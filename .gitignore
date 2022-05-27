@@ -11,6 +11,12 @@
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 
+# Output of the go-yacc tool
+*.output
+
+# Output of the Taskfile
+.task
+
 # Dependency directories (remove the comment below to include it)
 # vendor/
 
