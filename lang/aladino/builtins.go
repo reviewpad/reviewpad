@@ -18,3 +18,22 @@ type BuiltInAction struct {
 	Type Type
 	Code func(e *EvalEnv, args []Value) error
 }
+
+func MergeAladinoBuiltIns(builtInsList ...*BuiltIns) *BuiltIns {
+	mergedBuiltIns := &BuiltIns{
+		Functions: map[string]*BuiltInFunction{},
+		Actions:   map[string]*BuiltInAction{},
+	}
+
+	for _, builtIns := range builtInsList {
+		for key, fn := range builtIns.Functions {
+			mergedBuiltIns.Functions[key] = fn
+		}
+
+		for key, action := range builtIns.Actions {
+			mergedBuiltIns.Actions[key] = action
+		}
+	}
+
+	return mergedBuiltIns
+}
