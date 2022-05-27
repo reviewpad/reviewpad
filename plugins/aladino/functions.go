@@ -31,7 +31,7 @@ If the authenticated user is an owner of the organization, this will return both
 
 *none*
 
-**Return Value**:
+**Return value**:
 
 `[]string`
 
@@ -90,7 +90,7 @@ Appends elements to the end of a slice and returns the updated slice.
 | `slice`        | []string | slice that will have elements appended to it |
 | `elements`     | []string | elements to be added to the end of the slice |
 
-**Return al.Value**:
+**Return value**:
 
 `[]string`
 
@@ -144,7 +144,7 @@ Returns the list of GitHub user login that are assigned to the pull request.
 
 *none*
 
-**Return al.Value**:
+**Return value**:
 
 `[]string`
 
@@ -197,7 +197,7 @@ Returns the name of the branch the pull request should be pulled into.
 
 *none*
 
-**Return al.Value**:
+**Return value**:
 
 `string`
 
@@ -247,7 +247,7 @@ The code pattern needs to be a compilable regular expression.
 | -------------- | ------ | ---------------------------------- |
 | `queryPattern` | string | query pattern to look for on patch |
 
-**Return al.Value**:
+**Return value**:
 
 `boolean`
 
@@ -370,7 +370,7 @@ Returns the total number of commits made into the pull request.
 
 *none*
 
-**Return al.Value**:
+**Return value**:
 
 `int`
 
@@ -419,7 +419,7 @@ Determines whether a text includes a certain sentence, returning `true` or `fals
 | `text`              | string        | The text to search in       |
 | `searchSentence`    | string        | The sentence to search for  |
 
-**Return al.Value**:
+**Return value**:
 
 `boolean`
 
@@ -469,7 +469,7 @@ Returns the time the pull request was created at.
 
 *none*
 
-**Return al.Value**:
+**Return value**:
 
 `int64`
 
@@ -520,7 +520,7 @@ Returns the description of the pull request.
 
 *none*
 
-**Return al.Value**:
+**Return value**:
 
 `string`
 
@@ -566,7 +566,7 @@ Returns the total number of files changed in the patch.
 
 *none*
 
-**Return al.Value**:
+**Return value**:
 
 `int`
 
@@ -616,7 +616,7 @@ Each extension provided on the list needs to be a [glob](https://en.wikipedia.or
 | ------------ | -------- | --------------------------- |
 | `extensions` | []string | list of all file extensions |
 
-**Return al.Value**:
+**Return value**:
 
 `boolean`
 
@@ -707,7 +707,7 @@ Lists all members that belong to the provided group. This group needs to be defi
 | ----------- | ------ | -------------------------------------- |
 | `groupName` | string | the group name to list the member from |
 
-**Return al.Value**:
+**Return value**:
 
 `[]string`
 
@@ -767,7 +767,7 @@ Determines whether the provided filename is among the files on patch, returning 
 | ---------- | ------ | -------------------------------------------------- |
 | `filename` | string | filename to look for in the patch. case sensitive. |
 
-**Return al.Value**:
+**Return value**:
 
 `boolean`
 
@@ -828,7 +828,7 @@ The file pattern needs to be a [glob](https://en.wikipedia.org/wiki/Glob_(progra
 | `filePattern` | string | file pattern glob to look for on patch |
 
 
-**Return al.Value**:
+**Return value**:
 
 `boolean`
 
@@ -949,7 +949,7 @@ Checks if a pull request has associated issues that might be closed by it.
 
 *none*
 
-**Return al.Value**:
+**Return value**:
 
 `boolean`
 
@@ -1021,7 +1021,7 @@ Returns the name of the branch where the pull request changes are implemented.
 
 *none*
 
-**Return al.Value**:
+**Return value**:
 
 `string`
 
@@ -1069,7 +1069,7 @@ To know more about [GitHub Draft pull request](https://github.blog/2019-02-14-in
 
 *none*
 
-**Return al.Value**:
+**Return value**:
 
 `boolean`
 
@@ -1122,7 +1122,7 @@ Determines whether a list includes a certain al.Value among its entries, returni
 | `searchElement` | literal   | The al.Value to search for |
 | `list`          | []literal | The list to search in   |
 
-**Return al.Value**:
+**Return value**:
 
 `boolean`
 
@@ -1178,7 +1178,7 @@ Returns the list of labels of the pull request.
 
 *none*
 
-**Return al.Value**:
+**Return value**:
 
 `[]string`
 
@@ -1231,7 +1231,7 @@ Returns the milestone title associated to the pull request.
 
 *none*
 
-**Return al.Value**:
+**Return value**:
 
 `string`
 
@@ -1278,7 +1278,7 @@ Retrieves the pull request author GitHub login.
 
 *none*
 
-**Return al.Value**:
+**Return value**:
 
 `string`
 
@@ -1325,7 +1325,7 @@ Returns the list of GitHub user login or team slug that were requested to review
 
 *none*
 
-**Return al.Value**:
+**Return value**:
 
 `[]string`
 
@@ -1393,7 +1393,7 @@ function helloWorld() {
 
 *none*
 
-**Return al.Value**:
+**Return value**:
 
 `int`
 
@@ -1453,7 +1453,7 @@ Because of that, in order for the function `team` to work we need to provide a G
 | -------------- | ------ | ------------------------------------ |
 | `teamSlug`     | string | The slug of the team name on GitHub. |
 
-**Return al.Value**:
+**Return value**:
 
 `[]string`
 
@@ -1512,7 +1512,7 @@ Returns the title of the pull request.
 
 *none*
 
-**Return al.Value**:
+**Return value**:
 
 `string`
 
@@ -1560,7 +1560,7 @@ Returns the total number of pull requests created by the provided GitHub user lo
 | ----------- | ------ | --------------------- |
 | `userLogin` | string | the GitHub user login |
 
-**Return al.Value**:
+**Return value**:
 
 `int`
 
