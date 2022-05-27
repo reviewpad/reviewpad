@@ -1,0 +1,47 @@
+# Copyright (C) 2022 Explore.dev, Unipessoal Lda - All Rights Reserved
+# Use of this source code is governed by a license that can be
+# found in the LICENSE file
+
+version: "3"
+
+tasks:
+  build:
+    deps:
+      - build-aladino-parser
+    summary: |
+      Builds Go files.
+
+      Run with --watch or -w to watch for changes on Go files.
+    cmds:
+      - go build
+    sources:
+      - ./**/*.go
+
+  build-aladino-parser:
+    summary: |
+      Generates Aladino parser written in Go.
+
+      Run with --watch or -w to watch for changes on yacc file.
+    cmds:
+      - goyacc -o lang/aladino/parser.go -p Aladino lang/aladino/parser.y
+    sources:
+      - lang/aladino/parser.y
+    generates:
+      - lang/aladino/parser.go
+
+  test:
+    summary: |
+      Runs unit tests with coverage
+
+      Run with --watch or -w to watch for changes on _test.go files.
+    cmds:
+      - gotestsum -- -coverprofile=coverage.out ./...
+    sources:
+      - ./**/*_test.go
+
+  coverage:
+    summary: Generates coverage report and opens it
+    deps:
+      - test
+    cmds:
+      - go tool cover -html=coverage.out
