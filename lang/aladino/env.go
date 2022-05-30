@@ -14,33 +14,73 @@ import (
 
 const maxPerPage = int32(100)
 
-type TypeEnv struct {
-	Vars map[string]Type
+type TypeEnv map[string]Type
+
+type Patch map[string]*File
+
+type RegisterMap map[string]Value
+
+type Env interface {
+	GetCtx() context.Context
+	GetClient() *github.Client
+	GetClientGQL() *githubv4.Client
+	GetPullRequest() *github.PullRequest
+	GetPatch() *Patch
+	GetRegisterMap() *RegisterMap
+	GetBuiltIns() *BuiltIns
 }
 
-type EvalEnv struct {
+type BaseEnv struct {
 	Ctx         context.Context
 	Client      *github.Client
 	ClientGQL   *githubv4.Client
 	PullRequest *github.PullRequest
-	Patch       map[string]*File
-	RegisterMap map[string]Value
+	Patch       *Patch
+	RegisterMap *RegisterMap
 	BuiltIns    *BuiltIns
 }
 
-func NewTypeEnv(e *EvalEnv) *TypeEnv {
+func (e *BaseEnv) GetCtx() context.Context {
+	return e.Ctx
+}
+
+func (e *BaseEnv) GetClient() *github.Client {
+	return e.Client
+}
+
+func (e *BaseEnv) GetClientGQL() *githubv4.Client {
+	return e.ClientGQL
+}
+
+func (e *BaseEnv) GetPullRequest() *github.PullRequest {
+	return e.PullRequest
+}
+
+func (e *BaseEnv) GetPatch() *Patch {
+	return e.Patch
+}
+
+func (e *BaseEnv) GetRegisterMap() *RegisterMap {
+	return e.RegisterMap
+}
+
+func (e *BaseEnv) GetBuiltIns() *BuiltIns {
+	return e.BuiltIns
+}
+
+func NewTypeEnv(e Env) *TypeEnv {
 	builtInsType := make(map[string]Type)
-	for builtInName, builtInFunction := range e.BuiltIns.Functions {
+	for builtInName, builtInFunction := range e.GetBuiltIns().Functions {
 		builtInsType[builtInName] = builtInFunction.Type
 	}
 
-	for builtInName, builtInAction := range e.BuiltIns.Actions {
+	for builtInName, builtInAction := range e.GetBuiltIns().Actions {
 		builtInsType[builtInName] = builtInAction.Type
 	}
 
-	return &TypeEnv{
-		Vars: builtInsType,
-	}
+	typeEnv := TypeEnv(builtInsType)
+
+	return &typeEnv
 }
 
 func NewEvalEnv(
@@ -49,7 +89,7 @@ func NewEvalEnv(
 	clientGQL *githubv4.Client,
 	pullRequest *github.PullRequest,
 	builtIns *BuiltIns,
-) (*EvalEnv, error) {
+) (Env, error) {
 	owner := *pullRequest.Base.Repo.Owner.Login
 	repo := *pullRequest.Base.Repo.Name
 	number := *pullRequest.Number
@@ -70,13 +110,16 @@ func NewEvalEnv(
 		patchMap[file.GetFilename()] = patchFile
 	}
 
-	input := &EvalEnv{
+	patch := Patch(patchMap)
+	registerMap := RegisterMap(make(map[string]Value))
+
+	input := &BaseEnv{
 		Ctx:         ctx,
 		Client:      client,
 		ClientGQL:   clientGQL,
 		PullRequest: pullRequest,
-		Patch:       patchMap,
-		RegisterMap: make(map[string]Value),
+		Patch:       &patch,
+		RegisterMap: &registerMap,
 		BuiltIns:    builtIns,
 	}
 

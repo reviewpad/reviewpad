@@ -6,7 +6,7 @@ package aladino
 
 import "fmt"
 
-func TypeInference(e *EvalEnv, expr Expr) (Type, error) {
+func TypeInference(e Env, expr Expr) (Type, error) {
 	return expr.typeinfer(NewTypeEnv(e))
 }
 
@@ -110,7 +110,7 @@ func (te *TypedExpr) typeinfer(env *TypeEnv) (Type, error) {
 	}
 
 	varIdent := te.expr.(*Variable).ident
-	env.Vars[varIdent] = te.typeOf
+	(*env)[varIdent] = te.typeOf
 
 	return te.typeOf, nil
 }
@@ -118,7 +118,7 @@ func (te *TypedExpr) typeinfer(env *TypeEnv) (Type, error) {
 // TODO: Fix variable shadowing
 func (v *Variable) typeinfer(env *TypeEnv) (Type, error) {
 	varName := v.ident
-	varType, ok := env.Vars[varName]
+	varType, ok := (*env)[varName]
 	if !ok {
 		return nil, fmt.Errorf("no type for built-in %v", varName)
 	}

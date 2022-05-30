@@ -11,12 +11,12 @@ type BuiltIns struct {
 
 type BuiltInFunction struct {
 	Type Type
-	Code func(e *EvalEnv, args []Value) (Value, error)
+	Code func(e Env, args []Value) (Value, error)
 }
 
 type BuiltInAction struct {
 	Type Type
-	Code func(e *EvalEnv, args []Value) error
+	Code func(e Env, args []Value) error
 }
 
 func MergeAladinoBuiltIns(builtInsList ...*BuiltIns) *BuiltIns {

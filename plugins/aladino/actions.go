@@ -59,7 +59,7 @@ func addLabel() *aladino.BuiltInAction {
 	}
 }
 
-func addLabelCode(e *aladino.EvalEnv, args []aladino.Value) error {
+func addLabelCode(e aladino.Env, args []aladino.Value) error {
 	if len(args) != 1 {
 		return fmt.Errorf("addLabel: expecting 1 argument, got %v", len(args))
 	}
@@ -71,16 +71,16 @@ func addLabelCode(e *aladino.EvalEnv, args []aladino.Value) error {
 
 	label := labelVal.(*aladino.StringValue).Val
 
-	prNum := utils.GetPullRequestNumber(e.PullRequest)
-	owner := utils.GetPullRequestOwnerName(e.PullRequest)
-	repo := utils.GetPullRequestRepoName(e.PullRequest)
+	prNum := utils.GetPullRequestNumber(e.GetPullRequest())
+	owner := utils.GetPullRequestOwnerName(e.GetPullRequest())
+	repo := utils.GetPullRequestRepoName(e.GetPullRequest())
 
-	_, _, err := e.Client.Issues.GetLabel(e.Ctx, owner, repo, label)
+	_, _, err := e.GetClient().Issues.GetLabel(e.GetCtx(), owner, repo, label)
 	if err != nil {
 		return err
 	}
 
-	_, _, err = e.Client.Issues.AddLabelsToIssue(e.Ctx, owner, repo, prNum, []string{label})
+	_, _, err = e.GetClient().Issues.AddLabelsToIssue(e.GetCtx(), owner, repo, prNum, []string{label})
 
 	return err
 }
@@ -133,12 +133,12 @@ func assignRandomReviewer() *aladino.BuiltInAction {
 	}
 }
 
-func assignRandomReviewerCode(e *aladino.EvalEnv, _ []aladino.Value) error {
-	prNum := utils.GetPullRequestNumber(e.PullRequest)
-	owner := utils.GetPullRequestOwnerName(e.PullRequest)
-	repo := utils.GetPullRequestRepoName(e.PullRequest)
+func assignRandomReviewerCode(e aladino.Env, _ []aladino.Value) error {
+	prNum := utils.GetPullRequestNumber(e.GetPullRequest())
+	owner := utils.GetPullRequestOwnerName(e.GetPullRequest())
+	repo := utils.GetPullRequestRepoName(e.GetPullRequest())
 
-	ghPr, _, err := e.Client.PullRequests.Get(e.Ctx, owner, repo, prNum)
+	ghPr, _, err := e.GetClient().PullRequests.Get(e.GetCtx(), owner, repo, prNum)
 	if err != nil {
 		return err
 	}
@@ -149,7 +149,7 @@ func assignRandomReviewerCode(e *aladino.EvalEnv, _ []aladino.Value) error {
 		return nil
 	}
 
-	ghUsers, _, err := e.Client.Repositories.ListCollaborators(e.Ctx, owner, repo, nil)
+	ghUsers, _, err := e.GetClient().Repositories.ListCollaborators(e.GetCtx(), owner, repo, nil)
 	if err != nil {
 		return err
 	}
@@ -169,7 +169,7 @@ func assignRandomReviewerCode(e *aladino.EvalEnv, _ []aladino.Value) error {
 	lucky := utils.GenerateRandom(len(filteredGhUsers))
 	ghUser := filteredGhUsers[lucky]
 
-	_, _, err = e.Client.PullRequests.RequestReviewers(e.Ctx, owner, repo, prNum, github.ReviewersRequest{
+	_, _, err = e.GetClient().PullRequests.RequestReviewers(e.GetCtx(), owner, repo, prNum, github.ReviewersRequest{
 		Reviewers: []string{ghUser.GetLogin()},
 	})
 
@@ -225,7 +225,7 @@ func assignReviewer() *aladino.BuiltInAction {
 	}
 }
 
-func assignReviewerCode(e *aladino.EvalEnv, args []aladino.Value) error {
+func assignReviewerCode(e aladino.Env, args []aladino.Value) error {
 	if len(args) < 1 {
 		return fmt.Errorf("assignReviewer: expecting at least 1 argument")
 	}
@@ -251,7 +251,7 @@ func assignReviewerCode(e *aladino.EvalEnv, args []aladino.Value) error {
 
 	// Remove pull request author from provided reviewers list
 	for index, reviewer := range availableReviewers {
-		if reviewer.(*aladino.StringValue).Val == *e.PullRequest.User.Login {
+		if reviewer.(*aladino.StringValue).Val == *e.GetPullRequest().User.Login {
 			availableReviewers = append(availableReviewers[:index], availableReviewers[index+1:]...)
 			break
 		}
@@ -263,13 +263,13 @@ func assignReviewerCode(e *aladino.EvalEnv, args []aladino.Value) error {
 		totalRequiredReviewers = totalAvailableReviewers
 	}
 
-	prNum := utils.GetPullRequestNumber(e.PullRequest)
-	owner := utils.GetPullRequestOwnerName(e.PullRequest)
-	repo := utils.GetPullRequestRepoName(e.PullRequest)
+	prNum := utils.GetPullRequestNumber(e.GetPullRequest())
+	owner := utils.GetPullRequestOwnerName(e.GetPullRequest())
+	repo := utils.GetPullRequestRepoName(e.GetPullRequest())
 
 	reviewers := []string{}
 
-	reviews, _, err := e.Client.PullRequests.ListReviews(e.Ctx, owner, repo, prNum, nil)
+	reviews, _, err := e.GetClient().PullRequests.ListReviews(e.GetCtx(), owner, repo, prNum, nil)
 	if err != nil {
 		return err
 	}
@@ -287,7 +287,7 @@ func assignReviewerCode(e *aladino.EvalEnv, args []aladino.Value) error {
 	}
 
 	// Skip current requested reviewers if mention on the provided reviewers list
-	currentRequestedReviewers := e.PullRequest.RequestedReviewers
+	currentRequestedReviewers := e.GetPullRequest().RequestedReviewers
 	for _, requestedReviewer := range currentRequestedReviewers {
 		for index, availableReviewer := range availableReviewers {
 			if availableReviewer.(*aladino.StringValue).Val == *requestedReviewer.Login {
@@ -313,7 +313,7 @@ func assignReviewerCode(e *aladino.EvalEnv, args []aladino.Value) error {
 		return nil
 	}
 
-	_, _, err = e.Client.PullRequests.RequestReviewers(e.Ctx, owner, repo, prNum, github.ReviewersRequest{
+	_, _, err = e.GetClient().PullRequests.RequestReviewers(e.GetCtx(), owner, repo, prNum, github.ReviewersRequest{
 		Reviewers: reviewers,
 	})
 
@@ -375,17 +375,17 @@ func merge() *aladino.BuiltInAction {
 	}
 }
 
-func mergeCode(e *aladino.EvalEnv, args []aladino.Value) error {
-	prNum := utils.GetPullRequestNumber(e.PullRequest)
-	owner := utils.GetPullRequestOwnerName(e.PullRequest)
-	repo := utils.GetPullRequestRepoName(e.PullRequest)
+func mergeCode(e aladino.Env, args []aladino.Value) error {
+	prNum := utils.GetPullRequestNumber(e.GetPullRequest())
+	owner := utils.GetPullRequestOwnerName(e.GetPullRequest())
+	repo := utils.GetPullRequestRepoName(e.GetPullRequest())
 
 	mergeMethod, err := parseMergeMethod(args)
 	if err != nil {
 		return err
 	}
 
-	_, _, err = e.Client.PullRequests.Merge(e.Ctx, owner, repo, prNum, "Merged by Reviewpad", &github.PullRequestOptions{
+	_, _, err = e.GetClient().PullRequests.Merge(e.GetCtx(), owner, repo, prNum, "Merged by Reviewpad", &github.PullRequestOptions{
 		MergeMethod: mergeMethod,
 	})
 	return err
@@ -462,7 +462,7 @@ func removeLabel() *aladino.BuiltInAction {
 	}
 }
 
-func removeLabelCode(e *aladino.EvalEnv, args []aladino.Value) error {
+func removeLabelCode(e aladino.Env, args []aladino.Value) error {
 	if len(args) != 1 {
 		return fmt.Errorf("removeLabel: expecting 1 argument, got %v", len(args))
 	}
@@ -474,17 +474,17 @@ func removeLabelCode(e *aladino.EvalEnv, args []aladino.Value) error {
 
 	label := labelVal.(*aladino.StringValue).Val
 
-	prNum := utils.GetPullRequestNumber(e.PullRequest)
-	owner := utils.GetPullRequestOwnerName(e.PullRequest)
-	repo := utils.GetPullRequestRepoName(e.PullRequest)
+	prNum := utils.GetPullRequestNumber(e.GetPullRequest())
+	owner := utils.GetPullRequestOwnerName(e.GetPullRequest())
+	repo := utils.GetPullRequestRepoName(e.GetPullRequest())
 
-	_, _, err := e.Client.Issues.GetLabel(e.Ctx, owner, repo, label)
+	_, _, err := e.GetClient().Issues.GetLabel(e.GetCtx(), owner, repo, label)
 	if err != nil {
 		return err
 	}
 
 	var labelIsAppliedToPullRequest bool = false
-	for _, ghLabel := range e.PullRequest.Labels {
+	for _, ghLabel := range e.GetPullRequest().Labels {
 		if ghLabel.GetName() == label {
 			labelIsAppliedToPullRequest = true
 			break
@@ -495,7 +495,7 @@ func removeLabelCode(e *aladino.EvalEnv, args []aladino.Value) error {
 		return nil
 	}
 
-	_, err = e.Client.Issues.RemoveLabelForIssue(e.Ctx, owner, repo, prNum, label)
+	_, err = e.GetClient().Issues.RemoveLabelForIssue(e.GetCtx(), owner, repo, prNum, label)
 
 	return err
 }

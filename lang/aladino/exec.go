@@ -7,10 +7,10 @@ package aladino
 import "fmt"
 
 type ExecExpr interface {
-	exec(env *EvalEnv) error
+	exec(env Env) error
 }
 
-func TypeCheckExec(env *EvalEnv, expr Expr) (ExecExpr, error) {
+func TypeCheckExec(env Env, expr Expr) (ExecExpr, error) {
 	switch expr.Kind() {
 	case "FunctionCall":
 		_, err := TypeInference(env, expr)
@@ -24,7 +24,7 @@ func TypeCheckExec(env *EvalEnv, expr Expr) (ExecExpr, error) {
 	return nil, fmt.Errorf("typecheckexec: %v", expr.Kind())
 }
 
-func (fc *FunctionCall) exec(env *EvalEnv) error {
+func (fc *FunctionCall) exec(env Env) error {
 	args := make([]Value, len(fc.arguments))
 	for i, elem := range fc.arguments {
 		value, err := elem.Eval(env)
@@ -36,7 +36,7 @@ func (fc *FunctionCall) exec(env *EvalEnv) error {
 		args[i] = value
 	}
 
-	action, ok := env.BuiltIns.Actions[fc.name.ident]
+	action, ok := env.GetBuiltIns().Actions[fc.name.ident]
 	if !ok {
 		return fmt.Errorf("exec: %v not found. are you sure this is a built-in function?", fc.name.ident)
 	}
@@ -44,6 +44,6 @@ func (fc *FunctionCall) exec(env *EvalEnv) error {
 	return action.Code(env, args)
 }
 
-func ExecAction(env *EvalEnv, expr ExecExpr) error {
+func ExecAction(env Env, expr ExecExpr) error {
 	return expr.exec(env)
 }

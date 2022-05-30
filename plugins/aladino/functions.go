@@ -60,9 +60,9 @@ func allDevs() *aladino.BuiltInFunction {
 	}
 }
 
-func allDevsCode(e *aladino.EvalEnv, _ []aladino.Value) (aladino.Value, error) {
-	orgName := e.PullRequest.Head.Repo.Owner.Login
-	users, _, err := e.Client.Organizations.ListMembers(e.Ctx, *orgName, nil)
+func allDevsCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
+	orgName := e.GetPullRequest().Head.Repo.Owner.Login
+	users, _, err := e.GetClient().Organizations.ListMembers(e.GetCtx(), *orgName, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -124,7 +124,7 @@ func appendString() *aladino.BuiltInFunction {
 	}
 }
 
-func appendStringCode(e *aladino.EvalEnv, args []aladino.Value) (aladino.Value, error) {
+func appendStringCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
 	slice1 := args[0].(*aladino.ArrayValue).Vals
 	slice2 := args[1].(*aladino.ArrayValue).Vals
 
@@ -173,8 +173,8 @@ func assignees() *aladino.BuiltInFunction {
 	}
 }
 
-func assigneesCode(e *aladino.EvalEnv, _ []aladino.Value) (aladino.Value, error) {
-	ghAssignees := e.PullRequest.Assignees
+func assigneesCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
+	ghAssignees := e.GetPullRequest().Assignees
 	assignees := make([]aladino.Value, len(ghAssignees))
 
 	for i, ghAssignee := range ghAssignees {
@@ -226,8 +226,8 @@ func base() *aladino.BuiltInFunction {
 	}
 }
 
-func baseCode(e *aladino.EvalEnv, _ []aladino.Value) (aladino.Value, error) {
-	return aladino.BuildStringValue(e.PullRequest.GetBase().GetRef()), nil
+func baseCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
+	return aladino.BuildStringValue(e.GetPullRequest().GetBase().GetRef()), nil
 }
 
 /*
@@ -276,10 +276,11 @@ func codeQuery() *aladino.BuiltInFunction {
 	}
 }
 
-func codeQueryCode(e *aladino.EvalEnv, args []aladino.Value) (aladino.Value, error) {
+func codeQueryCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
 	arg := args[0].(*aladino.StringValue)
+	patch := e.GetPatch()
 
-	for _, file := range e.Patch {
+	for _, file := range *patch {
 		if file == nil {
 			continue
 		}
@@ -339,12 +340,12 @@ func commits() *aladino.BuiltInFunction {
 	}
 }
 
-func commitsCode(e *aladino.EvalEnv, _ []aladino.Value) (aladino.Value, error) {
-	prNum := utils.GetPullRequestNumber(e.PullRequest)
-	owner := utils.GetPullRequestOwnerName(e.PullRequest)
-	repo := utils.GetPullRequestRepoName(e.PullRequest)
+func commitsCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
+	prNum := utils.GetPullRequestNumber(e.GetPullRequest())
+	owner := utils.GetPullRequestOwnerName(e.GetPullRequest())
+	repo := utils.GetPullRequestRepoName(e.GetPullRequest())
 
-	ghCommits, _, err := e.Client.PullRequests.ListCommits(e.Ctx, owner, repo, prNum, &github.ListOptions{})
+	ghCommits, _, err := e.GetClient().PullRequests.ListCommits(e.GetCtx(), owner, repo, prNum, &github.ListOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -399,8 +400,8 @@ func commitsCount() *aladino.BuiltInFunction {
 	}
 }
 
-func commitsCountCode(e *aladino.EvalEnv, _ []aladino.Value) (aladino.Value, error) {
-	return aladino.BuildIntValue(*e.PullRequest.Commits), nil
+func commitsCountCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
+	return aladino.BuildIntValue(*e.GetPullRequest().Commits), nil
 }
 
 /*
@@ -449,7 +450,7 @@ func contains() *aladino.BuiltInFunction {
 	}
 }
 
-func containsCode(e *aladino.EvalEnv, args []aladino.Value) (aladino.Value, error) {
+func containsCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
 	str := args[0].(*aladino.StringValue).Val
 	subString := args[1].(*aladino.StringValue).Val
 
@@ -498,8 +499,8 @@ func createdAt() *aladino.BuiltInFunction {
 	}
 }
 
-func createdAtCode(e *aladino.EvalEnv, args []aladino.Value) (aladino.Value, error) {
-	createdAtTime, err := time.Parse("2006-01-02 15:04:05.999999999 -0700 MST", e.PullRequest.GetCreatedAt().String())
+func createdAtCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
+	createdAtTime, err := time.Parse("2006-01-02 15:04:05.999999999 -0700 MST", e.GetPullRequest().GetCreatedAt().String())
 	if err != nil {
 		return nil, err
 	}
@@ -549,8 +550,8 @@ func description() *aladino.BuiltInFunction {
 	}
 }
 
-func descriptionCode(e *aladino.EvalEnv, args []aladino.Value) (aladino.Value, error) {
-	return aladino.BuildStringValue(e.PullRequest.GetBody()), nil
+func descriptionCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
+	return aladino.BuildStringValue(e.GetPullRequest().GetBody()), nil
 }
 
 /*
@@ -595,8 +596,9 @@ func fileCount() *aladino.BuiltInFunction {
 	}
 }
 
-func fileCountCode(e *aladino.EvalEnv, _ []aladino.Value) (aladino.Value, error) {
-	return aladino.BuildIntValue(len(e.Patch)), nil
+func fileCountCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
+	patch := e.GetPatch()
+	return aladino.BuildIntValue(len(*patch)), nil
 }
 
 /*
@@ -645,7 +647,7 @@ func filesExtensions() *aladino.BuiltInFunction {
 	}
 }
 
-func filesExtensionsCode(e *aladino.EvalEnv, args []aladino.Value) (aladino.Value, error) {
+func filesExtensionsCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
 	argExtensions := args[0].(*aladino.ArrayValue)
 
 	extensionSet := make(map[string]bool, len(argExtensions.Vals))
@@ -656,7 +658,8 @@ func filesExtensionsCode(e *aladino.EvalEnv, args []aladino.Value) (aladino.Valu
 		extensionSet[normalizedStr] = true
 	}
 
-	for fp := range e.Patch {
+	patch := e.GetPatch()
+	for fp := range *patch {
 		fpExt := utils.FileExt(fp)
 		normalizedExt := strings.ToLower(fpExt)
 
@@ -675,7 +678,7 @@ func filter() *aladino.BuiltInFunction {
 	}
 }
 
-func filterCode(e *aladino.EvalEnv, args []aladino.Value) (aladino.Value, error) {
+func filterCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
 	result := make([]aladino.Value, 0)
 	elems := args[0].(*aladino.ArrayValue).Vals
 	fn := args[1].(*aladino.FunctionValue).Fn
@@ -742,14 +745,14 @@ func group() *aladino.BuiltInFunction {
 	}
 }
 
-func groupCode(e *aladino.EvalEnv, args []aladino.Value) (aladino.Value, error) {
+func groupCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
 	groupName := args[0].(*aladino.StringValue).Val
 
-	if val, ok := e.RegisterMap[groupName]; ok {
+	if val, ok := (*e.GetRegisterMap())[groupName]; ok {
 		return val, nil
 	}
 
-	return nil, fmt.Errorf("getGroup: no group with name %v in state %+q", groupName, e.RegisterMap)
+	return nil, fmt.Errorf("getGroup: no group with name %v in state %+q", groupName, e.GetRegisterMap())
 }
 
 /*
@@ -798,10 +801,11 @@ func hasFileName() *aladino.BuiltInFunction {
 	}
 }
 
-func hasFileNameCode(e *aladino.EvalEnv, args []aladino.Value) (aladino.Value, error) {
+func hasFileNameCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
 	fileNameStr := args[0].(*aladino.StringValue)
 
-	for fp := range e.Patch {
+	patch := e.GetPatch()
+	for fp := range *patch {
 		if fp == fileNameStr.Val {
 			return aladino.BuildTrueValue(), nil
 		}
@@ -826,7 +830,6 @@ The file pattern needs to be a [glob](https://en.wikipedia.org/wiki/Glob_(progra
 | variable      | type   | description                            |
 | ------------- | ------ | -------------------------------------- |
 | `filePattern` | string | file pattern glob to look for on patch |
-
 
 **Return value**:
 
@@ -857,10 +860,11 @@ func hasFilePattern() *aladino.BuiltInFunction {
 	}
 }
 
-func hasFilePatternCode(e *aladino.EvalEnv, args []aladino.Value) (aladino.Value, error) {
+func hasFilePatternCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
 	filePatternRegex := args[0].(*aladino.StringValue)
 
-	for fp := range e.Patch {
+	patch := e.GetPatch()
+	for fp := range *patch {
 		re, err := doublestar.Match(filePatternRegex.Val, fp)
 		if err != nil {
 			return aladino.BuildFalseValue(), err
@@ -917,12 +921,12 @@ func hasLinearHistory() *aladino.BuiltInFunction {
 	}
 }
 
-func hasLinearHistoryCode(e *aladino.EvalEnv, _ []aladino.Value) (aladino.Value, error) {
-	prNum := utils.GetPullRequestNumber(e.PullRequest)
-	owner := utils.GetPullRequestOwnerName(e.PullRequest)
-	repo := utils.GetPullRequestRepoName(e.PullRequest)
+func hasLinearHistoryCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
+	prNum := utils.GetPullRequestNumber(e.GetPullRequest())
+	owner := utils.GetPullRequestOwnerName(e.GetPullRequest())
+	repo := utils.GetPullRequestRepoName(e.GetPullRequest())
 
-	ghCommits, _, err := e.Client.PullRequests.ListCommits(e.Ctx, owner, repo, prNum, &github.ListOptions{})
+	ghCommits, _, err := e.GetClient().PullRequests.ListCommits(e.GetCtx(), owner, repo, prNum, &github.ListOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -978,7 +982,7 @@ func hasLinkedIssues() *aladino.BuiltInFunction {
 	}
 }
 
-func hasLinkedIssuesCode(e *aladino.EvalEnv, args []aladino.Value) (aladino.Value, error) {
+func hasLinkedIssuesCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
 	var pullRequestQuery struct {
 		Repository struct {
 			PullRequest struct {
@@ -989,9 +993,9 @@ func hasLinkedIssuesCode(e *aladino.EvalEnv, args []aladino.Value) (aladino.Valu
 		} `graphql:"repository(owner: $repositoryOwner, name: $repositoryName)"`
 	}
 
-	prNum := utils.GetPullRequestNumber(e.PullRequest)
-	owner := utils.GetPullRequestOwnerName(e.PullRequest)
-	repo := utils.GetPullRequestRepoName(e.PullRequest)
+	prNum := utils.GetPullRequestNumber(e.GetPullRequest())
+	owner := utils.GetPullRequestOwnerName(e.GetPullRequest())
+	repo := utils.GetPullRequestRepoName(e.GetPullRequest())
 
 	varGQLPullRequestQuery := map[string]interface{}{
 		"repositoryOwner":   githubv4.String(owner),
@@ -999,7 +1003,7 @@ func hasLinkedIssuesCode(e *aladino.EvalEnv, args []aladino.Value) (aladino.Valu
 		"pullRequestNumber": githubv4.Int(prNum),
 	}
 
-	err := e.ClientGQL.Query(e.Ctx, &pullRequestQuery, varGQLPullRequestQuery)
+	err := e.GetClientGQL().Query(e.GetCtx(), &pullRequestQuery, varGQLPullRequestQuery)
 
 	if err != nil {
 		return nil, err
@@ -1050,8 +1054,8 @@ func head() *aladino.BuiltInFunction {
 	}
 }
 
-func headCode(e *aladino.EvalEnv, _ []aladino.Value) (aladino.Value, error) {
-	return aladino.BuildStringValue(e.PullRequest.GetHead().GetRef()), nil
+func headCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
+	return aladino.BuildStringValue(e.GetPullRequest().GetHead().GetRef()), nil
 }
 
 /*
@@ -1098,12 +1102,13 @@ func isDraft() *aladino.BuiltInFunction {
 	}
 }
 
-func isDraftCode(e *aladino.EvalEnv, _ []aladino.Value) (aladino.Value, error) {
-	if e.PullRequest == nil {
+func isDraftCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
+	pullRequest := e.GetPullRequest()
+	if pullRequest == nil {
 		return nil, fmt.Errorf("isDraft: pull request is nil")
 	}
 
-	return aladino.BuildBoolValue(e.PullRequest.GetDraft()), nil
+	return aladino.BuildBoolValue(pullRequest.GetDraft()), nil
 }
 
 /*
@@ -1152,7 +1157,7 @@ func isMemberOf() *aladino.BuiltInFunction {
 	}
 }
 
-func isMemberOfCode(e *aladino.EvalEnv, args []aladino.Value) (aladino.Value, error) {
+func isMemberOfCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
 	member := args[0].(*aladino.StringValue)
 	group := args[1].(*aladino.ArrayValue).Vals
 
@@ -1207,8 +1212,8 @@ func labels() *aladino.BuiltInFunction {
 	}
 }
 
-func labelsCode(e *aladino.EvalEnv, _ []aladino.Value) (aladino.Value, error) {
-	ghLabels := e.PullRequest.Labels
+func labelsCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
+	ghLabels := e.GetPullRequest().Labels
 	labels := make([]aladino.Value, len(ghLabels))
 
 	for i, ghLabel := range ghLabels {
@@ -1260,8 +1265,8 @@ func milestone() *aladino.BuiltInFunction {
 	}
 }
 
-func milestoneCode(e *aladino.EvalEnv, _ []aladino.Value) (aladino.Value, error) {
-	milestoneTitle := e.PullRequest.GetMilestone().GetTitle()
+func milestoneCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
+	milestoneTitle := e.GetPullRequest().GetMilestone().GetTitle()
 	return aladino.BuildStringValue(milestoneTitle), nil
 }
 
@@ -1307,8 +1312,8 @@ func name() *aladino.BuiltInFunction {
 	}
 }
 
-func nameCode(e *aladino.EvalEnv, _ []aladino.Value) (aladino.Value, error) {
-	authorLogin := e.PullRequest.User.GetLogin()
+func nameCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
+	authorLogin := e.GetPullRequest().User.GetLogin()
 	return aladino.BuildStringValue(authorLogin), nil
 }
 
@@ -1354,9 +1359,9 @@ func reviewers() *aladino.BuiltInFunction {
 	}
 }
 
-func reviewersCode(e *aladino.EvalEnv, _ []aladino.Value) (aladino.Value, error) {
-	usersReviewers := e.PullRequest.RequestedReviewers
-	teamReviewers := e.PullRequest.RequestedTeams
+func reviewersCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
+	usersReviewers := e.GetPullRequest().RequestedReviewers
+	teamReviewers := e.GetPullRequest().RequestedTeams
 	totalReviewers := len(usersReviewers) + len(teamReviewers)
 	reviewersLogin := make([]aladino.Value, totalReviewers)
 
@@ -1422,8 +1427,8 @@ func size() *aladino.BuiltInFunction {
 	}
 }
 
-func sizeCode(e *aladino.EvalEnv, _ []aladino.Value) (aladino.Value, error) {
-	size := e.PullRequest.GetAdditions() + e.PullRequest.GetDeletions()
+func sizeCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
+	size := e.GetPullRequest().GetAdditions() + e.GetPullRequest().GetDeletions()
 	return aladino.BuildIntValue(size), nil
 }
 
@@ -1482,11 +1487,11 @@ func team() *aladino.BuiltInFunction {
 	}
 }
 
-func teamCode(e *aladino.EvalEnv, args []aladino.Value) (aladino.Value, error) {
+func teamCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
 	teamSlug := args[0].(*aladino.StringValue).Val
-	orgName := e.PullRequest.Head.Repo.Owner.Login
+	orgName := e.GetPullRequest().Head.Repo.Owner.Login
 
-	members, _, err := e.Client.Teams.ListTeamMembersBySlug(e.Ctx, *orgName, teamSlug, &github.TeamListTeamMembersOptions{})
+	members, _, err := e.GetClient().Teams.ListTeamMembersBySlug(e.GetCtx(), *orgName, teamSlug, &github.TeamListTeamMembersOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -1541,8 +1546,8 @@ func title() *aladino.BuiltInFunction {
 	}
 }
 
-func titleCode(e *aladino.EvalEnv, args []aladino.Value) (aladino.Value, error) {
-	return aladino.BuildStringValue(e.PullRequest.GetTitle()), nil
+func titleCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
+	return aladino.BuildStringValue(e.GetPullRequest().GetTitle()), nil
 }
 
 /*
@@ -1589,13 +1594,13 @@ func totalCreatedPRs() *aladino.BuiltInFunction {
 	}
 }
 
-func totalCreatedPRsCode(e *aladino.EvalEnv, args []aladino.Value) (aladino.Value, error) {
+func totalCreatedPRsCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
 	devName := args[0].(*aladino.StringValue).Val
 
-	owner := utils.GetPullRequestOwnerName(e.PullRequest)
-	repo := utils.GetPullRequestRepoName(e.PullRequest)
+	owner := utils.GetPullRequestOwnerName(e.GetPullRequest())
+	repo := utils.GetPullRequestRepoName(e.GetPullRequest())
 
-	issues, _, err := e.Client.Issues.ListByRepo(e.Ctx, owner, repo, &github.IssueListByRepoOptions{
+	issues, _, err := e.GetClient().Issues.ListByRepo(e.GetCtx(), owner, repo, &github.IssueListByRepoOptions{
 		Creator: devName,
 		State:   "all",
 	})

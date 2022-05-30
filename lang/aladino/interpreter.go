@@ -16,14 +16,14 @@ import (
 )
 
 type Interpreter struct {
-	env *EvalEnv
+	Env Env
 }
 
 func (i *Interpreter) ProcessGroup(groupName string, kind engine.GroupKind, typeOf engine.GroupType, expr, paramExpr, whereExpr string) error {
-	exprAST, err := buildGroupAST(typeOf, expr, paramExpr, whereExpr)
-	value, err := evalGroup(i.env, exprAST)
+	exprAST, _ := buildGroupAST(typeOf, expr, paramExpr, whereExpr)
+	value, err := evalGroup(i.Env, exprAST)
 
-	i.env.RegisterMap[groupName] = value
+	(*i.Env.GetRegisterMap())[groupName] = value
 
 	return err
 }
@@ -41,7 +41,7 @@ func buildGroupAST(typeOf engine.GroupType, expr, paramExpr, whereExpr string) (
 	}
 }
 
-func evalGroup(env *EvalEnv, expr Expr) (Value, error) {
+func evalGroup(env Env, expr Expr) (Value, error) {
 	exprType, err := TypeInference(env, expr)
 	if err != nil {
 		return nil, err
@@ -60,7 +60,7 @@ func (i *Interpreter) EvalExpr(kind, expr string) (bool, error) {
 		return false, err
 	}
 
-	exprType, err := TypeInference(i.env, exprAST)
+	exprType, err := TypeInference(i.Env, exprAST)
 	if err != nil {
 		return false, err
 	}
@@ -69,7 +69,7 @@ func (i *Interpreter) EvalExpr(kind, expr string) (bool, error) {
 		return false, fmt.Errorf("expression %v is not a condition", expr)
 	}
 
-	return EvalCondition(i.env, exprAST)
+	return EvalCondition(i.Env, exprAST)
 }
 
 func execLog(val string) {
@@ -89,12 +89,12 @@ func (i *Interpreter) ExecActions(program *[]string) error {
 			return err
 		}
 
-		execStatAST, err := TypeCheckExec(i.env, statAST)
+		execStatAST, err := TypeCheckExec(i.Env, statAST)
 		if err != nil {
 			return err
 		}
 
-		err = ExecAction(i.env, execStatAST)
+		err = ExecAction(i.Env, execStatAST)
 		if err != nil {
 			return err
 		}
@@ -120,6 +120,6 @@ func NewInterpreter(
 	}
 
 	return &Interpreter{
-		env: evalEnv,
+		Env: evalEnv,
 	}, nil
 }
