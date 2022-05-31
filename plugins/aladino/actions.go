@@ -16,7 +16,17 @@ import (
 /*
 reviewpad-an: builtin-docs
 
-## addLabel
+# Actions
+
+Reviewpad actions allow act on workflows.
+
+This set of actions are the defined functions that can run under `actions` on your `reviewpad.yml`.
+*/
+
+/*
+reviewpad-an: builtin-docs
+
+### addLabel
 
 **Description**:
 
@@ -88,7 +98,7 @@ func addLabelCode(e aladino.Env, args []aladino.Value) error {
 /*
 reviewpad-an: builtin-docs
 
-## assignRandomReviewer
+### assignRandomReviewer
 
 **Description**:
 
@@ -179,7 +189,7 @@ func assignRandomReviewerCode(e aladino.Env, _ []aladino.Value) error {
 /*
 reviewpad-an: builtin-docs
 
-## assignReviewer
+### assignReviewer
 
 **Description**:
 
@@ -323,7 +333,7 @@ func assignReviewerCode(e aladino.Env, args []aladino.Value) error {
 /*
 reviewpad-an: builtin-docs
 
-## merge
+### merge
 
 **Description**:
 
@@ -417,7 +427,7 @@ func parseMergeMethod(args []aladino.Value) (string, error) {
 /*
 reviewpad-an: builtin-docs
 
-## removeLabel
+### removeLabel
 
 **Description**:
 
