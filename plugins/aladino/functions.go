@@ -60,7 +60,7 @@ The list of GitHub user login that are assigned to the pull request.
 $assignees()
 ```
 
-A `revy.yml` example:
+A `reviewpad.yml.yml` example:
 
 ```yml
 rules:
@@ -113,7 +113,7 @@ The GitHub login of the pull request author.
 $author()
 ```
 
-A `revy.yml` example:
+A `reviewpad.yml.yml` example:
 
 ```yml
 rules:
@@ -160,7 +160,7 @@ The name of the branch the pull request should be pulled into.
 $base()
 ```
 
-A `revy.yml` example:
+A `reviewpad.yml.yml` example:
 
 ```yml
 rules:
@@ -206,7 +206,7 @@ The total number of commits in the pull request.
 $commitCount()
 ```
 
-A `revy.yml` example:
+A `reviewpad.yml.yml` example:
 
 ```yml
 rules:
@@ -252,7 +252,7 @@ The list of commit messages of the pull request.
 $commits()
 ```
 
-A `revy.yml` example:
+A `reviewpad.yml.yml` example:
 
 ```yml
 rules:
@@ -312,7 +312,7 @@ The number of seconds elapsed since January 1, 1970 UTC.
 $createdAt()
 ```
 
-A `revy.yml` example:
+A `reviewpad.yml.yml` example:
 
 ```yml
 rules:
@@ -363,7 +363,7 @@ The description of the pull request.
 $description()
 ```
 
-A `revy.yml` example:
+A `reviewpad.yml.yml` example:
 
 ```yml
 rules:
@@ -409,7 +409,7 @@ The total number of files changed in the patch.
 $filesCount()
 ```
 
-A `revy.yml` example:
+A `reviewpad.yml.yml` example:
 
 ```yml
 rules:
@@ -458,7 +458,7 @@ Returns `true` if it has a linear history. `false` otherwise.
 $hasLinearHistory()
 ```
 
-A `revy.yml` example:
+A `reviewpad.yml.yml` example:
 
 ```yml
 rules:
@@ -519,7 +519,7 @@ Returns `true` if it has linked issues. `false` otherwise.
 $hasLinkedIssues()
 ```
 
-A `revy.yml` example:
+A `reviewpad.yml.yml` example:
 
 ```yml
 rules:
@@ -591,7 +591,7 @@ The name of the branch where the pull request changes are implemented.
 $head()
 ```
 
-A `revy.yml` example:
+A `reviewpad.yml.yml` example:
 
 ```yml
 rules:
@@ -639,7 +639,7 @@ A boolean al.Value which is `true` if the pull request is `Draft`, `false` other
 $isDraft()
 ```
 
-A `revy.yml` example:
+A `reviewpad.yml.yml` example:
 
 ```yml
 rules:
@@ -690,7 +690,7 @@ The list of labels of the pull request.
 $labels()
 ```
 
-A `revy.yml` example:
+A `reviewpad.yml.yml` example:
 
 ```yml
 rules:
@@ -743,7 +743,7 @@ The milestone title associated to the pull request.
 $milestone()
 ```
 
-A `revy.yml` example:
+A `reviewpad.yml.yml` example:
 
 ```yml
 rules:
@@ -794,7 +794,7 @@ Returns `true` if the patch matches the code query, `false` otherwise.
 $codePattern("placeBet\(.*\)")
 ```
 
-A `revy.yml` example:
+A `reviewpad.yml.yml` example:
 
 ```yml
 rules:
@@ -862,7 +862,7 @@ Returns `true` if all file extensions in the patch are included in the list, `fa
 $patchHasFileExtensions([".test.ts"])
 ```
 
-A `revy.yml` example:
+A `reviewpad.yml.yml` example:
 
 ```yml
 rules:
@@ -932,7 +932,7 @@ The provided filename and the filename on the patch need to be exactly the same 
 $patchHasFileName("placeBet.js")
 ```
 
-A `revy.yml` example:
+A `reviewpad.yml.yml` example:
 
 ```yml
 rules:
@@ -991,7 +991,7 @@ Returns `true` if any of the files on patch matches the provided file pattern, `
 $patchHasFilePattern("src/transactions/**")
 ```
 
-A `revy.yml` example:
+A `reviewpad.yml.yml` example:
 
 ```yml
 rules:
@@ -1050,7 +1050,7 @@ The list of GitHub user login or team slug that were requested to review the pul
 $reviewers()
 ```
 
-A `revy.yml` example:
+A `reviewpad.yml.yml` example:
 
 ```yml
 rules:
@@ -1118,7 +1118,7 @@ The sum of all changed lines in the patch.
 $size()
 ```
 
-A `revy.yml` example:
+A `reviewpad.yml.yml` example:
 
 ```yml
 rules:
@@ -1165,7 +1165,7 @@ The title of the pull request.
 $title()
 ```
 
-A `revy.yml` example:
+A `reviewpad.yml.yml` example:
 
 ```yml
 rules:
@@ -1221,7 +1221,7 @@ The list of all members of the organization to where the pull request running ag
 $organization()
 ````
 
-A `revy.yml` example:
+A `reviewpad.yml.yml` example:
 
 ```yml
 rules:
@@ -1290,7 +1290,7 @@ Returns the list of all team and child teams members GitHub login.
 $team("devops")
 ```
 
-A `revy.yml` example:
+A `reviewpad.yml.yml` example:
 
 ```yml
 rules:
@@ -1359,7 +1359,7 @@ The total number of created pull requests created by GitHub user login.
 $totalCreatedPullRequests($author())
 ```
 
-A `revy.yml` example:
+A `reviewpad.yml.yml` example:
 
 ```yml
 rules:
@@ -1436,7 +1436,7 @@ Returns a new slice by appending the slices passed to it.
 $append(["a", "b"], ["c"])    # ["a", "b", "c"]
 ```
 
-A `revy.yml` example:
+A `reviewpad.yml.yml` example:
 
 ```yml
 groups:
@@ -1494,7 +1494,7 @@ $contains("Testing string contains", "string contains")     #true
 $contains("Testing string contains", "test")                #false
 ```
 
-A `revy.yml` example:
+A `reviewpad.yml.yml` example:
 
 ```yml
 rules:
@@ -1547,7 +1547,7 @@ $isElementOf("john", ["maria", "john"])  # true
 $isElementOf(3, [1, 2])                  # false
 ```
 
-A `revy.yml` example:
+A `reviewpad.yml.yml` example:
 
 ```yml
 rules:
@@ -1594,7 +1594,7 @@ reviewpad-an: builtin-docs
 
 **Description**:
 
-Lists all members that belong to the provided group. This group needs to be defined in the same `revy.yml` file.
+Lists all members that belong to the provided group. This group needs to be defined in the same `reviewpad.yml.yml` file.
 
 `group` is a way to refer to a defined set of users in a short way.
 
@@ -1616,7 +1616,7 @@ Returns all members from the group.
 $group("techLeads")
 ```
 
-A `revy.yml` example:
+A `reviewpad.yml.yml` example:
 
 ```yml
 groups:

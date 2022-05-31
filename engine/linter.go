@@ -171,7 +171,7 @@ func lintGroupsMentions(groups map[string]PadGroup, rules map[string]PadRule, ga
 	return nil
 }
 
-func Lint(file *RevyFile) error {
+func Lint(file *ReviewpadFile) error {
 	err := lintRules(file.Rules)
 	if err != nil {
 		return err

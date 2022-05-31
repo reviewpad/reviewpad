@@ -129,7 +129,7 @@ func (p PadGroup) equals(o PadGroup) bool {
 		p.Where == o.Where
 }
 
-type RevyFile struct {
+type ReviewpadFile struct {
 	Version         string              `yaml:"apiVersion"`
 	Mode            string              `yaml:"mode"`
 	Language        string              `yaml:"language"`
@@ -140,7 +140,7 @@ type RevyFile struct {
 	ProtectionGates []PadProtectionGate `yaml:"protectionGates"`
 }
 
-func (r *RevyFile) equals(o *RevyFile) bool {
+func (r *ReviewpadFile) equals(o *ReviewpadFile) bool {
 	if r.Version != o.Version {
 		return false
 	}
@@ -207,7 +207,7 @@ func (r *RevyFile) equals(o *RevyFile) bool {
 	return true
 }
 
-func (r *RevyFile) appendLabels(o *RevyFile) {
+func (r *ReviewpadFile) appendLabels(o *ReviewpadFile) {
 	if r.Labels == nil {
 		r.Labels = make(map[string]PadLabel)
 	}
@@ -217,7 +217,7 @@ func (r *RevyFile) appendLabels(o *RevyFile) {
 	}
 }
 
-func (r *RevyFile) appendRules(o *RevyFile) {
+func (r *ReviewpadFile) appendRules(o *ReviewpadFile) {
 	if r.Rules == nil {
 		r.Rules = make(map[string]PadRule)
 	}
@@ -227,7 +227,7 @@ func (r *RevyFile) appendRules(o *RevyFile) {
 	}
 }
 
-func (r *RevyFile) appendProtectionGates(o *RevyFile) {
+func (r *ReviewpadFile) appendProtectionGates(o *ReviewpadFile) {
 	if r.ProtectionGates == nil {
 		r.ProtectionGates = make([]PadProtectionGate, 0)
 	}

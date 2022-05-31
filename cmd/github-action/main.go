@@ -103,7 +103,7 @@ func main() {
 		}
 	}
 
-	ioReader, _, err := client.Repositories.DownloadContents(ctx, headRepoOwner, headRepoName, "revy.yml", &github.RepositoryContentGetOptions{
+	ioReader, _, err := client.Repositories.DownloadContents(ctx, headRepoOwner, headRepoName, "reviewpad.yml", &github.RepositoryContentGetOptions{
 		Ref: headRef,
 	})
 	if err != nil {

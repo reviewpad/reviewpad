@@ -24,7 +24,7 @@ func hash(data []byte) string {
 	return dHash
 }
 
-func Load(data []byte) (*RevyFile, error) {
+func Load(data []byte) (*ReviewpadFile, error) {
 	file, err := parse(data)
 	if err != nil {
 		return nil, err
@@ -47,8 +47,8 @@ func Load(data []byte) (*RevyFile, error) {
 	return inlineImports(transformedFile, env)
 }
 
-func parse(data []byte) (*RevyFile, error) {
-	file := RevyFile{}
+func parse(data []byte) (*ReviewpadFile, error) {
+	file := ReviewpadFile{}
 	err := yaml.Unmarshal([]byte(data), &file)
 	if err != nil {
 		return nil, err
@@ -57,7 +57,7 @@ func parse(data []byte) (*RevyFile, error) {
 	return &file, nil
 }
 
-func transform(file *RevyFile) *RevyFile {
+func transform(file *ReviewpadFile) *ReviewpadFile {
 	var transformedProtectionGates []PadProtectionGate
 	for _, gate := range file.ProtectionGates {
 		var transformedPatchRules []PatchRule
@@ -87,7 +87,7 @@ func transform(file *RevyFile) *RevyFile {
 		})
 	}
 
-	return &RevyFile{
+	return &ReviewpadFile{
 		Version:         file.Version,
 		Mode:            file.Mode,
 		Imports:         file.Imports,
@@ -98,8 +98,8 @@ func transform(file *RevyFile) *RevyFile {
 	}
 }
 
-func loadImport(revyImport PadImport) (*RevyFile, string, error) {
-	resp, err := http.Get(revyImport.Url)
+func loadImport(reviewpadImport PadImport) (*ReviewpadFile, string, error) {
+	resp, err := http.Get(reviewpadImport.Url)
 	if err != nil {
 		return nil, "", err
 	}
@@ -121,11 +121,11 @@ func loadImport(revyImport PadImport) (*RevyFile, string, error) {
 	return transformedFile, hash(content), nil
 }
 
-// InlineImports inlines the imports files into the current revy file
-// Post-condition: RevyFile without import statements
-func inlineImports(file *RevyFile, env *LoadEnv) (*RevyFile, error) {
-	for _, revyImport := range file.Imports {
-		iFile, idHash, err := loadImport(revyImport)
+// InlineImports inlines the imports files into the current reviewpad file
+// Post-condition: ReviewpadFile without import statements
+func inlineImports(file *ReviewpadFile, env *LoadEnv) (*ReviewpadFile, error) {
+	for _, reviewpadImport := range file.Imports {
+		iFile, idHash, err := loadImport(reviewpadImport)
 		if err != nil {
 			return nil, err
 		}

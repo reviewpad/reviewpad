@@ -11,20 +11,20 @@ import (
 )
 
 func execError(format string, a ...interface{}) error {
-	return fmtio.Errorf("revy", format, a...)
+	return fmtio.Errorf("reviewpad", format, a...)
 }
 
 func execLogf(format string, a ...interface{}) {
-	log.Println(fmtio.Sprintf("revy", format, a...))
+	log.Println(fmtio.Sprintf("reviewpad", format, a...))
 }
 
 func execLog(val string) {
-	log.Println(fmtio.Sprint("revy", val))
+	log.Println(fmtio.Sprint("reviewpad", val))
 }
 
 // Exec: main function
 // Pre-condition Lint(file) == nil
-func Exec(file *RevyFile, env *Env, flags *Flags) ([]string, error) {
+func Exec(file *ReviewpadFile, env *Env, flags *Flags) ([]string, error) {
 	execLogf("file to execute:\n%+v", file)
 
 	rules := make(map[string]PadRule)

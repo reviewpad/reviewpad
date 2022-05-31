@@ -22,7 +22,7 @@ type ReportGateDetails struct {
 	actExtraActions []string
 }
 
-var reviewpadReportCommentAnnotation = "<!--@annotation-reviewpad-revy-->"
+var reviewpadReportCommentAnnotation = "<!--@annotation-reviewpad-->"
 
 func reportError(format string, a ...interface{}) error {
 	return fmtio.Errorf("report", format, a...)
