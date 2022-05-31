@@ -7,6 +7,7 @@ version: "3"
 tasks:
   build:
     deps:
+      - build-cmd
       - build-aladino-parser
     summary: |
       Builds Go files.
@@ -28,6 +29,17 @@ tasks:
       - lang/aladino/parser.y
     generates:
       - lang/aladino/parser.go
+
+  build-cmd:
+    summary: |
+      Builds commands.
+
+      Run with --watch or -w to watch for changes on Go files.
+    cmds:
+      - go build ./cmd/cli/main.go
+      - go build ./cmd/github-action/main.go
+    sources:
+      - ./cmd/**/*.go
 
   test:
     summary: |
