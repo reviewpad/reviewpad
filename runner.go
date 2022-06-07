@@ -10,13 +10,22 @@ import (
 	"log"
 
 	"github.com/google/go-github/v42/github"
+	"github.com/reviewpad/reviewpad/collector"
 	"github.com/reviewpad/reviewpad/engine"
 	"github.com/reviewpad/reviewpad/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/plugins/aladino"
 	"github.com/shurcooL/githubv4"
 )
 
-func Run(ctx context.Context, client *github.Client, clientGQL *githubv4.Client, ghPullRequest *github.PullRequest, reviewpadFile *bytes.Buffer, dryRun bool) error {
+func Run(
+	ctx context.Context,
+	client *github.Client,
+	clientGQL *githubv4.Client,
+	collector collector.Collector,
+	ghPullRequest *github.PullRequest,
+	reviewpadFile *bytes.Buffer,
+	dryRun bool,
+) error {
 	file, err := engine.Load(reviewpadFile.Bytes())
 	if err != nil {
 		return err
@@ -31,13 +40,13 @@ func Run(ctx context.Context, client *github.Client, clientGQL *githubv4.Client,
 
 	interpreters := make(map[string]engine.Interpreter)
 
-	aladinoInterpreter, err := aladino.NewInterpreter(ctx, client, clientGQL, ghPullRequest, plugins_aladino.PluginBuiltIns())
+	aladinoInterpreter, err := aladino.NewInterpreter(ctx, client, clientGQL, collector, ghPullRequest, plugins_aladino.PluginBuiltIns())
 	if err != nil {
 		return err
 	}
 
 	interpreters["aladino"] = aladinoInterpreter
-	evalEnv, err := engine.NewEvalEnv(ctx, client, clientGQL, ghPullRequest, interpreters)
+	evalEnv, err := engine.NewEvalEnv(ctx, client, clientGQL, collector, ghPullRequest, interpreters)
 	if err != nil {
 		return err
 	}

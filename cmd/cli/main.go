@@ -15,6 +15,7 @@ import (
 
 	"github.com/google/go-github/v42/github"
 	"github.com/reviewpad/reviewpad"
+	"github.com/reviewpad/reviewpad/collector"
 	"github.com/shurcooL/githubv4"
 	"golang.org/x/oauth2"
 )
@@ -23,7 +24,8 @@ var (
 	dryRun         = flag.Bool("dry-run", false, "Dry run mode")
 	reviewpadFile  = flag.String("reviewpad", "", "File path to reviewpad.yml")
 	pullRequestUrl = flag.String("pull-request", "", "Pull request GitHub url")
-	token          = flag.String("token", "", "GitHub token")
+	gitHubToken    = flag.String("github-token", "", "GitHub token")
+	mixpanelToken  = flag.String("mixpanel-token", "", "Mixpanel token")
 )
 
 func usage() {
@@ -48,7 +50,7 @@ func main() {
 		usage()
 	}
 
-	if *token == "" {
+	if *gitHubToken == "" {
 		log.Printf("Missing argument reviewpad.")
 		usage()
 	}
@@ -65,14 +67,15 @@ func main() {
 
 	ctx := context.Background()
 	ts := oauth2.StaticTokenSource(
-		&oauth2.Token{AccessToken: *token},
+		&oauth2.Token{AccessToken: *gitHubToken},
 	)
 	tc := oauth2.NewClient(ctx, ts)
 
-	client := github.NewClient(tc)
-	clientGQL := githubv4.NewClient(tc)
+	gitHubClient := github.NewClient(tc)
+	gitHubClientGQL := githubv4.NewClient(tc)
+	collectorClient := collector.NewCollector(*mixpanelToken, repositoryOwner)
 
-	ghPullRequest, _, err := client.PullRequests.Get(ctx, repositoryOwner, repositoryName, pullRequestNumber)
+	ghPullRequest, _, err := gitHubClient.PullRequests.Get(ctx, repositoryOwner, repositoryName, pullRequestNumber)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -97,7 +100,7 @@ func main() {
 			return
 		}
 
-		_, _, err := client.Repositories.GetBranch(ctx, headRepoOwner, headRepoName, headRef, true)
+		_, _, err := gitHubClient.Repositories.GetBranch(ctx, headRepoOwner, headRepoName, headRef, true)
 		if err != nil {
 			log.Fatal("team-edition: pull request is merged and head branched cannot be retrieved\n")
 			return
@@ -111,7 +114,7 @@ func main() {
 
 	buf := bytes.NewBuffer(data)
 
-	err = reviewpad.Run(ctx, client, clientGQL, ghPullRequest, buf, *dryRun)
+	err = reviewpad.Run(ctx, gitHubClient, gitHubClientGQL, collectorClient, ghPullRequest, buf, *dryRun)
 	if err != nil {
 		log.Fatalf("Error running reviewpad team edition. Details %v", err.Error())
 	}

@@ -8,6 +8,7 @@ import (
 	"context"
 
 	"github.com/google/go-github/v42/github"
+	"github.com/reviewpad/reviewpad/collector"
 	"github.com/reviewpad/reviewpad/utils"
 	"github.com/shurcooL/githubv4"
 )
@@ -24,6 +25,7 @@ type Env interface {
 	GetCtx() context.Context
 	GetClient() *github.Client
 	GetClientGQL() *githubv4.Client
+	GetCollector() collector.Collector
 	GetPullRequest() *github.PullRequest
 	GetPatch() *Patch
 	GetRegisterMap() *RegisterMap
@@ -34,6 +36,7 @@ type BaseEnv struct {
 	Ctx         context.Context
 	Client      *github.Client
 	ClientGQL   *githubv4.Client
+	Collector   collector.Collector
 	PullRequest *github.PullRequest
 	Patch       *Patch
 	RegisterMap *RegisterMap
@@ -50,6 +53,10 @@ func (e *BaseEnv) GetClient() *github.Client {
 
 func (e *BaseEnv) GetClientGQL() *githubv4.Client {
 	return e.ClientGQL
+}
+
+func (e *BaseEnv) GetCollector() collector.Collector {
+	return e.Collector
 }
 
 func (e *BaseEnv) GetPullRequest() *github.PullRequest {
@@ -85,8 +92,9 @@ func NewTypeEnv(e Env) *TypeEnv {
 
 func NewEvalEnv(
 	ctx context.Context,
-	client *github.Client,
-	clientGQL *githubv4.Client,
+	gitHubClient *github.Client,
+	gitHubClientGQL *githubv4.Client,
+	collector collector.Collector,
 	pullRequest *github.PullRequest,
 	builtIns *BuiltIns,
 ) (Env, error) {
@@ -94,7 +102,7 @@ func NewEvalEnv(
 	repo := *pullRequest.Base.Repo.Name
 	number := *pullRequest.Number
 
-	files, err := getPullRequestFiles(ctx, client, owner, repo, number)
+	files, err := getPullRequestFiles(ctx, gitHubClient, owner, repo, number)
 	if err != nil {
 		return nil, err
 	}
@@ -115,8 +123,9 @@ func NewEvalEnv(
 
 	input := &BaseEnv{
 		Ctx:         ctx,
-		Client:      client,
-		ClientGQL:   clientGQL,
+		Client:      gitHubClient,
+		ClientGQL:   gitHubClientGQL,
+		Collector:   collector,
 		PullRequest: pullRequest,
 		Patch:       &patch,
 		RegisterMap: &registerMap,

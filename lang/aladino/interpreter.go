@@ -10,6 +10,7 @@ import (
 	"log"
 
 	"github.com/google/go-github/v42/github"
+	"github.com/reviewpad/reviewpad/collector"
 	"github.com/reviewpad/reviewpad/engine"
 	"github.com/reviewpad/reviewpad/utils/fmtio"
 	"github.com/shurcooL/githubv4"
@@ -109,12 +110,13 @@ func (i *Interpreter) ExecActions(program *[]string) error {
 
 func NewInterpreter(
 	ctx context.Context,
-	client *github.Client,
-	clientGQL *githubv4.Client,
+	gitHubClient *github.Client,
+	gitHubClientGQL *githubv4.Client,
+	collector collector.Collector,
 	pullRequest *github.PullRequest,
 	builtIns *BuiltIns,
 ) (engine.Interpreter, error) {
-	evalEnv, err := NewEvalEnv(ctx, client, clientGQL, pullRequest, builtIns)
+	evalEnv, err := NewEvalEnv(ctx, gitHubClient, gitHubClientGQL, collector, pullRequest, builtIns)
 	if err != nil {
 		return nil, err
 	}

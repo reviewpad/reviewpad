@@ -8,6 +8,7 @@ import (
 	"context"
 
 	"github.com/google/go-github/v42/github"
+	"github.com/reviewpad/reviewpad/collector"
 	"github.com/shurcooL/githubv4"
 )
 
@@ -28,6 +29,7 @@ type Env struct {
 	Ctx          context.Context
 	Client       *github.Client
 	ClientGQL    *githubv4.Client
+	Collector    collector.Collector
 	PullRequest  *github.PullRequest
 	Interpreters map[string]Interpreter
 }
@@ -36,6 +38,7 @@ func NewEvalEnv(
 	ctx context.Context,
 	client *github.Client,
 	clientGQL *githubv4.Client,
+	collector collector.Collector,
 	pullRequest *github.PullRequest,
 	interpreters map[string]Interpreter,
 ) (*Env, error) {
@@ -43,6 +46,7 @@ func NewEvalEnv(
 		Ctx:          ctx,
 		Client:       client,
 		ClientGQL:    clientGQL,
+		Collector:    collector,
 		PullRequest:  pullRequest,
 		Interpreters: interpreters,
 	}

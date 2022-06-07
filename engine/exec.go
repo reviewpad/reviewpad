@@ -22,10 +22,21 @@ func execLog(val string) {
 	log.Println(fmtio.Sprint("reviewpad", val))
 }
 
+func collectError(env *Env, err error) {
+	env.Collector.Collect("Error", &map[string]interface{}{
+		"pullRequestUrl": env.PullRequest.URL,
+		"details":        err.Error(),
+	})
+}
+
 // Exec: main function
 // Pre-condition Lint(file) == nil
 func Exec(file *ReviewpadFile, env *Env, flags *Flags) ([]string, error) {
 	execLogf("file to execute:\n%+v", file)
+
+	env.Collector.Collect("Trigger Analysis", &map[string]interface{}{
+		"pullRequestUrl": env.PullRequest.URL,
+	})
 
 	rules := make(map[string]PadRule)
 
@@ -47,6 +58,7 @@ func Exec(file *ReviewpadFile, env *Env, flags *Flags) ([]string, error) {
 
 		err := createLabel(env, &labelName, &label)
 		if err != nil {
+			collectError(env, err)
 			return nil, err
 		}
 	}
@@ -61,6 +73,7 @@ func Exec(file *ReviewpadFile, env *Env, flags *Flags) ([]string, error) {
 	for groupName, group := range file.Groups {
 		err := interpreter.ProcessGroup(groupName, GroupKind(group.Kind), GroupType(group.Type), group.Spec, group.Param, group.Where)
 		if err != nil {
+			collectError(env, err)
 			return nil, err
 		}
 	}
@@ -102,6 +115,7 @@ func Exec(file *ReviewpadFile, env *Env, flags *Flags) ([]string, error) {
 
 			activated, err := interpreter.EvalExpr(ruleDefinition.Kind, ruleDefinition.Spec)
 			if err != nil {
+				collectError(env, err)
 				return nil, err
 			}
 
@@ -144,11 +158,16 @@ func Exec(file *ReviewpadFile, env *Env, flags *Flags) ([]string, error) {
 
 		err := interpreter.ExecActions(&program)
 		if err != nil {
+			collectError(env, err)
 			return nil, err
 		}
 	}
 
 	execLogf("executed program:\n%+q", program)
+
+	env.Collector.Collect("Completed Analysis", &map[string]interface{}{
+		"pullRequestUrl": env.PullRequest.URL,
+	})
 
 	return program, nil
 }

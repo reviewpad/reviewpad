@@ -4,6 +4,7 @@ go 1.18
 
 require (
 	github.com/bmatcuk/doublestar/v4 v4.0.2
+	github.com/dukex/mixpanel v0.0.0-20220410140740-e82251311162
 	github.com/google/go-github/v42 v42.0.0
 	github.com/shurcooL/githubv4 v0.0.0-20220520033151-0b4e3294ff00
 	github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80

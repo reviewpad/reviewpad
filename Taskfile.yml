@@ -37,7 +37,6 @@ tasks:
       Run with --watch or -w to watch for changes on Go files.
     cmds:
       - go build ./cmd/cli/main.go
-      - go build ./cmd/github-action/main.go
     sources:
       - ./cmd/**/*.go
 
@@ -57,3 +56,8 @@ tasks:
       - test
     cmds:
       - go tool cover -html=coverage.out
+
+  check:
+    deps:
+      - build
+      - test
