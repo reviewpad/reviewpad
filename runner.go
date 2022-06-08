@@ -17,27 +17,31 @@ import (
 	"github.com/shurcooL/githubv4"
 )
 
+func Load(buf *bytes.Buffer) (*engine.ReviewpadFile, error) {
+	file, err := engine.Load(buf.Bytes())
+	if err != nil {
+		return nil, err
+	}
+
+	log.Printf("load: input file:\n%+v\n", file)
+
+	err = engine.Lint(file)
+	if err != nil {
+		return nil, err
+	}
+
+	return file, nil
+}
+
 func Run(
 	ctx context.Context,
 	client *github.Client,
 	clientGQL *githubv4.Client,
 	collector collector.Collector,
 	ghPullRequest *github.PullRequest,
-	reviewpadFile *bytes.Buffer,
+	reviewpadFile *engine.ReviewpadFile,
 	dryRun bool,
 ) error {
-	file, err := engine.Load(reviewpadFile.Bytes())
-	if err != nil {
-		return err
-	}
-
-	log.Printf("runner: input file:\n%+v\n", file)
-
-	err = engine.Lint(file)
-	if err != nil {
-		return err
-	}
-
 	interpreters := make(map[string]engine.Interpreter)
 
 	aladinoInterpreter, err := aladino.NewInterpreter(ctx, client, clientGQL, collector, ghPullRequest, plugins_aladino.PluginBuiltIns())
@@ -51,7 +55,7 @@ func Run(
 		return err
 	}
 
-	_, err = engine.Exec(file, evalEnv, &engine.Flags{Dryrun: dryRun})
+	_, err = engine.Exec(reviewpadFile, evalEnv, &engine.Flags{Dryrun: dryRun})
 	if err != nil {
 		return err
 	}

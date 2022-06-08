@@ -113,8 +113,12 @@ func main() {
 	}
 
 	buf := bytes.NewBuffer(data)
+	file, err := reviewpad.Load(buf)
+	if err != nil {
+		log.Fatalf("Error running reviewpad team edition. Details %v", err.Error())
+	}
 
-	err = reviewpad.Run(ctx, gitHubClient, gitHubClientGQL, collectorClient, ghPullRequest, buf, *dryRun)
+	err = reviewpad.Run(ctx, gitHubClient, gitHubClientGQL, collectorClient, ghPullRequest, file, *dryRun)
 	if err != nil {
 		log.Fatalf("Error running reviewpad team edition. Details %v", err.Error())
 	}
