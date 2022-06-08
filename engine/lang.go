@@ -4,6 +4,11 @@
 
 package engine
 
+const (
+	PROFESSIONAL_EDITION string = "professional"
+	TEAM_EDITION         string = "team"
+)
+
 type PadImport struct {
 	Url string `yaml:"url"`
 }
