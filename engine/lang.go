@@ -131,6 +131,7 @@ func (p PadGroup) equals(o PadGroup) bool {
 
 type ReviewpadFile struct {
 	Version         string              `yaml:"apiVersion"`
+	Edition         string              `yaml:"edition"`
 	Mode            string              `yaml:"mode"`
 	Language        string              `yaml:"language"`
 	Imports         []PadImport         `yaml:"imports"`
@@ -142,6 +143,10 @@ type ReviewpadFile struct {
 
 func (r *ReviewpadFile) equals(o *ReviewpadFile) bool {
 	if r.Version != o.Version {
+		return false
+	}
+
+	if r.Edition != o.Edition {
 		return false
 	}
 
