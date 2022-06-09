@@ -7,6 +7,8 @@ package engine
 const (
 	PROFESSIONAL_EDITION string = "professional"
 	TEAM_EDITION         string = "team"
+	SILENT_MODE          string = "silent"
+	VERBOSE_MODE         string = "verbose"
 )
 
 type PadImport struct {

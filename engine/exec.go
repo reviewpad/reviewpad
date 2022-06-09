@@ -150,9 +150,8 @@ func Exec(file *ReviewpadFile, env *Env, flags *Flags) ([]string, error) {
 	}
 
 	if !flags.Dryrun {
-		if file.Mode != "silent" {
-			// Although reportProgram is async we don't wait for it to finish.
-			// Also, we don't care if the report was done successfully or not.
+		if file.Mode == VERBOSE_MODE {
+			// Ignore errors in the report of the verbose mode
 			reportProgram(env, &reportDetails)
 		}
 
