@@ -40,12 +40,12 @@ func Exec(file *ReviewpadFile, env *Env, flags *Flags) ([]string, error) {
 
 	rules := make(map[string]PadRule)
 
-	reportDetails := make([]ReportGateDetails, 0)
+	reportDetails := make([]ReportWorkflowDetails, 0)
 
 	execLogf("detected %v groups", len(file.Groups))
 	execLogf("detected %v labels", len(file.Labels))
 	execLogf("detected %v rules", len(file.Rules))
-	execLogf("detected %v gates", len(file.ProtectionGates))
+	execLogf("detected %v workflows", len(file.Workflows))
 
 	// process labels
 	for labelName, label := range file.Labels {
@@ -83,24 +83,24 @@ func Exec(file *ReviewpadFile, env *Env, flags *Flags) ([]string, error) {
 	}
 
 	// program defines the set of all actions to run.
-	// This set is calculated based on the gates rules and actions.
+	// This set is calculated based on the workflow rules and actions.
 	program := make([]string, 0)
-	// triggeredGate defines the gate `alwaysRun: false` that has been triggered.
-	triggeredGate := ""
+	// triggeredWorkflow defines the workflow `always-run: false` that has been triggered.
+	triggeredWorkflow := ""
 
-	for _, gate := range file.ProtectionGates {
-		execLogf("evaluating gate %v:", gate.Name)
+	for _, workflow := range file.Workflows {
+		execLogf("evaluating workflow %v:", workflow.Name)
 
-		isGateEligible := gate.AlwaysRun || triggeredGate == ""
+		isWorkflowEligible := workflow.AlwaysRun || triggeredWorkflow == ""
 
-		if !isGateEligible {
+		if !isWorkflowEligible {
 			execLog("\tnot eligible")
 			continue
 		}
 
-		reportGateDetails := ReportGateDetails{
-			name:            gate.Name,
-			description:     gate.Description,
+		reportWorkflowDetails := ReportWorkflowDetails{
+			name:            workflow.Name,
+			description:     workflow.Description,
 			actRules:        []string{},
 			actActions:      []string{},
 			actExtraActions: []string{},
@@ -109,7 +109,7 @@ func Exec(file *ReviewpadFile, env *Env, flags *Flags) ([]string, error) {
 		ruleActivatedQueue := make([]PatchRule, 0)
 		ruleDefinitionQueue := make(map[string]PadRule)
 
-		for _, rule := range gate.PatchRules {
+		for _, rule := range workflow.PatchRules {
 			ruleName := rule.Rule
 			ruleDefinition := rules[ruleName]
 
@@ -127,23 +127,23 @@ func Exec(file *ReviewpadFile, env *Env, flags *Flags) ([]string, error) {
 			}
 		}
 
-		if len(ruleActivatedQueue) > 0 && isGateEligible {
-			program = append(program, gate.Actions...)
+		if len(ruleActivatedQueue) > 0 && isWorkflowEligible {
+			program = append(program, workflow.Actions...)
 
-			reportGateDetails.actActions = append(reportGateDetails.actActions, gate.Actions...)
+			reportWorkflowDetails.actActions = append(reportWorkflowDetails.actActions, workflow.Actions...)
 
 			for _, activatedRule := range ruleActivatedQueue {
 				program = append(program, activatedRule.ExtraActions...)
 
-				reportGateDetails.actRules = append(reportGateDetails.actRules, activatedRule.Rule)
-				reportGateDetails.actExtraActions = append(reportGateDetails.actExtraActions, activatedRule.ExtraActions...)
+				reportWorkflowDetails.actRules = append(reportWorkflowDetails.actRules, activatedRule.Rule)
+				reportWorkflowDetails.actExtraActions = append(reportWorkflowDetails.actExtraActions, activatedRule.ExtraActions...)
 			}
 
-			if !gate.AlwaysRun {
-				triggeredGate = gate.Name
+			if !workflow.AlwaysRun {
+				triggeredWorkflow = workflow.Name
 			}
 
-			reportDetails = append(reportDetails, reportGateDetails)
+			reportDetails = append(reportDetails, reportWorkflowDetails)
 		} else {
 			execLog("\tno rules activated")
 		}

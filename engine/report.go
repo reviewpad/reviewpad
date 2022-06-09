@@ -14,7 +14,7 @@ import (
 	"github.com/reviewpad/reviewpad/utils/fmtio"
 )
 
-type ReportGateDetails struct {
+type ReportWorkflowDetails struct {
 	name            string
 	description     string
 	actRules        []string
@@ -34,13 +34,13 @@ func buildEmptyReport() string {
 	sb.WriteString(fmt.Sprintf("%v\n", reviewpadReportCommentAnnotation))
 	sb.WriteString("### Reviewpad report\n")
 	sb.WriteString("___\n")
-	sb.WriteString("No gates activated")
+	sb.WriteString("No workflows activated")
 
 	msg := sb.String()
 	return msg
 }
 
-func buildReport(reportDetails *[]ReportGateDetails) string {
+func buildReport(reportDetails *[]ReportWorkflowDetails) string {
 	var sb strings.Builder
 
 	if len(*reportDetails) == 0 {
@@ -53,24 +53,24 @@ func buildReport(reportDetails *[]ReportGateDetails) string {
 	sb.WriteString("### Reviewpad report\n")
 	sb.WriteString("___\n")
 	// Report
-	sb.WriteString("| Gates <sub><sup>activated</sup></sub> | Rules <sub><sup>triggered</sup></sub> | Actions <sub><sup>ran</sub></sup> | Description |\n")
+	sb.WriteString("| Workflows <sub><sup>activated</sup></sub> | Rules <sub><sup>triggered</sup></sub> | Actions <sub><sup>ran</sub></sup> | Description |\n")
 	sb.WriteString("| - | - | - | - |\n")
 
-	for _, gate := range *reportDetails {
+	for _, workflow := range *reportDetails {
 		actRules := ""
-		for _, actRule := range gate.actRules {
+		for _, actRule := range workflow.actRules {
 			actRules += fmt.Sprintf("%v<br>", actRule)
 		}
 
 		actActions := ""
-		for _, actAction := range gate.actActions {
+		for _, actAction := range workflow.actActions {
 			actActions += fmt.Sprintf("`%v`<br>", actAction)
 		}
-		for _, actExtraAction := range gate.actExtraActions {
+		for _, actExtraAction := range workflow.actExtraActions {
 			actActions += fmt.Sprintf("[e] `%v`<br>", actExtraAction)
 		}
 
-		sb.WriteString(fmt.Sprintf("| %v | %v | %v | %v |\n", gate.name, actRules, actActions, gate.description))
+		sb.WriteString(fmt.Sprintf("| %v | %v | %v | %v |\n", workflow.name, actRules, actActions, workflow.description))
 	}
 
 	msg := sb.String()
@@ -111,7 +111,7 @@ func addReportComment(env *Env, prNum int, report string) error {
 	return nil
 }
 
-func reportProgram(env *Env, reportDetails *[]ReportGateDetails) (string, error) {
+func reportProgram(env *Env, reportDetails *[]ReportWorkflowDetails) (string, error) {
 	owner := utils.GetPullRequestOwnerName(env.PullRequest)
 	repo := utils.GetPullRequestRepoName(env.PullRequest)
 	prNum := utils.GetPullRequestNumber(env.PullRequest)

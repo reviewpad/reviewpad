@@ -35,7 +35,7 @@ var kinds = []string{"patch", "author"}
 
 type PatchRule struct {
 	Rule         string   `yaml:"rule"`
-	ExtraActions []string `yaml:"extraActions"`
+	ExtraActions []string `yaml:"extra-actions"`
 }
 
 func (p PatchRule) equals(o PatchRule) bool {
@@ -73,15 +73,15 @@ func (p PadLabel) equals(o PadLabel) bool {
 	return true
 }
 
-type PadProtectionGate struct {
+type PadWorkflow struct {
 	Name        string      `yaml:"name"`
 	Description string      `yaml:"description"`
-	PatchRules  []PatchRule `yaml:"patchRules"`
-	Actions     []string    `yaml:"actions"`
-	AlwaysRun   bool        `yaml:"alwaysRun"`
+	AlwaysRun   bool        `yaml:"always-run"`
+	PatchRules  []PatchRule `yaml:"if"`
+	Actions     []string    `yaml:"then"`
 }
 
-func (p PadProtectionGate) equals(o PadProtectionGate) bool {
+func (p PadWorkflow) equals(o PadWorkflow) bool {
 	if p.Name != o.Name {
 		return false
 	}
@@ -137,15 +137,15 @@ func (p PadGroup) equals(o PadGroup) bool {
 }
 
 type ReviewpadFile struct {
-	Version         string              `yaml:"apiVersion"`
-	Edition         string              `yaml:"edition"`
-	Mode            string              `yaml:"mode"`
-	Language        string              `yaml:"language"`
-	Imports         []PadImport         `yaml:"imports"`
-	Groups          map[string]PadGroup `yaml:"groups"`
-	Rules           map[string]PadRule  `yaml:"rules"`
-	Labels          map[string]PadLabel `yaml:"labels"`
-	ProtectionGates []PadProtectionGate `yaml:"protectionGates"`
+	Version   string              `yaml:"api-version"`
+	Edition   string              `yaml:"edition"`
+	Mode      string              `yaml:"mode"`
+	Language  string              `yaml:"language"`
+	Imports   []PadImport         `yaml:"imports"`
+	Groups    map[string]PadGroup `yaml:"groups"`
+	Rules     map[string]PadRule  `yaml:"rules"`
+	Labels    map[string]PadLabel `yaml:"labels"`
+	Workflows []PadWorkflow       `yaml:"workflows"`
 }
 
 func (r *ReviewpadFile) equals(o *ReviewpadFile) bool {
@@ -196,11 +196,11 @@ func (r *ReviewpadFile) equals(o *ReviewpadFile) bool {
 		}
 	}
 
-	if len(r.ProtectionGates) != len(o.ProtectionGates) {
+	if len(r.Workflows) != len(o.Workflows) {
 		return false
 	}
-	for i, rP := range r.ProtectionGates {
-		oP := o.ProtectionGates[i]
+	for i, rP := range r.Workflows {
+		oP := o.Workflows[i]
 		if !rP.equals(oP) {
 			return false
 		}
@@ -239,10 +239,10 @@ func (r *ReviewpadFile) appendRules(o *ReviewpadFile) {
 	}
 }
 
-func (r *ReviewpadFile) appendProtectionGates(o *ReviewpadFile) {
-	if r.ProtectionGates == nil {
-		r.ProtectionGates = make([]PadProtectionGate, 0)
+func (r *ReviewpadFile) appendWorkflows(o *ReviewpadFile) {
+	if r.Workflows == nil {
+		r.Workflows = make([]PadWorkflow, 0)
 	}
 
-	r.ProtectionGates = append(r.ProtectionGates, o.ProtectionGates...)
+	r.Workflows = append(r.Workflows, o.Workflows...)
 }

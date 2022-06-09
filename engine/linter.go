@@ -38,33 +38,33 @@ func lintRules(padRules map[string]PadRule) error {
 }
 
 // Validations:
-// - Protection gate has unique name
-// - Protection gate has rules
-// - Protection gate has non empty rules
-// - Protetion gate has only known rules
-func lintGates(rules map[string]PadRule, padGates []PadProtectionGate) error {
-	protectionGatesName := make([]string, 0)
-	gateHasExtraActions := false
+// - Workflow has unique name
+// - Workflow has rules
+// - Workflow has non empty rules
+// - Workflow has only known rules
+func lintWorkflows(rules map[string]PadRule, padWorkflows []PadWorkflow) error {
+	workflowsName := make([]string, 0)
+	workflowHasExtraActions := false
 
-	for _, gate := range padGates {
-		lintLog("analyzing protetion gate %v", gate.Name)
+	for _, workflow := range padWorkflows {
+		lintLog("analyzing workflow %v", workflow.Name)
 
-		gateHasActions := len(gate.Actions) > 0
+		workflowHasActions := len(workflow.Actions) > 0
 
-		for _, gateName := range protectionGatesName {
-			if gateName == gate.Name {
-				return lintError("gate with the name %v already exists", gate.Name)
+		for _, workflowName := range workflowsName {
+			if workflowName == workflow.Name {
+				return lintError("workflow with the name %v already exists", workflow.Name)
 			}
 		}
 
-		if len(gate.PatchRules) == 0 {
-			return lintError("gate %v does not have rules", gate.Name)
+		if len(workflow.PatchRules) == 0 {
+			return lintError("workflow %v does not have rules", workflow.Name)
 		}
 
-		for _, rule := range gate.PatchRules {
+		for _, rule := range workflow.PatchRules {
 			ruleName := rule.Rule
 			if ruleName == "" {
-				return lintError("gate has an empty rule")
+				return lintError("workflow has an empty rule")
 			}
 
 			_, exists := rules[ruleName]
@@ -72,33 +72,33 @@ func lintGates(rules map[string]PadRule, padGates []PadProtectionGate) error {
 				return lintError("rule %v is unknown", ruleName)
 			}
 
-			gateHasExtraActions = len(rule.ExtraActions) > 0
-			if !gateHasExtraActions && !gateHasActions {
+			workflowHasExtraActions = len(rule.ExtraActions) > 0
+			if !workflowHasExtraActions && !workflowHasActions {
 				lintLog("warning: rule %v will be ignored since it has no actions", ruleName)
 			}
 		}
 
-		if !gateHasActions && !gateHasExtraActions {
-			lintLog("warning: gate has no actions")
+		if !workflowHasActions && !workflowHasExtraActions {
+			lintLog("warning: workflow has no actions")
 		}
 
-		protectionGatesName = append(protectionGatesName, gate.Name)
+		workflowsName = append(workflowsName, workflow.Name)
 	}
 
 	return nil
 }
 
 // Validations
-// - Check that all rules are being used on gates
-func lintRulesWithGates(rules map[string]PadRule, padGates []PadProtectionGate) error {
+// - Check that all rules are being used on workflows
+func lintRulesWithWorkflows(rules map[string]PadRule, padWorkflows []PadWorkflow) error {
 	totalUsesByRule := make(map[string]int, len(rules))
 
 	for ruleName := range rules {
 		totalUsesByRule[ruleName] = 0
 	}
 
-	for _, gate := range padGates {
-		for _, rule := range gate.PatchRules {
+	for _, workflow := range padWorkflows {
+		for _, rule := range workflow.PatchRules {
 			ruleName := rule.Rule
 			_, exists := rules[ruleName]
 
@@ -117,7 +117,7 @@ func lintRulesWithGates(rules map[string]PadRule, padGates []PadProtectionGate) 
 	return nil
 }
 
-func lintGroupsMentions(groups map[string]PadGroup, rules map[string]PadRule, gates []PadProtectionGate) error {
+func lintGroupsMentions(groups map[string]PadGroup, rules map[string]PadRule, workflows []PadWorkflow) error {
 	reGroupFnCall := regexp.MustCompile(`\$group\(".*"\)`)
 	allGroupFunctionCalls := make([]string, 0)
 	for _, group := range groups {
@@ -142,8 +142,8 @@ func lintGroupsMentions(groups map[string]PadGroup, rules map[string]PadRule, ga
 		allGroupFunctionCalls = append(allGroupFunctionCalls, groupFunctionCalls...)
 	}
 
-	for _, gate := range gates {
-		actions := gate.Actions
+	for _, workflow := range workflows {
+		actions := workflow.Actions
 		groupFunctionCalls := make([]string, 0)
 		for _, action := range actions {
 			groupFunctionCalls = append(groupFunctionCalls, reGroupFnCall.FindAllString(action, -1)...)
@@ -177,15 +177,15 @@ func Lint(file *ReviewpadFile) error {
 		return err
 	}
 
-	err = lintGates(file.Rules, file.ProtectionGates)
+	err = lintWorkflows(file.Rules, file.Workflows)
 	if err != nil {
 		return err
 	}
 
-	err = lintRulesWithGates(file.Rules, file.ProtectionGates)
+	err = lintRulesWithWorkflows(file.Rules, file.Workflows)
 	if err != nil {
 		return err
 	}
 
-	return lintGroupsMentions(file.Groups, file.Rules, file.ProtectionGates)
+	return lintGroupsMentions(file.Groups, file.Rules, file.Workflows)
 }

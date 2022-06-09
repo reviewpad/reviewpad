@@ -58,10 +58,10 @@ func parse(data []byte) (*ReviewpadFile, error) {
 }
 
 func transform(file *ReviewpadFile) *ReviewpadFile {
-	var transformedProtectionGates []PadProtectionGate
-	for _, gate := range file.ProtectionGates {
+	var transformedWorkflows []PadWorkflow
+	for _, workflow := range file.Workflows {
 		var transformedPatchRules []PatchRule
-		for _, patchRule := range gate.PatchRules {
+		for _, patchRule := range workflow.PatchRules {
 			var transformedExtraActions []string
 			for _, extraAction := range patchRule.ExtraActions {
 				transformedExtraActions = append(transformedExtraActions, transformActionStr(extraAction))
@@ -74,28 +74,28 @@ func transform(file *ReviewpadFile) *ReviewpadFile {
 		}
 
 		var transformedActions []string
-		for _, action := range gate.Actions {
+		for _, action := range workflow.Actions {
 			transformedActions = append(transformedActions, transformActionStr(action))
 		}
 
-		transformedProtectionGates = append(transformedProtectionGates, PadProtectionGate{
-			Name:        gate.Name,
-			Description: gate.Description,
+		transformedWorkflows = append(transformedWorkflows, PadWorkflow{
+			Name:        workflow.Name,
+			Description: workflow.Description,
 			PatchRules:  transformedPatchRules,
 			Actions:     transformedActions,
-			AlwaysRun:   gate.AlwaysRun,
+			AlwaysRun:   workflow.AlwaysRun,
 		})
 	}
 
 	return &ReviewpadFile{
-		Version:         file.Version,
-		Edition:         file.Edition,
-		Mode:            file.Mode,
-		Imports:         file.Imports,
-		Groups:          file.Groups,
-		Rules:           file.Rules,
-		Labels:          file.Labels,
-		ProtectionGates: transformedProtectionGates,
+		Version:   file.Version,
+		Edition:   file.Edition,
+		Mode:      file.Mode,
+		Imports:   file.Imports,
+		Groups:    file.Groups,
+		Rules:     file.Rules,
+		Labels:    file.Labels,
+		Workflows: transformedWorkflows,
 	}
 }
 
@@ -154,10 +154,10 @@ func inlineImports(file *ReviewpadFile, env *LoadEnv) (*ReviewpadFile, error) {
 		// remove from the stack
 		delete(env.Stack, idHash)
 
-		// append labels, rules and protection gates
+		// append labels, rules and workflows
 		file.appendLabels(subTreeFile)
 		file.appendRules(subTreeFile)
-		file.appendProtectionGates(subTreeFile)
+		file.appendWorkflows(subTreeFile)
 	}
 
 	// reset all imports
