@@ -1,0 +1,9 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Reviewpad Community Support
+    url: https://reviewpad.com/discord
+    about: Please ask and answer questions here.
+  - name: Reviewpad Documentation 
+    url: https://docs.reviewpad.com
+    about: Please check out the documentation.
+

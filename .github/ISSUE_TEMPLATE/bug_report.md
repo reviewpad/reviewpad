@@ -11,7 +11,7 @@ assignees: ''
 
 
 **To Reproduce**
-Please provide a link to the **stage** or **beta** instance if possible.
+Please provide a link if possible.
 
 **Expected behavior**
 
