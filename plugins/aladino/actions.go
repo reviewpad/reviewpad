@@ -333,6 +333,65 @@ func assignReviewerCode(e aladino.Env, args []aladino.Value) error {
 /*
 reviewpad-an: builtin-docs
 
+## comment
+
+**Description**:
+
+Comments a pull request.
+
+**Parameters**:
+
+| variable       | type   | description                            |
+| -------------- | ------ | -------------------------------------- |
+| `comment`      | string | body of the comment                    |
+
+**Return value**:
+
+*none*
+
+**Examples**:
+
+```yml
+$comment("This is your first contribution! Thank you!")
+```
+
+A `revy.yml` example:
+
+```yml
+protectionGates:
+  - name: comment-pull-request
+    description: Comment pull request
+    patchRules:
+      - rule: firstContribution
+    actions:
+      - $comment("This is your first contribution! Thank you!")
+*/
+func comment() *aladino.BuiltInAction {
+	return &aladino.BuiltInAction{
+		Type: aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, nil),
+		Code: commentCode,
+	}
+}
+
+func commentCode(e aladino.Env, args []aladino.Value) error {
+	pullRequest := e.GetPullRequest()
+
+	prNum := utils.GetPullRequestNumber(pullRequest)
+	owner := utils.GetPullRequestOwnerName(pullRequest)
+	repo := utils.GetPullRequestRepoName(pullRequest)
+
+	commentBody := args[0].(*aladino.StringValue).Val
+
+	_, _, err := e.GetClient().Issues.CreateComment(e.GetCtx(), owner, repo, prNum, &github.IssueComment{
+		Body: &commentBody,
+	})
+
+	return err
+}
+
+/*
+reviewpad-an: builtin-docs
+
 ### merge
 
 **Description**:
