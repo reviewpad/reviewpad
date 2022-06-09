@@ -55,12 +55,12 @@ $addLabel("bug")
 A `reviewpad.yml.yml` example:
 
 ```yml
-protectionGates:
+workflows:
   - name: label-small-pull-request
     description: Label small pull request
-    patchRules:
+    if:
       - rule: isSmall
-    actions:
+    then:
       - $addLabel("small")
 ```
 */
@@ -130,12 +130,12 @@ $assignRandomReviewer()
 A `reviewpad.yml.yml` example:
 
 ```yml
-protectionGates:
+workflows:
   - name: assign-random-reviewer
     description: Assign random reviewer
-    patchRules:
+    if:
       - rule: tautology
-    actions:
+    then:
       - $assignRandomReviewer()
 ```
 */
@@ -223,12 +223,12 @@ $assignReviewer(["john", "marie", "peter"], 2)
 A `reviewpad.yml.yml` example:
 
 ```yml
-protectionGates:
+workflows:
   - name: review-code-from-new-joiners
     description: Assign senior reviewers to PRs from new joiners
-    patchRules:
+    if:
       - rule: authoredByJunior
-    actions:
+    then:
       - $assignReviewer($group("seniors"), 2)
 ```
 */
@@ -363,12 +363,12 @@ $comment("This is your first contribution! Thank you!")
 A `revy.yml` example:
 
 ```yml
-protectionGates:
+workflows:
   - name: comment-pull-request
     description: Comment pull request
-    patchRules:
+    if:
       - rule: firstContribution
-    actions:
+    then:
       - $comment("This is your first contribution! Thank you!")
 ```
 */
@@ -435,12 +435,12 @@ $merge()
 A `reviewpad.yml.yml` example:
 
 ```yml
-protectionGates:
+workflows:
   - name: auto-merge-small-pull-request
     description: Auto-merge small pull request
-    patchRules:
+    if:
       - rule: isSmall
-    actions:
+    then:
       - $merge()
 ```
 */
@@ -523,12 +523,12 @@ $removeLabel("bug")
 A `reviewpad.yml.yml` example:
 
 ```yml
-protectionGates:
+workflows:
   - name: remove-small-label-in-pull-request
     description: Remove small label applied to pull request
-    patchRules:
+    if:
       - rule: isNotSmall
-    actions:
+    then:
       - $removeLabel("small")
 ```
 */

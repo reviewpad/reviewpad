@@ -449,6 +449,270 @@ func fileCountCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
 /*
 reviewpad-an: builtin-docs
 
+## hasCodePattern
+______________
+
+**Description**:
+
+Verifies if the patch matches the provided code pattern, returning `true` or `false` as appropriate.
+
+The code pattern needs to be a compilable regular expression.
+
+**Parameters**:
+
+| variable       | type   | description                        |
+| -------------- | ------ | ---------------------------------- |
+| `queryPattern` | string | query pattern to look for on patch |
+
+**Return value**:
+
+`boolean`
+
+Returns `true` if the patch matches the code query, `false` otherwise.
+
+**Examples**:
+
+```yml
+$codePattern("placeBet\(.*\)")
+```
+
+A `reviewpad.yml.yml` example:
+
+```yml
+rules:
+    usesPlaceBet:
+        kind: patch
+        description: Verifies if uses placeBet
+        spec: $codePattern("placeBet\(.*\)")
+```
+*/
+func hasCodePattern() *aladino.BuiltInFunction {
+	return &aladino.BuiltInFunction{
+		Type: aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, aladino.BuildBoolType()),
+		Code: patchHasCodePatternCode,
+	}
+}
+
+func patchHasCodePatternCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
+	arg := args[0].(*aladino.StringValue)
+	patch := e.GetPatch()
+
+	for _, file := range *patch {
+		if file == nil {
+			continue
+		}
+
+		isMatch, err := file.Query(arg.Val)
+		if err != nil {
+			return nil, err
+		}
+
+		if isMatch {
+			return aladino.BuildTrueValue(), nil
+		}
+	}
+
+	return aladino.BuildFalseValue(), nil
+}
+
+/*
+reviewpad-an: builtin-docs
+
+## hasFileExtensions
+______________
+
+**Description**:
+
+Determines whether all the extensions of the changed files on the patch are included on the provided list of file extensions, returning `true` or `false` as appropriate.
+
+Each extension provided on the list needs to be a [glob](https://en.wikipedia.org/wiki/Glob_(programming)).
+
+**Parameters**:
+
+| variable     | type     | description                 |
+| ------------ | -------- | --------------------------- |
+| `extensions` | []string | list of all file extensions |
+
+**Return value**:
+
+`boolean`
+
+Returns `true` if all file extensions in the patch are included in the list, `false` otherwise.
+
+**Examples**:
+
+```yml
+$hasFileExtensions([".test.ts"])
+```
+
+A `reviewpad.yml.yml` example:
+
+```yml
+rules:
+    changesAreOnlyTests:
+        kind: patch
+        description: Verifies if changes are only on test files
+        spec: $hasFileExtensions([".test.ts"])
+```
+*/
+func hasFileExtensions() *aladino.BuiltInFunction {
+	return &aladino.BuiltInFunction{
+		Type: aladino.BuildFunctionType([]aladino.Type{aladino.BuildArrayOfType(aladino.BuildStringType())}, aladino.BuildBoolType()),
+		Code: patchHasFileExtensionsCode,
+	}
+}
+
+func patchHasFileExtensionsCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
+	argExtensions := args[0].(*aladino.ArrayValue)
+
+	extensionSet := make(map[string]bool, len(argExtensions.Vals))
+	for _, argExt := range argExtensions.Vals {
+		argStringVal := argExt.(*aladino.StringValue)
+
+		normalizedStr := strings.ToLower(argStringVal.Val)
+		extensionSet[normalizedStr] = true
+	}
+
+	patch := e.GetPatch()
+	for fp := range *patch {
+		fpExt := utils.FileExt(fp)
+		normalizedExt := strings.ToLower(fpExt)
+
+		if _, ok := extensionSet[normalizedExt]; !ok {
+			return aladino.BuildFalseValue(), nil
+		}
+	}
+
+	return aladino.BuildTrueValue(), nil
+}
+
+/*
+reviewpad-an: builtin-docs
+
+## hasFileName
+______________
+
+**Description**:
+
+Determines whether the provided filename is among the files on patch, returning `true` or `false` as appropriate.
+
+**Parameters**:
+
+| variable   | type   | description                                        |
+| ---------- | ------ | -------------------------------------------------- |
+| `filename` | string | filename to look for in the patch. case sensitive. |
+
+**Return value**:
+
+`boolean`
+
+Returns `true` if the patch has a file with the provided filename, `false` otherwise.
+
+The provided filename and the filename on the patch need to be exactly the same in order to get a positive result.
+
+**Examples**:
+
+```yml
+$hasFileName("placeBet.js")
+```
+
+A `reviewpad.yml.yml` example:
+
+```yml
+rules:
+    changesPlaceBet:
+        kind: patch
+        description: Verifies if changes place bet file
+        spec: $hasFileName("placeBet.js")
+```
+*/
+func hasFileName() *aladino.BuiltInFunction {
+	return &aladino.BuiltInFunction{
+		Type: aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, aladino.BuildBoolType()),
+		Code: patchHasFileNameCode,
+	}
+}
+
+func patchHasFileNameCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
+	fileNameStr := args[0].(*aladino.StringValue)
+
+	patch := e.GetPatch()
+	for fp := range *patch {
+		if fp == fileNameStr.Val {
+			return aladino.BuildTrueValue(), nil
+		}
+	}
+
+	return aladino.BuildFalseValue(), nil
+}
+
+/*
+reviewpad-an: builtin-docs
+
+## hasFilePattern
+______________
+
+**Description**:
+
+Determines whether the provided file pattern matches any of the files in the patch, returning `true` or `false` as appropriate.
+
+The file pattern needs to be a [glob](https://en.wikipedia.org/wiki/Glob_(programming)).
+
+**Parameters**:
+
+| variable      | type   | description                            |
+| ------------- | ------ | -------------------------------------- |
+| `filePattern` | string | file pattern glob to look for on patch |
+
+**Return value**:
+
+`boolean`
+
+Returns `true` if any of the files on patch matches the provided file pattern, `false` otherwise.
+
+**Examples**:
+
+```yml
+$hasFilePattern("src/transactions/**")
+```
+
+A `reviewpad.yml.yml` example:
+
+```yml
+rules:
+    changesTransactions:
+        kind: patch
+        description: Verifies if changes transactions
+        spec: $hasFilePattern("src/transactions/**")
+```
+*/
+func hasFilePattern() *aladino.BuiltInFunction {
+	return &aladino.BuiltInFunction{
+		Type: aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, aladino.BuildBoolType()),
+		Code: patchHasFilePatternCode,
+	}
+}
+
+func patchHasFilePatternCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
+	filePatternRegex := args[0].(*aladino.StringValue)
+
+	patch := e.GetPatch()
+	for fp := range *patch {
+		re, err := doublestar.Match(filePatternRegex.Val, fp)
+		if err != nil {
+			return aladino.BuildFalseValue(), err
+		}
+		if re {
+			return aladino.BuildTrueValue(), nil
+		}
+	}
+
+	return aladino.BuildFalseValue(), nil
+}
+
+/*
+reviewpad-an: builtin-docs
+
 ## hasLinearHistory
 ______________
 
@@ -789,270 +1053,6 @@ func milestoneCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
 /*
 reviewpad-an: builtin-docs
 
-## patchHasCodePattern
-______________
-
-**Description**:
-
-Verifies if the patch matches the provided code pattern, returning `true` or `false` as appropriate.
-
-The code pattern needs to be a compilable regular expression.
-
-**Parameters**:
-
-| variable       | type   | description                        |
-| -------------- | ------ | ---------------------------------- |
-| `queryPattern` | string | query pattern to look for on patch |
-
-**Return value**:
-
-`boolean`
-
-Returns `true` if the patch matches the code query, `false` otherwise.
-
-**Examples**:
-
-```yml
-$codePattern("placeBet\(.*\)")
-```
-
-A `reviewpad.yml.yml` example:
-
-```yml
-rules:
-    usesPlaceBet:
-        kind: patch
-        description: Verifies if uses placeBet
-        spec: $codePattern("placeBet\(.*\)")
-```
-*/
-func patchHasCodePattern() *aladino.BuiltInFunction {
-	return &aladino.BuiltInFunction{
-		Type: aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, aladino.BuildBoolType()),
-		Code: patchHasCodePatternCode,
-	}
-}
-
-func patchHasCodePatternCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
-	arg := args[0].(*aladino.StringValue)
-	patch := e.GetPatch()
-
-	for _, file := range *patch {
-		if file == nil {
-			continue
-		}
-
-		isMatch, err := file.Query(arg.Val)
-		if err != nil {
-			return nil, err
-		}
-
-		if isMatch {
-			return aladino.BuildTrueValue(), nil
-		}
-	}
-
-	return aladino.BuildFalseValue(), nil
-}
-
-/*
-reviewpad-an: builtin-docs
-
-## patchHasFileExtensions
-______________
-
-**Description**:
-
-Determines whether all the extensions of the changed files on the patch are included on the provided list of file extensions, returning `true` or `false` as appropriate.
-
-Each extension provided on the list needs to be a [glob](https://en.wikipedia.org/wiki/Glob_(programming)).
-
-**Parameters**:
-
-| variable     | type     | description                 |
-| ------------ | -------- | --------------------------- |
-| `extensions` | []string | list of all file extensions |
-
-**Return value**:
-
-`boolean`
-
-Returns `true` if all file extensions in the patch are included in the list, `false` otherwise.
-
-**Examples**:
-
-```yml
-$patchHasFileExtensions([".test.ts"])
-```
-
-A `reviewpad.yml.yml` example:
-
-```yml
-rules:
-    changesAreOnlyTests:
-        kind: patch
-        description: Verifies if changes are only on test files
-        spec: $patchHasFileExtensions([".test.ts"])
-```
-*/
-func patchHasFileExtensions() *aladino.BuiltInFunction {
-	return &aladino.BuiltInFunction{
-		Type: aladino.BuildFunctionType([]aladino.Type{aladino.BuildArrayOfType(aladino.BuildStringType())}, aladino.BuildBoolType()),
-		Code: patchHasFileExtensionsCode,
-	}
-}
-
-func patchHasFileExtensionsCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
-	argExtensions := args[0].(*aladino.ArrayValue)
-
-	extensionSet := make(map[string]bool, len(argExtensions.Vals))
-	for _, argExt := range argExtensions.Vals {
-		argStringVal := argExt.(*aladino.StringValue)
-
-		normalizedStr := strings.ToLower(argStringVal.Val)
-		extensionSet[normalizedStr] = true
-	}
-
-	patch := e.GetPatch()
-	for fp := range *patch {
-		fpExt := utils.FileExt(fp)
-		normalizedExt := strings.ToLower(fpExt)
-
-		if _, ok := extensionSet[normalizedExt]; !ok {
-			return aladino.BuildFalseValue(), nil
-		}
-	}
-
-	return aladino.BuildTrueValue(), nil
-}
-
-/*
-reviewpad-an: builtin-docs
-
-## patchHasFileName
-______________
-
-**Description**:
-
-Determines whether the provided filename is among the files on patch, returning `true` or `false` as appropriate.
-
-**Parameters**:
-
-| variable   | type   | description                                        |
-| ---------- | ------ | -------------------------------------------------- |
-| `filename` | string | filename to look for in the patch. case sensitive. |
-
-**Return value**:
-
-`boolean`
-
-Returns `true` if the patch has a file with the provided filename, `false` otherwise.
-
-The provided filename and the filename on the patch need to be exactly the same in order to get a positive result.
-
-**Examples**:
-
-```yml
-$patchHasFileName("placeBet.js")
-```
-
-A `reviewpad.yml.yml` example:
-
-```yml
-rules:
-    changesPlaceBet:
-        kind: patch
-        description: Verifies if changes place bet file
-        spec: $patchHasFileName("placeBet.js")
-```
-*/
-func patchHasFileName() *aladino.BuiltInFunction {
-	return &aladino.BuiltInFunction{
-		Type: aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, aladino.BuildBoolType()),
-		Code: patchHasFileNameCode,
-	}
-}
-
-func patchHasFileNameCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
-	fileNameStr := args[0].(*aladino.StringValue)
-
-	patch := e.GetPatch()
-	for fp := range *patch {
-		if fp == fileNameStr.Val {
-			return aladino.BuildTrueValue(), nil
-		}
-	}
-
-	return aladino.BuildFalseValue(), nil
-}
-
-/*
-reviewpad-an: builtin-docs
-
-## patchHasFilePattern
-______________
-
-**Description**:
-
-Determines whether the provided file pattern matches any of the files in the patch, returning `true` or `false` as appropriate.
-
-The file pattern needs to be a [glob](https://en.wikipedia.org/wiki/Glob_(programming)).
-
-**Parameters**:
-
-| variable      | type   | description                            |
-| ------------- | ------ | -------------------------------------- |
-| `filePattern` | string | file pattern glob to look for on patch |
-
-**Return value**:
-
-`boolean`
-
-Returns `true` if any of the files on patch matches the provided file pattern, `false` otherwise.
-
-**Examples**:
-
-```yml
-$patchHasFilePattern("src/transactions/**")
-```
-
-A `reviewpad.yml.yml` example:
-
-```yml
-rules:
-    changesTransactions:
-        kind: patch
-        description: Verifies if changes transactions
-        spec: $patchHasFilePattern("src/transactions/**")
-```
-*/
-func patchHasFilePattern() *aladino.BuiltInFunction {
-	return &aladino.BuiltInFunction{
-		Type: aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, aladino.BuildBoolType()),
-		Code: patchHasFilePatternCode,
-	}
-}
-
-func patchHasFilePatternCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
-	filePatternRegex := args[0].(*aladino.StringValue)
-
-	patch := e.GetPatch()
-	for fp := range *patch {
-		re, err := doublestar.Match(filePatternRegex.Val, fp)
-		if err != nil {
-			return aladino.BuildFalseValue(), err
-		}
-		if re {
-			return aladino.BuildTrueValue(), nil
-		}
-	}
-
-	return aladino.BuildFalseValue(), nil
-}
-
-/*
-reviewpad-an: builtin-docs
-
 ## reviewers
 ______________
 
@@ -1258,7 +1258,7 @@ rules:
     isAuthorFromOrganization:
         kind: patch
         description: Verifies if author belongs to organization
-        spec: $isMemberOf($author(), $organization())
+        spec: $isElementOf($author(), $organization())
 ```
 */
 func organization() *aladino.BuiltInFunction {
@@ -1328,7 +1328,7 @@ rules:
   isAuthorByDevops:
     description: Verifies if author belongs to devops team
     kind: patch
-    spec: $isMemberOf($name(), $team("devops"))
+    spec: $isElementOf($author(), $team("devops"))
 ```
 */
 func team() *aladino.BuiltInFunction {
@@ -1482,7 +1482,7 @@ rules:
     authoredByWebDeveloper:
         kind: patch
         description: Authored by web developers
-        spec: $isMemberOf($name(), $group("frontendAndBackendDevs"))
+        spec: $isElementOf($author(), $group("frontendAndBackendDevs"))
 ```
 */
 func appendString() *aladino.BuiltInFunction {
@@ -1590,7 +1590,7 @@ rules:
   authoredByJunior:
     description: Verifies if author is junior
     kind: patch
-    spec: $isElementOf($name(), $group("junior"))
+    spec: $isElementOf($author(), $group("junior"))
 ```
 */
 func isElementOf() *aladino.BuiltInFunction {
@@ -1667,7 +1667,7 @@ rules:
   isAuthorByTechLead:
     description: Verifies if author is a tech lead
     kind: patch
-    spec: $isMemberOf($name(), $group("techLeads"))
+    spec: $isElementOf($author(), $group("techLeads"))
 ```
 */
 func group() *aladino.BuiltInFunction {
