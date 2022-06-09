@@ -70,7 +70,18 @@ func (i *Interpreter) EvalExpr(kind, expr string) (bool, error) {
 		return false, fmt.Errorf("expression %v is not a condition", expr)
 	}
 
+	cleanTemporaryVariables(i.Env)
+
 	return EvalCondition(i.Env, exprAST)
+}
+
+func cleanTemporaryVariables(env Env) {
+	registerMap := env.GetRegisterMap()
+	for varName := range *registerMap {
+		if varName[0] == '@' {
+			delete(*registerMap, varName)
+		}
+	}
 }
 
 func execLog(val string) {
