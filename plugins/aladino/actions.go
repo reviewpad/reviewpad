@@ -17,6 +17,7 @@ import (
 reviewpad-an: builtin-docs
 
 # Actions
+______________
 
 Reviewpad actions allow act on workflows.
 
@@ -26,7 +27,8 @@ This set of actions are the defined functions that can run under `actions` on yo
 /*
 reviewpad-an: builtin-docs
 
-### addLabel
+## addLabel
+______________
 
 **Description**:
 
@@ -98,7 +100,8 @@ func addLabelCode(e aladino.Env, args []aladino.Value) error {
 /*
 reviewpad-an: builtin-docs
 
-### assignRandomReviewer
+## assignRandomReviewer
+______________
 
 **Description**:
 
@@ -189,7 +192,8 @@ func assignRandomReviewerCode(e aladino.Env, _ []aladino.Value) error {
 /*
 reviewpad-an: builtin-docs
 
-### assignReviewer
+## assignReviewer
+______________
 
 **Description**:
 
@@ -334,6 +338,7 @@ func assignReviewerCode(e aladino.Env, args []aladino.Value) error {
 reviewpad-an: builtin-docs
 
 ## comment
+______________
 
 **Description**:
 
@@ -365,6 +370,7 @@ protectionGates:
       - rule: firstContribution
     actions:
       - $comment("This is your first contribution! Thank you!")
+```
 */
 func comment() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
@@ -392,7 +398,8 @@ func commentCode(e aladino.Env, args []aladino.Value) error {
 /*
 reviewpad-an: builtin-docs
 
-### merge
+## merge
+______________
 
 **Description**:
 
@@ -400,8 +407,8 @@ Merge a pull request with a specific merge method.
 
 By default, if no parameter is provided, it will perform a standard git merge.
 
-| :warning: Requires a GitHub token :warning: |
-|---------------------------------------------|
+| :warning: Requires GitHub token :warning: |
+|-------------------------------------------|
 
 By default a GitHub action does not have permission to access organization members.
 
@@ -486,7 +493,8 @@ func parseMergeMethod(args []aladino.Value) (string, error) {
 /*
 reviewpad-an: builtin-docs
 
-### removeLabel
+## removeLabel
+______________
 
 **Description**:
 

@@ -20,17 +20,24 @@ import (
 reviewpad-an: builtin-docs
 
 # Functions
+______________
 
-Reviewpad functions allow query data from a pull request or organization in order to act on it.
+Reviewpad functions allow to query data from a `pull request` or `organization` in order to act on it.
 
-The functions are splitted into 4 different categories, mainly:
+The functions are organized into 4 categories:
 - **[Pull Request](#pull-request)** - Functions to query pull request data.
 - **[Organization](#organization)** - Functions to query organization data.
 - **[User](#user)** - Functions to query user's data.
 - **[Utilities](#utilities)** - Functions to help act on the queried data.
 - **[Engine](#engine)** - Functions used to work with `reviewpad.yml` file.
 
+*/
+
+/*
+reviewpad-an: builtin-docs
+
 ## Pull Request
+______________
 
 Set of functions to get pull request details.
 */
@@ -38,7 +45,8 @@ Set of functions to get pull request details.
 /*
 reviewpad-an: builtin-docs
 
-### assignees
+## assignees
+______________
 
 **Description**:
 
@@ -91,7 +99,8 @@ func assigneesCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
 /*
 reviewpad-an: builtin-docs
 
-### author
+## author
+______________
 
 **Description**:
 
@@ -138,7 +147,8 @@ func authorCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
 /*
 reviewpad-an: builtin-docs
 
-### base
+## base
+______________
 
 **Description**:
 
@@ -184,7 +194,8 @@ func baseCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
 /*
 reviewpad-an: builtin-docs
 
-### commitCount
+## commitCount
+______________
 
 **Description**:
 
@@ -230,7 +241,8 @@ func commitCountCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
 /*
 reviewpad-an: builtin-docs
 
-### commits
+## commits
+______________
 
 **Description**:
 
@@ -290,7 +302,8 @@ func commitsCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
 /*
 reviewpad-an: builtin-docs
 
-### createdAt
+## createdAt
+______________
 
 **Description**:
 
@@ -341,7 +354,8 @@ func createdAtCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
 /*
 reviewpad-an: builtin-docs
 
-### description
+## description
+______________
 
 **Description**:
 
@@ -387,7 +401,8 @@ func descriptionCode(e aladino.Env, args []aladino.Value) (aladino.Value, error)
 /*
 reviewpad-an: builtin-docs
 
-### fileCount
+## fileCount
+______________
 
 **Description**:
 
@@ -434,7 +449,8 @@ func fileCountCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
 /*
 reviewpad-an: builtin-docs
 
-### hasLinearHistory
+## hasLinearHistory
+______________
 
 **Description**:
 
@@ -497,7 +513,8 @@ func hasLinearHistoryCode(e aladino.Env, _ []aladino.Value) (aladino.Value, erro
 /*
 reviewpad-an: builtin-docs
 
-### hasLinkedIssues
+## hasLinkedIssues
+______________
 
 **Description**:
 
@@ -569,7 +586,8 @@ func hasLinkedIssuesCode(e aladino.Env, args []aladino.Value) (aladino.Value, er
 /*
 reviewpad-an: builtin-docs
 
-### head
+## head
+______________
 
 **Description**:
 
@@ -615,7 +633,8 @@ func headCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
 /*
 reviewpad-an: builtin-docs
 
-### isDraft
+## isDraft
+______________
 
 **Description**:
 
@@ -668,7 +687,8 @@ func isDraftCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
 /*
 reviewpad-an: builtin-docs
 
-### labels
+## labels
+______________
 
 **Description**:
 
@@ -721,7 +741,8 @@ func labelsCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
 /*
 reviewpad-an: builtin-docs
 
-### milestone
+## milestone
+______________
 
 **Description**:
 
@@ -768,7 +789,8 @@ func milestoneCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
 /*
 reviewpad-an: builtin-docs
 
-### patchHasCodePattern
+## patchHasCodePattern
+______________
 
 **Description**:
 
@@ -836,7 +858,8 @@ func patchHasCodePatternCode(e aladino.Env, args []aladino.Value) (aladino.Value
 /*
 reviewpad-an: builtin-docs
 
-### patchHasFileExtensions
+## patchHasFileExtensions
+______________
 
 **Description**:
 
@@ -906,7 +929,8 @@ func patchHasFileExtensionsCode(e aladino.Env, args []aladino.Value) (aladino.Va
 /*
 reviewpad-an: builtin-docs
 
-### patchHasFileName
+## patchHasFileName
+______________
 
 **Description**:
 
@@ -965,7 +989,8 @@ func patchHasFileNameCode(e aladino.Env, args []aladino.Value) (aladino.Value, e
 /*
 reviewpad-an: builtin-docs
 
-### patchHasFilePattern
+## patchHasFilePattern
+______________
 
 **Description**:
 
@@ -1028,7 +1053,8 @@ func patchHasFilePatternCode(e aladino.Env, args []aladino.Value) (aladino.Value
 /*
 reviewpad-an: builtin-docs
 
-### reviewers
+## reviewers
+______________
 
 **Description**:
 
@@ -1087,7 +1113,8 @@ func reviewersCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
 /*
 reviewpad-an: builtin-docs
 
-### size
+## size
+______________
 
 **Description**:
 
@@ -1143,7 +1170,8 @@ func sizeCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
 /*
 reviewpad-an: builtin-docs
 
-### title
+## title
+______________
 
 **Description**:
 
@@ -1190,6 +1218,7 @@ func titleCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
 reviewpad-an: builtin-docs
 
 ## Organization
+______________
 
 Set of functions to get organization details.
 */
@@ -1197,7 +1226,8 @@ Set of functions to get organization details.
 /*
 reviewpad-an: builtin-docs
 
-#### organization
+## organization
+______________
 
 **Description**:
 
@@ -1255,7 +1285,8 @@ func organizationCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
 /*
 reviewpad-an: builtin-docs
 
-### team
+## team
+______________
 
 **Description**:
 
@@ -1335,7 +1366,8 @@ Set of functions to get user details.
 /*
 reviewpad-an: builtin-docs
 
-### totalCreatedPullRequests
+## totalCreatedPullRequests
+______________
 
 **Description**:
 
@@ -1404,6 +1436,7 @@ func totalCreatedPullRequestsCode(e aladino.Env, args []aladino.Value) (aladino.
 reviewpad-an: builtin-docs
 
 ## Utilities
+______________
 
 Set of functions to help handle the queried data.
 */
@@ -1411,7 +1444,8 @@ Set of functions to help handle the queried data.
 /*
 reviewpad-an: builtin-docs
 
-### append
+## append
+______________
 
 **Description**:
 
@@ -1468,7 +1502,8 @@ func appendStringCode(e aladino.Env, args []aladino.Value) (aladino.Value, error
 /*
 reviewpad-an: builtin-docs
 
-### contains
+## contains
+______________
 
 **Description**:
 
@@ -1521,7 +1556,8 @@ func containsCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
 /*
 reviewpad-an: builtin-docs
 
-### isElementOf
+## isElementOf
+______________
 
 **Description**:
 
@@ -1581,6 +1617,7 @@ func isElementOfCode(e aladino.Env, args []aladino.Value) (aladino.Value, error)
 reviewpad-an: builtin-docs
 
 ## Engine
+______________
 
 Set of functions used to handle `reviewpad.yml` file.
 
@@ -1590,7 +1627,8 @@ This functions should be used to access and handle data declared into `reviewpad
 /*
 reviewpad-an: builtin-docs
 
-### group
+## group
+______________
 
 **Description**:
 
@@ -1650,8 +1688,8 @@ func groupCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
 }
 
 /*
-Internal
-*/
+ * Internal
+ */
 
 func filter() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
