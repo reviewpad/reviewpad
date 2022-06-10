@@ -38,7 +38,7 @@ tasks:
     cmds:
       - go build ./cmd/cli/main.go
     sources:
-      - ./cmd/**/*.go
+      - ./cmd/cli/*.go
 
   test:
     summary: |

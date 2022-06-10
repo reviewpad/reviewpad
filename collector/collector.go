@@ -19,11 +19,22 @@ type collector struct {
 }
 
 func NewCollector(token string, id string) Collector {
-	return &collector{
+	c := collector{
 		Client: mixpanel.New(token, ""),
 		Id:     id,
 		Token:  token,
 	}
+
+	if token != "" {
+		c.Client.UpdateUser(c.Id, &mixpanel.Update{
+			Operation: "$set",
+			Properties: map[string]interface{}{
+				"name": id,
+			},
+		})
+	}
+
+	return &c
 }
 
 func (c *collector) Collect(eventName string, properties *map[string]interface{}) error {

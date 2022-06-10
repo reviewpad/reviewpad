@@ -36,6 +36,13 @@ func Exec(file *ReviewpadFile, env *Env, flags *Flags) ([]string, error) {
 
 	env.Collector.Collect("Trigger Analysis", &map[string]interface{}{
 		"pullRequestUrl": env.PullRequest.URL,
+		"version":        file.Version,
+		"edition":        file.Edition,
+		"mode":           file.Mode,
+		"totalGroups":    len(file.Groups),
+		"totalLabels":    len(file.Labels),
+		"totalRules":     len(file.Rules),
+		"totalWorkflows": len(file.Workflows),
 	})
 
 	rules := make(map[string]PadRule)
