@@ -14,6 +14,7 @@ import (
 	"github.com/reviewpad/reviewpad/engine"
 	"github.com/reviewpad/reviewpad/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/plugins/aladino"
+	"github.com/reviewpad/reviewpad/utils/fmtio"
 	"github.com/shurcooL/githubv4"
 )
 
@@ -23,7 +24,7 @@ func Load(buf *bytes.Buffer) (*engine.ReviewpadFile, error) {
 		return nil, err
 	}
 
-	log.Printf("load: input file:\n%+v\n", file)
+	log.Println(fmtio.Sprintf("load", "input file:\n%+v\n", file))
 
 	err = engine.Lint(file)
 	if err != nil {
