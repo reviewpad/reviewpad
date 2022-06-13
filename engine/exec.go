@@ -6,6 +6,7 @@ package engine
 
 import (
 	"log"
+	"regexp"
 
 	"github.com/reviewpad/reviewpad/utils/fmtio"
 )
@@ -34,8 +35,12 @@ func collectError(env *Env, err error) {
 func Exec(file *ReviewpadFile, env *Env, flags *Flags) ([]string, error) {
 	execLogf("file to execute:\n%+v", file)
 
+	reg := regexp.MustCompile(`github\.com\/repos\/(.*)\/pulls\/\d+$$`)
+	matches := reg.FindStringSubmatch(*env.PullRequest.URL)
+
 	env.Collector.Collect("Trigger Analysis", &map[string]interface{}{
 		"pullRequestUrl": env.PullRequest.URL,
+		"project":        matches[1],
 		"version":        file.Version,
 		"edition":        file.Edition,
 		"mode":           file.Mode,
