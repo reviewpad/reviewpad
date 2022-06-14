@@ -15,6 +15,7 @@ require (
 require (
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
+	github.com/google/uuid v1.3.0 // indirect
 	github.com/kr/pretty v0.2.0 // indirect
 	github.com/shurcooL/graphql v0.0.0-20220520033453-bdb1221e171e // indirect
 	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5 // indirect

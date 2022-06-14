@@ -6,6 +6,7 @@ package collector
 
 import (
 	"github.com/dukex/mixpanel"
+	"github.com/google/uuid"
 )
 
 type Collector interface {
@@ -16,13 +17,19 @@ type collector struct {
 	Client mixpanel.Mixpanel
 	Id     string
 	Token  string
+	// Allows to identify a unique source of events
+	RunnerId string
+	// Allows to identify the correct order of events
+	Order int
 }
 
 func NewCollector(token string, id string) Collector {
 	c := collector{
-		Client: mixpanel.New(token, ""),
-		Id:     id,
-		Token:  token,
+		Client:   mixpanel.New(token, ""),
+		Id:       id,
+		Token:    token,
+		RunnerId: uuid.NewString(),
+		Order:    0,
 	}
 
 	if token != "" {
@@ -41,6 +48,9 @@ func (c *collector) Collect(eventName string, properties *map[string]interface{}
 	if c.Token == "" {
 		return nil
 	}
+	(*properties)["runnerId"] = c.RunnerId
+	(*properties)["order"] = c.Order
+	c.Order = c.Order + 1
 	return c.Client.Track(c.Id, eventName, &mixpanel.Event{
 		Properties: *properties,
 	})
