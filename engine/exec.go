@@ -118,7 +118,7 @@ func Exec(file *ReviewpadFile, env *Env, flags *Flags) ([]string, error) {
 			actExtraActions: []string{},
 		}
 
-		ruleActivatedQueue := make([]PatchRule, 0)
+		ruleActivatedQueue := make([]PadWorkflowRule, 0)
 		ruleDefinitionQueue := make(map[string]PadRule)
 
 		for _, rule := range workflow.PatchRules {
