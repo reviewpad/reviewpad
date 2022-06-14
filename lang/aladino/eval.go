@@ -42,7 +42,7 @@ func (b *BinaryOp) Eval(e Env) (Value, error) {
 func (v *Variable) Eval(e Env) (Value, error) {
 	variableName := v.ident
 
-	if val, ok := (*e.GetRegisterMap())[variableName]; ok {
+	if val, ok := e.GetRegisterMap()[variableName]; ok {
 		return val, nil
 	}
 
@@ -92,7 +92,7 @@ func (lambda *Lambda) Eval(e Env) (Value, error) {
 		for i, elem := range lambda.parameters {
 			paramIdent := elem.(*TypedExpr).expr.(*Variable).ident
 
-			(*e.GetRegisterMap())[paramIdent] = args[i]
+			e.GetRegisterMap()[paramIdent] = args[i]
 		}
 
 		fnVal, err := lambda.body.Eval(e)
