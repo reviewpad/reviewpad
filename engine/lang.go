@@ -77,7 +77,7 @@ type PadWorkflow struct {
 	Name        string            `yaml:"name"`
 	Description string            `yaml:"description"`
 	AlwaysRun   bool              `yaml:"always-run"`
-	PatchRules  []PadWorkflowRule `yaml:"if"`
+	Rules       []PadWorkflowRule `yaml:"if"`
 	Actions     []string          `yaml:"then"`
 }
 
@@ -90,12 +90,12 @@ func (p PadWorkflow) equals(o PadWorkflow) bool {
 		return false
 	}
 
-	if len(p.PatchRules) != len(o.PatchRules) {
+	if len(p.Rules) != len(o.Rules) {
 		return false
 	}
 
-	for i, pP := range p.PatchRules {
-		oP := o.PatchRules[i]
+	for i, pP := range p.Rules {
+		oP := o.Rules[i]
 		if !pP.equals(oP) {
 			return false
 		}

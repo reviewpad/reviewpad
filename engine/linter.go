@@ -57,11 +57,11 @@ func lintWorkflows(rules map[string]PadRule, padWorkflows []PadWorkflow) error {
 			}
 		}
 
-		if len(workflow.PatchRules) == 0 {
+		if len(workflow.Rules) == 0 {
 			return lintError("workflow %v does not have rules", workflow.Name)
 		}
 
-		for _, rule := range workflow.PatchRules {
+		for _, rule := range workflow.Rules {
 			ruleName := rule.Rule
 			if ruleName == "" {
 				return lintError("workflow has an empty rule")
@@ -98,7 +98,7 @@ func lintRulesWithWorkflows(rules map[string]PadRule, padWorkflows []PadWorkflow
 	}
 
 	for _, workflow := range padWorkflows {
-		for _, rule := range workflow.PatchRules {
+		for _, rule := range workflow.Rules {
 			ruleName := rule.Rule
 			_, exists := rules[ruleName]
 

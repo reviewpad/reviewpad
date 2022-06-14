@@ -60,15 +60,15 @@ func parse(data []byte) (*ReviewpadFile, error) {
 func transform(file *ReviewpadFile) *ReviewpadFile {
 	var transformedWorkflows []PadWorkflow
 	for _, workflow := range file.Workflows {
-		var transformedPatchRules []PadWorkflowRule
-		for _, patchRule := range workflow.PatchRules {
+		var transformedRules []PadWorkflowRule
+		for _, rule := range workflow.Rules {
 			var transformedExtraActions []string
-			for _, extraAction := range patchRule.ExtraActions {
+			for _, extraAction := range rule.ExtraActions {
 				transformedExtraActions = append(transformedExtraActions, transformActionStr(extraAction))
 			}
 
-			transformedPatchRules = append(transformedPatchRules, PadWorkflowRule{
-				Rule:         patchRule.Rule,
+			transformedRules = append(transformedRules, PadWorkflowRule{
+				Rule:         rule.Rule,
 				ExtraActions: transformedExtraActions,
 			})
 		}
@@ -81,7 +81,7 @@ func transform(file *ReviewpadFile) *ReviewpadFile {
 		transformedWorkflows = append(transformedWorkflows, PadWorkflow{
 			Name:        workflow.Name,
 			Description: workflow.Description,
-			PatchRules:  transformedPatchRules,
+			Rules:       transformedRules,
 			Actions:     transformedActions,
 			AlwaysRun:   workflow.AlwaysRun,
 		})
