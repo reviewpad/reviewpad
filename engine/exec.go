@@ -95,16 +95,15 @@ func Eval(file *ReviewpadFile, env *Env) (*[]string, error) {
 	// program defines the set of all actions to run.
 	// This set is calculated based on the workflow rules and actions.
 	program := make([]string, 0)
-	// triggeredWorkflow defines the workflow `always-run: false` that has been triggered.
-	triggeredWorkflow := ""
+
+	// triggeredExclusiveWorkflow is a control variable to denote if a workflow `always-run: false` has been triggered.
+	triggeredExclusiveWorkflow := false
 
 	for _, workflow := range file.Workflows {
 		execLogf("evaluating workflow %v:", workflow.Name)
 
-		isWorkflowEligible := workflow.AlwaysRun || triggeredWorkflow == ""
-
-		if !isWorkflowEligible {
-			execLog("\tnot eligible")
+		if !workflow.AlwaysRun && triggeredExclusiveWorkflow {
+			execLog("\tskipping workflow")
 			continue
 		}
 
@@ -129,7 +128,7 @@ func Eval(file *ReviewpadFile, env *Env) (*[]string, error) {
 			}
 		}
 
-		if len(ruleActivatedQueue) > 0 && isWorkflowEligible {
+		if len(ruleActivatedQueue) > 0 {
 			program = append(program, workflow.Actions...)
 
 			for _, activatedRule := range ruleActivatedQueue {
@@ -137,9 +136,8 @@ func Eval(file *ReviewpadFile, env *Env) (*[]string, error) {
 			}
 
 			if !workflow.AlwaysRun {
-				triggeredWorkflow = workflow.Name
+				triggeredExclusiveWorkflow = true
 			}
-
 		} else {
 			execLog("\tno rules activated")
 		}
