@@ -30,9 +30,9 @@ func CollectError(env *Env, err error) {
 	})
 }
 
-// Eval: main function that generates the Aladino program to be executed
+// Eval: main function that generates the program to be executed
 // Pre-condition Lint(file) == nil
-func Eval(file *ReviewpadFile, env *Env) (*[]string, error) {
+func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 	execLogf("file to evaluate:\n%+v", file)
 
 	interpreter := env.Interpreter
@@ -88,9 +88,10 @@ func Eval(file *ReviewpadFile, env *Env) (*[]string, error) {
 		rules[ruleName] = rule
 	}
 
-	// program defines the set of all actions to run.
-	// This set is calculated based on the workflow rules and actions.
-	program := make([]string, 0)
+	// a program is a list of statements to be executed based on the workflow rules and actions.
+	program := &Program{
+		Statements: make([]*Statement, 0),
+	}
 
 	// triggeredExclusiveWorkflow is a control variable to denote if a workflow `always-run: false` has been triggered.
 	triggeredExclusiveWorkflow := false
@@ -125,10 +126,10 @@ func Eval(file *ReviewpadFile, env *Env) (*[]string, error) {
 		}
 
 		if len(ruleActivatedQueue) > 0 {
-			program = append(program, workflow.Actions...)
+			program.append(workflow.Actions, workflow, ruleActivatedQueue)
 
 			for _, activatedRule := range ruleActivatedQueue {
-				program = append(program, activatedRule.ExtraActions...)
+				program.append(activatedRule.ExtraActions, workflow, []PadWorkflowRule{activatedRule})
 			}
 
 			if !workflow.AlwaysRun {
@@ -139,5 +140,5 @@ func Eval(file *ReviewpadFile, env *Env) (*[]string, error) {
 		}
 	}
 
-	return &program, nil
+	return program, nil
 }
