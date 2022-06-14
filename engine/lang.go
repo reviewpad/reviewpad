@@ -140,7 +140,6 @@ type ReviewpadFile struct {
 	Version   string              `yaml:"api-version"`
 	Edition   string              `yaml:"edition"`
 	Mode      string              `yaml:"mode"`
-	Language  string              `yaml:"language"`
 	Imports   []PadImport         `yaml:"imports"`
 	Groups    map[string]PadGroup `yaml:"groups"`
 	Rules     map[string]PadRule  `yaml:"rules"`
@@ -158,10 +157,6 @@ func (r *ReviewpadFile) equals(o *ReviewpadFile) bool {
 	}
 
 	if r.Mode != o.Mode {
-		return false
-	}
-
-	if r.Language != o.Language {
 		return false
 	}
 

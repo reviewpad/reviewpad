@@ -35,6 +35,8 @@ func CollectError(env *Env, err error) {
 func Eval(file *ReviewpadFile, env *Env) (*[]string, error) {
 	execLogf("file to evaluate:\n%+v", file)
 
+	interpreter := env.Interpreter
+
 	reg := regexp.MustCompile(`github\.com\/repos\/(.*)\/pulls\/\d+$$`)
 	matches := reg.FindStringSubmatch(*env.PullRequest.URL)
 
@@ -71,12 +73,6 @@ func Eval(file *ReviewpadFile, env *Env) (*[]string, error) {
 			CollectError(env, err)
 			return nil, err
 		}
-	}
-
-	// lang := file.Language
-	interpreter, ok := env.Interpreters["aladino"]
-	if !ok {
-		return nil, execError("no interpreter for aladino")
 	}
 
 	// process groups

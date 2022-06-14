@@ -43,15 +43,12 @@ func Run(
 	reviewpadFile *engine.ReviewpadFile,
 	dryRun bool,
 ) error {
-	interpreters := make(map[string]engine.Interpreter)
-
 	aladinoInterpreter, err := aladino.NewInterpreter(ctx, client, clientGQL, collector, ghPullRequest, plugins_aladino.PluginBuiltIns())
 	if err != nil {
 		return err
 	}
 
-	interpreters["aladino"] = aladinoInterpreter
-	evalEnv, err := engine.NewEvalEnv(ctx, client, clientGQL, collector, ghPullRequest, interpreters)
+	evalEnv, err := engine.NewEvalEnv(ctx, client, clientGQL, collector, ghPullRequest, aladinoInterpreter)
 	if err != nil {
 		return err
 	}
