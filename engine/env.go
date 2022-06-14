@@ -22,7 +22,7 @@ const GroupTypeFilter GroupType = "filter"
 type Interpreter interface {
 	ProcessGroup(name string, kind GroupKind, typeOf GroupType, expr, paramExpr, whereExpr string) error
 	EvalExpr(kind, expr string) (bool, error)
-	ExecActions(program *[]string) error
+	ExecProgram(mode string, program *[]string) error
 }
 
 type Env struct {

@@ -56,18 +56,13 @@ func Run(
 		return err
 	}
 
-	workflowsReport, program, err := engine.Eval(reviewpadFile, evalEnv)
+	program, err := engine.Eval(reviewpadFile, evalEnv)
 	if err != nil {
 		return err
 	}
 
 	if !dryRun {
-		if reviewpadFile.Mode == engine.VERBOSE_MODE {
-			// ignore error
-			engine.ReportProgram(evalEnv, workflowsReport)
-		}
-
-		err := aladinoInterpreter.ExecActions(program)
+		err := aladinoInterpreter.ExecProgram(reviewpadFile.Mode, program)
 		if err != nil {
 			engine.CollectError(evalEnv, err)
 			return err
