@@ -66,7 +66,7 @@ func (i *Interpreter) EvalExpr(kind, expr string) (bool, error) {
 		return false, err
 	}
 
-	if exprType.Kind() != "BoolType" {
+	if exprType.Kind() != BOOL_TYPE {
 		return false, fmt.Errorf("expression %v is not a condition", expr)
 	}
 
