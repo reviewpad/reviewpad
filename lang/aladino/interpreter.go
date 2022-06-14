@@ -108,7 +108,7 @@ func (i *Interpreter) ExecStatement(statement *engine.Statement) error {
 		return err
 	}
 
-	err = ExecAction(i.Env, execStatAST)
+	err = execStatAST.exec(i.Env)
 	if err != nil {
 		return err
 	}

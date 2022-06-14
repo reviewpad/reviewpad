@@ -48,7 +48,3 @@ func (fc *FunctionCall) exec(env Env) error {
 
 	return action.Code(env, args)
 }
-
-func ExecAction(env Env, expr ExecExpr) error {
-	return expr.exec(env)
-}
