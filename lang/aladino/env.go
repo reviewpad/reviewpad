@@ -98,9 +98,9 @@ func NewEvalEnv(
 	pullRequest *github.PullRequest,
 	builtIns *BuiltIns,
 ) (Env, error) {
-	owner := *pullRequest.Base.Repo.Owner.Login
-	repo := *pullRequest.Base.Repo.Name
-	number := *pullRequest.Number
+	owner := utils.GetPullRequestOwnerName(pullRequest)
+	repo := utils.GetPullRequestRepoName(pullRequest)
+	number := utils.GetPullRequestNumber(pullRequest)
 
 	files, err := getPullRequestFiles(ctx, gitHubClient, owner, repo, number)
 	if err != nil {
