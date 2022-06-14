@@ -96,27 +96,35 @@ func (i *Interpreter) ExecProgram(mode string, program *engine.Program) error {
 	execLog("executing program:")
 
 	for _, statement := range program.Statements {
-		statRaw := statement.Code
-		statAST, err := Parse(statRaw)
+		err := i.ExecStatement(statement)
 		if err != nil {
 			return err
 		}
-
-		execStatAST, err := TypeCheckExec(i.Env, statAST)
-		if err != nil {
-			return err
-		}
-
-		err = ExecAction(i.Env, execStatAST)
-		if err != nil {
-			return err
-		}
-
-		execLogf("\taction %v executed", statRaw)
 	}
 
 	execLog("execution done")
 
+	return nil
+}
+
+func (i *Interpreter) ExecStatement(statement *engine.Statement) error {
+	statRaw := statement.Code
+	statAST, err := Parse(statRaw)
+	if err != nil {
+		return err
+	}
+
+	execStatAST, err := TypeCheckExec(i.Env, statAST)
+	if err != nil {
+		return err
+	}
+
+	err = ExecAction(i.Env, execStatAST)
+	if err != nil {
+		return err
+	}
+
+	execLogf("\taction %v executed", statRaw)
 	return nil
 }
 

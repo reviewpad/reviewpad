@@ -23,6 +23,7 @@ type Interpreter interface {
 	ProcessGroup(name string, kind GroupKind, typeOf GroupType, expr, paramExpr, whereExpr string) error
 	EvalExpr(kind, expr string) (bool, error)
 	ExecProgram(mode string, program *Program) error
+	ExecStatement(statement *Statement) error
 }
 
 type Env struct {
