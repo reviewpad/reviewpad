@@ -30,9 +30,9 @@ func CollectError(env *Env, err error) {
 	})
 }
 
-// Eval: main function
+// Eval: main function that generates the Aladino program to be executed
 // Pre-condition Lint(file) == nil
-func Eval(file *ReviewpadFile, env *Env) (*[]ReportWorkflowDetails, *[]string, error) {
+func Eval(file *ReviewpadFile, env *Env) (*[]string, error) {
 	execLogf("file to evaluate:\n%+v", file)
 
 	reg := regexp.MustCompile(`github\.com\/repos\/(.*)\/pulls\/\d+$$`)
@@ -52,8 +52,6 @@ func Eval(file *ReviewpadFile, env *Env) (*[]ReportWorkflowDetails, *[]string, e
 
 	rules := make(map[string]PadRule)
 
-	reportDetails := make([]ReportWorkflowDetails, 0)
-
 	execLogf("detected %v groups", len(file.Groups))
 	execLogf("detected %v labels", len(file.Labels))
 	execLogf("detected %v rules", len(file.Rules))
@@ -71,14 +69,14 @@ func Eval(file *ReviewpadFile, env *Env) (*[]ReportWorkflowDetails, *[]string, e
 		err := createLabel(env, &labelName, &label)
 		if err != nil {
 			CollectError(env, err)
-			return nil, nil, err
+			return nil, err
 		}
 	}
 
 	// lang := file.Language
 	interpreter, ok := env.Interpreters["aladino"]
 	if !ok {
-		return nil, nil, execError("no interpreter for aladino")
+		return nil, execError("no interpreter for aladino")
 	}
 
 	// process groups
@@ -86,7 +84,7 @@ func Eval(file *ReviewpadFile, env *Env) (*[]ReportWorkflowDetails, *[]string, e
 		err := interpreter.ProcessGroup(groupName, GroupKind(group.Kind), GroupType(group.Type), group.Spec, group.Param, group.Where)
 		if err != nil {
 			CollectError(env, err)
-			return nil, nil, err
+			return nil, err
 		}
 	}
 
@@ -110,14 +108,6 @@ func Eval(file *ReviewpadFile, env *Env) (*[]ReportWorkflowDetails, *[]string, e
 			continue
 		}
 
-		reportWorkflowDetails := ReportWorkflowDetails{
-			name:            workflow.Name,
-			description:     workflow.Description,
-			actRules:        []string{},
-			actActions:      []string{},
-			actExtraActions: []string{},
-		}
-
 		ruleActivatedQueue := make([]PadWorkflowRule, 0)
 		ruleDefinitionQueue := make(map[string]PadRule)
 
@@ -128,7 +118,7 @@ func Eval(file *ReviewpadFile, env *Env) (*[]ReportWorkflowDetails, *[]string, e
 			activated, err := interpreter.EvalExpr(ruleDefinition.Kind, ruleDefinition.Spec)
 			if err != nil {
 				CollectError(env, err)
-				return nil, nil, err
+				return nil, err
 			}
 
 			if activated {
@@ -142,24 +132,18 @@ func Eval(file *ReviewpadFile, env *Env) (*[]ReportWorkflowDetails, *[]string, e
 		if len(ruleActivatedQueue) > 0 && isWorkflowEligible {
 			program = append(program, workflow.Actions...)
 
-			reportWorkflowDetails.actActions = append(reportWorkflowDetails.actActions, workflow.Actions...)
-
 			for _, activatedRule := range ruleActivatedQueue {
 				program = append(program, activatedRule.ExtraActions...)
-
-				reportWorkflowDetails.actRules = append(reportWorkflowDetails.actRules, activatedRule.Rule)
-				reportWorkflowDetails.actExtraActions = append(reportWorkflowDetails.actExtraActions, activatedRule.ExtraActions...)
 			}
 
 			if !workflow.AlwaysRun {
 				triggeredWorkflow = workflow.Name
 			}
 
-			reportDetails = append(reportDetails, reportWorkflowDetails)
 		} else {
 			execLog("\tno rules activated")
 		}
 	}
 
-	return &reportDetails, &program, nil
+	return &program, nil
 }
