@@ -20,6 +20,14 @@ type Interpreter struct {
 	Env Env
 }
 
+func execLog(val string) {
+	log.Println(fmtio.Sprint("aladino", val))
+}
+
+func execLogf(format string, a ...interface{}) {
+	log.Println(fmtio.Sprintf("aladino", format, a...))
+}
+
 func (i *Interpreter) ProcessGroup(groupName string, kind engine.GroupKind, typeOf engine.GroupType, expr, paramExpr, whereExpr string) error {
 	exprAST, _ := buildGroupAST(typeOf, expr, paramExpr, whereExpr)
 	value, err := evalGroup(i.Env, exprAST)
@@ -71,14 +79,6 @@ func (i *Interpreter) EvalExpr(kind, expr string) (bool, error) {
 	}
 
 	return EvalCondition(i.Env, exprAST)
-}
-
-func execLog(val string) {
-	log.Println(fmtio.Sprint("aladino", val))
-}
-
-func execLogf(format string, a ...interface{}) {
-	log.Println(fmtio.Sprintf("aladino", format, a...))
 }
 
 func (i *Interpreter) ExecProgram(mode string, program *engine.Program) error {
