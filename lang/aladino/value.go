@@ -24,8 +24,8 @@ type IntValue struct {
 	Val int
 }
 
-func BuildIntValue(ival int) *IntValue {
-	return &IntValue{Val: ival}
+func BuildIntValue(iVal int) *IntValue {
+	return &IntValue{Val: iVal}
 }
 
 func (iVal *IntValue) Kind() string {
@@ -100,10 +100,10 @@ func (sVal *StringValue) HasKindOf(ty string) bool {
 }
 
 type TimeValue struct {
-	Val int64
+	Val int
 }
 
-func BuildTimeValue(tVal int64) *TimeValue {
+func BuildTimeValue(tVal int) *TimeValue {
 	return &TimeValue{
 		Val: tVal,
 	}

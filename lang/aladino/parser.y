@@ -46,10 +46,10 @@ prog :
 
 expr :
       TK_NOT expr        { $$ = notOp($2) }
-    | expr TK_EQ expr    { $$ = eqOp($1, $3) }
-    | expr TK_NEQ expr   { $$ = neqOp($1, $3) }
     | expr TK_AND expr   { $$ = andOp($1, $3) }
     | expr TK_OR expr    { $$ = orOp($1, $3) }
+    | expr TK_EQ expr    { $$ = eqOp($1, $3) }
+    | expr TK_NEQ expr   { $$ = neqOp($1, $3) }
     | expr TK_CMPOP expr { $$ = cmpOp($1, $2, $3) }
     | '(' expr ')'       { $$ = $2 }
     | TIMESTAMP          { $$ = timeConst($1) }

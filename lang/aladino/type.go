@@ -44,7 +44,6 @@ type ArrayType struct {
 func BuildStringType() *StringType { return &StringType{} }
 func BuildIntType() *IntType       { return &IntType{} }
 func BuildBoolType() *BoolType     { return &BoolType{} }
-func BuildTimeType() *TimeType     { return &TimeType{} }
 
 func BuildFunctionType(paramsTypes []Type, returnType Type) *FunctionType {
 	return &FunctionType{paramsTypes, returnType}

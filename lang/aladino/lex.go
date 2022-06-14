@@ -26,18 +26,22 @@ type tokenDef struct {
 
 var tokens = []tokenDef{
 	{
-		// Allowed formart:
+		// Allowed formats:
 		// YYYYMMDD - e.g. 20220405
 		// YYYY-MM-DD - e.g. 2022-04-05
 		// YYYYMMDDTHH:MM:SS - e.g. 20220405T22:01:50
 		// YYYY-MM-DDTHH:MM:SS - e.g. 2022-04-05T22:01:50
 		// Recommended format:
 		// RFC3339 (https://pkg.go.dev/time#pkg-constants)
-		regex: regexp.MustCompile(`^\d{4}-?\d{2}-?\d{2}(T\d{2}:\d{2}:\d{2})?$`),
+		regex: regexp.MustCompile(`^\d{4}-?\d{2}-?\d{2}(T\d{2}:\d{2}:\d{2})?`),
 		kind:  "timestamp",
 		token: TIMESTAMP,
 	},
 	{
+		// Examples:
+		// 15 days ago
+		// 3 months ago
+		// 8 hours ago
 		regex: regexp.MustCompile(`^[0-9]+\s(year(s?)|month(s?)|day(s?)|week(s?)|hour(s?)|minute(s?))\sago`),
 		kind:  "relativeTimestamp",
 		token: RELATIVETIMESTAMP,

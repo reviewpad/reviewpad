@@ -56,9 +56,6 @@ func (b *BinaryOp) typeinfer(env *TypeEnv) (Type, error) {
 			return BuildBoolType(), nil
 		}
 	case GREATER_EQ_THAN_OP, GREATER_THAN_OP, LESS_EQ_THAN_OP, LESS_THAN_OP:
-		if lhsType.equals(BuildTimeType()) && rhsType.equals(BuildTimeType()) {
-			return BuildBoolType(), nil
-		}
 		if lhsType.equals(BuildIntType()) && rhsType.equals(BuildIntType()) {
 			return BuildBoolType(), nil
 		}
@@ -145,8 +142,4 @@ func (a *Array) typeinfer(env *TypeEnv) (Type, error) {
 	}
 
 	return BuildArrayType(elemsTy), nil
-}
-
-func (t *TimeConst) typeinfer(env *TypeEnv) (Type, error) {
-	return BuildTimeType(), nil
 }

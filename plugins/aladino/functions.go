@@ -337,7 +337,7 @@ rules:
 */
 func createdAt() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type: aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildTimeType()),
+		Type: aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildIntType()),
 		Code: createdAtCode,
 	}
 }
@@ -348,7 +348,7 @@ func createdAtCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
 		return nil, err
 	}
 
-	return aladino.BuildTimeValue(createdAtTime.Unix()), nil
+	return aladino.BuildIntValue(int(createdAtTime.Unix())), nil
 }
 
 /*

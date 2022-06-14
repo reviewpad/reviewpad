@@ -8,10 +8,6 @@ import (
 	"fmt"
 )
 
-func (t *TimeConst) Eval(e Env) (Value, error) {
-	return BuildTimeValue(t.value), nil
-}
-
 func (u *UnaryOp) Eval(e Env) (Value, error) {
 	exprValue, exprErr := u.expr.Eval(e)
 	if exprErr != nil {

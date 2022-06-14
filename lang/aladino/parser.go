@@ -88,18 +88,18 @@ const AladinoLast = 69
 
 var AladinoAct = [...]int{
 	20, 5, 6, 29, 8, 34, 7, 11, 12, 31,
-	22, 1, 0, 3, 4, 17, 9, 0, 10, 16,
-	15, 13, 14, 21, 2, 0, 0, 18, 19, 30,
+	22, 1, 0, 3, 4, 17, 9, 0, 10, 14,
+	13, 15, 16, 21, 2, 0, 0, 18, 19, 30,
 	0, 32, 33, 0, 0, 0, 0, 23, 24, 25,
-	26, 27, 17, 0, 0, 0, 16, 15, 13, 14,
-	17, 0, 28, 17, 16, 15, 13, 14, 15, 13,
-	14, 17, 0, 0, 0, 0, 0, 13, 14,
+	26, 27, 17, 0, 0, 0, 14, 13, 15, 16,
+	17, 0, 28, 17, 14, 13, 15, 16, 13, 15,
+	16, 17, 0, 0, 0, 0, 0, 15, 16,
 }
 
 var AladinoPact = [...]int{
 	-3, -1000, 42, -3, -3, -1000, -1000, -1000, -1000, -3,
 	4, -1000, -1000, -3, -3, -3, -3, -3, -1000, 34,
-	-17, 7, -8, -1000, -1000, 53, 45, -1000, -1000, -1000,
+	-17, 7, -8, 53, 45, -1000, -1000, -1000, -1000, -1000,
 	-3, -3, -1000, -13, -1000,
 }
 
@@ -121,7 +121,7 @@ var AladinoR2 = [...]int{
 
 var AladinoChk = [...]int{
 	-1000, -3, -1, 16, 17, 4, 5, 9, 7, 19,
-	21, 10, 11, 14, 15, 13, 12, 8, -1, -1,
+	21, 10, 11, 13, 12, 14, 15, 8, -1, -1,
 	-2, -1, 6, -1, -1, -1, -1, -1, 18, 20,
 	22, 17, -2, -2, 18,
 }
@@ -508,25 +508,25 @@ Aladinodefault:
 		AladinoDollar = AladinoS[Aladinopt-3 : Aladinopt+1]
 //line lang/aladino/parser.y:49
 		{
-			AladinoVAL.ast = eqOp(AladinoDollar[1].ast, AladinoDollar[3].ast)
+			AladinoVAL.ast = andOp(AladinoDollar[1].ast, AladinoDollar[3].ast)
 		}
 	case 4:
 		AladinoDollar = AladinoS[Aladinopt-3 : Aladinopt+1]
 //line lang/aladino/parser.y:50
 		{
-			AladinoVAL.ast = neqOp(AladinoDollar[1].ast, AladinoDollar[3].ast)
+			AladinoVAL.ast = orOp(AladinoDollar[1].ast, AladinoDollar[3].ast)
 		}
 	case 5:
 		AladinoDollar = AladinoS[Aladinopt-3 : Aladinopt+1]
 //line lang/aladino/parser.y:51
 		{
-			AladinoVAL.ast = andOp(AladinoDollar[1].ast, AladinoDollar[3].ast)
+			AladinoVAL.ast = eqOp(AladinoDollar[1].ast, AladinoDollar[3].ast)
 		}
 	case 6:
 		AladinoDollar = AladinoS[Aladinopt-3 : Aladinopt+1]
 //line lang/aladino/parser.y:52
 		{
-			AladinoVAL.ast = orOp(AladinoDollar[1].ast, AladinoDollar[3].ast)
+			AladinoVAL.ast = neqOp(AladinoDollar[1].ast, AladinoDollar[3].ast)
 		}
 	case 7:
 		AladinoDollar = AladinoS[Aladinopt-3 : Aladinopt+1]

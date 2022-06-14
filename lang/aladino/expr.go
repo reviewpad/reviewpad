@@ -91,16 +91,8 @@ type BoolConst struct {
 	value bool
 }
 
-func boolConst(bval bool) *BoolConst {
-	return &BoolConst{value: bval}
-}
-
-func trueExpr() *BoolConst {
-	return boolConst(true)
-}
-
-func falseExpr() *BoolConst {
-	return boolConst(false)
+func boolConst(bVal bool) *BoolConst {
+	return &BoolConst{value: bVal}
 }
 
 func (b *BoolConst) Kind() string {
@@ -155,11 +147,7 @@ func (thisInt *IntConst) equals(other Expr) bool {
 	return thisInt.value == other.(*IntConst).value
 }
 
-type TimeConst struct {
-	value int64
-}
-
-func relativeTimeConst(val string) *TimeConst {
+func relativeTimeConst(val string) *IntConst {
 	now := time.Now()
 
 	timeUnitRegex := regexp.MustCompile(`year|month|week|day|hour|minute`)
@@ -175,38 +163,37 @@ func relativeTimeConst(val string) *TimeConst {
 	case "year":
 		var a = now.AddDate(-timeValue, 0, 0)
 		a.UnixMilli()
-		return &TimeConst{
-			// value:    now.AddDate(-timeValue, 0, 0),
-			value: now.AddDate(-timeValue, 0, 0).Unix(),
+		return &IntConst{
+			value: int(now.AddDate(-timeValue, 0, 0).Unix()),
 		}
 	case "month":
-		return &TimeConst{
-			value: now.AddDate(0, -timeValue, 0).Unix(),
+		return &IntConst{
+			value: int(now.AddDate(0, -timeValue, 0).Unix()),
 		}
 	case "day":
-		return &TimeConst{
-			value: now.AddDate(0, 0, -timeValue).Unix(),
+		return &IntConst{
+			value: int(now.AddDate(0, 0, -timeValue).Unix()),
 		}
 	case "week":
 		week := time.Hour * 24 * 7
-		return &TimeConst{
-			value: now.Add(-week * time.Duration(timeValue)).Unix(),
+		return &IntConst{
+			value: int(now.Add(-week * time.Duration(timeValue)).Unix()),
 		}
 	case "hour":
-		return &TimeConst{
-			value: now.Add(-time.Hour * time.Duration(timeValue)).Unix(),
+		return &IntConst{
+			value: int(now.Add(-time.Hour * time.Duration(timeValue)).Unix()),
 		}
 	case "minute":
-		return &TimeConst{
-			value: now.Add(-time.Minute * time.Duration(timeValue)).Unix(),
+		return &IntConst{
+			value: int(now.Add(-time.Minute * time.Duration(timeValue)).Unix()),
 		}
 	}
 
 	log.Fatalf(report.Error("Unknown time unit %v", timeUnit))
-	return &TimeConst{}
+	return &IntConst{}
 }
 
-func timeConst(val string) *TimeConst {
+func timeConst(val string) *IntConst {
 	dateValueRegex := regexp.MustCompile(`^(\d{4})-?(\d{2})-?(\d{2})`)
 	dateValue := dateValueRegex.FindSubmatch([]byte(val))
 
@@ -249,21 +236,9 @@ func timeConst(val string) *TimeConst {
 		}
 	}
 
-	return &TimeConst{
-		value: time.Date(year, time.Month(month), day, hour, minute, second, 0, time.UTC).Unix(),
+	return &IntConst{
+		value: int(time.Date(year, time.Month(month), day, hour, minute, second, 0, time.UTC).Unix()),
 	}
-}
-
-func (i *TimeConst) Kind() string {
-	return TIME_CONST
-}
-
-func (thisTime *TimeConst) equals(other Expr) bool {
-	if thisTime.Kind() != other.Kind() {
-		return false
-	}
-
-	return thisTime.value == other.(*TimeConst).value
 }
 
 type Variable struct {
