@@ -92,10 +92,11 @@ func execLogf(format string, a ...interface{}) {
 	log.Println(fmtio.Sprintf("aladino", format, a...))
 }
 
-func (i *Interpreter) ExecProgram(mode string, program *[]string) error {
+func (i *Interpreter) ExecProgram(mode string, program *engine.Program) error {
 	execLog("executing program:")
 
-	for _, statRaw := range *program {
+	for _, statement := range program.Statements {
+		statRaw := statement.Code
 		statAST, err := Parse(statRaw)
 		if err != nil {
 			return err
