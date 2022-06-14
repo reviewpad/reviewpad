@@ -2,7 +2,7 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-package engine
+package aladino
 
 import (
 	"fmt"
@@ -68,15 +68,16 @@ func buildReport(reportDetails *[]ReportWorkflowDetails) string {
 	return msg
 }
 
-func updateReportComment(env *Env, commentId int64, report string) error {
+func updateReportComment(env Env, commentId int64, report string) error {
 	gitHubComment := github.IssueComment{
 		Body: &report,
 	}
 
-	owner := utils.GetPullRequestOwnerName(env.PullRequest)
-	repo := utils.GetPullRequestRepoName(env.PullRequest)
+	pullRequest := env.GetPullRequest()
+	owner := utils.GetPullRequestOwnerName(pullRequest)
+	repo := utils.GetPullRequestRepoName(pullRequest)
 
-	_, _, err := env.Client.Issues.EditComment(env.Ctx, owner, repo, commentId, &gitHubComment)
+	_, _, err := env.GetClient().Issues.EditComment(env.GetCtx(), owner, repo, commentId, &gitHubComment)
 
 	if err != nil {
 		return reportError("error on updating report comment %v", err.(*github.ErrorResponse).Message)
@@ -85,15 +86,16 @@ func updateReportComment(env *Env, commentId int64, report string) error {
 	return nil
 }
 
-func addReportComment(env *Env, prNum int, report string) error {
+func addReportComment(env Env, prNum int, report string) error {
 	gitHubComment := github.IssueComment{
 		Body: &report,
 	}
 
-	owner := utils.GetPullRequestOwnerName(env.PullRequest)
-	repo := utils.GetPullRequestRepoName(env.PullRequest)
+	pullRequest := env.GetPullRequest()
+	owner := utils.GetPullRequestOwnerName(pullRequest)
+	repo := utils.GetPullRequestRepoName(pullRequest)
 
-	_, _, err := env.Client.Issues.CreateComment(env.Ctx, owner, repo, prNum, &gitHubComment)
+	_, _, err := env.GetClient().Issues.CreateComment(env.GetCtx(), owner, repo, prNum, &gitHubComment)
 
 	if err != nil {
 		return reportError("error on creating report comment %v", err.(*github.ErrorResponse).Message)
@@ -102,12 +104,13 @@ func addReportComment(env *Env, prNum int, report string) error {
 	return nil
 }
 
-func ReportProgram(env *Env, reportDetails *[]ReportWorkflowDetails) (string, error) {
-	owner := utils.GetPullRequestOwnerName(env.PullRequest)
-	repo := utils.GetPullRequestRepoName(env.PullRequest)
-	prNum := utils.GetPullRequestNumber(env.PullRequest)
+func ReportProgram(env Env, reportDetails *[]ReportWorkflowDetails) (string, error) {
+	pullRequest := env.GetPullRequest()
+	owner := utils.GetPullRequestOwnerName(pullRequest)
+	repo := utils.GetPullRequestRepoName(pullRequest)
+	prNum := utils.GetPullRequestNumber(pullRequest)
 
-	comments, _, err := env.Client.Issues.ListComments(env.Ctx, owner, repo, prNum, &github.IssueListCommentsOptions{
+	comments, _, err := env.GetClient().Issues.ListComments(env.GetCtx(), owner, repo, prNum, &github.IssueListCommentsOptions{
 		Sort:      github.String("created"),
 		Direction: github.String("asc"),
 	})
