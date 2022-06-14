@@ -28,30 +28,21 @@ func reportError(format string, a ...interface{}) error {
 	return fmtio.Errorf("report", format, a...)
 }
 
-func buildEmptyReport() string {
-	var sb strings.Builder
-
-	sb.WriteString(fmt.Sprintf("%v\n", reviewpadReportCommentAnnotation))
-	sb.WriteString("### Reviewpad report\n")
-	sb.WriteString("___\n")
-	sb.WriteString("No workflows activated")
-
-	msg := sb.String()
-	return msg
-}
-
 func buildReport(reportDetails *[]ReportWorkflowDetails) string {
 	var sb strings.Builder
-
-	if len(*reportDetails) == 0 {
-		return buildEmptyReport()
-	}
 
 	// Annotation
 	sb.WriteString(fmt.Sprintf("%v\n", reviewpadReportCommentAnnotation))
 	// Header
 	sb.WriteString("### Reviewpad report\n")
 	sb.WriteString("___\n")
+
+	if len(*reportDetails) == 0 {
+		sb.WriteString("No workflows activated")
+		msg := sb.String()
+		return msg
+	}
+
 	// Report
 	sb.WriteString("| Workflows <sub><sup>activated</sup></sub> | Rules <sub><sup>triggered</sup></sub> | Actions <sub><sup>ran</sub></sup> | Description |\n")
 	sb.WriteString("| - | - | - | - |\n")
