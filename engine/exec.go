@@ -23,17 +23,17 @@ func execLog(val string) {
 	log.Println(fmtio.Sprint("reviewpad", val))
 }
 
-func collectError(env *Env, err error) {
+func CollectError(env *Env, err error) {
 	env.Collector.Collect("Error", &map[string]interface{}{
 		"pullRequestUrl": env.PullRequest.URL,
 		"details":        err.Error(),
 	})
 }
 
-// Exec: main function
+// Eval: main function
 // Pre-condition Lint(file) == nil
-func Exec(file *ReviewpadFile, env *Env, flags *Flags) ([]string, error) {
-	execLogf("file to execute:\n%+v", file)
+func Eval(file *ReviewpadFile, env *Env) (*[]ReportWorkflowDetails, *[]string, error) {
+	execLogf("file to evaluate:\n%+v", file)
 
 	reg := regexp.MustCompile(`github\.com\/repos\/(.*)\/pulls\/\d+$$`)
 	matches := reg.FindStringSubmatch(*env.PullRequest.URL)
@@ -70,23 +70,23 @@ func Exec(file *ReviewpadFile, env *Env, flags *Flags) ([]string, error) {
 
 		err := createLabel(env, &labelName, &label)
 		if err != nil {
-			collectError(env, err)
-			return nil, err
+			CollectError(env, err)
+			return nil, nil, err
 		}
 	}
 
 	// lang := file.Language
 	interpreter, ok := env.Interpreters["aladino"]
 	if !ok {
-		return nil, execError("no interpreter for aladino")
+		return nil, nil, execError("no interpreter for aladino")
 	}
 
 	// process groups
 	for groupName, group := range file.Groups {
 		err := interpreter.ProcessGroup(groupName, GroupKind(group.Kind), GroupType(group.Type), group.Spec, group.Param, group.Where)
 		if err != nil {
-			collectError(env, err)
-			return nil, err
+			CollectError(env, err)
+			return nil, nil, err
 		}
 	}
 
@@ -127,8 +127,8 @@ func Exec(file *ReviewpadFile, env *Env, flags *Flags) ([]string, error) {
 
 			activated, err := interpreter.EvalExpr(ruleDefinition.Kind, ruleDefinition.Spec)
 			if err != nil {
-				collectError(env, err)
-				return nil, err
+				CollectError(env, err)
+				return nil, nil, err
 			}
 
 			if activated {
@@ -161,24 +161,5 @@ func Exec(file *ReviewpadFile, env *Env, flags *Flags) ([]string, error) {
 		}
 	}
 
-	if !flags.Dryrun {
-		if file.Mode == VERBOSE_MODE {
-			// Ignore errors in the report of the verbose mode
-			reportProgram(env, &reportDetails)
-		}
-
-		err := interpreter.ExecActions(&program)
-		if err != nil {
-			collectError(env, err)
-			return nil, err
-		}
-	}
-
-	execLogf("executed program:\n%+q", program)
-
-	env.Collector.Collect("Completed Analysis", &map[string]interface{}{
-		"pullRequestUrl": env.PullRequest.URL,
-	})
-
-	return program, nil
+	return &reportDetails, &program, nil
 }
