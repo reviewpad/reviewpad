@@ -27,8 +27,8 @@ type Env interface {
 	GetClientGQL() *githubv4.Client
 	GetCollector() collector.Collector
 	GetPullRequest() *github.PullRequest
-	GetPatch() *Patch
-	GetRegisterMap() *RegisterMap
+	GetPatch() Patch
+	GetRegisterMap() RegisterMap
 	GetBuiltIns() *BuiltIns
 }
 
@@ -38,8 +38,8 @@ type BaseEnv struct {
 	ClientGQL   *githubv4.Client
 	Collector   collector.Collector
 	PullRequest *github.PullRequest
-	Patch       *Patch
-	RegisterMap *RegisterMap
+	Patch       Patch
+	RegisterMap RegisterMap
 	BuiltIns    *BuiltIns
 }
 
@@ -63,11 +63,11 @@ func (e *BaseEnv) GetPullRequest() *github.PullRequest {
 	return e.PullRequest
 }
 
-func (e *BaseEnv) GetPatch() *Patch {
+func (e *BaseEnv) GetPatch() Patch {
 	return e.Patch
 }
 
-func (e *BaseEnv) GetRegisterMap() *RegisterMap {
+func (e *BaseEnv) GetRegisterMap() RegisterMap {
 	return e.RegisterMap
 }
 
@@ -127,8 +127,8 @@ func NewEvalEnv(
 		ClientGQL:   gitHubClientGQL,
 		Collector:   collector,
 		PullRequest: pullRequest,
-		Patch:       &patch,
-		RegisterMap: &registerMap,
+		Patch:       patch,
+		RegisterMap: registerMap,
 		BuiltIns:    builtIns,
 	}
 

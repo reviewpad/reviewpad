@@ -443,7 +443,7 @@ func fileCount() *aladino.BuiltInFunction {
 
 func fileCountCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
 	patch := e.GetPatch()
-	return aladino.BuildIntValue(len(*patch)), nil
+	return aladino.BuildIntValue(len(patch)), nil
 }
 
 /*
@@ -497,7 +497,7 @@ func patchHasCodePatternCode(e aladino.Env, args []aladino.Value) (aladino.Value
 	arg := args[0].(*aladino.StringValue)
 	patch := e.GetPatch()
 
-	for _, file := range *patch {
+	for _, file := range patch {
 		if file == nil {
 			continue
 		}
@@ -574,7 +574,7 @@ func patchHasFileExtensionsCode(e aladino.Env, args []aladino.Value) (aladino.Va
 	}
 
 	patch := e.GetPatch()
-	for fp := range *patch {
+	for fp := range patch {
 		fpExt := utils.FileExt(fp)
 		normalizedExt := strings.ToLower(fpExt)
 
@@ -637,7 +637,7 @@ func patchHasFileNameCode(e aladino.Env, args []aladino.Value) (aladino.Value, e
 	fileNameStr := args[0].(*aladino.StringValue)
 
 	patch := e.GetPatch()
-	for fp := range *patch {
+	for fp := range patch {
 		if fp == fileNameStr.Val {
 			return aladino.BuildTrueValue(), nil
 		}
@@ -697,7 +697,7 @@ func patchHasFilePatternCode(e aladino.Env, args []aladino.Value) (aladino.Value
 	filePatternRegex := args[0].(*aladino.StringValue)
 
 	patch := e.GetPatch()
-	for fp := range *patch {
+	for fp := range patch {
 		re, err := doublestar.Match(filePatternRegex.Val, fp)
 		if err != nil {
 			return aladino.BuildFalseValue(), err
@@ -1680,7 +1680,7 @@ func group() *aladino.BuiltInFunction {
 func groupCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
 	groupName := args[0].(*aladino.StringValue).Val
 
-	if val, ok := (*e.GetRegisterMap())[groupName]; ok {
+	if val, ok := e.GetRegisterMap()[groupName]; ok {
 		return val, nil
 	}
 

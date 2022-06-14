@@ -32,7 +32,7 @@ func (i *Interpreter) ProcessGroup(groupName string, kind engine.GroupKind, type
 	exprAST, _ := buildGroupAST(typeOf, expr, paramExpr, whereExpr)
 	value, err := evalGroup(i.Env, exprAST)
 
-	(*i.Env.GetRegisterMap())[groupName] = value
+	i.Env.GetRegisterMap()[groupName] = value
 
 	return err
 }
