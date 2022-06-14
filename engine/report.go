@@ -102,7 +102,7 @@ func addReportComment(env *Env, prNum int, report string) error {
 	return nil
 }
 
-func reportProgram(env *Env, reportDetails *[]ReportWorkflowDetails) (string, error) {
+func ReportProgram(env *Env, reportDetails *[]ReportWorkflowDetails) (string, error) {
 	owner := utils.GetPullRequestOwnerName(env.PullRequest)
 	repo := utils.GetPullRequestRepoName(env.PullRequest)
 	prNum := utils.GetPullRequestNumber(env.PullRequest)

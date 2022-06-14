@@ -56,10 +56,29 @@ func Run(
 		return err
 	}
 
-	_, err = engine.Exec(reviewpadFile, evalEnv, &engine.Flags{Dryrun: dryRun})
+	workflowsReport, program, err := engine.Eval(reviewpadFile, evalEnv)
 	if err != nil {
 		return err
 	}
+
+	if !dryRun {
+		if reviewpadFile.Mode == engine.VERBOSE_MODE {
+			// ignore error
+			engine.ReportProgram(evalEnv, workflowsReport)
+		}
+
+		err := aladinoInterpreter.ExecActions(program)
+		if err != nil {
+			engine.CollectError(evalEnv, err)
+			return err
+		}
+	}
+
+	log.Println(fmtio.Sprintf("reviewpad", "executed program:\n%+q", program))
+
+	evalEnv.Collector.Collect("Completed Analysis", &map[string]interface{}{
+		"pullRequestUrl": evalEnv.PullRequest.URL,
+	})
 
 	return nil
 }
