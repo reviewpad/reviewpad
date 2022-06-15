@@ -48,8 +48,8 @@ func (c *collector) Collect(eventName string, properties map[string]interface{})
 	if c.Token == "" {
 		return nil
 	}
-	(*properties)["runnerId"] = c.RunnerId
-	(*properties)["order"] = c.Order
+	properties["runnerId"] = c.RunnerId
+	properties["order"] = c.Order
 	c.Order = c.Order + 1
 	return c.Client.Track(c.Id, eventName, &mixpanel.Event{
 		Properties: properties,
