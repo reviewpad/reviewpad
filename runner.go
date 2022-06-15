@@ -68,7 +68,7 @@ func Run(
 
 	log.Println(fmtio.Sprintf("reviewpad", "executed program:\n%+q", program))
 
-	evalEnv.Collector.Collect("Completed Analysis", &map[string]interface{}{
+	evalEnv.Collector.Collect("Completed Analysis", map[string]interface{}{
 		"pullRequestUrl": evalEnv.PullRequest.URL,
 	})
 
