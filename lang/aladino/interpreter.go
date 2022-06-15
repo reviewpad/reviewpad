@@ -81,7 +81,7 @@ func (i *Interpreter) EvalExpr(kind, expr string) (bool, error) {
 	return EvalCondition(i.Env, exprAST)
 }
 
-func (i *Interpreter) ExecProgram(mode string, program *engine.Program) error {
+func (i *Interpreter) ExecProgram(program *engine.Program) error {
 	execLog("executing program:")
 
 	for _, statement := range program.Statements {
@@ -90,8 +90,6 @@ func (i *Interpreter) ExecProgram(mode string, program *engine.Program) error {
 			return err
 		}
 	}
-
-	i.Report(mode)
 
 	execLog("execution done")
 
@@ -122,6 +120,8 @@ func (i *Interpreter) ExecStatement(statement *engine.Statement) error {
 }
 
 func (i *Interpreter) Report(mode string) error {
+	execLog("generating report")
+
 	if mode == engine.SILENT_MODE {
 		return nil
 	}

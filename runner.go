@@ -59,14 +59,18 @@ func Run(
 	}
 
 	if !dryRun {
-		err := aladinoInterpreter.ExecProgram(reviewpadFile.Mode, program)
+		err := aladinoInterpreter.ExecProgram(program)
+		if err != nil {
+			engine.CollectError(evalEnv, err)
+			return err
+		}
+
+		err = aladinoInterpreter.Report(reviewpadFile.Mode)
 		if err != nil {
 			engine.CollectError(evalEnv, err)
 			return err
 		}
 	}
-
-	log.Println(fmtio.Sprintf("reviewpad", "executed program:\n%+q", program))
 
 	evalEnv.Collector.Collect("Completed Analysis", map[string]interface{}{
 		"pullRequestUrl": evalEnv.PullRequest.URL,

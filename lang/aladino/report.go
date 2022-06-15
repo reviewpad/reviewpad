@@ -20,10 +20,10 @@ type Report struct {
 }
 
 type ReportWorkflowDetails struct {
-	name        string
-	description string
-	rules       map[string]bool
-	actions     []string
+	Name        string
+	Description string
+	Rules       map[string]bool
+	Actions     []string
 }
 
 var reviewpadReportCommentAnnotation = "<!--@annotation-reviewpad-->"
@@ -33,9 +33,9 @@ func reportError(format string, a ...interface{}) error {
 }
 
 func mergeReportWorkflowDetails(left, right ReportWorkflowDetails) ReportWorkflowDetails {
-	for rule, _ := range right.rules {
-		if _, ok := left.rules[rule]; !ok {
-			left.rules[rule] = true
+	for rule, _ := range right.Rules {
+		if _, ok := left.Rules[rule]; !ok {
+			left.Rules[rule] = true
 		}
 	}
 
@@ -51,10 +51,10 @@ func (report *Report) addToReport(statement *engine.Statement) {
 	}
 
 	reportWorkflow := ReportWorkflowDetails{
-		name:        workflowName,
-		description: statement.Metadata.Workflow.Description,
-		rules:       rules,
-		actions:     []string{statement.Code},
+		Name:        workflowName,
+		Description: statement.Metadata.Workflow.Description,
+		Rules:       rules,
+		Actions:     []string{statement.Code},
 	}
 
 	workflow, ok := report.WorkflowDetails[workflowName]
@@ -86,16 +86,16 @@ func buildReport(reportDetails map[string]ReportWorkflowDetails) string {
 
 	for _, workflow := range reportDetails {
 		actRules := ""
-		for _, actRule := range workflow.rules {
+		for _, actRule := range workflow.Rules {
 			actRules += fmt.Sprintf("%v<br>", actRule)
 		}
 
 		actActions := ""
-		for _, actAction := range workflow.actions {
+		for _, actAction := range workflow.Actions {
 			actActions += fmt.Sprintf("`%v`<br>", actAction)
 		}
 
-		sb.WriteString(fmt.Sprintf("| %v | %v | %v | %v |\n", workflow.name, actRules, actActions, workflow.description))
+		sb.WriteString(fmt.Sprintf("| %v | %v | %v | %v |\n", workflow.Name, actRules, actActions, workflow.Description))
 	}
 
 	msg := sb.String()
