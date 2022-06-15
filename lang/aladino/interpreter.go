@@ -122,11 +122,29 @@ func (i *Interpreter) ExecStatement(statement *engine.Statement) error {
 func (i *Interpreter) Report(mode string) error {
 	execLog("generating report")
 
+	var err error
+
+	env := i.Env
+
+	comment, err := FindReportComment(env)
+	if err != nil {
+		return err
+	}
+
 	if mode == engine.SILENT_MODE {
+		if comment != nil {
+			return DeleteReportComment(env, *comment.ID)
+		}
 		return nil
 	}
 
-	return ReportProgram(i.Env)
+	report := buildReport(env.GetReport())
+
+	if comment == nil {
+		return AddReportComment(env, report)
+	}
+
+	return UpdateReportComment(env, *comment.ID, report)
 }
 
 func NewInterpreter(

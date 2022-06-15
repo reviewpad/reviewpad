@@ -26,7 +26,7 @@ type ReportWorkflowDetails struct {
 	Actions     []string
 }
 
-var reviewpadReportCommentAnnotation = "<!--@annotation-reviewpad-->"
+const ReviewpadReportCommentAnnotation = "<!--@annotation-reviewpad-->"
 
 func reportError(format string, a ...interface{}) error {
 	return fmtio.Errorf("report", format, a...)
@@ -65,14 +65,36 @@ func (report *Report) addToReport(statement *engine.Statement) {
 	}
 }
 
-func buildReport(reportDetails map[string]ReportWorkflowDetails) string {
+func ReportHeader() string {
 	var sb strings.Builder
 
 	// Annotation
-	sb.WriteString(fmt.Sprintf("%v\n", reviewpadReportCommentAnnotation))
+	sb.WriteString(fmt.Sprintf("%v\n", ReviewpadReportCommentAnnotation))
 	// Header
-	sb.WriteString("### Reviewpad report\n")
-	sb.WriteString("___\n")
+	sb.WriteString("**Reviewpad Report**\n\n")
+
+	return sb.String()
+}
+
+func buildReport(report *Report) string {
+	var sb strings.Builder
+
+	sb.WriteString(ReportHeader())
+	sb.WriteString(BuildVerboseReport(report))
+
+	return sb.String()
+}
+
+func BuildVerboseReport(report *Report) string {
+	if report == nil {
+		return ""
+	}
+
+	var sb strings.Builder
+
+	sb.WriteString(":scroll: **Explanation**\n")
+
+	reportDetails := report.WorkflowDetails
 
 	if len(reportDetails) == 0 {
 		sb.WriteString("No workflows activated")
@@ -98,11 +120,24 @@ func buildReport(reportDetails map[string]ReportWorkflowDetails) string {
 		sb.WriteString(fmt.Sprintf("| %v | %v | %v | %v |\n", workflow.Name, actRules, actActions, workflow.Description))
 	}
 
-	msg := sb.String()
-	return msg
+	return sb.String()
 }
 
-func updateReportComment(env Env, commentId int64, report string) error {
+func DeleteReportComment(env Env, commentId int64) error {
+	pullRequest := env.GetPullRequest()
+	owner := utils.GetPullRequestOwnerName(pullRequest)
+	repo := utils.GetPullRequestRepoName(pullRequest)
+
+	_, err := env.GetClient().Issues.DeleteComment(env.GetCtx(), owner, repo, commentId)
+
+	if err != nil {
+		return reportError("error on deleting report comment %v", err.(*github.ErrorResponse).Message)
+	}
+
+	return nil
+}
+
+func UpdateReportComment(env Env, commentId int64, report string) error {
 	gitHubComment := github.IssueComment{
 		Body: &report,
 	}
@@ -120,7 +155,7 @@ func updateReportComment(env Env, commentId int64, report string) error {
 	return nil
 }
 
-func addReportComment(env Env, prNum int, report string) error {
+func AddReportComment(env Env, report string) error {
 	gitHubComment := github.IssueComment{
 		Body: &report,
 	}
@@ -128,6 +163,7 @@ func addReportComment(env Env, prNum int, report string) error {
 	pullRequest := env.GetPullRequest()
 	owner := utils.GetPullRequestOwnerName(pullRequest)
 	repo := utils.GetPullRequestRepoName(pullRequest)
+	prNum := utils.GetPullRequestNumber(pullRequest)
 
 	_, _, err := env.GetClient().Issues.CreateComment(env.GetCtx(), owner, repo, prNum, &gitHubComment)
 
@@ -138,8 +174,7 @@ func addReportComment(env Env, prNum int, report string) error {
 	return nil
 }
 
-func ReportProgram(env Env) error {
-	reportDetails := env.GetReport().WorkflowDetails
+func FindReportComment(env Env) (*github.IssueComment, error) {
 	pullRequest := env.GetPullRequest()
 	owner := utils.GetPullRequestOwnerName(pullRequest)
 	repo := utils.GetPullRequestRepoName(pullRequest)
@@ -149,12 +184,11 @@ func ReportProgram(env Env) error {
 		Sort:      github.String("created"),
 		Direction: github.String("asc"),
 	})
-
 	if err != nil {
-		return reportError("error getting issues %v", err.(*github.ErrorResponse).Message)
+		return nil, reportError("error getting issues %v", err.(*github.ErrorResponse).Message)
 	}
 
-	reviewpadCommentAnnotationRegex := regexp.MustCompile(fmt.Sprintf("^%v", reviewpadReportCommentAnnotation))
+	reviewpadCommentAnnotationRegex := regexp.MustCompile(fmt.Sprintf("^%v", ReviewpadReportCommentAnnotation))
 
 	var reviewpadExistingComment *github.IssueComment
 
@@ -166,17 +200,5 @@ func ReportProgram(env Env) error {
 		}
 	}
 
-	report := buildReport(reportDetails)
-
-	if reviewpadExistingComment == nil {
-		err = addReportComment(env, prNum, report)
-	} else {
-		err = updateReportComment(env, *reviewpadExistingComment.ID, report)
-	}
-
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return reviewpadExistingComment, nil
 }
