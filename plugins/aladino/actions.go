@@ -337,6 +337,63 @@ func assignReviewerCode(e aladino.Env, args []aladino.Value) error {
 /*
 reviewpad-an: builtin-docs
 
+## close
+______________
+
+**Description**:
+
+Closes a pull request.
+
+**Parameters**:
+
+*none*
+
+**Return value**:
+
+*none*
+
+**Examples**:
+
+```yml
+$close()
+```
+
+A `revy.yml` example:
+
+```yml
+workflows:
+  - name: close-pull-request
+    description: Close pull request
+    if:
+      - rule: stalePullRequest
+    then:
+      - $close()
+```
+*/
+func close() *aladino.BuiltInAction {
+	return &aladino.BuiltInAction{
+		Type: aladino.BuildFunctionType([]aladino.Type{}, nil),
+		Code: closeCode,
+	}
+}
+
+func closeCode(e aladino.Env, args []aladino.Value) error {
+	pullRequest := e.GetPullRequest()
+
+	prNum := utils.GetPullRequestNumber(pullRequest)
+	owner := utils.GetPullRequestOwnerName(pullRequest)
+	repo := utils.GetPullRequestRepoName(pullRequest)
+
+	closedState := "closed"
+	pullRequest.State = &closedState
+	_, _, err := e.GetClient().PullRequests.Edit(e.GetCtx(), owner, repo, prNum, pullRequest)
+
+	return err
+}
+
+/*
+reviewpad-an: builtin-docs
+
 ## comment
 ______________
 
