@@ -30,6 +30,7 @@ type Env interface {
 	GetPatch() Patch
 	GetRegisterMap() RegisterMap
 	GetBuiltIns() *BuiltIns
+	GetReport() *Report
 }
 
 type BaseEnv struct {
@@ -41,6 +42,7 @@ type BaseEnv struct {
 	Patch       Patch
 	RegisterMap RegisterMap
 	BuiltIns    *BuiltIns
+	Report      *Report
 }
 
 func (e *BaseEnv) GetCtx() context.Context {
@@ -73,6 +75,10 @@ func (e *BaseEnv) GetRegisterMap() RegisterMap {
 
 func (e *BaseEnv) GetBuiltIns() *BuiltIns {
 	return e.BuiltIns
+}
+
+func (e *BaseEnv) GetReport() *Report {
+	return e.Report
 }
 
 func NewTypeEnv(e Env) *TypeEnv {
@@ -120,6 +126,7 @@ func NewEvalEnv(
 
 	patch := Patch(patchMap)
 	registerMap := RegisterMap(make(map[string]Value))
+	report := &Report{WorkflowDetails: make(map[string]ReportWorkflowDetails, 0)}
 
 	input := &BaseEnv{
 		Ctx:         ctx,
@@ -130,6 +137,7 @@ func NewEvalEnv(
 		Patch:       patch,
 		RegisterMap: registerMap,
 		BuiltIns:    builtIns,
+		Report:      report,
 	}
 
 	return input, nil
