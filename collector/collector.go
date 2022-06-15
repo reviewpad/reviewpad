@@ -10,7 +10,7 @@ import (
 )
 
 type Collector interface {
-	Collect(eventName string, properties *map[string]interface{}) error
+	Collect(eventName string, properties map[string]interface{}) error
 }
 
 type collector struct {
@@ -44,7 +44,7 @@ func NewCollector(token string, id string) Collector {
 	return &c
 }
 
-func (c *collector) Collect(eventName string, properties *map[string]interface{}) error {
+func (c *collector) Collect(eventName string, properties map[string]interface{}) error {
 	if c.Token == "" {
 		return nil
 	}
@@ -52,6 +52,6 @@ func (c *collector) Collect(eventName string, properties *map[string]interface{}
 	(*properties)["order"] = c.Order
 	c.Order = c.Order + 1
 	return c.Client.Track(c.Id, eventName, &mixpanel.Event{
-		Properties: *properties,
+		Properties: properties,
 	})
 }

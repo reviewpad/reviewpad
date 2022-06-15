@@ -41,7 +41,7 @@ func (fc *FunctionCall) exec(env Env) error {
 		return fmt.Errorf("exec: %v not found. are you sure this is a built-in function?", fc.name.ident)
 	}
 
-	env.GetCollector().Collect("Ran Builtin", &map[string]interface{}{
+	env.GetCollector().Collect("Ran Builtin", map[string]interface{}{
 		"pullRequestUrl": env.GetPullRequest().URL,
 		"builtin":        fc.name.ident,
 	})

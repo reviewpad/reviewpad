@@ -24,7 +24,7 @@ func execLog(val string) {
 }
 
 func CollectError(env *Env, err error) {
-	env.Collector.Collect("Error", &map[string]interface{}{
+	env.Collector.Collect("Error", map[string]interface{}{
 		"pullRequestUrl": env.PullRequest.URL,
 		"details":        err.Error(),
 	})
@@ -40,7 +40,7 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 	reg := regexp.MustCompile(`github\.com\/repos\/(.*)\/pulls\/\d+$$`)
 	matches := reg.FindStringSubmatch(*env.PullRequest.URL)
 
-	env.Collector.Collect("Trigger Analysis", &map[string]interface{}{
+	env.Collector.Collect("Trigger Analysis", map[string]interface{}{
 		"pullRequestUrl": env.PullRequest.URL,
 		"project":        matches[1],
 		"version":        file.Version,
