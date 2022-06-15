@@ -10,16 +10,20 @@ import (
 	"strings"
 
 	"github.com/google/go-github/v42/github"
+	"github.com/reviewpad/reviewpad/engine"
 	"github.com/reviewpad/reviewpad/utils"
 	"github.com/reviewpad/reviewpad/utils/fmtio"
 )
 
+type Report struct {
+	WorkflowDetails map[string]ReportWorkflowDetails
+}
+
 type ReportWorkflowDetails struct {
-	name            string
-	description     string
-	actRules        []string
-	actActions      []string
-	actExtraActions []string
+	name        string
+	description string
+	rules       map[string]bool
+	actions     []string
 }
 
 var reviewpadReportCommentAnnotation = "<!--@annotation-reviewpad-->"
@@ -28,7 +32,40 @@ func reportError(format string, a ...interface{}) error {
 	return fmtio.Errorf("report", format, a...)
 }
 
-func buildReport(reportDetails *[]ReportWorkflowDetails) string {
+func mergeReportWorkflowDetails(left, right ReportWorkflowDetails) ReportWorkflowDetails {
+	for rule, _ := range right.rules {
+		if _, ok := left.rules[rule]; !ok {
+			left.rules[rule] = true
+		}
+	}
+
+	return left
+}
+
+func (report *Report) addToReport(statement *engine.Statement) {
+	workflowName := statement.Metadata.Workflow.Name
+
+	rules := make(map[string]bool, len(statement.Metadata.TriggeredBy))
+	for _, rule := range statement.Metadata.TriggeredBy {
+		rules[rule.Rule] = true
+	}
+
+	reportWorkflow := ReportWorkflowDetails{
+		name:        workflowName,
+		description: statement.Metadata.Workflow.Description,
+		rules:       rules,
+		actions:     []string{statement.Code},
+	}
+
+	workflow, ok := report.WorkflowDetails[workflowName]
+	if !ok {
+		report.WorkflowDetails[workflowName] = reportWorkflow
+	} else {
+		report.WorkflowDetails[workflowName] = mergeReportWorkflowDetails(workflow, reportWorkflow)
+	}
+}
+
+func buildReport(reportDetails map[string]ReportWorkflowDetails) string {
 	var sb strings.Builder
 
 	// Annotation
@@ -37,7 +74,7 @@ func buildReport(reportDetails *[]ReportWorkflowDetails) string {
 	sb.WriteString("### Reviewpad report\n")
 	sb.WriteString("___\n")
 
-	if len(*reportDetails) == 0 {
+	if len(reportDetails) == 0 {
 		sb.WriteString("No workflows activated")
 		msg := sb.String()
 		return msg
@@ -47,18 +84,15 @@ func buildReport(reportDetails *[]ReportWorkflowDetails) string {
 	sb.WriteString("| Workflows <sub><sup>activated</sup></sub> | Rules <sub><sup>triggered</sup></sub> | Actions <sub><sup>ran</sub></sup> | Description |\n")
 	sb.WriteString("| - | - | - | - |\n")
 
-	for _, workflow := range *reportDetails {
+	for _, workflow := range reportDetails {
 		actRules := ""
-		for _, actRule := range workflow.actRules {
+		for _, actRule := range workflow.rules {
 			actRules += fmt.Sprintf("%v<br>", actRule)
 		}
 
 		actActions := ""
-		for _, actAction := range workflow.actActions {
+		for _, actAction := range workflow.actions {
 			actActions += fmt.Sprintf("`%v`<br>", actAction)
-		}
-		for _, actExtraAction := range workflow.actExtraActions {
-			actActions += fmt.Sprintf("[e] `%v`<br>", actExtraAction)
 		}
 
 		sb.WriteString(fmt.Sprintf("| %v | %v | %v | %v |\n", workflow.name, actRules, actActions, workflow.description))
@@ -104,7 +138,8 @@ func addReportComment(env Env, prNum int, report string) error {
 	return nil
 }
 
-func ReportProgram(env Env, reportDetails *[]ReportWorkflowDetails) (string, error) {
+func ReportProgram(env Env) error {
+	reportDetails := env.GetReport().WorkflowDetails
 	pullRequest := env.GetPullRequest()
 	owner := utils.GetPullRequestOwnerName(pullRequest)
 	repo := utils.GetPullRequestRepoName(pullRequest)
@@ -116,7 +151,7 @@ func ReportProgram(env Env, reportDetails *[]ReportWorkflowDetails) (string, err
 	})
 
 	if err != nil {
-		return "", reportError("error getting issues %v", err.(*github.ErrorResponse).Message)
+		return reportError("error getting issues %v", err.(*github.ErrorResponse).Message)
 	}
 
 	reviewpadCommentAnnotationRegex := regexp.MustCompile(fmt.Sprintf("^%v", reviewpadReportCommentAnnotation))
@@ -140,8 +175,8 @@ func ReportProgram(env Env, reportDetails *[]ReportWorkflowDetails) (string, err
 	}
 
 	if err != nil {
-		return "", err
+		return err
 	}
 
-	return report, nil
+	return nil
 }

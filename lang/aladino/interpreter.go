@@ -91,6 +91,8 @@ func (i *Interpreter) ExecProgram(mode string, program *engine.Program) error {
 		}
 	}
 
+	i.Report(mode)
+
 	execLog("execution done")
 
 	return nil
@@ -113,8 +115,18 @@ func (i *Interpreter) ExecStatement(statement *engine.Statement) error {
 		return err
 	}
 
+	i.Env.GetReport().addToReport(statement)
+
 	execLogf("\taction %v executed", statRaw)
 	return nil
+}
+
+func (i *Interpreter) Report(mode string) error {
+	if mode == engine.SILENT_MODE {
+		return nil
+	}
+
+	return ReportProgram(i.Env)
 }
 
 func NewInterpreter(
