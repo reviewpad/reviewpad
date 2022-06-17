@@ -68,7 +68,7 @@ The list of GitHub user login that are assigned to the pull request.
 $assignees()
 ```
 
-A `reviewpad.yml.yml` example:
+A `reviewpad.yml` example:
 
 ```yml
 rules:
@@ -122,7 +122,7 @@ The GitHub login of the pull request author.
 $author()
 ```
 
-A `reviewpad.yml.yml` example:
+A `reviewpad.yml` example:
 
 ```yml
 rules:
@@ -170,7 +170,7 @@ The name of the branch the pull request should be pulled into.
 $base()
 ```
 
-A `reviewpad.yml.yml` example:
+A `reviewpad.yml` example:
 
 ```yml
 rules:
@@ -217,7 +217,7 @@ The total number of commits in the pull request.
 $commitCount()
 ```
 
-A `reviewpad.yml.yml` example:
+A `reviewpad.yml` example:
 
 ```yml
 rules:
@@ -264,7 +264,7 @@ The list of commit messages of the pull request.
 $commits()
 ```
 
-A `reviewpad.yml.yml` example:
+A `reviewpad.yml` example:
 
 ```yml
 rules:
@@ -325,7 +325,7 @@ The number of seconds elapsed since January 1, 1970 UTC.
 $createdAt()
 ```
 
-A `reviewpad.yml.yml` example:
+A `reviewpad.yml` example:
 
 ```yml
 rules:
@@ -377,7 +377,7 @@ The description of the pull request.
 $description()
 ```
 
-A `reviewpad.yml.yml` example:
+A `reviewpad.yml` example:
 
 ```yml
 rules:
@@ -424,7 +424,7 @@ The total number of files changed in the patch.
 $filesCount()
 ```
 
-A `reviewpad.yml.yml` example:
+A `reviewpad.yml` example:
 
 ```yml
 rules:
@@ -476,7 +476,7 @@ Returns `true` if the patch matches the code query, `false` otherwise.
 $codePattern("placeBet\(.*\)")
 ```
 
-A `reviewpad.yml.yml` example:
+A `reviewpad.yml` example:
 
 ```yml
 rules:
@@ -545,7 +545,7 @@ Returns `true` if all file extensions in the patch are included in the list, `fa
 $hasFileExtensions([".test.ts"])
 ```
 
-A `reviewpad.yml.yml` example:
+A `reviewpad.yml` example:
 
 ```yml
 rules:
@@ -616,7 +616,7 @@ The provided filename and the filename on the patch need to be exactly the same 
 $hasFileName("placeBet.js")
 ```
 
-A `reviewpad.yml.yml` example:
+A `reviewpad.yml` example:
 
 ```yml
 rules:
@@ -676,7 +676,7 @@ Returns `true` if any of the files on patch matches the provided file pattern, `
 $hasFilePattern("src/transactions/**")
 ```
 
-A `reviewpad.yml.yml` example:
+A `reviewpad.yml` example:
 
 ```yml
 rules:
@@ -738,7 +738,7 @@ Returns `true` if it has a linear history. `false` otherwise.
 $hasLinearHistory()
 ```
 
-A `reviewpad.yml.yml` example:
+A `reviewpad.yml` example:
 
 ```yml
 rules:
@@ -800,7 +800,7 @@ Returns `true` if it has linked issues. `false` otherwise.
 $hasLinkedIssues()
 ```
 
-A `reviewpad.yml.yml` example:
+A `reviewpad.yml` example:
 
 ```yml
 rules:
@@ -873,7 +873,7 @@ The name of the branch where the pull request changes are implemented.
 $head()
 ```
 
-A `reviewpad.yml.yml` example:
+A `reviewpad.yml` example:
 
 ```yml
 rules:
@@ -922,7 +922,7 @@ A boolean al.Value which is `true` if the pull request is `Draft`, `false` other
 $isDraft()
 ```
 
-A `reviewpad.yml.yml` example:
+A `reviewpad.yml` example:
 
 ```yml
 rules:
@@ -974,7 +974,7 @@ The list of labels of the pull request.
 $labels()
 ```
 
-A `reviewpad.yml.yml` example:
+A `reviewpad.yml` example:
 
 ```yml
 rules:
@@ -1028,7 +1028,7 @@ The milestone title associated to the pull request.
 $milestone()
 ```
 
-A `reviewpad.yml.yml` example:
+A `reviewpad.yml` example:
 
 ```yml
 rules:
@@ -1076,7 +1076,7 @@ The list of GitHub user login or team slug that were requested to review the pul
 $reviewers()
 ```
 
-A `reviewpad.yml.yml` example:
+A `reviewpad.yml` example:
 
 ```yml
 rules:
@@ -1145,7 +1145,7 @@ The sum of all changed lines in the patch.
 $size()
 ```
 
-A `reviewpad.yml.yml` example:
+A `reviewpad.yml` example:
 
 ```yml
 rules:
@@ -1193,7 +1193,7 @@ The title of the pull request.
 $title()
 ```
 
-A `reviewpad.yml.yml` example:
+A `reviewpad.yml` example:
 
 ```yml
 rules:
@@ -1251,7 +1251,7 @@ The list of all members of the organization to where the pull request running ag
 $organization()
 ````
 
-A `reviewpad.yml.yml` example:
+A `reviewpad.yml` example:
 
 ```yml
 rules:
@@ -1321,7 +1321,7 @@ Returns the list of all team and child teams members GitHub login.
 $team("devops")
 ```
 
-A `reviewpad.yml.yml` example:
+A `reviewpad.yml` example:
 
 ```yml
 rules:
@@ -1391,7 +1391,7 @@ The total number of created pull requests created by GitHub user login.
 $totalCreatedPullRequests($author())
 ```
 
-A `reviewpad.yml.yml` example:
+A `reviewpad.yml` example:
 
 ```yml
 rules:
@@ -1470,7 +1470,7 @@ Returns a new slice by appending the slices passed to it.
 $append(["a", "b"], ["c"])    # ["a", "b", "c"]
 ```
 
-A `reviewpad.yml.yml` example:
+A `reviewpad.yml` example:
 
 ```yml
 groups:
@@ -1529,7 +1529,7 @@ $contains("Testing string contains", "string contains")     #true
 $contains("Testing string contains", "test")                #false
 ```
 
-A `reviewpad.yml.yml` example:
+A `reviewpad.yml` example:
 
 ```yml
 rules:
@@ -1583,7 +1583,7 @@ $isElementOf("john", ["maria", "john"])  # true
 $isElementOf(3, [1, 2])                  # false
 ```
 
-A `reviewpad.yml.yml` example:
+A `reviewpad.yml` example:
 
 ```yml
 rules:
@@ -1632,7 +1632,7 @@ ______________
 
 **Description**:
 
-Lists all members that belong to the provided group. This group needs to be defined in the same `reviewpad.yml.yml` file.
+Lists all members that belong to the provided group. This group needs to be defined in the same `reviewpad.yml` file.
 
 `group` is a way to refer to a defined set of users in a short way.
 
@@ -1654,7 +1654,7 @@ Returns all members from the group.
 $group("techLeads")
 ```
 
-A `reviewpad.yml.yml` example:
+A `reviewpad.yml` example:
 
 ```yml
 groups:
@@ -1685,6 +1685,73 @@ func groupCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
 	}
 
 	return nil, fmt.Errorf("getGroup: no group with name %v in state %+q", groupName, e.GetRegisterMap())
+}
+
+/*
+reviewpad-an: builtin-docs
+
+## rule
+______________
+
+**Description**:
+
+Evaluates a rule. This rule needs to be defined in the same `reviewpad.yml` file.
+
+**Parameters**:
+
+| variable   | type   | description   |
+| ---------- | ------ | ------------- |
+| `ruleName` | string | the rule name |
+
+**Return value**:
+
+`bool`
+
+Returns the evaluation of the rule.
+
+**Examples**:
+
+```yml
+$rule("isSmall")
+```
+
+A `reviewpad.yml` example:
+
+```yml
+rules:
+  isSmall:
+    description: Small pull request
+    kind: patch
+    spec: '$size() > 10'
+
+  isNotSmall:
+    description: Not a small pull request
+	kind: patch
+	spec: '!$rule(isSmall)'
+```
+*/
+func rule() *aladino.BuiltInFunction {
+	return &aladino.BuiltInFunction{
+		Type: aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, aladino.BuildBoolType()),
+		Code: ruleCode,
+	}
+}
+
+func ruleCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
+	ruleName := args[0].(*aladino.StringValue).Val
+
+	internalRuleName := aladino.BuildInternalRuleName(ruleName)
+
+	if spec, ok := e.GetRegisterMap()[internalRuleName]; ok {
+		specRaw := spec.(*aladino.StringValue).Val
+		result, err := aladino.EvalExpr(e, "patch", specRaw)
+		if err != nil {
+			return nil, err
+		}
+		return aladino.BuildBoolValue(result), nil
+	}
+
+	return nil, fmt.Errorf("getRule: no rule with name %v in state %+q", ruleName, e.GetRegisterMap())
 }
 
 /*

@@ -63,13 +63,24 @@ func evalGroup(env Env, expr Expr) (Value, error) {
 	return Eval(env, expr)
 }
 
-func (i *Interpreter) EvalExpr(kind, expr string) (bool, error) {
+func BuildInternalRuleName(name string) string {
+	return fmt.Sprintf("@rule:%v", name)
+}
+
+func (i *Interpreter) ProcessRule(name, spec string) error {
+	internalRuleName := BuildInternalRuleName(name)
+
+	i.Env.GetRegisterMap()[internalRuleName] = BuildStringValue(spec)
+	return nil
+}
+
+func EvalExpr(env Env, kind, expr string) (bool, error) {
 	exprAST, err := Parse(expr)
 	if err != nil {
 		return false, err
 	}
 
-	exprType, err := TypeInference(i.Env, exprAST)
+	exprType, err := TypeInference(env, exprAST)
 	if err != nil {
 		return false, err
 	}
@@ -78,7 +89,11 @@ func (i *Interpreter) EvalExpr(kind, expr string) (bool, error) {
 		return false, fmt.Errorf("expression %v is not a condition", expr)
 	}
 
-	return EvalCondition(i.Env, exprAST)
+	return EvalCondition(env, exprAST)
+}
+
+func (i *Interpreter) EvalExpr(kind, expr string) (bool, error) {
+	return EvalExpr(i.Env, kind, expr)
 }
 
 func (i *Interpreter) ExecProgram(program *engine.Program) error {
