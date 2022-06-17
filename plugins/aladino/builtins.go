@@ -42,6 +42,7 @@ func PluginBuiltIns() *aladino.BuiltIns {
 			"isElementOf": isElementOf(),
 			// Engine
 			"group": group(),
+			"rule":  rule(),
 			// Internal
 			"filter": filter(),
 		},
