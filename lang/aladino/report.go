@@ -108,7 +108,7 @@ func BuildVerboseReport(report *Report) string {
 
 	for _, workflow := range reportDetails {
 		actRules := ""
-		for _, actRule := range workflow.Rules {
+		for actRule := range workflow.Rules {
 			actRules += fmt.Sprintf("%v<br>", actRule)
 		}
 
