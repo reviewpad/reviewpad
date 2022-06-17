@@ -12,7 +12,7 @@ groups:
   plugins-reviewers:
     description: Group of plugin reviewers
     kind: developers
-    spec: '["marcelosousa, "ferreiratiago, "shay2025"]'
+    spec: '["marcelosousa", "ferreiratiago", "shay2025"]'
 
 rules:
   touchesLicense:
