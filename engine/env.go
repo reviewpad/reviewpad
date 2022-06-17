@@ -21,6 +21,7 @@ const GroupTypeFilter GroupType = "filter"
 
 type Interpreter interface {
 	ProcessGroup(name string, kind GroupKind, typeOf GroupType, expr, paramExpr, whereExpr string) error
+	ProcessRule(name, spec string) error
 	EvalExpr(kind, expr string) (bool, error)
 	ExecProgram(program *Program) error
 	ExecStatement(statement *Statement) error
