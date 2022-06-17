@@ -6,6 +6,7 @@ require (
 	github.com/bmatcuk/doublestar/v4 v4.0.2
 	github.com/dukex/mixpanel v0.0.0-20220410140740-e82251311162
 	github.com/google/go-github/v42 v42.0.0
+	github.com/google/uuid v1.3.0
 	github.com/shurcooL/githubv4 v0.0.0-20220520033151-0b4e3294ff00
 	github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80
 	golang.org/x/oauth2 v0.0.0-20220411215720-9780585627b5
@@ -15,7 +16,6 @@ require (
 require (
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
-	github.com/google/uuid v1.3.0 // indirect
 	github.com/kr/pretty v0.2.0 // indirect
 	github.com/shurcooL/graphql v0.0.0-20220520033453-bdb1221e171e // indirect
 	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5 // indirect
