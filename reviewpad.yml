@@ -53,7 +53,7 @@ rules:
   touchesPluginsFunctionsOrActionsAndNotBuiltins:
     kind: patch
     description: modifies plugins but not built-ins
-    spec: '($hasFileName("plugins/aladino/actions.go") || $hasFileName("plugins/aladino/functions.go")) && !$hasFileName("plugins/aladino/built-ins.go")'
+    spec: '($hasFileName("plugins/aladino/actions.go") || $hasFileName("plugins/aladino/functions.go")) && !$hasFileName("plugins/aladino/builtins.go")'
 
 workflows:
   - name: unauthorized-license-workflow
