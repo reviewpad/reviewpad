@@ -7,6 +7,9 @@ labels:
   plugins:
     description: Modifications to the plugins directory
     color: "294b72"
+  ship:
+    description: Ship mode
+    color: 76dbbe
 
 groups:
   owners:
@@ -20,6 +23,11 @@ groups:
     spec: '["marcelosousa", "ferreiratiago", "shay2025"]'
 
 rules:
+  shipPullRequestsAreAutomerged:
+    kind: patch
+    description: owners of pull requests with ship in the title
+    spec: '$contains($title(), "[ship]: ") && $isElementOf($author(), $group("owners"))'
+
   touchesLicense:
     kind: patch
     description: modifies the LICENSE file
@@ -74,6 +82,14 @@ workflows:
     then:
       - $addLabel("modifies-license")
       - $assignReviewer($group("owners"), 1)
+
+  - name: auto-merge-owner-pull-requests
+    description: auto merge pull requests
+    if:
+      - rule: shipPullRequestsAreAutomerged
+    then:
+      - '$addLabel("ship")'
+      - '$merge("rebase")'
 
   - name: label-plugins
     description: Label changes to plugins
