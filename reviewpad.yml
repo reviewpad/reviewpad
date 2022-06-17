@@ -3,6 +3,11 @@ api-version: reviewpad.com/v1.x
 mode: silent
 edition: professional
 
+labels:
+  plugins:
+    description: Modifications to the plugins directory
+    color: "294b72"
+
 groups:
   owners:
     description: Group of owners
