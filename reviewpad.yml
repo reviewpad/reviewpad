@@ -1,4 +1,4 @@
-apiVersion: reviewpad.com/v0.0.4
+api-version: reviewpad.com/v1.x
 
 mode: silent
 edition: professional
