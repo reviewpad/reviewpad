@@ -28,7 +28,7 @@ rules:
   touchesLicenseByNonOwner:
     kind: patch
     description: non-owner modifies the LICENSE file
-    spec: '$hasFileName("LICENSE") && !$isElementOf($author(), $group(owners))'
+    spec: '$hasFileName("LICENSE") && !$isElementOf($author(), $group("owners"))'
 
   touchesPluginsFunctions:
     kind: patch
