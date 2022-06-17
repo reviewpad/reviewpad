@@ -1,0 +1,97 @@
+apiVersion: reviewpad.com/v0.0.4
+
+mode: silent
+edition: professional
+
+groups:
+  owners:
+    description: Group of owners
+    kind: developers
+    spec: '["marcelosousa", "ferreiratiago"]'
+
+  plugins-reviewers:
+    description: Group of plugin reviewers
+    kind: developers
+    spec: '["marcelosousa, "ferreiratiago, "shay2025"]'
+
+rules:
+  touchesLicense:
+    kind: patch
+    description: modifies the LICENSE file
+    spec: '$hasFileName("LICENSE")'
+
+  touchesMoreThanLicense:
+    kind: patch
+    description: modifies the LICENSE file and other files
+    spec: '$hasFileName("LICENSE") && $fileCount() > 1'
+
+  touchesLicenseByNonOwner:
+    kind: patch
+    description: non-owner modifies the LICENSE file
+    spec: '$hasFileName("LICENSE") && !$isElementOf($author(), $group(owners))'
+
+  touchesPluginsFunctions:
+    kind: patch
+    description: modifies the plugin functions
+    spec: '$hasFileName("plugins/aladino/functions.go")'
+
+  touchesPluginsActions:
+    kind: patch
+    description: modifies the plugin actions
+    spec: '$hasFileName("plugins/aladino/actions.go")'
+
+  touchesPluginsFunctionsAndActions:
+    kind: patch
+    description: modifies both plugin actions and functions
+    spec: '$hasFileName("plugins/aladino/actions.go") && $hasFileName("plugins/aladino/functions.go")'
+
+  touchesPluginsFunctionsOrActionsAndNotBuiltins:
+    kind: patch
+    description: modifies plugins but not built-ins
+    spec: '($hasFileName("plugins/aladino/actions.go") || $hasFileName("plugins/aladino/functions.go")) && !$hasFileName("plugins/aladino/built-ins.go")'
+
+workflows:
+  - name: unauthorized-license-workflow
+    description: Protect unauthorized modifications to the LICENSE
+    if:
+      - rule: touchesLicenseByNonOwner
+    then:
+      - $error("Sorry, you are not authorized to make these changes")
+      - $close()
+
+  - name: license-workflow
+    description: Protect modifications to the LICENSE
+    if:
+      - rule: touchesLicense
+      - rule: touchesMoreThanLicense
+        extra-actions:
+          - '$warn("This pull request should only modify the LICENSE!")'
+    then:
+      - $addLabel("modifies-license")
+      - $assignReviewer($group("owners"), 1)
+
+  - name: label-plugins
+    description: Label changes to plugins
+    always-run: true
+    if:
+      - rule: touchesPluginsFunctions
+      - rule: touchesPluginsActions
+    then:
+      - $addLabel("plugins")
+
+  - name: contained-plugin-changes
+    description: Warn when touching multiple changes
+    always-run: true
+    if:
+      - rule: touchesPluginsFunctionsAndActions
+    then:
+      - '$warn("It looks like you modifies both functions and actions. If that is intentional?")'
+
+  - name: help-with-builtins
+    description: Help with new built-in
+    always-run: true
+    if:
+      - rule: touchesPluginsFunctionsOrActionsAndNotBuiltins
+    then:
+      - $info("If you have added a new function or action do not forget to include it in the built-in list!")
+      - $assignReviewer($group("plugins-reviewers"), 2)
