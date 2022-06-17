@@ -13,7 +13,7 @@ func Parse(input string) (Expr, error) {
 	res := AladinoParse(lex)
 
 	if res != 0 {
-		return nil, fmt.Errorf("parse error: failed to build AST")
+		return nil, fmt.Errorf("parse error: failed to build AST on input %v", input)
 	}
 
 	return lex.ast, nil
