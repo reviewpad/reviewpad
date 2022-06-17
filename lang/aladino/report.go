@@ -33,7 +33,7 @@ func reportError(format string, a ...interface{}) error {
 }
 
 func mergeReportWorkflowDetails(left, right ReportWorkflowDetails) ReportWorkflowDetails {
-	for rule, _ := range right.Rules {
+	for rule := range right.Rules {
 		if _, ok := left.Rules[rule]; !ok {
 			left.Rules[rule] = true
 		}
