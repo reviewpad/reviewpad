@@ -6,7 +6,7 @@
 // Unauthorized copying of this file, via any medium is strictly prohibited
 // Proprietary and confidential
 
-package aladino
+package plugins_aladino
 
 import (
 	"context"
@@ -15,7 +15,7 @@ import (
 
 	"github.com/google/go-github/v42/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
-	"github.com/reviewpad/reviewpad/engine"
+	"github.com/reviewpad/reviewpad/lang/aladino"
 )
 
 func mockClient(clientOptions ...mock.MockBackendOption) *http.Client {
@@ -24,6 +24,7 @@ func mockClient(clientOptions ...mock.MockBackendOption) *http.Client {
 			mock.GetReposPullsByOwnerByRepoByPullNumber,
 			http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 				var pr int64 = 1234
+				var label int64 = 208045946
 				var url string = "https://api.github.com/repos/foobar/mocked-proj-1/pulls/1234"
 				var date time.Time = time.Date(2009, 11, 17, 20, 34, 58, 651387237, time.UTC)
 				w.Write(mock.MustMarshal(github.PullRequest{
@@ -32,16 +33,21 @@ func mockClient(clientOptions ...mock.MockBackendOption) *http.Client {
 					Assignees: []*github.User{
 						{Login: github.String("foobar")},
 					},
-					Title:     github.String("A title"),
-					Body:      github.String("A description"),
+					Title:     github.String("Amazing new feature"),
+					Body:      github.String("Please pull these awesome changes in!"),
 					CreatedAt: &date,
 					Commits:   github.Int(5),
 					Number:    github.Int(1234),
 					Milestone: &github.Milestone{
-						Title: github.String("A milestone"),
+						Title: github.String("v1.0"),
 					},
 					Labels: []*github.Label{
-						{Name: github.String("default")},
+						{
+							ID: &label,
+							Name: github.String("bug"),
+							Description: github.String("Something isn't working"),
+							Color: github.String("f29513"),
+						},
 					},
 					Head: &github.PullRequestBranch{
 						Repo: &github.Repository{
@@ -49,6 +55,7 @@ func mockClient(clientOptions ...mock.MockBackendOption) *http.Client {
 								Login: github.String("foobar"),
 							},
 							URL: github.String(url),
+							Name: github.String("mocked-proj-1"),
 						},
 						Ref: github.String("test"),
 					},
@@ -58,11 +65,29 @@ func mockClient(clientOptions ...mock.MockBackendOption) *http.Client {
 								Login: github.String("foobar"),
 							},
 							URL: github.String(url),
+							Name: github.String("mocked-proj-1"),
 						},
 						Ref: github.String("main"),
 					},
 				}))
 			}),
+		),
+		mock.WithRequestMatch(
+			mock.GetReposPullsFilesByOwnerByRepoByPullNumber,
+			[]*github.CommitFile{
+				{
+					Filename: github.String("mocked-proj-1/1.txt"),
+					Patch:    nil,
+				},
+				{
+					Filename: github.String("mocked-proj-1/2.ts"),
+					Patch:    nil,
+				},
+				{
+					Filename: github.String("mocked-proj-1/docs/folder/README.md"),
+					Patch:    nil,
+				},
+			},
 		),
 	}
 
@@ -71,7 +96,7 @@ func mockClient(clientOptions ...mock.MockBackendOption) *http.Client {
 	return mock.NewMockedHTTPClient(mocks...)
 }
 
-func mockEnv(clientOptions ...mock.MockBackendOption) (*engine.Env, error) {
+func mockEnv(clientOptions ...mock.MockBackendOption) (*aladino.Env, error) {
 	client := github.NewClient(mockClient(clientOptions...))
 
 	owner := "foobar"
@@ -81,15 +106,18 @@ func mockEnv(clientOptions ...mock.MockBackendOption) (*engine.Env, error) {
 	ctx := context.Background()
 
 	pr, _, err := client.PullRequests.Get(ctx, owner, repo, prNum)
-
-	evalEnv := &engine.Env{
-		Ctx:         ctx,
-		Client:      client,
-		ClientGQL:   nil,
-		Collector:   nil,
-		PullRequest: pr,
-		Interpreter: nil,
+	if err != nil {
+		return nil, err
 	}
 
-	return evalEnv, err
+	env, err := aladino.NewEvalEnv(
+		ctx,
+		client,
+		nil,
+		nil,
+		pr,
+		PluginBuiltIns(),
+	)
+
+	return &env, err
 }
