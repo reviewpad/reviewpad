@@ -14,8 +14,10 @@ require (
 )
 
 require (
+	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/google/go-github/v41 v41.0.0 // indirect
 	github.com/gorilla/mux v1.8.0 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
 )
 
 require (
@@ -24,6 +26,7 @@ require (
 	github.com/kr/pretty v0.2.0 // indirect
 	github.com/migueleliasweb/go-github-mock v0.0.8
 	github.com/shurcooL/graphql v0.0.0-20220520033453-bdb1221e171e // indirect
+	github.com/stretchr/testify v1.7.3
 	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5 // indirect
 	golang.org/x/net v0.0.0-20220127200216-cd36cc0744dd // indirect
 	google.golang.org/appengine v1.6.7 // indirect
