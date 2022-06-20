@@ -66,9 +66,7 @@ func TestCommentOnceWhenCommentAlreadyExists(t *testing.T) {
 
 	args := []aladino.Value{aladino.BuildStringValue("Lorem Ipsum")}
 
-	commentOnce := PluginBuiltIns().Actions["commentOnce"].Code
-
-	err = commentOnce(*testEvalEnv, args)
+	err = commentOnceCode(*testEvalEnv, args)
 
 	assert.Nil(t, err)
 	assert.Equal(t, "", commentCreated)
@@ -103,9 +101,7 @@ func TestCommentOnce(t *testing.T) {
 
 	args := []aladino.Value{aladino.BuildStringValue("Dummy Comment")}
 
-	commentOnce := PluginBuiltIns().Actions["commentOnce"].Code
-
-	err = commentOnce(*testEvalEnv, args)
+	err = commentOnceCode(*testEvalEnv, args)
 
 	assert.Nil(t, err)
 	assert.Equal(t, "Dummy Comment", commentCreated)
