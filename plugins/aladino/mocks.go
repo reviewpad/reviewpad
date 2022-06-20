@@ -2,10 +2,6 @@
 // Unauthorized copying of this file, via any medium is strictly prohibited
 // Proprietary and confidential
 
-// Copyright (C) 2019-2022 Explore.dev - All Rights Reserved
-// Unauthorized copying of this file, via any medium is strictly prohibited
-// Proprietary and confidential
-
 package plugins_aladino
 
 import (
