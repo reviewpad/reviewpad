@@ -56,6 +56,7 @@ func PluginBuiltIns() *aladino.BuiltIns {
 			"assignReviewer":       assignReviewer(),
 			"close":                close(),
 			"comment":              comment(),
+			"commentOnce":          commentOnce(),
 			"merge":                merge(),
 			"removeLabel":          removeLabel(),
 		},
