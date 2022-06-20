@@ -1751,7 +1751,7 @@ func ruleCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
 		return aladino.BuildBoolValue(result), nil
 	}
 
-	return nil, fmt.Errorf("getRule: no rule with name %v in state %+q", ruleName, e.GetRegisterMap())
+	return nil, fmt.Errorf("$rule: no rule with name %v in state %+q", ruleName, e.GetRegisterMap())
 }
 
 /*
