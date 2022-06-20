@@ -242,6 +242,41 @@ func commentCode(e aladino.Env, args []aladino.Value) error {
 	return err
 }
 
+func commentOnce() *aladino.BuiltInAction {
+	return &aladino.BuiltInAction{
+		Type: aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, nil),
+		Code: commentOnceCode,
+	}
+}
+
+func commentOnceCode(e aladino.Env, args []aladino.Value) error {
+	pullRequest := e.GetPullRequest()
+
+	prNum := utils.GetPullRequestNumber(pullRequest)
+	owner := utils.GetPullRequestOwnerName(pullRequest)
+	repo := utils.GetPullRequestRepoName(pullRequest)
+
+	commentBody := args[0].(*aladino.StringValue).Val
+
+	comments, _, err := e.GetClient().Issues.ListComments(e.GetCtx(), owner, repo, prNum, &github.IssueListCommentsOptions{})
+	if err != nil {
+		return err
+	}
+
+	for _, comment := range comments {
+		commentAlreadyMade := *comment.Body == commentBody
+		if commentAlreadyMade {
+			return nil
+		}
+	}
+
+	_, _, err = e.GetClient().Issues.CreateComment(e.GetCtx(), owner, repo, prNum, &github.IssueComment{
+		Body: &commentBody,
+	})
+
+	return err
+}
+
 func merge() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
 		Type: aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, nil),

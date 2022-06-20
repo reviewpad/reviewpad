@@ -14,9 +14,16 @@ require (
 )
 
 require (
+	github.com/google/go-github/v41 v41.0.0 // indirect
+	github.com/gorilla/mux v1.8.0 // indirect
+)
+
+require (
 	github.com/golang/protobuf v1.5.2 // indirect
+	github.com/google/go-github v17.0.0+incompatible
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/kr/pretty v0.2.0 // indirect
+	github.com/migueleliasweb/go-github-mock v0.0.8
 	github.com/shurcooL/graphql v0.0.0-20220520033453-bdb1221e171e // indirect
 	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5 // indirect
 	golang.org/x/net v0.0.0-20220127200216-cd36cc0744dd // indirect
