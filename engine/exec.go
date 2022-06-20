@@ -84,7 +84,13 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 		}
 	}
 
+	// process rules
 	for ruleName, rule := range file.Rules {
+		err := interpreter.ProcessRule(ruleName, rule.Spec)
+		if err != nil {
+			CollectError(env, err)
+			return nil, err
+		}
 		rules[ruleName] = rule
 	}
 
