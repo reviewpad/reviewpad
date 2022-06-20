@@ -47,7 +47,7 @@ func TestCommentOnceWhenCommentAlreadyExists(t *testing.T) {
 			},
 		),
 		mock.WithRequestMatchHandler(
-			mock.PostReposIssuesCommentsByOwnerByRepoByIssueNumber ,
+			mock.PostReposIssuesCommentsByOwnerByRepoByIssueNumber,
 			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				body, _ := ioutil.ReadAll(r.Body)
 				postBody := github.IssueComment{}
