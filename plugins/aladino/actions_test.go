@@ -30,9 +30,7 @@ func TestCommentOnceOnListCommentsFail(t *testing.T) {
 
 	args := []aladino.Value{aladino.BuildStringValue("Lorem Ipsum")}
 
-	commentOnce := PluginBuiltIns().Actions["commentOnce"].Code
-
-	err = commentOnce(*testEvalEnv, args)
+	err = commentOnceCode(*testEvalEnv, args)
 
 	assert.NotNil(t, err)
 }
