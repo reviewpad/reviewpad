@@ -13,57 +13,6 @@ import (
 	"github.com/reviewpad/reviewpad/utils"
 )
 
-/*
-reviewpad-an: builtin-docs
-
-# Actions
-______________
-
-Reviewpad actions allow act on workflows.
-
-This set of actions are the defined functions that can run under `actions` on your `reviewpad.yml`.
-*/
-
-/*
-reviewpad-an: builtin-docs
-
-## addLabel
-______________
-
-**Description**:
-
-Adds a label to the pull request.
-
-This built-in assumes that the label has been created. Otherwise, it returns an error.
-
-**Parameters**:
-
-| variable | type   | description       |
-| -------- | ------ | ----------------- |
-| `name`   | string | name of the label |
-
-**Return value**:
-
-Error if the label does not exist in the repository.
-
-**Examples**:
-
-```yml
-$addLabel("bug")
-```
-
-A `reviewpad.yml` example:
-
-```yml
-workflows:
-  - name: label-small-pull-request
-    description: Label small pull request
-    if:
-      - rule: isSmall
-    then:
-      - $addLabel("small")
-```
-*/
 func addLabel() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
 		Type: aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, nil),
@@ -97,48 +46,6 @@ func addLabelCode(e aladino.Env, args []aladino.Value) error {
 	return err
 }
 
-/*
-reviewpad-an: builtin-docs
-
-## assignRandomReviewer
-______________
-
-**Description**:
-
-Assigns a random user of the GitHub organization as the reviewer.
-This action will always pick a user different than the author of the pull request.
-
-However, if the pull request already has a reviewer, nothing happens. This is to prevent
-adding a reviewer each time the pull request is updated.
-
-When there's no reviewers to assign to, an error is returned.
-
-**Parameters**:
-
-*none*
-
-**Return value**:
-
-*none*
-
-**Examples**:
-
-```yml
-$assignRandomReviewer()
-```
-
-A `reviewpad.yml` example:
-
-```yml
-workflows:
-  - name: assign-random-reviewer
-    description: Assign random reviewer
-    if:
-      - rule: tautology
-    then:
-      - $assignRandomReviewer()
-```
-*/
 func assignRandomReviewer() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
 		Type: aladino.BuildFunctionType([]aladino.Type{}, nil),
@@ -189,49 +96,6 @@ func assignRandomReviewerCode(e aladino.Env, _ []aladino.Value) error {
 	return err
 }
 
-/*
-reviewpad-an: builtin-docs
-
-## assignReviewer
-______________
-
-**Description**:
-
-Assigns a defined amount of reviewers to the pull request from the provided list of reviewers.
-
-When there's not enough reviewers to assign to, an warning is returned.
-
-If a reviewer from the defined list has performed a review, his review will re-requested.
-
-**Parameters**:
-
-| variable           | type     | description                                                       |
-| ------------------ | -------- | ----------------------------------------------------------------- |
-| `reviewers`        | []string | list of GitHub logins to select from                              |
-| `total` (optional) | int      | total of reviewers to assign. by default assigns to all reviewers |
-
-**Return value**:
-
-*none*
-
-**Examples**:
-
-```yml
-$assignReviewer(["john", "marie", "peter"], 2)
-```
-
-A `reviewpad.yml` example:
-
-```yml
-workflows:
-  - name: review-code-from-new-joiners
-    description: Assign senior reviewers to PRs from new joiners
-    if:
-      - rule: authoredByJunior
-    then:
-      - $assignReviewer($group("seniors"), 2)
-```
-*/
 func assignReviewer() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
 		Type: aladino.BuildFunctionType([]aladino.Type{aladino.BuildArrayOfType(aladino.BuildStringType()), aladino.BuildIntType()}, nil),
@@ -334,42 +198,6 @@ func assignReviewerCode(e aladino.Env, args []aladino.Value) error {
 	return err
 }
 
-/*
-reviewpad-an: builtin-docs
-
-## close
-______________
-
-**Description**:
-
-Closes a pull request.
-
-**Parameters**:
-
-*none*
-
-**Return value**:
-
-*none*
-
-**Examples**:
-
-```yml
-$close()
-```
-
-A `revy.yml` example:
-
-```yml
-workflows:
-  - name: close-pull-request
-    description: Close pull request
-    if:
-      - rule: stalePullRequest
-    then:
-      - $close()
-```
-*/
 func close() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
 		Type: aladino.BuildFunctionType([]aladino.Type{}, nil),
@@ -391,44 +219,6 @@ func closeCode(e aladino.Env, args []aladino.Value) error {
 	return err
 }
 
-/*
-reviewpad-an: builtin-docs
-
-## comment
-______________
-
-**Description**:
-
-Comments a pull request.
-
-**Parameters**:
-
-| variable       | type   | description                            |
-| -------------- | ------ | -------------------------------------- |
-| `comment`      | string | body of the comment                    |
-
-**Return value**:
-
-*none*
-
-**Examples**:
-
-```yml
-$comment("This is your first contribution! Thank you!")
-```
-
-A `revy.yml` example:
-
-```yml
-workflows:
-  - name: comment-pull-request
-    description: Comment pull request
-    if:
-      - rule: firstContribution
-    then:
-      - $comment("This is your first contribution! Thank you!")
-```
-*/
 func comment() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
 		Type: aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, nil),
@@ -452,55 +242,6 @@ func commentCode(e aladino.Env, args []aladino.Value) error {
 	return err
 }
 
-/*
-reviewpad-an: builtin-docs
-
-## merge
-______________
-
-**Description**:
-
-Merge a pull request with a specific merge method.
-
-By default, if no parameter is provided, it will perform a standard git merge.
-
-| :warning: Requires GitHub token :warning: |
-|-------------------------------------------|
-
-By default a GitHub action does not have permission to access organization members.
-
-Because of that, in order for the function `team` to work we need to provide a GitHub token to the Reviewpad action.
-
-[Please follow this link to know more](https://docs.reviewpad.com/docs/install-github-action-with-github-token).
-
-**Parameters**:
-
-| variable       | type   | description                            |
-| -------------- | ------ | -------------------------------------- |
-| `method`       | string | merge method (merge, rebase or squash) |
-
-**Return value**:
-
-*none*
-
-**Examples**:
-
-```yml
-$merge()
-```
-
-A `reviewpad.yml` example:
-
-```yml
-workflows:
-  - name: auto-merge-small-pull-request
-    description: Auto-merge small pull request
-    if:
-      - rule: isSmall
-    then:
-      - $merge()
-```
-*/
 func merge() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
 		Type: aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, nil),
@@ -547,48 +288,6 @@ func parseMergeMethod(args []aladino.Value) (string, error) {
 	}
 }
 
-/*
-reviewpad-an: builtin-docs
-
-## removeLabel
-______________
-
-**Description**:
-
-Removes a label applied to a pull request.
-
-If the label is not applied to the pull request then nothing happens.
-
-This built-in assumes that the label has been created. Otherwise, it returns an error.
-
-**Parameters**:
-
-| variable | type   | description       |
-| -------- | ------ | ----------------- |
-| `name`   | string | name of the label |
-
-**Return value**:
-
-Error if the label does not exist in the repository.
-
-**Examples**:
-
-```yml
-$removeLabel("bug")
-```
-
-A `reviewpad.yml` example:
-
-```yml
-workflows:
-  - name: remove-small-label-in-pull-request
-    description: Remove small label applied to pull request
-    if:
-      - rule: isNotSmall
-    then:
-      - $removeLabel("small")
-```
-*/
 func removeLabel() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
 		Type: aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, nil),

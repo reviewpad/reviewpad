@@ -6,6 +6,10 @@ package plugins_aladino
 
 import "github.com/reviewpad/reviewpad/lang/aladino"
 
+// The documentation for the builtins is in:
+// https://github.com/reviewpad/docs/blob/main/aladino/builtins.md
+// This means that changes to the builtins need to be propagated to that document.
+
 func PluginBuiltIns() *aladino.BuiltIns {
 	return &aladino.BuiltIns{
 		Functions: map[string]*aladino.BuiltInFunction{
