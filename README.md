@@ -143,7 +143,7 @@ We use short-lived feature branches and pull requests to introduce changes to th
 
 Reviewpad will take care of most of the automation so that 90% of the pull requests do not stay open for longer than a few hours (even for outside contributors).
 
-**Take a look at the [X-Ray for Reviewpad](https://xray.reviewpad.com/analysis?repository=https%3A%2F%2Fgithub.com%2Freviewpad%2Freviewpad) to see how are are doing!**
+**Take a look at the [X-Ray for Reviewpad](https://xray.reviewpad.com/analysis?repository=https%3A%2F%2Fgithub.com%2Freviewpad%2Freviewpad) to see how we are doing!**
 
 ## License
 
