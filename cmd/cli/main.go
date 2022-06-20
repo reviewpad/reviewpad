@@ -118,7 +118,7 @@ func main() {
 		log.Fatalf("Error running reviewpad team edition. Details %v", err.Error())
 	}
 
-	err = reviewpad.Run(ctx, gitHubClient, gitHubClientGQL, collectorClient, ghPullRequest, file, *dryRun)
+	_, err = reviewpad.Run(ctx, gitHubClient, gitHubClientGQL, collectorClient, ghPullRequest, file, *dryRun)
 	if err != nil {
 		log.Fatalf("Error running reviewpad team edition. Details %v", err.Error())
 	}

@@ -42,33 +42,33 @@ func Run(
 	ghPullRequest *github.PullRequest,
 	reviewpadFile *engine.ReviewpadFile,
 	dryRun bool,
-) error {
+) (*engine.Program, error) {
 	aladinoInterpreter, err := aladino.NewInterpreter(ctx, client, clientGQL, collector, ghPullRequest, plugins_aladino.PluginBuiltIns())
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	evalEnv, err := engine.NewEvalEnv(ctx, client, clientGQL, collector, ghPullRequest, aladinoInterpreter)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	program, err := engine.Eval(reviewpadFile, evalEnv)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if !dryRun {
 		err := aladinoInterpreter.ExecProgram(program)
 		if err != nil {
 			engine.CollectError(evalEnv, err)
-			return err
+			return nil, err
 		}
 
 		err = aladinoInterpreter.Report(reviewpadFile.Mode)
 		if err != nil {
 			engine.CollectError(evalEnv, err)
-			return err
+			return nil, err
 		}
 	}
 
@@ -76,5 +76,5 @@ func Run(
 		"pullRequestUrl": evalEnv.PullRequest.URL,
 	})
 
-	return nil
+	return program, nil
 }
