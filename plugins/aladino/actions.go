@@ -52,7 +52,7 @@ Error if the label does not exist in the repository.
 $addLabel("bug")
 ```
 
-A `reviewpad.yml.yml` example:
+A `reviewpad.yml` example:
 
 ```yml
 workflows:
@@ -127,7 +127,7 @@ When there's no reviewers to assign to, an error is returned.
 $assignRandomReviewer()
 ```
 
-A `reviewpad.yml.yml` example:
+A `reviewpad.yml` example:
 
 ```yml
 workflows:
@@ -220,7 +220,7 @@ If a reviewer from the defined list has performed a review, his review will re-r
 $assignReviewer(["john", "marie", "peter"], 2)
 ```
 
-A `reviewpad.yml.yml` example:
+A `reviewpad.yml` example:
 
 ```yml
 workflows:
@@ -489,7 +489,7 @@ Because of that, in order for the function `team` to work we need to provide a G
 $merge()
 ```
 
-A `reviewpad.yml.yml` example:
+A `reviewpad.yml` example:
 
 ```yml
 workflows:
@@ -577,7 +577,7 @@ Error if the label does not exist in the repository.
 $removeLabel("bug")
 ```
 
-A `reviewpad.yml.yml` example:
+A `reviewpad.yml` example:
 
 ```yml
 workflows:
