@@ -36,12 +36,12 @@ rules:
   touchesMoreThanLicense:
     kind: patch
     description: modifies the LICENSE file and other files
-    spec: '$hasFileName("LICENSE") && $fileCount() > 1'
+    spec: '$rule("touchesLicense") && $fileCount() > 1'
 
   touchesLicenseByNonOwner:
     kind: patch
     description: non-owner modifies the LICENSE file
-    spec: '$hasFileName("LICENSE") && !$isElementOf($author(), $group("owners"))'
+    spec: '$rule("touchesLicense") && !$isElementOf($author(), $group("owners"))'
 
   touchesPluginsFunctions:
     kind: patch
@@ -56,12 +56,12 @@ rules:
   touchesPluginsFunctionsAndActions:
     kind: patch
     description: modifies both plugin actions and functions
-    spec: '$hasFileName("plugins/aladino/actions.go") && $hasFileName("plugins/aladino/functions.go")'
+    spec: '$rule("touchesPluginsActions") && $rule("touchesPluginsFunctions")'
 
   touchesPluginsFunctionsOrActionsAndNotBuiltins:
     kind: patch
     description: modifies plugins but not built-ins
-    spec: '($hasFileName("plugins/aladino/actions.go") || $hasFileName("plugins/aladino/functions.go")) && !$hasFileName("plugins/aladino/builtins.go")'
+    spec: '($rule("touchesPluginsActions") || $rule("touchesPluginsFunctions")) && !$hasFileName("plugins/aladino/builtins.go")'
 
 workflows:
   - name: unauthorized-license-workflow
