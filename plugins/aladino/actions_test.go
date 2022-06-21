@@ -38,14 +38,16 @@ func TestCommentOnceOnListCommentsFail(t *testing.T) {
 }
 
 func TestCommentOnceWhenCommentAlreadyExists(t *testing.T) {
-	const ExistingComment = ReviewpadCommentAnnotation + "Lorem Ipsum"
+	const ExistingComment = "Lorem Ipsum"
+	const ExistingCommentWithReviewpadCommentAnnotation = ReviewpadCommentAnnotation + "Lorem Ipsum"
+	
 	var commentCreated *string
 	testEvalEnv, err := mockEnv(
 		mock.WithRequestMatch(
 			mock.GetReposIssuesCommentsByOwnerByRepoByIssueNumber,
 			[]*github.IssueComment{
 				{
-					Body: github.String(ExistingComment),
+					Body: github.String(ExistingCommentWithReviewpadCommentAnnotation),
 				},
 			},
 		),

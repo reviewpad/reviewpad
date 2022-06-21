@@ -251,6 +251,8 @@ func commentOnce() *aladino.BuiltInAction {
 }
 
 func commentOnceCode(e aladino.Env, args []aladino.Value) error {
+	const ReviewpadCommentAnnotation = "<!--@annotation-reviewpad-->"
+
 	pullRequest := e.GetPullRequest()
 
 	prNum := utils.GetPullRequestNumber(pullRequest)
@@ -258,25 +260,23 @@ func commentOnceCode(e aladino.Env, args []aladino.Value) error {
 	repo := utils.GetPullRequestRepoName(pullRequest)
 
 	commentBody := args[0].(*aladino.StringValue).Val
+	commentBodyWithReviewpadAnnotation := ReviewpadCommentAnnotation + commentBody
 
 	comments, err := utils.GetPullRequestComments(e.GetCtx(), e.GetClient(), owner, repo, prNum)
 	if err != nil {
 		return err
 	}
 
-	const ReviewpadCommentAnnotation = "<!--@annotation-reviewpad-->"
-
 	reviewpadCommentAnnotationRegex := regexp.MustCompile(fmt.Sprintf("^%v", ReviewpadCommentAnnotation))
 
 	for _, comment := range comments {
 		isReviewpadComment := reviewpadCommentAnnotationRegex.Match([]byte(*comment.Body))
-		commentAlreadyExists := *comment.Body == commentBody
+		commentAlreadyExists := *comment.Body == commentBodyWithReviewpadAnnotation
 		if isReviewpadComment && commentAlreadyExists {
 			return nil
 		}
 	}
 
-	commentBodyWithReviewpadAnnotation := ReviewpadCommentAnnotation + commentBody
 	_, _, err = e.GetClient().Issues.CreateComment(e.GetCtx(), owner, repo, prNum, &github.IssueComment{
 		Body: &commentBodyWithReviewpadAnnotation,
 	})
