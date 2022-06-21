@@ -117,7 +117,7 @@ func lintRulesWithWorkflows(rules map[string]PadRule, padWorkflows []PadWorkflow
 	return nil
 }
 
-func lintGroupsMentions(groups map[string]PadGroup, rules map[string]PadRule, workflows []PadWorkflow) error {
+func lintGroupsMentions(groups []PadGroup, rules map[string]PadRule, workflows []PadWorkflow) error {
 	reGroupFnCall := regexp.MustCompile(`\$group\(".*"\)`)
 	allGroupFunctionCalls := make([]string, 0)
 	for _, group := range groups {
@@ -162,7 +162,7 @@ func lintGroupsMentions(groups map[string]PadGroup, rules map[string]PadRule, wo
 		// Remove quotation marks
 		groupMention = groupMention[1 : len(groupMention)-1]
 
-		_, ok := groups[groupMention]
+		_, ok := findGroup(groups, groupMention)
 		if !ok {
 			return lintError("the group %v isn't defined", groupMention)
 		}
