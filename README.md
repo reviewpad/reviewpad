@@ -24,7 +24,7 @@ In Reviewpad, you can automate actions over the pull requests such as:
 As an example, the following workflow:
 
 ```yml
-api-version: reviewpad.com/v1.x
+api-version: reviewpad.com/v2.x
 
 labels:
   ship:
