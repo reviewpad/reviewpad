@@ -19,6 +19,48 @@ func lintLog(format string, a ...interface{}) {
 	fmtio.LogPrintln("lint", format, a...)
 }
 
+func getAllMatches(pattern string, groups []PadGroup, rules []PadRule, workflows []PadWorkflow) []string {
+	rePatternFnCall := regexp.MustCompile(pattern)
+	allGroupFunctionCalls := make([]string, 0)
+	for _, group := range groups {
+		spec := group.Spec
+		groupFunctionCalls := rePatternFnCall.FindAllString(spec, -1)
+
+		if len(groupFunctionCalls) == 0 {
+			continue
+		}
+
+		allGroupFunctionCalls = append(allGroupFunctionCalls, groupFunctionCalls...)
+	}
+
+	for _, rule := range rules {
+		spec := rule.Spec
+		groupFunctionCalls := rePatternFnCall.FindAllString(spec, -1)
+
+		if len(groupFunctionCalls) == 0 {
+			continue
+		}
+
+		allGroupFunctionCalls = append(allGroupFunctionCalls, groupFunctionCalls...)
+	}
+
+	for _, workflow := range workflows {
+		actions := workflow.Actions
+		groupFunctionCalls := make([]string, 0)
+		for _, action := range actions {
+			groupFunctionCalls = append(groupFunctionCalls, rePatternFnCall.FindAllString(action, -1)...)
+		}
+
+		if len(groupFunctionCalls) == 0 {
+			continue
+		}
+
+		allGroupFunctionCalls = append(allGroupFunctionCalls, groupFunctionCalls...)
+	}
+
+	return allGroupFunctionCalls
+}
+
 // Validations:
 // - Every rule has a (unique) name
 // - Every rule has a kind
@@ -128,23 +170,38 @@ func lintWorkflows(rules []PadRule, padWorkflows []PadWorkflow) error {
 }
 
 // Validations
-// - Check that all rules are being used on workflows
-func lintRulesWithWorkflows(rules map[string]PadRule, padWorkflows []PadWorkflow) error {
+// - Check that all rules are being used
+// - Check that all referenced rules exist
+func lintRulesMentions(rules []PadRule, groups []PadGroup, workflows []PadWorkflow) error {
 	totalUsesByRule := make(map[string]int, len(rules))
 
-	for ruleName := range rules {
-		totalUsesByRule[ruleName] = 0
+	for _, rule := range rules {
+		totalUsesByRule[rule.Name] = 0
 	}
 
-	for _, workflow := range padWorkflows {
+	for _, workflow := range workflows {
 		for _, rule := range workflow.Rules {
 			ruleName := rule.Rule
-			_, exists := rules[ruleName]
+			_, exists := findRule(rules, ruleName)
 
 			if exists {
 				totalUsesByRule[ruleName]++
 			}
 		}
+	}
+
+	allRuleFunctionCalls := getAllMatches(`\$rule\(".*"\)`, groups, rules, workflows)
+	reRuleMention := regexp.MustCompile(`"(.*?)"`)
+	for _, ruleFunctionCall := range allRuleFunctionCalls {
+		ruleName := reRuleMention.FindString(ruleFunctionCall)
+		// Remove quotation marks
+		ruleName = ruleName[1 : len(ruleName)-1]
+
+		_, ok := findRule(rules, ruleName)
+		if !ok {
+			return lintError("the rule %v isn't defined", ruleName)
+		}
+		totalUsesByRule[ruleName]++
 	}
 
 	for ruleName, totalUses := range totalUsesByRule {
@@ -156,44 +213,11 @@ func lintRulesWithWorkflows(rules map[string]PadRule, padWorkflows []PadWorkflow
 	return nil
 }
 
+// Validations
+// - Check that all groups are being used
+// - Check that all referenced groups exist
 func lintGroupsMentions(groups []PadGroup, rules []PadRule, workflows []PadWorkflow) error {
-	reGroupFnCall := regexp.MustCompile(`\$group\(".*"\)`)
-	allGroupFunctionCalls := make([]string, 0)
-	for _, group := range groups {
-		spec := group.Spec
-		groupFunctionCalls := reGroupFnCall.FindAllString(spec, -1)
-
-		if len(groupFunctionCalls) == 0 {
-			continue
-		}
-
-		allGroupFunctionCalls = append(allGroupFunctionCalls, groupFunctionCalls...)
-	}
-
-	for _, rule := range rules {
-		spec := rule.Spec
-		groupFunctionCalls := reGroupFnCall.FindAllString(spec, -1)
-
-		if len(groupFunctionCalls) == 0 {
-			continue
-		}
-
-		allGroupFunctionCalls = append(allGroupFunctionCalls, groupFunctionCalls...)
-	}
-
-	for _, workflow := range workflows {
-		actions := workflow.Actions
-		groupFunctionCalls := make([]string, 0)
-		for _, action := range actions {
-			groupFunctionCalls = append(groupFunctionCalls, reGroupFnCall.FindAllString(action, -1)...)
-		}
-
-		if len(groupFunctionCalls) == 0 {
-			continue
-		}
-
-		allGroupFunctionCalls = append(allGroupFunctionCalls, groupFunctionCalls...)
-	}
+	allGroupFunctionCalls := getAllMatches(`\$group\(".*"\)`, groups, rules, workflows)
 
 	reGroupMention := regexp.MustCompile(`"(.*?)"`)
 	for _, groupFunctionCall := range allGroupFunctionCalls {
@@ -226,12 +250,10 @@ func Lint(file *ReviewpadFile) error {
 		return err
 	}
 
-	// skipping this validation as it is now possible for rules to reference each other
-	// TODO: #8 Improve this validation
-	// err = lintRulesWithWorkflows(file.Rules, file.Workflows)
-	// if err != nil {
-	// 	return err
-	// }
+	err = lintRulesMentions(file.Rules, file.Groups, file.Workflows)
+	if err != nil {
+		return err
+	}
 
 	return lintGroupsMentions(file.Groups, file.Rules, file.Workflows)
 }
