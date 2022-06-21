@@ -14,6 +14,8 @@ import (
 	"github.com/reviewpad/reviewpad/v2/utils"
 )
 
+const reviewpadCommentAnnotation = "<!--@annotation-reviewpad-->"
+
 func addLabel() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
 		Type: aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, nil),
@@ -251,8 +253,6 @@ func commentOnce() *aladino.BuiltInAction {
 }
 
 func commentOnceCode(e aladino.Env, args []aladino.Value) error {
-	const ReviewpadCommentAnnotation = "<!--@annotation-reviewpad-->"
-
 	pullRequest := e.GetPullRequest()
 
 	prNum := utils.GetPullRequestNumber(pullRequest)
@@ -260,17 +260,17 @@ func commentOnceCode(e aladino.Env, args []aladino.Value) error {
 	repo := utils.GetPullRequestRepoName(pullRequest)
 
 	commentBody := args[0].(*aladino.StringValue).Val
-	commentBodyWithReviewpadAnnotation := ReviewpadCommentAnnotation + commentBody
+	commentBodyWithReviewpadAnnotation := fmt.Sprintf("%v%v", reviewpadCommentAnnotation, commentBody)
 
 	comments, err := utils.GetPullRequestComments(e.GetCtx(), e.GetClient(), owner, repo, prNum)
 	if err != nil {
 		return err
 	}
 
-	reviewpadCommentAnnotationRegex := regexp.MustCompile(fmt.Sprintf("^%v", ReviewpadCommentAnnotation))
+	reviewpadCommentRegex := regexp.MustCompile(fmt.Sprintf("^%v", reviewpadCommentAnnotation))
 
 	for _, comment := range comments {
-		isReviewpadComment := reviewpadCommentAnnotationRegex.Match([]byte(*comment.Body))
+		isReviewpadComment := reviewpadCommentRegex.Match([]byte(*comment.Body))
 		commentAlreadyExists := *comment.Body == commentBodyWithReviewpadAnnotation
 		if isReviewpadComment && commentAlreadyExists {
 			return nil
