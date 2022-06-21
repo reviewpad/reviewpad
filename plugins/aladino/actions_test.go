@@ -17,6 +17,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+const ReviewpadCommentAnnotation = "<!--@annotation-reviewpad-->"
+
 func TestCommentOnceOnListCommentsFail(t *testing.T) {
 	testEvalEnv, err := mockEnv(
 		mock.WithRequestMatch(
@@ -28,7 +30,7 @@ func TestCommentOnceOnListCommentsFail(t *testing.T) {
 		log.Fatalf("mockEnv failed: %v", err)
 	}
 
-	args := []aladino.Value{aladino.BuildStringValue("<!--@annotation-reviewpad-->Lorem Ipsum")}
+	args := []aladino.Value{aladino.BuildStringValue("Lorem Ipsum")}
 
 	err = commentOnceCode(testEvalEnv, args)
 
@@ -36,7 +38,7 @@ func TestCommentOnceOnListCommentsFail(t *testing.T) {
 }
 
 func TestCommentOnceWhenCommentAlreadyExists(t *testing.T) {
-	const ExistingComment = "<!--@annotation-reviewpad-->Lorem Ipsum"
+	const ExistingComment = ReviewpadCommentAnnotation + "Lorem Ipsum"
 	var commentCreated *string
 	testEvalEnv, err := mockEnv(
 		mock.WithRequestMatch(
@@ -77,7 +79,7 @@ func TestCommentOnce(t *testing.T) {
 			mock.GetReposIssuesCommentsByOwnerByRepoByIssueNumber,
 			[]*github.IssueComment{
 				{
-					Body: github.String("<!--@annotation-reviewpad-->Lorem Ipsum"),
+					Body: github.String(ReviewpadCommentAnnotation + "Lorem Ipsum"),
 				},
 			},
 		),
@@ -97,11 +99,12 @@ func TestCommentOnce(t *testing.T) {
 		log.Fatalf("mockEnv failed: %v", err)
 	}
 
-	const NewComment = "<!--@annotation-reviewpad-->Dummy Comment"
+	const NewComment = "Dummy Comment"
+	const NewCommentWithReviewpadAnnotation = ReviewpadCommentAnnotation + NewComment
 	args := []aladino.Value{aladino.BuildStringValue(NewComment)}
 
 	err = commentOnceCode(testEvalEnv, args)
 
 	assert.Nil(t, err)
-	assert.Equal(t, NewComment, *commentCreated)
+	assert.Equal(t, NewCommentWithReviewpadAnnotation, *commentCreated)
 }
