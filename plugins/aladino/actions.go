@@ -276,8 +276,9 @@ func commentOnceCode(e aladino.Env, args []aladino.Value) error {
 		}
 	}
 
+	commentBodyWithReviewpadAnnotation := ReviewpadCommentAnnotation + commentBody
 	_, _, err = e.GetClient().Issues.CreateComment(e.GetCtx(), owner, repo, prNum, &github.IssueComment{
-		Body: &commentBody,
+		Body: &commentBodyWithReviewpadAnnotation,
 	})
 
 	return err
