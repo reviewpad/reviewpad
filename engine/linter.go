@@ -182,10 +182,12 @@ func Lint(file *ReviewpadFile) error {
 		return err
 	}
 
-	err = lintRulesWithWorkflows(file.Rules, file.Workflows)
-	if err != nil {
-		return err
-	}
+	// skipping this validation as it is now possible for rules to reference each other
+	// TODO: #8 Improve this validation
+	// err = lintRulesWithWorkflows(file.Rules, file.Workflows)
+	// if err != nil {
+	// 	return err
+	// }
 
 	return lintGroupsMentions(file.Groups, file.Rules, file.Workflows)
 }
