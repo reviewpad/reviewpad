@@ -5,6 +5,7 @@
 package utils
 
 import (
+	"context"
 	"net/url"
 	"strconv"
 	"strings"
@@ -90,4 +91,33 @@ func HasLinearHistory(commit *github.Commit) bool {
 	default:
 		return false
 	}
+}
+
+func GetPullRequestComments(ctx context.Context, client *github.Client, owner string, repo string, number int) ([]*github.IssueComment, error) {
+	const maxPerPage = int32(100)
+
+	fs, err := PaginatedRequest(
+		func() interface{} {
+			return []*github.IssueComment{}
+		},
+		func(i interface{}, page int) (interface{}, *github.Response, error) {
+			fls := i.([]*github.IssueComment)
+			fs, resp, err := client.Issues.ListComments(ctx, owner, repo, number, &github.IssueListCommentsOptions{
+				ListOptions: github.ListOptions{
+					Page:    page,
+					PerPage: int(maxPerPage),
+				},
+			})
+			if err != nil {
+				return nil, nil, err
+			}
+			fls = append(fls, fs...)
+			return fls, resp, nil
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return fs.([]*github.IssueComment), nil
 }
