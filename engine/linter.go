@@ -38,6 +38,30 @@ func lintRules(padRules map[string]PadRule) error {
 }
 
 // Validations:
+// - Group has unique name
+func lintGroups(padGroups []PadGroup) error {
+	groupsName := make([]string, 0)
+
+	for _, group := range padGroups {
+		lintLog("analyzing group %v", group.Name)
+
+		if group.Name == "" {
+			return lintError("group %v has invalid name", group)
+		}
+
+		for _, groupName := range groupsName {
+			if groupName == group.Name {
+				return lintError("group with the name %v already exists", group.Name)
+			}
+		}
+
+		groupsName = append(groupsName, group.Name)
+	}
+
+	return nil
+}
+
+// Validations:
 // - Workflow has unique name
 // - Workflow has rules
 // - Workflow has non empty rules
@@ -172,7 +196,12 @@ func lintGroupsMentions(groups []PadGroup, rules map[string]PadRule, workflows [
 }
 
 func Lint(file *ReviewpadFile) error {
-	err := lintRules(file.Rules)
+	err := lintGroups(file.Groups)
+	if err != nil {
+		return err
+	}
+
+	err = lintRules(file.Rules)
 	if err != nil {
 		return err
 	}
