@@ -1,6 +1,14 @@
 # Reviewpad
 
-**If you think Reviewpad is or could be useful for you, come say hi on [Discord](https://reviewpad.com/discord)!**
+## Welcome to Reviewpad!
+
+For **questions**, check out the [discussions](https://github.com/reviewpad/reviewpad/discussions).
+
+For **documentation**, check out this document and the [official documentation](https://docs.reviewpad.com).
+
+**If you think Reviewpad is or could be useful for you, come say hi on [Discord](https://reviewpad.com/discord).**
+
+To start using Reviewpad, check out the [Reviewpad GitHub Action](https://github.com/reviewpad/action).
 
 ## What is Reviewpad?
 Reviewpad is an open-source tool to automate pull request workflows.
