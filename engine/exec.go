@@ -85,13 +85,13 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 	}
 
 	// process rules
-	for ruleName, rule := range file.Rules {
-		err := interpreter.ProcessRule(ruleName, rule.Spec)
+	for _, rule := range file.Rules {
+		err := interpreter.ProcessRule(rule.Name, rule.Spec)
 		if err != nil {
 			CollectError(env, err)
 			return nil, err
 		}
-		rules[ruleName] = rule
+		rules[rule.Name] = rule
 	}
 
 	// a program is a list of statements to be executed based on the workflow rules and actions.
