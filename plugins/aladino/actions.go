@@ -259,7 +259,7 @@ func commentOnceCode(e aladino.Env, args []aladino.Value) error {
 
 	commentBody := args[0].(*aladino.StringValue).Val
 
-	comments, _, err := e.GetClient().Issues.ListComments(e.GetCtx(), owner, repo, prNum, &github.IssueListCommentsOptions{})
+	comments, err := utils.GetPullRequestComments(e.GetCtx(), e.GetClient(), owner, repo, prNum)
 	if err != nil {
 		return err
 	}
