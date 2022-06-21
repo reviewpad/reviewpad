@@ -1,6 +1,6 @@
-// Copyright (C) 2019-2022 Explore.dev - All Rights Reserved
-// Unauthorized copying of this file, via any medium is strictly prohibited
-// Proprietary and confidential
+// Copyright 2022 Explore.dev Unipessoal Lda. All Rights Reserved.
+// Use of this source code is governed by a license that can be
+// found in the LICENSE file.
 
 package plugins_aladino
 
@@ -82,7 +82,7 @@ func TestCommentOnce(t *testing.T) {
 			},
 		),
 		mock.WithRequestMatchHandler(
-			mock.PostReposIssuesCommentsByOwnerByRepoByIssueNumber ,
+			mock.PostReposIssuesCommentsByOwnerByRepoByIssueNumber,
 			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				body, _ := ioutil.ReadAll(r.Body)
 				postBody := github.IssueComment{}
