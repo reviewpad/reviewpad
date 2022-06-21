@@ -1,4 +1,4 @@
-module github.com/reviewpad/reviewpad
+module github.com/reviewpad/reviewpad/v2
 
 go 1.18
 

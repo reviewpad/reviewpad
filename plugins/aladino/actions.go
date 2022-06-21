@@ -9,8 +9,8 @@ import (
 	"log"
 
 	"github.com/google/go-github/v42/github"
-	"github.com/reviewpad/reviewpad/lang/aladino"
-	"github.com/reviewpad/reviewpad/utils"
+	"github.com/reviewpad/reviewpad/v2/lang/aladino"
+	"github.com/reviewpad/reviewpad/v2/utils"
 )
 
 func addLabel() *aladino.BuiltInAction {
