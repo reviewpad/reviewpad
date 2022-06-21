@@ -28,7 +28,7 @@ func TestCommentOnceOnListCommentsFail(t *testing.T) {
 		log.Fatalf("mockEnv failed: %v", err)
 	}
 
-	args := []aladino.Value{aladino.BuildStringValue("Lorem Ipsum")}
+	args := []aladino.Value{aladino.BuildStringValue("<!--@annotation-reviewpad-->Lorem Ipsum")}
 
 	err = commentOnceCode(*testEvalEnv, args)
 
@@ -42,7 +42,7 @@ func TestCommentOnceWhenCommentAlreadyExists(t *testing.T) {
 			mock.GetReposIssuesCommentsByOwnerByRepoByIssueNumber,
 			[]*github.IssueComment{
 				{
-					Body: github.String("Lorem Ipsum"),
+					Body: github.String("<!--@annotation-reviewpad-->Lorem Ipsum"),
 				},
 			},
 		),
@@ -62,7 +62,7 @@ func TestCommentOnceWhenCommentAlreadyExists(t *testing.T) {
 		log.Fatalf("mockEnv failed: %v", err)
 	}
 
-	args := []aladino.Value{aladino.BuildStringValue("Lorem Ipsum")}
+	args := []aladino.Value{aladino.BuildStringValue("<!--@annotation-reviewpad-->Lorem Ipsum")}
 
 	err = commentOnceCode(*testEvalEnv, args)
 
@@ -77,7 +77,7 @@ func TestCommentOnce(t *testing.T) {
 			mock.GetReposIssuesCommentsByOwnerByRepoByIssueNumber,
 			[]*github.IssueComment{
 				{
-					Body: github.String("Lorem Ipsum"),
+					Body: github.String("<!--@annotation-reviewpad-->Lorem Ipsum"),
 				},
 			},
 		),
@@ -97,10 +97,10 @@ func TestCommentOnce(t *testing.T) {
 		log.Fatalf("mockEnv failed: %v", err)
 	}
 
-	args := []aladino.Value{aladino.BuildStringValue("Dummy Comment")}
+	args := []aladino.Value{aladino.BuildStringValue("<!--@annotation-reviewpad-->Dummy Comment")}
 
 	err = commentOnceCode(*testEvalEnv, args)
 
 	assert.Nil(t, err)
-	assert.Equal(t, "Dummy Comment", commentCreated)
+	assert.Equal(t, "<!--@annotation-reviewpad-->Dummy Comment", commentCreated)
 }

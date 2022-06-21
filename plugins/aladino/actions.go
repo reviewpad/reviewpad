@@ -7,6 +7,7 @@ package plugins_aladino
 import (
 	"fmt"
 	"log"
+	"regexp"
 
 	"github.com/google/go-github/v42/github"
 	"github.com/reviewpad/reviewpad/lang/aladino"
@@ -263,9 +264,14 @@ func commentOnceCode(e aladino.Env, args []aladino.Value) error {
 		return err
 	}
 
+	const ReviewpadCommentAnnotation = "<!--@annotation-reviewpad-->"
+
+	reviewpadCommentAnnotationRegex := regexp.MustCompile(fmt.Sprintf("^%v", ReviewpadCommentAnnotation))
+
 	for _, comment := range comments {
-		commentAlreadyMade := *comment.Body == commentBody
-		if commentAlreadyMade {
+		isReviewpadComment := reviewpadCommentAnnotationRegex.Match([]byte(*comment.Body))
+		commentAlreadyExists := *comment.Body == commentBody
+		if isReviewpadComment && commentAlreadyExists {
 			return nil
 		}
 	}
