@@ -156,6 +156,7 @@ func inlineImports(file *ReviewpadFile, env *LoadEnv) (*ReviewpadFile, error) {
 
 		// append labels, rules and workflows
 		file.appendLabels(subTreeFile)
+		file.appendGroups(subTreeFile)
 		file.appendRules(subTreeFile)
 		file.appendWorkflows(subTreeFile)
 	}

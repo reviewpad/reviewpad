@@ -76,8 +76,8 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 	}
 
 	// process groups
-	for groupName, group := range file.Groups {
-		err := interpreter.ProcessGroup(groupName, GroupKind(group.Kind), GroupType(group.Type), group.Spec, group.Param, group.Where)
+	for _, group := range file.Groups {
+		err := interpreter.ProcessGroup(group.Name, GroupKind(group.Kind), GroupType(group.Type), group.Spec, group.Param, group.Where)
 		if err != nil {
 			CollectError(env, err)
 			return nil, err

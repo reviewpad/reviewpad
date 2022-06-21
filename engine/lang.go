@@ -120,6 +120,7 @@ func (p PadWorkflow) equals(o PadWorkflow) bool {
 }
 
 type PadGroup struct {
+	Name        string `yaml:"name"`
 	Description string `yaml:"description"`
 	Kind        string `yaml:"kind"`
 	Type        string `yaml:"type"`
@@ -129,7 +130,8 @@ type PadGroup struct {
 }
 
 func (p PadGroup) equals(o PadGroup) bool {
-	return p.Description == o.Description &&
+	return p.Name == o.Name &&
+		p.Description == o.Description &&
 		p.Kind == o.Kind &&
 		p.Type == o.Type &&
 		p.Spec == o.Spec &&
@@ -141,7 +143,7 @@ type ReviewpadFile struct {
 	Edition   string              `yaml:"edition"`
 	Mode      string              `yaml:"mode"`
 	Imports   []PadImport         `yaml:"imports"`
-	Groups    map[string]PadGroup `yaml:"groups"`
+	Groups    []PadGroup          `yaml:"groups"`
 	Rules     map[string]PadRule  `yaml:"rules"`
 	Labels    map[string]PadLabel `yaml:"labels"`
 	Workflows []PadWorkflow       `yaml:"workflows"`
@@ -234,10 +236,28 @@ func (r *ReviewpadFile) appendRules(o *ReviewpadFile) {
 	}
 }
 
+func (r *ReviewpadFile) appendGroups(o *ReviewpadFile) {
+	if r.Groups == nil {
+		r.Groups = make([]PadGroup, 0)
+	}
+
+	r.Groups = append(r.Groups, o.Groups...)
+}
+
 func (r *ReviewpadFile) appendWorkflows(o *ReviewpadFile) {
 	if r.Workflows == nil {
 		r.Workflows = make([]PadWorkflow, 0)
 	}
 
 	r.Workflows = append(r.Workflows, o.Workflows...)
+}
+
+func findGroup(groups []PadGroup, name string) (*PadGroup, bool) {
+	for _, group := range groups {
+		if group.Name == name {
+			return &group, true
+		}
+	}
+
+	return nil, false
 }
