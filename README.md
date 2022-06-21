@@ -32,7 +32,7 @@ labels:
     color: 76dbbe
 
 rules:
-  - name: changesToMDFiles:
+  - name: changesToMDFiles
     kind: patch
     description: Patch only contains changes to files with extension .md
     spec: $hasFileExtensions([".md"])
