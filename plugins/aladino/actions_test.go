@@ -30,19 +30,20 @@ func TestCommentOnceOnListCommentsFail(t *testing.T) {
 
 	args := []aladino.Value{aladino.BuildStringValue("<!--@annotation-reviewpad-->Lorem Ipsum")}
 
-	err = commentOnceCode(*testEvalEnv, args)
+	err = commentOnceCode(testEvalEnv, args)
 
 	assert.NotNil(t, err)
 }
 
 func TestCommentOnceWhenCommentAlreadyExists(t *testing.T) {
-	var commentCreated string
+	const ExistingComment = "<!--@annotation-reviewpad-->Lorem Ipsum"
+	var commentCreated *string
 	testEvalEnv, err := mockEnv(
 		mock.WithRequestMatch(
 			mock.GetReposIssuesCommentsByOwnerByRepoByIssueNumber,
 			[]*github.IssueComment{
 				{
-					Body: github.String("<!--@annotation-reviewpad-->Lorem Ipsum"),
+					Body: github.String(ExistingComment),
 				},
 			},
 		),
@@ -54,7 +55,7 @@ func TestCommentOnceWhenCommentAlreadyExists(t *testing.T) {
 
 				json.Unmarshal(body, &postBody)
 
-				commentCreated = *postBody.Body
+				commentCreated = postBody.Body
 			}),
 		),
 	)
@@ -62,16 +63,15 @@ func TestCommentOnceWhenCommentAlreadyExists(t *testing.T) {
 		log.Fatalf("mockEnv failed: %v", err)
 	}
 
-	args := []aladino.Value{aladino.BuildStringValue("<!--@annotation-reviewpad-->Lorem Ipsum")}
+	args := []aladino.Value{aladino.BuildStringValue(ExistingComment)}
 
-	err = commentOnceCode(*testEvalEnv, args)
-
+	err = commentOnceCode(testEvalEnv, args)
 	assert.Nil(t, err)
-	assert.Equal(t, "", commentCreated)
+	assert.Equal(t, (*string)(nil), commentCreated)
 }
 
 func TestCommentOnce(t *testing.T) {
-	var commentCreated string
+	var commentCreated *string
 	testEvalEnv, err := mockEnv(
 		mock.WithRequestMatch(
 			mock.GetReposIssuesCommentsByOwnerByRepoByIssueNumber,
@@ -89,7 +89,7 @@ func TestCommentOnce(t *testing.T) {
 
 				json.Unmarshal(body, &postBody)
 
-				commentCreated = *postBody.Body
+				commentCreated = postBody.Body
 			}),
 		),
 	)
@@ -97,10 +97,11 @@ func TestCommentOnce(t *testing.T) {
 		log.Fatalf("mockEnv failed: %v", err)
 	}
 
-	args := []aladino.Value{aladino.BuildStringValue("<!--@annotation-reviewpad-->Dummy Comment")}
+	const NewComment = "<!--@annotation-reviewpad-->Dummy Comment"
+	args := []aladino.Value{aladino.BuildStringValue(NewComment)}
 
-	err = commentOnceCode(*testEvalEnv, args)
+	err = commentOnceCode(testEvalEnv, args)
 
 	assert.Nil(t, err)
-	assert.Equal(t, "<!--@annotation-reviewpad-->Dummy Comment", commentCreated)
+	assert.Equal(t, NewComment, *commentCreated)
 }

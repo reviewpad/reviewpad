@@ -92,7 +92,7 @@ func mockClient(clientOptions ...mock.MockBackendOption) *http.Client {
 	return mock.NewMockedHTTPClient(mocks...)
 }
 
-func mockEnv(clientOptions ...mock.MockBackendOption) (*aladino.Env, error) {
+func mockEnv(clientOptions ...mock.MockBackendOption) (aladino.Env, error) {
 	client := github.NewClient(mockClient(clientOptions...))
 
 	owner := "foobar"
@@ -115,5 +115,5 @@ func mockEnv(clientOptions ...mock.MockBackendOption) (*aladino.Env, error) {
 		PluginBuiltIns(),
 	)
 
-	return &env, err
+	return env, err
 }
