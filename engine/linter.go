@@ -20,18 +20,33 @@ func lintLog(format string, a ...interface{}) {
 }
 
 // Validations:
+// - Every rule has a (unique) name
 // - Every rule has a kind
 // - Every rules has a spec
-func lintRules(padRules map[string]PadRule) error {
-	for ruleName, rule := range padRules {
+func lintRules(padRules []PadRule) error {
+	rulesName := make([]string, 0)
+
+	for _, rule := range padRules {
+		if rule.Name == "" {
+			return lintError("rule %v has invalid name", rule)
+		}
+
+		for _, ruleName := range rulesName {
+			if ruleName == rule.Name {
+				return lintError("rule with the name %v already exists", rule.Name)
+			}
+		}
+
 		ruleKind := rule.Kind
 		if !utils.ElementOf(kinds, ruleKind) {
-			return lintError("rule %v has invalid kind %v", ruleName, ruleKind)
+			return lintError("rule %v has invalid kind %v", rule.Name, ruleKind)
 		}
 
 		if rule.Spec == "" {
-			return lintError("rule %v has empty spec", ruleName)
+			return lintError("rule %v has empty spec", rule.Name)
 		}
+
+		rulesName = append(rulesName, rule.Name)
 	}
 
 	return nil
@@ -66,7 +81,7 @@ func lintGroups(padGroups []PadGroup) error {
 // - Workflow has rules
 // - Workflow has non empty rules
 // - Workflow has only known rules
-func lintWorkflows(rules map[string]PadRule, padWorkflows []PadWorkflow) error {
+func lintWorkflows(rules []PadRule, padWorkflows []PadWorkflow) error {
 	workflowsName := make([]string, 0)
 	workflowHasExtraActions := false
 
@@ -91,7 +106,7 @@ func lintWorkflows(rules map[string]PadRule, padWorkflows []PadWorkflow) error {
 				return lintError("workflow has an empty rule")
 			}
 
-			_, exists := rules[ruleName]
+			_, exists := findRule(rules, ruleName)
 			if !exists {
 				return lintError("rule %v is unknown", ruleName)
 			}
@@ -141,7 +156,7 @@ func lintRulesWithWorkflows(rules map[string]PadRule, padWorkflows []PadWorkflow
 	return nil
 }
 
-func lintGroupsMentions(groups []PadGroup, rules map[string]PadRule, workflows []PadWorkflow) error {
+func lintGroupsMentions(groups []PadGroup, rules []PadRule, workflows []PadWorkflow) error {
 	reGroupFnCall := regexp.MustCompile(`\$group\(".*"\)`)
 	allGroupFunctionCalls := make([]string, 0)
 	for _, group := range groups {
