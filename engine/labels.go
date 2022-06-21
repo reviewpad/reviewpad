@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/google/go-github/v42/github"
-	"github.com/reviewpad/reviewpad/utils"
+	"github.com/reviewpad/reviewpad/v2/utils"
 )
 
 func validateLabelColor(label *PadLabel) error {
