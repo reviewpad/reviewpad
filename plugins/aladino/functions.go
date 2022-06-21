@@ -254,7 +254,7 @@ func hasLinearHistoryCode(e aladino.Env, _ []aladino.Value) (aladino.Value, erro
 	}
 
 	for _, ghCommit := range ghCommits {
-		if !utils.HasLinearHistory(ghCommit.Commit) {
+		if len(ghCommit.Parents) > 1 {
 			return aladino.BuildBoolValue(false), nil
 		}
 	}

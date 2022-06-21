@@ -80,14 +80,3 @@ func ParseNumPages(resp *github.Response) int {
 
 	return ParseNumPagesFromLink(link)
 }
-
-func HasLinearHistory(commit *github.Commit) bool {
-	switch len(commit.Parents) {
-	case 0:
-		return true
-	case 1:
-		return HasLinearHistory(commit.Parents[0])
-	default:
-		return false
-	}
-}
