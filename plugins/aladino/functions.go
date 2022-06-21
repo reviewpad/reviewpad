@@ -11,8 +11,8 @@ import (
 
 	doublestar "github.com/bmatcuk/doublestar/v4"
 	"github.com/google/go-github/v42/github"
-	"github.com/reviewpad/reviewpad/lang/aladino"
-	"github.com/reviewpad/reviewpad/utils"
+	"github.com/reviewpad/reviewpad/v2/lang/aladino"
+	"github.com/reviewpad/reviewpad/v2/utils"
 	"github.com/shurcooL/githubv4"
 )
 
@@ -254,7 +254,7 @@ func hasLinearHistoryCode(e aladino.Env, _ []aladino.Value) (aladino.Value, erro
 	}
 
 	for _, ghCommit := range ghCommits {
-		if !utils.HasLinearHistory(ghCommit.Commit) {
+		if len(ghCommit.Parents) > 1 {
 			return aladino.BuildBoolValue(false), nil
 		}
 	}

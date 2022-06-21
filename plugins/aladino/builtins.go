@@ -4,7 +4,7 @@
 
 package plugins_aladino
 
-import "github.com/reviewpad/reviewpad/lang/aladino"
+import "github.com/reviewpad/reviewpad/v2/lang/aladino"
 
 // The documentation for the builtins is in:
 // https://github.com/reviewpad/docs/blob/main/aladino/builtins.md

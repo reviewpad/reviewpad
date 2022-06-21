@@ -1,6 +1,6 @@
-// Copyright (C) 2019-2022 Explore.dev - All Rights Reserved
-// Unauthorized copying of this file, via any medium is strictly prohibited
-// Proprietary and confidential
+// Copyright 2022 Explore.dev Unipessoal Lda. All Rights Reserved.
+// Use of this source code is governed by a license that can be
+// found in the LICENSE file.
 
 package engine
 
@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/google/go-github/v42/github"
-	"github.com/reviewpad/reviewpad/utils"
+	"github.com/reviewpad/reviewpad/v2/utils"
 )
 
 func validateLabelColor(label *PadLabel) error {

@@ -8,7 +8,7 @@ import (
 	"log"
 	"regexp"
 
-	"github.com/reviewpad/reviewpad/utils/fmtio"
+	"github.com/reviewpad/reviewpad/v2/utils/fmtio"
 )
 
 func execError(format string, a ...interface{}) error {
@@ -76,8 +76,8 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 	}
 
 	// process groups
-	for groupName, group := range file.Groups {
-		err := interpreter.ProcessGroup(groupName, GroupKind(group.Kind), GroupType(group.Type), group.Spec, group.Param, group.Where)
+	for _, group := range file.Groups {
+		err := interpreter.ProcessGroup(group.Name, GroupKind(group.Kind), GroupType(group.Type), group.Spec, group.Param, group.Where)
 		if err != nil {
 			CollectError(env, err)
 			return nil, err
@@ -85,13 +85,13 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 	}
 
 	// process rules
-	for ruleName, rule := range file.Rules {
-		err := interpreter.ProcessRule(ruleName, rule.Spec)
+	for _, rule := range file.Rules {
+		err := interpreter.ProcessRule(rule.Name, rule.Spec)
 		if err != nil {
 			CollectError(env, err)
 			return nil, err
 		}
-		rules[ruleName] = rule
+		rules[rule.Name] = rule
 	}
 
 	// a program is a list of statements to be executed based on the workflow rules and actions.

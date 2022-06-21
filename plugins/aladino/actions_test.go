@@ -6,6 +6,7 @@ package plugins_aladino
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -13,98 +14,94 @@ import (
 
 	"github.com/google/go-github/v42/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
-	"github.com/reviewpad/reviewpad/lang/aladino"
+	"github.com/reviewpad/reviewpad/v2/lang/aladino"
 	"github.com/stretchr/testify/assert"
 )
 
-const ReviewpadCommentAnnotation = "<!--@annotation-reviewpad-->"
-
-func TestCommentOnceOnListCommentsFail(t *testing.T) {
-	testEvalEnv, err := mockEnv(
-		mock.WithRequestMatch(
+func TestCommentOnce_WhenGetCommentsRequestFails(t *testing.T) {
+	failMessage := "GetCommentRequestFail"
+	mockedEnv, err := mockDefaultEnv(
+		mock.WithRequestMatchHandler(
 			mock.GetReposIssuesCommentsByOwnerByRepoByIssueNumber,
-			&github.ErrorResponse{},
+			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				mock.WriteError(
+					w,
+					http.StatusInternalServerError,
+					failMessage,
+				)
+			}),
 		),
 	)
 	if err != nil {
-		log.Fatalf("mockEnv failed: %v", err)
+		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
 
-	args := []aladino.Value{aladino.BuildStringValue("Lorem Ipsum")}
+	args := []aladino.Value{aladino.BuildStringValue("<!--@annotation-reviewpad-->Lorem Ipsum")}
+	err = commentOnceCode(mockedEnv, args)
 
-	err = commentOnceCode(testEvalEnv, args)
-
-	assert.NotNil(t, err)
+	assert.Equal(t, err.(*github.ErrorResponse).Message, failMessage)
 }
 
-func TestCommentOnceWhenCommentAlreadyExists(t *testing.T) {
-	const ExistingComment = ReviewpadCommentAnnotation + "Lorem Ipsum"
-	var commentCreated *string
-	testEvalEnv, err := mockEnv(
+func TestCommentOnce_WhenCommentAlreadyExists(t *testing.T) {
+	existingComment := "Lorem Ipsum"
+	commentCreated := false
+
+	mockedEnv, err := mockDefaultEnv(
 		mock.WithRequestMatch(
 			mock.GetReposIssuesCommentsByOwnerByRepoByIssueNumber,
 			[]*github.IssueComment{
 				{
-					Body: github.String(ExistingComment),
+					Body: github.String(fmt.Sprintf("%v%v", reviewpadCommentAnnotation, existingComment)),
 				},
 			},
 		),
 		mock.WithRequestMatchHandler(
 			mock.PostReposIssuesCommentsByOwnerByRepoByIssueNumber,
 			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				body, _ := ioutil.ReadAll(r.Body)
-				postBody := github.IssueComment{}
-
-				json.Unmarshal(body, &postBody)
-
-				commentCreated = postBody.Body
+				// If the create comment request was performed then the comment was created
+				commentCreated = true
 			}),
 		),
 	)
 	if err != nil {
-		log.Fatalf("mockEnv failed: %v", err)
+		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
 
-	args := []aladino.Value{aladino.BuildStringValue(ExistingComment)}
+	args := []aladino.Value{aladino.BuildStringValue(existingComment)}
+	err = commentOnceCode(mockedEnv, args)
 
-	err = commentOnceCode(testEvalEnv, args)
 	assert.Nil(t, err)
-	assert.Equal(t, (*string)(nil), commentCreated)
+	assert.False(t, commentCreated, "The comment should not be created")
 }
 
-func TestCommentOnce(t *testing.T) {
-	var commentCreated *string
-	testEvalEnv, err := mockEnv(
+func TestCommentOnce_WhenFirstTime(t *testing.T) {
+	commentToAdd := "Lorem Ipsum"
+	addedComment := ""
+
+	mockedEnv, err := mockDefaultEnv(
 		mock.WithRequestMatch(
 			mock.GetReposIssuesCommentsByOwnerByRepoByIssueNumber,
-			[]*github.IssueComment{
-				{
-					Body: github.String(ReviewpadCommentAnnotation + "Lorem Ipsum"),
-				},
-			},
+			[]*github.IssueComment{},
 		),
 		mock.WithRequestMatchHandler(
 			mock.PostReposIssuesCommentsByOwnerByRepoByIssueNumber,
 			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				body, _ := ioutil.ReadAll(r.Body)
-				postBody := github.IssueComment{}
+				rawBody, _ := ioutil.ReadAll(r.Body)
+				body := github.IssueComment{}
 
-				json.Unmarshal(body, &postBody)
+				json.Unmarshal(rawBody, &body)
 
-				commentCreated = postBody.Body
+				addedComment = *body.Body
 			}),
 		),
 	)
 	if err != nil {
-		log.Fatalf("mockEnv failed: %v", err)
+		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
 
-	const NewComment = "Dummy Comment"
-	const NewCommentWithReviewpadAnnotation = ReviewpadCommentAnnotation + NewComment
-	args := []aladino.Value{aladino.BuildStringValue(NewComment)}
-
-	err = commentOnceCode(testEvalEnv, args)
+	args := []aladino.Value{aladino.BuildStringValue(commentToAdd)}
+	err = commentOnceCode(mockedEnv, args)
 
 	assert.Nil(t, err)
-	assert.Equal(t, NewCommentWithReviewpadAnnotation, *commentCreated)
+	assert.Equal(t, fmt.Sprintf("%v%v", reviewpadCommentAnnotation, commentToAdd), addedComment)
 }

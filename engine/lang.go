@@ -20,13 +20,15 @@ func (p PadImport) equals(o PadImport) bool {
 }
 
 type PadRule struct {
+	Name        string `yaml:"name"`
 	Kind        string `yaml:"kind"`
 	Description string `yaml:"description"`
 	Spec        string `yaml:"spec"`
 }
 
 func (p PadRule) equals(o PadRule) bool {
-	return p.Kind == o.Kind &&
+	return p.Name != o.Name &&
+		p.Kind == o.Kind &&
 		p.Description == o.Description &&
 		p.Spec == o.Spec
 }
@@ -120,6 +122,7 @@ func (p PadWorkflow) equals(o PadWorkflow) bool {
 }
 
 type PadGroup struct {
+	Name        string `yaml:"name"`
 	Description string `yaml:"description"`
 	Kind        string `yaml:"kind"`
 	Type        string `yaml:"type"`
@@ -129,7 +132,8 @@ type PadGroup struct {
 }
 
 func (p PadGroup) equals(o PadGroup) bool {
-	return p.Description == o.Description &&
+	return p.Name == o.Name &&
+		p.Description == o.Description &&
 		p.Kind == o.Kind &&
 		p.Type == o.Type &&
 		p.Spec == o.Spec &&
@@ -141,8 +145,8 @@ type ReviewpadFile struct {
 	Edition   string              `yaml:"edition"`
 	Mode      string              `yaml:"mode"`
 	Imports   []PadImport         `yaml:"imports"`
-	Groups    map[string]PadGroup `yaml:"groups"`
-	Rules     map[string]PadRule  `yaml:"rules"`
+	Groups    []PadGroup          `yaml:"groups"`
+	Rules     []PadRule           `yaml:"rules"`
 	Labels    map[string]PadLabel `yaml:"labels"`
 	Workflows []PadWorkflow       `yaml:"workflows"`
 }
@@ -226,12 +230,18 @@ func (r *ReviewpadFile) appendLabels(o *ReviewpadFile) {
 
 func (r *ReviewpadFile) appendRules(o *ReviewpadFile) {
 	if r.Rules == nil {
-		r.Rules = make(map[string]PadRule)
+		r.Rules = make([]PadRule, 0)
 	}
 
-	for ruleName, rule := range o.Rules {
-		r.Rules[ruleName] = rule
+	r.Rules = append(r.Rules, o.Rules...)
+}
+
+func (r *ReviewpadFile) appendGroups(o *ReviewpadFile) {
+	if r.Groups == nil {
+		r.Groups = make([]PadGroup, 0)
 	}
+
+	r.Groups = append(r.Groups, o.Groups...)
 }
 
 func (r *ReviewpadFile) appendWorkflows(o *ReviewpadFile) {
@@ -240,4 +250,24 @@ func (r *ReviewpadFile) appendWorkflows(o *ReviewpadFile) {
 	}
 
 	r.Workflows = append(r.Workflows, o.Workflows...)
+}
+
+func findGroup(groups []PadGroup, name string) (*PadGroup, bool) {
+	for _, group := range groups {
+		if group.Name == name {
+			return &group, true
+		}
+	}
+
+	return nil, false
+}
+
+func findRule(rules []PadRule, name string) (*PadRule, bool) {
+	for _, rule := range rules {
+		if rule.Name == name {
+			return &rule, true
+		}
+	}
+
+	return nil, false
 }

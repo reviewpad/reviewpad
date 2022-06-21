@@ -8,8 +8,8 @@ import (
 	"context"
 
 	"github.com/google/go-github/v42/github"
-	"github.com/reviewpad/reviewpad/collector"
-	"github.com/reviewpad/reviewpad/utils"
+	"github.com/reviewpad/reviewpad/v2/collector"
+	"github.com/reviewpad/reviewpad/v2/utils"
 	"github.com/shurcooL/githubv4"
 )
 

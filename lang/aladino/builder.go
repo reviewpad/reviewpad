@@ -5,15 +5,15 @@
 package aladino
 
 func buildFilter(param string, condition Expr) (Expr, error) {
-	allDevsAST := functionCall(
-		variable("allDevs"),
+	organizationAST := functionCall(
+		variable("organization"),
 		[]Expr{},
 	)
 
 	ast := functionCall(
 		variable("filter"),
 		[]Expr{
-			allDevsAST,
+			organizationAST,
 			lambda(
 				[]Expr{typedExpr(variable(param), BuildStringType())},
 				condition,

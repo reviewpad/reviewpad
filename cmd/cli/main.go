@@ -14,8 +14,8 @@ import (
 	"strconv"
 
 	"github.com/google/go-github/v42/github"
-	"github.com/reviewpad/reviewpad"
-	"github.com/reviewpad/reviewpad/collector"
+	"github.com/reviewpad/reviewpad/v2"
+	"github.com/reviewpad/reviewpad/v2/collector"
 	"github.com/shurcooL/githubv4"
 	"golang.org/x/oauth2"
 )
@@ -118,7 +118,7 @@ func main() {
 		log.Fatalf("Error running reviewpad team edition. Details %v", err.Error())
 	}
 
-	err = reviewpad.Run(ctx, gitHubClient, gitHubClientGQL, collectorClient, ghPullRequest, file, *dryRun)
+	_, err = reviewpad.Run(ctx, gitHubClient, gitHubClientGQL, collectorClient, ghPullRequest, file, *dryRun)
 	if err != nil {
 		log.Fatalf("Error running reviewpad team edition. Details %v", err.Error())
 	}

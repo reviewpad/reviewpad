@@ -10,9 +10,11 @@ import (
 	"regexp"
 
 	"github.com/google/go-github/v42/github"
-	"github.com/reviewpad/reviewpad/lang/aladino"
-	"github.com/reviewpad/reviewpad/utils"
+	"github.com/reviewpad/reviewpad/v2/lang/aladino"
+	"github.com/reviewpad/reviewpad/v2/utils"
 )
+
+const reviewpadCommentAnnotation = "<!--@annotation-reviewpad-->"
 
 func addLabel() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
@@ -258,25 +260,23 @@ func commentOnceCode(e aladino.Env, args []aladino.Value) error {
 	repo := utils.GetPullRequestRepoName(pullRequest)
 
 	commentBody := args[0].(*aladino.StringValue).Val
+	commentBodyWithReviewpadAnnotation := fmt.Sprintf("%v%v", reviewpadCommentAnnotation, commentBody)
 
 	comments, err := utils.GetPullRequestComments(e.GetCtx(), e.GetClient(), owner, repo, prNum)
 	if err != nil {
 		return err
 	}
 
-	const ReviewpadCommentAnnotation = "<!--@annotation-reviewpad-->"
-
-	reviewpadCommentAnnotationRegex := regexp.MustCompile(fmt.Sprintf("^%v", ReviewpadCommentAnnotation))
+	reviewpadCommentRegex := regexp.MustCompile(fmt.Sprintf("^%v", reviewpadCommentAnnotation))
 
 	for _, comment := range comments {
-		isReviewpadComment := reviewpadCommentAnnotationRegex.Match([]byte(*comment.Body))
-		commentAlreadyExists := *comment.Body == commentBody
+		isReviewpadComment := reviewpadCommentRegex.Match([]byte(*comment.Body))
+		commentAlreadyExists := *comment.Body == commentBodyWithReviewpadAnnotation
 		if isReviewpadComment && commentAlreadyExists {
 			return nil
 		}
 	}
 
-	commentBodyWithReviewpadAnnotation := ReviewpadCommentAnnotation + commentBody
 	_, _, err = e.GetClient().Issues.CreateComment(e.GetCtx(), owner, repo, prNum, &github.IssueComment{
 		Body: &commentBodyWithReviewpadAnnotation,
 	})

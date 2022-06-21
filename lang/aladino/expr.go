@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/reviewpad/reviewpad/utils/report"
+	"github.com/reviewpad/reviewpad/v2/utils/report"
 )
 
 type Expr interface {
