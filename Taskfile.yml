@@ -24,7 +24,7 @@ tasks:
 
       Run with --watch or -w to watch for changes on yacc file.
     cmds:
-      - goyacc -o lang/aladino/parser.go -p Aladino lang/aladino/parser.y
+      - goyacc -l -o lang/aladino/parser.go -p Aladino lang/aladino/parser.y
     sources:
       - lang/aladino/parser.y
     generates:
