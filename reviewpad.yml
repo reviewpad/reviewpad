@@ -1,76 +1,156 @@
-api-version: reviewpad.com/v1.x
+api-version: reviewpad.com/v2.x
 
 mode: silent
 edition: professional
 
 labels:
+  small:
+    description: Small changes
+    # color is the hexadecimal color code for the label, without the leading #.
+    color: "294b69"
+  medium:
+    description: Medium changes
+    color: "a8c3f7"
+  large:
+    description: Large changes
+    color: "8a2138"
+  external-contribution:
+    description: External contribution
+    color: "8a2151"
   plugins:
     description: Modifications to the plugins directory
     color: "294b72"
+  critical:
+    description: Modifications to critical changes
+    color: "294b75"
   ship:
     description: Ship mode
-    color: 76dbbe
+    color: "76dbbe"
 
 groups:
-  owners:
+  - name: owners
     description: Group of owners
     kind: developers
     spec: '["marcelosousa", "ferreiratiago"]'
 
-  plugins-reviewers:
+  - name: plugins-reviewers
     description: Group of plugin reviewers
     kind: developers
     spec: '["marcelosousa", "ferreiratiago", "shay2025"]'
 
 rules:
-  shipPullRequestsAreAutomerged:
+  - name: is-small
+    kind: patch
+    description: small pull request
+    spec: $size() <= 30
+
+  - name: is-medium
+    kind: patch
+    description: medium-sized pull request
+    spec: $size() > 30 && $size() <= 100
+
+  - name: is-large
+    kind: patch
+    description: large-sized pull request
+    spec: $size() > 100
+
+  - name: shipPullRequestsAreAutomerged
     kind: patch
     description: owners of pull requests with ship in the title
     spec: '$contains($title(), "[ship]: ") && $isElementOf($author(), $group("owners"))'
 
-  touchesLicense:
+  - name: touchesLicense
     kind: patch
     description: modifies the LICENSE file
     spec: '$hasFileName("LICENSE")'
 
-  touchesMoreThanLicense:
+  - name: touchesMoreThanLicense
     kind: patch
     description: modifies the LICENSE file and other files
     spec: '$rule("touchesLicense") && $fileCount() > 1'
 
-  touchesLicenseByNonOwner:
+  - name: touchesLicenseByNonOwner
     kind: patch
     description: non-owner modifies the LICENSE file
     spec: '$rule("touchesLicense") && !$isElementOf($author(), $group("owners"))'
 
-  touchesPluginsFunctions:
+  - name: touchesPluginsFunctions
     kind: patch
     description: modifies the plugin functions
     spec: '$hasFileName("plugins/aladino/functions.go")'
 
-  touchesPluginsActions:
+  - name: touchesPluginsActions
     kind: patch
     description: modifies the plugin actions
     spec: '$hasFileName("plugins/aladino/actions.go")'
 
-  touchesPluginsFunctionsAndActions:
+  - name: touchesPluginsFunctionsAndActions
     kind: patch
     description: modifies both plugin actions and functions
     spec: '$rule("touchesPluginsActions") && $rule("touchesPluginsFunctions")'
 
-  touchesPluginsFunctionsOrActionsAndNotBuiltins:
+  - name: touchesPluginsFunctionsOrActionsAndNotBuiltins
     kind: patch
     description: modifies plugins but not built-ins
     spec: '($rule("touchesPluginsActions") || $rule("touchesPluginsFunctions")) && !$hasFileName("plugins/aladino/builtins.go")'
 
+  - name: changes-critical-functions
+    kind: patch
+    description: Changes to functions considered critical
+    # This spec uses a special built-in that understand which functions were commented
+    # with "reviewpad-an: critical"
+    spec: '$hasAnnotation("critical")'
+
+  - name: changes-to-main-file
+    description: Changes to the main file
+    kind: patch
+    spec: '$hasFileName("runner.go")'
+
+  - name: does-not-have-linear-history
+    kind: patch
+    description: Pull request does not have a linear history
+    spec: '!$hasLinearHistory()'
+
+  - name: authored-by-official-contributors
+    kind: patch
+    description: Pull request was authored by official contributors
+    spec: '$isElementOf($author(), $organization())'
+
+  - name: authored-by-external-contributors
+    kind: patch
+    description: Pull request was authored by external contributors
+    spec: '!$rule("authored-by-official-contributors")'
+
 workflows:
+  - name: add-label-with-size
+    description: Add label with size of the pull request
+    always-run: true
+    if:
+      - rule: is-small
+        extra-actions:
+          - '$addLabel("small")'
+      - rule: is-medium
+        extra-actions:
+          - '$addLabel("medium")'
+      - rule: is-large
+        extra-actions:
+          - '$addLabel("large")'
+
+  - name: require-linear-history
+    description: Require linear history
+    always-run: true
+    if:
+      - rule: does-not-have-linear-history
+    then:
+      - '$error("This pull request does not have linear history - please fix this!")'
+
   - name: unauthorized-license-workflow
     description: Protect unauthorized modifications to the LICENSE
     if:
       - rule: touchesLicenseByNonOwner
     then:
-      - $error("Sorry, you are not authorized to make these changes")
-      - $close()
+      - '$error("Sorry, you are not authorized to make these changes")'
+      - '$close()'
 
   - name: license-workflow
     description: Protect modifications to the LICENSE
@@ -80,8 +160,8 @@ workflows:
         extra-actions:
           - '$warn("This pull request should only modify the LICENSE!")'
     then:
-      - $addLabel("modifies-license")
-      - $assignReviewer($group("owners"), 1)
+      - '$addLabel("modifies-license")'
+      - '$assignReviewer($group("owners"), 1)'
 
   - name: auto-merge-owner-pull-requests
     description: auto merge pull requests
@@ -91,6 +171,29 @@ workflows:
       - '$addLabel("ship")'
       - '$merge("rebase")'
 
+  - name: changes-to-critical-code
+    description: changes to critical code
+    always-run: true
+    if:
+      - rule: changes-critical-functions
+      - rule: changes-to-main-file
+    then:
+      - '$addLabel("critical")'
+      - '$assignReviewer($group("owners"), 1)'
+      - '$info("@marcelosousa: you are being notified because critical code was modified")'
+
+  - name: default-review-process
+    description: default review process
+    # only runs if the pull request is not automatically merged
+    if:
+      - rule: authored-by-official-contributors
+      - rule: authored-by-external-contributors
+        extra-actions:
+          - '$info("Thank you for your contribution - you are awesome!")'
+          - '$addLabel("external-contribution")'
+    then:
+      - '$assignRandomReviewer()'
+
   - name: label-plugins
     description: Label changes to plugins
     always-run: true
@@ -98,7 +201,8 @@ workflows:
       - rule: touchesPluginsFunctions
       - rule: touchesPluginsActions
     then:
-      - $addLabel("plugins")
+      - '$addLabel("plugins")'
+      - '$assignReviewer($group("plugins-reviewers"), 1)'
 
   - name: contained-plugin-changes
     description: Warn when touching multiple changes
@@ -106,7 +210,7 @@ workflows:
     if:
       - rule: touchesPluginsFunctionsAndActions
     then:
-      - '$warn("It looks like you modifies both functions and actions. If that is intentional?")'
+      - '$info("It looks like you modified both functions and actions. Is that intentional?")'
 
   - name: help-with-builtins
     description: Help with new built-in
@@ -114,5 +218,5 @@ workflows:
     if:
       - rule: touchesPluginsFunctionsOrActionsAndNotBuiltins
     then:
-      - $info("If you have added a new function or action do not forget to include it in the built-in list!")
-      - $assignReviewer($group("plugins-reviewers"), 2)
+      - '$info("If you have added a new function or action do not forget to include it in the built-in list!")'
+
