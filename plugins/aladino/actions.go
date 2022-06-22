@@ -267,7 +267,7 @@ func commentOnceCode(e aladino.Env, args []aladino.Value) error {
 	}
 
 	for _, comment := range comments {
-		commentHash := sha256.Sum256([]byte([]byte(*comment.Body)))
+		commentHash := sha256.Sum256([]byte(*comment.Body))
 		commentAlreadyExists := commentHash == commentBodyWithReviewpadAnnotationHash
 		if commentAlreadyExists {
 			return nil
