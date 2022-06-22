@@ -38,6 +38,11 @@ groups:
     kind: developers
     spec: '["marcelosousa", "ferreiratiago", "shay2025"]'
 
+  - name: official-contributors
+    description: Official contributors
+    kind: developers
+    spec: '["marcelosousa", "ferreiratiago", "shay2025"]'
+
 rules:
   - name: is-small
     kind: patch
@@ -114,7 +119,7 @@ rules:
   - name: authored-by-official-contributors
     kind: patch
     description: Pull request was authored by official contributors
-    spec: '$isElementOf($author(), $organization())'
+    spec: '$isElementOf($author(), $group("official-contributors"))'
 
   - name: authored-by-external-contributors
     kind: patch
