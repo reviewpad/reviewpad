@@ -23,6 +23,7 @@ tasks:
       Generates Aladino parser written in Go.
 
       Run with --watch or -w to watch for changes on yacc file.
+    # For debug purposes, remove the -l argumment enabling the line directives in parser.go.
     cmds:
       - goyacc -l -o lang/aladino/parser.go -p Aladino lang/aladino/parser.y
     sources:
