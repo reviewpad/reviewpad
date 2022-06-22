@@ -5,9 +5,9 @@
 package plugins_aladino
 
 import (
+	"crypto/sha256"
 	"fmt"
 	"log"
-	"regexp"
 
 	"github.com/google/go-github/v42/github"
 	"github.com/reviewpad/reviewpad/v2/lang/aladino"
@@ -259,18 +259,17 @@ func commentOnceCode(e aladino.Env, args []aladino.Value) error {
 
 	commentBody := args[0].(*aladino.StringValue).Val
 	commentBodyWithReviewpadAnnotation := fmt.Sprintf("%v%v", aladino.ReviewpadCommentAnnotation, commentBody)
+	commentBodyWithReviewpadAnnotationHash := sha256.Sum256([]byte(commentBodyWithReviewpadAnnotation))
 
 	comments, err := utils.GetPullRequestComments(e.GetCtx(), e.GetClient(), owner, repo, prNum)
 	if err != nil {
 		return err
 	}
 
-	reviewpadCommentRegex := regexp.MustCompile(fmt.Sprintf("^%v", aladino.ReviewpadCommentAnnotation))
-
 	for _, comment := range comments {
-		isReviewpadComment := reviewpadCommentRegex.Match([]byte(*comment.Body))
-		commentAlreadyExists := *comment.Body == commentBodyWithReviewpadAnnotation
-		if isReviewpadComment && commentAlreadyExists {
+		commentHash := sha256.Sum256([]byte([]byte(*comment.Body)))
+		commentAlreadyExists := commentHash == commentBodyWithReviewpadAnnotationHash
+		if commentAlreadyExists {
 			return nil
 		}
 	}
