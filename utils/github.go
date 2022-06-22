@@ -14,6 +14,8 @@ import (
 	"github.com/tomnomnom/linkheader"
 )
 
+const maxPerPage = int32(100)
+
 func GetPullRequestOwnerName(pullRequest *github.PullRequest) string {
 	return pullRequest.Base.Repo.Owner.GetLogin()
 }
@@ -83,8 +85,6 @@ func ParseNumPages(resp *github.Response) int {
 }
 
 func GetPullRequestComments(ctx context.Context, client *github.Client, owner string, repo string, number int) ([]*github.IssueComment, error) {
-	const maxPerPage = int32(100)
-
 	fs, err := PaginatedRequest(
 		func() interface{} {
 			return []*github.IssueComment{}
@@ -109,4 +109,29 @@ func GetPullRequestComments(ctx context.Context, client *github.Client, owner st
 	}
 
 	return fs.([]*github.IssueComment), nil
+}
+
+func GetPullRequestFiles(ctx context.Context, client *github.Client, owner string, repo string, number int) ([]*github.CommitFile, error) {
+	fs, err := PaginatedRequest(
+		func() interface{} {
+			return []*github.CommitFile{}
+		},
+		func(i interface{}, page int) (interface{}, *github.Response, error) {
+			fls := i.([]*github.CommitFile)
+			fs, resp, err := client.PullRequests.ListFiles(ctx, owner, repo, number, &github.ListOptions{
+				Page:    page,
+				PerPage: int(maxPerPage),
+			})
+			if err != nil {
+				return nil, nil, err
+			}
+			fls = append(fls, fs...)
+			return fls, resp, nil
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return fs.([]*github.CommitFile), nil
 }
