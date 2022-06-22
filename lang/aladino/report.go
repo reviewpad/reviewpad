@@ -188,13 +188,13 @@ func FindReportComment(env Env) (*github.IssueComment, error) {
 		return nil, reportError("error getting issues %v", err.(*github.ErrorResponse).Message)
 	}
 
-	reviewpadCommentAnnotationRegex := regexp.MustCompile(fmt.Sprintf("^%v", ReviewpadCommentAnnotation))
+	reviewpadCommentAnnotationRegex := regexp.MustCompile(fmt.Sprintf("^%v\\*\\*Reviewpad Report\\*\\*\n\n", ReviewpadCommentAnnotation))
 
 	var reviewpadExistingComment *github.IssueComment
 
 	for _, comment := range comments {
-		isReviewpadComment := reviewpadCommentAnnotationRegex.Match([]byte(*comment.Body))
-		if isReviewpadComment {
+		isReviewpadReportComment := reviewpadCommentAnnotationRegex.Match([]byte(*comment.Body))
+		if isReviewpadReportComment {
 			reviewpadExistingComment = comment
 			break
 		}
