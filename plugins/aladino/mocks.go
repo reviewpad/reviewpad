@@ -109,7 +109,7 @@ func mockEnvWith(prOwner string, prRepoName string, prNum int, client *github.Cl
 // Being ready for Aladino means that at least the request to build Aladino Env need to be mocked.
 // As for now, at least two github request need to be mocked in order to build Aladino Env, mainly:
 // - Get pull request details (i.e. /repos/{owner}/{repo}/pulls/{pull_number})
-// - Get pull request files (i.e. /repos/{owner}/{repo}/pulls/{pull_number})
+// - Get pull request files (i.e. /repos/{owner}/{repo}/pulls/{pull_number}/files)
 func mockDefaultHttpClient(clientOptions ...mock.MockBackendOption) *http.Client {
 	defaultMocks := []mock.MockBackendOption{
 		mock.WithRequestMatchHandler(
