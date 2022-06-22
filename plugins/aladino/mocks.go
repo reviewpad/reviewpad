@@ -15,13 +15,14 @@ import (
 	"github.com/reviewpad/reviewpad/v2/lang/aladino"
 )
 
-const defaultMockPrNum = 123
+const defaultMockPrID = 1234
+const defaultMockPrNum = 6
 const defaultMockPrOwner = "foobar"
 const defaultMockPrRepoName = "default-mock-repo"
 
 func getDefaultMockPullRequestDetails() *github.PullRequest {
 	prNum := defaultMockPrNum
-	prId := int64(prNum)
+	prId := int64(defaultMockPrID)
 	prOwner := defaultMockPrOwner
 	prRepoName := defaultMockPrRepoName
 	prUrl := fmt.Sprintf("https://api.github.com/repos/%v/%v/pulls/%v", prOwner, prRepoName, prNum)
