@@ -295,7 +295,7 @@ func commentOnceCode(e aladino.Env, args []aladino.Value) error {
 	commentBodyWithReviewpadAnnotation := fmt.Sprintf("%v%v", ReviewpadCommentAnnotation, commentBody)
 	commentBodyWithReviewpadAnnotationHash := sha256.Sum256([]byte(commentBodyWithReviewpadAnnotation))
 
-	comments, err := utils.GetPullRequestComments(e.GetCtx(), e.GetClient(), owner, repo, prNum)
+	comments, err := utils.GetPullRequestComments(e.GetCtx(), e.GetClient(), owner, repo, prNum, &github.IssueListCommentsOptions{})
 	if err != nil {
 		return err
 	}

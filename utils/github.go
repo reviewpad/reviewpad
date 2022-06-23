@@ -84,7 +84,7 @@ func ParseNumPages(resp *github.Response) int {
 	return ParseNumPagesFromLink(link)
 }
 
-func GetPullRequestComments(ctx context.Context, client *github.Client, owner string, repo string, number int) ([]*github.IssueComment, error) {
+func GetPullRequestComments(ctx context.Context, client *github.Client, owner string, repo string, number int, opts *github.IssueListCommentsOptions) ([]*github.IssueComment, error) {
 	fs, err := PaginatedRequest(
 		func() interface{} {
 			return []*github.IssueComment{}
@@ -92,6 +92,9 @@ func GetPullRequestComments(ctx context.Context, client *github.Client, owner st
 		func(i interface{}, page int) (interface{}, *github.Response, error) {
 			fls := i.([]*github.IssueComment)
 			fs, resp, err := client.Issues.ListComments(ctx, owner, repo, number, &github.IssueListCommentsOptions{
+				Sort: opts.Sort,
+				Direction: opts.Direction,
+				Since: opts.Since,
 				ListOptions: github.ListOptions{
 					Page:    page,
 					PerPage: int(maxPerPage),
