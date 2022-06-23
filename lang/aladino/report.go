@@ -26,7 +26,7 @@ type ReportWorkflowDetails struct {
 	Actions     []string
 }
 
-const ReviewpadCommentAnnotation = "<!--@annotation-reviewpad-->"
+const ReviewpadReportCommentAnnotation = "<!--@annotation-reviewpad-report-->"
 
 func reportError(format string, a ...interface{}) error {
 	return fmtio.Errorf("report", format, a...)
@@ -69,7 +69,7 @@ func ReportHeader() string {
 	var sb strings.Builder
 
 	// Annotation
-	sb.WriteString(fmt.Sprintf("%v\n", ReviewpadCommentAnnotation))
+	sb.WriteString(fmt.Sprintf("%v\n", ReviewpadReportCommentAnnotation))
 	// Header
 	sb.WriteString("**Reviewpad Report**\n\n")
 
@@ -188,7 +188,7 @@ func FindReportComment(env Env) (*github.IssueComment, error) {
 		return nil, reportError("error getting issues %v", err.(*github.ErrorResponse).Message)
 	}
 
-	reviewpadCommentAnnotationRegex := regexp.MustCompile(fmt.Sprintf("^%v\\*\\*Reviewpad Report\\*\\*\n\n", ReviewpadCommentAnnotation))
+	reviewpadCommentAnnotationRegex := regexp.MustCompile(fmt.Sprintf("^%v", ReviewpadReportCommentAnnotation))
 
 	var reviewpadExistingComment *github.IssueComment
 
