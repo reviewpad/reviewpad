@@ -14,7 +14,7 @@ import (
 	"github.com/reviewpad/reviewpad/v2/utils"
 )
 
-const ReviewpadCommentAnnotation = "<!--@annotation-reviewpad-->"
+const ReviewpadCommentAnnotation = "<!--@annotation-reviewpad-single-comment-->"
 
 func addLabel() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
