@@ -180,7 +180,7 @@ func FindReportComment(env Env) (*github.IssueComment, error) {
 	repo := utils.GetPullRequestRepoName(pullRequest)
 	prNum := utils.GetPullRequestNumber(pullRequest)
 
-	comments, _, err := env.GetClient().Issues.ListComments(env.GetCtx(), owner, repo, prNum, &github.IssueListCommentsOptions{
+	comments, err := utils.GetPullRequestComments(env.GetCtx(), env.GetClient(), owner, repo, prNum, &github.IssueListCommentsOptions{
 		Sort:      github.String("created"),
 		Direction: github.String("asc"),
 	})
