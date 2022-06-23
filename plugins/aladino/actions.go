@@ -201,6 +201,46 @@ func assignReviewerCode(e aladino.Env, args []aladino.Value) error {
 	return err
 }
 
+func assignTeamReviewer() *aladino.BuiltInAction {
+	return &aladino.BuiltInAction{
+		Type: aladino.BuildFunctionType([]aladino.Type{aladino.BuildArrayOfType(aladino.BuildStringType())}, nil),
+		Code: assignTeamReviewerCode,
+	}
+}
+
+func assignTeamReviewerCode(e aladino.Env, args []aladino.Value) error {
+	if len(args) < 1 {
+		return fmt.Errorf("assignTeamReviewer: expecting at least 1 argument")
+	}
+
+	arg := args[0]
+	if !arg.HasKindOf(aladino.ARRAY_VALUE) {
+		return fmt.Errorf("assignTeamReviewer: requires array argument, got %v", arg.Kind())
+	}
+
+	teamsToReview := arg.(*aladino.ArrayValue).Vals
+
+	teamReviewers := []string{}
+
+	for _, team := range teamsToReview {
+		if !team.HasKindOf(aladino.STRING_VALUE) {
+			return fmt.Errorf("assignTeamReviewer: requires array of strings, got array with value of %v", team.Kind())
+		}
+		
+		teamReviewers = append(teamReviewers, team.(*aladino.StringValue).Val)
+	}
+
+	prNum := utils.GetPullRequestNumber(e.GetPullRequest())
+	owner := utils.GetPullRequestOwnerName(e.GetPullRequest())
+	repo := utils.GetPullRequestRepoName(e.GetPullRequest())
+
+	_, _, err := e.GetClient().PullRequests.RequestReviewers(e.GetCtx(), owner, repo, prNum, github.ReviewersRequest{
+		TeamReviewers: teamReviewers,
+	})
+
+	return err
+}
+
 func close() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
 		Type: aladino.BuildFunctionType([]aladino.Type{}, nil),

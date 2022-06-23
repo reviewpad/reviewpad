@@ -54,6 +54,7 @@ func PluginBuiltIns() *aladino.BuiltIns {
 			"addLabel":             addLabel(),
 			"assignRandomReviewer": assignRandomReviewer(),
 			"assignReviewer":       assignReviewer(),
+			"assignTeamReviewer":   assignTeamReviewer(),
 			"close":                close(),
 			"comment":              comment(),
 			"commentOnce":          commentOnce(),
