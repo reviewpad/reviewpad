@@ -26,7 +26,7 @@ type ReportWorkflowDetails struct {
 	Actions     []string
 }
 
-const ReviewpadReportCommentAnnotation = "<!--@annotation-reviewpad-->"
+const ReviewpadReportCommentAnnotation = "<!--@annotation-reviewpad-report-->"
 
 func reportError(format string, a ...interface{}) error {
 	return fmtio.Errorf("report", format, a...)
@@ -193,8 +193,8 @@ func FindReportComment(env Env) (*github.IssueComment, error) {
 	var reviewpadExistingComment *github.IssueComment
 
 	for _, comment := range comments {
-		isReviewpadComment := reviewpadCommentAnnotationRegex.Match([]byte(*comment.Body))
-		if isReviewpadComment {
+		isReviewpadReportComment := reviewpadCommentAnnotationRegex.Match([]byte(*comment.Body))
+		if isReviewpadReportComment {
 			reviewpadExistingComment = comment
 			break
 		}

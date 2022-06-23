@@ -13,8 +13,6 @@ import (
 	"github.com/shurcooL/githubv4"
 )
 
-const maxPerPage = int32(100)
-
 type TypeEnv map[string]Type
 
 type Patch map[string]*File
@@ -108,7 +106,7 @@ func NewEvalEnv(
 	repo := utils.GetPullRequestRepoName(pullRequest)
 	number := utils.GetPullRequestNumber(pullRequest)
 
-	files, err := getPullRequestFiles(ctx, gitHubClient, owner, repo, number)
+	files, err := utils.GetPullRequestFiles(ctx, gitHubClient, owner, repo, number)
 	if err != nil {
 		return nil, err
 	}
@@ -141,29 +139,4 @@ func NewEvalEnv(
 	}
 
 	return input, nil
-}
-
-func getPullRequestFiles(ctx context.Context, client *github.Client, owner string, repo string, number int) ([]*github.CommitFile, error) {
-	fs, err := utils.PaginatedRequest(
-		func() interface{} {
-			return []*github.CommitFile{}
-		},
-		func(i interface{}, page int) (interface{}, *github.Response, error) {
-			fls := i.([]*github.CommitFile)
-			fs, resp, err := client.PullRequests.ListFiles(ctx, owner, repo, number, &github.ListOptions{
-				Page:    page,
-				PerPage: int(maxPerPage),
-			})
-			if err != nil {
-				return nil, nil, err
-			}
-			fls = append(fls, fs...)
-			return fls, resp, nil
-		},
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	return fs.([]*github.CommitFile), nil
 }
