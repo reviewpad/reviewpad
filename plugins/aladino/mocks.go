@@ -34,8 +34,8 @@ func getDefaultMockPullRequestDetails() *github.PullRequest {
 		Assignees: []*github.User{
 			{Login: github.String("jane")},
 		},
-		Title:     github.String("Default Tile"),
-		Body:      github.String("Default Body"),
+		Title:     github.String("Amazing new feature"),
+		Body:      github.String("Please pull these awesome changes in!"),
 		CreatedAt: &prDate,
 		Commits:   github.Int(5),
 		Number:    github.Int(prNum),
@@ -45,22 +45,22 @@ func getDefaultMockPullRequestDetails() *github.PullRequest {
 		Head: &github.PullRequestBranch{
 			Repo: &github.Repository{
 				Owner: &github.User{
-					Login: github.String("headLogin"),
+					Login: github.String("john"),
 				},
 				URL:  github.String(prUrl),
 				Name: github.String(prRepoName),
 			},
-			Ref: github.String("HeadRef"),
+			Ref: github.String("new-topic"),
 		},
 		Base: &github.PullRequestBranch{
 			Repo: &github.Repository{
 				Owner: &github.User{
-					Login: github.String("baseLogin"),
+					Login: github.String("reviewpad"),
 				},
 				URL:  github.String(prUrl),
 				Name: github.String(prRepoName),
 			},
-			Ref: github.String("BaseRef"),
+			Ref: github.String("master"),
 		},
 	}
 }
