@@ -34,6 +34,18 @@ func TestAssignTeamReviewers_WhenArgIsNotArray(t *testing.T) {
 	assert.EqualError(t, err, "assignTeamReviewer: requires array argument, got IntValue")
 }
 
+func TestAssignTeamReviewers_WhenNoTeamSlugsAreProvided(t *testing.T) {
+	mockedEnv, err := mockDefaultEnv()
+	if err != nil {
+		log.Fatalf("mockDefaultEnv failed: %v", err)
+	}
+
+	args := []aladino.Value{aladino.BuildArrayValue([]aladino.Value{})}
+	err = assignTeamReviewerCode(mockedEnv, args)
+
+	assert.EqualError(t, err, "assignTeamReviewer: requires at least 1 team to request for review")
+}
+
 func TestAssignTeamReviewers(t *testing.T) {
 	wantTeamReviewers := []string{
 		"core",
