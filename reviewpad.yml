@@ -64,6 +64,11 @@ rules:
     description: owners of pull requests with ship in the title
     spec: '$contains($title(), "[ship]: ") && $isElementOf($author(), $group("owners"))'
 
+  - name: is-first-time-contributor
+    kind: patch
+    description: First pull request created
+    spec: '$totalCreatedPullRequests($author()) == 1'
+
   - name: touchesLicense
     kind: patch
     description: modifies the LICENSE file
@@ -191,10 +196,12 @@ workflows:
     description: default review process
     # only runs if the pull request is not automatically merged
     if:
+      - rule: is-first-time-contributor
+        extra-actions:
+          - '$commentOnce("Thank you so much for your first contribution!")'
       - rule: authored-by-official-contributors
       - rule: authored-by-external-contributors
         extra-actions:
-          - '$info("Thank you for your contribution - you are awesome!")'
           - '$addLabel("external-contribution")'
     then:
       - '$assignRandomReviewer()'
