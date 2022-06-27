@@ -209,10 +209,6 @@ func assignTeamReviewer() *aladino.BuiltInAction {
 }
 
 func assignTeamReviewerCode(e aladino.Env, args []aladino.Value) error {
-	if len(args) < 1 {
-		return fmt.Errorf("assignTeamReviewer: expecting at least 1 argument")
-	}
-
 	arg := args[0]
 	if !arg.HasKindOf(aladino.ARRAY_VALUE) {
 		return fmt.Errorf("assignTeamReviewer: requires array argument, got %v", arg.Kind())
@@ -223,10 +219,6 @@ func assignTeamReviewerCode(e aladino.Env, args []aladino.Value) error {
 	teamReviewersSlugs := []string{}
 
 	for _, team := range teamReviewers {
-		if !team.HasKindOf(aladino.STRING_VALUE) {
-			return fmt.Errorf("assignTeamReviewer: requires array of strings, got array with value of %v", team.Kind())
-		}
-		
 		teamReviewersSlugs = append(teamReviewersSlugs, team.(*aladino.StringValue).Val)
 	}
 
