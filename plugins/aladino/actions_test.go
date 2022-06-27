@@ -22,18 +22,6 @@ type TeamReviewersRequestPostBody struct {
 	TeamReviewers []string `json:"team_reviewers"`
 }
 
-func TestAssignTeamReviewers_WhenArgIsNotArray(t *testing.T) {
-	mockedEnv, err := mockDefaultEnv()
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
-
-	args := []aladino.Value{aladino.BuildIntValue(1)}
-	err = assignTeamReviewerCode(mockedEnv, args)
-
-	assert.EqualError(t, err, "assignTeamReviewer: requires array argument, got IntValue")
-}
-
 func TestAssignTeamReviewers_WhenNoTeamSlugsAreProvided(t *testing.T) {
 	mockedEnv, err := mockDefaultEnv()
 	if err != nil {

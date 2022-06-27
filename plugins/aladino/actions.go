@@ -209,12 +209,7 @@ func assignTeamReviewer() *aladino.BuiltInAction {
 }
 
 func assignTeamReviewerCode(e aladino.Env, args []aladino.Value) error {
-	arg := args[0]
-	if !arg.HasKindOf(aladino.ARRAY_VALUE) {
-		return fmt.Errorf("assignTeamReviewer: requires array argument, got %v", arg.Kind())
-	}
-
-	teamReviewers := arg.(*aladino.ArrayValue).Vals
+	teamReviewers := args[0].(*aladino.ArrayValue).Vals
 
 	if len(teamReviewers) < 1 {
 		return fmt.Errorf("assignTeamReviewer: requires at least 1 team to request for review")
