@@ -222,8 +222,8 @@ func assignTeamReviewerCode(e aladino.Env, args []aladino.Value) error {
 
 	teamReviewersSlugs := make([]string, len(teamReviewers))
 
-	for _, team := range teamReviewers {
-		teamReviewersSlugs = append(teamReviewersSlugs, team.(*aladino.StringValue).Val)
+	for i, team := range teamReviewers {
+		teamReviewersSlugs[i] = team.(*aladino.StringValue).Val
 	}
 
 	pullRequest := e.GetPullRequest()

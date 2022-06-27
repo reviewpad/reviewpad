@@ -22,18 +22,6 @@ type TeamReviewersRequestPostBody struct {
 	TeamReviewers []string `json:"team_reviewers"`
 }
 
-func TestAssignTeamReviewers_WhenNoArgsAreProvided(t *testing.T) {
-	mockedEnv, err := mockDefaultEnv()
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
-
-	args := []aladino.Value{}
-	err = assignTeamReviewerCode(mockedEnv, args)
-
-	assert.EqualError(t, err, "assignTeamReviewer: expecting at least 1 argument")
-}
-
 func TestAssignTeamReviewers_WhenArgIsNotArray(t *testing.T) {
 	mockedEnv, err := mockDefaultEnv()
 	if err != nil {
@@ -46,24 +34,12 @@ func TestAssignTeamReviewers_WhenArgIsNotArray(t *testing.T) {
 	assert.EqualError(t, err, "assignTeamReviewer: requires array argument, got IntValue")
 }
 
-func TestAssignTeamReviewers_WhenArgHasANonStringElem(t *testing.T) {
-	mockedEnv, err := mockDefaultEnv()
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
-
-	args := []aladino.Value{aladino.BuildArrayValue([]aladino.Value{aladino.BuildStringValue("team"), aladino.BuildFalseValue()})}
-	err = assignTeamReviewerCode(mockedEnv, args)
-
-	assert.EqualError(t, err, "assignTeamReviewer: requires array of strings, got array with value of BoolValue")
-}
-
 func TestAssignTeamReviewers(t *testing.T) {
-	teamsToRequestForReview := []string{
+	wantTeamReviewers := []string{
 		"core",
 		"reviewpad-project",
 	}
-	requestedTeamReviewers := []string{}
+	gotTeamReviewers := []string{}
 	mockedEnv, err := mockDefaultEnv(
 		mock.WithRequestMatchHandler(
 			mock.PostReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
@@ -73,7 +49,7 @@ func TestAssignTeamReviewers(t *testing.T) {
 
 				json.Unmarshal(rawBody, &body)
 
-				requestedTeamReviewers = body.TeamReviewers
+				gotTeamReviewers = body.TeamReviewers
 			}),
 		),
 	)
@@ -85,7 +61,7 @@ func TestAssignTeamReviewers(t *testing.T) {
 	err = assignTeamReviewerCode(mockedEnv, args)
 
 	assert.Nil(t, err)
-	assert.Equal(t, teamsToRequestForReview, requestedTeamReviewers)
+	assert.Equal(t, wantTeamReviewers, gotTeamReviewers)
 }
 
 func TestCommentOnce_WhenGetCommentsRequestFails(t *testing.T) {
