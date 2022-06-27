@@ -2,7 +2,7 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-package plugins_aladino
+package tests_plugins_aladino
 
 import (
 	"encoding/json"
@@ -15,13 +15,15 @@ import (
 	"github.com/google/go-github/v42/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v2/lang/aladino"
+	plugins_aladino "github.com/reviewpad/reviewpad/v2/plugins/aladino"
+	"github.com/reviewpad/reviewpad/v2/tests"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestCommentOnce_WhenGetCommentsRequestFails(t *testing.T) {
 	failMessage := "GetCommentRequestFail"
 	comment := "Lorem Ipsum"
-	mockedEnv, err := mockDefaultEnv(
+	mockedEnv, err := tests.MockDefaultEnv(
 		mock.WithRequestMatchHandler(
 			mock.GetReposIssuesCommentsByOwnerByRepoByIssueNumber,
 			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -37,8 +39,9 @@ func TestCommentOnce_WhenGetCommentsRequestFails(t *testing.T) {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
 
-	args := []aladino.Value{aladino.BuildStringValue(fmt.Sprintf("%v%v", ReviewpadCommentAnnotation, comment))}
-	err = commentOnceCode(mockedEnv, args)
+	args := []aladino.Value{aladino.BuildStringValue(fmt.Sprintf("%v%v", plugins_aladino.ReviewpadCommentAnnotation, comment))}
+	commentOnce := plugins_aladino.PluginBuiltIns().Actions["commentOnce"].Code
+	err = commentOnce(mockedEnv, args)
 
 	assert.Equal(t, err.(*github.ErrorResponse).Message, failMessage)
 }
@@ -47,12 +50,12 @@ func TestCommentOnce_WhenCommentAlreadyExists(t *testing.T) {
 	existingComment := "Lorem Ipsum"
 	commentCreated := false
 
-	mockedEnv, err := mockDefaultEnv(
+	mockedEnv, err := tests.MockDefaultEnv(
 		mock.WithRequestMatch(
 			mock.GetReposIssuesCommentsByOwnerByRepoByIssueNumber,
 			[]*github.IssueComment{
 				{
-					Body: github.String(fmt.Sprintf("%v%v", ReviewpadCommentAnnotation, existingComment)),
+					Body: github.String(fmt.Sprintf("%v%v", plugins_aladino.ReviewpadCommentAnnotation, existingComment)),
 				},
 			},
 		),
@@ -69,7 +72,8 @@ func TestCommentOnce_WhenCommentAlreadyExists(t *testing.T) {
 	}
 
 	args := []aladino.Value{aladino.BuildStringValue(existingComment)}
-	err = commentOnceCode(mockedEnv, args)
+	commentOnce := plugins_aladino.PluginBuiltIns().Actions["commentOnce"].Code
+	err = commentOnce(mockedEnv, args)
 
 	assert.Nil(t, err)
 	assert.False(t, commentCreated, "The comment should not be created")
@@ -79,7 +83,7 @@ func TestCommentOnce_WhenFirstTime(t *testing.T) {
 	commentToAdd := "Lorem Ipsum"
 	addedComment := ""
 
-	mockedEnv, err := mockDefaultEnv(
+	mockedEnv, err := tests.MockDefaultEnv(
 		mock.WithRequestMatch(
 			mock.GetReposIssuesCommentsByOwnerByRepoByIssueNumber,
 			[]*github.IssueComment{},
@@ -101,8 +105,9 @@ func TestCommentOnce_WhenFirstTime(t *testing.T) {
 	}
 
 	args := []aladino.Value{aladino.BuildStringValue(commentToAdd)}
-	err = commentOnceCode(mockedEnv, args)
+	commentOnce := plugins_aladino.PluginBuiltIns().Actions["commentOnce"].Code
+	err = commentOnce(mockedEnv, args)
 
 	assert.Nil(t, err)
-	assert.Equal(t, fmt.Sprintf("%v%v", ReviewpadCommentAnnotation, commentToAdd), addedComment)
+	assert.Equal(t, fmt.Sprintf("%v%v", plugins_aladino.ReviewpadCommentAnnotation, commentToAdd), addedComment)
 }
