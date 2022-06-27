@@ -46,7 +46,7 @@ func TestAssignTeamReviewers_WhenArgIsNotArray(t *testing.T) {
 	assert.EqualError(t, err, "assignTeamReviewer: requires array argument, got IntValue")
 }
 
-func TestAssignTeamReviewers_WhenArgHasANoStringElem(t *testing.T) {
+func TestAssignTeamReviewers_WhenArgHasANonStringElem(t *testing.T) {
 	mockedEnv, err := mockDefaultEnv()
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
@@ -60,8 +60,8 @@ func TestAssignTeamReviewers_WhenArgHasANoStringElem(t *testing.T) {
 
 func TestAssignTeamReviewers(t *testing.T) {
 	teamsToRequestForReview := []string{
-		"justice-league",
-		"avengers",
+		"core",
+		"reviewpad-project",
 	}
 	requestedTeamReviewers := []string{}
 	mockedEnv, err := mockDefaultEnv(
@@ -81,7 +81,7 @@ func TestAssignTeamReviewers(t *testing.T) {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
 
-	args := []aladino.Value{aladino.BuildArrayValue([]aladino.Value{aladino.BuildStringValue("justice-league"), aladino.BuildStringValue("avengers")})}
+	args := []aladino.Value{aladino.BuildArrayValue([]aladino.Value{aladino.BuildStringValue("core"), aladino.BuildStringValue("reviewpad-project")})}
 	err = assignTeamReviewerCode(mockedEnv, args)
 
 	assert.Nil(t, err)

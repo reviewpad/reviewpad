@@ -218,16 +218,16 @@ func assignTeamReviewerCode(e aladino.Env, args []aladino.Value) error {
 		return fmt.Errorf("assignTeamReviewer: requires array argument, got %v", arg.Kind())
 	}
 
-	teamsToReview := arg.(*aladino.ArrayValue).Vals
+	teamReviewers := arg.(*aladino.ArrayValue).Vals
 
-	teamReviewers := []string{}
+	teamReviewersSlugs := []string{}
 
-	for _, team := range teamsToReview {
+	for _, team := range teamReviewers {
 		if !team.HasKindOf(aladino.STRING_VALUE) {
 			return fmt.Errorf("assignTeamReviewer: requires array of strings, got array with value of %v", team.Kind())
 		}
 		
-		teamReviewers = append(teamReviewers, team.(*aladino.StringValue).Val)
+		teamReviewersSlugs = append(teamReviewersSlugs, team.(*aladino.StringValue).Val)
 	}
 
 	prNum := utils.GetPullRequestNumber(e.GetPullRequest())
@@ -235,7 +235,7 @@ func assignTeamReviewerCode(e aladino.Env, args []aladino.Value) error {
 	repo := utils.GetPullRequestRepoName(e.GetPullRequest())
 
 	_, _, err := e.GetClient().PullRequests.RequestReviewers(e.GetCtx(), owner, repo, prNum, github.ReviewersRequest{
-		TeamReviewers: teamReviewers,
+		TeamReviewers: teamReviewersSlugs,
 	})
 
 	return err
