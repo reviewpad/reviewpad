@@ -216,6 +216,10 @@ func assignTeamReviewerCode(e aladino.Env, args []aladino.Value) error {
 
 	teamReviewers := arg.(*aladino.ArrayValue).Vals
 
+	if len(teamReviewers) < 1 {
+		return fmt.Errorf("assignTeamReviewer: requires at least 1 team to request for review")
+	}
+
 	teamReviewersSlugs := []string{}
 
 	for _, team := range teamReviewers {
