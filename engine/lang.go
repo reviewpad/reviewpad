@@ -141,14 +141,15 @@ func (p PadGroup) equals(o PadGroup) bool {
 }
 
 type ReviewpadFile struct {
-	Version   string              `yaml:"api-version"`
-	Edition   string              `yaml:"edition"`
-	Mode      string              `yaml:"mode"`
-	Imports   []PadImport         `yaml:"imports"`
-	Groups    []PadGroup          `yaml:"groups"`
-	Rules     []PadRule           `yaml:"rules"`
-	Labels    map[string]PadLabel `yaml:"labels"`
-	Workflows []PadWorkflow       `yaml:"workflows"`
+	Version         string              `yaml:"api-version"`
+	Edition         string              `yaml:"edition"`
+	Mode            string              `yaml:"mode"`
+	SkipFailOnError bool                `yaml:"skip-fail-on-error"`
+	Imports         []PadImport         `yaml:"imports"`
+	Groups          []PadGroup          `yaml:"groups"`
+	Rules           []PadRule           `yaml:"rules"`
+	Labels          map[string]PadLabel `yaml:"labels"`
+	Workflows       []PadWorkflow       `yaml:"workflows"`
 }
 
 func (r *ReviewpadFile) equals(o *ReviewpadFile) bool {
@@ -161,6 +162,10 @@ func (r *ReviewpadFile) equals(o *ReviewpadFile) bool {
 	}
 
 	if r.Mode != o.Mode {
+		return false
+	}
+
+	if r.SkipFailOnError != o.SkipFailOnError {
 		return false
 	}
 
