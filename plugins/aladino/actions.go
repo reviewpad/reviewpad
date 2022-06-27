@@ -220,15 +220,16 @@ func assignTeamReviewerCode(e aladino.Env, args []aladino.Value) error {
 		return fmt.Errorf("assignTeamReviewer: requires at least 1 team to request for review")
 	}
 
-	teamReviewersSlugs := []string{}
+	teamReviewersSlugs := make([]string, len(teamReviewers))
 
 	for _, team := range teamReviewers {
 		teamReviewersSlugs = append(teamReviewersSlugs, team.(*aladino.StringValue).Val)
 	}
 
-	prNum := utils.GetPullRequestNumber(e.GetPullRequest())
-	owner := utils.GetPullRequestOwnerName(e.GetPullRequest())
-	repo := utils.GetPullRequestRepoName(e.GetPullRequest())
+	pullRequest := e.GetPullRequest()
+	prNum := utils.GetPullRequestNumber(pullRequest)
+	owner := utils.GetPullRequestOwnerName(pullRequest)
+	repo := utils.GetPullRequestRepoName(pullRequest)
 
 	_, _, err := e.GetClient().PullRequests.RequestReviewers(e.GetCtx(), owner, repo, prNum, github.ReviewersRequest{
 		TeamReviewers: teamReviewersSlugs,
