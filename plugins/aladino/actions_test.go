@@ -16,10 +16,12 @@ import (
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v2/lang/aladino"
 	"github.com/reviewpad/reviewpad/v2/mocks"
-	"github.com/stretchr/testify/assert"
 	plugins_aladino "github.com/reviewpad/reviewpad/v2/plugins/aladino"
+	"github.com/reviewpad/reviewpad/v2/utils/fmtio"
+	"github.com/stretchr/testify/assert"
 )
 
+var addLabel = plugins_aladino.PluginBuiltIns().Actions["addLabel"].Code
 var assignTeamReviewer = plugins_aladino.PluginBuiltIns().Actions["assignTeamReviewer"].Code
 var commentOnce = plugins_aladino.PluginBuiltIns().Actions["commentOnce"].Code
 
@@ -68,6 +70,99 @@ func TestAssignTeamReviewer(t *testing.T) {
 	assert.Equal(t, wantTeamReviewers, gotTeamReviewers)
 }
 
+func TestAddLabel_WhenANonStringArgIsProvided(t *testing.T) {
+	mockedEnv, err := mocks.MockDefaultEnv()
+	fmtio.FailOnError("mockDefaultEnv failed: %v", err)
+
+	args := []aladino.Value{aladino.BuildIntValue(1)}
+	err = addLabel(mockedEnv, args)
+
+	assert.EqualError(t, err, "addLabel: expecting string argument, got IntValue")
+}
+
+func TestAddLabel_WhenGetLabelRequestFails(t *testing.T) {
+	failMessage := "GetLabelRequestFail"
+	mockedEnv, err := mocks.MockDefaultEnv(
+		mock.WithRequestMatchHandler(
+			mock.GetReposLabelsByOwnerByRepoByName,
+			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				mock.WriteError(
+					w,
+					http.StatusInternalServerError,
+					failMessage,
+				)
+			}),
+		),
+	)
+	fmtio.FailOnError("mockDefaultEnv failed: %v", err)
+
+	args := []aladino.Value{aladino.BuildStringValue("test")}
+	err = addLabel(mockedEnv, args)
+
+	assert.Equal(t, err.(*github.ErrorResponse).Message, failMessage)
+}
+
+func TestAddLabel_WhenAddLabelToIssueRequestFails(t *testing.T) {
+	label := "bug"
+	failMessage := "AddLabelsToIssueRequestFail"
+	mockedEnv, err := mocks.MockDefaultEnv(
+		mock.WithRequestMatch(
+			mock.GetReposLabelsByOwnerByRepoByName,
+			&github.Label{
+				Name: github.String(label),
+			},
+		),
+		mock.WithRequestMatchHandler(
+			mock.PostReposIssuesLabelsByOwnerByRepoByIssueNumber,
+			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				mock.WriteError(
+					w,
+					http.StatusInternalServerError,
+					failMessage,
+				)
+			}),
+		),
+	)
+	fmtio.FailOnError("mockDefaultEnv failed: %v", err)
+
+	args := []aladino.Value{aladino.BuildStringValue(label)}
+	err = addLabel(mockedEnv, args)
+
+	assert.Equal(t, err.(*github.ErrorResponse).Message, failMessage)
+}
+
+func TestAddLabel(t *testing.T) {
+	labelA := "bug"
+	wantLabels := []string{
+		labelA,
+	}
+	gotLabels := []string{}
+	mockedEnv, err := mocks.MockDefaultEnv(
+		mock.WithRequestMatch(
+			mock.GetReposLabelsByOwnerByRepoByName,
+			&github.Label{},
+		),
+		mock.WithRequestMatchHandler(
+			mock.PostReposIssuesLabelsByOwnerByRepoByIssueNumber,
+			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				rawBody, _ := ioutil.ReadAll(r.Body)
+				body := []string{}
+				
+				json.Unmarshal(rawBody, &body)
+
+				gotLabels = body
+			}),
+		),
+	)
+	fmtio.FailOnError("mockDefaultEnv failed: %v", err)
+
+	args := []aladino.Value{aladino.BuildStringValue(labelA)}
+	err = addLabel(mockedEnv, args)
+
+	assert.Nil(t, err)
+	assert.Equal(t, wantLabels, gotLabels)
+}
+
 func TestCommentOnce_WhenGetCommentsRequestFails(t *testing.T) {
 	failMessage := "GetCommentRequestFail"
 	comment := "Lorem Ipsum"
@@ -83,11 +178,8 @@ func TestCommentOnce_WhenGetCommentsRequestFails(t *testing.T) {
 			}),
 		),
 	)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
+	fmtio.FailOnError("mockDefaultEnv failed: %v", err)
 
-	
 	args := []aladino.Value{aladino.BuildStringValue(fmt.Sprintf("%v%v", plugins_aladino.ReviewpadCommentAnnotation, comment))}
 	err = commentOnce(mockedEnv, args)
 
@@ -115,9 +207,7 @@ func TestCommentOnce_WhenCommentAlreadyExists(t *testing.T) {
 			}),
 		),
 	)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
+	fmtio.FailOnError("mockDefaultEnv failed: %v", err)
 
 	args := []aladino.Value{aladino.BuildStringValue(existingComment)}
 	err = commentOnce(mockedEnv, args)
@@ -147,9 +237,7 @@ func TestCommentOnce_WhenFirstTime(t *testing.T) {
 			}),
 		),
 	)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
+	fmtio.FailOnError("mockDefaultEnv failed: %v", err)
 
 	args := []aladino.Value{aladino.BuildStringValue(commentToAdd)}
 	err = commentOnce(mockedEnv, args)
