@@ -2,7 +2,7 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-package plugins_aladino
+package plugins_aladino_test
 
 import (
 	"encoding/json"
@@ -15,21 +15,26 @@ import (
 	"github.com/google/go-github/v42/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v2/lang/aladino"
+	"github.com/reviewpad/reviewpad/v2/mocks"
 	"github.com/stretchr/testify/assert"
+	plugins_aladino "github.com/reviewpad/reviewpad/v2/plugins/aladino"
 )
+
+var assignTeamReviewer = plugins_aladino.PluginBuiltIns().Actions["assignTeamReviewer"].Code
+var commentOnce = plugins_aladino.PluginBuiltIns().Actions["commentOnce"].Code
 
 type TeamReviewersRequestPostBody struct {
 	TeamReviewers []string `json:"team_reviewers"`
 }
 
 func TestAssignTeamReviewer_WhenNoTeamSlugsAreProvided(t *testing.T) {
-	mockedEnv, err := mockDefaultEnv()
+	mockedEnv, err := mocks.MockDefaultEnv()
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
 
 	args := []aladino.Value{aladino.BuildArrayValue([]aladino.Value{})}
-	err = assignTeamReviewerCode(mockedEnv, args)
+	err = assignTeamReviewer(mockedEnv, args)
 
 	assert.EqualError(t, err, "assignTeamReviewer: requires at least 1 team to request for review")
 }
@@ -39,7 +44,7 @@ func TestAssignTeamReviewer(t *testing.T) {
 	teamB := "reviewpad-project"
 	wantTeamReviewers := []string{teamA, teamB}	
 	gotTeamReviewers := []string{}
-	mockedEnv, err := mockDefaultEnv(
+	mockedEnv, err := mocks.MockDefaultEnv(
 		mock.WithRequestMatchHandler(
 			mock.PostReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
 			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -57,7 +62,7 @@ func TestAssignTeamReviewer(t *testing.T) {
 	}
 
 	args := []aladino.Value{aladino.BuildArrayValue([]aladino.Value{aladino.BuildStringValue(teamA), aladino.BuildStringValue(teamB)})}
-	err = assignTeamReviewerCode(mockedEnv, args)
+	err = assignTeamReviewer(mockedEnv, args)
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantTeamReviewers, gotTeamReviewers)
@@ -66,7 +71,7 @@ func TestAssignTeamReviewer(t *testing.T) {
 func TestCommentOnce_WhenGetCommentsRequestFails(t *testing.T) {
 	failMessage := "GetCommentRequestFail"
 	comment := "Lorem Ipsum"
-	mockedEnv, err := mockDefaultEnv(
+	mockedEnv, err := mocks.MockDefaultEnv(
 		mock.WithRequestMatchHandler(
 			mock.GetReposIssuesCommentsByOwnerByRepoByIssueNumber,
 			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -82,8 +87,9 @@ func TestCommentOnce_WhenGetCommentsRequestFails(t *testing.T) {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
 
-	args := []aladino.Value{aladino.BuildStringValue(fmt.Sprintf("%v%v", ReviewpadCommentAnnotation, comment))}
-	err = commentOnceCode(mockedEnv, args)
+	
+	args := []aladino.Value{aladino.BuildStringValue(fmt.Sprintf("%v%v", plugins_aladino.ReviewpadCommentAnnotation, comment))}
+	err = commentOnce(mockedEnv, args)
 
 	assert.Equal(t, err.(*github.ErrorResponse).Message, failMessage)
 }
@@ -92,12 +98,12 @@ func TestCommentOnce_WhenCommentAlreadyExists(t *testing.T) {
 	existingComment := "Lorem Ipsum"
 	commentCreated := false
 
-	mockedEnv, err := mockDefaultEnv(
+	mockedEnv, err := mocks.MockDefaultEnv(
 		mock.WithRequestMatch(
 			mock.GetReposIssuesCommentsByOwnerByRepoByIssueNumber,
 			[]*github.IssueComment{
 				{
-					Body: github.String(fmt.Sprintf("%v%v", ReviewpadCommentAnnotation, existingComment)),
+					Body: github.String(fmt.Sprintf("%v%v", plugins_aladino.ReviewpadCommentAnnotation, existingComment)),
 				},
 			},
 		),
@@ -114,7 +120,7 @@ func TestCommentOnce_WhenCommentAlreadyExists(t *testing.T) {
 	}
 
 	args := []aladino.Value{aladino.BuildStringValue(existingComment)}
-	err = commentOnceCode(mockedEnv, args)
+	err = commentOnce(mockedEnv, args)
 
 	assert.Nil(t, err)
 	assert.False(t, commentCreated, "The comment should not be created")
@@ -124,7 +130,7 @@ func TestCommentOnce_WhenFirstTime(t *testing.T) {
 	commentToAdd := "Lorem Ipsum"
 	addedComment := ""
 
-	mockedEnv, err := mockDefaultEnv(
+	mockedEnv, err := mocks.MockDefaultEnv(
 		mock.WithRequestMatch(
 			mock.GetReposIssuesCommentsByOwnerByRepoByIssueNumber,
 			[]*github.IssueComment{},
@@ -146,8 +152,8 @@ func TestCommentOnce_WhenFirstTime(t *testing.T) {
 	}
 
 	args := []aladino.Value{aladino.BuildStringValue(commentToAdd)}
-	err = commentOnceCode(mockedEnv, args)
+	err = commentOnce(mockedEnv, args)
 
 	assert.Nil(t, err)
-	assert.Equal(t, fmt.Sprintf("%v%v", ReviewpadCommentAnnotation, commentToAdd), addedComment)
+	assert.Equal(t, fmt.Sprintf("%v%v", plugins_aladino.ReviewpadCommentAnnotation, commentToAdd), addedComment)
 }
