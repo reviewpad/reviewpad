@@ -24,10 +24,6 @@ func addLabel() *aladino.BuiltInAction {
 }
 
 func addLabelCode(e aladino.Env, args []aladino.Value) error {
-	if len(args) != 1 {
-		return fmt.Errorf("addLabel: expecting 1 argument, got %v", len(args))
-	}
-
 	labelVal := args[0]
 	if !labelVal.HasKindOf(aladino.STRING_VALUE) {
 		return fmt.Errorf("addLabel: expecting string argument, got %v", labelVal.Kind())
