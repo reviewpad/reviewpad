@@ -1,6 +1,6 @@
 name: Reviewpad Action
-on:
-  pull_request
+
+on: pull_request
 
 jobs:
   reviewpad:
@@ -8,4 +8,3 @@ jobs:
     steps:
       - name: Reviewpad
         uses: reviewpad/action@v2.x
-
