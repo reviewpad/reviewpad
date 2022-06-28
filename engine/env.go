@@ -30,12 +30,13 @@ type Interpreter interface {
 }
 
 type Env struct {
-	Ctx         context.Context
-	Client      *github.Client
-	ClientGQL   *githubv4.Client
-	Collector   collector.Collector
-	PullRequest *github.PullRequest
-	Interpreter Interpreter
+	Ctx          context.Context
+	Client       *github.Client
+	ClientGQL    *githubv4.Client
+	Collector    collector.Collector
+	PullRequest  *github.PullRequest
+	EventPayload interface{}
+	Interpreter  Interpreter
 }
 
 func NewEvalEnv(
@@ -44,15 +45,17 @@ func NewEvalEnv(
 	clientGQL *githubv4.Client,
 	collector collector.Collector,
 	pullRequest *github.PullRequest,
+	eventPayload interface{},
 	interpreter Interpreter,
 ) (*Env, error) {
 	input := &Env{
-		Ctx:         ctx,
-		Client:      client,
-		ClientGQL:   clientGQL,
-		Collector:   collector,
-		PullRequest: pullRequest,
-		Interpreter: interpreter,
+		Ctx:          ctx,
+		Client:       client,
+		ClientGQL:    clientGQL,
+		Collector:    collector,
+		PullRequest:  pullRequest,
+		EventPayload: eventPayload,
+		Interpreter:  interpreter,
 	}
 
 	return input, nil

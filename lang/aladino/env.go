@@ -29,18 +29,20 @@ type Env interface {
 	GetRegisterMap() RegisterMap
 	GetBuiltIns() *BuiltIns
 	GetReport() *Report
+	GetEventPayload() interface{}
 }
 
 type BaseEnv struct {
-	Ctx         context.Context
-	Client      *github.Client
-	ClientGQL   *githubv4.Client
-	Collector   collector.Collector
-	PullRequest *github.PullRequest
-	Patch       Patch
-	RegisterMap RegisterMap
-	BuiltIns    *BuiltIns
-	Report      *Report
+	Ctx          context.Context
+	Client       *github.Client
+	ClientGQL    *githubv4.Client
+	Collector    collector.Collector
+	PullRequest  *github.PullRequest
+	Patch        Patch
+	RegisterMap  RegisterMap
+	BuiltIns     *BuiltIns
+	Report       *Report
+	EventPayload interface{}
 }
 
 func (e *BaseEnv) GetCtx() context.Context {
@@ -79,6 +81,10 @@ func (e *BaseEnv) GetReport() *Report {
 	return e.Report
 }
 
+func (e *BaseEnv) GetEventPayload() interface{} {
+	return e.EventPayload
+}
+
 func NewTypeEnv(e Env) *TypeEnv {
 	builtInsType := make(map[string]Type)
 	for builtInName, builtInFunction := range e.GetBuiltIns().Functions {
@@ -100,6 +106,7 @@ func NewEvalEnv(
 	gitHubClientGQL *githubv4.Client,
 	collector collector.Collector,
 	pullRequest *github.PullRequest,
+	eventPayload interface{},
 	builtIns *BuiltIns,
 ) (Env, error) {
 	owner := utils.GetPullRequestBaseOwnerName(pullRequest)
@@ -127,15 +134,16 @@ func NewEvalEnv(
 	report := &Report{WorkflowDetails: make(map[string]ReportWorkflowDetails, 0)}
 
 	input := &BaseEnv{
-		Ctx:         ctx,
-		Client:      gitHubClient,
-		ClientGQL:   gitHubClientGQL,
-		Collector:   collector,
-		PullRequest: pullRequest,
-		Patch:       patch,
-		RegisterMap: registerMap,
-		BuiltIns:    builtIns,
-		Report:      report,
+		Ctx:          ctx,
+		Client:       gitHubClient,
+		ClientGQL:    gitHubClientGQL,
+		Collector:    collector,
+		PullRequest:  pullRequest,
+		Patch:        patch,
+		RegisterMap:  registerMap,
+		BuiltIns:     builtIns,
+		Report:       report,
+		EventPayload: eventPayload,
 	}
 
 	return input, nil
