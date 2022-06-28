@@ -39,16 +39,17 @@ func Run(
 	client *github.Client,
 	clientGQL *githubv4.Client,
 	collector collector.Collector,
-	ghPullRequest *github.PullRequest,
+	pullRequest *github.PullRequest,
+	eventPayload interface{},
 	reviewpadFile *engine.ReviewpadFile,
 	dryRun bool,
 ) (*engine.Program, error) {
-	aladinoInterpreter, err := aladino.NewInterpreter(ctx, client, clientGQL, collector, ghPullRequest, plugins_aladino.PluginBuiltIns())
+	aladinoInterpreter, err := aladino.NewInterpreter(ctx, client, clientGQL, collector, pullRequest, eventPayload, plugins_aladino.PluginBuiltIns())
 	if err != nil {
 		return nil, err
 	}
 
-	evalEnv, err := engine.NewEvalEnv(ctx, client, clientGQL, collector, ghPullRequest, aladinoInterpreter)
+	evalEnv, err := engine.NewEvalEnv(ctx, client, clientGQL, collector, pullRequest, eventPayload, aladinoInterpreter)
 	if err != nil {
 		return nil, err
 	}

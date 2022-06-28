@@ -179,9 +179,11 @@ func NewInterpreter(
 	gitHubClientGQL *githubv4.Client,
 	collector collector.Collector,
 	pullRequest *github.PullRequest,
+	eventPayload interface{},
 	builtIns *BuiltIns,
+
 ) (engine.Interpreter, error) {
-	evalEnv, err := NewEvalEnv(ctx, gitHubClient, gitHubClientGQL, collector, pullRequest, builtIns)
+	evalEnv, err := NewEvalEnv(ctx, gitHubClient, gitHubClientGQL, collector, pullRequest, eventPayload, builtIns)
 	if err != nil {
 		return nil, err
 	}
