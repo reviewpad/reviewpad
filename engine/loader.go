@@ -88,15 +88,15 @@ func transform(file *ReviewpadFile) *ReviewpadFile {
 	}
 
 	return &ReviewpadFile{
-		Version:         file.Version,
-		Edition:         file.Edition,
-		Mode:            file.Mode,
-		SkipFailOnError: file.SkipFailOnError,
-		Imports:         file.Imports,
-		Groups:          file.Groups,
-		Rules:           file.Rules,
-		Labels:          file.Labels,
-		Workflows:       transformedWorkflows,
+		Version:      file.Version,
+		Edition:      file.Edition,
+		Mode:         file.Mode,
+		IgnoreErrors: file.IgnoreErrors,
+		Imports:      file.Imports,
+		Groups:       file.Groups,
+		Rules:        file.Rules,
+		Labels:       file.Labels,
+		Workflows:    transformedWorkflows,
 	}
 }
 
