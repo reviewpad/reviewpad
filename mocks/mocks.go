@@ -2,7 +2,7 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-package plugins_aladino
+package mocks
 
 import (
 	"context"
@@ -13,6 +13,7 @@ import (
 	"github.com/google/go-github/v42/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v2/lang/aladino"
+	plugins_aladino "github.com/reviewpad/reviewpad/v2/plugins/aladino"
 )
 
 const defaultMockPrID = 1234
@@ -87,7 +88,7 @@ func mockHttpClientWith(clientOptions ...mock.MockBackendOption) *http.Client {
 	return mock.NewMockedHTTPClient(clientOptions...)
 }
 
-func mockEnvWith(prOwner string, prRepoName string, prNum int, client *github.Client) (aladino.Env, error) {
+func MockEnvWith(prOwner string, prRepoName string, prNum int, client *github.Client) (aladino.Env, error) {
 	ctx := context.Background()
 	pr, _, err := client.PullRequests.Get(ctx, prOwner, prRepoName, prNum)
 	if err != nil {
@@ -100,7 +101,7 @@ func mockEnvWith(prOwner string, prRepoName string, prNum int, client *github.Cl
 		nil,
 		nil,
 		pr,
-		PluginBuiltIns(),
+		plugins_aladino.PluginBuiltIns(),
 	)
 
 	return env, err
@@ -134,12 +135,12 @@ func mockDefaultHttpClient(clientOptions ...mock.MockBackendOption) *http.Client
 	return mockHttpClientWith(mocks...)
 }
 
-// mockDefaultEnv mocks an Aladino Env with default values.
-func mockDefaultEnv(clientOptions ...mock.MockBackendOption) (aladino.Env, error) {
+// MockDefaultEnv mocks an Aladino Env with default values.
+func MockDefaultEnv(clientOptions ...mock.MockBackendOption) (aladino.Env, error) {
 	prOwner := defaultMockPrOwner
 	prRepoName := defaultMockPrRepoName
 	prNum := defaultMockPrNum
 	client := github.NewClient(mockDefaultHttpClient(clientOptions...))
 
-	return mockEnvWith(prOwner, prRepoName, prNum, client)
+	return MockEnvWith(prOwner, prRepoName, prNum, client)
 }
