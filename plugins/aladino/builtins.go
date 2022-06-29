@@ -4,7 +4,10 @@
 
 package plugins_aladino
 
-import "github.com/reviewpad/reviewpad/v2/lang/aladino"
+import (
+	"github.com/reviewpad/reviewpad/v2/lang/aladino"
+	actions "github.com/reviewpad/reviewpad/v2/plugins/aladino/actions"
+)
 
 // The documentation for the builtins is in:
 // https://github.com/reviewpad/docs/blob/main/aladino/builtins.md
@@ -51,15 +54,15 @@ func PluginBuiltIns() *aladino.BuiltIns {
 			"filter": filter(),
 		},
 		Actions: map[string]*aladino.BuiltInAction{
-			"addLabel":             addLabel(),
-			"assignRandomReviewer": assignRandomReviewer(),
-			"assignReviewer":       assignReviewer(),
-			"assignTeamReviewer":   assignTeamReviewer(),
-			"close":                close(),
-			"comment":              comment(),
-			"commentOnce":          commentOnce(),
-			"merge":                merge(),
-			"removeLabel":          removeLabel(),
+			"addLabel":             actions.AddLabel(),
+			"assignRandomReviewer": actions.AssignRandomReviewer(),
+			"assignReviewer":       actions.AssignReviewer(),
+			"assignTeamReviewer":   actions.AssignTeamReviewer(),
+			"close":                actions.Close(),
+			"comment":              actions.Comment(),
+			"commentOnce":          actions.CommentOnce(),
+			"merge":                actions.Merge(),
+			"removeLabel":          actions.RemoveLabel(),
 		},
 	}
 }
