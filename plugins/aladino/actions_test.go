@@ -17,7 +17,6 @@ import (
 	"github.com/reviewpad/reviewpad/v2/lang/aladino"
 	"github.com/reviewpad/reviewpad/v2/mocks"
 	plugins_aladino "github.com/reviewpad/reviewpad/v2/plugins/aladino"
-	"github.com/reviewpad/reviewpad/v2/utils/fmtio"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -72,7 +71,9 @@ func TestAssignTeamReviewer(t *testing.T) {
 
 func TestAddLabel_WhenANonStringArgIsProvided(t *testing.T) {
 	mockedEnv, err := mocks.MockDefaultEnv()
-	fmtio.FailOnError("mockDefaultEnv failed: %v", err)
+	if err != nil {
+		log.Fatalf("mockDefaultEnv failed: %v", err)
+	}
 
 	args := []aladino.Value{aladino.BuildIntValue(1)}
 	err = addLabel(mockedEnv, args)
@@ -94,7 +95,9 @@ func TestAddLabel_WhenGetLabelRequestFails(t *testing.T) {
 			}),
 		),
 	)
-	fmtio.FailOnError("mockDefaultEnv failed: %v", err)
+	if err != nil {
+		log.Fatalf("mockDefaultEnv failed: %v", err)
+	}
 
 	args := []aladino.Value{aladino.BuildStringValue("test")}
 	err = addLabel(mockedEnv, args)
@@ -123,7 +126,9 @@ func TestAddLabel_WhenAddLabelToIssueRequestFails(t *testing.T) {
 			}),
 		),
 	)
-	fmtio.FailOnError("mockDefaultEnv failed: %v", err)
+	if err != nil {
+		log.Fatalf("mockDefaultEnv failed: %v", err)
+	}
 
 	args := []aladino.Value{aladino.BuildStringValue(label)}
 	err = addLabel(mockedEnv, args)
@@ -154,7 +159,9 @@ func TestAddLabel(t *testing.T) {
 			}),
 		),
 	)
-	fmtio.FailOnError("mockDefaultEnv failed: %v", err)
+	if err != nil {
+		log.Fatalf("mockDefaultEnv failed: %v", err)
+	}
 
 	args := []aladino.Value{aladino.BuildStringValue(labelA)}
 	err = addLabel(mockedEnv, args)
@@ -178,7 +185,9 @@ func TestCommentOnce_WhenGetCommentsRequestFails(t *testing.T) {
 			}),
 		),
 	)
-	fmtio.FailOnError("mockDefaultEnv failed: %v", err)
+	if err != nil {
+		log.Fatalf("mockDefaultEnv failed: %v", err)
+	}
 
 	args := []aladino.Value{aladino.BuildStringValue(fmt.Sprintf("%v%v", plugins_aladino.ReviewpadCommentAnnotation, comment))}
 	err = commentOnce(mockedEnv, args)
@@ -207,7 +216,9 @@ func TestCommentOnce_WhenCommentAlreadyExists(t *testing.T) {
 			}),
 		),
 	)
-	fmtio.FailOnError("mockDefaultEnv failed: %v", err)
+	if err != nil {
+		log.Fatalf("mockDefaultEnv failed: %v", err)
+	}
 
 	args := []aladino.Value{aladino.BuildStringValue(existingComment)}
 	err = commentOnce(mockedEnv, args)
@@ -237,7 +248,9 @@ func TestCommentOnce_WhenFirstTime(t *testing.T) {
 			}),
 		),
 	)
-	fmtio.FailOnError("mockDefaultEnv failed: %v", err)
+	if err != nil {
+		log.Fatalf("mockDefaultEnv failed: %v", err)
+	}
 
 	args := []aladino.Value{aladino.BuildStringValue(commentToAdd)}
 	err = commentOnce(mockedEnv, args)

@@ -4,17 +4,8 @@
 
 package fmtio
 
-import (
-	"fmt"
-	"log"
-)
+import "fmt"
 
 func Errorf(context string, format string, a ...interface{}) error {
 	return fmt.Errorf("[%v] %v", context, fmt.Sprintf(format, a...))
-}
-
-func FailOnError(format string, err error) {
-	if err != nil {
-		log.Fatalf(format, err)
-	}
 }
