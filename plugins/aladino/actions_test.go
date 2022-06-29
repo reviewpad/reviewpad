@@ -22,7 +22,7 @@ type TeamReviewersRequestPostBody struct {
 	TeamReviewers []string `json:"team_reviewers"`
 }
 
-func TestAssignTeamReviewers_WhenNoTeamSlugsAreProvided(t *testing.T) {
+func TestAssignTeamReviewer_WhenNoTeamSlugsAreProvided(t *testing.T) {
 	mockedEnv, err := mockDefaultEnv()
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
@@ -34,7 +34,7 @@ func TestAssignTeamReviewers_WhenNoTeamSlugsAreProvided(t *testing.T) {
 	assert.EqualError(t, err, "assignTeamReviewer: requires at least 1 team to request for review")
 }
 
-func TestAssignTeamReviewers(t *testing.T) {
+func TestAssignTeamReviewer(t *testing.T) {
 	wantTeamReviewers := []string{
 		"core",
 		"reviewpad-project",
