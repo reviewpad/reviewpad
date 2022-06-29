@@ -35,10 +35,9 @@ func TestAssignTeamReviewer_WhenNoTeamSlugsAreProvided(t *testing.T) {
 }
 
 func TestAssignTeamReviewer(t *testing.T) {
-	wantTeamReviewers := []string{
-		"core",
-		"reviewpad-project",
-	}
+	teamA := "core"
+	teamB := "reviewpad-project"
+	wantTeamReviewers := []string{teamA, teamB}	
 	gotTeamReviewers := []string{}
 	mockedEnv, err := mockDefaultEnv(
 		mock.WithRequestMatchHandler(
@@ -57,7 +56,7 @@ func TestAssignTeamReviewer(t *testing.T) {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
 
-	args := []aladino.Value{aladino.BuildArrayValue([]aladino.Value{aladino.BuildStringValue("core"), aladino.BuildStringValue("reviewpad-project")})}
+	args := []aladino.Value{aladino.BuildArrayValue([]aladino.Value{aladino.BuildStringValue(teamA), aladino.BuildStringValue(teamB)})}
 	err = assignTeamReviewerCode(mockedEnv, args)
 
 	assert.Nil(t, err)
