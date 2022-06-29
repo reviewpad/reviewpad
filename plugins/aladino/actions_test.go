@@ -15,7 +15,7 @@ import (
 	"github.com/google/go-github/v42/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v2/lang/aladino"
-	"github.com/reviewpad/reviewpad/v2/mocks"
+	mocks_aladino "github.com/reviewpad/reviewpad/v2/mocks/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v2/plugins/aladino"
 	"github.com/stretchr/testify/assert"
 )
@@ -29,7 +29,7 @@ type TeamReviewersRequestPostBody struct {
 }
 
 func TestAssignTeamReviewer_WhenNoTeamSlugsAreProvided(t *testing.T) {
-	mockedEnv, err := mocks.MockDefaultEnv()
+	mockedEnv, err := mocks_aladino.MockDefaultEnv()
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
@@ -45,7 +45,7 @@ func TestAssignTeamReviewer(t *testing.T) {
 	teamB := "reviewpad-project"
 	wantTeamReviewers := []string{teamA, teamB}	
 	gotTeamReviewers := []string{}
-	mockedEnv, err := mocks.MockDefaultEnv(
+	mockedEnv, err := mocks_aladino.MockDefaultEnv(
 		mock.WithRequestMatchHandler(
 			mock.PostReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
 			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -70,7 +70,7 @@ func TestAssignTeamReviewer(t *testing.T) {
 }
 
 func TestAddLabel_WhenANonStringArgIsProvided(t *testing.T) {
-	mockedEnv, err := mocks.MockDefaultEnv()
+	mockedEnv, err := mocks_aladino.MockDefaultEnv()
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
@@ -83,7 +83,7 @@ func TestAddLabel_WhenANonStringArgIsProvided(t *testing.T) {
 
 func TestAddLabel_WhenGetLabelRequestFails(t *testing.T) {
 	failMessage := "GetLabelRequestFail"
-	mockedEnv, err := mocks.MockDefaultEnv(
+	mockedEnv, err := mocks_aladino.MockDefaultEnv(
 		mock.WithRequestMatchHandler(
 			mock.GetReposLabelsByOwnerByRepoByName,
 			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -108,7 +108,7 @@ func TestAddLabel_WhenGetLabelRequestFails(t *testing.T) {
 func TestAddLabel_WhenAddLabelToIssueRequestFails(t *testing.T) {
 	label := "bug"
 	failMessage := "AddLabelsToIssueRequestFail"
-	mockedEnv, err := mocks.MockDefaultEnv(
+	mockedEnv, err := mocks_aladino.MockDefaultEnv(
 		mock.WithRequestMatch(
 			mock.GetReposLabelsByOwnerByRepoByName,
 			&github.Label{
@@ -142,7 +142,7 @@ func TestAddLabel(t *testing.T) {
 		labelA,
 	}
 	gotLabels := []string{}
-	mockedEnv, err := mocks.MockDefaultEnv(
+	mockedEnv, err := mocks_aladino.MockDefaultEnv(
 		mock.WithRequestMatch(
 			mock.GetReposLabelsByOwnerByRepoByName,
 			&github.Label{},
@@ -173,7 +173,7 @@ func TestAddLabel(t *testing.T) {
 func TestCommentOnce_WhenGetCommentsRequestFails(t *testing.T) {
 	failMessage := "GetCommentRequestFail"
 	comment := "Lorem Ipsum"
-	mockedEnv, err := mocks.MockDefaultEnv(
+	mockedEnv, err := mocks_aladino.MockDefaultEnv(
 		mock.WithRequestMatchHandler(
 			mock.GetReposIssuesCommentsByOwnerByRepoByIssueNumber,
 			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -199,7 +199,7 @@ func TestCommentOnce_WhenCommentAlreadyExists(t *testing.T) {
 	existingComment := "Lorem Ipsum"
 	commentCreated := false
 
-	mockedEnv, err := mocks.MockDefaultEnv(
+	mockedEnv, err := mocks_aladino.MockDefaultEnv(
 		mock.WithRequestMatch(
 			mock.GetReposIssuesCommentsByOwnerByRepoByIssueNumber,
 			[]*github.IssueComment{
@@ -231,7 +231,7 @@ func TestCommentOnce_WhenFirstTime(t *testing.T) {
 	commentToAdd := "Lorem Ipsum"
 	addedComment := ""
 
-	mockedEnv, err := mocks.MockDefaultEnv(
+	mockedEnv, err := mocks_aladino.MockDefaultEnv(
 		mock.WithRequestMatch(
 			mock.GetReposIssuesCommentsByOwnerByRepoByIssueNumber,
 			[]*github.IssueComment{},
