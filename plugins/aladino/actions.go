@@ -201,6 +201,38 @@ func assignReviewerCode(e aladino.Env, args []aladino.Value) error {
 	return err
 }
 
+func assignTeamReviewer() *aladino.BuiltInAction {
+	return &aladino.BuiltInAction{
+		Type: aladino.BuildFunctionType([]aladino.Type{aladino.BuildArrayOfType(aladino.BuildStringType())}, nil),
+		Code: assignTeamReviewerCode,
+	}
+}
+
+func assignTeamReviewerCode(e aladino.Env, args []aladino.Value) error {
+	teamReviewers := args[0].(*aladino.ArrayValue).Vals
+
+	if len(teamReviewers) < 1 {
+		return fmt.Errorf("assignTeamReviewer: requires at least 1 team to request for review")
+	}
+
+	teamReviewersSlugs := make([]string, len(teamReviewers))
+
+	for i, team := range teamReviewers {
+		teamReviewersSlugs[i] = team.(*aladino.StringValue).Val
+	}
+
+	pullRequest := e.GetPullRequest()
+	prNum := utils.GetPullRequestNumber(pullRequest)
+	owner := utils.GetPullRequestOwnerName(pullRequest)
+	repo := utils.GetPullRequestRepoName(pullRequest)
+
+	_, _, err := e.GetClient().PullRequests.RequestReviewers(e.GetCtx(), owner, repo, prNum, github.ReviewersRequest{
+		TeamReviewers: teamReviewersSlugs,
+	})
+
+	return err
+}
+
 func close() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
 		Type: aladino.BuildFunctionType([]aladino.Type{}, nil),

@@ -18,6 +18,51 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+type TeamReviewersRequestPostBody struct {
+	TeamReviewers []string `json:"team_reviewers"`
+}
+
+func TestAssignTeamReviewer_WhenNoTeamSlugsAreProvided(t *testing.T) {
+	mockedEnv, err := mockDefaultEnv()
+	if err != nil {
+		log.Fatalf("mockDefaultEnv failed: %v", err)
+	}
+
+	args := []aladino.Value{aladino.BuildArrayValue([]aladino.Value{})}
+	err = assignTeamReviewerCode(mockedEnv, args)
+
+	assert.EqualError(t, err, "assignTeamReviewer: requires at least 1 team to request for review")
+}
+
+func TestAssignTeamReviewer(t *testing.T) {
+	teamA := "core"
+	teamB := "reviewpad-project"
+	wantTeamReviewers := []string{teamA, teamB}	
+	gotTeamReviewers := []string{}
+	mockedEnv, err := mockDefaultEnv(
+		mock.WithRequestMatchHandler(
+			mock.PostReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
+			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				rawBody, _ := ioutil.ReadAll(r.Body)
+				body := TeamReviewersRequestPostBody{}
+
+				json.Unmarshal(rawBody, &body)
+
+				gotTeamReviewers = body.TeamReviewers
+			}),
+		),
+	)
+	if err != nil {
+		log.Fatalf("mockDefaultEnv failed: %v", err)
+	}
+
+	args := []aladino.Value{aladino.BuildArrayValue([]aladino.Value{aladino.BuildStringValue(teamA), aladino.BuildStringValue(teamB)})}
+	err = assignTeamReviewerCode(mockedEnv, args)
+
+	assert.Nil(t, err)
+	assert.Equal(t, wantTeamReviewers, gotTeamReviewers)
+}
+
 func TestCommentOnce_WhenGetCommentsRequestFails(t *testing.T) {
 	failMessage := "GetCommentRequestFail"
 	comment := "Lorem Ipsum"
