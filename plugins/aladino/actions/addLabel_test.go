@@ -21,7 +21,7 @@ import (
 
 var addLabel = plugins_aladino.PluginBuiltIns().Actions["addLabel"].Code
 
-func TestAddLabel_WhenANonStringArgIsProvided(t *testing.T) {
+func TestAddLabel_WhenArgumentIsInvalid(t *testing.T) {
 	mockedEnv, err := mocks_aladino.MockDefaultEnv()
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
@@ -89,9 +89,9 @@ func TestAddLabel_WhenAddLabelToIssueRequestFails(t *testing.T) {
 }
 
 func TestAddLabel(t *testing.T) {
-	labelA := "bug"
+	label := "bug"
 	wantLabels := []string{
-		labelA,
+		label,
 	}
 	gotLabels := []string{}
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
@@ -115,7 +115,7 @@ func TestAddLabel(t *testing.T) {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
 
-	args := []aladino.Value{aladino.BuildStringValue(labelA)}
+	args := []aladino.Value{aladino.BuildStringValue(label)}
 	err = addLabel(mockedEnv, args)
 
 	assert.Nil(t, err)
