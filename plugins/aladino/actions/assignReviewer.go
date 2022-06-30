@@ -5,6 +5,7 @@
 package plugins_aladino_actions
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/google/go-github/v42/github"
@@ -21,8 +22,14 @@ func AssignReviewer() *aladino.BuiltInAction {
 
 func assignReviewerCode(e aladino.Env, args []aladino.Value) error {
 	totalRequiredReviewers := args[1].(*aladino.IntValue).Val
+	if totalRequiredReviewers == 0 {
+		return fmt.Errorf("assignTeamReviewer: total required reviewers can't be 0")
+	}
 
 	availableReviewers := args[0].(*aladino.ArrayValue).Vals
+	if len(availableReviewers) < 1 {
+		return fmt.Errorf("assignTeamReviewer: requires at least 1 user to request for review")
+	}
 
 	// Remove pull request author from provided reviewers list
 	for index, reviewer := range availableReviewers {
