@@ -5,7 +5,6 @@
 package plugins_aladino_actions
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/google/go-github/v42/github"
@@ -21,28 +20,9 @@ func AssignReviewer() *aladino.BuiltInAction {
 }
 
 func assignReviewerCode(e aladino.Env, args []aladino.Value) error {
-	if len(args) < 1 {
-		return fmt.Errorf("assignReviewer: expecting at least 1 argument")
-	}
-
-	arg := args[0]
-	if !arg.HasKindOf(aladino.ARRAY_VALUE) {
-		return fmt.Errorf("assignReviewer: requires array argument, got %v", arg.Kind())
-	}
-
-	if !args[1].HasKindOf(aladino.INT_VALUE) {
-		return fmt.Errorf("assignReviewer: the parameter total is required to be an int, instead got %v", args[1].Kind())
-	}
-
 	totalRequiredReviewers := args[1].(*aladino.IntValue).Val
 
-	availableReviewers := arg.(*aladino.ArrayValue).Vals
-
-	for _, reviewer := range availableReviewers {
-		if !reviewer.HasKindOf(aladino.STRING_VALUE) {
-			return fmt.Errorf("assignReviewer: requires array of strings, got array with value of %v", reviewer.Kind())
-		}
-	}
+	availableReviewers := args[0].(*aladino.ArrayValue).Vals
 
 	// Remove pull request author from provided reviewers list
 	for index, reviewer := range availableReviewers {
