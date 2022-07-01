@@ -40,16 +40,11 @@ func parseMergeMethod(args []aladino.Value) (string, error) {
 		return "merge", nil
 	}
 
-	arg := args[0]
-	if arg.HasKindOf(aladino.STRING_VALUE) {
-		mergeMethod := arg.(*aladino.StringValue).Val
-		switch mergeMethod {
-		case "merge", "rebase", "squash":
-			return mergeMethod, nil
-		default:
-			return "", fmt.Errorf("merge: unexpected argument %v", mergeMethod)
-		}
-	} else {
-		return "", fmt.Errorf("merge: expects string argument")
+	mergeMethod := args[0].(*aladino.StringValue).Val
+	switch mergeMethod {
+	case "merge", "rebase", "squash":
+		return mergeMethod, nil
+	default:
+		return "", fmt.Errorf("merge: unexpected argument %v", mergeMethod)
 	}
 }
