@@ -7,6 +7,7 @@ require (
 	github.com/dukex/mixpanel v0.0.0-20220410140740-e82251311162
 	github.com/google/go-github/v42 v42.0.0
 	github.com/google/uuid v1.3.0
+	github.com/gorilla/mux v1.8.0
 	github.com/migueleliasweb/go-github-mock v0.0.8
 	github.com/shurcooL/githubv4 v0.0.0-20220520033151-0b4e3294ff00
 	github.com/stretchr/testify v1.7.4
@@ -20,7 +21,6 @@ require (
 	github.com/golang/protobuf v1.4.2 // indirect
 	github.com/google/go-github/v41 v41.0.0 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
-	github.com/gorilla/mux v1.8.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/shurcooL/graphql v0.0.0-20220606043923-3cf50f8a0a29 // indirect
 	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5 // indirect
