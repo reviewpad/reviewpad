@@ -36,10 +36,6 @@ func mergeCode(e aladino.Env, args []aladino.Value) error {
 }
 
 func parseMergeMethod(args []aladino.Value) (string, error) {
-	if len(args) > 1 {
-		return "", fmt.Errorf("merge: received two arguments")
-	}
-
 	if len(args) == 0 {
 		return "merge", nil
 	}
