@@ -14,17 +14,17 @@ import (
 func TestFileExt_WhenFilePathHasNoExtension(t *testing.T) {
 	fp := "test/file"
 
-	expectedFileExt := ""
+	wantFileExt := ""
 	gotFileExt := utils.FileExt(fp)
 
-	assert.Equal(t, expectedFileExt, gotFileExt)
+	assert.Equal(t, wantFileExt, gotFileExt)
 }
 
 func TestFileExt_WhenFilePathHasExtension(t *testing.T) {
 	fp := "test/file.go"
 
-	expectedFileExt := ".go"
+	wantFileExt := ".go"
 	gotFileExt := utils.FileExt(fp)
 
-	assert.Equal(t, expectedFileExt, gotFileExt)
+	assert.Equal(t, wantFileExt, gotFileExt)
 }
