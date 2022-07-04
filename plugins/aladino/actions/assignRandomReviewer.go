@@ -24,7 +24,7 @@ func assignRandomReviewerCode(e aladino.Env, _ []aladino.Value) error {
 	owner := utils.GetPullRequestOwnerName(e.GetPullRequest())
 	repo := utils.GetPullRequestRepoName(e.GetPullRequest())
 
-	ghPrRequestedReviewers, _, err := e.GetClient().PullRequests.ListReviewers(e.GetCtx(), owner, repo, prNum, &github.ListOptions{})
+	ghPrRequestedReviewers, err := utils.GetPullRequestReviewers(e.GetCtx(), e.GetClient(), owner, repo, prNum, &github.ListOptions{})
 	if err != nil {
 		return err
 	}

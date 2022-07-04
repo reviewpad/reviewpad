@@ -138,3 +138,29 @@ func GetPullRequestFiles(ctx context.Context, client *github.Client, owner strin
 
 	return fs.([]*github.CommitFile), nil
 }
+
+func GetPullRequestReviewers(ctx context.Context, client *github.Client, owner string, repo string, number int, opts *github.ListOptions) (*github.Reviewers, error) {
+	fs, err := PaginatedRequest(
+		func() interface{} {
+			return &github.Reviewers{}
+		},
+		func(i interface{}, page int) (interface{}, *github.Response, error) {
+			fls := i.(*github.Reviewers)
+			fs, resp, err := client.PullRequests.ListReviewers(ctx, owner, repo, number, &github.ListOptions{
+				Page:    page,
+				PerPage: int(maxPerPage),
+			})
+			if err != nil {
+				return nil, nil, err
+			}
+			fls.Users = append(fls.Users, fs.Users...)
+			fls.Teams = append(fls.Teams, fs.Teams...)
+			return fls, resp, nil
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return fs.(*github.Reviewers), nil
+}
