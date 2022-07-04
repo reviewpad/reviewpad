@@ -60,15 +60,23 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 	execLogf("detected %v workflows", len(file.Workflows))
 
 	// process labels
-	for labelName, label := range file.Labels {
-		labelInRepo, _ := getLabel(env, &labelName)
+	for labelKeyName, label := range file.Labels {
+		labelName := labelKeyName
+		if label.Name != "" {
+			labelName = label.Name
+		}
+
+		labelInRepo, err := getLabel(env, labelName)
+		if err != nil {
+			return nil, err
+		}
 
 		if labelInRepo.GetName() != "" {
 			// label already exists: nothing to do
 			continue
 		}
 
-		err := createLabel(env, &labelName, &label)
+		err = createLabel(env, &labelName, &label)
 		if err != nil {
 			CollectError(env, err)
 			return nil, err

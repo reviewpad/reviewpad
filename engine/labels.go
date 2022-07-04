@@ -33,7 +33,7 @@ func createLabel(e *Env, labelName *string, label *PadLabel) error {
 		return err
 	}
 
-	var labelColor *string = nil
+	var labelColor *string
 	if label.Color != "" {
 		labelColor = &label.Color
 	}
@@ -52,11 +52,11 @@ func createLabel(e *Env, labelName *string, label *PadLabel) error {
 	return err
 }
 
-func getLabel(e *Env, labelName *string) (*github.Label, error) {
+func getLabel(e *Env, labelName string) (*github.Label, error) {
 	owner := utils.GetPullRequestOwnerName(e.PullRequest)
 	repo := utils.GetPullRequestRepoName(e.PullRequest)
 
-	ghLabel, _, err := e.Client.Issues.GetLabel(e.Ctx, owner, repo, *labelName)
+	ghLabel, _, err := e.Client.Issues.GetLabel(e.Ctx, owner, repo, labelName)
 	if err != nil {
 		return nil, err
 	}
