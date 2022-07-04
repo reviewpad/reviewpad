@@ -59,11 +59,16 @@ func (p PadWorkflowRule) equals(o PadWorkflowRule) bool {
 }
 
 type PadLabel struct {
+	Name        string `yaml:"name"`
 	Color       string `yaml:"color"`
 	Description string `yaml:"description"`
 }
 
 func (p PadLabel) equals(o PadLabel) bool {
+	if p.Name != o.Name {
+		return false
+	}
+
 	if p.Color != o.Color {
 		return false
 	}
