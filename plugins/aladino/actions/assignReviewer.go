@@ -23,12 +23,12 @@ func AssignReviewer() *aladino.BuiltInAction {
 func assignReviewerCode(e aladino.Env, args []aladino.Value) error {
 	totalRequiredReviewers := args[1].(*aladino.IntValue).Val
 	if totalRequiredReviewers == 0 {
-		return fmt.Errorf("assignTeamReviewer: total required reviewers can't be 0")
+		return fmt.Errorf("assignReviewer: total required reviewers can't be 0")
 	}
 
 	availableReviewers := args[0].(*aladino.ArrayValue).Vals
-	if len(availableReviewers) < 1 {
-		return fmt.Errorf("assignTeamReviewer: requires at least 1 user to request for review")
+	if len(availableReviewers) == 0 {
+		return fmt.Errorf("assignReviewer: list of reviewers can't be empty")
 	}
 
 	// Remove pull request author from provided reviewers list
