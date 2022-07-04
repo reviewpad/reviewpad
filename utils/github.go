@@ -164,3 +164,30 @@ func GetPullRequestReviewers(ctx context.Context, client *github.Client, owner s
 
 	return reviewers.(*github.Reviewers), nil
 }
+
+func GetRepoCollaborators(ctx context.Context, client *github.Client, owner string, repo string) ([]*github.User, error) {
+	collaborators, err := PaginatedRequest(
+		func() interface{} {
+			return []*github.User{}
+		},
+		func(i interface{}, page int) (interface{}, *github.Response, error) {
+			currentCollaborators := i.([]*github.User)
+			collaborators, resp, err := client.Repositories.ListCollaborators(ctx, owner, repo, &github.ListCollaboratorsOptions{
+				ListOptions: github.ListOptions{
+					Page:    page,
+					PerPage: int(maxPerPage),
+				},
+			})
+			if err != nil {
+				return nil, nil, err
+			}
+			currentCollaborators = append(currentCollaborators, collaborators...)
+			return currentCollaborators, resp, nil
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return collaborators.([]*github.User), nil
+}
