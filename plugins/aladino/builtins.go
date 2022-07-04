@@ -7,6 +7,12 @@ package plugins_aladino
 import (
 	"github.com/reviewpad/reviewpad/v2/lang/aladino"
 	actions "github.com/reviewpad/reviewpad/v2/plugins/aladino/actions"
+	pullRequest_functions "github.com/reviewpad/reviewpad/v2/plugins/aladino/functions/pullRequest"
+	organization_functions "github.com/reviewpad/reviewpad/v2/plugins/aladino/functions/organization"
+	utils_functions "github.com/reviewpad/reviewpad/v2/plugins/aladino/functions/utils"
+	engine_functions "github.com/reviewpad/reviewpad/v2/plugins/aladino/functions/engine"
+	inner_functions "github.com/reviewpad/reviewpad/v2/plugins/aladino/functions/inner"
+	user_functions "github.com/reviewpad/reviewpad/v2/plugins/aladino/functions/user"
 )
 
 // The documentation for the builtins is in:
@@ -17,41 +23,41 @@ func PluginBuiltIns() *aladino.BuiltIns {
 	return &aladino.BuiltIns{
 		Functions: map[string]*aladino.BuiltInFunction{
 			// Pull Request
-			"assignees":         assignees(),
-			"author":            author(),
-			"base":              base(),
-			"commitCount":       commitCount(),
-			"commits":           commits(),
-			"createdAt":         createdAt(),
-			"description":       description(),
-			"fileCount":         fileCount(),
-			"hasCodePattern":    hasCodePattern(),
-			"hasFileExtensions": hasFileExtensions(),
-			"hasFileName":       hasFileName(),
-			"hasFilePattern":    hasFilePattern(),
-			"hasLinearHistory":  hasLinearHistory(),
-			"hasLinkedIssues":   hasLinkedIssues(),
-			"head":              head(),
-			"isDraft":           isDraft(),
-			"labels":            labels(),
-			"milestone":         milestone(),
-			"reviewers":         reviewers(),
-			"size":              size(),
-			"title":             title(),
+			"assignees":         pullRequest_functions.Assignees(),
+			"author":            pullRequest_functions.Author(),
+			"base":              pullRequest_functions.Base(),
+			"commitCount":       pullRequest_functions.CommitCount(),
+			"commits":           pullRequest_functions.Commits(),
+			"createdAt":         pullRequest_functions.CreatedAt(),
+			"description":       pullRequest_functions.Description(),
+			"fileCount":         pullRequest_functions.FileCount(),
+			"hasCodePattern":    pullRequest_functions.HasCodePattern(),
+			"hasFileExtensions": pullRequest_functions.HasFileExtensions(),
+			"hasFileName":       pullRequest_functions.HasFileName(),
+			"hasFilePattern":    pullRequest_functions.HasFilePattern(),
+			"hasLinearHistory":  pullRequest_functions.HasLinearHistory(),
+			"hasLinkedIssues":   pullRequest_functions.HasLinkedIssues(),
+			"head":              pullRequest_functions.Head(),
+			"isDraft":           pullRequest_functions.IsDraft(),
+			"labels":            pullRequest_functions.Labels(),
+			"milestone":         pullRequest_functions.Milestone(),
+			"reviewers":         pullRequest_functions.Reviewers(),
+			"size":              pullRequest_functions.Size(),
+			"title":             pullRequest_functions.Title(),
 			// Organization
-			"organization": organization(),
-			"team":         team(),
+			"organization": organization_functions.Organization(),
+			"team":         organization_functions.Team(),
 			// User
-			"totalCreatedPullRequests": totalCreatedPullRequests(),
+			"totalCreatedPullRequests": user_functions.TotalCreatedPullRequests(),
 			// Utilities
-			"append":      appendString(),
-			"contains":    contains(),
-			"isElementOf": isElementOf(),
+			"append":      utils_functions.AppendString(),
+			"contains":    utils_functions.Contains(),
+			"isElementOf": utils_functions.IsElementOf(),
 			// Engine
-			"group": group(),
-			"rule":  rule(),
+			"group": engine_functions.Group(),
+			"rule":  engine_functions.Rule(),
 			// Internal
-			"filter": filter(),
+			"filter": inner_functions.Filter(),
 		},
 		Actions: map[string]*aladino.BuiltInAction{
 			"addLabel":             actions.AddLabel(),
