@@ -62,6 +62,7 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 	// process labels
 	for labelKeyName, label := range file.Labels {
 		labelName := labelKeyName
+		// for backwards compatibility, a label has both a key and a name
 		if label.Name != "" {
 			labelName = label.Name
 		}
