@@ -55,12 +55,12 @@ You can execute Reviewpad through the CLI or through the Reviewpad [GitHub actio
 This repository generates two artifacts:
 
 1. CLI [cmd/cli](cmd/cli/main.go) that runs reviewpad open source edition.
-2. Reviewpad library packages:  
-    ├ github.com/reviewpad/reviewpad/collector  
-    ├ github.com/reviewpad/reviewpad/engine  
-    ├ github.com/reviewpad/reviewpad/lang/aladino  
-    ├ github.com/reviewpad/reviewpad/plugins/aladino  
-    ├ github.com/reviewpad/reviewpad/utils/fmtio  
+2. Reviewpad library packages:
+    ├ github.com/reviewpad/reviewpad/collector
+    ├ github.com/reviewpad/reviewpad/engine
+    ├ github.com/reviewpad/reviewpad/lang/aladino
+    ├ github.com/reviewpad/reviewpad/plugins/aladino
+    ├ github.com/reviewpad/reviewpad/utils/fmtio
 
 Conceptually, the packages are divided into four categories:
 
@@ -110,6 +110,31 @@ Usage of ./main:
         Pull request GitHub url
   -reviewpad string
         File path to reviewpad.yml
+```
+
+### VSCode
+
+We strongly recommend the use of VSCode but feel free to use the IDE of your choice. For the case of VSCode we also recommend the installation of the following extensions:
+
+* [EditorConfig](https://marketplace.visualstudio.com/items?itemName=EditorConfig.EditorConfig) - To helps maintaining consistent coding styles.
+* [licenser](https://marketplace.visualstudio.com/items?itemName=ymotongpoo.licenser) - For adding license headers.
+
+On your VSCode settings please add the following settings:
+
+```json
+{
+  // Format files on save
+  "editor.formatOnSave": true,
+  // Licenser configuration
+  "licenser.license": "Custom",
+  "licenser.author": "Explore.dev, Unipessoal Lda",
+  "licenser.customHeader": "Copyright (C) @YEAR@ @AUTHOR@ - All Rights Reserved\nUse of this source code is governed by a license that can be\nfound in the LICENSE file.",
+  // File nesting
+  "explorer.fileNesting.patterns": {
+    // Next go and go test files
+    "*.go": "${capture}_test.go",
+  },
+}
 ```
 
 ### Debugging on VSCode
