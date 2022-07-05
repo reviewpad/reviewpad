@@ -7,6 +7,7 @@ package plugins_aladino
 import (
 	"github.com/reviewpad/reviewpad/v2/lang/aladino"
 	actions "github.com/reviewpad/reviewpad/v2/plugins/aladino/actions"
+	functions "github.com/reviewpad/reviewpad/v2/plugins/aladino/functions"
 )
 
 // The documentation for the builtins is in:
@@ -17,41 +18,41 @@ func PluginBuiltIns() *aladino.BuiltIns {
 	return &aladino.BuiltIns{
 		Functions: map[string]*aladino.BuiltInFunction{
 			// Pull Request
-			"assignees":         assignees(),
-			"author":            author(),
-			"base":              base(),
-			"commitCount":       commitCount(),
-			"commits":           commits(),
-			"createdAt":         createdAt(),
-			"description":       description(),
-			"fileCount":         fileCount(),
-			"hasCodePattern":    hasCodePattern(),
-			"hasFileExtensions": hasFileExtensions(),
-			"hasFileName":       hasFileName(),
-			"hasFilePattern":    hasFilePattern(),
-			"hasLinearHistory":  hasLinearHistory(),
-			"hasLinkedIssues":   hasLinkedIssues(),
-			"head":              head(),
-			"isDraft":           isDraft(),
-			"labels":            labels(),
-			"milestone":         milestone(),
-			"reviewers":         reviewers(),
-			"size":              size(),
-			"title":             title(),
+			"assignees":         functions.Assignees(),
+			"author":            functions.Author(),
+			"base":              functions.Base(),
+			"commitCount":       functions.CommitCount(),
+			"commits":           functions.Commits(),
+			"createdAt":         functions.CreatedAt(),
+			"description":       functions.Description(),
+			"fileCount":         functions.FileCount(),
+			"hasCodePattern":    functions.HasCodePattern(),
+			"hasFileExtensions": functions.HasFileExtensions(),
+			"hasFileName":       functions.HasFileName(),
+			"hasFilePattern":    functions.HasFilePattern(),
+			"hasLinearHistory":  functions.HasLinearHistory(),
+			"hasLinkedIssues":   functions.HasLinkedIssues(),
+			"head":              functions.Head(),
+			"isDraft":           functions.IsDraft(),
+			"labels":            functions.Labels(),
+			"milestone":         functions.Milestone(),
+			"reviewers":         functions.Reviewers(),
+			"size":              functions.Size(),
+			"title":             functions.Title(),
 			// Organization
-			"organization": organization(),
-			"team":         team(),
+			"organization": functions.Organization(),
+			"team":         functions.Team(),
 			// User
-			"totalCreatedPullRequests": totalCreatedPullRequests(),
+			"totalCreatedPullRequests": functions.TotalCreatedPullRequests(),
 			// Utilities
-			"append":      appendString(),
-			"contains":    contains(),
-			"isElementOf": isElementOf(),
+			"append":      functions.AppendString(),
+			"contains":    functions.Contains(),
+			"isElementOf": functions.IsElementOf(),
 			// Engine
-			"group": group(),
-			"rule":  rule(),
+			"group": functions.Group(),
+			"rule":  functions.Rule(),
 			// Internal
-			"filter": filter(),
+			"filter": functions.Filter(),
 		},
 		Actions: map[string]*aladino.BuiltInAction{
 			"addLabel":             actions.AddLabel(),
