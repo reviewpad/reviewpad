@@ -33,7 +33,7 @@ func TestMerge_WhenMergeMethodIsInvalid(t *testing.T) {
 	args := []aladino.Value{aladino.BuildStringValue("INVALID")}
 	err = merge(mockedEnv, args)
 
-	assert.EqualError(t, err, "merge: unexpected argument INVALID")
+	assert.EqualError(t, err, "merge: unsupported merge method INVALID")
 }
 
 func TestMerge_WhenNoMergeMethodIsProvided(t *testing.T) {

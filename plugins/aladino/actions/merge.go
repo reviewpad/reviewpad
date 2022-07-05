@@ -45,6 +45,6 @@ func parseMergeMethod(args []aladino.Value) (string, error) {
 	case "merge", "rebase", "squash":
 		return mergeMethod, nil
 	default:
-		return "", fmt.Errorf("merge: unexpected argument %v", mergeMethod)
+		return "", fmt.Errorf("merge: unsupported merge method %v", mergeMethod)
 	}
 }
