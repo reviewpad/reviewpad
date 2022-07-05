@@ -45,20 +45,20 @@ func TestRemoveLabel_WhenGetLabelRequestFails(t *testing.T) {
 }
 
 func TestRemoveLabel_WhenLabelIsNotAppliedToPullRequest(t *testing.T) {
-	label := "bug"
-	var labelRemoved bool
+	wantLabel := "bug"
+	var isLabelRemoved bool
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
 		mock.WithRequestMatch(
 			mock.GetReposLabelsByOwnerByRepoByName,
 			github.Label{
-				Name: github.String("bug"),
+				Name: github.String(wantLabel),
 			},
 		),
 		mock.WithRequestMatchHandler(
 			mock.DeleteReposIssuesLabelsByOwnerByRepoByIssueNumberByName,
 			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				// If the remove label request was performed then the label was removed
-				labelRemoved = true
+				isLabelRemoved = true
 			}),
 		),
 	)
@@ -66,21 +66,21 @@ func TestRemoveLabel_WhenLabelIsNotAppliedToPullRequest(t *testing.T) {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
 
-	args := []aladino.Value{aladino.BuildStringValue(label)}
+	args := []aladino.Value{aladino.BuildStringValue(wantLabel)}
 	err = removeLabel(mockedEnv, args)
 
 	assert.Nil(t, err)
-	assert.False(t, labelRemoved, "The label should not be removed")
+	assert.False(t, isLabelRemoved, "The label should not be removed")
 }
 
 func TestRemoveLabel_WhenLabelIsAppliedToPullRequest(t *testing.T) {
-	label := "enhancement"
+	wantLabel := "enhancement"
 	var gotLabel string
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
 		mock.WithRequestMatch(
 			mock.GetReposLabelsByOwnerByRepoByName,
 			github.Label{
-				Name: github.String("enhancement"),
+				Name: github.String(wantLabel),
 			},
 		),
 		mock.WithRequestMatchHandler(
@@ -95,9 +95,9 @@ func TestRemoveLabel_WhenLabelIsAppliedToPullRequest(t *testing.T) {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
 
-	args := []aladino.Value{aladino.BuildStringValue(label)}
+	args := []aladino.Value{aladino.BuildStringValue(wantLabel)}
 	err = removeLabel(mockedEnv, args)
 
 	assert.Nil(t, err)
-	assert.Equal(t, label, gotLabel)
+	assert.Equal(t, wantLabel, gotLabel)
 }
