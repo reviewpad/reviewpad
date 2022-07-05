@@ -21,27 +21,14 @@ func AssignReviewer() *aladino.BuiltInAction {
 }
 
 func assignReviewerCode(e aladino.Env, args []aladino.Value) error {
-	if len(args) < 1 {
-		return fmt.Errorf("assignReviewer: expecting at least 1 argument")
-	}
-
-	arg := args[0]
-	if !arg.HasKindOf(aladino.ARRAY_VALUE) {
-		return fmt.Errorf("assignReviewer: requires array argument, got %v", arg.Kind())
-	}
-
-	if !args[1].HasKindOf(aladino.INT_VALUE) {
-		return fmt.Errorf("assignReviewer: the parameter total is required to be an int, instead got %v", args[1].Kind())
-	}
-
 	totalRequiredReviewers := args[1].(*aladino.IntValue).Val
+	if totalRequiredReviewers == 0 {
+		return fmt.Errorf("assignReviewer: total required reviewers can't be 0")
+	}
 
-	availableReviewers := arg.(*aladino.ArrayValue).Vals
-
-	for _, reviewer := range availableReviewers {
-		if !reviewer.HasKindOf(aladino.STRING_VALUE) {
-			return fmt.Errorf("assignReviewer: requires array of strings, got array with value of %v", reviewer.Kind())
-		}
+	availableReviewers := args[0].(*aladino.ArrayValue).Vals
+	if len(availableReviewers) == 0 {
+		return fmt.Errorf("assignReviewer: list of reviewers can't be empty")
 	}
 
 	// Remove pull request author from provided reviewers list
