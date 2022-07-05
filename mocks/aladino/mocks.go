@@ -43,6 +43,11 @@ func getDefaultMockPullRequestDetails() *github.PullRequest {
 		Milestone: &github.Milestone{
 			Title: github.String("v1.0"),
 		},
+		Labels: []*github.Label{
+			{
+				Name: github.String("enhancement"),
+			},
+		},
 		Head: &github.PullRequestBranch{
 			Repo: &github.Repository{
 				Owner: &github.User{
