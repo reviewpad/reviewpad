@@ -24,7 +24,7 @@ type MergeRequestPostBody struct {
 	MergeMethod string `json:"merge_method"`
 }
 
-func TestMerge_WhenMergeMethodIsInvalid(t *testing.T) {
+func TestMerge_WhenMergeMethodIsUnsupported(t *testing.T) {
 	mockedEnv, err := mocks_aladino.MockDefaultEnv()
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
@@ -79,7 +79,6 @@ func TestMerge_WhenMergeMethodIsProvided(t *testing.T) {
 			}),
 		),
 	)
-
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
