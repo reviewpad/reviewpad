@@ -7,12 +7,7 @@ package plugins_aladino
 import (
 	"github.com/reviewpad/reviewpad/v2/lang/aladino"
 	actions "github.com/reviewpad/reviewpad/v2/plugins/aladino/actions"
-	pullRequest_functions "github.com/reviewpad/reviewpad/v2/plugins/aladino/functions/pullRequest"
-	organization_functions "github.com/reviewpad/reviewpad/v2/plugins/aladino/functions/organization"
-	utils_functions "github.com/reviewpad/reviewpad/v2/plugins/aladino/functions/utils"
-	engine_functions "github.com/reviewpad/reviewpad/v2/plugins/aladino/functions/engine"
-	inner_functions "github.com/reviewpad/reviewpad/v2/plugins/aladino/functions/inner"
-	user_functions "github.com/reviewpad/reviewpad/v2/plugins/aladino/functions/user"
+	functions "github.com/reviewpad/reviewpad/v2/plugins/aladino/functions"
 )
 
 // The documentation for the builtins is in:
@@ -23,41 +18,41 @@ func PluginBuiltIns() *aladino.BuiltIns {
 	return &aladino.BuiltIns{
 		Functions: map[string]*aladino.BuiltInFunction{
 			// Pull Request
-			"assignees":         pullRequest_functions.Assignees(),
-			"author":            pullRequest_functions.Author(),
-			"base":              pullRequest_functions.Base(),
-			"commitCount":       pullRequest_functions.CommitCount(),
-			"commits":           pullRequest_functions.Commits(),
-			"createdAt":         pullRequest_functions.CreatedAt(),
-			"description":       pullRequest_functions.Description(),
-			"fileCount":         pullRequest_functions.FileCount(),
-			"hasCodePattern":    pullRequest_functions.HasCodePattern(),
-			"hasFileExtensions": pullRequest_functions.HasFileExtensions(),
-			"hasFileName":       pullRequest_functions.HasFileName(),
-			"hasFilePattern":    pullRequest_functions.HasFilePattern(),
-			"hasLinearHistory":  pullRequest_functions.HasLinearHistory(),
-			"hasLinkedIssues":   pullRequest_functions.HasLinkedIssues(),
-			"head":              pullRequest_functions.Head(),
-			"isDraft":           pullRequest_functions.IsDraft(),
-			"labels":            pullRequest_functions.Labels(),
-			"milestone":         pullRequest_functions.Milestone(),
-			"reviewers":         pullRequest_functions.Reviewers(),
-			"size":              pullRequest_functions.Size(),
-			"title":             pullRequest_functions.Title(),
+			"assignees":         functions.Assignees(),
+			"author":            functions.Author(),
+			"base":              functions.Base(),
+			"commitCount":       functions.CommitCount(),
+			"commits":           functions.Commits(),
+			"createdAt":         functions.CreatedAt(),
+			"description":       functions.Description(),
+			"fileCount":         functions.FileCount(),
+			"hasCodePattern":    functions.HasCodePattern(),
+			"hasFileExtensions": functions.HasFileExtensions(),
+			"hasFileName":       functions.HasFileName(),
+			"hasFilePattern":    functions.HasFilePattern(),
+			"hasLinearHistory":  functions.HasLinearHistory(),
+			"hasLinkedIssues":   functions.HasLinkedIssues(),
+			"head":              functions.Head(),
+			"isDraft":           functions.IsDraft(),
+			"labels":            functions.Labels(),
+			"milestone":         functions.Milestone(),
+			"reviewers":         functions.Reviewers(),
+			"size":              functions.Size(),
+			"title":             functions.Title(),
 			// Organization
-			"organization": organization_functions.Organization(),
-			"team":         organization_functions.Team(),
+			"organization": functions.Organization(),
+			"team":         functions.Team(),
 			// User
-			"totalCreatedPullRequests": user_functions.TotalCreatedPullRequests(),
+			"totalCreatedPullRequests": functions.TotalCreatedPullRequests(),
 			// Utilities
-			"append":      utils_functions.AppendString(),
-			"contains":    utils_functions.Contains(),
-			"isElementOf": utils_functions.IsElementOf(),
+			"append":      functions.AppendString(),
+			"contains":    functions.Contains(),
+			"isElementOf": functions.IsElementOf(),
 			// Engine
-			"group": engine_functions.Group(),
-			"rule":  engine_functions.Rule(),
+			"group": functions.Group(),
+			"rule":  functions.Rule(),
 			// Internal
-			"filter": inner_functions.Filter(),
+			"filter": functions.Filter(),
 		},
 		Actions: map[string]*aladino.BuiltInAction{
 			"addLabel":             actions.AddLabel(),
