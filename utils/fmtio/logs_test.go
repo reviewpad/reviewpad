@@ -17,7 +17,7 @@ import (
 
 func TestLogPrintLn(t *testing.T) {
 	var buf bytes.Buffer
-    log.SetOutput(&buf)
+	log.SetOutput(&buf)
 
    	fmtio.LogPrintln("test", "test value: %v", "TEST")
 
