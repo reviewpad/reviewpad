@@ -73,6 +73,14 @@ Conceptually, the packages are divided into four categories:
 
 ## Development
 
+### Setup
+
+This project uses the Goyacc, a version of yacc for Go, used to create the Aladino parser, to install goyacc run:
+
+```sh
+go install golang.org/x/tools/cmd/goyacc@master
+```
+
 ### Compilation
 
 We use [Taskfile](https://taskfile.dev/). To compile the packages simply run:
