@@ -12,22 +12,22 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestElementOf_WhenTrue(t *testing.T) {
-	s := []string{
-		"hello",
-		"world",
-	}
+func TestElementOf_WhenElementIsPresent(t *testing.T) {
 	str := "world"
+	list := []string{
+		"hello",
+		str,
+	}
 
-	assert.True(t, utils.ElementOf(s, str), fmt.Sprintf("\"%s\" should be an element of the list %v.", str, s))
+	assert.True(t, utils.ElementOf(list, str), fmt.Sprintf("\"%s\" should be an element of the list %v.", str, list))
 }
 
-func TestElementOf_WhenFalse(t *testing.T) {
-	s := []string{
+func TestElementOf_WhenElementIsNotPresent(t *testing.T) {
+	str := "bye"
+	list := []string{
 		"hello",
 		"world",
 	}
-	str := "bye"
 
-	assert.False(t, utils.ElementOf(s, str), fmt.Sprintf("\"%s\" should not be an element of the list %v.", str, s))
+	assert.False(t, utils.ElementOf(list, str), fmt.Sprintf("\"%s\" should not be an element of the list %v.", str, list))
 }
