@@ -22,8 +22,8 @@ import (
 var comment = plugins_aladino.PluginBuiltIns().Actions["comment"].Code
 
 func TestComment(t *testing.T) {
-	commentToAdd := "Lorem Ipsum"
-	addedComment := ""
+	wantComment := "Lorem Ipsum"
+	gotComment := ""
 
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
 		mock.WithRequestMatch(
@@ -38,7 +38,7 @@ func TestComment(t *testing.T) {
 
 				json.Unmarshal(rawBody, &body)
 
-				addedComment = *body.Body
+				gotComment = *body.Body
 			}),
 		),
 	)
@@ -46,9 +46,9 @@ func TestComment(t *testing.T) {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
 
-	args := []aladino.Value{aladino.BuildStringValue(commentToAdd)}
+	args := []aladino.Value{aladino.BuildStringValue(wantComment)}
 	err = comment(mockedEnv, args)
 
 	assert.Nil(t, err)
-	assert.Equal(t, commentToAdd, addedComment)
+	assert.Equal(t, wantComment, gotComment)
 }
