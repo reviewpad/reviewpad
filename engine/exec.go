@@ -79,6 +79,11 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 				return nil, err
 			}
 		}
+
+		err = interpreter.ProcessLabel(labelKeyName, labelName)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	// process groups

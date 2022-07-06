@@ -63,6 +63,17 @@ func evalGroup(env Env, expr Expr) (Value, error) {
 	return Eval(env, expr)
 }
 
+func BuildInternalLabelID(id string) string {
+	return fmt.Sprintf("@label:%v", id)
+}
+
+func (i *Interpreter) ProcessLabel(id, name string) error {
+	internalLabelID := BuildInternalLabelID(id)
+
+	i.Env.GetRegisterMap()[internalLabelID] = BuildStringValue(name)
+	return nil
+}
+
 func BuildInternalRuleName(name string) string {
 	return fmt.Sprintf("@rule:%v", name)
 }
