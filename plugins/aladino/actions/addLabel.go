@@ -5,8 +5,6 @@
 package plugins_aladino_actions
 
 import (
-	"fmt"
-
 	"github.com/reviewpad/reviewpad/v2/lang/aladino"
 	"github.com/reviewpad/reviewpad/v2/utils"
 )
@@ -19,12 +17,7 @@ func AddLabel() *aladino.BuiltInAction {
 }
 
 func addLabelCode(e aladino.Env, args []aladino.Value) error {
-	labelVal := args[0]
-	if !labelVal.HasKindOf(aladino.STRING_VALUE) {
-		return fmt.Errorf("addLabel: expecting string argument, got %v", labelVal.Kind())
-	}
-
-	label := labelVal.(*aladino.StringValue).Val
+	label := args[0].(*aladino.StringValue).Val
 
 	prNum := utils.GetPullRequestNumber(e.GetPullRequest())
 	owner := utils.GetPullRequestOwnerName(e.GetPullRequest())
