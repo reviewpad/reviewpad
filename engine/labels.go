@@ -52,14 +52,18 @@ func createLabel(e *Env, labelName *string, label *PadLabel) error {
 	return err
 }
 
-func getLabel(e *Env, labelName string) (*github.Label, error) {
+func checkLabelExists(e *Env, labelName string) (bool, error) {
 	owner := utils.GetPullRequestOwnerName(e.PullRequest)
 	repo := utils.GetPullRequestRepoName(e.PullRequest)
 
-	ghLabel, _, err := e.Client.Issues.GetLabel(e.Ctx, owner, repo, labelName)
+	_, _, err := e.Client.Issues.GetLabel(e.Ctx, owner, repo, labelName)
 	if err != nil {
-		return nil, err
+		if err.(*github.ErrorResponse).Response.StatusCode == 404 {
+			return false, nil
+		}
+
+		return false, err
 	}
 
-	return ghLabel, nil
+	return true, nil
 }
