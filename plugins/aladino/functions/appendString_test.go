@@ -21,10 +21,10 @@ func TestAppendString(t *testing.T) {
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
-	
+
 	slice := aladino.BuildArrayValue(
 		[]aladino.Value{
-			aladino.BuildStringValue("a"), 
+			aladino.BuildStringValue("a"),
 			aladino.BuildStringValue("b"),
 		},
 	)
@@ -37,13 +37,13 @@ func TestAppendString(t *testing.T) {
 
 	wantSlice := aladino.BuildArrayValue(
 		[]aladino.Value{
-			aladino.BuildStringValue("a"), 
+			aladino.BuildStringValue("a"),
 			aladino.BuildStringValue("b"),
 			aladino.BuildStringValue("c"),
 		},
 	)
 
-	gotSlice, err := appendString(mockedEnv, args) 
+	gotSlice, err := appendString(mockedEnv, args)
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantSlice, gotSlice)
