@@ -23,5 +23,5 @@ jobs:
               owner: context.repo.owner,
               name: context.repo.repo,
             }
-            const result = await github.graphql(query, variables)
-            console.log(result)
+            const resultQL = await github.graphql(query, variables)
+            console.log(resultQL)
