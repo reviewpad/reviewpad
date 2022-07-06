@@ -9,3 +9,19 @@ jobs:
           script: |
             const result = await github.rest.repos.listCollaborators({owner: 'reviewpad', repo: 'reviewpad'})
             console.log(result)
+
+            const query = `query($owner:String!, $name:String!) {
+              repository(owner:$owner, name:$name){
+                collaborators(first:50) {
+                  nodes {
+                    login
+                  }
+                }
+              }
+            }`;
+            const variables = {
+              owner: context.repo.owner,
+              name: context.repo.repo,
+            }
+            const result = await github.graphql(query, variables)
+            console.log(result)
