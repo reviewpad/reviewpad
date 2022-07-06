@@ -16,7 +16,7 @@ import (
 
 var startsWith = plugins_aladino.PluginBuiltIns().Functions["startsWith"].Code
 
-func TestStartsWithTrue(t *testing.T) {
+func TestStarts_WhenTrue(t *testing.T) {
 	mockedEnv, err := mocks_aladino.MockDefaultEnv()
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
@@ -35,7 +35,7 @@ func TestStartsWithTrue(t *testing.T) {
 	assert.Equal(t, wantVal, gotVal)
 }
 
-func TestStartsWithFalse(t *testing.T) {
+func TestStarts_WhenFalse(t *testing.T) {
 	mockedEnv, err := mocks_aladino.MockDefaultEnv()
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
@@ -45,7 +45,7 @@ func TestStartsWithFalse(t *testing.T) {
 
 	args := []aladino.Value{
 		aladino.BuildStringValue("Pull request title"),
-		aladino.BuildStringValue("title"),
+		aladino.BuildStringValue("Title"),
 	}
 
 	gotVal, err := startsWith(mockedEnv, args)
