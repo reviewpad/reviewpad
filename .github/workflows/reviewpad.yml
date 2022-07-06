@@ -10,6 +10,7 @@ on:
 jobs:
   reviewpad:
     runs-on: ubuntu-latest
+    permissions: read-all
     steps:
       - name: Reviewpad
         uses: reviewpad/action@debug
