@@ -22,7 +22,7 @@ func commentsCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
 	owner := utils.GetPullRequestOwnerName(e.GetPullRequest())
 	repo := utils.GetPullRequestRepoName(e.GetPullRequest())
 
-	ghComments, _, err := e.GetClient().Issues.ListComments(e.GetCtx(), owner, repo, prNum, &github.IssueListCommentsOptions{})
+	ghComments, err := utils.GetPullRequestComments(e.GetCtx(), e.GetClient(), owner, repo, prNum, &github.IssueListCommentsOptions{})
 	if err != nil {
 		return nil, err
 	}

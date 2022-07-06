@@ -14,9 +14,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+var commentCount = plugins_aladino.PluginBuiltIns().Functions["commentCount"].Code
+
 func TestCommentCount(t *testing.T) {
 	wantCommentCount := aladino.BuildIntValue(6)
-	var commentCount = plugins_aladino.PluginBuiltIns().Functions["commentCount"].Code
 
 	mockedEnv, err := mocks_aladino.MockDefaultEnv()
 	if err != nil {

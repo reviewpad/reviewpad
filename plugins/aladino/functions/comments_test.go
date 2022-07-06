@@ -6,6 +6,7 @@ package plugins_aladino_functions_test
 
 import (
 	"log"
+	"net/http"
 	"testing"
 
 	"github.com/google/go-github/v42/github"
@@ -16,14 +17,14 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+var comments = plugins_aladino.PluginBuiltIns().Functions["comments"].Code
+
 func TestComments(t *testing.T) {
 	wantedComments := aladino.BuildArrayValue(
 		[]aladino.Value{
 			aladino.BuildStringValue("hello world"),
 		},
 	)
-
-	var comments = plugins_aladino.PluginBuiltIns().Functions["comments"].Code
 
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
 		mock.WithRequestMatch(
@@ -45,4 +46,31 @@ func TestComments(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantedComments, gotComments)
+}
+
+func TestComments_WhenGetCommentsRequestFailed(t *testing.T) {
+	failMessage := "GetCommentsRequestFailed"
+
+	mockedEnv, err := mocks_aladino.MockDefaultEnv(
+		mock.WithRequestMatchHandler(
+			mock.GetReposIssuesCommentsByOwnerByRepoByIssueNumber,
+			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				mock.WriteError(
+					w,
+					http.StatusInternalServerError,
+					failMessage,
+				)
+			}),
+		),
+	)
+
+	if err != nil {
+		log.Fatalf("mockDefaultEnv failed: %v", err)
+	}
+
+	args := []aladino.Value{}
+	gotComments, err := comments(mockedEnv, args)
+
+	assert.Nil(t, gotComments)
+	assert.Equal(t, err.(*github.ErrorResponse).Message, failMessage)
 }
