@@ -14,7 +14,7 @@ import (
 	"github.com/tomnomnom/linkheader"
 )
 
-const maxPerPage = int32(100)
+const maxPerPage int = 100
 
 func GetPullRequestOwnerName(pullRequest *github.PullRequest) string {
 	return pullRequest.Base.Repo.Owner.GetLogin()
@@ -97,7 +97,7 @@ func GetPullRequestComments(ctx context.Context, client *github.Client, owner st
 				Since: opts.Since,
 				ListOptions: github.ListOptions{
 					Page:    page,
-					PerPage: int(maxPerPage),
+					PerPage: maxPerPage,
 				},
 			})
 			if err != nil {
@@ -123,7 +123,7 @@ func GetPullRequestFiles(ctx context.Context, client *github.Client, owner strin
 			fls := i.([]*github.CommitFile)
 			fs, resp, err := client.PullRequests.ListFiles(ctx, owner, repo, number, &github.ListOptions{
 				Page:    page,
-				PerPage: int(maxPerPage),
+				PerPage: maxPerPage,
 			})
 			if err != nil {
 				return nil, nil, err
@@ -137,4 +137,30 @@ func GetPullRequestFiles(ctx context.Context, client *github.Client, owner strin
 	}
 
 	return fs.([]*github.CommitFile), nil
+}
+
+func GetPullRequestReviewers(ctx context.Context, client *github.Client, owner string, repo string, number int, opts *github.ListOptions) (*github.Reviewers, error) {
+	reviewers, err := PaginatedRequest(
+		func() interface{} {
+			return &github.Reviewers{}
+		},
+		func(i interface{}, page int) (interface{}, *github.Response, error) {
+			currentReviewers := i.(*github.Reviewers)
+			reviewers, resp, err := client.PullRequests.ListReviewers(ctx, owner, repo, number, &github.ListOptions{
+				Page:    page,
+				PerPage: maxPerPage,
+			})
+			if err != nil {
+				return nil, nil, err
+			}
+			currentReviewers.Users = append(currentReviewers.Users, reviewers.Users...)
+			currentReviewers.Teams = append(currentReviewers.Teams, reviewers.Teams...)
+			return currentReviewers, resp, nil
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return reviewers.(*github.Reviewers), nil
 }

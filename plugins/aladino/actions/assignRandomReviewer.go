@@ -24,13 +24,13 @@ func assignRandomReviewerCode(e aladino.Env, _ []aladino.Value) error {
 	owner := utils.GetPullRequestOwnerName(e.GetPullRequest())
 	repo := utils.GetPullRequestRepoName(e.GetPullRequest())
 
-	ghPr, _, err := e.GetClient().PullRequests.Get(e.GetCtx(), owner, repo, prNum)
+	ghPrRequestedReviewers, err := utils.GetPullRequestReviewers(e.GetCtx(), e.GetClient(), owner, repo, prNum, &github.ListOptions{})
 	if err != nil {
 		return err
 	}
 
 	// When there's already assigned reviewers, do nothing
-	totalRequestReviewers := len(ghPr.RequestedReviewers)
+	totalRequestReviewers := len(ghPrRequestedReviewers.Users)
 	if totalRequestReviewers > 0 {
 		return nil
 	}
@@ -43,7 +43,7 @@ func assignRandomReviewerCode(e aladino.Env, _ []aladino.Value) error {
 	filteredGhUsers := []*github.User{}
 
 	for i := range ghUsers {
-		if ghUsers[i].GetLogin() != ghPr.GetUser().GetLogin() {
+		if ghUsers[i].GetLogin() != e.GetPullRequest().GetUser().GetLogin() {
 			filteredGhUsers = append(filteredGhUsers, ghUsers[i])
 		}
 	}

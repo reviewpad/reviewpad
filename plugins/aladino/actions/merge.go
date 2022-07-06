@@ -36,24 +36,15 @@ func mergeCode(e aladino.Env, args []aladino.Value) error {
 }
 
 func parseMergeMethod(args []aladino.Value) (string, error) {
-	if len(args) > 1 {
-		return "", fmt.Errorf("merge: received two arguments")
-	}
-
 	if len(args) == 0 {
 		return "merge", nil
 	}
 
-	arg := args[0]
-	if arg.HasKindOf(aladino.STRING_VALUE) {
-		mergeMethod := arg.(*aladino.StringValue).Val
-		switch mergeMethod {
-		case "merge", "rebase", "squash":
-			return mergeMethod, nil
-		default:
-			return "", fmt.Errorf("merge: unexpected argument %v", mergeMethod)
-		}
-	} else {
-		return "", fmt.Errorf("merge: expects string argument")
+	mergeMethod := args[0].(*aladino.StringValue).Val
+	switch mergeMethod {
+	case "merge", "rebase", "squash":
+		return mergeMethod, nil
+	default:
+		return "", fmt.Errorf("merge: unsupported merge method %v", mergeMethod)
 	}
 }
