@@ -29,3 +29,20 @@ jobs:
             }
             const resultQL = await github.graphql(query, variables)
             console.log(JSON.stringify(resultQL))
+
+
+            const query2 = `query($owner:String!, $name:String!) {
+              repository(owner:$owner, name:$name){
+                assignableUsers(first:50) {
+                  nodes {
+                    login
+                  }
+                }
+              }
+            }`;
+            const variables2 = {
+              owner: context.repo.owner,
+              name: context.repo.repo,
+            }
+            const resultQL2 = await github.graphql(query2, variables2)
+            console.log(JSON.stringify(resultQL2))
