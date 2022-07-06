@@ -59,15 +59,10 @@ rules:
     description: large-sized pull request
     spec: $size() > 100
 
-  - name: ci-is-green
-    kind: patch
-    description: Pipeline is green
-    spec: $workflowStatus("build") == "success"
-
   - name: shipPullRequestsAreAutomerged
     kind: patch
     description: owners of pull requests with ship in the title
-    spec: '$contains($title(), "[ship]: ") && $isElementOf($author(), $group("owners")) && $rule("ci-is-green")'
+    spec: '$contains($title(), "[ship]: ") && $isElementOf($author(), $group("owners"))'
 
   - name: is-first-time-contributor
     kind: patch
