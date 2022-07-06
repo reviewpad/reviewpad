@@ -35,7 +35,7 @@ func assignRandomReviewerCode(e aladino.Env, _ []aladino.Value) error {
 		return nil
 	}
 
-	ghUsers, err := utils.GetRepoCollaborators(e.GetCtx(), e.GetClient(), owner, repo)
+	ghUsers, _, err := e.GetClient().Repositories.ListCollaborators(e.GetCtx(), owner, repo, nil)
 	if err != nil {
 		return err
 	}
