@@ -6,6 +6,7 @@ package plugins_aladino_actions
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/google/go-github/v42/github"
 	"github.com/reviewpad/reviewpad/v2/lang/aladino"
@@ -36,6 +37,7 @@ func assignRandomReviewerCode(e aladino.Env, _ []aladino.Value) error {
 	}
 
 	ghUsers, _, err := e.GetClient().Repositories.ListCollaborators(e.GetCtx(), owner, repo, nil)
+	log.Printf(ghUsers)
 	if err != nil {
 		return err
 	}
