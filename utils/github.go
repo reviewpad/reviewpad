@@ -191,3 +191,28 @@ func GetRepoCollaborators(ctx context.Context, client *github.Client, owner stri
 
 	return collaborators.([]*github.User), nil
 }
+
+func GetIssuesAvailableAssignees(ctx context.Context, client *github.Client, owner string, repo string) ([]*github.User, error) {
+	assignees, err := PaginatedRequest(
+		func() interface{} {
+			return []*github.User{}
+		},
+		func(i interface{}, page int) (interface{}, *github.Response, error) {
+			currentAssignees := i.([]*github.User)
+			assignees, resp, err := client.Issues.ListAssignees(ctx, owner, repo, &github.ListOptions{
+				Page:    page,
+				PerPage: maxPerPage,
+			})
+			if err != nil {
+				return nil, nil, err
+			}
+			currentAssignees = append(currentAssignees, assignees...)
+			return currentAssignees, resp, nil
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return assignees.([]*github.User), nil
+}
