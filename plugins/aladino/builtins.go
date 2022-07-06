@@ -21,6 +21,8 @@ func PluginBuiltIns() *aladino.BuiltIns {
 			"assignees":         functions.Assignees(),
 			"author":            functions.Author(),
 			"base":              functions.Base(),
+			"commentCount":      functions.CommentCount(),
+			"comments":          functions.Comments(),
 			"commitCount":       functions.CommitCount(),
 			"commits":           functions.Commits(),
 			"createdAt":         functions.CreatedAt(),
