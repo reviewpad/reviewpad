@@ -77,7 +77,7 @@ func Run(
 	})
 
 	if err != nil {
-		return nil, err
+		log.Printf("error on collector due to %v", err.Error())
 	}
 
 	return program, nil
