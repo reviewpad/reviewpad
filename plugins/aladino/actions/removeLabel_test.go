@@ -20,30 +20,6 @@ import (
 
 var removeLabel = plugins_aladino.PluginBuiltIns().Actions["removeLabel"].Code
 
-func TestRemoveLabel_WhenGetLabelRequestFails(t *testing.T) {
-	failMessage := "GetLabelRequestFail"
-	mockedEnv, err := mocks_aladino.MockDefaultEnv(
-		mock.WithRequestMatchHandler(
-			mock.GetReposLabelsByOwnerByRepoByName,
-			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				mock.WriteError(
-					w,
-					http.StatusInternalServerError,
-					failMessage,
-				)
-			}),
-		),
-	)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
-
-	args := []aladino.Value{aladino.BuildStringValue("test")}
-	err = removeLabel(mockedEnv, args)
-
-	assert.Equal(t, err.(*github.ErrorResponse).Message, failMessage)
-}
-
 func TestRemoveLabel_WhenLabelIsNotAppliedToPullRequest(t *testing.T) {
 	wantLabel := "bug"
 	var isLabelRemoved bool
@@ -73,7 +49,39 @@ func TestRemoveLabel_WhenLabelIsNotAppliedToPullRequest(t *testing.T) {
 	assert.False(t, isLabelRemoved, "The label should not be removed")
 }
 
-func TestRemoveLabel_WhenLabelIsAppliedToPullRequest(t *testing.T) {
+func TestRemoveLabel_WhenLabelIsAppliedToPullRequestAndLabelIsInEnvironment(t *testing.T) {
+	wantLabel := "enhancement"
+	var gotLabel string
+	mockedEnv, err := mocks_aladino.MockDefaultEnv(
+		mock.WithRequestMatch(
+			mock.GetReposLabelsByOwnerByRepoByName,
+			github.Label{
+				Name: github.String(wantLabel),
+			},
+		),
+		mock.WithRequestMatchHandler(
+			mock.DeleteReposIssuesLabelsByOwnerByRepoByIssueNumberByName,
+			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				vars := mux.Vars(r)
+				gotLabel = vars["name"]
+			}),
+		),
+	)
+	if err != nil {
+		log.Fatalf("mockDefaultEnv failed: %v", err)
+	}
+
+	internalLabelID := aladino.BuildInternalLabelID(wantLabel)
+	mockedEnv.GetRegisterMap()[internalLabelID] = aladino.BuildStringValue(wantLabel)
+
+	args := []aladino.Value{aladino.BuildStringValue(wantLabel)}
+	err = removeLabel(mockedEnv, args)
+
+	assert.Nil(t, err)
+	assert.Equal(t, wantLabel, gotLabel)
+}
+
+func TestRemoveLabel_WhenLabelIsAppliedToPullRequestAndLabelIsNotInEnvironment(t *testing.T) {
 	wantLabel := "enhancement"
 	var gotLabel string
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
