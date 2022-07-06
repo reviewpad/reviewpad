@@ -72,9 +72,13 @@ func Run(
 		}
 	}
 
-	evalEnv.Collector.Collect("Completed Analysis", map[string]interface{}{
+	err = evalEnv.Collector.Collect("Completed Analysis", map[string]interface{}{
 		"pullRequestUrl": evalEnv.PullRequest.URL,
 	})
+
+	if err != nil {
+		log.Printf("error on collector due to %v", err.Error())
+	}
 
 	return program, nil
 }
