@@ -26,7 +26,7 @@ type ReviewersRequestPostBody struct {
 }
 
 func TestAssignRandomReviewer_WhenListReviewersRequestFails(t *testing.T) {
-	failMessage := "ListReviewerslRequestFail"
+	failMessage := "ListReviewersRequestFail"
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
 		mock.WithRequestMatchHandler(
 			mock.GetReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
@@ -49,22 +49,23 @@ func TestAssignRandomReviewer_WhenListReviewersRequestFails(t *testing.T) {
 	assert.Equal(t, err.(*github.ErrorResponse).Message, failMessage)
 }
 
-func TestAssignRandomReviewer_WhenPullRequestHasAssignedReviewers(t *testing.T) {
-	var noAssignedReviewers bool
+func TestAssignRandomReviewer_WhenPullRequestAlreadyHasReviewers(t *testing.T) {
+	var isListAssigneesFetched bool
+	requestedReviewer := "jane"
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
 		mock.WithRequestMatch(
 			mock.GetReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
 			github.Reviewers{
 				Users: []*github.User{
-					{Login: github.String("jane")},
+					{Login: github.String(requestedReviewer)},
 				},
 			},
 		),
 		mock.WithRequestMatchHandler(
 			mock.GetReposAssigneesByOwnerByRepo,
 			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				// After checking if the pull request has already assigned reviewers, if not, we perform a request to list available assignees
-				noAssignedReviewers = true
+				// When a pull request has no reviewers then the list of available assignees is fetched
+				isListAssigneesFetched = true
 			}),
 		),
 	)
@@ -76,11 +77,11 @@ func TestAssignRandomReviewer_WhenPullRequestHasAssignedReviewers(t *testing.T) 
 	err = assignRandomReviewer(mockedEnv, args)
 
 	assert.Nil(t, err)
-	assert.False(t, noAssignedReviewers, "The pull request should not have already assigned reviewers")
+	assert.False(t, isListAssigneesFetched, "shouldn't fetch the list of available assignees since the pull request already has reviewers")
 }
 
 func TestAssignRandomReviewer_WhenListAssigneesRequestFails(t *testing.T) {
-	failMessage := "ListAssigneeslRequestFail"
+	failMessage := "ListAssigneesRequestFail"
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
 		mock.WithRequestMatch(
 			mock.GetReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
@@ -107,7 +108,58 @@ func TestAssignRandomReviewer_WhenListAssigneesRequestFails(t *testing.T) {
 	assert.Equal(t, err.(*github.ErrorResponse).Message, failMessage)
 }
 
+func TestAssignRandomReviewer_ShouldFilterPullRequestAuthor(t *testing.T) {
+	selectedReviewers := []string{}
+    authorLogin := "maria"
+    assigneeLogin := "peter"
+    defaultPullRequestDetails := mocks_aladino.GetDefaultMockPullRequestDetails()
+    defaultPullRequestDetails.User = &github.User{
+        Login: github.String(authorLogin),
+    }
+    mockedEnv, err := mocks_aladino.MockDefaultEnv(
+        mock.WithRequestMatchHandler(
+            // Overwrite default mock to pull request request details
+            mock.GetReposPullsByOwnerByRepoByPullNumber,
+            http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+                w.Write(mock.MustMarshal(defaultPullRequestDetails))
+            }),
+        ),
+        mock.WithRequestMatch(
+            mock.GetReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
+            github.Reviewers{},
+        ),
+        mock.WithRequestMatch(
+            mock.GetReposAssigneesByOwnerByRepo,
+            []*github.User{
+                {Login: github.String(authorLogin)},
+                {Login: github.String(assigneeLogin)},
+            },
+        ),
+        mock.WithRequestMatchHandler(
+            mock.PostReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
+            http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+                rawBody, _ := ioutil.ReadAll(r.Body)
+				body := ReviewersRequestPostBody{}
+
+				json.Unmarshal(rawBody, &body)
+
+				selectedReviewers = body.Reviewers
+            }),
+        ),
+    )
+	if err != nil {
+		log.Fatalf("mockDefaultEnv failed: %v", err)
+	}
+
+	args := []aladino.Value{}
+	err = assignRandomReviewer(mockedEnv, args)
+    
+	assert.Nil(t, err)
+	assert.ElementsMatch(t, []string{assigneeLogin}, selectedReviewers)
+}
+
 func TestAssignRandomReviewer_WhenThereIsNoUsers(t *testing.T) {
+	authorLogin := "john"
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
 		mock.WithRequestMatch(
 			mock.GetReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
@@ -116,8 +168,7 @@ func TestAssignRandomReviewer_WhenThereIsNoUsers(t *testing.T) {
 		mock.WithRequestMatch(
 			mock.GetReposAssigneesByOwnerByRepo,
 			[]*github.User{
-				// Author of the mocked pull request
-				{Login: github.String("john")},
+				{Login: github.String(authorLogin)},
 			},
 		),
 	)
@@ -132,7 +183,9 @@ func TestAssignRandomReviewer_WhenThereIsNoUsers(t *testing.T) {
 }
 
 func TestAssignRandomReviewer(t *testing.T) {
-	selectedReviewer := []string{}
+	selectedReviewers := []string{}
+	authorLogin := "john"
+    assigneeLogin := "mary"
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
 		mock.WithRequestMatch(
 			mock.GetReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
@@ -142,8 +195,8 @@ func TestAssignRandomReviewer(t *testing.T) {
 			mock.GetReposAssigneesByOwnerByRepo,
 			[]*github.User{
 				// Author of the mocked pull request
-				{Login: github.String("john")},
-				{Login: github.String("mary")},
+				{Login: github.String(authorLogin)},
+				{Login: github.String(assigneeLogin)},
 			},
 		),
 		mock.WithRequestMatchHandler(
@@ -154,7 +207,7 @@ func TestAssignRandomReviewer(t *testing.T) {
 
 				json.Unmarshal(rawBody, &body)
 
-				selectedReviewer = body.Reviewers
+				selectedReviewers = body.Reviewers
 			}),
 		),
 	)
@@ -166,6 +219,5 @@ func TestAssignRandomReviewer(t *testing.T) {
 	err = assignRandomReviewer(mockedEnv, args)
 
 	assert.Nil(t, err)
-	assert.Equal(t, 1, len(selectedReviewer))
-	assert.Equal(t, "mary", selectedReviewer[0])
+	assert.ElementsMatch(t, []string{assigneeLogin}, selectedReviewers)
 }
