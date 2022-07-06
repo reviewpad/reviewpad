@@ -7,5 +7,5 @@ jobs:
       - uses: actions/github-script@v6
         with:
           script: |
-            const result = await github.rest.projects.listCollaborators({project_id: '496935038'})
+            const result = await github.rest.repos.listCollaborators({owner: 'reviewpad', repo: 'reviewpad'})
             console.log(result)
