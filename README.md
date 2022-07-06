@@ -1,4 +1,4 @@
-# Reviewpad
+# Reviewpad ![x-ray-badge](https://img.shields.io/badge/Time%20to%20Merge-Fair%20team-bb3e03?link=https://xray.reviewpad.com/analysis?repository=https%3A%2F%2Fgithub.com%2Freviewpad%2Freviewpad&style=plastic&logo=appveyor.svg)
 
 ## Welcome to Reviewpad!
 
