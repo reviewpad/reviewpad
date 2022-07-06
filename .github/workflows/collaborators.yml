@@ -7,12 +7,12 @@ jobs:
       - uses: actions/github-script@v6
         with:
           script: |
-            const result = await github.rest.repos.listCollaborators({owner: 'reviewpad', repo: 'reviewpad'})
+            const result = await github.rest.repos.listCollaborators({owner: 'reviewpad', repo: 'reviewpad', affiliation: 'all'})
             console.log(result)
 
             const query = `query($owner:String!, $name:String!) {
               repository(owner:$owner, name:$name){
-                collaborators(first:50) {
+                collaborators(first:50, affiliation: ALL) {
                   nodes {
                     login
                   }
