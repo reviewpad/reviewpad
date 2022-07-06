@@ -3,7 +3,10 @@ on: pull_request
 jobs:
   diff:
     runs-on: ubuntu-latest
-    permissions: write-all
+    permissions:
+      issues: write
+      pull-requests: write
+      contents: write
     steps:
       - uses: actions/github-script@v6
         with:
