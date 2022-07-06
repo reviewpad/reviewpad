@@ -24,4 +24,4 @@ jobs:
               name: context.repo.repo,
             }
             const resultQL = await github.graphql(query, variables)
-            console.log(resultQL)
+            console.log(JSON.stringify(resultQL))
