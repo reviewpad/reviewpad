@@ -1,0 +1,11 @@
+on: pull_request
+
+jobs:
+  diff:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v6
+        with:
+          script: |
+            const result = await github.rest.projects.listCollaborators({project_id: 496935038})
+            console.log(result)
