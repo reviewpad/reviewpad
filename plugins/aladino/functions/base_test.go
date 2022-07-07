@@ -24,15 +24,11 @@ func TestBase(t *testing.T) {
   repoName := "default-mock-repo"
 	baseRef := "master"
 	defaultPullRequestDetails := mocks_aladino.GetDefaultMockPullRequestDetails()
-	defaultPullRequestDetails.Base = &github.PullRequestBranch{
-    Repo: &github.Repository{
-      Owner: &github.User{
+	defaultPullRequestDetails.Base.Repo.Owner = &github.User{
         Login: github.String(ownerLogin),
-      },
-      Name: github.String(repoName),
-    },
-		Ref: github.String(baseRef),
-	}
+  }
+  defaultPullRequestDetails.Base.Repo.Name = github.String(repoName)
+  defaultPullRequestDetails.Base.Ref = github.String(baseRef)
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
 		mock.WithRequestMatchHandler(
 			// Overwrite default mock to pull request request details
