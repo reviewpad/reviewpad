@@ -110,56 +110,54 @@ func TestAssignRandomReviewer_WhenListAssigneesRequestFails(t *testing.T) {
 
 func TestAssignRandomReviewer_ShouldFilterPullRequestAuthor(t *testing.T) {
 	selectedReviewers := []string{}
-    authorLogin := "maria"
-    assigneeLogin := "peter"
-    defaultPullRequestDetails := mocks_aladino.GetDefaultMockPullRequestDetails()
-    defaultPullRequestDetails.User = &github.User{
-        Login: github.String(authorLogin),
-    }
-    mockedEnv, err := mocks_aladino.MockDefaultEnv(
-        mock.WithRequestMatchHandler(
-            // Overwrite default mock to pull request request details
-            mock.GetReposPullsByOwnerByRepoByPullNumber,
-            http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-                w.Write(mock.MustMarshal(defaultPullRequestDetails))
-            }),
-        ),
-        mock.WithRequestMatch(
-            mock.GetReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
-            github.Reviewers{},
-        ),
-        mock.WithRequestMatch(
-            mock.GetReposAssigneesByOwnerByRepo,
-            []*github.User{
-                {Login: github.String(authorLogin)},
-                {Login: github.String(assigneeLogin)},
-            },
-        ),
-        mock.WithRequestMatchHandler(
-            mock.PostReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
-            http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-                rawBody, _ := ioutil.ReadAll(r.Body)
+	defaultPullRequestDetails := mocks_aladino.GetDefaultMockPullRequestDetails()
+	authorLogin := defaultPullRequestDetails.GetUser().GetLogin()
+	assigneeLogin := "peter"
+	mockedEnv, err := mocks_aladino.MockDefaultEnv(
+		mock.WithRequestMatchHandler(
+			// Overwrite default mock to pull request request details
+			mock.GetReposPullsByOwnerByRepoByPullNumber,
+			http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+				w.Write(mock.MustMarshal(defaultPullRequestDetails))
+			}),
+		),
+		mock.WithRequestMatch(
+			mock.GetReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
+			github.Reviewers{},
+		),
+		mock.WithRequestMatch(
+			mock.GetReposAssigneesByOwnerByRepo,
+			[]*github.User{
+				{Login: github.String(authorLogin)},
+				{Login: github.String(assigneeLogin)},
+			},
+		),
+		mock.WithRequestMatchHandler(
+			mock.PostReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
+			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				rawBody, _ := ioutil.ReadAll(r.Body)
 				body := ReviewersRequestPostBody{}
 
 				json.Unmarshal(rawBody, &body)
 
 				selectedReviewers = body.Reviewers
-            }),
-        ),
-    )
+			}),
+		),
+	)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
 
 	args := []aladino.Value{}
 	err = assignRandomReviewer(mockedEnv, args)
-    
+
 	assert.Nil(t, err)
 	assert.ElementsMatch(t, []string{assigneeLogin}, selectedReviewers)
 }
 
 func TestAssignRandomReviewer_WhenThereIsNoUsers(t *testing.T) {
-	authorLogin := "john"
+	defaultPullRequestDetails := mocks_aladino.GetDefaultMockPullRequestDetails()
+	authorLogin := defaultPullRequestDetails.GetUser().GetLogin()
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
 		mock.WithRequestMatch(
 			mock.GetReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
@@ -184,8 +182,9 @@ func TestAssignRandomReviewer_WhenThereIsNoUsers(t *testing.T) {
 
 func TestAssignRandomReviewer(t *testing.T) {
 	selectedReviewers := []string{}
-	authorLogin := "john"
-    assigneeLogin := "mary"
+	defaultPullRequestDetails := mocks_aladino.GetDefaultMockPullRequestDetails()
+	authorLogin := defaultPullRequestDetails.GetUser().GetLogin()
+	assigneeLogin := "mary"
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
 		mock.WithRequestMatch(
 			mock.GetReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
@@ -194,7 +193,6 @@ func TestAssignRandomReviewer(t *testing.T) {
 		mock.WithRequestMatch(
 			mock.GetReposAssigneesByOwnerByRepo,
 			[]*github.User{
-				// Author of the mocked pull request
 				{Login: github.String(authorLogin)},
 				{Login: github.String(assigneeLogin)},
 			},
