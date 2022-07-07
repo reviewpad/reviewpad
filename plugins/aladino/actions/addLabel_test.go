@@ -81,11 +81,11 @@ func TestAddLabel_WhenLabelIsInEnvironment(t *testing.T) {
 	internalLabelID := aladino.BuildInternalLabelID(label)
 	mockedEnv.GetRegisterMap()[internalLabelID] = aladino.BuildStringValue(label)
 
-	args := []aladino.Value{aladino.BuildStringValue("bug")}
+	args := []aladino.Value{aladino.BuildStringValue(label)}
 	err = addLabel(mockedEnv, args)
 
 	assert.Nil(t, err)
-	assert.Equal(t, wantLabels, gotLabels)
+	assert.ElementsMatch(t, wantLabels, gotLabels)
 }
 
 func TestAddLabel_WhenLabelIsNotInEnvironment(t *testing.T) {
@@ -119,5 +119,5 @@ func TestAddLabel_WhenLabelIsNotInEnvironment(t *testing.T) {
 	err = addLabel(mockedEnv, args)
 
 	assert.Nil(t, err)
-	assert.Equal(t, wantLabels, gotLabels)
+	assert.ElementsMatch(t, wantLabels, gotLabels)
 }
