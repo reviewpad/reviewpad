@@ -3,7 +3,7 @@ name: Reviewpad
 on:
   pull_request:
   workflow_run:
-    workflows: ["*"]
+    workflows: ["Pull Request Build"]
     types:
       - completed
 
