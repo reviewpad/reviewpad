@@ -55,11 +55,11 @@ You can execute Reviewpad through the CLI or through the Reviewpad [GitHub actio
 This repository generates two artifacts:
 
 1. CLI [cmd/cli](cmd/cli/main.go) that runs reviewpad open source edition.
-2. Reviewpad library packages:
-    ├ github.com/reviewpad/reviewpad/collector
-    ├ github.com/reviewpad/reviewpad/engine
-    ├ github.com/reviewpad/reviewpad/lang/aladino
-    ├ github.com/reviewpad/reviewpad/plugins/aladino
+2. Reviewpad library packages:  
+    ├ github.com/reviewpad/reviewpad/collector  
+    ├ github.com/reviewpad/reviewpad/engine  
+    ├ github.com/reviewpad/reviewpad/lang/aladino  
+    ├ github.com/reviewpad/reviewpad/plugins/aladino  
     ├ github.com/reviewpad/reviewpad/utils/fmtio
 
 Conceptually, the packages are divided into four categories:
