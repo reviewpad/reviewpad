@@ -21,10 +21,6 @@ import (
 
 var assignReviewer = plugins_aladino.PluginBuiltIns().Actions["assignReviewer"].Code
 
-type ReviewersRequestPostBody struct {
-	Reviewers []string `json:"reviewers"`
-}
-
 func TestAssignReviewer_WhenTotalRequiredReviewersIsZero(t *testing.T) {
 	mockedEnv, err := mocks_aladino.MockDefaultEnv()
 	if err != nil {
