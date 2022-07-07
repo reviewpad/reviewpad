@@ -45,6 +45,12 @@ func TestCommits_WhenListCommitsRequestFails(t *testing.T) {
 }
 
 func TestCommits(t *testing.T) {
+  defaultPullRequestDetails := mocks_aladino.GetDefaultMockPullRequestDetails()
+  defaultPullRequestDetails.Number = github.Int(6)
+  defaultPullRequestDetails.Base.Repo.Owner = &github.User{
+    Login: github.String("john"),
+  }
+  defaultPullRequestDetails.Base.Repo.Name = github.String("default-mock-repo")
 	repoCommits := []*github.RepositoryCommit{
 		{
 			Commit: &github.Commit{
@@ -53,6 +59,13 @@ func TestCommits(t *testing.T) {
 		},
 	}
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
+    mock.WithRequestMatchHandler(
+			// Overwrite default mock to pull request request details
+			mock.GetReposPullsByOwnerByRepoByPullNumber,
+			http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+				w.Write(mock.MustMarshal(defaultPullRequestDetails))
+			}),
+		),
 		mock.WithRequestMatch(
 			mock.GetReposPullsCommitsByOwnerByRepoByPullNumber,
 			repoCommits,
