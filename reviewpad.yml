@@ -59,10 +59,15 @@ rules:
     description: large-sized pull request
     spec: $size() > 100
 
+  - name: changes-are-not-in-markdown
+    kind: patch
+    description: Verifies if changes are not only in markdown files
+    spec: '!$hasFileExtensions([".md"])'
+
   - name: ci-is-green
     kind: patch
     description: Pipeline is green
-    spec: '$workflowStatus("build") == "success" && $workflowStatus("reviewpad") == "success"'
+    spec: '$workflowStatus("pr-build") == "success" && $workflowStatus("reviewpad") == "success"'
 
   - name: shipPullRequestsAreAutomerged
     kind: patch
@@ -177,6 +182,14 @@ workflows:
     then:
       - '$addLabel("modifies-license")'
       - '$assignReviewer($group("owners"), 1)'
+
+  - name: add-label-for-build
+    description: Add label to kick in the build
+    always-run: true
+    if:
+      - rule: changes-are-not-in-markdown
+    then:
+      - '$addLabel("run-build")'
 
   - name: auto-merge-owner-pull-requests
     description: auto merge pull requests

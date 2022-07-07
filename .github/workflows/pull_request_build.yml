@@ -1,11 +1,12 @@
-name: Build
+name: Pull Request Build
 
 on:
-  push:
-    branches: [ main ]
+  pull_request:
+    types: [ labeled ]
 
 jobs:
-  build:
+  pr-build:
+    if: ${{ github.event.label.name == 'run-build' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
