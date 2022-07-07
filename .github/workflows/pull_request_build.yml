@@ -2,11 +2,11 @@ name: Pull Request Build
 
 on:
   pull_request:
-    types: [ labeled ]
+    types: [ labeled, opened, synchronize, reopened ]
 
 jobs:
   pr-build:
-    if: ${{ github.event.label.name == 'run-build' }}
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'run-build') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
