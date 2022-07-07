@@ -6,8 +6,11 @@ package plugins_aladino_functions_test
 
 import (
 	"log"
+	"net/http"
 	"testing"
 
+	"github.com/google/go-github/v42/github"
+	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v2/lang/aladino"
 	mocks_aladino "github.com/reviewpad/reviewpad/v2/mocks/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v2/plugins/aladino"
@@ -17,16 +20,37 @@ import (
 var base = plugins_aladino.PluginBuiltIns().Functions["base"].Code
 
 func TestBase(t *testing.T) {
-  mockedEnv, err := mocks_aladino.MockDefaultEnv()
+  ownerLogin := "john"
+  repoName := "default-mock-repo"
+	baseRef := "master"
+	defaultPullRequestDetails := mocks_aladino.GetDefaultMockPullRequestDetails()
+	defaultPullRequestDetails.Base = &github.PullRequestBranch{
+    Repo: &github.Repository{
+      Owner: &github.User{
+        Login: github.String(ownerLogin),
+      },
+      Name: github.String(repoName),
+    },
+		Ref: github.String(baseRef),
+	}
+	mockedEnv, err := mocks_aladino.MockDefaultEnv(
+		mock.WithRequestMatchHandler(
+			// Overwrite default mock to pull request request details
+			mock.GetReposPullsByOwnerByRepoByPullNumber,
+			http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+				w.Write(mock.MustMarshal(defaultPullRequestDetails))
+			}),
+		),
+	)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
 
-  wantBase := aladino.BuildStringValue(mockedEnv.GetPullRequest().GetBase().GetRef())
+	wantBase := aladino.BuildStringValue(mockedEnv.GetPullRequest().GetBase().GetRef())
 
-  args := []aladino.Value{}
-  gotBase, err := base(mockedEnv, args)
+	args := []aladino.Value{}
+	gotBase, err := base(mockedEnv, args)
 
-  assert.Nil(t, err)
-  assert.Equal(t, wantBase, gotBase)
+	assert.Nil(t, err)
+	assert.Equal(t, wantBase, gotBase)
 }
