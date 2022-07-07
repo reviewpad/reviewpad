@@ -33,7 +33,7 @@ func addLabelCode(e aladino.Env, args []aladino.Value) error {
 		labelName = val.(*aladino.StringValue).Val
 	} else {
 		labelName = labelID
-		log.Printf("[warn]: addLabel %v was not found in the environemnt", labelID)
+		log.Printf("[warn]: addLabel %v was not found in the environment", labelID)
 	}
 
 	_, _, err := e.GetClient().Issues.AddLabelsToIssue(e.GetCtx(), owner, repo, prNum, []string{labelName})
