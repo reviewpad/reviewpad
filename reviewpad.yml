@@ -62,7 +62,7 @@ rules:
   - name: ci-is-green
     kind: patch
     description: Pipeline is green
-    spec: $workflowStatus("build") == "success"
+    spec: '$workflowStatus("build") == "success" && $workflowStatus("reviewpad") == "success"'
 
   - name: shipPullRequestsAreAutomerged
     kind: patch
