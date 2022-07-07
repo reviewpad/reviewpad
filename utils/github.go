@@ -175,7 +175,7 @@ func GetRepoCollaborators(ctx context.Context, client *github.Client, owner stri
 			collaborators, resp, err := client.Repositories.ListCollaborators(ctx, owner, repo, &github.ListCollaboratorsOptions{
 				ListOptions: github.ListOptions{
 					Page:    page,
-					PerPage: int(maxPerPage),
+					PerPage: maxPerPage,
 				},
 			})
 			if err != nil {
@@ -215,4 +215,29 @@ func GetIssuesAvailableAssignees(ctx context.Context, client *github.Client, own
 	}
 
 	return assignees.([]*github.User), nil
+}
+
+func GetPullRequestCommits(ctx context.Context, client *github.Client, owner string, repo string, number int) ([]*github.RepositoryCommit, error) {
+	commits, err := PaginatedRequest(
+		func() interface{} {
+			return []*github.RepositoryCommit{}
+		},
+		func(i interface{}, page int) (interface{}, *github.Response, error) {
+			currentCommits := i.([]*github.RepositoryCommit)
+			commits, resp, err := client.PullRequests.ListCommits(ctx, owner, repo, number, &github.ListOptions{
+					Page:    page,
+					PerPage: maxPerPage,
+			})
+			if err != nil {
+				return nil, nil, err
+			}
+			currentCommits = append(currentCommits, commits...)
+			return currentCommits, resp, nil
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return commits.([]*github.RepositoryCommit), nil
 }
