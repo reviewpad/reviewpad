@@ -114,13 +114,6 @@ func TestAssignRandomReviewer_ShouldFilterPullRequestAuthor(t *testing.T) {
 	authorLogin := defaultPullRequestDetails.GetUser().GetLogin()
 	assigneeLogin := "peter"
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
-		mock.WithRequestMatchHandler(
-			// Overwrite default mock to pull request request details
-			mock.GetReposPullsByOwnerByRepoByPullNumber,
-			http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-				w.Write(mock.MustMarshal(defaultPullRequestDetails))
-			}),
-		),
 		mock.WithRequestMatch(
 			mock.GetReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
 			github.Reviewers{},
