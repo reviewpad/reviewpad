@@ -21,8 +21,14 @@ func TestAssignees(t *testing.T) {
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
-	
-	wantAssignees := aladino.BuildArrayValue([]aladino.Value{aladino.BuildStringValue("jane")})
+
+  mockedAssignees := mockedEnv.GetPullRequest().Assignees
+  wantAssigneesLogins := make([]aladino.Value, len(mockedAssignees))
+  for i, assignee := range mockedAssignees {
+		wantAssigneesLogins[i] = aladino.BuildStringValue(assignee.GetLogin())
+	}
+
+	wantAssignees := aladino.BuildArrayValue(wantAssigneesLogins)
 
 	gotAssignees, err := assignees(mockedEnv, []aladino.Value{})
 
