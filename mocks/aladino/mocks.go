@@ -21,7 +21,7 @@ const defaultMockPrNum = 6
 const defaultMockPrOwner = "foobar"
 const defaultMockPrRepoName = "default-mock-repo"
 
-func getDefaultMockPullRequestDetails() *github.PullRequest {
+func GetDefaultMockPullRequestDetails() *github.PullRequest {
 	prNum := defaultMockPrNum
 	prId := int64(defaultMockPrID)
 	prOwner := defaultMockPrOwner
@@ -61,7 +61,7 @@ func getDefaultMockPullRequestDetails() *github.PullRequest {
 		Base: &github.PullRequestBranch{
 			Repo: &github.Repository{
 				Owner: &github.User{
-					Login: github.String("reviewpad"),
+					Login: github.String("john"),
 				},
 				URL:  github.String(prUrl),
 				Name: github.String(prRepoName),
@@ -123,7 +123,7 @@ func mockDefaultHttpClient(clientOptions ...mock.MockBackendOption) *http.Client
 			// Mock request to get pull request details
 			mock.GetReposPullsByOwnerByRepoByPullNumber,
 			http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-				w.Write(mock.MustMarshal(getDefaultMockPullRequestDetails()))
+				w.Write(mock.MustMarshal(GetDefaultMockPullRequestDetails()))
 			}),
 		),
 		mock.WithRequestMatchHandler(
