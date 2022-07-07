@@ -56,12 +56,12 @@ func TestAssignReviewer_WhenListOfReviewersIsEmpty(t *testing.T) {
 }
 
 func TestAssignReviewer_WhenAuthorIsRemovedFromProvidedReviewersList(t *testing.T) {
-  var gotReviewers []string
+	var gotReviewers []string
 	authorLogin := "john"
-  reviewer := "mary"
-  wantReviewers := []string{
-    reviewer,
-  }
+	reviewerLogin := "mary"
+	wantReviewers := []string{
+		reviewerLogin,
+	}
 	defaultPullRequestDetails := mocks_aladino.GetDefaultMockPullRequestDetails()
 	defaultPullRequestDetails.User = &github.User{
 		Login: github.String(authorLogin),
@@ -99,7 +99,7 @@ func TestAssignReviewer_WhenAuthorIsRemovedFromProvidedReviewersList(t *testing.
 		aladino.BuildArrayValue(
 			[]aladino.Value{
 				aladino.BuildStringValue(authorLogin),
-				aladino.BuildStringValue(reviewer),
+				aladino.BuildStringValue(reviewerLogin),
 			},
 		),
 		aladino.BuildIntValue(1),
@@ -113,7 +113,7 @@ func TestAssignReviewer_WhenAuthorIsRemovedFromProvidedReviewersList(t *testing.
 func TestAssignReviewer_WhenTotalRequiredReviewersIsMoreThanTotalAvailableReviewers(t *testing.T) {
 	var buf bytes.Buffer
 	var gotReviewers []string
-	reviewer := "mary"
+	reviewerLogin := "mary"
 	authorLogin := "john"
 	totalRequiredReviewers := 2
 	defaultPullRequestDetails := mocks_aladino.GetDefaultMockPullRequestDetails()
@@ -122,7 +122,7 @@ func TestAssignReviewer_WhenTotalRequiredReviewersIsMoreThanTotalAvailableReview
 	}
 	defaultPullRequestDetails.RequestedReviewers = []*github.User{}
 	wantReviewers := []string{
-		reviewer,
+		reviewerLogin,
 	}
 	wantLog := fmt.Sprintf("%v assignReviewer: total required reviewers %v exceeds the total available reviewers %v\n", time.Now().Format("2006/01/02 15:04:05"), totalRequiredReviewers, len(wantReviewers))
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
@@ -158,7 +158,7 @@ func TestAssignReviewer_WhenTotalRequiredReviewersIsMoreThanTotalAvailableReview
 	args := []aladino.Value{
 		aladino.BuildArrayValue(
 			[]aladino.Value{
-				aladino.BuildStringValue(reviewer),
+				aladino.BuildStringValue(reviewerLogin),
 			},
 		),
 		aladino.BuildIntValue(totalRequiredReviewers),
@@ -204,12 +204,12 @@ func TestAssignReviewer_WhenListReviewsRequestFails(t *testing.T) {
 }
 
 func TestAssignReviewer_WhenPullRequestAlreadyHasReviews(t *testing.T) {
-  var gotReviewers []string
+	var gotReviewers []string
 	authorLogin := "john"
-  reviewer := "mary"
-  wantReviewers := []string{
-    reviewer,
-  }
+	reviewerLogin := "mary"
+	wantReviewers := []string{
+		reviewerLogin,
+	}
 	defaultPullRequestDetails := mocks_aladino.GetDefaultMockPullRequestDetails()
 	defaultPullRequestDetails.User = &github.User{
 		Login: github.String(authorLogin),
@@ -226,12 +226,12 @@ func TestAssignReviewer_WhenPullRequestAlreadyHasReviews(t *testing.T) {
 		mock.WithRequestMatch(
 			mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
 			[]*github.PullRequestReview{
-        {
-          User: &github.User{
-            Login: github.String(reviewer),
-          },
-        },
-      },
+				{
+					User: &github.User{
+						Login: github.String(reviewerLogin),
+					},
+				},
+			},
 		),
 		mock.WithRequestMatchHandler(
 			mock.PostReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
@@ -252,7 +252,7 @@ func TestAssignReviewer_WhenPullRequestAlreadyHasReviews(t *testing.T) {
 	args := []aladino.Value{
 		aladino.BuildArrayValue(
 			[]aladino.Value{
-				aladino.BuildStringValue(reviewer),
+				aladino.BuildStringValue(reviewerLogin),
 			},
 		),
 		aladino.BuildIntValue(1),
@@ -264,20 +264,20 @@ func TestAssignReviewer_WhenPullRequestAlreadyHasReviews(t *testing.T) {
 }
 
 func TestAssignReviewer_WhenPullRequestAlreadyHasRequestedReviewers(t *testing.T) {
-  var gotReviewers []string
-  authorLogin := "john"
-  reviewerA := "mary"
-  reviewerB := "steve"
-  wantReviewers := []string{
-    reviewerB,
-  }
+	var gotReviewers []string
+	authorLogin := "john"
+	reviewerA := "mary"
+	reviewerB := "steve"
+	wantReviewers := []string{
+		reviewerB,
+	}
 	defaultPullRequestDetails := mocks_aladino.GetDefaultMockPullRequestDetails()
 	defaultPullRequestDetails.User = &github.User{
 		Login: github.String(authorLogin),
 	}
 	defaultPullRequestDetails.RequestedReviewers = []*github.User{
-    {Login: github.String(reviewerA)},
-  }
+		{Login: github.String(reviewerA)},
+	}
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
 		mock.WithRequestMatchHandler(
 			// Overwrite default mock to pull request request details
@@ -310,7 +310,7 @@ func TestAssignReviewer_WhenPullRequestAlreadyHasRequestedReviewers(t *testing.T
 		aladino.BuildArrayValue(
 			[]aladino.Value{
 				aladino.BuildStringValue(reviewerA),
-        aladino.BuildStringValue(reviewerB),
+				aladino.BuildStringValue(reviewerB),
 			},
 		),
 		aladino.BuildIntValue(2),
@@ -327,14 +327,14 @@ func TestAssignReviewer_WhenPullRequestAlreadyHasRequestedReviewers(t *testing.T
 func TestAssignReviewer_HasNoAvailableReviewers(t *testing.T) {
 	var pullRequestHasReviewers bool
 	authorLogin := "john"
-	reviewer := "mary"
+	reviewerLogin := "mary"
 	totalRequiredReviewers := 1
 	defaultPullRequestDetails := mocks_aladino.GetDefaultMockPullRequestDetails()
 	defaultPullRequestDetails.User = &github.User{
 		Login: github.String(authorLogin),
 	}
 	defaultPullRequestDetails.RequestedReviewers = []*github.User{
-		{Login: github.String(reviewer)},
+		{Login: github.String(reviewerLogin)},
 	}
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
 		mock.WithRequestMatchHandler(
@@ -363,7 +363,7 @@ func TestAssignReviewer_HasNoAvailableReviewers(t *testing.T) {
 	args := []aladino.Value{
 		aladino.BuildArrayValue(
 			[]aladino.Value{
-				aladino.BuildStringValue(reviewer),
+				aladino.BuildStringValue(reviewerLogin),
 			},
 		),
 		aladino.BuildIntValue(totalRequiredReviewers),
