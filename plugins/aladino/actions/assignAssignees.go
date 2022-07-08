@@ -11,21 +11,21 @@ import (
 	"github.com/reviewpad/reviewpad/v2/utils"
 )
 
-func AssignAssignee() *aladino.BuiltInAction {
+func AssignAssignees() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
 		Type: aladino.BuildFunctionType([]aladino.Type{aladino.BuildArrayOfType(aladino.BuildStringType())}, nil),
-		Code: assignAssigneeCode,
+		Code: assignAssigneesCode,
 	}
 }
 
-func assignAssigneeCode(e aladino.Env, args []aladino.Value) error {
+func assignAssigneesCode(e aladino.Env, args []aladino.Value) error {
 	assignees := args[0].(*aladino.ArrayValue).Vals
 	if len(assignees) == 0 {
-		return fmt.Errorf("assignAssignee: list of assignees can't be empty")
+		return fmt.Errorf("assignAssignees: list of assignees can't be empty")
 	}
 
 	if len(assignees) > 10 {
-		return fmt.Errorf("assignAssignee: can only assign up to 10 assignees")
+		return fmt.Errorf("assignAssignees: can only assign up to 10 assignees")
 	}
 
 	assigneesLogin := make([]string, len(assignees))
