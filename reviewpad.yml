@@ -38,10 +38,15 @@ groups:
     kind: developers
     spec: '["marcelosousa", "ferreiratiago", "shay2025"]'
 
-  - name: official-contributors
-    description: Official contributors
+  - name: maintainers
+    description: Official maintainers
     kind: developers
-    spec: '["marcelosousa", "ferreiratiago", "shay2025"]'
+    spec: '["marcelosousa", "ferreiratiago"]'
+
+  - name: rising-stars
+    description: Rising stars in the team
+    kind: developers
+    spec: '["shay2025"]'
 
 rules:
   - name: is-small
@@ -141,15 +146,20 @@ rules:
     description: Pull request does not have a linear history
     spec: '!$hasLinearHistory()'
 
-  - name: authored-by-official-contributors
+  - name: authored-by-rising-stars
     kind: patch
-    description: Pull request was authored by official contributors
-    spec: '$isElementOf($author(), $group("official-contributors"))'
+    description: Pull request was authored by rising stars
+    spec: '$isElementOf($author(), $group("rising-stars"))'
+
+  - name: authored-by-maintainers
+    kind: patch
+    description: Pull request was authored by maintainers
+    spec: '$isElementOf($author(), $group("maintainers"))'
 
   - name: authored-by-external-contributors
     kind: patch
     description: Pull request was authored by external contributors
-    spec: '!$rule("authored-by-official-contributors")'
+    spec: '!$isElementOf($author(), $group("official-contributors"))'
 
 workflows:
   - name: add-label-with-size
@@ -228,12 +238,15 @@ workflows:
       - rule: is-first-time-contributor
         extra-actions:
           - '$commentOnce("Thank you so much for your first contribution!")'
-      - rule: authored-by-official-contributors
+      - rule: authored-by-rising-stars
+          - '$assignReviewer($group("maintainers"))'
+      - rule: authored-by-maintainers
+          - '$assignReviewer($group("maintainers"), 1)'
+          - '$assignReviewer($group("rising-stars"), 1)'
       - rule: authored-by-external-contributors
         extra-actions:
           - '$addLabel("external-contribution")'
-    then:
-      - '$assignRandomReviewer()'
+          - '$assignReviewer($group("maintainers"), 1)'
 
   - name: label-plugins
     description: Label changes to plugins
