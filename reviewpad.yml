@@ -47,6 +47,11 @@ groups:
     description: Rising stars in the team
     kind: developers
     spec: '["shay2025"]'
+  
+  - name: official-contributors
+    description: Reviewpad core contributors
+    kind: developers
+    spec: '$append($group("maintainers"), $group("rising-stars"))'
 
 rules:
   - name: is-small
