@@ -67,14 +67,6 @@ func TestAssignAssignees(t *testing.T) {
         "mary",
     }
 	mockedPullRequest := mocks_aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
-        Base: &github.PullRequestBranch{
-            Repo: &github.Repository{
-                Owner: &github.User{
-                    Login: github.String("john"),
-                },
-                Name: github.String("default-mock-repo"),
-            },
-        },
         Assignees: []*github.User{},
 	})
 
