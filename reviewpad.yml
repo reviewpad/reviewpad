@@ -117,12 +117,12 @@ rules:
   - name: touchesPluginsFunctions
     kind: patch
     description: modifies the plugin functions
-    spec: '$hasFileName("plugins/aladino/functions.go")'
+    spec: '$hasFilePattern("plugins/aladino/functions/**")'
 
   - name: touchesPluginsActions
     kind: patch
     description: modifies the plugin actions
-    spec: '$hasFileName("plugins/aladino/actions.go")'
+    spec: '$hasFilePattern("plugins/aladino/actions/**")'
 
   - name: touchesPluginsFunctionsAndActions
     kind: patch
