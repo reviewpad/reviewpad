@@ -264,6 +264,7 @@ workflows:
     then:
       - '$addLabel("plugins")'
       - '$assignReviewer($group("plugins-reviewers"), 1)'
+      - '$info("If you are adding or updating a built-in, please do not forget to update the [docs](https://github.com/reviewpad/docs)")'
 
   - name: contained-plugin-changes
     description: Warn when touching multiple changes
