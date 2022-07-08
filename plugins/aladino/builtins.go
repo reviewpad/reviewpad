@@ -57,6 +57,7 @@ func PluginBuiltIns() *aladino.BuiltIns {
 		},
 		Actions: map[string]*aladino.BuiltInAction{
 			"addLabel":             actions.AddLabel(),
+			"assignAssignee":       actions.AssignAssignee(),
 			"assignRandomReviewer": actions.AssignRandomReviewer(),
 			"assignReviewer":       actions.AssignReviewer(),
 			"assignTeamReviewer":   actions.AssignTeamReviewer(),
