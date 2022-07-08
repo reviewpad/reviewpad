@@ -22,8 +22,8 @@ func TestFail(t *testing.T) {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
 
-	args := []aladino.Value{}
+	args := []aladino.Value{aladino.BuildStringValue("fail message")}
 	err = fail(mockedEnv, args)
 
-	assert.EqualError(t, err, "action failed")
+	assert.EqualError(t, err, "fail message")
 }

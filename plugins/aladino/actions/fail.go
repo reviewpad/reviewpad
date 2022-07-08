@@ -12,11 +12,13 @@ import (
 
 func Fail() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
-		Type: aladino.BuildFunctionType([]aladino.Type{}, nil),
+		Type: aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, nil),
 		Code: failCode,
 	}
 }
 
-func failCode(e aladino.Env, _ []aladino.Value) error {
-    return fmt.Errorf("action failed")
+func failCode(e aladino.Env, args []aladino.Value) error {
+    failMessage := args[0].(*aladino.StringValue).Val
+
+    return fmt.Errorf(failMessage)
 }
