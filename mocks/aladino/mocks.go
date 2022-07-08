@@ -71,6 +71,32 @@ func GetDefaultMockPullRequestDetails() *github.PullRequest {
 	}
 }
 
+func GetDefaultMockPullRequestDetailsWith(pr *github.PullRequest) *github.PullRequest {
+	defaultPullRequest := GetDefaultMockPullRequestDetails()
+
+	if pr.User != nil {
+		defaultPullRequest.User = pr.User
+	}
+
+    if pr.Number != nil {
+        defaultPullRequest.Number = pr.Number
+    }
+
+    if pr.Base.Repo.Owner.Login != nil {
+        defaultPullRequest.Base.Repo.Owner.Login = pr.Base.Repo.Owner.Login
+    }
+
+    if pr.Base.Repo.Name != nil {
+        defaultPullRequest.Base.Repo.Name = pr.Base.Repo.Name
+    }
+
+    if pr.Assignees != nil {
+        defaultPullRequest.Assignees = pr.Assignees
+    }
+
+	return defaultPullRequest
+}
+
 func getDefaultMockPullRequestFileList() *[]*github.CommitFile {
 	prRepoName := defaultMockPrRepoName
 	return &[]*github.CommitFile{
