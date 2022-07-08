@@ -40,7 +40,7 @@ func GetDefaultMockPullRequestDetails() *github.PullRequest {
 		CreatedAt: &prDate,
 		Comments:  github.Int(6),
 		Commits:   github.Int(5),
-		Number:    github.Int(prNum),
+        Number:    github.Int(prNum),
 		Milestone: &github.Milestone{
 			Title: github.String("v1.0"),
 		},
@@ -70,6 +70,28 @@ func GetDefaultMockPullRequestDetails() *github.PullRequest {
 			Ref: github.String("master"),
 		},
 	}
+}
+
+func GetDefaultMockPullRequestDetailsWith(pr *github.PullRequest) *github.PullRequest {
+	defaultPullRequest := GetDefaultMockPullRequestDetails()
+
+	if pr.User != nil {
+		defaultPullRequest.User = pr.User
+	}
+
+    if pr.Number != nil {
+        defaultPullRequest.Number = pr.Number
+    }
+
+    if pr.Base != nil {
+        defaultPullRequest.Base = pr.Base
+    }
+
+    if pr.Assignees != nil {
+        defaultPullRequest.Assignees = pr.Assignees
+    }
+
+	return defaultPullRequest
 }
 
 func getDefaultMockPullRequestFileList() *[]*github.CommitFile {
