@@ -39,7 +39,6 @@ func GetDefaultMockPullRequestDetails() *github.PullRequest {
 		Body:      github.String("Please pull these awesome changes in!"),
 		CreatedAt: &prDate,
 		Commits:   github.Int(5),
-		Number:    github.Int(prNum),
 		Milestone: &github.Milestone{
 			Title: github.String("v1.0"),
 		},
@@ -82,12 +81,8 @@ func GetDefaultMockPullRequestDetailsWith(pr *github.PullRequest) *github.PullRe
         defaultPullRequest.Number = pr.Number
     }
 
-    if pr.Base.Repo.Owner.Login != nil {
-        defaultPullRequest.Base.Repo.Owner.Login = pr.Base.Repo.Owner.Login
-    }
-
-    if pr.Base.Repo.Name != nil {
-        defaultPullRequest.Base.Repo.Name = pr.Base.Repo.Name
+    if pr.Base != nil {
+        defaultPullRequest.Base = pr.Base
     }
 
     if pr.Assignees != nil {

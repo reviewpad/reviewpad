@@ -67,7 +67,6 @@ func TestAssignAssignees(t *testing.T) {
         "mary",
     }
 	mockedPullRequest := mocks_aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
-		Number: github.Int(6),
         Base: &github.PullRequestBranch{
             Repo: &github.Repository{
                 Owner: &github.User{
@@ -81,7 +80,6 @@ func TestAssignAssignees(t *testing.T) {
 
     mockedEnv, err := mocks_aladino.MockDefaultEnv(
 		mock.WithRequestMatchHandler(
-			// Overwrite default mock to pull request request details
 			mock.GetReposPullsByOwnerByRepoByPullNumber,
 			http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 				w.Write(mock.MustMarshal(mockedPullRequest))
@@ -107,7 +105,7 @@ func TestAssignAssignees(t *testing.T) {
     for i, assignee := range wantAssignees {
         assignees[i] = aladino.BuildStringValue(assignee)
     }
-    
+
     args := []aladino.Value{aladino.BuildArrayValue(assignees)}
     err = assignAssignees(mockedEnv, args)
 
