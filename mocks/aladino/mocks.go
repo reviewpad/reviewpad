@@ -39,6 +39,7 @@ func GetDefaultMockPullRequestDetails() *github.PullRequest {
 		Body:      github.String("Please pull these awesome changes in!"),
 		CreatedAt: &prDate,
 		Commits:   github.Int(5),
+        Number:    github.Int(prNum),
 		Milestone: &github.Milestone{
 			Title: github.String("v1.0"),
 		},
