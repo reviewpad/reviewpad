@@ -6,9 +6,12 @@ package plugins_aladino_functions_test
 
 import (
 	"log"
+	"net/http"
 	"testing"
 	"time"
 
+	"github.com/google/go-github/v42/github"
+	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v2/lang/aladino"
 	mocks_aladino "github.com/reviewpad/reviewpad/v2/mocks/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v2/plugins/aladino"
@@ -18,12 +21,23 @@ import (
 var createdAt = plugins_aladino.PluginBuiltIns().Functions["createdAt"].Code
 
 func TestCreatedAt(t *testing.T) {
-	mockedEnv, err := mocks_aladino.MockDefaultEnv()
+	date := time.Date(2009, 11, 17, 20, 34, 58, 651387237, time.UTC)
+	mockedPullRequest := mocks_aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
+		CreatedAt: &date,
+	})
+	mockedEnv, err := mocks_aladino.MockDefaultEnv(
+		mock.WithRequestMatchHandler(
+			mock.GetReposPullsByOwnerByRepoByPullNumber,
+			http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+				w.Write(mock.MustMarshal(mockedPullRequest))
+			}),
+		),
+	)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
 
-	wantCreatedAtTime, err := time.Parse("2006-01-02 15:04:05.999999999 -0700 MST", mockedEnv.GetPullRequest().GetCreatedAt().String())
+	wantCreatedAtTime, err := time.Parse("2006-01-02 15:04:05.999999999 -0700 MST", date.String())
 	if err != nil {
 		log.Fatalf("time.Parse failed: %v", err)
 	}
