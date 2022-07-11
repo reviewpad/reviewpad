@@ -26,7 +26,6 @@ func TestCommitCount(t *testing.T) {
 	})
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
 		mock.WithRequestMatchHandler(
-			// Overwrite default mock to pull request request details
 			mock.GetReposPullsByOwnerByRepoByPullNumber,
 			http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 				w.Write(mock.MustMarshal(mockedPullRequest))
@@ -43,5 +42,5 @@ func TestCommitCount(t *testing.T) {
 	gotCommitCount, err := commitCount(mockedEnv, args)
 
 	assert.Nil(t, err)
-	assert.Equal(t, wantCommitCount, gotCommitCount)
+	assert.Equal(t, wantCommitCount, gotCommitCount, "it should get the pull request commit count")
 }
