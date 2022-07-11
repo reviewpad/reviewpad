@@ -20,27 +20,28 @@ import (
 var assignees = plugins_aladino.PluginBuiltIns().Functions["assignees"].Code
 
 func TestAssignees(t *testing.T) {
-  assigneeLogin := "jane"
-	defaultPullRequestDetails := mocks_aladino.GetDefaultMockPullRequestDetails()
-	defaultPullRequestDetails.Assignees = []*github.User{
-		{Login: github.String(assigneeLogin)},
-	}
+	assigneeLogin := "jane"
+	mockedPullRequest := mocks_aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
+		Assignees: []*github.User{
+			{Login: github.String(assigneeLogin)},
+		},
+	})
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
-    mock.WithRequestMatchHandler(
+		mock.WithRequestMatchHandler(
 			// Overwrite default mock to pull request request details
 			mock.GetReposPullsByOwnerByRepoByPullNumber,
 			http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-				w.Write(mock.MustMarshal(defaultPullRequestDetails))
+				w.Write(mock.MustMarshal(mockedPullRequest))
 			}),
 		),
-  )
+	)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
 
-  mockedAssignees := mockedEnv.GetPullRequest().Assignees
-  wantAssigneesLogins := make([]aladino.Value, len(mockedAssignees))
-  for i, assignee := range mockedAssignees {
+	mockedAssignees := mockedEnv.GetPullRequest().Assignees
+	wantAssigneesLogins := make([]aladino.Value, len(mockedAssignees))
+	for i, assignee := range mockedAssignees {
 		wantAssigneesLogins[i] = aladino.BuildStringValue(assignee.GetLogin())
 	}
 
