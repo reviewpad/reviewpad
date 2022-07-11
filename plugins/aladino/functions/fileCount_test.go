@@ -28,7 +28,6 @@ func TestFileCount(t *testing.T) {
 	}
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
 		mock.WithRequestMatchHandler(
-			// Overwrite default mock request to get pull request changed files
 			mock.GetReposPullsFilesByOwnerByRepoByPullNumber,
 			http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 				w.Write(mock.MustMarshal(mockedPullRequestFileList))
@@ -45,5 +44,5 @@ func TestFileCount(t *testing.T) {
 	gotFileCount, err := fileCount(mockedEnv, args)
 
 	assert.Nil(t, err)
-	assert.Equal(t, wantFileCount, gotFileCount)
+	assert.Equal(t, wantFileCount, gotFileCount, "action should count the total pull request files")
 }
