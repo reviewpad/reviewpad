@@ -5,14 +5,11 @@
 package plugins_aladino_actions_test
 
 import (
-	"bytes"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"testing"
-	"time"
 
 	"github.com/google/go-github/v42/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
@@ -68,7 +65,6 @@ func TestAssignReviewer_WhenAuthorIsInListOfReviewers(t *testing.T) {
 	})
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
 		mock.WithRequestMatchHandler(
-			// Overwrite default mock to pull request request details
 			mock.GetReposPullsByOwnerByRepoByPullNumber,
 			http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 				w.Write(mock.MustMarshal(mockedPullRequest))
@@ -110,7 +106,6 @@ func TestAssignReviewer_WhenAuthorIsInListOfReviewers(t *testing.T) {
 }
 
 func TestAssignReviewer_WhenTotalRequiredReviewersIsMoreThanTotalAvailableReviewers(t *testing.T) {
-	var buf bytes.Buffer
 	var gotReviewers []string
 	reviewerLogin := "mary"
 	authorLogin := "john"
@@ -122,10 +117,8 @@ func TestAssignReviewer_WhenTotalRequiredReviewersIsMoreThanTotalAvailableReview
 	wantReviewers := []string{
 		reviewerLogin,
 	}
-	wantLog := fmt.Sprintf("%v assignReviewer: total required reviewers %v exceeds the total available reviewers %v\n", time.Now().Format("2006/01/02 15:04:05"), totalRequiredReviewers, len(wantReviewers))
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
 		mock.WithRequestMatchHandler(
-			// Overwrite default mock to pull request request details
 			mock.GetReposPullsByOwnerByRepoByPullNumber,
 			http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 				w.Write(mock.MustMarshal(mockedPullRequest))
@@ -151,8 +144,6 @@ func TestAssignReviewer_WhenTotalRequiredReviewersIsMoreThanTotalAvailableReview
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
 
-	log.SetOutput(&buf)
-
 	args := []aladino.Value{
 		aladino.BuildArrayValue(
 			[]aladino.Value{
@@ -163,11 +154,8 @@ func TestAssignReviewer_WhenTotalRequiredReviewersIsMoreThanTotalAvailableReview
 	}
 	err = assignReviewer(mockedEnv, args)
 
-	gotLog := buf.String()
-
 	assert.Nil(t, err)
-	assert.ElementsMatch(t, wantReviewers, gotReviewers)
-	assert.Equal(t, wantLog, gotLog)
+	assert.ElementsMatch(t, wantReviewers, gotReviewers, "the list of assign reviewers should be all provided reviewers")
 }
 
 func TestAssignReviewer_WhenListReviewsRequestFails(t *testing.T) {
@@ -214,7 +202,6 @@ func TestAssignReviewer_WhenPullRequestAlreadyHasReviews(t *testing.T) {
 	})
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
 		mock.WithRequestMatchHandler(
-			// Overwrite default mock to pull request request details
 			mock.GetReposPullsByOwnerByRepoByPullNumber,
 			http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 				w.Write(mock.MustMarshal(mockedPullRequest))
@@ -257,7 +244,7 @@ func TestAssignReviewer_WhenPullRequestAlreadyHasReviews(t *testing.T) {
 	err = assignReviewer(mockedEnv, args)
 
 	assert.Nil(t, err)
-	assert.ElementsMatch(t, wantReviewers, gotReviewers)
+	assert.ElementsMatch(t, wantReviewers, gotReviewers, "when a provided reviewer already has review then a review needs to be re-requested")
 }
 
 func TestAssignReviewer_WhenPullRequestAlreadyHasRequestedReviewers(t *testing.T) {
@@ -268,15 +255,14 @@ func TestAssignReviewer_WhenPullRequestAlreadyHasRequestedReviewers(t *testing.T
 	wantReviewers := []string{
 		reviewerB,
 	}
-    mockedPullRequest := mocks_aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
-		User:               &github.User{Login: github.String(authorLogin)},
+	mockedPullRequest := mocks_aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
+		User: &github.User{Login: github.String(authorLogin)},
 		RequestedReviewers: []*github.User{
-            {Login: github.String(reviewerA)},
-        },
+			{Login: github.String(reviewerA)},
+		},
 	})
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
 		mock.WithRequestMatchHandler(
-			// Overwrite default mock to pull request request details
 			mock.GetReposPullsByOwnerByRepoByPullNumber,
 			http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 				w.Write(mock.MustMarshal(mockedPullRequest))
@@ -314,26 +300,26 @@ func TestAssignReviewer_WhenPullRequestAlreadyHasRequestedReviewers(t *testing.T
 	err = assignReviewer(mockedEnv, args)
 
 	assert.Nil(t, err)
-	assert.ElementsMatch(t, wantReviewers, gotReviewers)
+	assert.ElementsMatch(t, wantReviewers, gotReviewers, "when a reviewer already has a requested review, then it shouldn't be re-requested")
 }
 
+// Test scenario description:
 // The mocked pull request has an assigned reviewer ("mary") which hasn't made any review yet
 // The provided reviewers list contains an already assigned reviewer ("mary")
 // Since a review has already been requested to the already assigned reviewer, so there's no available reviewers left
 func TestAssignReviewer_HasNoAvailableReviewers(t *testing.T) {
-	var pullRequestHasReviewers bool
+	var isRequestReviewersRequestPerformed bool
 	authorLogin := "john"
 	reviewerLogin := "mary"
 	totalRequiredReviewers := 1
-    mockedPullRequest := mocks_aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
-		User:               &github.User{Login: github.String(authorLogin)},
+	mockedPullRequest := mocks_aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
+		User: &github.User{Login: github.String(authorLogin)},
 		RequestedReviewers: []*github.User{
-            {Login: github.String(reviewerLogin)},
-        },
+			{Login: github.String(reviewerLogin)},
+		},
 	})
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
 		mock.WithRequestMatchHandler(
-			// Overwrite default mock to pull request request details
 			mock.GetReposPullsByOwnerByRepoByPullNumber,
 			http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 				w.Write(mock.MustMarshal(mockedPullRequest))
@@ -347,7 +333,7 @@ func TestAssignReviewer_HasNoAvailableReviewers(t *testing.T) {
 			mock.PostReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
 			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				// If the request reviewers request was performed then the reviewers were assigned to the pull request
-				pullRequestHasReviewers = true
+				isRequestReviewersRequestPerformed = true
 			}),
 		),
 	)
@@ -366,5 +352,5 @@ func TestAssignReviewer_HasNoAvailableReviewers(t *testing.T) {
 	err = assignReviewer(mockedEnv, args)
 
 	assert.Nil(t, err)
-	assert.False(t, pullRequestHasReviewers, "The pull request should not have new reviewers assigned")
+	assert.False(t, isRequestReviewersRequestPerformed, "the action shouldn't request for reviewers")
 }
