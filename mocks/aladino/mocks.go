@@ -101,6 +101,10 @@ func GetDefaultMockPullRequestDetailsWith(pr *github.PullRequest) *github.PullRe
     if pr.Commits != nil {
         defaultPullRequest.Commits = pr.Commits
     }
+    
+    if pr.RequestedReviewers != nil {
+		defaultPullRequest.RequestedReviewers = pr.RequestedReviewers
+	}
 
     if pr.RequestedReviewers != nil {
        defaultPullRequest.RequestedReviewers = pr.RequestedReviewers
