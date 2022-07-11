@@ -21,16 +21,15 @@ var author = plugins_aladino.PluginBuiltIns().Functions["author"].Code
 
 func TestAuthor(t *testing.T) {
 	authorLogin := "john"
-	defaultPullRequestDetails := mocks_aladino.GetDefaultMockPullRequestDetails()
-	defaultPullRequestDetails.User = &github.User{
-		Login: github.String(authorLogin),
-	}
+    mockedPullRequest := mocks_aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
+		User:               &github.User{Login: github.String(authorLogin)},
+	})
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
 		mock.WithRequestMatchHandler(
 			// Overwrite default mock to pull request request details
 			mock.GetReposPullsByOwnerByRepoByPullNumber,
 			http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-				w.Write(mock.MustMarshal(defaultPullRequestDetails))
+				w.Write(mock.MustMarshal(mockedPullRequest))
 			}),
 		),
 	)
