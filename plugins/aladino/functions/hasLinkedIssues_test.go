@@ -32,23 +32,23 @@ func TestHasLinkedIssues_WhenRequestFails(t *testing.T) {
 		http.Error(w, "404 Not Found", http.StatusNotFound)
 	})
 
-	testEvalEnv, err := mocks_aladino.MockDefaultEvalEnvWithGQ(mux)
+	mockedEnv, err := mocks_aladino.MockDefaultEvalEnvWithGQ(mux)
 	if err != nil {
-		log.Fatalf("mockEvalEnv failed: %v", err)
+		log.Fatalf("mockDefaultEvalEnvWithGQ failed: %v", err)
 	}
 
-	_, err = hasLinkedIssues(testEvalEnv, []aladino.Value{})
+	_, err = hasLinkedIssues(mockedEnv, []aladino.Value{})
 
 	assert.NotNil(t, err)
 }
 
 func TestHasLinkedIssues_WhenHasLinkedIssues(t *testing.T) {
 	wantQuery := fmt.Sprintf(
-        "{\"query\":\"query($pullRequestNumber:Int!$repositoryName:String!$repositoryOwner:String!){repository(owner: $repositoryOwner, name: $repositoryName){pullRequest(number: $pullRequestNumber){closingIssuesReferences{totalCount}}}}\",\"variables\":{\"pullRequestNumber\":%d,\"repositoryName\":%q,\"repositoryOwner\":%q}}\n",
-        defaultMockPrNum,
-        defaultMockPrRepoName,
-        defaultMockPrOwner,
-    )
+		"{\"query\":\"query($pullRequestNumber:Int!$repositoryName:String!$repositoryOwner:String!){repository(owner: $repositoryOwner, name: $repositoryName){pullRequest(number: $pullRequestNumber){closingIssuesReferences{totalCount}}}}\",\"variables\":{\"pullRequestNumber\":%d,\"repositoryName\":%q,\"repositoryOwner\":%q}}\n",
+		defaultMockPrNum,
+		defaultMockPrRepoName,
+		defaultMockPrOwner,
+	)
 	gotQuery := ""
 
 	mux := http.NewServeMux()
@@ -72,16 +72,16 @@ func TestHasLinkedIssues_WhenHasLinkedIssues(t *testing.T) {
 
 	authorLogin := "john"
 	mockedPullRequest := mocks_aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
-        Number: github.Int(defaultMockPrNum),
-		User: &github.User{Login: github.String(authorLogin)},
-        Base: &github.PullRequestBranch{
-            Repo: &github.Repository{
-                Owner: &github.User{
-                    Login: github.String(defaultMockPrOwner),
-                },
-                Name: github.String(defaultMockPrRepoName),
-            },
-        },
+		Number: github.Int(defaultMockPrNum),
+		User:   &github.User{Login: github.String(authorLogin)},
+		Base: &github.PullRequestBranch{
+			Repo: &github.Repository{
+				Owner: &github.User{
+					Login: github.String(defaultMockPrOwner),
+				},
+				Name: github.String(defaultMockPrRepoName),
+			},
+		},
 	})
 	mockedEnv, err := mocks_aladino.MockDefaultEvalEnvWithGQ(
 		mux,
@@ -93,7 +93,7 @@ func TestHasLinkedIssues_WhenHasLinkedIssues(t *testing.T) {
 		),
 	)
 	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
+		log.Fatalf("mockDefaultEvalEnvWithGQ failed: %v", err)
 	}
 	wantVal := aladino.BuildBoolValue(true)
 	gotVal, err := hasLinkedIssues(mockedEnv, []aladino.Value{})
@@ -105,11 +105,11 @@ func TestHasLinkedIssues_WhenHasLinkedIssues(t *testing.T) {
 
 func TestHasLinkedIssues_WhenNoLinkedIssues(t *testing.T) {
 	wantQuery := fmt.Sprintf(
-        "{\"query\":\"query($pullRequestNumber:Int!$repositoryName:String!$repositoryOwner:String!){repository(owner: $repositoryOwner, name: $repositoryName){pullRequest(number: $pullRequestNumber){closingIssuesReferences{totalCount}}}}\",\"variables\":{\"pullRequestNumber\":%d,\"repositoryName\":%q,\"repositoryOwner\":%q}}\n",
-        defaultMockPrNum,
-        defaultMockPrRepoName,
-        defaultMockPrOwner,
-    )
+		"{\"query\":\"query($pullRequestNumber:Int!$repositoryName:String!$repositoryOwner:String!){repository(owner: $repositoryOwner, name: $repositoryName){pullRequest(number: $pullRequestNumber){closingIssuesReferences{totalCount}}}}\",\"variables\":{\"pullRequestNumber\":%d,\"repositoryName\":%q,\"repositoryOwner\":%q}}\n",
+		defaultMockPrNum,
+		defaultMockPrRepoName,
+		defaultMockPrOwner,
+	)
 	gotQuery := ""
 
 	mux := http.NewServeMux()
@@ -131,18 +131,18 @@ func TestHasLinkedIssues_WhenNoLinkedIssues(t *testing.T) {
 		}}`)
 	})
 
-    authorLogin := "john"
+	authorLogin := "john"
 	mockedPullRequest := mocks_aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
-        Number: github.Int(defaultMockPrNum),
-		User: &github.User{Login: github.String(authorLogin)},
-        Base: &github.PullRequestBranch{
-            Repo: &github.Repository{
-                Owner: &github.User{
-                    Login: github.String(defaultMockPrOwner),
-                },
-                Name: github.String(defaultMockPrRepoName),
-            },
-        },
+		Number: github.Int(defaultMockPrNum),
+		User:   &github.User{Login: github.String(authorLogin)},
+		Base: &github.PullRequestBranch{
+			Repo: &github.Repository{
+				Owner: &github.User{
+					Login: github.String(defaultMockPrOwner),
+				},
+				Name: github.String(defaultMockPrRepoName),
+			},
+		},
 	})
 	mockedEnv, err := mocks_aladino.MockDefaultEvalEnvWithGQ(
 		mux,
@@ -154,7 +154,7 @@ func TestHasLinkedIssues_WhenNoLinkedIssues(t *testing.T) {
 		),
 	)
 	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
+		log.Fatalf("mockDefaultEvalEnvWithGQ failed: %v", err)
 	}
 
 	wantVal := aladino.BuildBoolValue(false)
