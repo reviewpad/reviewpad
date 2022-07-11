@@ -8,12 +8,14 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"net/http/httptest"
 	"time"
 
 	"github.com/google/go-github/v42/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v2/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v2/plugins/aladino"
+	"github.com/shurcooL/githubv4"
 )
 
 const defaultMockPrID = 1234
@@ -120,7 +122,7 @@ func mockHttpClientWith(clientOptions ...mock.MockBackendOption) *http.Client {
 	return mock.NewMockedHTTPClient(clientOptions...)
 }
 
-func MockEnvWith(prOwner string, prRepoName string, prNum int, client *github.Client) (aladino.Env, error) {
+func MockEnvWith(prOwner string, prRepoName string, prNum int, client *github.Client, clientGQL *githubv4.Client) (aladino.Env, error) {
 	ctx := context.Background()
 	pr, _, err := client.PullRequests.Get(ctx, prOwner, prRepoName, prNum)
 	if err != nil {
@@ -130,7 +132,7 @@ func MockEnvWith(prOwner string, prRepoName string, prNum int, client *github.Cl
 	env, err := aladino.NewEvalEnv(
 		ctx,
 		client,
-		nil,
+		clientGQL,
 		nil,
 		pr,
 		plugins_aladino.PluginBuiltIns(),
@@ -174,5 +176,28 @@ func MockDefaultEnv(clientOptions ...mock.MockBackendOption) (aladino.Env, error
 	prNum := defaultMockPrNum
 	client := github.NewClient(mockDefaultHttpClient(clientOptions...))
 
-	return MockEnvWith(prOwner, prRepoName, prNum, client)
+	return MockEnvWith(prOwner, prRepoName, prNum, client, nil)
+}
+
+// localRoundTripper is an http.RoundTripper that executes HTTP transactions
+// by using handler directly, instead of going over an HTTP connection.
+type localRoundTripper struct {
+	handler http.Handler
+}
+
+func (l localRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
+	w := httptest.NewRecorder()
+	l.handler.ServeHTTP(w, req)
+	return w.Result(), nil
+}
+
+func MockDefaultEvalEnvWithGQ(mux http.Handler, clientOptions ...mock.MockBackendOption) (aladino.Env, error) {
+    prOwner := defaultMockPrOwner
+	prRepoName := defaultMockPrRepoName
+	prNum := defaultMockPrNum
+	client := github.NewClient(mockDefaultHttpClient(clientOptions...))
+
+	clientGQL := githubv4.NewClient(&http.Client{Transport: localRoundTripper{handler: mux}})
+
+	return MockEnvWith(prOwner, prRepoName, prNum, client, clientGQL)
 }
