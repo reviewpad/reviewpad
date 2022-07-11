@@ -20,21 +20,24 @@ import (
 var base = plugins_aladino.PluginBuiltIns().Functions["base"].Code
 
 func TestBase(t *testing.T) {
-  ownerLogin := "john"
-  repoName := "default-mock-repo"
 	baseRef := "master"
-	defaultPullRequestDetails := mocks_aladino.GetDefaultMockPullRequestDetails()
-	defaultPullRequestDetails.Base.Repo.Owner = &github.User{
-        Login: github.String(ownerLogin),
-  }
-  defaultPullRequestDetails.Base.Repo.Name = github.String(repoName)
-  defaultPullRequestDetails.Base.Ref = github.String(baseRef)
+	mockedPullRequest := mocks_aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
+		Base: &github.PullRequestBranch{
+            Repo: &github.Repository{
+                Owner: &github.User{
+                    Login: github.String("john"),
+                },
+                Name: github.String("default-mock-repo"),
+            },
+			Ref: github.String(baseRef),
+		},
+	})
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
 		mock.WithRequestMatchHandler(
 			// Overwrite default mock to pull request request details
 			mock.GetReposPullsByOwnerByRepoByPullNumber,
 			http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-				w.Write(mock.MustMarshal(defaultPullRequestDetails))
+				w.Write(mock.MustMarshal(mockedPullRequest))
 			}),
 		),
 	)
@@ -42,7 +45,7 @@ func TestBase(t *testing.T) {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
 
-	wantBase := aladino.BuildStringValue(mockedEnv.GetPullRequest().GetBase().GetRef())
+	wantBase := aladino.BuildStringValue(baseRef)
 
 	args := []aladino.Value{}
 	gotBase, err := base(mockedEnv, args)
