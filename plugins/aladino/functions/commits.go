@@ -5,7 +5,6 @@
 package plugins_aladino_functions
 
 import (
-	"github.com/google/go-github/v42/github"
 	"github.com/reviewpad/reviewpad/v2/lang/aladino"
 	"github.com/reviewpad/reviewpad/v2/utils"
 )
@@ -22,7 +21,7 @@ func commitsCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
 	owner := utils.GetPullRequestOwnerName(e.GetPullRequest())
 	repo := utils.GetPullRequestRepoName(e.GetPullRequest())
 
-	ghCommits, _, err := e.GetClient().PullRequests.ListCommits(e.GetCtx(), owner, repo, prNum, &github.ListOptions{})
+	ghCommits, err := utils.GetPullRequestCommits(e.GetCtx(), e.GetClient(), owner, repo, prNum)
 	if err != nil {
 		return nil, err
 	}
