@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/google/go-github/v42/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v2/lang/aladino"
 	mocks_aladino "github.com/reviewpad/reviewpad/v2/mocks/aladino"
@@ -20,14 +21,15 @@ var commitCount = plugins_aladino.PluginBuiltIns().Functions["commitCount"].Code
 
 func TestCommitCount(t *testing.T) {
 	totalCommits := 1
-	defaultPullRequestDetails := mocks_aladino.GetDefaultMockPullRequestDetails()
-	defaultPullRequestDetails.Commits = &totalCommits
+	mockedPullRequest := mocks_aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
+		Commits: &totalCommits,
+	})
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
 		mock.WithRequestMatchHandler(
 			// Overwrite default mock to pull request request details
 			mock.GetReposPullsByOwnerByRepoByPullNumber,
 			http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-				w.Write(mock.MustMarshal(defaultPullRequestDetails))
+				w.Write(mock.MustMarshal(mockedPullRequest))
 			}),
 		),
 	)
@@ -35,7 +37,7 @@ func TestCommitCount(t *testing.T) {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
 
-	wantCommitCount := aladino.BuildIntValue(*mockedEnv.GetPullRequest().Commits)
+	wantCommitCount := aladino.BuildIntValue(totalCommits)
 
 	args := []aladino.Value{}
 	gotCommitCount, err := commitCount(mockedEnv, args)

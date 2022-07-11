@@ -91,6 +91,10 @@ func GetDefaultMockPullRequestDetailsWith(pr *github.PullRequest) *github.PullRe
         defaultPullRequest.Assignees = pr.Assignees
     }
 
+    if pr.Commits != nil {
+        defaultPullRequest.Commits = pr.Commits
+    }
+
 	return defaultPullRequest
 }
 
