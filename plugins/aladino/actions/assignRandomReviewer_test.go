@@ -112,12 +112,11 @@ func TestAssignRandomReviewer_ShouldFilterPullRequestAuthor(t *testing.T) {
 	selectedReviewers := []string{}
 	authorLogin := "maria"
 	assigneeLogin := "peter"
-    mockedPullRequest := mocks_aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
-		User:               &github.User{Login: github.String(authorLogin)},
+	mockedPullRequest := mocks_aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
+		User: &github.User{Login: github.String(authorLogin)},
 	})
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
 		mock.WithRequestMatchHandler(
-			// Overwrite default mock to pull request request details
 			mock.GetReposPullsByOwnerByRepoByPullNumber,
 			http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 				w.Write(mock.MustMarshal(mockedPullRequest))
@@ -159,12 +158,11 @@ func TestAssignRandomReviewer_ShouldFilterPullRequestAuthor(t *testing.T) {
 
 func TestAssignRandomReviewer_WhenThereIsNoUsers(t *testing.T) {
 	authorLogin := "maria"
-    mockedPullRequest := mocks_aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
-		User:               &github.User{Login: github.String(authorLogin)},
+	mockedPullRequest := mocks_aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
+		User: &github.User{Login: github.String(authorLogin)},
 	})
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
-        mock.WithRequestMatchHandler(
-			// Overwrite default mock to pull request request details
+		mock.WithRequestMatchHandler(
 			mock.GetReposPullsByOwnerByRepoByPullNumber,
 			http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 				w.Write(mock.MustMarshal(mockedPullRequest))
