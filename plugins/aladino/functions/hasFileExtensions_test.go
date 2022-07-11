@@ -5,7 +5,6 @@
 package plugins_aladino_functions_test
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"testing"
@@ -20,12 +19,12 @@ import (
 
 var hasFileExtensions = plugins_aladino.PluginBuiltIns().Functions["hasFileExtensions"].Code
 
-const defaultMockPrRepoName = "default-mock-repo"
+const defaultMockPrFileName = "default-mock-repo/file1.ts"
 
 func TestHasFileExtensions_WhenFalse(t *testing.T) {
 	mockedPullRequestFileList := &[]*github.CommitFile{
 		{
-			Filename: github.String(fmt.Sprintf("%v/file1.ts", defaultMockPrRepoName)),
+			Filename: github.String(defaultMockPrFileName),
 			Patch:    nil,
 		},
 	}
@@ -53,7 +52,7 @@ func TestHasFileExtensions_WhenFalse(t *testing.T) {
 func TestHasFileExtensions_WhenTrue(t *testing.T) {
 	mockedPullRequestFileList := &[]*github.CommitFile{
 		{
-			Filename: github.String(fmt.Sprintf("%v/file1.ts", defaultMockPrRepoName)),
+			Filename: github.String(defaultMockPrFileName),
 			Patch:    nil,
 		},
 	}
