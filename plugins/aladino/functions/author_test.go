@@ -37,7 +37,7 @@ func TestAuthor(t *testing.T) {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
 
-	wantAuthor := aladino.BuildStringValue(mockedEnv.GetPullRequest().GetUser().GetLogin())
+	wantAuthor := aladino.BuildStringValue(authorLogin)
 
 	gotAuthor, err := author(mockedEnv, []aladino.Value{})
 
