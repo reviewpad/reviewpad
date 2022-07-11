@@ -34,7 +34,6 @@ func TestBase(t *testing.T) {
 	})
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
 		mock.WithRequestMatchHandler(
-			// Overwrite default mock to pull request request details
 			mock.GetReposPullsByOwnerByRepoByPullNumber,
 			http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 				w.Write(mock.MustMarshal(mockedPullRequest))
@@ -51,5 +50,5 @@ func TestBase(t *testing.T) {
 	gotBase, err := base(mockedEnv, args)
 
 	assert.Nil(t, err)
-	assert.Equal(t, wantBase, gotBase)
+	assert.Equal(t, wantBase, gotBase, "it should get the pull request base reference")
 }
