@@ -46,7 +46,7 @@ func TestTotalCreatedPullRequests_WhenListIssuesByRepoRequestFails(t *testing.T)
 	assert.Equal(t, err.(*github.ErrorResponse).Message, failMessage)
 }
 
-func TestTotalCreatedPullRequests_WhenThereIsNonPullRequestIssues(t *testing.T) {
+func TestTotalCreatedPullRequests_WhenThereIsPullRequestIssues(t *testing.T) {
 	devName := "steve"
     ghIssues := []*github.Issue{
         {
