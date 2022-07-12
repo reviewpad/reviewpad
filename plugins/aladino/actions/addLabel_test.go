@@ -25,22 +25,25 @@ func TestAddLabel_WhenAddLabelToIssueRequestFails(t *testing.T) {
 	label := "bug"
 	failMessage := "AddLabelsToIssueRequestFail"
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
-		mock.WithRequestMatch(
-			mock.GetReposLabelsByOwnerByRepoByName,
-			&github.Label{
-				Name: github.String(label),
-			},
-		),
-		mock.WithRequestMatchHandler(
-			mock.PostReposIssuesLabelsByOwnerByRepoByIssueNumber,
-			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				mock.WriteError(
-					w,
-					http.StatusInternalServerError,
-					failMessage,
-				)
-			}),
-		),
+		[]mock.MockBackendOption{
+			mock.WithRequestMatch(
+				mock.GetReposLabelsByOwnerByRepoByName,
+				&github.Label{
+					Name: github.String(label),
+				},
+			),
+			mock.WithRequestMatchHandler(
+				mock.PostReposIssuesLabelsByOwnerByRepoByIssueNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					mock.WriteError(
+						w,
+						http.StatusInternalServerError,
+						failMessage,
+					)
+				}),
+			),
+		},
+		nil,
 	)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
@@ -59,21 +62,25 @@ func TestAddLabel_WhenLabelIsInEnvironment(t *testing.T) {
 	}
 	gotLabels := []string{}
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
-		mock.WithRequestMatch(
-			mock.GetReposLabelsByOwnerByRepoByName,
-			&github.Label{},
-		),
-		mock.WithRequestMatchHandler(
-			mock.PostReposIssuesLabelsByOwnerByRepoByIssueNumber,
-			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				rawBody, _ := ioutil.ReadAll(r.Body)
-				body := []string{}
+		[]mock.MockBackendOption{
 
-				json.Unmarshal(rawBody, &body)
+			mock.WithRequestMatch(
+				mock.GetReposLabelsByOwnerByRepoByName,
+				&github.Label{},
+			),
+			mock.WithRequestMatchHandler(
+				mock.PostReposIssuesLabelsByOwnerByRepoByIssueNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					rawBody, _ := ioutil.ReadAll(r.Body)
+					body := []string{}
 
-				gotLabels = body
-			}),
-		),
+					json.Unmarshal(rawBody, &body)
+
+					gotLabels = body
+				}),
+			),
+		},
+		nil,
 	)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
@@ -95,21 +102,24 @@ func TestAddLabel_WhenLabelIsNotInEnvironment(t *testing.T) {
 	}
 	gotLabels := []string{}
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
-		mock.WithRequestMatch(
-			mock.GetReposLabelsByOwnerByRepoByName,
-			&github.Label{},
-		),
-		mock.WithRequestMatchHandler(
-			mock.PostReposIssuesLabelsByOwnerByRepoByIssueNumber,
-			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				rawBody, _ := ioutil.ReadAll(r.Body)
-				body := []string{}
+		[]mock.MockBackendOption{
+			mock.WithRequestMatch(
+				mock.GetReposLabelsByOwnerByRepoByName,
+				&github.Label{},
+			),
+			mock.WithRequestMatchHandler(
+				mock.PostReposIssuesLabelsByOwnerByRepoByIssueNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					rawBody, _ := ioutil.ReadAll(r.Body)
+					body := []string{}
 
-				json.Unmarshal(rawBody, &body)
+					json.Unmarshal(rawBody, &body)
 
-				gotLabels = body
-			}),
-		),
+					gotLabels = body
+				}),
+			),
+		},
+		nil,
 	)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)

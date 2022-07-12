@@ -24,19 +24,22 @@ func TestRemoveLabel_WhenLabelIsNotAppliedToPullRequest(t *testing.T) {
 	wantLabel := "bug"
 	var isLabelRemoved bool
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
-		mock.WithRequestMatch(
-			mock.GetReposLabelsByOwnerByRepoByName,
-			github.Label{
-				Name: github.String(wantLabel),
-			},
-		),
-		mock.WithRequestMatchHandler(
-			mock.DeleteReposIssuesLabelsByOwnerByRepoByIssueNumberByName,
-			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				// If the remove label request was performed then the label was removed
-				isLabelRemoved = true
-			}),
-		),
+		[]mock.MockBackendOption{
+			mock.WithRequestMatch(
+				mock.GetReposLabelsByOwnerByRepoByName,
+				github.Label{
+					Name: github.String(wantLabel),
+				},
+			),
+			mock.WithRequestMatchHandler(
+				mock.DeleteReposIssuesLabelsByOwnerByRepoByIssueNumberByName,
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					// If the remove label request was performed then the label was removed
+					isLabelRemoved = true
+				}),
+			),
+		},
+		nil,
 	)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
@@ -53,19 +56,22 @@ func TestRemoveLabel_WhenLabelIsAppliedToPullRequestAndLabelIsInEnvironment(t *t
 	wantLabel := "enhancement"
 	var gotLabel string
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
-		mock.WithRequestMatch(
-			mock.GetReposLabelsByOwnerByRepoByName,
-			github.Label{
-				Name: github.String(wantLabel),
-			},
-		),
-		mock.WithRequestMatchHandler(
-			mock.DeleteReposIssuesLabelsByOwnerByRepoByIssueNumberByName,
-			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				vars := mux.Vars(r)
-				gotLabel = vars["name"]
-			}),
-		),
+		[]mock.MockBackendOption{
+			mock.WithRequestMatch(
+				mock.GetReposLabelsByOwnerByRepoByName,
+				github.Label{
+					Name: github.String(wantLabel),
+				},
+			),
+			mock.WithRequestMatchHandler(
+				mock.DeleteReposIssuesLabelsByOwnerByRepoByIssueNumberByName,
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					vars := mux.Vars(r)
+					gotLabel = vars["name"]
+				}),
+			),
+		},
+		nil,
 	)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
@@ -85,19 +91,22 @@ func TestRemoveLabel_WhenLabelIsAppliedToPullRequestAndLabelIsNotInEnvironment(t
 	wantLabel := "enhancement"
 	var gotLabel string
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
-		mock.WithRequestMatch(
-			mock.GetReposLabelsByOwnerByRepoByName,
-			github.Label{
-				Name: github.String(wantLabel),
-			},
-		),
-		mock.WithRequestMatchHandler(
-			mock.DeleteReposIssuesLabelsByOwnerByRepoByIssueNumberByName,
-			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				vars := mux.Vars(r)
-				gotLabel = vars["name"]
-			}),
-		),
+		[]mock.MockBackendOption{
+			mock.WithRequestMatch(
+				mock.GetReposLabelsByOwnerByRepoByName,
+				github.Label{
+					Name: github.String(wantLabel),
+				},
+			),
+			mock.WithRequestMatchHandler(
+				mock.DeleteReposIssuesLabelsByOwnerByRepoByIssueNumberByName,
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					vars := mux.Vars(r)
+					gotLabel = vars["name"]
+				}),
+			),
+		},
+		nil,
 	)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)

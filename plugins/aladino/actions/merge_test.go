@@ -25,7 +25,7 @@ type MergeRequestPostBody struct {
 }
 
 func TestMerge_WhenMergeMethodIsUnsupported(t *testing.T) {
-	mockedEnv, err := mocks_aladino.MockDefaultEnv()
+	mockedEnv, err := mocks_aladino.MockDefaultEnv(nil, nil)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
@@ -40,17 +40,20 @@ func TestMerge_WhenNoMergeMethodIsProvided(t *testing.T) {
 	wantMergeMethod := "merge"
 	var gotMergeMethod string
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
-		mock.WithRequestMatchHandler(
-			mock.PutReposPullsMergeByOwnerByRepoByPullNumber,
-			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				rawBody, _ := ioutil.ReadAll(r.Body)
-				body := MergeRequestPostBody{}
+		[]mock.MockBackendOption{
+			mock.WithRequestMatchHandler(
+				mock.PutReposPullsMergeByOwnerByRepoByPullNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					rawBody, _ := ioutil.ReadAll(r.Body)
+					body := MergeRequestPostBody{}
 
-				json.Unmarshal(rawBody, &body)
+					json.Unmarshal(rawBody, &body)
 
-				gotMergeMethod = body.MergeMethod
-			}),
-		),
+					gotMergeMethod = body.MergeMethod
+				}),
+			),
+		},
+		nil,
 	)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
@@ -67,17 +70,20 @@ func TestMerge_WhenMergeMethodIsProvided(t *testing.T) {
 	wantMergeMethod := "rebase"
 	var gotMergeMethod string
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
-		mock.WithRequestMatchHandler(
-			mock.PutReposPullsMergeByOwnerByRepoByPullNumber,
-			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				rawBody, _ := ioutil.ReadAll(r.Body)
-				body := MergeRequestPostBody{}
+		[]mock.MockBackendOption{
+			mock.WithRequestMatchHandler(
+				mock.PutReposPullsMergeByOwnerByRepoByPullNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					rawBody, _ := ioutil.ReadAll(r.Body)
+					body := MergeRequestPostBody{}
 
-				json.Unmarshal(rawBody, &body)
+					json.Unmarshal(rawBody, &body)
 
-				gotMergeMethod = body.MergeMethod
-			}),
-		),
+					gotMergeMethod = body.MergeMethod
+				}),
+			),
+		},
+		nil,
 	)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)

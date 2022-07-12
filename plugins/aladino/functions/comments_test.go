@@ -27,14 +27,17 @@ func TestComments(t *testing.T) {
 	)
 
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
-		mock.WithRequestMatch(
-			mock.GetReposIssuesCommentsByOwnerByRepoByIssueNumber,
-			[]*github.IssueComment{
-				{
-					Body: github.String("hello world"),
+		[]mock.MockBackendOption{
+			mock.WithRequestMatch(
+				mock.GetReposIssuesCommentsByOwnerByRepoByIssueNumber,
+				[]*github.IssueComment{
+					{
+						Body: github.String("hello world"),
+					},
 				},
-			},
-		),
+			),
+		},
+		nil,
 	)
 
 	if err != nil {
@@ -52,16 +55,19 @@ func TestComments_WhenGetCommentsRequestFailed(t *testing.T) {
 	failMessage := "GetCommentsRequestFailed"
 
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
-		mock.WithRequestMatchHandler(
-			mock.GetReposIssuesCommentsByOwnerByRepoByIssueNumber,
-			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				mock.WriteError(
-					w,
-					http.StatusInternalServerError,
-					failMessage,
-				)
-			}),
-		),
+		[]mock.MockBackendOption{
+			mock.WithRequestMatchHandler(
+				mock.GetReposIssuesCommentsByOwnerByRepoByIssueNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					mock.WriteError(
+						w,
+						http.StatusInternalServerError,
+						failMessage,
+					)
+				}),
+			),
+		},
+		nil,
 	)
 
 	if err != nil {

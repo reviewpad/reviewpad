@@ -26,7 +26,7 @@ type AssigneesRequestPostBody struct {
 }
 
 func TestAssignAssignees_WhenListOfAssigneesIsEmpty(t *testing.T) {
-	mockedEnv, err := mocks_aladino.MockDefaultEnv()
+	mockedEnv, err := mocks_aladino.MockDefaultEnv(nil, nil)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
@@ -38,7 +38,7 @@ func TestAssignAssignees_WhenListOfAssigneesIsEmpty(t *testing.T) {
 }
 
 func TestAssignAssignees_WhenListOfAssigneesExceeds10Users(t *testing.T) {
-	mockedEnv, err := mocks_aladino.MockDefaultEnv()
+	mockedEnv, err := mocks_aladino.MockDefaultEnv(nil, nil)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
@@ -62,45 +62,48 @@ func TestAssignAssignees_WhenListOfAssigneesExceeds10Users(t *testing.T) {
 }
 
 func TestAssignAssignees(t *testing.T) {
-    gotAssignees := []string{}
-    wantAssignees := []string{
-        "mary",
-    }
+	gotAssignees := []string{}
+	wantAssignees := []string{
+		"mary",
+	}
 	mockedPullRequest := mocks_aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
-        Assignees: []*github.User{},
+		Assignees: []*github.User{},
 	})
 
-    mockedEnv, err := mocks_aladino.MockDefaultEnv(
-		mock.WithRequestMatchHandler(
-			mock.GetReposPullsByOwnerByRepoByPullNumber,
-			http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-				w.Write(mock.MustMarshal(mockedPullRequest))
-			}),
-		),
-		mock.WithRequestMatchHandler(
-			mock.PostReposIssuesAssigneesByOwnerByRepoByIssueNumber,
-			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				rawBody, _ := ioutil.ReadAll(r.Body)
-				body := AssigneesRequestPostBody{}
+	mockedEnv, err := mocks_aladino.MockDefaultEnv(
+		[]mock.MockBackendOption{
+			mock.WithRequestMatchHandler(
+				mock.GetReposPullsByOwnerByRepoByPullNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+					w.Write(mock.MustMarshal(mockedPullRequest))
+				}),
+			),
+			mock.WithRequestMatchHandler(
+				mock.PostReposIssuesAssigneesByOwnerByRepoByIssueNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					rawBody, _ := ioutil.ReadAll(r.Body)
+					body := AssigneesRequestPostBody{}
 
-				json.Unmarshal(rawBody, &body)
+					json.Unmarshal(rawBody, &body)
 
-				gotAssignees = body.Assignees
-			}),
-		),
+					gotAssignees = body.Assignees
+				}),
+			),
+		},
+		nil,
 	)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
 
-    assignees := make([]aladino.Value, len(wantAssignees))
-    for i, assignee := range wantAssignees {
-        assignees[i] = aladino.BuildStringValue(assignee)
-    }
+	assignees := make([]aladino.Value, len(wantAssignees))
+	for i, assignee := range wantAssignees {
+		assignees[i] = aladino.BuildStringValue(assignee)
+	}
 
-    args := []aladino.Value{aladino.BuildArrayValue(assignees)}
-    err = assignAssignees(mockedEnv, args)
+	args := []aladino.Value{aladino.BuildArrayValue(assignees)}
+	err = assignAssignees(mockedEnv, args)
 
-    assert.Nil(t, err)
-    assert.ElementsMatch(t, wantAssignees, gotAssignees)
+	assert.Nil(t, err)
+	assert.ElementsMatch(t, wantAssignees, gotAssignees)
 }

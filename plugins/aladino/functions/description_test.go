@@ -20,18 +20,21 @@ import (
 var description = plugins_aladino.PluginBuiltIns().Functions["description"].Code
 
 func TestDescription(t *testing.T) {
-    prDescription := "Please pull these awesome changes in!"
+	prDescription := "Please pull these awesome changes in!"
 	mockedPullRequest := mocks_aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
 		Body: github.String(prDescription),
 	})
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
-        mock.WithRequestMatchHandler(
-			mock.GetReposPullsByOwnerByRepoByPullNumber,
-			http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-				w.Write(mock.MustMarshal(mockedPullRequest))
-			}),
-		),
-    )
+		[]mock.MockBackendOption{
+			mock.WithRequestMatchHandler(
+				mock.GetReposPullsByOwnerByRepoByPullNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+					w.Write(mock.MustMarshal(mockedPullRequest))
+				}),
+			),
+		},
+		nil,
+	)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}

@@ -24,16 +24,19 @@ var close = plugins_aladino.PluginBuiltIns().Actions["close"].Code
 func TestClose_WhenEditRequestFails(t *testing.T) {
 	failMessage := "EditRequestFail"
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
-		mock.WithRequestMatchHandler(
-			mock.PatchReposPullsByOwnerByRepoByPullNumber,
-			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				mock.WriteError(
-					w,
-					http.StatusInternalServerError,
-					failMessage,
-				)
-			}),
-		),
+		[]mock.MockBackendOption{
+			mock.WithRequestMatchHandler(
+				mock.PatchReposPullsByOwnerByRepoByPullNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					mock.WriteError(
+						w,
+						http.StatusInternalServerError,
+						failMessage,
+					)
+				}),
+			),
+		},
+		nil,
 	)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
@@ -49,17 +52,20 @@ func TestClose(t *testing.T) {
 	wantState := "closed"
 	var gotState string
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
-		mock.WithRequestMatchHandler(
-			mock.PatchReposPullsByOwnerByRepoByPullNumber,
-			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				rawBody, _ := ioutil.ReadAll(r.Body)
-				body := github.PullRequest{}
-				
-				json.Unmarshal(rawBody, &body)
+		[]mock.MockBackendOption{
+			mock.WithRequestMatchHandler(
+				mock.PatchReposPullsByOwnerByRepoByPullNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					rawBody, _ := ioutil.ReadAll(r.Body)
+					body := github.PullRequest{}
 
-				gotState = body.GetState()
-			}),
-		),
+					json.Unmarshal(rawBody, &body)
+
+					gotState = body.GetState()
+				}),
+			),
+		},
+		nil,
 	)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)

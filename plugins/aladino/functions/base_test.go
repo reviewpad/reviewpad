@@ -23,22 +23,25 @@ func TestBase(t *testing.T) {
 	baseRef := "master"
 	mockedPullRequest := mocks_aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
 		Base: &github.PullRequestBranch{
-            Repo: &github.Repository{
-                Owner: &github.User{
-                    Login: github.String("john"),
-                },
-                Name: github.String("default-mock-repo"),
-            },
+			Repo: &github.Repository{
+				Owner: &github.User{
+					Login: github.String("john"),
+				},
+				Name: github.String("default-mock-repo"),
+			},
 			Ref: github.String(baseRef),
 		},
 	})
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
-		mock.WithRequestMatchHandler(
-			mock.GetReposPullsByOwnerByRepoByPullNumber,
-			http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-				w.Write(mock.MustMarshal(mockedPullRequest))
-			}),
-		),
+		[]mock.MockBackendOption{
+			mock.WithRequestMatchHandler(
+				mock.GetReposPullsByOwnerByRepoByPullNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+					w.Write(mock.MustMarshal(mockedPullRequest))
+				}),
+			),
+		},
+		nil,
 	)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
