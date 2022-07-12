@@ -20,10 +20,12 @@ import (
 var hasCodePattern = plugins_aladino.PluginBuiltIns().Functions["hasCodePattern"].Code
 
 func TestHasCodePattern_WhenPullRequestPatchHasNilFile(t *testing.T) {
-	mockedPullRequestFileList := &[]*github.CommitFile{}
+	mockedPullRequestFileList := &[]*github.CommitFile{{
+		Patch:    nil,
+		Filename: github.String("default-mock-repo/file1.ts"),
+	}}
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
 		mock.WithRequestMatchHandler(
-			// Overwrite default mock request to get pull request changed files
 			mock.GetReposPullsFilesByOwnerByRepoByPullNumber,
 			http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 				w.Write(mock.MustMarshal(mockedPullRequestFileList))
@@ -34,8 +36,6 @@ func TestHasCodePattern_WhenPullRequestPatchHasNilFile(t *testing.T) {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
 
-	mockedEnv.GetPatch()["file1.ts"] = nil
-
 	args := []aladino.Value{aladino.BuildStringValue("placeBet\\(.*\\)")}
 	gotVal, err := hasCodePattern(mockedEnv, args)
 
@@ -45,7 +45,7 @@ func TestHasCodePattern_WhenPullRequestPatchHasNilFile(t *testing.T) {
 	assert.Equal(t, wantVal, gotVal)
 }
 
-func TestHasCodePattern_WhenFileHasQueryError(t *testing.T) {
+func TestHasCodePattern_WhenPatternIsInvalid(t *testing.T) {
 	mockedEnv, err := mocks_aladino.MockDefaultEnv()
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
@@ -59,29 +59,21 @@ func TestHasCodePattern_WhenFileHasQueryError(t *testing.T) {
 }
 
 func TestHasCodePattern(t *testing.T) {
-    mockedPullRequestFileList := &[]*github.CommitFile{}
+	mockedPullRequestFileList := &[]*github.CommitFile{{
+		Patch:    github.String("@@ -2,9 +2,11 @@ package main\n- func previous() {\n+ func new() {\n+\nreturn"),
+		Filename: github.String("default-mock-repo/file1.ts"),
+	}}
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
-        mock.WithRequestMatchHandler(
-			// Overwrite default mock request to get pull request changed files
+		mock.WithRequestMatchHandler(
 			mock.GetReposPullsFilesByOwnerByRepoByPullNumber,
 			http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 				w.Write(mock.MustMarshal(mockedPullRequestFileList))
 			}),
 		),
-    )
+	)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
-
-    fileName := "default-mock-repo/file1.ts"
-	ghFile := &github.CommitFile{
-		SHA:      github.String("1234"),
-		Patch:    github.String("@@ -2,9 +2,11 @@ package main\n- func previous() {\n+ func new() {\n+\nreturn"),
-		Filename: github.String(fileName),
-	}
-	file, _ := aladino.NewFile(ghFile)
-
-	mockedEnv.GetPatch()[fileName] = file
 
 	args := []aladino.Value{aladino.BuildStringValue("new\\(.*\\)")}
 	gotVal, err := hasCodePattern(mockedEnv, args)
