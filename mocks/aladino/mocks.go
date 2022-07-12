@@ -122,6 +122,14 @@ func GetDefaultMockPullRequestDetailsWith(pr *github.PullRequest) *github.PullRe
         defaultPullRequest.Milestone = pr.Milestone
     }
 
+    if pr.RequestedReviewers != nil {
+        defaultPullRequest.RequestedReviewers = pr.RequestedReviewers
+    }
+
+    if pr.RequestedTeams != nil {
+        defaultPullRequest.RequestedTeams = pr.RequestedTeams
+    }
+
 	return defaultPullRequest
 }
 
