@@ -130,6 +130,14 @@ func GetDefaultMockPullRequestDetailsWith(pr *github.PullRequest) *github.PullRe
 		defaultPullRequest.Deletions = pr.Deletions
 	}
 
+    if pr.Title != nil {
+        defaultPullRequest.Title = pr.Title
+    }
+
+    if pr.Body != nil {
+        defaultPullRequest.Body = pr.Body
+    }
+    
 	return defaultPullRequest
 }
 
