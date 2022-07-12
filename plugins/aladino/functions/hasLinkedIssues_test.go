@@ -72,15 +72,18 @@ func TestHasLinkedIssues_WhenHasLinkedIssues(t *testing.T) {
 			query := mocks_aladino.MustRead(req.Body)
 			switch query {
 			case mockedGraphQLQuery:
-				mocks_aladino.MustWrite(w, `{"data": {
-                    "repository": {
-                        "pullRequest": {
-                            "closingIssuesReferences": {
-                                "totalCount": 3
-                            }
-                        }
-                    }
-                }}`)
+				mocks_aladino.MustWrite(
+					w,
+					`{"data": {
+						"repository": {
+							"pullRequest": {
+								"closingIssuesReferences": {
+									"totalCount": 3
+								}
+							}
+						}
+					}}`,
+				)
 			}
 		},
 	)
@@ -96,7 +99,7 @@ func TestHasLinkedIssues_WhenHasLinkedIssues(t *testing.T) {
 }
 
 func TestHasLinkedIssues_WhenNoLinkedIssues(t *testing.T) {
-    mockedPrNum := 6
+	mockedPrNum := 6
 	mockedPrOwner := "foobar"
 	mockedPrRepoName := "default-mock-repo"
 	mockedAuthorLogin := "john"
@@ -106,7 +109,7 @@ func TestHasLinkedIssues_WhenNoLinkedIssues(t *testing.T) {
 		mockedPrRepoName,
 		mockedPrOwner,
 	)
-    mockedPullRequest := mocks_aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
+	mockedPullRequest := mocks_aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
 		Number: github.Int(mockedPrNum),
 		User:   &github.User{Login: github.String(mockedAuthorLogin)},
 		Base: &github.PullRequestBranch{
@@ -118,7 +121,7 @@ func TestHasLinkedIssues_WhenNoLinkedIssues(t *testing.T) {
 			},
 		},
 	})
-    mockedEnv, err := mocks_aladino.MockDefaultEnv(
+	mockedEnv, err := mocks_aladino.MockDefaultEnv(
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsByOwnerByRepoByPullNumber,
@@ -131,15 +134,18 @@ func TestHasLinkedIssues_WhenNoLinkedIssues(t *testing.T) {
 			query := mocks_aladino.MustRead(req.Body)
 			switch query {
 			case mockedGraphQLQuery:
-				mocks_aladino.MustWrite(w, `{"data": {
-                    "repository": {
-                        "pullRequest": {
-                            "closingIssuesReferences": {
-                                "totalCount": 0
-                            }
-                        }
-                    }
-                }}`)
+				mocks_aladino.MustWrite(
+					w,
+					`{"data": {
+						"repository": {
+							"pullRequest": {
+								"closingIssuesReferences": {
+									"totalCount": 0
+								}
+							}
+						}
+					}}`,
+				)
 			}
 		},
 	)
@@ -152,4 +158,3 @@ func TestHasLinkedIssues_WhenNoLinkedIssues(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, wantVal, gotVal)
 }
-
