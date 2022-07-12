@@ -390,3 +390,71 @@ func TestGetPullRequestReviewers(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, wantReviewers, gotReviewers)
 }
+
+func TestGetRepoCollaborators_WhenListCollaboratorsRequestFails(t *testing.T) {
+	failMessage := "ListCollaboratorsRequestFail"
+	mockedEnv, err := mocks_aladino.MockDefaultEnv(
+		[]mock.MockBackendOption{
+			mock.WithRequestMatchHandler(
+				mock.GetReposCollaboratorsByOwnerByRepo,
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					mock.WriteError(
+						w,
+						http.StatusInternalServerError,
+						failMessage,
+					)
+				}),
+			),
+		},
+		nil,
+	)
+	if err != nil {
+		log.Fatalf("mockDefaultEnv failed: %v", err)
+	}
+
+	mockedPullRequest := mockedEnv.GetPullRequest()
+	mockedPullRequestOwner := mockedPullRequest.Base.Repo.Owner.GetLogin()
+	mockedPullRequestRepoName := mockedPullRequest.Base.Repo.GetName()
+
+	collaborators, err := utils.GetRepoCollaborators(
+		mockedEnv.GetCtx(),
+		mockedEnv.GetClient(),
+		mockedPullRequestOwner,
+		mockedPullRequestRepoName,
+	)
+
+	assert.Nil(t, collaborators)
+	assert.Equal(t, err.(*github.ErrorResponse).Message, failMessage)
+}
+
+func TestGetRepoCollaborators(t *testing.T) {
+	wantCollaborators := []*github.User{
+		{Login: github.String("mary")},
+	}
+	mockedEnv, err := mocks_aladino.MockDefaultEnv(
+		[]mock.MockBackendOption{
+			mock.WithRequestMatch(
+				mock.GetReposCollaboratorsByOwnerByRepo,
+				wantCollaborators,
+			),
+		},
+		nil,
+	)
+	if err != nil {
+		log.Fatalf("mockDefaultEnv failed: %v", err)
+	}
+
+	mockedPullRequest := mockedEnv.GetPullRequest()
+	mockedPullRequestOwner := mockedPullRequest.Base.Repo.Owner.GetLogin()
+	mockedPullRequestRepoName := mockedPullRequest.Base.Repo.GetName()
+
+	gotCollaborators, err := utils.GetRepoCollaborators(
+		mockedEnv.GetCtx(),
+		mockedEnv.GetClient(),
+		mockedPullRequestOwner,
+		mockedPullRequestRepoName,
+	)
+
+	assert.Nil(t, err)
+	assert.Equal(t, wantCollaborators, gotCollaborators)
+}
