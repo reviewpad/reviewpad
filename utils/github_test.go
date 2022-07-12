@@ -284,3 +284,42 @@ func TestGetPullRequestComments(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, wantComments, gotComments)
 }
+
+func TestGetPullRequestFiles(t *testing.T) {
+	wantFiles := []*github.CommitFile{
+		{
+			Filename: github.String("default-mock-repo/file1.ts"),
+			Patch:    nil,
+		},
+	}
+	mockedEnv, err := mocks_aladino.MockDefaultEnv(
+		[]mock.MockBackendOption{
+			mock.WithRequestMatchHandler(
+				mock.GetReposPullsFilesByOwnerByRepoByPullNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+					w.Write(mock.MustMarshal(wantFiles))
+				}),
+			),
+		},
+		nil,
+	)
+	if err != nil {
+		log.Fatalf("mockDefaultEnv failed: %v", err)
+	}
+
+	mockedPullRequest := mockedEnv.GetPullRequest()
+	mockedPullRequestOwner := mockedPullRequest.Base.Repo.Owner.GetLogin()
+	mockedPullRequestRepoName := mockedPullRequest.Base.Repo.GetName()
+	mockedPullRequestNumber := mockedPullRequest.GetNumber()
+
+	gotFiles, err := utils.GetPullRequestFiles(
+		mockedEnv.GetCtx(),
+		mockedEnv.GetClient(),
+		mockedPullRequestOwner,
+		mockedPullRequestRepoName,
+		mockedPullRequestNumber,
+	)
+
+	assert.Nil(t, err)
+	assert.Equal(t, wantFiles, gotFiles)
+}
