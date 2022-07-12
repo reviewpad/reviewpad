@@ -26,21 +26,24 @@ func TestComment(t *testing.T) {
 	gotComment := ""
 
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
-		mock.WithRequestMatch(
-			mock.GetReposIssuesCommentsByOwnerByRepoByIssueNumber,
-			[]*github.IssueComment{},
-		),
-		mock.WithRequestMatchHandler(
-			mock.PostReposIssuesCommentsByOwnerByRepoByIssueNumber,
-			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				rawBody, _ := ioutil.ReadAll(r.Body)
-				body := github.IssueComment{}
+		[]mock.MockBackendOption{
+			mock.WithRequestMatch(
+				mock.GetReposIssuesCommentsByOwnerByRepoByIssueNumber,
+				[]*github.IssueComment{},
+			),
+			mock.WithRequestMatchHandler(
+				mock.PostReposIssuesCommentsByOwnerByRepoByIssueNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					rawBody, _ := ioutil.ReadAll(r.Body)
+					body := github.IssueComment{}
 
-				json.Unmarshal(rawBody, &body)
+					json.Unmarshal(rawBody, &body)
 
-				gotComment = *body.Body
-			}),
-		),
+					gotComment = *body.Body
+				}),
+			),
+		},
+		nil,
 	)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)

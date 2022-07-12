@@ -17,7 +17,7 @@ import (
 var contains = plugins_aladino.PluginBuiltIns().Functions["contains"].Code
 
 func TestContainsTrue(t *testing.T) {
-	mockedEnv, err := mocks_aladino.MockDefaultEnv()
+	mockedEnv, err := mocks_aladino.MockDefaultEnv(nil, nil)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
@@ -36,7 +36,7 @@ func TestContainsTrue(t *testing.T) {
 }
 
 func TestContainsFalse(t *testing.T) {
-	mockedEnv, err := mocks_aladino.MockDefaultEnv()
+	mockedEnv, err := mocks_aladino.MockDefaultEnv(nil, nil)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}

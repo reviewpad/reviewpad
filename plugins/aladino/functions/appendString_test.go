@@ -17,7 +17,7 @@ import (
 var appendString = plugins_aladino.PluginBuiltIns().Functions["append"].Code
 
 func TestAppendString(t *testing.T) {
-	mockedEnv, err := mocks_aladino.MockDefaultEnv()
+	mockedEnv, err := mocks_aladino.MockDefaultEnv(nil, nil)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}

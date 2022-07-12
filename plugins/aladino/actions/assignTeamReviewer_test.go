@@ -25,7 +25,7 @@ type TeamReviewersRequestPostBody struct {
 }
 
 func TestAssignTeamReviewer_WhenNoTeamSlugsAreProvided(t *testing.T) {
-	mockedEnv, err := mocks_aladino.MockDefaultEnv()
+	mockedEnv, err := mocks_aladino.MockDefaultEnv(nil, nil)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
@@ -39,20 +39,23 @@ func TestAssignTeamReviewer_WhenNoTeamSlugsAreProvided(t *testing.T) {
 func TestAssignTeamReviewer(t *testing.T) {
 	teamA := "core"
 	teamB := "reviewpad-project"
-	wantTeamReviewers := []string{teamA, teamB}	
+	wantTeamReviewers := []string{teamA, teamB}
 	gotTeamReviewers := []string{}
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
-		mock.WithRequestMatchHandler(
-			mock.PostReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
-			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				rawBody, _ := ioutil.ReadAll(r.Body)
-				body := TeamReviewersRequestPostBody{}
+		[]mock.MockBackendOption{
+			mock.WithRequestMatchHandler(
+				mock.PostReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					rawBody, _ := ioutil.ReadAll(r.Body)
+					body := TeamReviewersRequestPostBody{}
 
-				json.Unmarshal(rawBody, &body)
+					json.Unmarshal(rawBody, &body)
 
-				gotTeamReviewers = body.TeamReviewers
-			}),
-		),
+					gotTeamReviewers = body.TeamReviewers
+				}),
+			),
+		},
+		nil,
 	)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)

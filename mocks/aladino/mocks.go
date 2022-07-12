@@ -7,6 +7,8 @@ package mocks_aladino
 import (
 	"context"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"time"
@@ -42,7 +44,7 @@ func GetDefaultMockPullRequestDetails() *github.PullRequest {
 		CreatedAt: &prDate,
 		Comments:  github.Int(6),
 		Commits:   github.Int(5),
-        Number:    github.Int(prNum),
+		Number:    github.Int(prNum),
 		Milestone: &github.Milestone{
 			Title: github.String("v1.0"),
 		},
@@ -81,20 +83,24 @@ func GetDefaultMockPullRequestDetailsWith(pr *github.PullRequest) *github.PullRe
 		defaultPullRequest.User = pr.User
 	}
 
-    if pr.Number != nil {
-        defaultPullRequest.Number = pr.Number
-    }
+	if pr.Number != nil {
+		defaultPullRequest.Number = pr.Number
+	}
 
-    if pr.Base != nil {
-        defaultPullRequest.Base = pr.Base
-    }
+	if pr.Base != nil {
+		defaultPullRequest.Base = pr.Base
+	}
 
-    if pr.Assignees != nil {
-        defaultPullRequest.Assignees = pr.Assignees
-    }
+	if pr.Assignees != nil {
+		defaultPullRequest.Assignees = pr.Assignees
+	}
 
     if pr.Commits != nil {
         defaultPullRequest.Commits = pr.Commits
+    }
+
+    if pr.RequestedReviewers != nil {
+       defaultPullRequest.RequestedReviewers = pr.RequestedReviewers
     }
 
 	return defaultPullRequest
@@ -146,7 +152,7 @@ func MockEnvWith(prOwner string, prRepoName string, prNum int, client *github.Cl
 // As for now, at least two github request need to be mocked in order to build Aladino Env, mainly:
 // - Get pull request details (i.e. /repos/{owner}/{repo}/pulls/{pull_number})
 // - Get pull request files (i.e. /repos/{owner}/{repo}/pulls/{pull_number}/files)
-func mockDefaultHttpClient(clientOptions ...mock.MockBackendOption) *http.Client {
+func mockDefaultHttpClient(clientOptions []mock.MockBackendOption) *http.Client {
 	defaultMocks := []mock.MockBackendOption{
 		mock.WithRequestMatchHandler(
 			// Mock request to get pull request details
@@ -169,16 +175,6 @@ func mockDefaultHttpClient(clientOptions ...mock.MockBackendOption) *http.Client
 	return mockHttpClientWith(mocks...)
 }
 
-// MockDefaultEnv mocks an Aladino Env with default values.
-func MockDefaultEnv(clientOptions ...mock.MockBackendOption) (aladino.Env, error) {
-	prOwner := defaultMockPrOwner
-	prRepoName := defaultMockPrRepoName
-	prNum := defaultMockPrNum
-	client := github.NewClient(mockDefaultHttpClient(clientOptions...))
-
-	return MockEnvWith(prOwner, prRepoName, prNum, client, nil)
-}
-
 // localRoundTripper is an http.RoundTripper that executes HTTP transactions
 // by using handler directly, instead of going over an HTTP connection.
 type localRoundTripper struct {
@@ -191,13 +187,35 @@ func (l localRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) 
 	return w.Result(), nil
 }
 
-func MockDefaultEvalEnvWithGQ(mux http.Handler, clientOptions ...mock.MockBackendOption) (aladino.Env, error) {
-    prOwner := defaultMockPrOwner
+// MockDefaultEnv mocks an Aladino Env with default values.
+func MockDefaultEnv(ghApiClientOptions []mock.MockBackendOption, ghGraphQLHandler func(http.ResponseWriter, *http.Request)) (aladino.Env, error) {
+	prOwner := defaultMockPrOwner
 	prRepoName := defaultMockPrRepoName
 	prNum := defaultMockPrNum
-	client := github.NewClient(mockDefaultHttpClient(clientOptions...))
+	client := github.NewClient(mockDefaultHttpClient(ghApiClientOptions))
 
-	clientGQL := githubv4.NewClient(&http.Client{Transport: localRoundTripper{handler: mux}})
+	// Handle GraphQL
+    var clientGQL *githubv4.Client
+    if ghGraphQLHandler != nil {
+        mux := http.NewServeMux()
+        mux.HandleFunc("/graphql", ghGraphQLHandler)
+        clientGQL = githubv4.NewClient(&http.Client{Transport: localRoundTripper{handler: mux}})
+    }
 
 	return MockEnvWith(prOwner, prRepoName, prNum, client, clientGQL)
+}
+
+func MustRead(r io.Reader) string {
+	b, err := ioutil.ReadAll(r)
+	if err != nil {
+		panic(err)
+	}
+	return string(b)
+}
+
+func MustWrite(w io.Writer, s string) {
+	_, err := io.WriteString(w, s)
+	if err != nil {
+		panic(err)
+	}
 }

@@ -19,7 +19,7 @@ var commentCount = plugins_aladino.PluginBuiltIns().Functions["commentCount"].Co
 func TestCommentCount(t *testing.T) {
 	wantCommentCount := aladino.BuildIntValue(6)
 
-	mockedEnv, err := mocks_aladino.MockDefaultEnv()
+	mockedEnv, err := mocks_aladino.MockDefaultEnv(nil, nil)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}

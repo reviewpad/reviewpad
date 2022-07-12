@@ -28,16 +28,19 @@ func TestCommentOnce_WhenGetCommentsRequestFails(t *testing.T) {
 	failMessage := "GetCommentRequestFail"
 	comment := "Lorem Ipsum"
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
-		mock.WithRequestMatchHandler(
-			mock.GetReposIssuesCommentsByOwnerByRepoByIssueNumber,
-			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				mock.WriteError(
-					w,
-					http.StatusInternalServerError,
-					failMessage,
-				)
-			}),
-		),
+		[]mock.MockBackendOption{
+			mock.WithRequestMatchHandler(
+				mock.GetReposIssuesCommentsByOwnerByRepoByIssueNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					mock.WriteError(
+						w,
+						http.StatusInternalServerError,
+						failMessage,
+					)
+				}),
+			),
+		},
+		nil,
 	)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
@@ -54,21 +57,24 @@ func TestCommentOnce_WhenCommentAlreadyExists(t *testing.T) {
 	commentCreated := false
 
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
-		mock.WithRequestMatch(
-			mock.GetReposIssuesCommentsByOwnerByRepoByIssueNumber,
-			[]*github.IssueComment{
-				{
-					Body: github.String(fmt.Sprintf("%v%v", ReviewpadCommentAnnotation, existingComment)),
+		[]mock.MockBackendOption{
+			mock.WithRequestMatch(
+				mock.GetReposIssuesCommentsByOwnerByRepoByIssueNumber,
+				[]*github.IssueComment{
+					{
+						Body: github.String(fmt.Sprintf("%v%v", ReviewpadCommentAnnotation, existingComment)),
+					},
 				},
-			},
-		),
-		mock.WithRequestMatchHandler(
-			mock.PostReposIssuesCommentsByOwnerByRepoByIssueNumber,
-			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				// If the create comment request was performed then the comment was created
-				commentCreated = true
-			}),
-		),
+			),
+			mock.WithRequestMatchHandler(
+				mock.PostReposIssuesCommentsByOwnerByRepoByIssueNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					// If the create comment request was performed then the comment was created
+					commentCreated = true
+				}),
+			),
+		},
+		nil,
 	)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
@@ -86,21 +92,24 @@ func TestCommentOnce_WhenFirstTime(t *testing.T) {
 	addedComment := ""
 
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
-		mock.WithRequestMatch(
-			mock.GetReposIssuesCommentsByOwnerByRepoByIssueNumber,
-			[]*github.IssueComment{},
-		),
-		mock.WithRequestMatchHandler(
-			mock.PostReposIssuesCommentsByOwnerByRepoByIssueNumber,
-			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				rawBody, _ := ioutil.ReadAll(r.Body)
-				body := github.IssueComment{}
+		[]mock.MockBackendOption{
+			mock.WithRequestMatch(
+				mock.GetReposIssuesCommentsByOwnerByRepoByIssueNumber,
+				[]*github.IssueComment{},
+			),
+			mock.WithRequestMatchHandler(
+				mock.PostReposIssuesCommentsByOwnerByRepoByIssueNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					rawBody, _ := ioutil.ReadAll(r.Body)
+					body := github.IssueComment{}
 
-				json.Unmarshal(rawBody, &body)
+					json.Unmarshal(rawBody, &body)
 
-				addedComment = *body.Body
-			}),
-		),
+					addedComment = *body.Body
+				}),
+			),
+		},
+		nil,
 	)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
