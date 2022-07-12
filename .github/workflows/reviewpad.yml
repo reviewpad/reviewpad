@@ -1,7 +1,7 @@
 name: Reviewpad
 
 on:
-  pull_request:
+  pull_request_target:
   workflow_run:
     workflows: ["Pull Request Build"]
     types:
