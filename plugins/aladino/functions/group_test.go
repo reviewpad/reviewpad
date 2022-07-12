@@ -43,7 +43,7 @@ func TestGroup_WhenGroupIsNonExisting(t *testing.T) {
 	}
 
   // Make sure that the group 'techLeads' doesn't exist
-  delete(mockedEnv.GetRegisterMap(), "techLeads")
+  delete(mockedEnv.GetRegisterMap(), groupName)
 
   args := []aladino.Value{aladino.BuildStringValue(groupName)}
   gotGroup, err := group(mockedEnv, args)
