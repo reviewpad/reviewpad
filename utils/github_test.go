@@ -11,13 +11,14 @@ import (
 	"testing"
 
 	"github.com/google/go-github/v42/github"
+	"github.com/migueleliasweb/go-github-mock/src/mock"
 	mocks_aladino "github.com/reviewpad/reviewpad/v2/mocks/aladino"
 	"github.com/reviewpad/reviewpad/v2/utils"
 	"github.com/stretchr/testify/assert"
 )
 
 type paginatedRequestResult struct {
-    pageNum int
+	pageNum int
 }
 
 func TestGetPullRequestOwnerName(t *testing.T) {
@@ -216,4 +217,78 @@ func TestParseNumPages(t *testing.T) {
 	gotNumPages := utils.ParseNumPages(resp)
 
 	assert.Equal(t, wantNumPages, gotNumPages)
+}
+
+func TestGetPullRequestComments_WhenListCommentsRequestFails(t *testing.T) {
+	failMessage := "ListCommentsRequestFail"
+	mockedEnv, err := mocks_aladino.MockDefaultEnv(
+		[]mock.MockBackendOption{
+			mock.WithRequestMatchHandler(
+				mock.GetReposIssuesCommentsByOwnerByRepoByIssueNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					mock.WriteError(
+						w,
+						http.StatusInternalServerError,
+						failMessage,
+					)
+				}),
+			),
+		},
+		nil,
+	)
+	if err != nil {
+		log.Fatalf("mockDefaultEnv failed: %v", err)
+	}
+
+	mockedPullRequest := mockedEnv.GetPullRequest()
+	mockedPullRequestOwner := mockedPullRequest.Base.Repo.Owner.GetLogin()
+	mockedPullRequestRepoName := mockedPullRequest.Base.Repo.GetName()
+	mockedPullRequestNumber := mockedPullRequest.GetNumber()
+
+	comments, err := utils.GetPullRequestComments(
+		mockedEnv.GetCtx(),
+		mockedEnv.GetClient(),
+		mockedPullRequestOwner,
+		mockedPullRequestRepoName,
+		mockedPullRequestNumber,
+		&github.IssueListCommentsOptions{},
+	)
+
+	assert.Nil(t, comments)
+	assert.Equal(t, err.(*github.ErrorResponse).Message, failMessage)
+}
+
+func TestGetPullRequestComments(t *testing.T) {
+	wantComments := []*github.IssueComment{
+		{Body: github.String("Lorem Ipsum")},
+	}
+	mockedEnv, err := mocks_aladino.MockDefaultEnv(
+		[]mock.MockBackendOption{
+			mock.WithRequestMatch(
+				mock.GetReposIssuesCommentsByOwnerByRepoByIssueNumber,
+				wantComments,
+			),
+		},
+		nil,
+	)
+	if err != nil {
+		log.Fatalf("mockDefaultEnv failed: %v", err)
+	}
+
+	mockedPullRequest := mockedEnv.GetPullRequest()
+	mockedPullRequestOwner := mockedPullRequest.Base.Repo.Owner.GetLogin()
+	mockedPullRequestRepoName := mockedPullRequest.Base.Repo.GetName()
+	mockedPullRequestNumber := mockedPullRequest.GetNumber()
+
+	gotComments, err := utils.GetPullRequestComments(
+		mockedEnv.GetCtx(),
+		mockedEnv.GetClient(),
+		mockedPullRequestOwner,
+		mockedPullRequestRepoName,
+		mockedPullRequestNumber,
+		&github.IssueListCommentsOptions{},
+	)
+
+	assert.Nil(t, err)
+	assert.Equal(t, wantComments, gotComments)
 }
