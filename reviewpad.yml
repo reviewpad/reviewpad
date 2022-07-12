@@ -54,6 +54,11 @@ groups:
     spec: '$append($group("maintainers"), $group("rising-stars"))'
 
 rules:
+  - name: tautology
+    kind: patch
+    description: always true
+    spec: 'true'
+
   - name: is-small
     kind: patch
     description: small pull request
@@ -181,13 +186,16 @@ workflows:
         extra-actions:
           - '$addLabel("large")'
 
-  - name: require-linear-history
-    description: Require linear history
+  - name: lint-commits
+    description: Lint commits
     always-run: true
     if:
       - rule: does-not-have-linear-history
-    then:
-      - '$error("This pull request does not have linear history - please fix this!")'
+        extra-actions:
+          - '$warn("This pull request does not have linear history - please fix this!")'
+      - rule: tautology
+        extra-actions:
+          - '$commitLint()'
 
   - name: unauthorized-license-workflow
     description: Protect unauthorized modifications to the LICENSE
