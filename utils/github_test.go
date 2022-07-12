@@ -319,3 +319,82 @@ func TestGetPullRequestFiles(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, wantFiles, gotFiles)
 }
+
+func TestGetPullRequestReviewers_WhenListReviewersRequestFails(t *testing.T) {
+	failMessage := "ListReviewersRequestFail"
+	mockedEnv, err := mocks_aladino.MockDefaultEnv(
+		[]mock.MockBackendOption{
+			mock.WithRequestMatchHandler(
+				mock.GetReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					mock.WriteError(
+						w,
+						http.StatusInternalServerError,
+						failMessage,
+					)
+				}),
+			),
+		},
+		nil,
+	)
+	if err != nil {
+		log.Fatalf("mockDefaultEnv failed: %v", err)
+	}
+
+	mockedPullRequest := mockedEnv.GetPullRequest()
+	mockedPullRequestOwner := mockedPullRequest.Base.Repo.Owner.GetLogin()
+	mockedPullRequestRepoName := mockedPullRequest.Base.Repo.GetName()
+	mockedPullRequestNumber := mockedPullRequest.GetNumber()
+
+	reviewers, err := utils.GetPullRequestReviewers(
+		mockedEnv.GetCtx(),
+		mockedEnv.GetClient(),
+		mockedPullRequestOwner,
+		mockedPullRequestRepoName,
+		mockedPullRequestNumber,
+		nil,
+	)
+
+	assert.Nil(t, reviewers)
+	assert.Equal(t, err.(*github.ErrorResponse).Message, failMessage)
+}
+
+func TestGetPullRequestReviewers(t *testing.T) {
+	wantReviewers := &github.Reviewers{
+		Users: []*github.User{
+			{Login: github.String("mary")},
+		},
+		Teams: []*github.Team{
+			{Slug: github.String("reviewpad-team")},
+		},
+	}
+	mockedEnv, err := mocks_aladino.MockDefaultEnv(
+		[]mock.MockBackendOption{
+			mock.WithRequestMatch(
+				mock.GetReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
+				wantReviewers,
+			),
+		},
+		nil,
+	)
+	if err != nil {
+		log.Fatalf("mockDefaultEnv failed: %v", err)
+	}
+
+	mockedPullRequest := mockedEnv.GetPullRequest()
+	mockedPullRequestOwner := mockedPullRequest.Base.Repo.Owner.GetLogin()
+	mockedPullRequestRepoName := mockedPullRequest.Base.Repo.GetName()
+	mockedPullRequestNumber := mockedPullRequest.GetNumber()
+
+	gotReviewers, err := utils.GetPullRequestReviewers(
+		mockedEnv.GetCtx(),
+		mockedEnv.GetClient(),
+		mockedPullRequestOwner,
+		mockedPullRequestRepoName,
+		mockedPullRequestNumber,
+		nil,
+	)
+
+	assert.Nil(t, err)
+	assert.Equal(t, wantReviewers, gotReviewers)
+}
