@@ -95,79 +95,61 @@ func TestHasLinkedIssues_WhenHasLinkedIssues(t *testing.T) {
 	assert.Equal(t, wantVal, gotVal)
 }
 
-// func TestHasLinkedIssues_WhenNoLinkedIssues(t *testing.T) {
-// 	wantQuery := fmt.Sprintf(
-// 		"{\"query\":\"query($pullRequestNumber:Int!$repositoryName:String!$repositoryOwner:String!){repository(owner: $repositoryOwner, name: $repositoryName){pullRequest(number: $pullRequestNumber){closingIssuesReferences{totalCount}}}}\",\"variables\":{\"pullRequestNumber\":%d,\"repositoryName\":%q,\"repositoryOwner\":%q}}\n",
-// 		defaultMockPrNum,
-// 		defaultMockPrRepoName,
-// 		defaultMockPrOwner,
-// 	)
-// 	gotQuery := ""
+func TestHasLinkedIssues_WhenNoLinkedIssues(t *testing.T) {
+    mockedPrNum := 6
+	mockedPrOwner := "foobar"
+	mockedPrRepoName := "default-mock-repo"
+	mockedAuthorLogin := "john"
+	mockedGraphQLQuery := fmt.Sprintf(
+		"{\"query\":\"query($pullRequestNumber:Int!$repositoryName:String!$repositoryOwner:String!){repository(owner: $repositoryOwner, name: $repositoryName){pullRequest(number: $pullRequestNumber){closingIssuesReferences{totalCount}}}}\",\"variables\":{\"pullRequestNumber\":%d,\"repositoryName\":%q,\"repositoryOwner\":%q}}\n",
+		mockedPrNum,
+		mockedPrRepoName,
+		mockedPrOwner,
+	)
+    mockedPullRequest := mocks_aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
+		Number: github.Int(mockedPrNum),
+		User:   &github.User{Login: github.String(mockedAuthorLogin)},
+		Base: &github.PullRequestBranch{
+			Repo: &github.Repository{
+				Owner: &github.User{
+					Login: github.String(mockedPrOwner),
+				},
+				Name: github.String(mockedPrRepoName),
+			},
+		},
+	})
+    mockedEnv, err := mocks_aladino.MockDefaultEnv(
+		[]mock.MockBackendOption{
+			mock.WithRequestMatchHandler(
+				mock.GetReposPullsByOwnerByRepoByPullNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+					w.Write(mock.MustMarshal(mockedPullRequest))
+				}),
+			),
+		},
+		func(w http.ResponseWriter, req *http.Request) {
+			query := mocks_aladino.MustRead(req.Body)
+			switch query {
+			case mockedGraphQLQuery:
+				mocks_aladino.MustWrite(w, `{"data": {
+                    "repository": {
+                        "pullRequest": {
+                            "closingIssuesReferences": {
+                                "totalCount": 0
+                            }
+                        }
+                    }
+                }}`)
+			}
+		},
+	)
+	if err != nil {
+		log.Fatalf("mockDefaultEvalEnvWithGQ failed: %v", err)
+	}
+	wantVal := aladino.BuildBoolValue(false)
+	gotVal, err := hasLinkedIssues(mockedEnv, []aladino.Value{})
 
-// 	mux := http.NewServeMux()
-// 	mux.HandleFunc("/graphql", func(w http.ResponseWriter, req *http.Request) {
-// 		if got, want := req.Method, http.MethodPost; got != want {
-// 			t.Errorf("got request method: %v, want: %v", got, want)
-// 		}
+	assert.Nil(t, err)
+	assert.Equal(t, wantVal, gotVal)
+}
 
-// 		gotQuery = mustRead(req.Body)
-
-// 		mustWrite(w, `{"data": {
-// 			"repository": {
-// 				"pullRequest": {
-// 					"closingIssuesReferences": {
-// 						"totalCount": 0
-// 					}
-// 				}
-// 			}
-// 		}}`)
-// 	})
-
-// 	authorLogin := "john"
-// 	mockedPullRequest := mocks_aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
-// 		Number: github.Int(defaultMockPrNum),
-// 		User:   &github.User{Login: github.String(authorLogin)},
-// 		Base: &github.PullRequestBranch{
-// 			Repo: &github.Repository{
-// 				Owner: &github.User{
-// 					Login: github.String(defaultMockPrOwner),
-// 				},
-// 				Name: github.String(defaultMockPrRepoName),
-// 			},
-// 		},
-// 	})
-// 	mockedEnv, err := mocks_aladino.MockDefaultEvalEnvWithGQ(
-// 		mux,
-// 		mock.WithRequestMatchHandler(
-// 			mock.GetReposPullsByOwnerByRepoByPullNumber,
-// 			http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-// 				w.Write(mock.MustMarshal(mockedPullRequest))
-// 			}),
-// 		),
-// 	)
-// 	if err != nil {
-// 		log.Fatalf("mockDefaultEvalEnvWithGQ failed: %v", err)
-// 	}
-
-// 	wantVal := aladino.BuildBoolValue(false)
-// 	gotVal, err := hasLinkedIssues(mockedEnv, []aladino.Value{})
-
-// 	assert.Nil(t, err)
-// 	assert.Equal(t, wantQuery, gotQuery)
-// 	assert.Equal(t, wantVal, gotVal)
-// }
-
-// func mustRead(r io.Reader) string {
-// 	b, err := ioutil.ReadAll(r)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// 	return string(b)
-// }
-
-// func mustWrite(w io.Writer, s string) {
-// 	_, err := io.WriteString(w, s)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// }
