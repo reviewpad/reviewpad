@@ -452,3 +452,71 @@ func TestGetRepoCollaborators(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, wantCollaborators, gotCollaborators)
 }
+
+func TestGetIssuesAvailableAssignees_WhenListAssigneesRequestFails(t *testing.T) {
+	failMessage := "ListAssigneesRequestFail"
+	mockedEnv, err := mocks_aladino.MockDefaultEnv(
+		[]mock.MockBackendOption{
+			mock.WithRequestMatchHandler(
+				mock.GetReposAssigneesByOwnerByRepo,
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					mock.WriteError(
+						w,
+						http.StatusInternalServerError,
+						failMessage,
+					)
+				}),
+			),
+		},
+		nil,
+	)
+	if err != nil {
+		log.Fatalf("mockDefaultEnv failed: %v", err)
+	}
+
+	mockedPullRequest := mockedEnv.GetPullRequest()
+	mockedPullRequestOwner := mockedPullRequest.GetUser().GetLogin()
+	mockedPullRequestRepo := mockedPullRequest.GetBase().GetRepo().GetName()
+
+	gotAssignees, err := utils.GetIssuesAvailableAssignees(
+		mockedEnv.GetCtx(),
+		mockedEnv.GetClient(),
+		mockedPullRequestOwner,
+		mockedPullRequestRepo,
+	)
+
+	assert.Nil(t, gotAssignees)
+	assert.Equal(t, err.(*github.ErrorResponse).Message, failMessage)
+}
+
+func TestGetIssuesAvailableAssignees(t *testing.T) {
+	wantAssignees := []*github.User{
+		{Login: github.String("jane")},
+	}
+	mockedEnv, err := mocks_aladino.MockDefaultEnv(
+		[]mock.MockBackendOption{
+			mock.WithRequestMatch(
+				mock.GetReposAssigneesByOwnerByRepo,
+				wantAssignees,
+			),
+		},
+		nil,
+	)
+	if err != nil {
+		log.Fatalf("mockDefaultEnv failed: %v", err)
+	}
+
+	mockedPullRequest := mockedEnv.GetPullRequest()
+	mockedPullRequestOwner := mockedPullRequest.GetUser().GetLogin()
+	mockedPullRequestRepo := mockedPullRequest.GetBase().GetRepo().GetName()
+
+	gotAssignees, err := utils.GetIssuesAvailableAssignees(
+		mockedEnv.GetCtx(),
+		mockedEnv.GetClient(),
+		mockedPullRequestOwner,
+		mockedPullRequestRepo,
+	)
+
+	assert.Nil(t, err)
+	assert.Equal(t, wantAssignees, gotAssignees)
+}
