@@ -23,16 +23,19 @@ func TestTeam_WhenListTeamMembersBySlugRequestFails(t *testing.T) {
 	teamSlug := "reviewpad-team"
 	failMessage := "ListTeamMembersBySlugRequestFail"
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
-		mock.WithRequestMatchHandler(
-			mock.GetOrgsTeamsMembersByOrgByTeamSlug,
-			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				mock.WriteError(
-					w,
-					http.StatusInternalServerError,
-					failMessage,
-				)
-			}),
-		),
+		[]mock.MockBackendOption{
+			mock.WithRequestMatchHandler(
+				mock.GetOrgsTeamsMembersByOrgByTeamSlug,
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					mock.WriteError(
+						w,
+						http.StatusInternalServerError,
+						failMessage,
+					)
+				}),
+			),
+		},
+		nil,
 	)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
@@ -47,26 +50,27 @@ func TestTeam_WhenListTeamMembersBySlugRequestFails(t *testing.T) {
 
 func TestTeam(t *testing.T) {
 	teamSlug := "reviewpad-team"
-    ghMembers := []*github.User{
-        {Login: github.String("john")},
-        {Login: github.String("jane")},
-    }
+	ghMembers := []*github.User{
+		{Login: github.String("john")},
+		{Login: github.String("jane")},
+	}
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
-		mock.WithRequestMatch(
-			mock.GetOrgsTeamsMembersByOrgByTeamSlug,
-			ghMembers,
-		),
+		[]mock.MockBackendOption{
+			mock.WithRequestMatch(
+				mock.GetOrgsTeamsMembersByOrgByTeamSlug,
+				ghMembers,
+			),
+		},
+		nil,
 	)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
 
-    members := make([]aladino.Value, len(ghMembers))
-    for i, ghMember := range ghMembers {
-		members[i] = aladino.BuildStringValue(ghMember.GetLogin())
-	}
-
-    wantMembers := aladino.BuildArrayValue(members)
+	wantMembers := aladino.BuildArrayValue([]aladino.Value{
+        aladino.BuildStringValue("john"),
+        aladino.BuildStringValue("jane"),
+    })
 
 	args := []aladino.Value{aladino.BuildStringValue(teamSlug)}
 	gotMembers, err := team(mockedEnv, args)
