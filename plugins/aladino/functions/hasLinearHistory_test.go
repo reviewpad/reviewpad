@@ -22,16 +22,19 @@ var hasLinearHistory = plugins_aladino.PluginBuiltIns().Functions["hasLinearHist
 func TestHasLinearHistory_WhenListCommitsRequestFails(t *testing.T) {
 	failMessage := "ListCommitsRequestFail"
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
-		mock.WithRequestMatchHandler(
-			mock.GetReposPullsCommitsByOwnerByRepoByPullNumber,
-			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				mock.WriteError(
-					w,
-					http.StatusInternalServerError,
-					failMessage,
-				)
-			}),
-		),
+		[]mock.MockBackendOption{
+			mock.WithRequestMatchHandler(
+				mock.GetReposPullsCommitsByOwnerByRepoByPullNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					mock.WriteError(
+						w,
+						http.StatusInternalServerError,
+						failMessage,
+					)
+				}),
+			),
+		},
+		nil,
 	)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
@@ -61,10 +64,13 @@ func TestHasLinearHistory_WhenFalse(t *testing.T) {
 		},
 	}
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
-		mock.WithRequestMatch(
-			mock.GetReposPullsCommitsByOwnerByRepoByPullNumber,
-			repoCommits,
-		),
+		[]mock.MockBackendOption{
+			mock.WithRequestMatch(
+				mock.GetReposPullsCommitsByOwnerByRepoByPullNumber,
+				repoCommits,
+			),
+		},
+		nil,
 	)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
@@ -80,7 +86,7 @@ func TestHasLinearHistory_WhenFalse(t *testing.T) {
 }
 
 func TestHasLinearHistory_WhenTrue(t *testing.T) {
-    repoCommits := []*github.RepositoryCommit{
+	repoCommits := []*github.RepositoryCommit{
 		{
 			Commit: &github.Commit{
 				Message: github.String("Lorem Ipsum"),
@@ -94,10 +100,13 @@ func TestHasLinearHistory_WhenTrue(t *testing.T) {
 		},
 	}
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
-		mock.WithRequestMatch(
-			mock.GetReposPullsCommitsByOwnerByRepoByPullNumber,
-			repoCommits,
-		),
+		[]mock.MockBackendOption{
+			mock.WithRequestMatch(
+				mock.GetReposPullsCommitsByOwnerByRepoByPullNumber,
+				repoCommits,
+			),
+		},
+		nil,
 	)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
