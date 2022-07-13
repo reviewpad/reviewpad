@@ -90,29 +90,21 @@ func GetDefaultMockPullRequestDetailsWith(pr *github.PullRequest) *github.PullRe
 		defaultPullRequest.Number = pr.Number
 	}
 
-	if pr.Base != nil {
-		defaultPullRequest.Base = pr.Base
-	}
-
     if pr.Head != nil {
         defaultPullRequest.Head = pr.Head
     }
 
-    if pr.Assignees != nil {
-        defaultPullRequest.Assignees = pr.Assignees
-    }
-
-    if pr.Commits != nil {
-        defaultPullRequest.Commits = pr.Commits
-    }
-    
-    if pr.RequestedReviewers != nil {
-		defaultPullRequest.RequestedReviewers = pr.RequestedReviewers
+	if pr.Base != nil {
+		defaultPullRequest.Base = pr.Base
 	}
 
-    if pr.RequestedReviewers != nil {
-       defaultPullRequest.RequestedReviewers = pr.RequestedReviewers
-    }
+	if pr.Assignees != nil {
+		defaultPullRequest.Assignees = pr.Assignees
+	}
+
+	if pr.Commits != nil {
+		defaultPullRequest.Commits = pr.Commits
+	}
 
     if pr.Labels != nil {
         defaultPullRequest.Labels = pr.Labels
@@ -129,6 +121,14 @@ func GetDefaultMockPullRequestDetailsWith(pr *github.PullRequest) *github.PullRe
     if pr.RequestedTeams != nil {
         defaultPullRequest.RequestedTeams = pr.RequestedTeams
     }
+
+    if pr.Additions != nil {
+		defaultPullRequest.Additions = pr.Additions
+	}
+    
+	if pr.Deletions != nil {
+		defaultPullRequest.Deletions = pr.Deletions
+	}
 
 	return defaultPullRequest
 }
