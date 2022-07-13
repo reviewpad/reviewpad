@@ -73,6 +73,9 @@ func GetDefaultMockPullRequestDetails() *github.PullRequest {
 			},
 			Ref: github.String("master"),
 		},
+		RequestedReviewers: []*github.User{
+			{Login: github.String("jane")},
+		},
 	}
 }
 
@@ -98,6 +101,10 @@ func GetDefaultMockPullRequestDetailsWith(pr *github.PullRequest) *github.PullRe
     if pr.Commits != nil {
         defaultPullRequest.Commits = pr.Commits
     }
+    
+    if pr.RequestedReviewers != nil {
+		defaultPullRequest.RequestedReviewers = pr.RequestedReviewers
+	}
 
     if pr.RequestedReviewers != nil {
        defaultPullRequest.RequestedReviewers = pr.RequestedReviewers
