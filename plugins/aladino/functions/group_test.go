@@ -19,7 +19,7 @@ var group = plugins_aladino.PluginBuiltIns().Functions["group"].Code
 
 func TestGroup(t *testing.T) {
   groupName := "techLeads"
-  mockedEnv, err := mocks_aladino.MockDefaultEnv()
+  mockedEnv, err := mocks_aladino.MockDefaultEnv(nil, nil)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
@@ -37,7 +37,7 @@ func TestGroup(t *testing.T) {
 
 func TestGroup_WhenGroupIsNonExisting(t *testing.T) {
   groupName := "techLeads"
-  mockedEnv, err := mocks_aladino.MockDefaultEnv()
+  mockedEnv, err := mocks_aladino.MockDefaultEnv(nil, nil)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
