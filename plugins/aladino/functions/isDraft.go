@@ -5,8 +5,6 @@
 package plugins_aladino_functions
 
 import (
-	"fmt"
-
 	"github.com/reviewpad/reviewpad/v2/lang/aladino"
 )
 
@@ -18,10 +16,5 @@ func IsDraft() *aladino.BuiltInFunction {
 }
 
 func isDraftCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
-	pullRequest := e.GetPullRequest()
-	if pullRequest == nil {
-		return nil, fmt.Errorf("isDraft: pull request is nil")
-	}
-
-	return aladino.BuildBoolValue(pullRequest.GetDraft()), nil
+	return aladino.BuildBoolValue(e.GetPullRequest().GetDraft()), nil
 }

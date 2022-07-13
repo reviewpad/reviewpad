@@ -17,31 +17,6 @@ import (
 
 var isDraft = plugins_aladino.PluginBuiltIns().Functions["isDraft"].Code
 
-func TestIsDraftOnNilPullRequest(t *testing.T) {
-	mockedEnv, err := mocks_aladino.MockDefaultEnv(nil, nil)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
-
-	mockedEnvWithNilPullRequest := &aladino.BaseEnv{
-		Ctx:         mockedEnv.GetCtx(),
-		Client:      mockedEnv.GetClient(),
-		ClientGQL:   mockedEnv.GetClientGQL(),
-		Collector:   mockedEnv.GetCollector(),
-		PullRequest: nil,
-		Patch:       mockedEnv.GetPatch(),
-		RegisterMap: mockedEnv.GetRegisterMap(),
-		BuiltIns:    mockedEnv.GetBuiltIns(),
-		Report:      mockedEnv.GetReport(),
-	}
-
-	args := []aladino.Value{}
-	gotVal, err := isDraft(mockedEnvWithNilPullRequest, args)
-
-	assert.Nil(t, gotVal)
-	assert.EqualError(t, err, "isDraft: pull request is nil")
-}
-
 func TestIsDraft_WhenTrue(t *testing.T) {
     mockedEnv, err := mocks_aladino.MockDefaultEnv(nil, nil)
 	if err != nil {
