@@ -44,7 +44,7 @@ func buildGroupAST(typeOf engine.GroupType, expr, paramExpr, whereExpr string) (
 			return nil, err
 		}
 
-		return buildFilter(paramExpr, whereExprAST)
+		return BuildFilter(paramExpr, whereExprAST)
 	} else {
 		return Parse(expr)
 	}

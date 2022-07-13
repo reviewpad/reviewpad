@@ -4,18 +4,18 @@
 
 package aladino
 
-func buildFilter(param string, condition Expr) (Expr, error) {
-	organizationAST := functionCall(
-		variable("organization"),
+func BuildFilter(param string, condition Expr) (Expr, error) {
+	organizationAST := FunctionCallConstr(
+		VariableConstr("organization"),
 		[]Expr{},
 	)
 
-	ast := functionCall(
-		variable("filter"),
+	ast := FunctionCallConstr(
+		VariableConstr("filter"),
 		[]Expr{
 			organizationAST,
-			lambda(
-				[]Expr{typedExpr(variable(param), BuildStringType())},
+			LambdaConstr(
+				[]Expr{TypedExprConstr(VariableConstr(param), BuildStringType())},
 				condition,
 			),
 		},

@@ -551,7 +551,7 @@ Aladinodefault:
 	case 14:
 		AladinoDollar = AladinoS[Aladinopt-2 : Aladinopt+1]
 		{
-			AladinoVAL.ast = variable(AladinoDollar[2].str)
+			AladinoVAL.ast = VariableConstr(AladinoDollar[2].str)
 		}
 	case 15:
 		AladinoDollar = AladinoS[Aladinopt-1 : Aladinopt+1]
@@ -566,7 +566,7 @@ Aladinodefault:
 	case 17:
 		AladinoDollar = AladinoS[Aladinopt-5 : Aladinopt+1]
 		{
-			AladinoVAL.ast = functionCall(variable(AladinoDollar[2].str), AladinoDollar[4].astList)
+			AladinoVAL.ast = FunctionCallConstr(VariableConstr(AladinoDollar[2].str), AladinoDollar[4].astList)
 		}
 	case 18:
 		AladinoDollar = AladinoS[Aladinopt-3 : Aladinopt+1]

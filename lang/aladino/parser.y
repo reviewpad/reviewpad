@@ -57,11 +57,11 @@ expr :
     | NUMBER             { $$ = intConst($1) }
     | STRINGLITERAL      { $$ = stringConst($1) }
     | '[' expr_list ']'  { $$ = array($2) }
-    | '$' IDENTIFIER     { $$ = variable($2) }
+    | '$' IDENTIFIER     { $$ = VariableConstr($2) }
     | TRUE               { $$ = boolConst(true) }
     | FALSE              { $$ = boolConst(false) }
     | '$' IDENTIFIER '(' expr_list ')' 
-        { $$ = functionCall(variable($2), $4) }
+        { $$ = FunctionCallConstr(VariableConstr($2), $4) }
 ;
 
 expr_list :
