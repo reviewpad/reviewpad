@@ -118,6 +118,10 @@ func GetDefaultMockPullRequestDetailsWith(pr *github.PullRequest) *github.PullRe
         defaultPullRequest.Labels = pr.Labels
     }
 
+    if pr.Milestone != nil {
+        defaultPullRequest.Milestone = pr.Milestone
+    }
+
 	return defaultPullRequest
 }
 
