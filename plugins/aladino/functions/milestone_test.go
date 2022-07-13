@@ -27,22 +27,25 @@ func TestMilestone(t *testing.T) {
 		},
 	})
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
-		mock.WithRequestMatchHandler(
-			mock.GetReposPullsByOwnerByRepoByPullNumber,
-			http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-				w.Write(mock.MustMarshal(mockedPullRequest))
-			}),
-		),
+		[]mock.MockBackendOption{
+			mock.WithRequestMatchHandler(
+				mock.GetReposPullsByOwnerByRepoByPullNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+					w.Write(mock.MustMarshal(mockedPullRequest))
+				}),
+			),
+		},
+		nil,
 	)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
 
 	args := []aladino.Value{}
-    gotMilestoneTitle, err := milestone(mockedEnv, args)
+	gotMilestoneTitle, err := milestone(mockedEnv, args)
 
-    wantMilestoneTitle := aladino.BuildStringValue(milestoneTitle)
+	wantMilestoneTitle := aladino.BuildStringValue(milestoneTitle)
 
-    assert.Nil(t, err)
-    assert.Equal(t, wantMilestoneTitle, gotMilestoneTitle)
+	assert.Nil(t, err)
+	assert.Equal(t, wantMilestoneTitle, gotMilestoneTitle)
 }
