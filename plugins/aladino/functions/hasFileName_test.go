@@ -19,9 +19,8 @@ import (
 
 var hasFileName = plugins_aladino.PluginBuiltIns().Functions["hasFileName"].Code
 
-const defaultMockPrFileName = "default-mock-repo/file1.ts"
-
 func TestHasFileName_WhenTrue(t *testing.T) {
+	defaultMockPrFileName := "default-mock-repo/file1.ts"
 	mockedPullRequestFileList := &[]*github.CommitFile{
 		{
 			Filename: github.String(defaultMockPrFileName),
@@ -29,12 +28,15 @@ func TestHasFileName_WhenTrue(t *testing.T) {
 		},
 	}
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
-		mock.WithRequestMatchHandler(
-			mock.GetReposPullsFilesByOwnerByRepoByPullNumber,
-			http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-				w.Write(mock.MustMarshal(mockedPullRequestFileList))
-			}),
-		),
+		[]mock.MockBackendOption{
+			mock.WithRequestMatchHandler(
+				mock.GetReposPullsFilesByOwnerByRepoByPullNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+					w.Write(mock.MustMarshal(mockedPullRequestFileList))
+				}),
+			),
+		},
+		nil,
 	)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
@@ -50,6 +52,7 @@ func TestHasFileName_WhenTrue(t *testing.T) {
 }
 
 func TestHasFileName_WhenFalse(t *testing.T) {
+	defaultMockPrFileName := "default-mock-repo/file1.ts"
 	mockedPullRequestFileList := &[]*github.CommitFile{
 		{
 			Filename: github.String("default-mock-repo/file2.ts"),
@@ -57,12 +60,15 @@ func TestHasFileName_WhenFalse(t *testing.T) {
 		},
 	}
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
-		mock.WithRequestMatchHandler(
-			mock.GetReposPullsFilesByOwnerByRepoByPullNumber,
-			http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-				w.Write(mock.MustMarshal(mockedPullRequestFileList))
-			}),
-		),
+		[]mock.MockBackendOption{
+			mock.WithRequestMatchHandler(
+				mock.GetReposPullsFilesByOwnerByRepoByPullNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+					w.Write(mock.MustMarshal(mockedPullRequestFileList))
+				}),
+			),
+		},
+		nil,
 	)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
@@ -76,4 +82,3 @@ func TestHasFileName_WhenFalse(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, wantVal, gotVal)
 }
-
