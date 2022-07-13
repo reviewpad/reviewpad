@@ -19,9 +19,8 @@ import (
 
 var hasFileExtensions = plugins_aladino.PluginBuiltIns().Functions["hasFileExtensions"].Code
 
-const defaultMockPrFileName = "default-mock-repo/file1.ts"
-
 func TestHasFileExtensions_WhenFalse(t *testing.T) {
+	defaultMockPrFileName := "default-mock-repo/file1.ts"
 	mockedPullRequestFileList := &[]*github.CommitFile{
 		{
 			Filename: github.String(defaultMockPrFileName),
@@ -29,12 +28,15 @@ func TestHasFileExtensions_WhenFalse(t *testing.T) {
 		},
 	}
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
-		mock.WithRequestMatchHandler(
-			mock.GetReposPullsFilesByOwnerByRepoByPullNumber,
-			http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-				w.Write(mock.MustMarshal(mockedPullRequestFileList))
-			}),
-		),
+		[]mock.MockBackendOption{
+			mock.WithRequestMatchHandler(
+				mock.GetReposPullsFilesByOwnerByRepoByPullNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+					w.Write(mock.MustMarshal(mockedPullRequestFileList))
+				}),
+			),
+		},
+		nil,
 	)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
@@ -50,6 +52,7 @@ func TestHasFileExtensions_WhenFalse(t *testing.T) {
 }
 
 func TestHasFileExtensions_WhenTrue(t *testing.T) {
+	defaultMockPrFileName := "default-mock-repo/file1.ts"
 	mockedPullRequestFileList := &[]*github.CommitFile{
 		{
 			Filename: github.String(defaultMockPrFileName),
@@ -57,12 +60,15 @@ func TestHasFileExtensions_WhenTrue(t *testing.T) {
 		},
 	}
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
-		mock.WithRequestMatchHandler(
-			mock.GetReposPullsFilesByOwnerByRepoByPullNumber,
-			http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-				w.Write(mock.MustMarshal(mockedPullRequestFileList))
-			}),
-		),
+		[]mock.MockBackendOption{
+			mock.WithRequestMatchHandler(
+				mock.GetReposPullsFilesByOwnerByRepoByPullNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+					w.Write(mock.MustMarshal(mockedPullRequestFileList))
+				}),
+			),
+		},
+		nil,
 	)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
