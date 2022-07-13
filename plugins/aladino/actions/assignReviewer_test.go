@@ -22,7 +22,7 @@ import (
 var assignReviewer = plugins_aladino.PluginBuiltIns().Actions["assignReviewer"].Code
 
 func TestAssignReviewer_WhenTotalRequiredReviewersIsZero(t *testing.T) {
-	mockedEnv, err := mocks_aladino.MockDefaultEnv()
+	mockedEnv, err := mocks_aladino.MockDefaultEnv(nil, nil)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
@@ -41,7 +41,7 @@ func TestAssignReviewer_WhenTotalRequiredReviewersIsZero(t *testing.T) {
 }
 
 func TestAssignReviewer_WhenListOfReviewersIsEmpty(t *testing.T) {
-	mockedEnv, err := mocks_aladino.MockDefaultEnv()
+	mockedEnv, err := mocks_aladino.MockDefaultEnv(nil, nil)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
@@ -64,27 +64,30 @@ func TestAssignReviewer_WhenAuthorIsInListOfReviewers(t *testing.T) {
 		RequestedReviewers: []*github.User{},
 	})
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
-		mock.WithRequestMatchHandler(
-			mock.GetReposPullsByOwnerByRepoByPullNumber,
-			http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-				w.Write(mock.MustMarshal(mockedPullRequest))
-			}),
-		),
-		mock.WithRequestMatch(
-			mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
-			[]*github.PullRequestReview{},
-		),
-		mock.WithRequestMatchHandler(
-			mock.PostReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
-			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				rawBody, _ := ioutil.ReadAll(r.Body)
-				body := ReviewersRequestPostBody{}
+		[]mock.MockBackendOption{
+			mock.WithRequestMatchHandler(
+				mock.GetReposPullsByOwnerByRepoByPullNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+					w.Write(mock.MustMarshal(mockedPullRequest))
+				}),
+			),
+			mock.WithRequestMatch(
+				mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
+				[]*github.PullRequestReview{},
+			),
+			mock.WithRequestMatchHandler(
+				mock.PostReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					rawBody, _ := ioutil.ReadAll(r.Body)
+					body := ReviewersRequestPostBody{}
 
-				json.Unmarshal(rawBody, &body)
+					json.Unmarshal(rawBody, &body)
 
-				gotReviewers = body.Reviewers
-			}),
-		),
+					gotReviewers = body.Reviewers
+				}),
+			),
+		},
+		nil,
 	)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
@@ -118,27 +121,30 @@ func TestAssignReviewer_WhenTotalRequiredReviewersIsMoreThanTotalAvailableReview
 		reviewerLogin,
 	}
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
-		mock.WithRequestMatchHandler(
-			mock.GetReposPullsByOwnerByRepoByPullNumber,
-			http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-				w.Write(mock.MustMarshal(mockedPullRequest))
-			}),
-		),
-		mock.WithRequestMatch(
-			mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
-			[]*github.PullRequestReview{},
-		),
-		mock.WithRequestMatchHandler(
-			mock.PostReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
-			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				rawBody, _ := ioutil.ReadAll(r.Body)
-				body := ReviewersRequestPostBody{}
+		[]mock.MockBackendOption{
+			mock.WithRequestMatchHandler(
+				mock.GetReposPullsByOwnerByRepoByPullNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+					w.Write(mock.MustMarshal(mockedPullRequest))
+				}),
+			),
+			mock.WithRequestMatch(
+				mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
+				[]*github.PullRequestReview{},
+			),
+			mock.WithRequestMatchHandler(
+				mock.PostReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					rawBody, _ := ioutil.ReadAll(r.Body)
+					body := ReviewersRequestPostBody{}
 
-				json.Unmarshal(rawBody, &body)
+					json.Unmarshal(rawBody, &body)
 
-				gotReviewers = body.Reviewers
-			}),
-		),
+					gotReviewers = body.Reviewers
+				}),
+			),
+		},
+		nil,
 	)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
@@ -161,16 +167,19 @@ func TestAssignReviewer_WhenTotalRequiredReviewersIsMoreThanTotalAvailableReview
 func TestAssignReviewer_WhenListReviewsRequestFails(t *testing.T) {
 	failMessage := "ListReviewsRequestFail"
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
-		mock.WithRequestMatchHandler(
-			mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
-			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				mock.WriteError(
-					w,
-					http.StatusInternalServerError,
-					failMessage,
-				)
-			}),
-		),
+		[]mock.MockBackendOption{
+			mock.WithRequestMatchHandler(
+				mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					mock.WriteError(
+						w,
+						http.StatusInternalServerError,
+						failMessage,
+					)
+				}),
+			),
+		},
+		nil,
 	)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
@@ -201,33 +210,36 @@ func TestAssignReviewer_WhenPullRequestAlreadyHasReviews(t *testing.T) {
 		RequestedReviewers: []*github.User{},
 	})
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
-		mock.WithRequestMatchHandler(
-			mock.GetReposPullsByOwnerByRepoByPullNumber,
-			http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-				w.Write(mock.MustMarshal(mockedPullRequest))
-			}),
-		),
-		mock.WithRequestMatch(
-			mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
-			[]*github.PullRequestReview{
-				{
-					User: &github.User{
-						Login: github.String(reviewerLogin),
+		[]mock.MockBackendOption{
+			mock.WithRequestMatchHandler(
+				mock.GetReposPullsByOwnerByRepoByPullNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+					w.Write(mock.MustMarshal(mockedPullRequest))
+				}),
+			),
+			mock.WithRequestMatch(
+				mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
+				[]*github.PullRequestReview{
+					{
+						User: &github.User{
+							Login: github.String(reviewerLogin),
+						},
 					},
 				},
-			},
-		),
-		mock.WithRequestMatchHandler(
-			mock.PostReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
-			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				rawBody, _ := ioutil.ReadAll(r.Body)
-				body := ReviewersRequestPostBody{}
+			),
+			mock.WithRequestMatchHandler(
+				mock.PostReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					rawBody, _ := ioutil.ReadAll(r.Body)
+					body := ReviewersRequestPostBody{}
 
-				json.Unmarshal(rawBody, &body)
+					json.Unmarshal(rawBody, &body)
 
-				gotReviewers = body.Reviewers
-			}),
-		),
+					gotReviewers = body.Reviewers
+				}),
+			),
+		},
+		nil,
 	)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
@@ -262,27 +274,30 @@ func TestAssignReviewer_WhenPullRequestAlreadyHasRequestedReviewers(t *testing.T
 		},
 	})
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
-		mock.WithRequestMatchHandler(
-			mock.GetReposPullsByOwnerByRepoByPullNumber,
-			http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-				w.Write(mock.MustMarshal(mockedPullRequest))
-			}),
-		),
-		mock.WithRequestMatch(
-			mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
-			[]*github.PullRequestReview{},
-		),
-		mock.WithRequestMatchHandler(
-			mock.PostReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
-			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				rawBody, _ := ioutil.ReadAll(r.Body)
-				body := ReviewersRequestPostBody{}
+		[]mock.MockBackendOption{
+			mock.WithRequestMatchHandler(
+				mock.GetReposPullsByOwnerByRepoByPullNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+					w.Write(mock.MustMarshal(mockedPullRequest))
+				}),
+			),
+			mock.WithRequestMatch(
+				mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
+				[]*github.PullRequestReview{},
+			),
+			mock.WithRequestMatchHandler(
+				mock.PostReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					rawBody, _ := ioutil.ReadAll(r.Body)
+					body := ReviewersRequestPostBody{}
 
-				json.Unmarshal(rawBody, &body)
+					json.Unmarshal(rawBody, &body)
 
-				gotReviewers = body.Reviewers
-			}),
-		),
+					gotReviewers = body.Reviewers
+				}),
+			),
+		},
+		nil,
 	)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
@@ -319,23 +334,26 @@ func TestAssignReviewer_HasNoAvailableReviewers(t *testing.T) {
 		},
 	})
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
-		mock.WithRequestMatchHandler(
-			mock.GetReposPullsByOwnerByRepoByPullNumber,
-			http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-				w.Write(mock.MustMarshal(mockedPullRequest))
-			}),
-		),
-		mock.WithRequestMatch(
-			mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
-			[]*github.PullRequestReview{},
-		),
-		mock.WithRequestMatchHandler(
-			mock.PostReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
-			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				// If the request reviewers request was performed then the reviewers were assigned to the pull request
-				isRequestReviewersRequestPerformed = true
-			}),
-		),
+		[]mock.MockBackendOption{
+			mock.WithRequestMatchHandler(
+				mock.GetReposPullsByOwnerByRepoByPullNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+					w.Write(mock.MustMarshal(mockedPullRequest))
+				}),
+			),
+			mock.WithRequestMatch(
+				mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
+				[]*github.PullRequestReview{},
+			),
+			mock.WithRequestMatchHandler(
+				mock.PostReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					// If the request reviewers request was performed then the reviewers were assigned to the pull request
+					isRequestReviewersRequestPerformed = true
+				}),
+			),
+		},
+		nil,
 	)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
