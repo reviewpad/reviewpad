@@ -114,6 +114,10 @@ func GetDefaultMockPullRequestDetailsWith(pr *github.PullRequest) *github.PullRe
        defaultPullRequest.RequestedReviewers = pr.RequestedReviewers
     }
 
+    if pr.Labels != nil {
+        defaultPullRequest.Labels = pr.Labels
+    }
+
 	return defaultPullRequest
 }
 
