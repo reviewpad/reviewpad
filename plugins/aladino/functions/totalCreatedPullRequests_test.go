@@ -21,19 +21,21 @@ var totalCreatedPullRequests = plugins_aladino.PluginBuiltIns().Functions["total
 
 func TestTotalCreatedPullRequests_WhenListIssuesByRepoRequestFails(t *testing.T) {
 	devName := "steve"
-
 	failMessage := "ListListIssuesByRepoRequestFail"
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
-		mock.WithRequestMatchHandler(
-			mock.GetReposIssuesByOwnerByRepo,
-			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				mock.WriteError(
-					w,
-					http.StatusInternalServerError,
-					failMessage,
-				)
-			}),
-		),
+		[]mock.MockBackendOption{
+			mock.WithRequestMatchHandler(
+				mock.GetReposIssuesByOwnerByRepo,
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					mock.WriteError(
+						w,
+						http.StatusInternalServerError,
+						failMessage,
+					)
+				}),
+			),
+		},
+		nil,
 	)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
@@ -48,30 +50,32 @@ func TestTotalCreatedPullRequests_WhenListIssuesByRepoRequestFails(t *testing.T)
 
 func TestTotalCreatedPullRequests_WhenThereIsPullRequestIssues(t *testing.T) {
 	devName := "steve"
-    ghIssues := []*github.Issue{
-        {
-            Title: github.String("First Issue"),
-            PullRequestLinks: nil,
-            
-        },
-        {
-            Title: github.String("Second Issue"),
-            PullRequestLinks: &github.PullRequestLinks{
-                URL: github.String("pull-request-link"),
-            },
-        },
-    }
+	ghIssues := []*github.Issue{
+		{
+			Title:            github.String("First Issue"),
+			PullRequestLinks: nil,
+		},
+		{
+			Title: github.String("Second Issue"),
+			PullRequestLinks: &github.PullRequestLinks{
+				URL: github.String("pull-request-link"),
+			},
+		},
+	}
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
-		mock.WithRequestMatch(
-			mock.GetReposIssuesByOwnerByRepo,
-			ghIssues,
-		),
+		[]mock.MockBackendOption{
+			mock.WithRequestMatch(
+				mock.GetReposIssuesByOwnerByRepo,
+				ghIssues,
+			),
+		},
+		nil,
 	)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
 
-    wantTotal := aladino.BuildIntValue(1)
+	wantTotal := aladino.BuildIntValue(1)
 
 	args := []aladino.Value{aladino.BuildStringValue(devName)}
 	gotTotal, err := totalCreatedPullRequests(mockedEnv, args)
