@@ -65,10 +65,6 @@ func TestOrganization(t *testing.T) {
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
 		[]mock.MockBackendOption{
 			mock.WithRequestMatch(
-				mock.GetOrgsPublicMembersByOrg,
-				ghMembers,
-			),
-			mock.WithRequestMatch(
 				mock.GetOrgsMembersByOrg,
 				ghMembers,
 			),
