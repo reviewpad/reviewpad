@@ -20,29 +20,32 @@ import (
 var size = plugins_aladino.PluginBuiltIns().Functions["size"].Code
 
 func TestSize(t *testing.T) {
-    additions := 1
-    deletions := 1
+	additions := 1
+	deletions := 1
 	mockedPullRequest := mocks_aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
 		Additions: github.Int(additions),
-        Deletions: github.Int(deletions),
+		Deletions: github.Int(deletions),
 	})
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
-		mock.WithRequestMatchHandler(
-			mock.GetReposPullsByOwnerByRepoByPullNumber,
-			http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-				w.Write(mock.MustMarshal(mockedPullRequest))
-			}),
-		),
+		[]mock.MockBackendOption{
+			mock.WithRequestMatchHandler(
+				mock.GetReposPullsByOwnerByRepoByPullNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+					w.Write(mock.MustMarshal(mockedPullRequest))
+				}),
+			),
+		},
+		nil,
 	)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
 
-    wantSize := aladino.BuildIntValue(additions + deletions)
+	wantSize := aladino.BuildIntValue(additions + deletions)
 
-    args := []aladino.Value{}
-    gotSize, err := size(mockedEnv, args)
+	args := []aladino.Value{}
+	gotSize, err := size(mockedEnv, args)
 
-    assert.Nil(t, err)
-    assert.Equal(t, wantSize, gotSize)
+	assert.Nil(t, err)
+	assert.Equal(t, wantSize, gotSize)
 }
