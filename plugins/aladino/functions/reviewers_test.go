@@ -34,31 +34,28 @@ func TestReviewers(t *testing.T) {
 		RequestedTeams:     ghTeamReviewers,
 	})
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
-		mock.WithRequestMatchHandler(
-			mock.GetReposPullsByOwnerByRepoByPullNumber,
-			http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-				w.Write(mock.MustMarshal(mockedPullRequest))
-			}),
-		),
+		[]mock.MockBackendOption{
+			mock.WithRequestMatchHandler(
+				mock.GetReposPullsByOwnerByRepoByPullNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+					w.Write(mock.MustMarshal(mockedPullRequest))
+				}),
+			),
+		},
+		nil,
 	)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
 
-	allReviewers := make([]aladino.Value, len(ghUsersReviewers)+len(ghTeamReviewers))
-	for i, ghUser := range ghUsersReviewers {
-		allReviewers[i] = aladino.BuildStringValue(ghUser.GetLogin())
-	}
-
-	for i, ghTeam := range ghTeamReviewers {
-		allReviewers[i+len(ghUsersReviewers)] = aladino.BuildStringValue(ghTeam.GetSlug())
-	}
-
-	wantReviewers := aladino.BuildArrayValue(allReviewers)
+	wantReviewers := aladino.BuildArrayValue([]aladino.Value{
+        aladino.BuildStringValue("mary"),
+        aladino.BuildStringValue("reviewpad"),
+    })
 
 	args := []aladino.Value{}
 	gotReviewers, err := reviewers(mockedEnv, args)
 
 	assert.Nil(t, err)
-    assert.Equal(t, wantReviewers, gotReviewers)
+	assert.Equal(t, wantReviewers, gotReviewers)
 }
