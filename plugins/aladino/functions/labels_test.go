@@ -28,23 +28,24 @@ func TestLabels(t *testing.T) {
 		Labels: ghLabels,
 	})
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
-		mock.WithRequestMatchHandler(
-			mock.GetReposPullsByOwnerByRepoByPullNumber,
-			http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-				w.Write(mock.MustMarshal(mockedPullRequest))
-			}),
-		),
+		[]mock.MockBackendOption{
+			mock.WithRequestMatchHandler(
+				mock.GetReposPullsByOwnerByRepoByPullNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+					w.Write(mock.MustMarshal(mockedPullRequest))
+				}),
+			),
+		},
+		nil,
 	)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
 
-	labelsName := make([]aladino.Value, len(ghLabels))
-	for i, ghLabel := range ghLabels {
-		labelsName[i] = aladino.BuildStringValue(ghLabel.GetName())
-	}
-
-	wantLabels := aladino.BuildArrayValue(labelsName)
+	wantLabels := aladino.BuildArrayValue([]aladino.Value{
+		aladino.BuildStringValue("bug"),
+		aladino.BuildStringValue("enhancement"),
+	})
 
 	args := []aladino.Value{}
 	gotLabels, err := labels(mockedEnv, args)
