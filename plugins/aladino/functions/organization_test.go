@@ -62,23 +62,8 @@ func TestOrganization(t *testing.T) {
 		{Login: github.String("john")},
 		{Login: github.String("jane")},
 	}
-	mockedPullRequest := mocks_aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
-		Head: &github.PullRequestBranch{
-			Repo: &github.Repository{
-				Owner: &github.User{
-					Login: github.String("reviewpad"),
-				},
-			},
-		},
-	})
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
 		[]mock.MockBackendOption{
-			mock.WithRequestMatchHandler(
-				mock.GetReposPullsByOwnerByRepoByPullNumber,
-				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					w.Write(mock.MustMarshal(mockedPullRequest))
-				}),
-			),
 			mock.WithRequestMatch(
 				mock.GetOrgsPublicMembersByOrg,
 				ghMembers,
@@ -94,12 +79,10 @@ func TestOrganization(t *testing.T) {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
 
-	members := make([]aladino.Value, len(ghMembers))
-	for i, ghMember := range ghMembers {
-		members[i] = aladino.BuildStringValue(ghMember.GetLogin())
-	}
-
-	wantMembers := aladino.BuildArrayValue(members)
+	wantMembers := aladino.BuildArrayValue([]aladino.Value{
+		aladino.BuildStringValue("john"),
+		aladino.BuildStringValue("jane"),
+	})
 
 	args := []aladino.Value{}
 	gotMembers, err := organization(mockedEnv, args)
