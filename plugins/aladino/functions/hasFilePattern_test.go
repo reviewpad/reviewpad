@@ -19,10 +19,8 @@ import (
 
 var hasFilePattern = plugins_aladino.PluginBuiltIns().Functions["hasFilePattern"].Code
 
-const defaultMockPrFileName = "default-mock-repo/file1.ts"
-
 func TestHasFilePattern_WhenFileBadPattern(t *testing.T) {
-	mockedEnv, err := mocks_aladino.MockDefaultEnv()
+	mockedEnv, err := mocks_aladino.MockDefaultEnv(nil, nil)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
@@ -37,6 +35,7 @@ func TestHasFilePattern_WhenFileBadPattern(t *testing.T) {
 }
 
 func TestHasFilePattern_WhenTrue(t *testing.T) {
+	defaultMockPrFileName := "default-mock-repo/file1.ts"
 	mockedPullRequestFileList := &[]*github.CommitFile{
 		{
 			Filename: github.String(defaultMockPrFileName),
@@ -44,12 +43,15 @@ func TestHasFilePattern_WhenTrue(t *testing.T) {
 		},
 	}
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
-		mock.WithRequestMatchHandler(
-			mock.GetReposPullsFilesByOwnerByRepoByPullNumber,
-			http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-				w.Write(mock.MustMarshal(mockedPullRequestFileList))
-			}),
-		),
+		[]mock.MockBackendOption{
+			mock.WithRequestMatchHandler(
+				mock.GetReposPullsFilesByOwnerByRepoByPullNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+					w.Write(mock.MustMarshal(mockedPullRequestFileList))
+				}),
+			),
+		},
+		nil,
 	)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
@@ -60,11 +62,12 @@ func TestHasFilePattern_WhenTrue(t *testing.T) {
 
 	wantVal := aladino.BuildBoolValue(true)
 
-    assert.Nil(t, err)
+	assert.Nil(t, err)
 	assert.Equal(t, wantVal, gotVal)
 }
 
 func TestHasFilePattern_WhenFalse(t *testing.T) {
+	defaultMockPrFileName := "default-mock-repo/file1.ts"
 	mockedPullRequestFileList := &[]*github.CommitFile{
 		{
 			Filename: github.String(defaultMockPrFileName),
@@ -72,12 +75,15 @@ func TestHasFilePattern_WhenFalse(t *testing.T) {
 		},
 	}
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
-		mock.WithRequestMatchHandler(
-			mock.GetReposPullsFilesByOwnerByRepoByPullNumber,
-			http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-				w.Write(mock.MustMarshal(mockedPullRequestFileList))
-			}),
-		),
+		[]mock.MockBackendOption{
+			mock.WithRequestMatchHandler(
+				mock.GetReposPullsFilesByOwnerByRepoByPullNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+					w.Write(mock.MustMarshal(mockedPullRequestFileList))
+				}),
+			),
+		},
+		nil,
 	)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
@@ -88,6 +94,6 @@ func TestHasFilePattern_WhenFalse(t *testing.T) {
 
 	wantVal := aladino.BuildBoolValue(false)
 
-    assert.Nil(t, err)
+	assert.Nil(t, err)
 	assert.Equal(t, wantVal, gotVal)
 }
