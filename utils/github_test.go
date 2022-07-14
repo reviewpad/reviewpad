@@ -514,3 +514,71 @@ func TestGetIssuesAvailableAssignees(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, wantAssignees, gotAssignees)
 }
+
+func TestGetPullRequestCommits_WhenListCommistsRequestFails(t *testing.T) {
+	failMessage := "ListCommitsRequestFail"
+	mockedEnv, err := mocks_aladino.MockDefaultEnv(
+		[]mock.MockBackendOption{
+			mock.WithRequestMatchHandler(
+				mock.GetReposPullsCommitsByOwnerByRepoByPullNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					mock.WriteError(
+						w,
+						http.StatusInternalServerError,
+						failMessage,
+					)
+				}),
+			),
+		},
+		nil,
+	)
+	if err != nil {
+		log.Fatalf("mockDefaultEnv failed: %v", err)
+	}
+
+	mockedPullRequest := mockedEnv.GetPullRequest()
+	gotCommits, err := utils.GetPullRequestCommits(
+		mockedEnv.GetCtx(),
+		mockedEnv.GetClient(),
+		mockedPullRequest.GetUser().GetLogin(),
+		mockedPullRequest.GetBase().GetRepo().GetName(),
+		mockedPullRequest.GetNumber(),
+	)
+
+	assert.Nil(t, gotCommits)
+	assert.Equal(t, err.(*github.ErrorResponse).Message, failMessage)
+}
+
+func TestGetPullRequestCommits(t *testing.T) {
+	wantCommits := []*github.RepositoryCommit{
+		{
+			Commit: &github.Commit{
+				Message: github.String("Lorem Ipsum"),
+			},
+		},
+	}
+	mockedEnv, err := mocks_aladino.MockDefaultEnv(
+		[]mock.MockBackendOption{
+			mock.WithRequestMatch(
+				mock.GetReposPullsCommitsByOwnerByRepoByPullNumber,
+				wantCommits,
+			),
+		},
+		nil,
+	)
+	if err != nil {
+		log.Fatalf("mockDefaultEnv failed: %v", err)
+	}
+
+	mockedPullRequest := mockedEnv.GetPullRequest()
+	gotCommits, err := utils.GetPullRequestCommits(
+		mockedEnv.GetCtx(),
+		mockedEnv.GetClient(),
+		mockedPullRequest.GetUser().GetLogin(),
+		mockedPullRequest.GetBase().GetRepo().GetName(),
+		mockedPullRequest.GetNumber(),
+	)
+
+	assert.Nil(t, err)
+	assert.Equal(t, wantCommits, gotCommits)
+}
