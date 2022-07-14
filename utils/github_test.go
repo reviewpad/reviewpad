@@ -413,14 +413,11 @@ func TestGetRepoCollaborators_WhenListCollaboratorsRequestFails(t *testing.T) {
 	}
 
 	mockedPullRequest := mockedEnv.GetPullRequest()
-	mockedPullRequestOwner := mockedPullRequest.Base.Repo.Owner.GetLogin()
-	mockedPullRequestRepoName := mockedPullRequest.Base.Repo.GetName()
-
 	collaborators, err := utils.GetRepoCollaborators(
 		mockedEnv.GetCtx(),
 		mockedEnv.GetClient(),
-		mockedPullRequestOwner,
-		mockedPullRequestRepoName,
+		mockedPullRequest.Base.Repo.Owner.GetLogin(),
+		mockedPullRequest.Base.Repo.GetName(),
 	)
 
 	assert.Nil(t, collaborators)
@@ -445,14 +442,11 @@ func TestGetRepoCollaborators(t *testing.T) {
 	}
 
 	mockedPullRequest := mockedEnv.GetPullRequest()
-	mockedPullRequestOwner := mockedPullRequest.Base.Repo.Owner.GetLogin()
-	mockedPullRequestRepoName := mockedPullRequest.Base.Repo.GetName()
-
 	gotCollaborators, err := utils.GetRepoCollaborators(
 		mockedEnv.GetCtx(),
 		mockedEnv.GetClient(),
-		mockedPullRequestOwner,
-		mockedPullRequestRepoName,
+		mockedPullRequest.Base.Repo.Owner.GetLogin(),
+		mockedPullRequest.Base.Repo.GetName(),
 	)
 
 	assert.Nil(t, err)
