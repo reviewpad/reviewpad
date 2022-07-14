@@ -194,7 +194,6 @@ func TestParseNumPages_WhenHTTPLinkHeaderIsNotProvided(t *testing.T) {
 		},
 	}
 
-	// The number of pages are given in the url query "page"
 	wantNumPages := 0
 
 	gotNumPages := utils.ParseNumPages(resp)
