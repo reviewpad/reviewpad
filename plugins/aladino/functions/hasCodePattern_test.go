@@ -20,9 +20,10 @@ import (
 var hasCodePattern = plugins_aladino.PluginBuiltIns().Functions["hasCodePattern"].Code
 
 func TestHasCodePattern_WhenPullRequestPatchHasNilFile(t *testing.T) {
+    fileName := "default-mock-repo/file1.ts"
 	mockedPullRequestFileList := &[]*github.CommitFile{{
 		Patch:    nil,
-		Filename: github.String("default-mock-repo/file1.ts"),
+		Filename: github.String(fileName),
 	}}
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
 		[]mock.MockBackendOption{
@@ -38,6 +39,8 @@ func TestHasCodePattern_WhenPullRequestPatchHasNilFile(t *testing.T) {
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
+
+    mockedEnv.GetPatch()[fileName] = nil
 
 	args := []aladino.Value{aladino.BuildStringValue("placeBet\\(.*\\)")}
 	gotVal, err := hasCodePattern(mockedEnv, args)
