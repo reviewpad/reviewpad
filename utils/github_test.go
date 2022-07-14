@@ -342,16 +342,12 @@ func TestGetPullRequestReviewers_WhenListReviewersRequestFails(t *testing.T) {
 	}
 
 	mockedPullRequest := mockedEnv.GetPullRequest()
-	mockedPullRequestOwner := mockedPullRequest.Base.Repo.Owner.GetLogin()
-	mockedPullRequestRepoName := mockedPullRequest.Base.Repo.GetName()
-	mockedPullRequestNumber := mockedPullRequest.GetNumber()
-
 	reviewers, err := utils.GetPullRequestReviewers(
 		mockedEnv.GetCtx(),
 		mockedEnv.GetClient(),
-		mockedPullRequestOwner,
-		mockedPullRequestRepoName,
-		mockedPullRequestNumber,
+		mockedPullRequest.Base.Repo.Owner.GetLogin(),
+		mockedPullRequest.Base.Repo.GetName(),
+		mockedPullRequest.GetNumber(),
 		nil,
 	)
 
