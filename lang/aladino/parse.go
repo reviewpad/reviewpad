@@ -6,9 +6,11 @@ package aladino
 
 import (
 	"fmt"
+	"strings"
 )
 
 func Parse(input string) (Expr, error) {
+	input = strings.TrimRight(input, "\n")
 	lex := &AladinoLex{input: input}
 	res := AladinoParse(lex)
 
