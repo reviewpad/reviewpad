@@ -137,6 +137,10 @@ func GetDefaultMockPullRequestDetailsWith(pr *github.PullRequest) *github.PullRe
     if pr.Body != nil {
         defaultPullRequest.Body = pr.Body
     }
+
+    if pr.Draft != nil {
+        defaultPullRequest.Draft = pr.Draft
+    }
     
 	return defaultPullRequest
 }
