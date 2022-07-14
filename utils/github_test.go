@@ -537,16 +537,12 @@ func TestGetPullRequestCommits_WhenListCommistsRequestFails(t *testing.T) {
 	}
 
 	mockedPullRequest := mockedEnv.GetPullRequest()
-	mockedPullRequestOwner := mockedPullRequest.GetUser().GetLogin()
-	mockedPullRequestRepo := mockedPullRequest.GetBase().GetRepo().GetName()
-	mockedPullRequestNumber := mockedPullRequest.GetNumber()
-
 	gotCommits, err := utils.GetPullRequestCommits(
 		mockedEnv.GetCtx(),
 		mockedEnv.GetClient(),
-		mockedPullRequestOwner,
-		mockedPullRequestRepo,
-		mockedPullRequestNumber,
+		mockedPullRequest.GetUser().GetLogin(),
+		mockedPullRequest.GetBase().GetRepo().GetName(),
+		mockedPullRequest.GetNumber(),
 	)
 
 	assert.Nil(t, gotCommits)
@@ -575,16 +571,12 @@ func TestGetPullRequestCommits(t *testing.T) {
 	}
 
 	mockedPullRequest := mockedEnv.GetPullRequest()
-	mockedPullRequestOwner := mockedPullRequest.GetUser().GetLogin()
-	mockedPullRequestRepo := mockedPullRequest.GetBase().GetRepo().GetName()
-	mockedPullRequestNumber := mockedPullRequest.GetNumber()
-
 	gotCommits, err := utils.GetPullRequestCommits(
 		mockedEnv.GetCtx(),
 		mockedEnv.GetClient(),
-		mockedPullRequestOwner,
-		mockedPullRequestRepo,
-		mockedPullRequestNumber,
+		mockedPullRequest.GetUser().GetLogin(),
+		mockedPullRequest.GetBase().GetRepo().GetName(),
+		mockedPullRequest.GetNumber(),
 	)
 
 	assert.Nil(t, err)
