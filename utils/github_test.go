@@ -475,14 +475,11 @@ func TestGetIssuesAvailableAssignees_WhenListAssigneesRequestFails(t *testing.T)
 	}
 
 	mockedPullRequest := mockedEnv.GetPullRequest()
-	mockedPullRequestOwner := mockedPullRequest.GetUser().GetLogin()
-	mockedPullRequestRepo := mockedPullRequest.GetBase().GetRepo().GetName()
-
 	gotAssignees, err := utils.GetIssuesAvailableAssignees(
 		mockedEnv.GetCtx(),
 		mockedEnv.GetClient(),
-		mockedPullRequestOwner,
-		mockedPullRequestRepo,
+		mockedPullRequest.GetUser().GetLogin(),
+		mockedPullRequest.GetBase().GetRepo().GetName(),
 	)
 
 	assert.Nil(t, gotAssignees)
@@ -507,14 +504,11 @@ func TestGetIssuesAvailableAssignees(t *testing.T) {
 	}
 
 	mockedPullRequest := mockedEnv.GetPullRequest()
-	mockedPullRequestOwner := mockedPullRequest.GetUser().GetLogin()
-	mockedPullRequestRepo := mockedPullRequest.GetBase().GetRepo().GetName()
-
 	gotAssignees, err := utils.GetIssuesAvailableAssignees(
 		mockedEnv.GetCtx(),
 		mockedEnv.GetClient(),
-		mockedPullRequestOwner,
-		mockedPullRequestRepo,
+		mockedPullRequest.GetUser().GetLogin(),
+		mockedPullRequest.GetBase().GetRepo().GetName(),
 	)
 
 	assert.Nil(t, err)
