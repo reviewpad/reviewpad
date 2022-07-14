@@ -241,16 +241,12 @@ func TestGetPullRequestComments_WhenListCommentsRequestFails(t *testing.T) {
 	}
 
 	mockedPullRequest := mockedEnv.GetPullRequest()
-	mockedPullRequestOwner := mockedPullRequest.Base.Repo.Owner.GetLogin()
-	mockedPullRequestRepoName := mockedPullRequest.Base.Repo.GetName()
-	mockedPullRequestNumber := mockedPullRequest.GetNumber()
-
 	comments, err := utils.GetPullRequestComments(
 		mockedEnv.GetCtx(),
 		mockedEnv.GetClient(),
-		mockedPullRequestOwner,
-		mockedPullRequestRepoName,
-		mockedPullRequestNumber,
+		mockedPullRequest.Base.Repo.Owner.GetLogin(),
+		mockedPullRequest.Base.Repo.GetName(),
+		mockedPullRequest.GetNumber(),
 		&github.IssueListCommentsOptions{},
 	)
 
@@ -276,16 +272,12 @@ func TestGetPullRequestComments(t *testing.T) {
 	}
 
 	mockedPullRequest := mockedEnv.GetPullRequest()
-	mockedPullRequestOwner := mockedPullRequest.Base.Repo.Owner.GetLogin()
-	mockedPullRequestRepoName := mockedPullRequest.Base.Repo.GetName()
-	mockedPullRequestNumber := mockedPullRequest.GetNumber()
-
 	gotComments, err := utils.GetPullRequestComments(
 		mockedEnv.GetCtx(),
 		mockedEnv.GetClient(),
-		mockedPullRequestOwner,
-		mockedPullRequestRepoName,
-		mockedPullRequestNumber,
+		mockedPullRequest.Base.Repo.Owner.GetLogin(),
+		mockedPullRequest.Base.Repo.GetName(),
+		mockedPullRequest.GetNumber(),
 		&github.IssueListCommentsOptions{},
 	)
 
