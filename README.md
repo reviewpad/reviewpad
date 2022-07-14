@@ -118,22 +118,29 @@ We strongly recommend the use of VSCode but feel free to use the IDE of your cho
 
 * [EditorConfig](https://marketplace.visualstudio.com/items?itemName=EditorConfig.EditorConfig) - To helps maintaining consistent coding styles.
 * [licenser](https://marketplace.visualstudio.com/items?itemName=ymotongpoo.licenser) - For adding license headers.
+* [YAML](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml) - For enabling `reviewpad.yml` JSON schema.
 
 On your VSCode settings please add the following settings:
 
 ```json
 {
-  // Format files on save
-  "editor.formatOnSave": true,
-  // Licenser configuration
-  "licenser.license": "Custom",
-  "licenser.author": "Explore.dev, Unipessoal Lda",
-  "licenser.customHeader": "Copyright (C) @YEAR@ @AUTHOR@ - All Rights Reserved\nUse of this source code is governed by a license that can be\nfound in the LICENSE file.",
-  // File nesting
-  "explorer.fileNesting.patterns": {
+    // Format files on save
+    "editor.formatOnSave": true,
+    // Licenser configuration
+    "licenser.license": "Custom",
+    "licenser.author": "Explore.dev, Unipessoal Lda",
+    "licenser.customHeader": "Copyright (C) @YEAR@ @AUTHOR@ - All Rights Reserved\nUse of this source code is governed by a license that can be\nfound in the LICENSE file.",
+    // reviewpad.yml JSON schema
+    "yaml.schemas": {
+        "https://raw.githubusercontent.com/reviewpad/schemas/main/latest/schema.json": [
+            "reviewpad.yml",
+        ]
+    },
+    // File nesting
+    "explorer.fileNesting.patterns": {
     // Next go and go test files
     "*.go": "${capture}_test.go",
-  },
+    },
 }
 ```
 
