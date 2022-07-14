@@ -182,6 +182,23 @@ func mockBuiltIns() *BuiltIns {
 	}
 }
 
+func MockBuiltIns() *aladino.BuiltIns {
+	return &aladino.BuiltIns{
+		Functions: map[string]*aladino.BuiltInFunction{
+			"emptyFunction": {
+				Type: aladino.BuildFunctionType([]aladino.Type{}, nil),
+				Code: nil,
+			},
+		},
+		Actions: map[string]*aladino.BuiltInAction{
+			"emptyAction": {
+				Type: aladino.BuildFunctionType([]aladino.Type{}, nil),
+				Code: nil,
+			},
+		},
+	}
+}
+
 func mockHttpClientWith(clientOptions ...mock.MockBackendOption) *http.Client {
 	return mock.NewMockedHTTPClient(clientOptions...)
 }

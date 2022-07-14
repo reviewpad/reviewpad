@@ -13,7 +13,7 @@ import (
 
 type File struct {
 	Repr *github.CommitFile
-	Diff []*diffBlock
+	Diff []*DiffBlock
 }
 
 func NewFile(file *github.CommitFile) (*File, error) {
