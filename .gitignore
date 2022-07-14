@@ -21,6 +21,7 @@ main
 # Dependency directories (remove the comment below to include it)
 # vendor/
 
-# Remove VSCode and macos index files
+# Remove VSCode, IntelliJ IDEA and macos index files
 .vscode
+.idea
 .DS_Store
