@@ -16,7 +16,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type result struct {
+type paginatedRequestResult struct {
     pageNum int
 }
 
@@ -62,7 +62,7 @@ func TestGetPullRequestNumber(t *testing.T) {
 func TestPaginatedRequest_WhenFirstRequestFails(t *testing.T) {
 	failMessage := "PaginatedRequestFail"
 	initFn := func() interface{} {
-		return result{}
+		return paginatedRequestResult{}
 	}
 	reqFn := func(i interface{}, page int) (interface{}, *github.Response, error) {
 		return nil, nil, errors.New(failMessage)
@@ -77,7 +77,7 @@ func TestPaginatedRequest_WhenFirstRequestFails(t *testing.T) {
 func TestPaginatedRequest_WhenFurtherRequestsFail(t *testing.T) {
 	failMessage := "PaginatedRequestFail"
 	initFn := func() interface{} {
-		return result{
+		return paginatedRequestResult{
 			pageNum: 1,
 		}
 	}
@@ -92,7 +92,7 @@ func TestPaginatedRequest_WhenFurtherRequestsFail(t *testing.T) {
 				NextPage: 3,
 			}
 
-			return result{pageNum: 1}, resp, nil
+			return paginatedRequestResult{pageNum: 1}, resp, nil
 		}
 
 		return nil, nil, errors.New(failMessage)
@@ -106,12 +106,12 @@ func TestPaginatedRequest_WhenFurtherRequestsFail(t *testing.T) {
 
 func TestPaginatedRequest(t *testing.T) {
 	initFn := func() interface{} {
-		return []*result{
+		return []*paginatedRequestResult{
 			{pageNum: 1},
 		}
 	}
 	reqFn := func(i interface{}, page int) (interface{}, *github.Response, error) {
-		results := i.([]*result)
+		results := i.([]*paginatedRequestResult)
 		if page == 1 {
 			respHeader := make(http.Header)
 			respHeader.Add("Link", "<https://api.github.com/user/58276/repos?page=3>; rel=\"last\"")
@@ -127,14 +127,14 @@ func TestPaginatedRequest(t *testing.T) {
 		return results, nil, nil
 	}
 
-	wantRes := []*result{{pageNum: 1}}
+	wantRes := []*paginatedRequestResult{{pageNum: 1}}
 	gotRes, err := utils.PaginatedRequest(initFn, reqFn)
 
 	assert.Nil(t, err)
 	assert.Equal(t, gotRes, wantRes)
 }
 
-func TestParseNumPagesFromLink_WhenURLHasNoInfo(t *testing.T) {
+func TestParseNumPagesFromLink_WhenHTTPLinkHeaderHasNoRel(t *testing.T) {
 	link := "<https://api.github.com/user/58276/repos?page=1>"
 
 	wantNumPages := 0
@@ -144,7 +144,7 @@ func TestParseNumPagesFromLink_WhenURLHasNoInfo(t *testing.T) {
 	assert.Equal(t, wantNumPages, gotNumPages)
 }
 
-func TestParseNumPagesFromLink_WhenParseURLFails(t *testing.T) {
+func TestParseNumPagesFromLink_WhenHTTPLinkHeaderIsInvalid(t *testing.T) {
 	link := "<invalid%+url>; rel=\"last\""
 
 	wantNumPages := 0
@@ -154,7 +154,7 @@ func TestParseNumPagesFromLink_WhenParseURLFails(t *testing.T) {
 	assert.Equal(t, wantNumPages, gotNumPages)
 }
 
-func TestParseNumPagesFromLink_WhenPageQueryIsNotPresentInURL(t *testing.T) {
+func TestParseNumPagesFromLink_WhenHTTPLinkHeaderHasNoQueryParamPage(t *testing.T) {
 	link := "<https://api.github.com/user/58276/repos>; rel=\"last\""
 
 	wantNumPages := 0
@@ -164,7 +164,7 @@ func TestParseNumPagesFromLink_WhenPageQueryIsNotPresentInURL(t *testing.T) {
 	assert.Equal(t, wantNumPages, gotNumPages)
 }
 
-func TestParseNumPagesFromLink_WhenNumPagesParseIntFails(t *testing.T) {
+func TestParseNumPagesFromLink_WhenHTTPLinkHeaderHasInvalidQueryParamPage(t *testing.T) {
 	link := "<https://api.github.com/user/58276/repos?page=7B316>; rel=\"last\""
 
 	wantNumPages := 0
@@ -177,7 +177,7 @@ func TestParseNumPagesFromLink_WhenNumPagesParseIntFails(t *testing.T) {
 func TestParseNumPagesFromLink(t *testing.T) {
 	link := "<https://api.github.com/user/58276/repos?page=3>; rel=\"last\""
 
-	// The number of pages are given in the url query "page"
+	// The number of pages is provided in the url query parameter "page"
 	wantNumPages := 3
 
 	gotNumPages := utils.ParseNumPagesFromLink(link)
@@ -185,7 +185,7 @@ func TestParseNumPagesFromLink(t *testing.T) {
 	assert.Equal(t, wantNumPages, gotNumPages)
 }
 
-func TestParseNumPages_WhenNoLinkIsProvided(t *testing.T) {
+func TestParseNumPages_WhenHTTPLinkHeaderIsNotProvided(t *testing.T) {
 	respHeader := make(http.Header)
 	respHeader.Add("Link", " ")
 	resp := &github.Response{
@@ -211,7 +211,7 @@ func TestParseNumPages(t *testing.T) {
 		},
 	}
 
-	// The number of pages are given in the url query "page"
+	// The number of pages is provided in the url query parameter "page"
 	wantNumPages := 3
 
 	gotNumPages := utils.ParseNumPages(resp)
