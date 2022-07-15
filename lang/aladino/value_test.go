@@ -195,11 +195,18 @@ func TestIntValueEquals_WhenDiffKinds(t *testing.T) {
 	assert.False(t, intVal.Equals(otherVal))
 }
 
-func TestIntValueEquals(t *testing.T) {
+func TestIntValueEquals_WhenTrue(t *testing.T) {
 	intVal := &aladino.IntValue{Val: 0}
 	otherVal := &aladino.IntValue{Val: 0}
 
 	assert.True(t, intVal.Equals(otherVal))
+}
+
+func TestIntValueEquals_WhenFalse(t *testing.T) {
+	intVal := &aladino.IntValue{Val: 0}
+	otherVal := &aladino.IntValue{Val: 1}
+
+	assert.False(t, intVal.Equals(otherVal))
 }
 
 func TestBoolValueEquals_WhenDiffKinds(t *testing.T) {
@@ -209,11 +216,18 @@ func TestBoolValueEquals_WhenDiffKinds(t *testing.T) {
 	assert.False(t, boolVal.Equals(otherVal))
 }
 
-func TestBoolValueEquals(t *testing.T) {
+func TestBoolValueEquals_WhenTrue(t *testing.T) {
 	boolVal := &aladino.BoolValue{Val: true}
 	otherVal := &aladino.BoolValue{Val: true}
 
 	assert.True(t, boolVal.Equals(otherVal))
+}
+
+func TestBoolValueEquals_WhenFalse(t *testing.T) {
+	boolVal := &aladino.BoolValue{Val: true}
+	otherVal := &aladino.BoolValue{Val: false}
+
+	assert.False(t, boolVal.Equals(otherVal))
 }
 
 func TestStringValueEquals_WhenDiffKinds(t *testing.T) {
@@ -223,11 +237,18 @@ func TestStringValueEquals_WhenDiffKinds(t *testing.T) {
 	assert.False(t, strVal.Equals(otherVal))
 }
 
-func TestStringValueEquals(t *testing.T) {
+func TestStringValueEquals_WhenTrue(t *testing.T) {
 	strVal := &aladino.StringValue{Val: "Lorem Ipsum"}
 	otherVal := &aladino.StringValue{Val: "Lorem Ipsum"}
 
 	assert.True(t, strVal.Equals(otherVal))
+}
+
+func TestStringValueEquals_WhenFalse(t *testing.T) {
+	strVal := &aladino.StringValue{Val: "Lorem Ipsum #1"}
+	otherVal := &aladino.StringValue{Val: "Lorem Ipsum #2"}
+
+	assert.False(t, strVal.Equals(otherVal))
 }
 
 func TestTimeValueEquals_WhenDiffKinds(t *testing.T) {
@@ -237,11 +258,18 @@ func TestTimeValueEquals_WhenDiffKinds(t *testing.T) {
 	assert.False(t, timeVal.Equals(otherVal))
 }
 
-func TestTimeValueEquals(t *testing.T) {
+func TestTimeValueEquals_WhenTrue(t *testing.T) {
 	timeVal := &aladino.TimeValue{Val: 1}
 	otherVal := &aladino.TimeValue{Val: 1}
 
 	assert.True(t, timeVal.Equals(otherVal))
+}
+
+func TestTimeValueEquals_WhenFalse(t *testing.T) {
+	timeVal := &aladino.TimeValue{Val: 0}
+	otherVal := &aladino.TimeValue{Val: 1}
+
+	assert.False(t, timeVal.Equals(otherVal))
 }
 
 func TestArrayValueEquals_WhenDiffKinds(t *testing.T) {
@@ -265,14 +293,21 @@ func TestArrayValueEquals_WhenDiffElems(t *testing.T) {
 	assert.False(t, arrayVal.Equals(otherVal))
 }
 
-func TestArrayValueEquals(t *testing.T) {
+func TestArrayValueEquals_WhenTrue(t *testing.T) {
 	arrayVal := &aladino.ArrayValue{Vals: []aladino.Value{&aladino.BoolValue{Val: true}}}
 	otherVal := &aladino.ArrayValue{Vals: []aladino.Value{&aladino.BoolValue{Val: true}}}
 
 	assert.True(t, arrayVal.Equals(otherVal))
 }
 
-func TestFunctionValueEquals(t *testing.T) {
+func TestArrayValueEquals_WhenFalse(t *testing.T) {
+	arrayVal := &aladino.ArrayValue{Vals: []aladino.Value{&aladino.BoolValue{Val: true}}}
+	otherVal := &aladino.ArrayValue{Vals: []aladino.Value{&aladino.BoolValue{Val: false}}}
+
+	assert.False(t, arrayVal.Equals(otherVal))
+}
+
+func TestFunctionValueEquals_WhenTrue(t *testing.T) {
 	fnVal := &aladino.FunctionValue{
 		func(args []aladino.Value) aladino.Value {
 			return &aladino.IntValue{Val: 0}
@@ -286,4 +321,16 @@ func TestFunctionValueEquals(t *testing.T) {
 	}
 
 	assert.True(t, fnVal.Equals(otherVal))
+}
+
+func TestFunctionValueEquals_WhenFalse(t *testing.T) {
+	fnVal := &aladino.FunctionValue{
+		func(args []aladino.Value) aladino.Value {
+			return &aladino.IntValue{Val: 0}
+		},
+	}
+
+	otherVal := &aladino.IntValue{Val: 0}
+
+	assert.False(t, fnVal.Equals(otherVal))
 }
