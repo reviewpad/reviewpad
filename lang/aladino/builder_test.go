@@ -15,17 +15,17 @@ func TestBuildFilter(t *testing.T) {
 	param := "test"
 	condition, _ := aladino.Parse("$totalCreatedPRs($dev) < 10")
 
-	wantAST := aladino.FunctionCallConstr(
-		aladino.VariableConstr("filter"),
+	wantAST := aladino.BuildFunctionCall(
+		aladino.BuildVariable("filter"),
 		[]aladino.Expr{
-			aladino.FunctionCallConstr(
-				aladino.VariableConstr("organization"),
+			aladino.BuildFunctionCall(
+				aladino.BuildVariable("organization"),
 				[]aladino.Expr{},
 			),
-			aladino.LambdaConstr(
+			aladino.BuildLambda(
 				[]aladino.Expr{
-					aladino.TypedExprConstr(
-						aladino.VariableConstr(param),
+					aladino.BuildTypedExpr(
+						aladino.BuildVariable(param),
 						aladino.BuildStringType()),
 				},
 				condition,

@@ -245,7 +245,7 @@ type Variable struct {
 	ident string
 }
 
-func VariableConstr(ident string) *Variable {
+func BuildVariable(ident string) *Variable {
 	return &Variable{ident}
 }
 
@@ -347,7 +347,7 @@ type FunctionCall struct {
 	arguments []Expr
 }
 
-func FunctionCallConstr(name *Variable, arguments []Expr) *FunctionCall {
+func BuildFunctionCall(name *Variable, arguments []Expr) *FunctionCall {
 	return &FunctionCall{name, arguments}
 }
 
@@ -409,7 +409,7 @@ type TypedExpr struct {
 	typeOf Type
 }
 
-func TypedExprConstr(expr Expr, typeOf Type) *TypedExpr {
+func BuildTypedExpr(expr Expr, typeOf Type) *TypedExpr {
 	return &TypedExpr{expr, typeOf}
 }
 
@@ -433,7 +433,7 @@ type Lambda struct {
 	body       Expr
 }
 
-func LambdaConstr(parameters []Expr, body Expr) *Lambda {
+func BuildLambda(parameters []Expr, body Expr) *Lambda {
 	return &Lambda{parameters, body}
 }
 

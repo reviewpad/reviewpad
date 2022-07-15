@@ -5,17 +5,17 @@
 package aladino
 
 func BuildFilter(param string, condition Expr) (Expr, error) {
-	organizationAST := FunctionCallConstr(
-		VariableConstr("organization"),
+	organizationAST := BuildFunctionCall(
+		BuildVariable("organization"),
 		[]Expr{},
 	)
 
-	ast := FunctionCallConstr(
-		VariableConstr("filter"),
+	ast := BuildFunctionCall(
+		BuildVariable("filter"),
 		[]Expr{
 			organizationAST,
-			LambdaConstr(
-				[]Expr{TypedExprConstr(VariableConstr(param), BuildStringType())},
+			BuildLambda(
+				[]Expr{BuildTypedExpr(BuildVariable(param), BuildStringType())},
 				condition,
 			),
 		},
