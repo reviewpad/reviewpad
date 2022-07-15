@@ -8,7 +8,6 @@ import (
 	"context"
 	"log"
 	"net/http"
-	"reflect"
 	"testing"
 
 	"github.com/google/go-github/v42/github"
@@ -67,9 +66,10 @@ func TestGetPullRequest(t *testing.T) {
 }
 
 func TestGetPatch(t *testing.T) {
+	filename := "default-mock-repo/file1.ts"
 	mockedPullRequestFileList := &[]*github.CommitFile{
 		{
-			Filename: github.String("default-mock-repo/file1.ts"),
+			Filename: github.String(filename),
 			Patch:    nil,
 		},
 	}
@@ -88,8 +88,6 @@ func TestGetPatch(t *testing.T) {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
 
-	filename := "default-mock-repo/file1.ts"
-
 	wantPatch := make(aladino.Patch)
 	wantPatch[filename] = &aladino.File{
 		Repr: &github.CommitFile{
@@ -100,7 +98,7 @@ func TestGetPatch(t *testing.T) {
 
 	gotPatch := mockedEnv.GetPatch()
 
-	assert.True(t, reflect.DeepEqual(wantPatch, gotPatch))
+	assert.Equal(t, wantPatch, gotPatch)
 }
 
 func TestGetRegisterMap(t *testing.T) {
@@ -113,7 +111,7 @@ func TestGetRegisterMap(t *testing.T) {
 
 	gotRegisterMap := mockedEnv.GetRegisterMap()
 
-	assert.True(t, reflect.DeepEqual(wantRegisterMap, gotRegisterMap))
+	assert.Equal(t, wantRegisterMap, gotRegisterMap)
 }
 
 func TestGetBuiltIns(t *testing.T) {
@@ -154,7 +152,7 @@ func TestGetReport(t *testing.T) {
 
 	gotReport := mockedEnv.GetReport()
 
-	assert.True(t, reflect.DeepEqual(wantReport, gotReport))
+	assert.Equal(t, wantReport, gotReport)
 }
 
 func TestNewTypeEnv(t *testing.T) {
