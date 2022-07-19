@@ -3,3 +3,36 @@
 // found in the LICENSE file.
 
 package aladino_test
+
+import (
+	"fmt"
+	"log"
+	"testing"
+
+	"github.com/reviewpad/reviewpad/v2/lang/aladino"
+	mocks_aladino "github.com/reviewpad/reviewpad/v2/mocks/aladino"
+	"github.com/stretchr/testify/assert"
+)
+
+func TestProcessRule(t *testing.T) {
+	mockedEnv, err := mocks_aladino.MockDefaultEnv(nil, nil)
+	if err != nil {
+		log.Fatalf("mockDefaultEnv failed: %v", err)
+	}
+
+	mockedInterpreter := &aladino.Interpreter{
+		Env: mockedEnv,
+	}
+
+	ruleName := "rule_name"
+	spec := "1 == 1"
+	err = mockedInterpreter.ProcessRule(ruleName, spec)
+
+	internalRuleName := fmt.Sprintf("@rule:%v", ruleName)
+	gotVal := mockedEnv.GetRegisterMap()[internalRuleName]
+
+	wantVal := aladino.BuildStringValue(spec)
+
+	assert.Nil(t, err)
+	assert.Equal(t, wantVal, gotVal)
+}
