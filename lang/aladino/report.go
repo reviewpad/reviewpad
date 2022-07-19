@@ -126,7 +126,7 @@ func BuildVerboseReport(report *Report) string {
 func DeleteReportComment(env Env, commentId int64) error {
 	pullRequest := env.GetPullRequest()
 	owner := utils.GetPullRequestBaseOwnerName(pullRequest)
-	repo := utils.GetPullRequestRepoName(pullRequest)
+	repo := utils.GetPullRequestBaseRepoName(pullRequest)
 
 	_, err := env.GetClient().Issues.DeleteComment(env.GetCtx(), owner, repo, commentId)
 
@@ -144,7 +144,7 @@ func UpdateReportComment(env Env, commentId int64, report string) error {
 
 	pullRequest := env.GetPullRequest()
 	owner := utils.GetPullRequestBaseOwnerName(pullRequest)
-	repo := utils.GetPullRequestRepoName(pullRequest)
+	repo := utils.GetPullRequestBaseRepoName(pullRequest)
 
 	_, _, err := env.GetClient().Issues.EditComment(env.GetCtx(), owner, repo, commentId, &gitHubComment)
 
@@ -162,7 +162,7 @@ func AddReportComment(env Env, report string) error {
 
 	pullRequest := env.GetPullRequest()
 	owner := utils.GetPullRequestBaseOwnerName(pullRequest)
-	repo := utils.GetPullRequestRepoName(pullRequest)
+	repo := utils.GetPullRequestBaseRepoName(pullRequest)
 	prNum := utils.GetPullRequestNumber(pullRequest)
 
 	_, _, err := env.GetClient().Issues.CreateComment(env.GetCtx(), owner, repo, prNum, &gitHubComment)
@@ -177,7 +177,7 @@ func AddReportComment(env Env, report string) error {
 func FindReportComment(env Env) (*github.IssueComment, error) {
 	pullRequest := env.GetPullRequest()
 	owner := utils.GetPullRequestBaseOwnerName(pullRequest)
-	repo := utils.GetPullRequestRepoName(pullRequest)
+	repo := utils.GetPullRequestBaseRepoName(pullRequest)
 	prNum := utils.GetPullRequestNumber(pullRequest)
 
 	comments, err := utils.GetPullRequestComments(env.GetCtx(), env.GetClient(), owner, repo, prNum, &github.IssueListCommentsOptions{

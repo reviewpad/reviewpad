@@ -103,7 +103,7 @@ func NewEvalEnv(
 	builtIns *BuiltIns,
 ) (Env, error) {
 	owner := utils.GetPullRequestBaseOwnerName(pullRequest)
-	repo := utils.GetPullRequestRepoName(pullRequest)
+	repo := utils.GetPullRequestBaseRepoName(pullRequest)
 	number := utils.GetPullRequestNumber(pullRequest)
 
 	files, err := utils.GetPullRequestFiles(ctx, gitHubClient, owner, repo, number)

@@ -22,7 +22,7 @@ func commentCode(e aladino.Env, args []aladino.Value) error {
 
 	prNum := utils.GetPullRequestNumber(pullRequest)
 	owner := utils.GetPullRequestBaseOwnerName(pullRequest)
-	repo := utils.GetPullRequestRepoName(pullRequest)
+	repo := utils.GetPullRequestBaseRepoName(pullRequest)
 
 	commentBody := args[0].(*aladino.StringValue).Val
 

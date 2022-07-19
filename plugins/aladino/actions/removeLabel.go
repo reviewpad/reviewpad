@@ -23,7 +23,7 @@ func removeLabelCode(e aladino.Env, args []aladino.Value) error {
 
 	prNum := utils.GetPullRequestNumber(e.GetPullRequest())
 	owner := utils.GetPullRequestBaseOwnerName(e.GetPullRequest())
-	repo := utils.GetPullRequestRepoName(e.GetPullRequest())
+	repo := utils.GetPullRequestBaseRepoName(e.GetPullRequest())
 
 	internalLabelID := aladino.BuildInternalLabelID(labelID)
 

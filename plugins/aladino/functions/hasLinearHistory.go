@@ -20,7 +20,7 @@ func HasLinearHistory() *aladino.BuiltInFunction {
 func hasLinearHistoryCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
 	prNum := utils.GetPullRequestNumber(e.GetPullRequest())
 	owner := utils.GetPullRequestBaseOwnerName(e.GetPullRequest())
-	repo := utils.GetPullRequestRepoName(e.GetPullRequest())
+	repo := utils.GetPullRequestBaseRepoName(e.GetPullRequest())
 
 	ghCommits, _, err := e.GetClient().PullRequests.ListCommits(e.GetCtx(), owner, repo, prNum, &github.ListOptions{})
 	if err != nil {
