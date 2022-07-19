@@ -14,8 +14,8 @@ import (
 	"strconv"
 
 	"github.com/google/go-github/v42/github"
-	"github.com/reviewpad/reviewpad/v2"
-	"github.com/reviewpad/reviewpad/v2/collector"
+	"github.com/reviewpad/reviewpad/v3"
+	"github.com/reviewpad/reviewpad/v3/collector"
 	"github.com/shurcooL/githubv4"
 	"golang.org/x/oauth2"
 )

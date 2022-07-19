@@ -11,9 +11,9 @@ import (
 
 	"github.com/google/go-github/v42/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
-	"github.com/reviewpad/reviewpad/v2/lang/aladino"
-	mocks_aladino "github.com/reviewpad/reviewpad/v2/mocks/aladino"
-	plugins_aladino "github.com/reviewpad/reviewpad/v2/plugins/aladino"
+	"github.com/reviewpad/reviewpad/v3/lang/aladino"
+	mocks_aladino "github.com/reviewpad/reviewpad/v3/mocks/aladino"
+	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -24,7 +24,7 @@ func TestIsDraft_WhenTrue(t *testing.T) {
 		Draft: github.Bool(true),
 	})
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
-        []mock.MockBackendOption{
+		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsByOwnerByRepoByPullNumber,
 				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
@@ -33,7 +33,7 @@ func TestIsDraft_WhenTrue(t *testing.T) {
 			),
 		},
 		nil,
-    )
+	)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}

@@ -7,8 +7,8 @@ package engine
 import (
 	"regexp"
 
-	"github.com/reviewpad/reviewpad/v2/utils"
-	"github.com/reviewpad/reviewpad/v2/utils/fmtio"
+	"github.com/reviewpad/reviewpad/v3/utils"
+	"github.com/reviewpad/reviewpad/v3/utils/fmtio"
 )
 
 func lintError(format string, a ...interface{}) error {
