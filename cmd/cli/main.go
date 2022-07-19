@@ -46,12 +46,12 @@ func main() {
 	}
 
 	if *pullRequestUrl == "" {
-		log.Printf("Missing argument reviewpad.")
+		log.Printf("Missing argument pull-request.")
 		usage()
 	}
 
 	if *gitHubToken == "" {
-		log.Printf("Missing argument reviewpad.")
+		log.Printf("Missing argument github-token.")
 		usage()
 	}
 
