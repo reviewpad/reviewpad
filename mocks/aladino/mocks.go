@@ -90,9 +90,9 @@ func GetDefaultMockPullRequestDetailsWith(pr *github.PullRequest) *github.PullRe
 		defaultPullRequest.Number = pr.Number
 	}
 
-    if pr.Head != nil {
-        defaultPullRequest.Head = pr.Head
-    }
+	if pr.Head != nil {
+		defaultPullRequest.Head = pr.Head
+	}
 
 	if pr.Base != nil {
 		defaultPullRequest.Base = pr.Base
@@ -106,42 +106,42 @@ func GetDefaultMockPullRequestDetailsWith(pr *github.PullRequest) *github.PullRe
 		defaultPullRequest.Commits = pr.Commits
 	}
 
-    if pr.Labels != nil {
-        defaultPullRequest.Labels = pr.Labels
-    }
+	if pr.Labels != nil {
+		defaultPullRequest.Labels = pr.Labels
+	}
 
-    if pr.Milestone != nil {
-        defaultPullRequest.Milestone = pr.Milestone
-    }
+	if pr.Milestone != nil {
+		defaultPullRequest.Milestone = pr.Milestone
+	}
 
-    if pr.RequestedReviewers != nil {
-        defaultPullRequest.RequestedReviewers = pr.RequestedReviewers
-    }
+	if pr.RequestedReviewers != nil {
+		defaultPullRequest.RequestedReviewers = pr.RequestedReviewers
+	}
 
-    if pr.RequestedTeams != nil {
-        defaultPullRequest.RequestedTeams = pr.RequestedTeams
-    }
+	if pr.RequestedTeams != nil {
+		defaultPullRequest.RequestedTeams = pr.RequestedTeams
+	}
 
-    if pr.Additions != nil {
+	if pr.Additions != nil {
 		defaultPullRequest.Additions = pr.Additions
 	}
-    
+
 	if pr.Deletions != nil {
 		defaultPullRequest.Deletions = pr.Deletions
 	}
 
-    if pr.Title != nil {
-        defaultPullRequest.Title = pr.Title
-    }
+	if pr.Title != nil {
+		defaultPullRequest.Title = pr.Title
+	}
 
-    if pr.Body != nil {
-        defaultPullRequest.Body = pr.Body
-    }
+	if pr.Body != nil {
+		defaultPullRequest.Body = pr.Body
+	}
 
-    if pr.Draft != nil {
-        defaultPullRequest.Draft = pr.Draft
-    }
-    
+	if pr.Draft != nil {
+		defaultPullRequest.Draft = pr.Draft
+	}
+
 	return defaultPullRequest
 }
 
@@ -234,12 +234,12 @@ func MockDefaultEnv(ghApiClientOptions []mock.MockBackendOption, ghGraphQLHandle
 	client := github.NewClient(mockDefaultHttpClient(ghApiClientOptions))
 
 	// Handle GraphQL
-    var clientGQL *githubv4.Client
-    if ghGraphQLHandler != nil {
-        mux := http.NewServeMux()
-        mux.HandleFunc("/graphql", ghGraphQLHandler)
-        clientGQL = githubv4.NewClient(&http.Client{Transport: localRoundTripper{handler: mux}})
-    }
+	var clientGQL *githubv4.Client
+	if ghGraphQLHandler != nil {
+		mux := http.NewServeMux()
+		mux.HandleFunc("/graphql", ghGraphQLHandler)
+		clientGQL = githubv4.NewClient(&http.Client{Transport: localRoundTripper{handler: mux}})
+	}
 
 	return MockEnvWith(prOwner, prRepoName, prNum, client, clientGQL)
 }
