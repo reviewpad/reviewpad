@@ -36,6 +36,7 @@ type Env struct {
 	Collector   collector.Collector
 	PullRequest *github.PullRequest
 	Interpreter Interpreter
+	DryRun      bool
 }
 
 func NewEvalEnv(
@@ -45,6 +46,7 @@ func NewEvalEnv(
 	collector collector.Collector,
 	pullRequest *github.PullRequest,
 	interpreter Interpreter,
+	dryRun bool,
 ) (*Env, error) {
 	input := &Env{
 		Ctx:         ctx,
@@ -53,6 +55,7 @@ func NewEvalEnv(
 		Collector:   collector,
 		PullRequest: pullRequest,
 		Interpreter: interpreter,
+		DryRun:      dryRun,
 	}
 
 	return input, nil
