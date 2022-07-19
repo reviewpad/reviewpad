@@ -214,7 +214,11 @@ func mockEnvWith(prOwner string, prRepoName string, prNum int, client *github.Cl
 		ctx,
 		client,
 		clientGQL,
+<<<<<<< HEAD:lang/aladino/mocks.go
 		DefaultMockCollector,
+=======
+		collector.NewCollector("", ""),
+>>>>>>> test: add unit tests for lang/aladino interpreter ExecStatement:mocks/aladino/mocks.go
 		pr,
 		eventPayload,
 		builtIns,
