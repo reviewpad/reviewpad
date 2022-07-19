@@ -55,7 +55,7 @@ func TestGetPullRequestHeadRepoName(t *testing.T) {
 	assert.Equal(t, mockedHeadRepoName, gotRepoName)
 }
 
-func TestGetPullRequestOwnerName(t *testing.T) {
+func TestGetPullRequestBaseOwnerName(t *testing.T) {
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(nil, nil)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
@@ -63,7 +63,7 @@ func TestGetPullRequestOwnerName(t *testing.T) {
 
 	mockedPullRequest := mockedEnv.GetPullRequest()
 	wantOwnerName := mockedPullRequest.Base.Repo.Owner.GetLogin()
-	gotOwnerName := utils.GetPullRequestOwnerName(mockedPullRequest)
+	gotOwnerName := utils.GetPullRequestBaseOwnerName(mockedPullRequest)
 
 	assert.Equal(t, wantOwnerName, gotOwnerName)
 }

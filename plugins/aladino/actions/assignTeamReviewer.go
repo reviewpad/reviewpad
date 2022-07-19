@@ -34,7 +34,7 @@ func assignTeamReviewerCode(e aladino.Env, args []aladino.Value) error {
 
 	pullRequest := e.GetPullRequest()
 	prNum := utils.GetPullRequestNumber(pullRequest)
-	owner := utils.GetPullRequestOwnerName(pullRequest)
+	owner := utils.GetPullRequestBaseOwnerName(pullRequest)
 	repo := utils.GetPullRequestRepoName(pullRequest)
 
 	_, _, err := e.GetClient().PullRequests.RequestReviewers(e.GetCtx(), owner, repo, prNum, github.ReviewersRequest{

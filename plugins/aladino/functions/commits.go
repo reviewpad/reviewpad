@@ -18,7 +18,7 @@ func Commits() *aladino.BuiltInFunction {
 
 func commitsCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
 	prNum := utils.GetPullRequestNumber(e.GetPullRequest())
-	owner := utils.GetPullRequestOwnerName(e.GetPullRequest())
+	owner := utils.GetPullRequestBaseOwnerName(e.GetPullRequest())
 	repo := utils.GetPullRequestRepoName(e.GetPullRequest())
 
 	ghCommits, err := utils.GetPullRequestCommits(e.GetCtx(), e.GetClient(), owner, repo, prNum)

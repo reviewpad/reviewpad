@@ -22,7 +22,7 @@ func addLabelCode(e aladino.Env, args []aladino.Value) error {
 	labelID := args[0].(*aladino.StringValue).Val
 
 	prNum := utils.GetPullRequestNumber(e.GetPullRequest())
-	owner := utils.GetPullRequestOwnerName(e.GetPullRequest())
+	owner := utils.GetPullRequestBaseOwnerName(e.GetPullRequest())
 	repo := utils.GetPullRequestRepoName(e.GetPullRequest())
 
 	internalLabelID := aladino.BuildInternalLabelID(labelID)

@@ -20,7 +20,7 @@ func TotalCreatedPullRequests() *aladino.BuiltInFunction {
 func totalCreatedPullRequestsCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
 	devName := args[0].(*aladino.StringValue).Val
 
-	owner := utils.GetPullRequestOwnerName(e.GetPullRequest())
+	owner := utils.GetPullRequestBaseOwnerName(e.GetPullRequest())
 	repo := utils.GetPullRequestRepoName(e.GetPullRequest())
 
 	issues, _, err := e.GetClient().Issues.ListByRepo(e.GetCtx(), owner, repo, &github.IssueListByRepoOptions{

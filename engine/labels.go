@@ -44,7 +44,7 @@ func createLabel(e *Env, labelName *string, label *PadLabel) error {
 		Description: &label.Description,
 	}
 
-	owner := utils.GetPullRequestOwnerName(e.PullRequest)
+	owner := utils.GetPullRequestBaseOwnerName(e.PullRequest)
 	repo := utils.GetPullRequestRepoName(e.PullRequest)
 
 	_, _, err = e.Client.Issues.CreateLabel(e.Ctx, owner, repo, ghLabel)
@@ -53,7 +53,7 @@ func createLabel(e *Env, labelName *string, label *PadLabel) error {
 }
 
 func checkLabelExists(e *Env, labelName string) (bool, error) {
-	owner := utils.GetPullRequestOwnerName(e.PullRequest)
+	owner := utils.GetPullRequestBaseOwnerName(e.PullRequest)
 	repo := utils.GetPullRequestRepoName(e.PullRequest)
 
 	_, _, err := e.Client.Issues.GetLabel(e.Ctx, owner, repo, labelName)

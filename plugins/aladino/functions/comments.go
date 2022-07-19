@@ -19,7 +19,7 @@ func Comments() *aladino.BuiltInFunction {
 
 func commentsCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
 	prNum := utils.GetPullRequestNumber(e.GetPullRequest())
-	owner := utils.GetPullRequestOwnerName(e.GetPullRequest())
+	owner := utils.GetPullRequestBaseOwnerName(e.GetPullRequest())
 	repo := utils.GetPullRequestRepoName(e.GetPullRequest())
 
 	ghComments, err := utils.GetPullRequestComments(e.GetCtx(), e.GetClient(), owner, repo, prNum, &github.IssueListCommentsOptions{})

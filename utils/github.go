@@ -24,7 +24,7 @@ func GetPullRequestHeadRepoName(pullRequest *github.PullRequest) string {
 	return pullRequest.Head.Repo.GetName()
 }
 
-func GetPullRequestOwnerName(pullRequest *github.PullRequest) string {
+func GetPullRequestBaseOwnerName(pullRequest *github.PullRequest) string {
 	return pullRequest.Base.Repo.Owner.GetLogin()
 }
 
