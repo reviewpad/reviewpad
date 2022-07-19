@@ -21,6 +21,40 @@ type paginatedRequestResult struct {
 	pageNum int
 }
 
+func TestGetPullRequestHeadOwnerName(t *testing.T) {
+	mockedHeadOwnerName := "reviewpad"
+	mockedPullRequest := mocks_aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
+		Head: &github.PullRequestBranch{
+			Repo: &github.Repository{
+				Owner: &github.User{
+					Login: github.String(mockedHeadOwnerName),
+				},
+			},
+		},
+	})
+	wantOwnerName := mockedPullRequest.Head.Repo.Owner.GetLogin()
+	gotOwnerName := utils.GetPullRequestHeadOwnerName(mockedPullRequest)
+
+	assert.Equal(t, wantOwnerName, gotOwnerName)
+	assert.Equal(t, mockedHeadOwnerName, gotOwnerName)
+}
+
+func TestGetPullRequestHeadRepoName(t *testing.T) {
+	mockedHeadRepoName := "mocks-test"
+	mockedPullRequest := mocks_aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
+		Head: &github.PullRequestBranch{
+			Repo: &github.Repository{
+				Name: &mockedHeadRepoName,
+			},
+		},
+	})
+	wantRepoName := mockedPullRequest.Head.Repo.GetName()
+	gotRepoName := utils.GetPullRequestHeadRepoName(mockedPullRequest)
+
+	assert.Equal(t, wantRepoName, gotRepoName)
+	assert.Equal(t, mockedHeadRepoName, gotRepoName)
+}
+
 func TestGetPullRequestOwnerName(t *testing.T) {
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(nil, nil)
 	if err != nil {

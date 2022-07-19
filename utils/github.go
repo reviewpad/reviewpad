@@ -16,6 +16,14 @@ import (
 
 const maxPerPage int = 100
 
+func GetPullRequestHeadOwnerName(pullRequest *github.PullRequest) string {
+	return pullRequest.Head.Repo.Owner.GetLogin()
+}
+
+func GetPullRequestHeadRepoName(pullRequest *github.PullRequest) string {
+	return pullRequest.Head.Repo.GetName()
+}
+
 func GetPullRequestOwnerName(pullRequest *github.PullRequest) string {
 	return pullRequest.Base.Repo.Owner.GetLogin()
 }
@@ -92,9 +100,9 @@ func GetPullRequestComments(ctx context.Context, client *github.Client, owner st
 		func(i interface{}, page int) (interface{}, *github.Response, error) {
 			fls := i.([]*github.IssueComment)
 			fs, resp, err := client.Issues.ListComments(ctx, owner, repo, number, &github.IssueListCommentsOptions{
-				Sort: opts.Sort,
+				Sort:      opts.Sort,
 				Direction: opts.Direction,
-				Since: opts.Since,
+				Since:     opts.Since,
 				ListOptions: github.ListOptions{
 					Page:    page,
 					PerPage: maxPerPage,
@@ -225,8 +233,8 @@ func GetPullRequestCommits(ctx context.Context, client *github.Client, owner str
 		func(i interface{}, page int) (interface{}, *github.Response, error) {
 			currentCommits := i.([]*github.RepositoryCommit)
 			commits, resp, err := client.PullRequests.ListCommits(ctx, owner, repo, number, &github.ListOptions{
-					Page:    page,
-					PerPage: maxPerPage,
+				Page:    page,
+				PerPage: maxPerPage,
 			})
 			if err != nil {
 				return nil, nil, err
