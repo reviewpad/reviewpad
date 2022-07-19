@@ -43,6 +43,7 @@ func GetDefaultMockPullRequestDetails() *github.PullRequest {
 		},
 		Title:     github.String("Amazing new feature"),
 		Body:      github.String("Please pull these awesome changes in!"),
+		URL:       github.String("pullRequestURL"),
 		CreatedAt: &prDate,
 		Comments:  github.Int(6),
 		Commits:   github.Int(5),
@@ -50,7 +51,7 @@ func GetDefaultMockPullRequestDetails() *github.PullRequest {
 		Milestone: &github.Milestone{
 			Title: github.String("v1.0"),
 		},
-        URL: github.String("https://foo.bar"),
+		URL: github.String("https://foo.bar"),
 		Labels: []*github.Label{
 			{
 				Name: github.String("enhancement"),
@@ -169,7 +170,7 @@ func getDefaultMockPullRequestFileList() *[]*github.CommitFile {
 func MockBuiltIns() *BuiltIns {
 	return &BuiltIns{
 		Functions: map[string]*BuiltInFunction{
-            "emptyFunction": {
+			"emptyFunction": {
 				Type: BuildFunctionType([]Type{}, nil),
 				Code: func(e Env, args []Value) (Value, error) {
 					return nil, nil
@@ -181,7 +182,7 @@ func MockBuiltIns() *BuiltIns {
 					return BuildIntValue(0), nil
 				},
 			},
-            "returnStr": {
+			"returnStr": {
 				Type: BuildFunctionType([]Type{BuildStringType()}, BuildStringType()),
 				Code: func(e Env, args []Value) (Value, error) {
 					return args[0].(*StringValue), nil
@@ -285,7 +286,7 @@ func MockDefaultEnv(ghApiClientOptions []mock.MockBackendOption, ghGraphQLHandle
 func MockDefaultEnvWithBuiltIns(
 	ghApiClientOptions []mock.MockBackendOption,
 	ghGraphQLHandler func(http.ResponseWriter, *http.Request),
-    builtIns *BuiltIns,
+	builtIns *BuiltIns,
 ) (Env, error) {
 	prOwner := DefaultMockPrOwner
 	prRepoName := DefaultMockPrRepoName
