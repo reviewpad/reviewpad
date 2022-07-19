@@ -8,10 +8,10 @@ on:
       - completed
 
 jobs:
-    reviewpad:
-        runs-on: ubuntu-latest
-        steps:
-            - name: Reviewpad
-              uses: reviewpad/action@v3.x
-              with:
-                  token: ${{ secrets.REVIEWPAD_TOKEN }}
+  reviewpad:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Reviewpad
+        uses: reviewpad/action@v3.x
+        with:
+          token: ${{ secrets.REVIEWPAD_TOKEN }}

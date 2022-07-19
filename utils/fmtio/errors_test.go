@@ -8,7 +8,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/reviewpad/reviewpad/v2/utils/fmtio"
+	"github.com/reviewpad/reviewpad/v3/utils/fmtio"
 	"github.com/stretchr/testify/assert"
 )
 

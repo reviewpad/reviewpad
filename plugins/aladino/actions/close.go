@@ -5,8 +5,8 @@
 package plugins_aladino_actions
 
 import (
-	"github.com/reviewpad/reviewpad/v2/lang/aladino"
-	"github.com/reviewpad/reviewpad/v2/utils"
+	"github.com/reviewpad/reviewpad/v3/lang/aladino"
+	"github.com/reviewpad/reviewpad/v3/utils"
 )
 
 func Close() *aladino.BuiltInAction {

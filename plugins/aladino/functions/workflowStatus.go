@@ -9,8 +9,8 @@ import (
 	"strings"
 
 	"github.com/google/go-github/v42/github"
-	"github.com/reviewpad/reviewpad/v2/lang/aladino"
-	"github.com/reviewpad/reviewpad/v2/utils"
+	"github.com/reviewpad/reviewpad/v3/lang/aladino"
+	"github.com/reviewpad/reviewpad/v3/utils"
 )
 
 // workflowStatus gets GitHub workflow status. Status can be "success" or "failure".

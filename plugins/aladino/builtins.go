@@ -5,9 +5,9 @@
 package plugins_aladino
 
 import (
-	"github.com/reviewpad/reviewpad/v2/lang/aladino"
-	actions "github.com/reviewpad/reviewpad/v2/plugins/aladino/actions"
-	functions "github.com/reviewpad/reviewpad/v2/plugins/aladino/functions"
+	"github.com/reviewpad/reviewpad/v3/lang/aladino"
+	actions "github.com/reviewpad/reviewpad/v3/plugins/aladino/actions"
+	functions "github.com/reviewpad/reviewpad/v3/plugins/aladino/functions"
 )
 
 // The documentation for the builtins is in:

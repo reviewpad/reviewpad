@@ -8,9 +8,9 @@ import (
 	"log"
 	"testing"
 
-	"github.com/reviewpad/reviewpad/v2/lang/aladino"
-	mocks_aladino "github.com/reviewpad/reviewpad/v2/mocks/aladino"
-	plugins_aladino "github.com/reviewpad/reviewpad/v2/plugins/aladino"
+	"github.com/reviewpad/reviewpad/v3/lang/aladino"
+	mocks_aladino "github.com/reviewpad/reviewpad/v3/mocks/aladino"
+	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
 	"github.com/stretchr/testify/assert"
 )
 

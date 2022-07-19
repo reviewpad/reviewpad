@@ -10,9 +10,9 @@ import (
 	"strings"
 
 	"github.com/google/go-github/v42/github"
-	"github.com/reviewpad/reviewpad/v2/engine"
-	"github.com/reviewpad/reviewpad/v2/utils"
-	"github.com/reviewpad/reviewpad/v2/utils/fmtio"
+	"github.com/reviewpad/reviewpad/v3/engine"
+	"github.com/reviewpad/reviewpad/v3/utils"
+	"github.com/reviewpad/reviewpad/v3/utils/fmtio"
 )
 
 type Report struct {
