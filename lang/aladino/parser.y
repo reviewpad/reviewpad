@@ -45,23 +45,23 @@ prog :
 ;
 
 expr :
-      TK_NOT expr        { $$ = notOp($2) }
-    | expr TK_AND expr   { $$ = andOp($1, $3) }
-    | expr TK_OR expr    { $$ = orOp($1, $3) }
-    | expr TK_EQ expr    { $$ = eqOp($1, $3) }
-    | expr TK_NEQ expr   { $$ = neqOp($1, $3) }
-    | expr TK_CMPOP expr { $$ = cmpOp($1, $2, $3) }
+      TK_NOT expr        { $$ = BuildNotOp($2) }
+    | expr TK_AND expr   { $$ = BuildAndOp($1, $3) }
+    | expr TK_OR expr    { $$ = BuildOrOp($1, $3) }
+    | expr TK_EQ expr    { $$ = BuildEqOp($1, $3) }
+    | expr TK_NEQ expr   { $$ = BuildNeqOp($1, $3) }
+    | expr TK_CMPOP expr { $$ = BuildCmpOp($1, $2, $3) }
     | '(' expr ')'       { $$ = $2 }
-    | TIMESTAMP          { $$ = timeConst($1) }
-    | RELATIVETIMESTAMP  { $$ = relativeTimeConst($1) }
-    | NUMBER             { $$ = intConst($1) }
-    | STRINGLITERAL      { $$ = stringConst($1) }
-    | '[' expr_list ']'  { $$ = array($2) }
-    | '$' IDENTIFIER     { $$ = variable($2) }
-    | TRUE               { $$ = boolConst(true) }
-    | FALSE              { $$ = boolConst(false) }
+    | TIMESTAMP          { $$ = BuildTimeConst($1) }
+    | RELATIVETIMESTAMP  { $$ = BuildRelativeTimeConst($1) }
+    | NUMBER             { $$ = BuildIntConst($1) }
+    | STRINGLITERAL      { $$ = BuildStringConst($1) }
+    | '[' expr_list ']'  { $$ = BuildArray($2) }
+    | '$' IDENTIFIER     { $$ = BuildVariable($2) }
+    | TRUE               { $$ = BuildBoolConst(true) }
+    | FALSE              { $$ = BuildBoolConst(false) }
     | '$' IDENTIFIER '(' expr_list ')' 
-        { $$ = functionCall(variable($2), $4) }
+        { $$ = BuildFunctionCall(BuildVariable($2), $4) }
 ;
 
 expr_list :

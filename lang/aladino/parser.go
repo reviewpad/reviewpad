@@ -491,32 +491,32 @@ Aladinodefault:
 	case 2:
 		AladinoDollar = AladinoS[Aladinopt-2 : Aladinopt+1]
 		{
-			AladinoVAL.ast = notOp(AladinoDollar[2].ast)
+			AladinoVAL.ast = BuildNotOp(AladinoDollar[2].ast)
 		}
 	case 3:
 		AladinoDollar = AladinoS[Aladinopt-3 : Aladinopt+1]
 		{
-			AladinoVAL.ast = andOp(AladinoDollar[1].ast, AladinoDollar[3].ast)
+			AladinoVAL.ast = BuildAndOp(AladinoDollar[1].ast, AladinoDollar[3].ast)
 		}
 	case 4:
 		AladinoDollar = AladinoS[Aladinopt-3 : Aladinopt+1]
 		{
-			AladinoVAL.ast = orOp(AladinoDollar[1].ast, AladinoDollar[3].ast)
+			AladinoVAL.ast = BuildOrOp(AladinoDollar[1].ast, AladinoDollar[3].ast)
 		}
 	case 5:
 		AladinoDollar = AladinoS[Aladinopt-3 : Aladinopt+1]
 		{
-			AladinoVAL.ast = eqOp(AladinoDollar[1].ast, AladinoDollar[3].ast)
+			AladinoVAL.ast = BuildEqOp(AladinoDollar[1].ast, AladinoDollar[3].ast)
 		}
 	case 6:
 		AladinoDollar = AladinoS[Aladinopt-3 : Aladinopt+1]
 		{
-			AladinoVAL.ast = neqOp(AladinoDollar[1].ast, AladinoDollar[3].ast)
+			AladinoVAL.ast = BuildNeqOp(AladinoDollar[1].ast, AladinoDollar[3].ast)
 		}
 	case 7:
 		AladinoDollar = AladinoS[Aladinopt-3 : Aladinopt+1]
 		{
-			AladinoVAL.ast = cmpOp(AladinoDollar[1].ast, AladinoDollar[2].str, AladinoDollar[3].ast)
+			AladinoVAL.ast = BuildCmpOp(AladinoDollar[1].ast, AladinoDollar[2].str, AladinoDollar[3].ast)
 		}
 	case 8:
 		AladinoDollar = AladinoS[Aladinopt-3 : Aladinopt+1]
@@ -526,47 +526,47 @@ Aladinodefault:
 	case 9:
 		AladinoDollar = AladinoS[Aladinopt-1 : Aladinopt+1]
 		{
-			AladinoVAL.ast = timeConst(AladinoDollar[1].str)
+			AladinoVAL.ast = BuildTimeConst(AladinoDollar[1].str)
 		}
 	case 10:
 		AladinoDollar = AladinoS[Aladinopt-1 : Aladinopt+1]
 		{
-			AladinoVAL.ast = relativeTimeConst(AladinoDollar[1].str)
+			AladinoVAL.ast = BuildRelativeTimeConst(AladinoDollar[1].str)
 		}
 	case 11:
 		AladinoDollar = AladinoS[Aladinopt-1 : Aladinopt+1]
 		{
-			AladinoVAL.ast = intConst(AladinoDollar[1].int)
+			AladinoVAL.ast = BuildIntConst(AladinoDollar[1].int)
 		}
 	case 12:
 		AladinoDollar = AladinoS[Aladinopt-1 : Aladinopt+1]
 		{
-			AladinoVAL.ast = stringConst(AladinoDollar[1].str)
+			AladinoVAL.ast = BuildStringConst(AladinoDollar[1].str)
 		}
 	case 13:
 		AladinoDollar = AladinoS[Aladinopt-3 : Aladinopt+1]
 		{
-			AladinoVAL.ast = array(AladinoDollar[2].astList)
+			AladinoVAL.ast = BuildArray(AladinoDollar[2].astList)
 		}
 	case 14:
 		AladinoDollar = AladinoS[Aladinopt-2 : Aladinopt+1]
 		{
-			AladinoVAL.ast = variable(AladinoDollar[2].str)
+			AladinoVAL.ast = BuildVariable(AladinoDollar[2].str)
 		}
 	case 15:
 		AladinoDollar = AladinoS[Aladinopt-1 : Aladinopt+1]
 		{
-			AladinoVAL.ast = boolConst(true)
+			AladinoVAL.ast = BuildBoolConst(true)
 		}
 	case 16:
 		AladinoDollar = AladinoS[Aladinopt-1 : Aladinopt+1]
 		{
-			AladinoVAL.ast = boolConst(false)
+			AladinoVAL.ast = BuildBoolConst(false)
 		}
 	case 17:
 		AladinoDollar = AladinoS[Aladinopt-5 : Aladinopt+1]
 		{
-			AladinoVAL.ast = functionCall(variable(AladinoDollar[2].str), AladinoDollar[4].astList)
+			AladinoVAL.ast = BuildFunctionCall(BuildVariable(AladinoDollar[2].str), AladinoDollar[4].astList)
 		}
 	case 18:
 		AladinoDollar = AladinoS[Aladinopt-3 : Aladinopt+1]

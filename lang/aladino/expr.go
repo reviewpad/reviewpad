@@ -91,7 +91,7 @@ type BoolConst struct {
 	value bool
 }
 
-func boolConst(bVal bool) *BoolConst {
+func BuildBoolConst(bVal bool) *BoolConst {
 	return &BoolConst{value: bVal}
 }
 
@@ -111,7 +111,7 @@ type StringConst struct {
 	value string
 }
 
-func stringConst(val string) *StringConst {
+func BuildStringConst(val string) *StringConst {
 	return &StringConst{val}
 }
 
@@ -131,7 +131,7 @@ type IntConst struct {
 	value int
 }
 
-func intConst(val int) *IntConst {
+func BuildIntConst(val int) *IntConst {
 	return &IntConst{val}
 }
 
@@ -147,7 +147,7 @@ func (thisInt *IntConst) equals(other Expr) bool {
 	return thisInt.value == other.(*IntConst).value
 }
 
-func relativeTimeConst(val string) *IntConst {
+func BuildRelativeTimeConst(val string) *IntConst {
 	now := time.Now()
 
 	timeUnitRegex := regexp.MustCompile(`year|month|week|day|hour|minute`)
@@ -193,7 +193,7 @@ func relativeTimeConst(val string) *IntConst {
 	return &IntConst{}
 }
 
-func timeConst(val string) *IntConst {
+func BuildTimeConst(val string) *IntConst {
 	dateValueRegex := regexp.MustCompile(`^(\d{4})-?(\d{2})-?(\d{2})`)
 	dateValue := dateValueRegex.FindSubmatch([]byte(val))
 
@@ -245,7 +245,7 @@ type Variable struct {
 	ident string
 }
 
-func variable(ident string) *Variable {
+func BuildVariable(ident string) *Variable {
 	return &Variable{ident}
 }
 
@@ -266,11 +266,11 @@ type UnaryOp struct {
 	expr Expr
 }
 
-func unaryOp(op UnaryOperator, expr Expr) *UnaryOp {
+func BuildUnaryOp(op UnaryOperator, expr Expr) *UnaryOp {
 	return &UnaryOp{op, expr}
 }
 
-func notOp(expr Expr) *UnaryOp { return unaryOp(notOperator(), expr) }
+func BuildNotOp(expr Expr) *UnaryOp { return BuildUnaryOp(notOperator(), expr) }
 
 func (b *UnaryOp) Kind() string {
 	return UNARY_OP_CONST
@@ -294,31 +294,37 @@ type BinaryOp struct {
 	rhs Expr
 }
 
-func binaryOp(lhs Expr, op BinaryOperator, rhs Expr) *BinaryOp {
+func BuildBinaryOp(lhs Expr, op BinaryOperator, rhs Expr) *BinaryOp {
 	return &BinaryOp{lhs, op, rhs}
 }
 
-func andOp(lhs Expr, rhs Expr) *BinaryOp         { return binaryOp(lhs, andOperator(), rhs) }
-func orOp(lhs Expr, rhs Expr) *BinaryOp          { return binaryOp(lhs, orOperator(), rhs) }
-func eqOp(lhs Expr, rhs Expr) *BinaryOp          { return binaryOp(lhs, eqOperator(), rhs) }
-func neqOp(lhs Expr, rhs Expr) *BinaryOp         { return binaryOp(lhs, neqOperator(), rhs) }
-func lessThanOp(lhs Expr, rhs Expr) *BinaryOp    { return binaryOp(lhs, lessThanOperator(), rhs) }
-func lessEqThanOp(lhs Expr, rhs Expr) *BinaryOp  { return binaryOp(lhs, lessEqThanOperator(), rhs) }
-func greaterThanOp(lhs Expr, rhs Expr) *BinaryOp { return binaryOp(lhs, greaterThanOperator(), rhs) }
-func greaterEqThanOp(lhs Expr, rhs Expr) *BinaryOp {
-	return binaryOp(lhs, greaterEqThanOperator(), rhs)
+func BuildAndOp(lhs Expr, rhs Expr) *BinaryOp { return BuildBinaryOp(lhs, andOperator(), rhs) }
+func BuildOrOp(lhs Expr, rhs Expr) *BinaryOp  { return BuildBinaryOp(lhs, orOperator(), rhs) }
+func BuildEqOp(lhs Expr, rhs Expr) *BinaryOp  { return BuildBinaryOp(lhs, eqOperator(), rhs) }
+func BuildNeqOp(lhs Expr, rhs Expr) *BinaryOp { return BuildBinaryOp(lhs, neqOperator(), rhs) }
+func BuildLessThanOp(lhs Expr, rhs Expr) *BinaryOp {
+	return BuildBinaryOp(lhs, lessThanOperator(), rhs)
+}
+func BuildLessEqThanOp(lhs Expr, rhs Expr) *BinaryOp {
+	return BuildBinaryOp(lhs, lessEqThanOperator(), rhs)
+}
+func BuildGreaterThanOp(lhs Expr, rhs Expr) *BinaryOp {
+	return BuildBinaryOp(lhs, greaterThanOperator(), rhs)
+}
+func BuildGreaterEqThanOp(lhs Expr, rhs Expr) *BinaryOp {
+	return BuildBinaryOp(lhs, greaterEqThanOperator(), rhs)
 }
 
-func cmpOp(lhs Expr, op string, rhs Expr) Expr {
+func BuildCmpOp(lhs Expr, op string, rhs Expr) Expr {
 	switch op {
 	case LESS_THAN_OP:
-		return lessThanOp(lhs, rhs)
+		return BuildLessThanOp(lhs, rhs)
 	case LESS_EQ_THAN_OP:
-		return lessEqThanOp(lhs, rhs)
+		return BuildLessEqThanOp(lhs, rhs)
 	case GREATER_THAN_OP:
-		return greaterThanOp(lhs, rhs)
+		return BuildGreaterThanOp(lhs, rhs)
 	case GREATER_EQ_THAN_OP:
-		return greaterEqThanOp(lhs, rhs)
+		return BuildGreaterEqThanOp(lhs, rhs)
 	default:
 		fmt.Printf("cmpOp: invalid op %v\n", op)
 		return nil
@@ -347,7 +353,7 @@ type FunctionCall struct {
 	arguments []Expr
 }
 
-func functionCall(name *Variable, arguments []Expr) *FunctionCall {
+func BuildFunctionCall(name *Variable, arguments []Expr) *FunctionCall {
 	return &FunctionCall{name, arguments}
 }
 
@@ -371,7 +377,7 @@ type Array struct {
 	elems []Expr
 }
 
-func array(elems []Expr) *Array {
+func BuildArray(elems []Expr) *Array {
 	return &Array{elems}
 }
 
@@ -409,7 +415,7 @@ type TypedExpr struct {
 	typeOf Type
 }
 
-func typedExpr(expr Expr, typeOf Type) *TypedExpr {
+func BuildTypedExpr(expr Expr, typeOf Type) *TypedExpr {
 	return &TypedExpr{expr, typeOf}
 }
 
@@ -433,7 +439,7 @@ type Lambda struct {
 	body       Expr
 }
 
-func lambda(parameters []Expr, body Expr) *Lambda {
+func BuildLambda(parameters []Expr, body Expr) *Lambda {
 	return &Lambda{parameters, body}
 }
 
