@@ -63,7 +63,6 @@ func TestAddLabel_WhenLabelIsInEnvironment(t *testing.T) {
 	gotLabels := []string{}
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
 		[]mock.MockBackendOption{
-
 			mock.WithRequestMatch(
 				mock.GetReposLabelsByOwnerByRepoByName,
 				&github.Label{},
