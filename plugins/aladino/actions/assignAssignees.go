@@ -35,7 +35,7 @@ func assignAssigneesCode(e aladino.Env, args []aladino.Value) error {
 
 	prNum := utils.GetPullRequestNumber(e.GetPullRequest())
 	owner := utils.GetPullRequestBaseOwnerName(e.GetPullRequest())
-	repo := utils.GetPullRequestRepoName(e.GetPullRequest())
+	repo := utils.GetPullRequestBaseRepoName(e.GetPullRequest())
 
 	_, _, err := e.GetClient().Issues.AddAssignees(e.GetCtx(), owner, repo, prNum, assigneesLogin)
 

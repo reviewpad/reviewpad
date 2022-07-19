@@ -30,7 +30,7 @@ func hasLinkedIssuesCode(e aladino.Env, args []aladino.Value) (aladino.Value, er
 
 	prNum := utils.GetPullRequestNumber(e.GetPullRequest())
 	owner := utils.GetPullRequestBaseOwnerName(e.GetPullRequest())
-	repo := utils.GetPullRequestRepoName(e.GetPullRequest())
+	repo := utils.GetPullRequestBaseRepoName(e.GetPullRequest())
 
 	varGQLPullRequestQuery := map[string]interface{}{
 		"repositoryOwner":   githubv4.String(owner),
