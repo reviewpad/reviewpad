@@ -29,8 +29,12 @@ func execLogf(format string, a ...interface{}) {
 }
 
 func (i *Interpreter) ProcessGroup(groupName string, kind engine.GroupKind, typeOf engine.GroupType, expr, paramExpr, whereExpr string) error {
-	exprAST, _ := buildGroupAST(typeOf, expr, paramExpr, whereExpr)
-	value, err := evalGroup(i.Env, exprAST)
+	exprAST, err := buildGroupAST(typeOf, expr, paramExpr, whereExpr)
+	if err != nil {
+		return fmt.Errorf("buildGroupAST: %v", err)
+	}
+
+    value, err := evalGroup(i.Env, exprAST)
 
 	i.Env.GetRegisterMap()[groupName] = value
 
