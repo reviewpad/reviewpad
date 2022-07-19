@@ -21,7 +21,7 @@ func Merge() *aladino.BuiltInAction {
 
 func mergeCode(e aladino.Env, args []aladino.Value) error {
 	prNum := utils.GetPullRequestNumber(e.GetPullRequest())
-	owner := utils.GetPullRequestOwnerName(e.GetPullRequest())
+	owner := utils.GetPullRequestBaseOwnerName(e.GetPullRequest())
 	repo := utils.GetPullRequestRepoName(e.GetPullRequest())
 
 	mergeMethod, err := parseMergeMethod(args)

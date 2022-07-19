@@ -20,7 +20,7 @@ func closeCode(e aladino.Env, args []aladino.Value) error {
 	pullRequest := e.GetPullRequest()
 
 	prNum := utils.GetPullRequestNumber(pullRequest)
-	owner := utils.GetPullRequestOwnerName(pullRequest)
+	owner := utils.GetPullRequestBaseOwnerName(pullRequest)
 	repo := utils.GetPullRequestRepoName(pullRequest)
 
 	closedState := "closed"
