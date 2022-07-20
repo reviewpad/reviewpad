@@ -70,7 +70,6 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 		// don't check for existence
 		// or create label for dry runs
 		if !env.DryRun {
-
 			labelExists, err := checkLabelExists(env, labelName)
 			if err != nil {
 				return nil, err
@@ -83,7 +82,6 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 					return nil, err
 				}
 			}
-
 		}
 
 		err := interpreter.ProcessLabel(labelKeyName, labelName)
