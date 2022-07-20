@@ -13,7 +13,6 @@ import (
 	"github.com/reviewpad/reviewpad/v3/utils"
 )
 
-// workflowStatus gets GitHub workflow status. Status can be "success" or "failure".
 func WorkflowStatus() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
 		Type: aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, aladino.BuildStringType()),
