@@ -31,12 +31,12 @@ type Interpreter interface {
 
 type Env struct {
 	Ctx         context.Context
+	DryRun      bool
 	Client      *github.Client
 	ClientGQL   *githubv4.Client
 	Collector   collector.Collector
 	PullRequest *github.PullRequest
 	Interpreter Interpreter
-	DryRun      bool
 }
 
 func NewEvalEnv(
