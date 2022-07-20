@@ -7,7 +7,9 @@ package main
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"flag"
+	"io/ioutil"
 	"log"
 	"os"
 	"regexp"
@@ -25,12 +27,29 @@ var (
 	reviewpadFile  = flag.String("reviewpad", "", "File path to reviewpad.yml")
 	pullRequestUrl = flag.String("pull-request", "", "Pull request GitHub url")
 	gitHubToken    = flag.String("github-token", "", "GitHub token")
+	eventFilePath  = flag.String("event-payload", "", "File path to github action event in JSON format")
 	mixpanelToken  = flag.String("mixpanel-token", "", "Mixpanel token")
 )
 
 func usage() {
 	flag.PrintDefaults()
 	os.Exit(2)
+}
+
+type Event struct {
+	Payload *json.RawMessage `json:"event,omitempty"`
+	Name    *string          `json:"event_name,omitempty"`
+}
+
+func parseEvent(rawEvent string) (interface{}, error) {
+	ev := &Event{}
+
+	err := json.Unmarshal([]byte(rawEvent), ev)
+	if err != nil {
+		return nil, err
+	}
+
+	return github.ParseWebHook(*ev.Name, *ev.Payload)
 }
 
 func main() {
@@ -53,6 +72,24 @@ func main() {
 	if *gitHubToken == "" {
 		log.Printf("Missing argument github-token.")
 		usage()
+	}
+
+	var rawEvent string
+
+	if *eventFilePath == "" {
+		rawEvent = "{}"
+	} else {
+		content, err := ioutil.ReadFile(*eventFilePath)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		rawEvent = string(content)
+	}
+
+	ev, err := parseEvent(rawEvent)
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	pullRequestDetailsRegex := regexp.MustCompile(`github\.com\/(.+)\/(.+)\/pull\/(\d+)`)
@@ -118,7 +155,7 @@ func main() {
 		log.Fatalf("Error running reviewpad team edition. Details %v", err.Error())
 	}
 
-	_, err = reviewpad.Run(ctx, gitHubClient, gitHubClientGQL, collectorClient, ghPullRequest, nil, file, *dryRun)
+	_, err = reviewpad.Run(ctx, gitHubClient, gitHubClientGQL, collectorClient, ghPullRequest, ev, file, *dryRun)
 	if err != nil {
 		log.Fatalf("Error running reviewpad team edition. Details %v", err.Error())
 	}

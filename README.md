@@ -104,10 +104,12 @@ This command generate the Reviewpad CLI `main` which you can run to try Reviewpa
 Usage of ./main:
   -dry-run bool
         Dry run mode
+  -event-payload string (optional)
+        File path to github action event in JSON format
   -github-token string
         GitHub token
-  -mixpanel-token string
-        Mixpanel token (optional)
+  -mixpanel-token string (optional)
+        Mixpanel token
   -pull-request string
         Pull request GitHub url
   -reviewpad string
@@ -170,6 +172,8 @@ Add the following to your `.vscode/launch.json`.
                 // GiHub personal access token
                 // https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token
                 "-github-token=_GIT_HUB_TOKEN_",
+                // Absolute path to JSON file with GitHub event payload
+                "-event-payload=_PATH_TO_EVENT_JSON",
             ],
             "program": "${workspaceFolder}/cmd/cli/main.go"
         }
