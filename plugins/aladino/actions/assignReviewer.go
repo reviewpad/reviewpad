@@ -56,6 +56,14 @@ func assignReviewerCode(e aladino.Env, args []aladino.Value) error {
 		return err
 	}
 
+	// Skip current requested reviewers if pull request already reviewed
+	for _, review := range reviews {
+		if review.State != nil && *review.State == "APPROVED" {
+			log.Printf("assignReviewer: skipping request reviewers. the pull request already reviewed")
+			return nil
+		}
+	}
+
 	// Re-request current reviewers if mention on the provided reviewers list
 	for _, review := range reviews {
 		for index, availableReviewer := range availableReviewers {
