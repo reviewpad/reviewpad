@@ -372,3 +372,61 @@ func TestAssignReviewer_HasNoAvailableReviewers(t *testing.T) {
 	assert.Nil(t, err)
 	assert.False(t, isRequestReviewersRequestPerformed, "the action shouldn't request for reviewers")
 }
+
+func TestAssignReviewer_WhenPullRequestAlreadyApproved(t *testing.T) {
+	var isRequestReviewersRequestPerformed bool
+	authorLogin := "john"
+	reviewerA := "mary"
+	mockedPullRequest := mocks_aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
+		User: &github.User{Login: github.String(authorLogin)},
+		RequestedReviewers: []*github.User{
+			{Login: github.String(reviewerA)},
+		},
+	})
+	reviewID := int64(1)
+	reviewState := "APPROVED"
+	mockedReviews := []*github.PullRequestReview{
+		{
+			ID:    &reviewID,
+			State: &reviewState,
+			User:  &github.User{Login: github.String(reviewerA)},
+		},
+	}
+	mockedEnv, err := mocks_aladino.MockDefaultEnv(
+		[]mock.MockBackendOption{
+			mock.WithRequestMatchHandler(
+				mock.GetReposPullsByOwnerByRepoByPullNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+					w.Write(mock.MustMarshal(mockedPullRequest))
+				}),
+			),
+			mock.WithRequestMatch(
+				mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
+				mockedReviews,
+			),
+			mock.WithRequestMatchHandler(
+				mock.PostReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					// If the request reviewers request was performed then the reviewers were assigned to the pull request
+					isRequestReviewersRequestPerformed = true
+				}),
+			),
+		},
+		nil,
+	)
+	if err != nil {
+		log.Fatalf("mockDefaultEnv failed: %v", err)
+	}
+
+	args := []aladino.Value{
+		aladino.BuildArrayValue(
+			[]aladino.Value{
+				aladino.BuildStringValue(reviewerA),
+			},
+		),
+		aladino.BuildIntValue(1),
+	}
+	err = assignReviewer(mockedEnv, args)
+	assert.Nil(t, err)
+	assert.False(t, isRequestReviewersRequestPerformed, "the action shouldn't request for reviewers")
+}
