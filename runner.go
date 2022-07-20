@@ -48,7 +48,7 @@ func Run(
 		return nil, err
 	}
 
-	evalEnv, err := engine.NewEvalEnv(ctx, client, clientGQL, collector, ghPullRequest, aladinoInterpreter, dryRun)
+	evalEnv, err := engine.NewEvalEnv(ctx, dryRun, client, clientGQL, collector, ghPullRequest, aladinoInterpreter)
 	if err != nil {
 		return nil, err
 	}

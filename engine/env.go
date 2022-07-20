@@ -41,21 +41,21 @@ type Env struct {
 
 func NewEvalEnv(
 	ctx context.Context,
+	dryRun bool,
 	client *github.Client,
 	clientGQL *githubv4.Client,
 	collector collector.Collector,
 	pullRequest *github.PullRequest,
 	interpreter Interpreter,
-	dryRun bool,
 ) (*Env, error) {
 	input := &Env{
 		Ctx:         ctx,
+		DryRun:      dryRun,
 		Client:      client,
 		ClientGQL:   clientGQL,
 		Collector:   collector,
 		PullRequest: pullRequest,
 		Interpreter: interpreter,
-		DryRun:      dryRun,
 	}
 
 	return input, nil
