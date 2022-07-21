@@ -22,7 +22,7 @@ func TestEval_OnUnaryOp_WhenExprEvalFails(t *testing.T) {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
 
-	unaryOp, _ := aladino.Parse("!$nonBuiltIn")
+	unaryOp, err := aladino.Parse("!$nonBuiltIn")
 	if err != nil {
 		log.Fatalf("parse failed: %v", err)
 	}
@@ -39,7 +39,7 @@ func TestEval_OnUnaryOp(t *testing.T) {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
 
-	unaryOp, _ := aladino.Parse("!true")
+	unaryOp, err := aladino.Parse("!true")
 	if err != nil {
 		log.Fatalf("parse failed: %v", err)
 	}
@@ -58,8 +58,7 @@ func TestEval_OnBinaryOp_WhenLeftOperandEvalFails(t *testing.T) {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
 
-	// $a() is not a registered built-in
-	binaryOp, _ := aladino.Parse("$nonBuiltIn() == 1")
+	binaryOp, err := aladino.Parse("$nonBuiltIn() == 1")
 	if err != nil {
 		log.Fatalf("parse failed: %v", err)
 	}
@@ -76,8 +75,7 @@ func TestEval_OnBinaryOp_WhenRightOperandEvalFails(t *testing.T) {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
 
-	// $a() is not a registered built-in
-	binaryOp, _ := aladino.Parse("1 == $nonBuiltIn()")
+	binaryOp, err := aladino.Parse("1 == $nonBuiltIn()")
 	if err != nil {
 		log.Fatalf("parse failed: %v", err)
 	}
@@ -94,7 +92,7 @@ func TestEval_OnBinaryOp_WhenDiffKinds(t *testing.T) {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
 
-	binaryOp, _ := aladino.Parse("1 == \"a\"")
+	binaryOp, err := aladino.Parse("1 == \"a\"")
 	if err != nil {
 		log.Fatalf("parse failed: %v", err)
 	}
@@ -105,13 +103,13 @@ func TestEval_OnBinaryOp_WhenDiffKinds(t *testing.T) {
 	assert.EqualError(t, err, "eval: left and right operand have different kinds")
 }
 
-func TestEval_OnBinaryOp(t *testing.T) {
+func TestEval_OnBinaryOp_WhenTrue(t *testing.T) {
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(nil, nil)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
 
-	binaryOp, _ := aladino.Parse("1 == 1")
+	binaryOp, err := aladino.Parse("1 == 1")
 	if err != nil {
 		log.Fatalf("parse failed: %v", err)
 	}
@@ -124,18 +122,37 @@ func TestEval_OnBinaryOp(t *testing.T) {
 	assert.Equal(t, wantVal, gotVal)
 }
 
+func TestEval_OnBinaryOp_WhenFalse(t *testing.T) {
+	mockedEnv, err := mocks_aladino.MockDefaultEnv(nil, nil)
+	if err != nil {
+		log.Fatalf("mockDefaultEnv failed: %v", err)
+	}
+
+	binaryOp, err := aladino.Parse("1 == 2")
+	if err != nil {
+		log.Fatalf("parse failed: %v", err)
+	}
+
+	gotVal, err := binaryOp.Eval(mockedEnv)
+
+	wantVal := aladino.BuildFalseValue()
+
+	assert.Nil(t, err)
+	assert.Equal(t, wantVal, gotVal)
+}
+
 func TestEval_OnVariable_WhenVariableIsRegistered(t *testing.T) {
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(nil, nil)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
 
-	variable, _ := aladino.Parse("$size")
-	variableName := "size"
+	variable, err := aladino.Parse("$size")
 	if err != nil {
-		log.Fatalf("parse failed: %v", err)
+        log.Fatalf("parse failed: %v", err)
 	}
-
+    
+    variableName := "size"
 	mockedEnv.GetRegisterMap()[variableName] = aladino.BuildIntValue(0)
 
 	gotVal, err := variable.Eval(mockedEnv)
@@ -155,7 +172,7 @@ func TestEval_OnVariable_WhenVariableIsNotABuiltIn(t *testing.T) {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
 
-	variable, _ := aladino.Parse("$nonBuiltIn")
+	variable, err := aladino.Parse("$nonBuiltIn")
 	if err != nil {
 		log.Fatalf("parse failed: %v", err)
 	}
@@ -188,7 +205,7 @@ func TestEval_OnVariable_WhenVariableIsABuiltIn(t *testing.T) {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
 
-	variable, _ := aladino.Parse("$size")
+	variable, err := aladino.Parse("$size")
 	if err != nil {
 		log.Fatalf("parse failed: %v", err)
 	}
