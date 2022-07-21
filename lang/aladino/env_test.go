@@ -14,8 +14,8 @@ import (
 
 	"github.com/google/go-github/v42/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
-	"github.com/reviewpad/reviewpad/v2/lang/aladino"
-	mocks_aladino "github.com/reviewpad/reviewpad/v2/mocks/aladino"
+	"github.com/reviewpad/reviewpad/v3/lang/aladino"
+	mocks_aladino "github.com/reviewpad/reviewpad/v3/mocks/aladino"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -207,6 +207,7 @@ func TestNewEvalEnv_WhenGetPullRequestFilesFails(t *testing.T) {
 		nil,
 		mocks_aladino.DefaultCollector,
 		mockedPullRequest,
+        nil,
 		mocks_aladino.MockBuiltIns(),
 	)
 
@@ -245,6 +246,7 @@ func TestNewEvalEnv_WhenNewFileFails(t *testing.T) {
 		nil,
 		mocks_aladino.DefaultCollector,
 		mockedPullRequest,
+        nil,
 		mocks_aladino.MockBuiltIns(),
 	)
 
@@ -289,6 +291,7 @@ func TestNewEvalEnv(t *testing.T) {
 		nil,
 		mocks_aladino.DefaultCollector,
 		mockedPullRequest,
+        nil,
 		mocks_aladino.MockBuiltIns(),
 	)
 
@@ -324,6 +327,7 @@ func TestNewEvalEnv(t *testing.T) {
     assert.Equal(t, wantEnv.PullRequest, gotEnv.GetPullRequest())
     assert.Equal(t, wantEnv.Patch, gotEnv.GetPatch())
     assert.Equal(t, wantEnv.RegisterMap, gotEnv.GetRegisterMap())
+    assert.Equal(t, wantEnv.EventPayload, gotEnv.GetEventPayload())
     
     assert.Equal(t, len(wantEnv.BuiltIns.Functions), len(gotEnv.GetBuiltIns().Functions))
 	assert.Equal(t, len(wantEnv.BuiltIns.Actions), len(gotEnv.GetBuiltIns().Actions))
