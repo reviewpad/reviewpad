@@ -7,7 +7,7 @@ package plugins_aladino_functions
 import (
 	"strings"
 
-	"github.com/reviewpad/reviewpad/v2/lang/aladino"
+	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 )
 
 func StartsWith() *aladino.BuiltInFunction {

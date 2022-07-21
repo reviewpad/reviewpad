@@ -12,8 +12,8 @@ import (
 
 	"github.com/google/go-github/v42/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
-	mocks_aladino "github.com/reviewpad/reviewpad/v2/mocks/aladino"
-	"github.com/reviewpad/reviewpad/v2/utils"
+	mocks_aladino "github.com/reviewpad/reviewpad/v3/mocks/aladino"
+	"github.com/reviewpad/reviewpad/v3/utils"
 	"github.com/stretchr/testify/assert"
 )
 

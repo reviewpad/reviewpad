@@ -10,9 +10,9 @@ import (
 	"log"
 
 	"github.com/google/go-github/v42/github"
-	"github.com/reviewpad/reviewpad/v2/collector"
-	"github.com/reviewpad/reviewpad/v2/engine"
-	"github.com/reviewpad/reviewpad/v2/utils/fmtio"
+	"github.com/reviewpad/reviewpad/v3/collector"
+	"github.com/reviewpad/reviewpad/v3/engine"
+	"github.com/reviewpad/reviewpad/v3/utils/fmtio"
 	"github.com/shurcooL/githubv4"
 )
 
@@ -179,9 +179,11 @@ func NewInterpreter(
 	gitHubClientGQL *githubv4.Client,
 	collector collector.Collector,
 	pullRequest *github.PullRequest,
+	eventPayload interface{},
 	builtIns *BuiltIns,
+
 ) (engine.Interpreter, error) {
-	evalEnv, err := NewEvalEnv(ctx, gitHubClient, gitHubClientGQL, collector, pullRequest, builtIns)
+	evalEnv, err := NewEvalEnv(ctx, gitHubClient, gitHubClientGQL, collector, pullRequest, eventPayload, builtIns)
 	if err != nil {
 		return nil, err
 	}

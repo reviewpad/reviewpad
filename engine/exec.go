@@ -8,7 +8,7 @@ import (
 	"log"
 	"regexp"
 
-	"github.com/reviewpad/reviewpad/v2/utils/fmtio"
+	"github.com/reviewpad/reviewpad/v3/utils/fmtio"
 )
 
 func execError(format string, a ...interface{}) error {

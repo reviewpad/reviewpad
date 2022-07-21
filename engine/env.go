@@ -8,7 +8,7 @@ import (
 	"context"
 
 	"github.com/google/go-github/v42/github"
-	"github.com/reviewpad/reviewpad/v2/collector"
+	"github.com/reviewpad/reviewpad/v3/collector"
 	"github.com/shurcooL/githubv4"
 )
 
@@ -30,13 +30,14 @@ type Interpreter interface {
 }
 
 type Env struct {
-	Ctx         context.Context
-	DryRun      bool
-	Client      *github.Client
-	ClientGQL   *githubv4.Client
-	Collector   collector.Collector
-	PullRequest *github.PullRequest
-	Interpreter Interpreter
+	Ctx          context.Context
+	DryRun       bool
+	Client       *github.Client
+	ClientGQL    *githubv4.Client
+	Collector    collector.Collector
+	PullRequest  *github.PullRequest
+	EventPayload interface{}
+	Interpreter  Interpreter
 }
 
 func NewEvalEnv(
@@ -46,16 +47,18 @@ func NewEvalEnv(
 	clientGQL *githubv4.Client,
 	collector collector.Collector,
 	pullRequest *github.PullRequest,
+	eventPayload interface{},
 	interpreter Interpreter,
 ) (*Env, error) {
 	input := &Env{
-		Ctx:         ctx,
-		DryRun:      dryRun,
-		Client:      client,
-		ClientGQL:   clientGQL,
-		Collector:   collector,
-		PullRequest: pullRequest,
-		Interpreter: interpreter,
+		Ctx:          ctx,
+		DryRun:       dryRun,
+		Client:       client,
+		ClientGQL:    clientGQL,
+		Collector:    collector,
+		PullRequest:  pullRequest,
+		EventPayload: eventPayload,
+		Interpreter:  interpreter,
 	}
 
 	return input, nil

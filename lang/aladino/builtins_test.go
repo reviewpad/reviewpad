@@ -7,8 +7,8 @@ package aladino_test
 import (
 	"testing"
 
-	"github.com/reviewpad/reviewpad/v2/lang/aladino"
-    "github.com/stretchr/testify/assert"
+	"github.com/reviewpad/reviewpad/v3/lang/aladino"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestMergeAladinoBuiltIns(t *testing.T) {

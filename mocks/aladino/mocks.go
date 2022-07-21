@@ -15,8 +15,8 @@ import (
 
 	"github.com/google/go-github/v42/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
-	"github.com/reviewpad/reviewpad/v2/lang/aladino"
-	plugins_aladino "github.com/reviewpad/reviewpad/v2/plugins/aladino"
+	"github.com/reviewpad/reviewpad/v3/lang/aladino"
+	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
 	"github.com/shurcooL/githubv4"
 )
 
@@ -167,7 +167,7 @@ func mockHttpClientWith(clientOptions ...mock.MockBackendOption) *http.Client {
 	return mock.NewMockedHTTPClient(clientOptions...)
 }
 
-func MockEnvWith(prOwner string, prRepoName string, prNum int, client *github.Client, clientGQL *githubv4.Client) (aladino.Env, error) {
+func MockEnvWith(prOwner string, prRepoName string, prNum int, client *github.Client, clientGQL *githubv4.Client, eventPayload interface{}) (aladino.Env, error) {
 	ctx := context.Background()
 	pr, _, err := client.PullRequests.Get(ctx, prOwner, prRepoName, prNum)
 	if err != nil {
@@ -180,6 +180,7 @@ func MockEnvWith(prOwner string, prRepoName string, prNum int, client *github.Cl
 		clientGQL,
 		nil,
 		pr,
+		eventPayload,
 		plugins_aladino.PluginBuiltIns(),
 	)
 
@@ -241,7 +242,29 @@ func MockDefaultEnv(ghApiClientOptions []mock.MockBackendOption, ghGraphQLHandle
 		clientGQL = githubv4.NewClient(&http.Client{Transport: localRoundTripper{handler: mux}})
 	}
 
-	return MockEnvWith(prOwner, prRepoName, prNum, client, clientGQL)
+	return MockEnvWith(prOwner, prRepoName, prNum, client, clientGQL, nil)
+}
+
+// MockDefaultEnvWithEvent mocks an Aladino Env with default values and an event
+func MockDefaultEnvWithEvent(
+	ghApiClientOptions []mock.MockBackendOption,
+	ghGraphQLHandler func(http.ResponseWriter, *http.Request),
+	eventPayload interface{},
+) (aladino.Env, error) {
+	prOwner := defaultMockPrOwner
+	prRepoName := defaultMockPrRepoName
+	prNum := defaultMockPrNum
+	client := github.NewClient(mockDefaultHttpClient(ghApiClientOptions))
+
+	// Handle GraphQL
+	var clientGQL *githubv4.Client
+	if ghGraphQLHandler != nil {
+		mux := http.NewServeMux()
+		mux.HandleFunc("/graphql", ghGraphQLHandler)
+		clientGQL = githubv4.NewClient(&http.Client{Transport: localRoundTripper{handler: mux}})
+	}
+
+	return MockEnvWith(prOwner, prRepoName, prNum, client, clientGQL, eventPayload)
 }
 
 func MustRead(r io.Reader) string {

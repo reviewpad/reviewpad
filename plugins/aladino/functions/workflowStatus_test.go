@@ -1,0 +1,276 @@
+// Copyright 2022 Explore.dev Unipessoal Lda. All Rights Reserved.
+// Use of this source code is governed by a license that can be
+// found in the LICENSE file.
+
+package plugins_aladino_functions_test
+
+import (
+	"log"
+	"net/http"
+	"testing"
+
+	"github.com/google/go-github/v42/github"
+	"github.com/migueleliasweb/go-github-mock/src/mock"
+	"github.com/reviewpad/reviewpad/v3/lang/aladino"
+	mocks_aladino "github.com/reviewpad/reviewpad/v3/mocks/aladino"
+	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
+	"github.com/stretchr/testify/assert"
+)
+
+var workflowStatus = plugins_aladino.PluginBuiltIns().Functions["workflowStatus"].Code
+
+func TestWorkflowStatus_WhenEventPayloadIsNotWorkflowRunEvent(t *testing.T) {
+	checkName := "test-workflow"
+	wantValue := aladino.BuildStringValue("")
+
+	eventPayload := &github.CheckRunEvent{}
+	mockedEnv, err := mocks_aladino.MockDefaultEnvWithEvent(
+		nil,
+		nil,
+		eventPayload,
+	)
+	if err != nil {
+		log.Fatalf("mockDefaultEnvWithEvent failed: %v", err)
+	}
+
+	args := []aladino.Value{aladino.BuildStringValue(checkName)}
+	gotValue, err := workflowStatus(mockedEnv, args)
+
+	assert.Nil(t, err)
+	assert.Equal(t, wantValue, gotValue)
+}
+
+func TestWorkflowStatus_WhenWorkflowRunIsNil(t *testing.T) {
+	checkName := "test-workflow"
+	wantValue := aladino.BuildStringValue("")
+
+	eventPayload := &github.WorkflowRunEvent{
+		WorkflowRun: nil,
+	}
+	mockedEnv, err := mocks_aladino.MockDefaultEnvWithEvent(
+		nil,
+		nil,
+		eventPayload,
+	)
+	if err != nil {
+		log.Fatalf("mockDefaultEnvWithEvent failed: %v", err)
+	}
+
+	args := []aladino.Value{aladino.BuildStringValue(checkName)}
+	gotValue, err := workflowStatus(mockedEnv, args)
+
+	assert.Nil(t, err)
+	assert.Equal(t, wantValue, gotValue)
+}
+
+func TestWorkflowStatus_WhenListCheckRunsForRefRequestFails(t *testing.T) {
+	checkName := "test-workflow"
+	failMessage := "ListCheckRunsForRefRequestFail"
+	headSHA := "1234abc"
+
+	eventPayload := &github.WorkflowRunEvent{
+		WorkflowRun: &github.WorkflowRun{
+			HeadSHA: &headSHA,
+		},
+	}
+	mockedEnv, err := mocks_aladino.MockDefaultEnvWithEvent(
+		[]mock.MockBackendOption{
+			mock.WithRequestMatchHandler(
+				mock.GetReposCommitsCheckRunsByOwnerByRepoByRef,
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					mock.WriteError(
+						w,
+						http.StatusInternalServerError,
+						failMessage,
+					)
+				}),
+			),
+		},
+		nil,
+		eventPayload,
+	)
+	if err != nil {
+		log.Fatalf("mockDefaultEnvWithEvent failed: %v", err)
+	}
+
+	args := []aladino.Value{aladino.BuildStringValue(checkName)}
+	gotValue, err := workflowStatus(mockedEnv, args)
+
+	assert.Nil(t, gotValue)
+	assert.Equal(t, err.(*github.ErrorResponse).Message, failMessage)
+}
+
+func TestWorkflowStatus_WhenCheckRunNotFoundDueToEmptyCheckRuns(t *testing.T) {
+	checkName := "test-workflow"
+	headSHA := "1234abc"
+
+	wantValue := aladino.BuildStringValue("")
+
+	eventPayload := &github.WorkflowRunEvent{
+		WorkflowRun: &github.WorkflowRun{
+			HeadSHA: &headSHA,
+		},
+	}
+	emptyCheckRuns := &github.ListCheckRunsResults{
+		CheckRuns: []*github.CheckRun{},
+	}
+	mockedEnv, err := mocks_aladino.MockDefaultEnvWithEvent(
+		[]mock.MockBackendOption{
+			mock.WithRequestMatchHandler(
+				mock.GetReposCommitsCheckRunsByOwnerByRepoByRef,
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					w.Write(mock.MustMarshal(emptyCheckRuns))
+				}),
+			),
+		},
+		nil,
+		eventPayload,
+	)
+	if err != nil {
+		log.Fatalf("mockDefaultEnvWithEvent failed: %v", err)
+	}
+
+	args := []aladino.Value{aladino.BuildStringValue(checkName)}
+	gotValue, err := workflowStatus(mockedEnv, args)
+
+	assert.Nil(t, err)
+	assert.Equal(t, wantValue, gotValue)
+}
+
+func TestWorkflowStatus_WhenCheckRunIsMissingInNonEmptyCheckRuns(t *testing.T) {
+	checkName := "test-workflow"
+	headSHA := "1234abc"
+
+	wantValue := aladino.BuildStringValue("")
+
+	eventPayload := &github.WorkflowRunEvent{
+		WorkflowRun: &github.WorkflowRun{
+			HeadSHA: &headSHA,
+		},
+	}
+	dummyCheckName := "test-check"
+	emptyCheckRuns := &github.ListCheckRunsResults{
+		CheckRuns: []*github.CheckRun{
+			{
+				Name: &dummyCheckName,
+			},
+		},
+	}
+	mockedEnv, err := mocks_aladino.MockDefaultEnvWithEvent(
+		[]mock.MockBackendOption{
+			mock.WithRequestMatchHandler(
+				mock.GetReposCommitsCheckRunsByOwnerByRepoByRef,
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					w.Write(mock.MustMarshal(emptyCheckRuns))
+				}),
+			),
+		},
+		nil,
+		eventPayload,
+	)
+	if err != nil {
+		log.Fatalf("mockDefaultEnvWithEvent failed: %v", err)
+	}
+
+	args := []aladino.Value{aladino.BuildStringValue(checkName)}
+	gotValue, err := workflowStatus(mockedEnv, args)
+
+	assert.Nil(t, err)
+	assert.Equal(t, wantValue, gotValue)
+}
+
+func TestWorkflowStatus_WhenEventIsCompleted(t *testing.T) {
+	checkName := "test-workflow"
+	checkStatus := "completed"
+	checkConclusion := "success"
+	headSHA := "1234abc"
+
+	wantValue := aladino.BuildStringValue(checkConclusion)
+
+	eventPayload := &github.WorkflowRunEvent{
+		WorkflowRun: &github.WorkflowRun{
+			HeadSHA: &headSHA,
+		},
+	}
+	dummyCheckName := "test-check"
+	checkRuns := &github.ListCheckRunsResults{
+		CheckRuns: []*github.CheckRun{
+			{
+				Name: &dummyCheckName,
+			},
+			{
+				Name:       &checkName,
+				Status:     &checkStatus,
+				Conclusion: &checkConclusion,
+			},
+		},
+	}
+	mockedEnv, err := mocks_aladino.MockDefaultEnvWithEvent(
+		[]mock.MockBackendOption{
+			mock.WithRequestMatchHandler(
+				mock.GetReposCommitsCheckRunsByOwnerByRepoByRef,
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					w.Write(mock.MustMarshal(checkRuns))
+				}),
+			),
+		},
+		nil,
+		eventPayload,
+	)
+	if err != nil {
+		log.Fatalf("mockDefaultEnvWithEvent failed: %v", err)
+	}
+
+	args := []aladino.Value{aladino.BuildStringValue(checkName)}
+	gotValue, err := workflowStatus(mockedEnv, args)
+
+	assert.Nil(t, err)
+	assert.Equal(t, wantValue, gotValue)
+}
+
+func TestWorkflowStatus_WhenEventIsNotCompleted(t *testing.T) {
+	checkName := "test-workflow"
+	checkStatus := "in_progress"
+	headSHA := "1234abc"
+
+	wantValue := aladino.BuildStringValue(checkStatus)
+
+	eventPayload := &github.WorkflowRunEvent{
+		WorkflowRun: &github.WorkflowRun{
+			HeadSHA: &headSHA,
+		},
+	}
+	dummyCheckName := "test-check"
+	checkRuns := &github.ListCheckRunsResults{
+		CheckRuns: []*github.CheckRun{
+			{
+				Name: &dummyCheckName,
+			},
+			{
+				Name:   &checkName,
+				Status: &checkStatus,
+			},
+		},
+	}
+	mockedEnv, err := mocks_aladino.MockDefaultEnvWithEvent(
+		[]mock.MockBackendOption{
+			mock.WithRequestMatchHandler(
+				mock.GetReposCommitsCheckRunsByOwnerByRepoByRef,
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					w.Write(mock.MustMarshal(checkRuns))
+				}),
+			),
+		},
+		nil,
+		eventPayload,
+	)
+	if err != nil {
+		log.Fatalf("mockDefaultEnvWithEvent failed: %v", err)
+	}
+
+	args := []aladino.Value{aladino.BuildStringValue(checkName)}
+	gotValue, err := workflowStatus(mockedEnv, args)
+
+	assert.Nil(t, err)
+	assert.Equal(t, wantValue, gotValue)
+}

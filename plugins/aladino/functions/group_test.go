@@ -9,45 +9,45 @@ import (
 	"log"
 	"testing"
 
-	"github.com/reviewpad/reviewpad/v2/lang/aladino"
-	mocks_aladino "github.com/reviewpad/reviewpad/v2/mocks/aladino"
-	plugins_aladino "github.com/reviewpad/reviewpad/v2/plugins/aladino"
+	"github.com/reviewpad/reviewpad/v3/lang/aladino"
+	mocks_aladino "github.com/reviewpad/reviewpad/v3/mocks/aladino"
+	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
 	"github.com/stretchr/testify/assert"
 )
 
 var group = plugins_aladino.PluginBuiltIns().Functions["group"].Code
 
 func TestGroup(t *testing.T) {
-  groupName := "techLeads"
-  mockedEnv, err := mocks_aladino.MockDefaultEnv(nil, nil)
+	groupName := "techLeads"
+	mockedEnv, err := mocks_aladino.MockDefaultEnv(nil, nil)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
 
-  wantGroup := aladino.BuildArrayValue([]aladino.Value{aladino.BuildStringValue("john"), aladino.BuildStringValue("arthur")})
+	wantGroup := aladino.BuildArrayValue([]aladino.Value{aladino.BuildStringValue("john"), aladino.BuildStringValue("arthur")})
 
-  mockedEnv.GetRegisterMap()[groupName] = wantGroup
+	mockedEnv.GetRegisterMap()[groupName] = wantGroup
 
-  args := []aladino.Value{aladino.BuildStringValue(groupName)}
-  gotGroup, err := group(mockedEnv, args)
+	args := []aladino.Value{aladino.BuildStringValue(groupName)}
+	gotGroup, err := group(mockedEnv, args)
 
-  assert.Nil(t, err)
-  assert.Equal(t, wantGroup, gotGroup)
+	assert.Nil(t, err)
+	assert.Equal(t, wantGroup, gotGroup)
 }
 
 func TestGroup_WhenGroupIsNonExisting(t *testing.T) {
-  groupName := "techLeads"
-  mockedEnv, err := mocks_aladino.MockDefaultEnv(nil, nil)
+	groupName := "techLeads"
+	mockedEnv, err := mocks_aladino.MockDefaultEnv(nil, nil)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
 
-  // Make sure that the group 'techLeads' doesn't exist
-  delete(mockedEnv.GetRegisterMap(), groupName)
+	// Make sure that the group 'techLeads' doesn't exist
+	delete(mockedEnv.GetRegisterMap(), groupName)
 
-  args := []aladino.Value{aladino.BuildStringValue(groupName)}
-  gotGroup, err := group(mockedEnv, args)
+	args := []aladino.Value{aladino.BuildStringValue(groupName)}
+	gotGroup, err := group(mockedEnv, args)
 
-  assert.Nil(t, gotGroup)
-  assert.EqualError(t, err, fmt.Sprintf("getGroup: no group with name %v in state %+q", groupName, mockedEnv.GetRegisterMap()))
+	assert.Nil(t, gotGroup)
+	assert.EqualError(t, err, fmt.Sprintf("getGroup: no group with name %v in state %+q", groupName, mockedEnv.GetRegisterMap()))
 }
