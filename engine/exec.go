@@ -67,20 +67,22 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 			labelName = label.Name
 		}
 
-		labelExists, err := checkLabelExists(env, labelName)
-		if err != nil {
-			return nil, err
-		}
-
-		if !labelExists {
-			err = createLabel(env, &labelName, &label)
+		if !env.DryRun {
+			labelExists, err := checkLabelExists(env, labelName)
 			if err != nil {
-				CollectError(env, err)
 				return nil, err
+			}
+
+			if !labelExists {
+				err = createLabel(env, &labelName, &label)
+				if err != nil {
+					CollectError(env, err)
+					return nil, err
+				}
 			}
 		}
 
-		err = interpreter.ProcessLabel(labelKeyName, labelName)
+		err := interpreter.ProcessLabel(labelKeyName, labelName)
 		if err != nil {
 			return nil, err
 		}
