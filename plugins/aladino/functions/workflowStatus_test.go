@@ -12,7 +12,6 @@ import (
 	"github.com/google/go-github/v42/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
-	mocks_aladino "github.com/reviewpad/reviewpad/v3/mocks/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
 	"github.com/stretchr/testify/assert"
 )
@@ -24,7 +23,7 @@ func TestWorkflowStatus_WhenEventPayloadIsNotWorkflowRunEvent(t *testing.T) {
 	wantValue := aladino.BuildStringValue("")
 
 	eventPayload := &github.CheckRunEvent{}
-	mockedEnv, err := mocks_aladino.MockDefaultEnvWithEvent(
+	mockedEnv, err := aladino.MockDefaultEnvWithEvent(
 		nil,
 		nil,
 		eventPayload,
@@ -47,7 +46,7 @@ func TestWorkflowStatus_WhenWorkflowRunIsNil(t *testing.T) {
 	eventPayload := &github.WorkflowRunEvent{
 		WorkflowRun: nil,
 	}
-	mockedEnv, err := mocks_aladino.MockDefaultEnvWithEvent(
+	mockedEnv, err := aladino.MockDefaultEnvWithEvent(
 		nil,
 		nil,
 		eventPayload,
@@ -73,7 +72,7 @@ func TestWorkflowStatus_WhenListCheckRunsForRefRequestFails(t *testing.T) {
 			HeadSHA: &headSHA,
 		},
 	}
-	mockedEnv, err := mocks_aladino.MockDefaultEnvWithEvent(
+	mockedEnv, err := aladino.MockDefaultEnvWithEvent(
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.GetReposCommitsCheckRunsByOwnerByRepoByRef,
@@ -114,7 +113,7 @@ func TestWorkflowStatus_WhenCheckRunNotFoundDueToEmptyCheckRuns(t *testing.T) {
 	emptyCheckRuns := &github.ListCheckRunsResults{
 		CheckRuns: []*github.CheckRun{},
 	}
-	mockedEnv, err := mocks_aladino.MockDefaultEnvWithEvent(
+	mockedEnv, err := aladino.MockDefaultEnvWithEvent(
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.GetReposCommitsCheckRunsByOwnerByRepoByRef,
@@ -156,7 +155,7 @@ func TestWorkflowStatus_WhenCheckRunIsMissingInNonEmptyCheckRuns(t *testing.T) {
 			},
 		},
 	}
-	mockedEnv, err := mocks_aladino.MockDefaultEnvWithEvent(
+	mockedEnv, err := aladino.MockDefaultEnvWithEvent(
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.GetReposCommitsCheckRunsByOwnerByRepoByRef,
@@ -205,7 +204,7 @@ func TestWorkflowStatus_WhenEventIsCompleted(t *testing.T) {
 			},
 		},
 	}
-	mockedEnv, err := mocks_aladino.MockDefaultEnvWithEvent(
+	mockedEnv, err := aladino.MockDefaultEnvWithEvent(
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.GetReposCommitsCheckRunsByOwnerByRepoByRef,
@@ -252,7 +251,7 @@ func TestWorkflowStatus_WhenEventIsNotCompleted(t *testing.T) {
 			},
 		},
 	}
-	mockedEnv, err := mocks_aladino.MockDefaultEnvWithEvent(
+	mockedEnv, err := aladino.MockDefaultEnvWithEvent(
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.GetReposCommitsCheckRunsByOwnerByRepoByRef,

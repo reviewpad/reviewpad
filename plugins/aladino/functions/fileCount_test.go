@@ -12,7 +12,6 @@ import (
 	"github.com/google/go-github/v42/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
-	mocks_aladino "github.com/reviewpad/reviewpad/v3/mocks/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
 	"github.com/stretchr/testify/assert"
 )
@@ -26,7 +25,7 @@ func TestFileCount(t *testing.T) {
 			Patch:    nil,
 		},
 	}
-	mockedEnv, err := mocks_aladino.MockDefaultEnv(
+	mockedEnv, err := aladino.MockDefaultEnv(
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsFilesByOwnerByRepoByPullNumber,

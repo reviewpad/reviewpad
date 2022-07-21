@@ -12,7 +12,6 @@ import (
 	"github.com/google/go-github/v42/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
-	mocks_aladino "github.com/reviewpad/reviewpad/v3/mocks/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
 	"github.com/stretchr/testify/assert"
 )
@@ -21,10 +20,10 @@ var commitCount = plugins_aladino.PluginBuiltIns().Functions["commitCount"].Code
 
 func TestCommitCount(t *testing.T) {
 	totalCommits := 1
-	mockedPullRequest := mocks_aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
+	mockedPullRequest := aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
 		Commits: &totalCommits,
 	})
-	mockedEnv, err := mocks_aladino.MockDefaultEnv(
+	mockedEnv, err := aladino.MockDefaultEnv(
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsByOwnerByRepoByPullNumber,

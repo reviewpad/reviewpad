@@ -13,7 +13,6 @@ import (
 
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
-	mocks_aladino "github.com/reviewpad/reviewpad/v3/mocks/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
 	"github.com/stretchr/testify/assert"
 )
@@ -25,7 +24,7 @@ type MergeRequestPostBody struct {
 }
 
 func TestMerge_WhenMergeMethodIsUnsupported(t *testing.T) {
-	mockedEnv, err := mocks_aladino.MockDefaultEnv(nil, nil)
+	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
@@ -39,7 +38,7 @@ func TestMerge_WhenMergeMethodIsUnsupported(t *testing.T) {
 func TestMerge_WhenNoMergeMethodIsProvided(t *testing.T) {
 	wantMergeMethod := "merge"
 	var gotMergeMethod string
-	mockedEnv, err := mocks_aladino.MockDefaultEnv(
+	mockedEnv, err := aladino.MockDefaultEnv(
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.PutReposPullsMergeByOwnerByRepoByPullNumber,
@@ -69,7 +68,7 @@ func TestMerge_WhenNoMergeMethodIsProvided(t *testing.T) {
 func TestMerge_WhenMergeMethodIsProvided(t *testing.T) {
 	wantMergeMethod := "rebase"
 	var gotMergeMethod string
-	mockedEnv, err := mocks_aladino.MockDefaultEnv(
+	mockedEnv, err := aladino.MockDefaultEnv(
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.PutReposPullsMergeByOwnerByRepoByPullNumber,

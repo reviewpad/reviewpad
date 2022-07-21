@@ -12,7 +12,6 @@ import (
 	"github.com/google/go-github/v42/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
-	mocks_aladino "github.com/reviewpad/reviewpad/v3/mocks/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
 	"github.com/stretchr/testify/assert"
 )
@@ -20,7 +19,7 @@ import (
 var hasFilePattern = plugins_aladino.PluginBuiltIns().Functions["hasFilePattern"].Code
 
 func TestHasFilePattern_WhenFileBadPattern(t *testing.T) {
-	mockedEnv, err := mocks_aladino.MockDefaultEnv(nil, nil)
+	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
@@ -42,7 +41,7 @@ func TestHasFilePattern_WhenTrue(t *testing.T) {
 			Patch:    nil,
 		},
 	}
-	mockedEnv, err := mocks_aladino.MockDefaultEnv(
+	mockedEnv, err := aladino.MockDefaultEnv(
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsFilesByOwnerByRepoByPullNumber,
@@ -74,7 +73,7 @@ func TestHasFilePattern_WhenFalse(t *testing.T) {
 			Patch:    nil,
 		},
 	}
-	mockedEnv, err := mocks_aladino.MockDefaultEnv(
+	mockedEnv, err := aladino.MockDefaultEnv(
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsFilesByOwnerByRepoByPullNumber,

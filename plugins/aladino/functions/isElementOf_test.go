@@ -9,7 +9,6 @@ import (
 	"testing"
 
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
-	mocks_aladino "github.com/reviewpad/reviewpad/v3/mocks/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
 	"github.com/stretchr/testify/assert"
 )
@@ -17,7 +16,7 @@ import (
 var isElementOf = plugins_aladino.PluginBuiltIns().Functions["isElementOf"].Code
 
 func TestIsElementOf_WhenTrue(t *testing.T) {
-	mockedEnv, err := mocks_aladino.MockDefaultEnv(nil, nil)
+	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
@@ -38,7 +37,7 @@ func TestIsElementOf_WhenTrue(t *testing.T) {
 }
 
 func TestIsElementOf_WhenFalse(t *testing.T) {
-	mockedEnv, err := mocks_aladino.MockDefaultEnv(nil, nil)
+	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}

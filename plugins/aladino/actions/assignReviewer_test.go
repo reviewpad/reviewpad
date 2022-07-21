@@ -14,7 +14,6 @@ import (
 	"github.com/google/go-github/v42/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
-	mocks_aladino "github.com/reviewpad/reviewpad/v3/mocks/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
 	"github.com/stretchr/testify/assert"
 )
@@ -22,7 +21,7 @@ import (
 var assignReviewer = plugins_aladino.PluginBuiltIns().Actions["assignReviewer"].Code
 
 func TestAssignReviewer_WhenTotalRequiredReviewersIsZero(t *testing.T) {
-	mockedEnv, err := mocks_aladino.MockDefaultEnv(nil, nil)
+	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
@@ -41,7 +40,7 @@ func TestAssignReviewer_WhenTotalRequiredReviewersIsZero(t *testing.T) {
 }
 
 func TestAssignReviewer_WhenListOfReviewersIsEmpty(t *testing.T) {
-	mockedEnv, err := mocks_aladino.MockDefaultEnv(nil, nil)
+	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
@@ -59,11 +58,11 @@ func TestAssignReviewer_WhenAuthorIsInListOfReviewers(t *testing.T) {
 	wantReviewers := []string{
 		reviewerLogin,
 	}
-	mockedPullRequest := mocks_aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
+	mockedPullRequest := aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
 		User:               &github.User{Login: github.String(authorLogin)},
 		RequestedReviewers: []*github.User{},
 	})
-	mockedEnv, err := mocks_aladino.MockDefaultEnv(
+	mockedEnv, err := aladino.MockDefaultEnv(
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsByOwnerByRepoByPullNumber,
@@ -113,14 +112,14 @@ func TestAssignReviewer_WhenTotalRequiredReviewersIsMoreThanTotalAvailableReview
 	reviewerLogin := "mary"
 	authorLogin := "john"
 	totalRequiredReviewers := 2
-	mockedPullRequest := mocks_aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
+	mockedPullRequest := aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
 		User:               &github.User{Login: github.String(authorLogin)},
 		RequestedReviewers: []*github.User{},
 	})
 	wantReviewers := []string{
 		reviewerLogin,
 	}
-	mockedEnv, err := mocks_aladino.MockDefaultEnv(
+	mockedEnv, err := aladino.MockDefaultEnv(
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsByOwnerByRepoByPullNumber,
@@ -166,7 +165,7 @@ func TestAssignReviewer_WhenTotalRequiredReviewersIsMoreThanTotalAvailableReview
 
 func TestAssignReviewer_WhenListReviewsRequestFails(t *testing.T) {
 	failMessage := "ListReviewsRequestFail"
-	mockedEnv, err := mocks_aladino.MockDefaultEnv(
+	mockedEnv, err := aladino.MockDefaultEnv(
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
@@ -205,11 +204,11 @@ func TestAssignReviewer_WhenPullRequestAlreadyHasReviews(t *testing.T) {
 	wantReviewers := []string{
 		reviewerLogin,
 	}
-	mockedPullRequest := mocks_aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
+	mockedPullRequest := aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
 		User:               &github.User{Login: github.String(authorLogin)},
 		RequestedReviewers: []*github.User{},
 	})
-	mockedEnv, err := mocks_aladino.MockDefaultEnv(
+	mockedEnv, err := aladino.MockDefaultEnv(
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsByOwnerByRepoByPullNumber,
@@ -267,13 +266,13 @@ func TestAssignReviewer_WhenPullRequestAlreadyHasRequestedReviewers(t *testing.T
 	wantReviewers := []string{
 		reviewerB,
 	}
-	mockedPullRequest := mocks_aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
+	mockedPullRequest := aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
 		User: &github.User{Login: github.String(authorLogin)},
 		RequestedReviewers: []*github.User{
 			{Login: github.String(reviewerA)},
 		},
 	})
-	mockedEnv, err := mocks_aladino.MockDefaultEnv(
+	mockedEnv, err := aladino.MockDefaultEnv(
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsByOwnerByRepoByPullNumber,
@@ -327,13 +326,13 @@ func TestAssignReviewer_HasNoAvailableReviewers(t *testing.T) {
 	authorLogin := "john"
 	reviewerLogin := "mary"
 	totalRequiredReviewers := 1
-	mockedPullRequest := mocks_aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
+	mockedPullRequest := aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
 		User: &github.User{Login: github.String(authorLogin)},
 		RequestedReviewers: []*github.User{
 			{Login: github.String(reviewerLogin)},
 		},
 	})
-	mockedEnv, err := mocks_aladino.MockDefaultEnv(
+	mockedEnv, err := aladino.MockDefaultEnv(
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsByOwnerByRepoByPullNumber,
@@ -377,7 +376,7 @@ func TestAssignReviewer_WhenPullRequestAlreadyApproved(t *testing.T) {
 	var isRequestReviewersRequestPerformed bool
 	authorLogin := "john"
 	reviewerA := "mary"
-	mockedPullRequest := mocks_aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
+	mockedPullRequest := aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
 		User: &github.User{Login: github.String(authorLogin)},
 		RequestedReviewers: []*github.User{
 			{Login: github.String(reviewerA)},
@@ -392,7 +391,7 @@ func TestAssignReviewer_WhenPullRequestAlreadyApproved(t *testing.T) {
 			User:  &github.User{Login: github.String(reviewerA)},
 		},
 	}
-	mockedEnv, err := mocks_aladino.MockDefaultEnv(
+	mockedEnv, err := aladino.MockDefaultEnv(
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsByOwnerByRepoByPullNumber,

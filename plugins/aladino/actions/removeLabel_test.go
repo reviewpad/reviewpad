@@ -13,7 +13,6 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
-	mocks_aladino "github.com/reviewpad/reviewpad/v3/mocks/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
 	"github.com/stretchr/testify/assert"
 )
@@ -23,7 +22,7 @@ var removeLabel = plugins_aladino.PluginBuiltIns().Actions["removeLabel"].Code
 func TestRemoveLabel_WhenLabelIsNotAppliedToPullRequest(t *testing.T) {
 	wantLabel := "bug"
 	var isLabelRemoved bool
-	mockedEnv, err := mocks_aladino.MockDefaultEnv(
+	mockedEnv, err := aladino.MockDefaultEnv(
 		[]mock.MockBackendOption{
 			mock.WithRequestMatch(
 				mock.GetReposLabelsByOwnerByRepoByName,
@@ -55,7 +54,7 @@ func TestRemoveLabel_WhenLabelIsNotAppliedToPullRequest(t *testing.T) {
 func TestRemoveLabel_WhenLabelIsAppliedToPullRequestAndLabelIsInEnvironment(t *testing.T) {
 	wantLabel := "enhancement"
 	var gotLabel string
-	mockedEnv, err := mocks_aladino.MockDefaultEnv(
+	mockedEnv, err := aladino.MockDefaultEnv(
 		[]mock.MockBackendOption{
 			mock.WithRequestMatch(
 				mock.GetReposLabelsByOwnerByRepoByName,
@@ -90,7 +89,7 @@ func TestRemoveLabel_WhenLabelIsAppliedToPullRequestAndLabelIsInEnvironment(t *t
 func TestRemoveLabel_WhenLabelIsAppliedToPullRequestAndLabelIsNotInEnvironment(t *testing.T) {
 	wantLabel := "enhancement"
 	var gotLabel string
-	mockedEnv, err := mocks_aladino.MockDefaultEnv(
+	mockedEnv, err := aladino.MockDefaultEnv(
 		[]mock.MockBackendOption{
 			mock.WithRequestMatch(
 				mock.GetReposLabelsByOwnerByRepoByName,
