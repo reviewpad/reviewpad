@@ -21,7 +21,7 @@ const defaultMockPrOwner = "foobar"
 const defaultMockPrRepoName = "default-mock-repo"
 
 var DefaultCtx = context.Background()
-var DefaultCollector = collector.NewCollector("", "") 
+var DefaultCollector = collector.NewCollector("", "")
 
 func GetDefaultMockPullRequestDetails() *github.PullRequest {
 	prNum := defaultMockPrNum
@@ -194,5 +194,5 @@ func mockHttpClientWith(clientOptions ...mock.MockBackendOption) *http.Client {
 }
 
 func MockGithubClient(clientOptions []mock.MockBackendOption) *github.Client {
-    return github.NewClient(mockDefaultHttpClient(clientOptions))
+	return github.NewClient(mockDefaultHttpClient(clientOptions))
 }

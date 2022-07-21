@@ -27,11 +27,11 @@ func TestNewEvalEnv(t *testing.T) {
 		collector,
 		mockedPullRequest,
 		nil,
-		// TODO: This needs to be mocked (#155)
+		// TODO: This needs to be mocked (PR #155)
 		plugins_aladino.PluginBuiltIns(),
 	)
 	if err != nil {
-		log.Fatalf("aladino.NewInterpreter failed: %v", err)
+		log.Fatalf("aladino NewInterpreter failed: %v", err)
 	}
 
 	wantEnv := &engine.Env{
