@@ -49,7 +49,7 @@ func Run(
 		return nil, err
 	}
 
-	evalEnv, err := engine.NewEvalEnv(ctx, client, clientGQL, collector, pullRequest, eventPayload, aladinoInterpreter)
+	evalEnv, err := engine.NewEvalEnv(ctx, dryRun, client, clientGQL, collector, pullRequest, eventPayload, aladinoInterpreter)
 	if err != nil {
 		return nil, err
 	}

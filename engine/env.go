@@ -31,6 +31,7 @@ type Interpreter interface {
 
 type Env struct {
 	Ctx          context.Context
+	DryRun       bool
 	Client       *github.Client
 	ClientGQL    *githubv4.Client
 	Collector    collector.Collector
@@ -41,6 +42,7 @@ type Env struct {
 
 func NewEvalEnv(
 	ctx context.Context,
+	dryRun bool,
 	client *github.Client,
 	clientGQL *githubv4.Client,
 	collector collector.Collector,
@@ -50,6 +52,7 @@ func NewEvalEnv(
 ) (*Env, error) {
 	input := &Env{
 		Ctx:          ctx,
+		DryRun:       dryRun,
 		Client:       client,
 		ClientGQL:    clientGQL,
 		Collector:    collector,
