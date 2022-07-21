@@ -2,7 +2,7 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-package mocks_aladino
+package aladino
 
 import (
 	"context"
@@ -15,8 +15,6 @@ import (
 
 	"github.com/google/go-github/v42/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
-	"github.com/reviewpad/reviewpad/v3/lang/aladino"
-	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
 	"github.com/shurcooL/githubv4"
 )
 
@@ -150,15 +148,36 @@ func getDefaultMockPullRequestFileList() *[]*github.CommitFile {
 	return &[]*github.CommitFile{
 		{
 			Filename: github.String(fmt.Sprintf("%v/file1.ts", prRepoName)),
-			Patch:    nil,
+			Patch:    github.String("@@ -2,9 +2,11 @@ package main\n- func previous1() {\n+ func new1() {\n+\nreturn"),
 		},
 		{
 			Filename: github.String(fmt.Sprintf("%v/file2.ts", prRepoName)),
-			Patch:    nil,
+			Patch:    github.String("@@ -2,9 +2,11 @@ package main\n- func previous2() {\n+ func new2() {\n+\nreturn"),
 		},
 		{
 			Filename: github.String(fmt.Sprintf("%v/file3.ts", prRepoName)),
-			Patch:    nil,
+			Patch:    github.String("@@ -2,9 +2,11 @@ package main\n- func previous3() {\n+ func new3() {\n+\nreturn"),
+		},
+	}
+}
+
+func mockBuiltIns() *BuiltIns {
+	return &BuiltIns{
+		Functions: map[string]*BuiltInFunction{
+			"emptyFunction": {
+				Type: BuildFunctionType([]Type{}, nil),
+				Code: func(e Env, args []Value) (Value, error) {
+					return nil, nil
+				},
+			},
+		},
+		Actions: map[string]*BuiltInAction{
+			"emptyAction": {
+				Type: BuildFunctionType([]Type{}, nil),
+				Code: func(e Env, args []Value) error {
+					return nil
+				},
+			},
 		},
 	}
 }
@@ -167,21 +186,21 @@ func mockHttpClientWith(clientOptions ...mock.MockBackendOption) *http.Client {
 	return mock.NewMockedHTTPClient(clientOptions...)
 }
 
-func MockEnvWith(prOwner string, prRepoName string, prNum int, client *github.Client, clientGQL *githubv4.Client, eventPayload interface{}) (aladino.Env, error) {
+func mockEnvWith(prOwner string, prRepoName string, prNum int, client *github.Client, clientGQL *githubv4.Client, eventPayload interface{}) (Env, error) {
 	ctx := context.Background()
 	pr, _, err := client.PullRequests.Get(ctx, prOwner, prRepoName, prNum)
 	if err != nil {
 		return nil, err
 	}
 
-	env, err := aladino.NewEvalEnv(
+	env, err := NewEvalEnv(
 		ctx,
 		client,
 		clientGQL,
 		nil,
 		pr,
 		eventPayload,
-		plugins_aladino.PluginBuiltIns(),
+		mockBuiltIns(),
 	)
 
 	return env, err
@@ -228,7 +247,7 @@ func (l localRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) 
 }
 
 // MockDefaultEnv mocks an Aladino Env with default values.
-func MockDefaultEnv(ghApiClientOptions []mock.MockBackendOption, ghGraphQLHandler func(http.ResponseWriter, *http.Request)) (aladino.Env, error) {
+func MockDefaultEnv(ghApiClientOptions []mock.MockBackendOption, ghGraphQLHandler func(http.ResponseWriter, *http.Request)) (Env, error) {
 	prOwner := defaultMockPrOwner
 	prRepoName := defaultMockPrRepoName
 	prNum := defaultMockPrNum
@@ -242,7 +261,7 @@ func MockDefaultEnv(ghApiClientOptions []mock.MockBackendOption, ghGraphQLHandle
 		clientGQL = githubv4.NewClient(&http.Client{Transport: localRoundTripper{handler: mux}})
 	}
 
-	return MockEnvWith(prOwner, prRepoName, prNum, client, clientGQL, nil)
+	return mockEnvWith(prOwner, prRepoName, prNum, client, clientGQL, nil)
 }
 
 // MockDefaultEnvWithEvent mocks an Aladino Env with default values and an event
@@ -250,7 +269,7 @@ func MockDefaultEnvWithEvent(
 	ghApiClientOptions []mock.MockBackendOption,
 	ghGraphQLHandler func(http.ResponseWriter, *http.Request),
 	eventPayload interface{},
-) (aladino.Env, error) {
+) (Env, error) {
 	prOwner := defaultMockPrOwner
 	prRepoName := defaultMockPrRepoName
 	prNum := defaultMockPrNum
@@ -264,7 +283,7 @@ func MockDefaultEnvWithEvent(
 		clientGQL = githubv4.NewClient(&http.Client{Transport: localRoundTripper{handler: mux}})
 	}
 
-	return MockEnvWith(prOwner, prRepoName, prNum, client, clientGQL, eventPayload)
+	return mockEnvWith(prOwner, prRepoName, prNum, client, clientGQL, eventPayload)
 }
 
 func MustRead(r io.Reader) string {

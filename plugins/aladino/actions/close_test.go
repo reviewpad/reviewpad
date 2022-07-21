@@ -14,7 +14,6 @@ import (
 	"github.com/google/go-github/v42/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
-	mocks_aladino "github.com/reviewpad/reviewpad/v3/mocks/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
 	"github.com/stretchr/testify/assert"
 )
@@ -23,7 +22,7 @@ var close = plugins_aladino.PluginBuiltIns().Actions["close"].Code
 
 func TestClose_WhenEditRequestFails(t *testing.T) {
 	failMessage := "EditRequestFail"
-	mockedEnv, err := mocks_aladino.MockDefaultEnv(
+	mockedEnv, err := aladino.MockDefaultEnv(
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.PatchReposPullsByOwnerByRepoByPullNumber,
@@ -51,7 +50,7 @@ func TestClose_WhenEditRequestFails(t *testing.T) {
 func TestClose(t *testing.T) {
 	wantState := "closed"
 	var gotState string
-	mockedEnv, err := mocks_aladino.MockDefaultEnv(
+	mockedEnv, err := aladino.MockDefaultEnv(
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.PatchReposPullsByOwnerByRepoByPullNumber,

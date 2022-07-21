@@ -13,7 +13,6 @@ import (
 	"github.com/google/go-github/v42/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
-	mocks_aladino "github.com/reviewpad/reviewpad/v3/mocks/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
 	"github.com/stretchr/testify/assert"
 )
@@ -21,7 +20,7 @@ import (
 var hasLinkedIssues = plugins_aladino.PluginBuiltIns().Functions["hasLinkedIssues"].Code
 
 func TestHasLinkedIssues_WhenRequestFails(t *testing.T) {
-	mockedEnv, err := mocks_aladino.MockDefaultEnv(
+	mockedEnv, err := aladino.MockDefaultEnv(
 		nil,
 		func(w http.ResponseWriter, req *http.Request) {
 			http.Error(w, "404 Not Found", http.StatusNotFound)
@@ -47,7 +46,7 @@ func TestHasLinkedIssues_WhenHasLinkedIssues(t *testing.T) {
 		mockedPrRepoName,
 		mockedPrOwner,
 	)
-	mockedPullRequest := mocks_aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
+	mockedPullRequest := aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
 		Number: github.Int(mockedPrNum),
 		User:   &github.User{Login: github.String(mockedAuthorLogin)},
 		Base: &github.PullRequestBranch{
@@ -59,7 +58,7 @@ func TestHasLinkedIssues_WhenHasLinkedIssues(t *testing.T) {
 			},
 		},
 	})
-	mockedEnv, err := mocks_aladino.MockDefaultEnv(
+	mockedEnv, err := aladino.MockDefaultEnv(
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsByOwnerByRepoByPullNumber,
@@ -69,10 +68,10 @@ func TestHasLinkedIssues_WhenHasLinkedIssues(t *testing.T) {
 			),
 		},
 		func(w http.ResponseWriter, req *http.Request) {
-			query := mocks_aladino.MustRead(req.Body)
+			query := aladino.MustRead(req.Body)
 			switch query {
 			case mockedGraphQLQuery:
-				mocks_aladino.MustWrite(
+				aladino.MustWrite(
 					w,
 					`{"data": {
 						"repository": {
@@ -109,7 +108,7 @@ func TestHasLinkedIssues_WhenNoLinkedIssues(t *testing.T) {
 		mockedPrRepoName,
 		mockedPrOwner,
 	)
-	mockedPullRequest := mocks_aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
+	mockedPullRequest := aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
 		Number: github.Int(mockedPrNum),
 		User:   &github.User{Login: github.String(mockedAuthorLogin)},
 		Base: &github.PullRequestBranch{
@@ -121,7 +120,7 @@ func TestHasLinkedIssues_WhenNoLinkedIssues(t *testing.T) {
 			},
 		},
 	})
-	mockedEnv, err := mocks_aladino.MockDefaultEnv(
+	mockedEnv, err := aladino.MockDefaultEnv(
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsByOwnerByRepoByPullNumber,
@@ -131,10 +130,10 @@ func TestHasLinkedIssues_WhenNoLinkedIssues(t *testing.T) {
 			),
 		},
 		func(w http.ResponseWriter, req *http.Request) {
-			query := mocks_aladino.MustRead(req.Body)
+			query := aladino.MustRead(req.Body)
 			switch query {
 			case mockedGraphQLQuery:
-				mocks_aladino.MustWrite(
+				aladino.MustWrite(
 					w,
 					`{"data": {
 						"repository": {

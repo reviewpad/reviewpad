@@ -12,7 +12,7 @@ import (
 
 	"github.com/google/go-github/v42/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
-	mocks_aladino "github.com/reviewpad/reviewpad/v3/mocks/aladino"
+	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	"github.com/reviewpad/reviewpad/v3/utils"
 	"github.com/stretchr/testify/assert"
 )
@@ -23,7 +23,7 @@ type paginatedRequestResult struct {
 
 func TestGetPullRequestHeadOwnerName(t *testing.T) {
 	mockedHeadOwnerName := "reviewpad"
-	mockedPullRequest := mocks_aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
+	mockedPullRequest := aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
 		Head: &github.PullRequestBranch{
 			Repo: &github.Repository{
 				Owner: &github.User{
@@ -41,7 +41,7 @@ func TestGetPullRequestHeadOwnerName(t *testing.T) {
 
 func TestGetPullRequestHeadRepoName(t *testing.T) {
 	mockedHeadRepoName := "mocks-test"
-	mockedPullRequest := mocks_aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
+	mockedPullRequest := aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
 		Head: &github.PullRequestBranch{
 			Repo: &github.Repository{
 				Name: &mockedHeadRepoName,
@@ -56,7 +56,7 @@ func TestGetPullRequestHeadRepoName(t *testing.T) {
 }
 
 func TestGetPullRequestBaseOwnerName(t *testing.T) {
-	mockedEnv, err := mocks_aladino.MockDefaultEnv(nil, nil)
+	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
@@ -69,7 +69,7 @@ func TestGetPullRequestBaseOwnerName(t *testing.T) {
 }
 
 func TestGetPullRequestBaseRepoName(t *testing.T) {
-	mockedEnv, err := mocks_aladino.MockDefaultEnv(nil, nil)
+	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
@@ -82,7 +82,7 @@ func TestGetPullRequestBaseRepoName(t *testing.T) {
 }
 
 func TestGetPullRequestNumber(t *testing.T) {
-	mockedEnv, err := mocks_aladino.MockDefaultEnv(nil, nil)
+	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
@@ -255,7 +255,7 @@ func TestParseNumPages(t *testing.T) {
 
 func TestGetPullRequestComments_WhenListCommentsRequestFails(t *testing.T) {
 	failMessage := "ListCommentsRequestFail"
-	mockedEnv, err := mocks_aladino.MockDefaultEnv(
+	mockedEnv, err := aladino.MockDefaultEnv(
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.GetReposIssuesCommentsByOwnerByRepoByIssueNumber,
@@ -292,7 +292,7 @@ func TestGetPullRequestComments(t *testing.T) {
 	wantComments := []*github.IssueComment{
 		{Body: github.String("Lorem Ipsum")},
 	}
-	mockedEnv, err := mocks_aladino.MockDefaultEnv(
+	mockedEnv, err := aladino.MockDefaultEnv(
 		[]mock.MockBackendOption{
 			mock.WithRequestMatch(
 				mock.GetReposIssuesCommentsByOwnerByRepoByIssueNumber,
@@ -326,7 +326,7 @@ func TestGetPullRequestFiles(t *testing.T) {
 			Patch:    nil,
 		},
 	}
-	mockedEnv, err := mocks_aladino.MockDefaultEnv(
+	mockedEnv, err := aladino.MockDefaultEnv(
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsFilesByOwnerByRepoByPullNumber,
@@ -356,7 +356,7 @@ func TestGetPullRequestFiles(t *testing.T) {
 
 func TestGetPullRequestReviewers_WhenListReviewersRequestFails(t *testing.T) {
 	failMessage := "ListReviewersRequestFail"
-	mockedEnv, err := mocks_aladino.MockDefaultEnv(
+	mockedEnv, err := aladino.MockDefaultEnv(
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
@@ -398,7 +398,7 @@ func TestGetPullRequestReviewers(t *testing.T) {
 			{Slug: github.String("reviewpad-team")},
 		},
 	}
-	mockedEnv, err := mocks_aladino.MockDefaultEnv(
+	mockedEnv, err := aladino.MockDefaultEnv(
 		[]mock.MockBackendOption{
 			mock.WithRequestMatch(
 				mock.GetReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
@@ -427,7 +427,7 @@ func TestGetPullRequestReviewers(t *testing.T) {
 
 func TestGetRepoCollaborators_WhenListCollaboratorsRequestFails(t *testing.T) {
 	failMessage := "ListCollaboratorsRequestFail"
-	mockedEnv, err := mocks_aladino.MockDefaultEnv(
+	mockedEnv, err := aladino.MockDefaultEnv(
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.GetReposCollaboratorsByOwnerByRepo,
@@ -462,7 +462,7 @@ func TestGetRepoCollaborators(t *testing.T) {
 	wantCollaborators := []*github.User{
 		{Login: github.String("mary")},
 	}
-	mockedEnv, err := mocks_aladino.MockDefaultEnv(
+	mockedEnv, err := aladino.MockDefaultEnv(
 		[]mock.MockBackendOption{
 			mock.WithRequestMatch(
 				mock.GetReposCollaboratorsByOwnerByRepo,
@@ -489,7 +489,7 @@ func TestGetRepoCollaborators(t *testing.T) {
 
 func TestGetIssuesAvailableAssignees_WhenListAssigneesRequestFails(t *testing.T) {
 	failMessage := "ListAssigneesRequestFail"
-	mockedEnv, err := mocks_aladino.MockDefaultEnv(
+	mockedEnv, err := aladino.MockDefaultEnv(
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.GetReposAssigneesByOwnerByRepo,
@@ -524,7 +524,7 @@ func TestGetIssuesAvailableAssignees(t *testing.T) {
 	wantAssignees := []*github.User{
 		{Login: github.String("jane")},
 	}
-	mockedEnv, err := mocks_aladino.MockDefaultEnv(
+	mockedEnv, err := aladino.MockDefaultEnv(
 		[]mock.MockBackendOption{
 			mock.WithRequestMatch(
 				mock.GetReposAssigneesByOwnerByRepo,
@@ -551,7 +551,7 @@ func TestGetIssuesAvailableAssignees(t *testing.T) {
 
 func TestGetPullRequestCommits_WhenListCommistsRequestFails(t *testing.T) {
 	failMessage := "ListCommitsRequestFail"
-	mockedEnv, err := mocks_aladino.MockDefaultEnv(
+	mockedEnv, err := aladino.MockDefaultEnv(
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsCommitsByOwnerByRepoByPullNumber,
@@ -591,7 +591,7 @@ func TestGetPullRequestCommits(t *testing.T) {
 			},
 		},
 	}
-	mockedEnv, err := mocks_aladino.MockDefaultEnv(
+	mockedEnv, err := aladino.MockDefaultEnv(
 		[]mock.MockBackendOption{
 			mock.WithRequestMatch(
 				mock.GetReposPullsCommitsByOwnerByRepoByPullNumber,
