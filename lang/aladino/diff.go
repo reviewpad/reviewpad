@@ -13,7 +13,7 @@ import (
 )
 
 type diff struct {
-	blocks []*DiffBlock
+	blocks []*diffBlock
 }
 
 type diffSpan struct {
@@ -21,7 +21,7 @@ type diffSpan struct {
 	End   int32
 }
 
-type DiffBlock struct {
+type diffBlock struct {
 	isContext bool
 	Old       *diffSpan
 	New       *diffSpan
@@ -34,14 +34,14 @@ type chunkLinesInfo struct {
 	numOld, numNew   int32
 }
 
-func parseFilePatch(patch string) ([]*DiffBlock, error) {
+func parseFilePatch(patch string) ([]*diffBlock, error) {
 	lines := strings.Split(patch, "\n")
 	return parseFilePatchLines(lines)
 }
 
-func parseFilePatchLines(lines []string) ([]*DiffBlock, error) {
+func parseFilePatchLines(lines []string) ([]*diffBlock, error) {
 	diff := &diff{
-		blocks: []*DiffBlock{},
+		blocks: []*diffBlock{},
 	}
 
 	currentLine := 0
@@ -137,7 +137,7 @@ func parseVersionSection(section string) (int32, int32, error) {
 }
 
 func appendUnmodifiedLine(diff *diff, lines *chunkLinesInfo, lineText string) {
-	var block *DiffBlock
+	var block *diffBlock
 	if len(diff.blocks) > 0 {
 		lastBlock := diff.blocks[len(diff.blocks)-1]
 		if lastBlock.isContext && lastBlock.Old.End == lines.oldLine-1 {
@@ -148,7 +148,7 @@ func appendUnmodifiedLine(diff *diff, lines *chunkLinesInfo, lineText string) {
 	}
 
 	if block == nil {
-		block = &DiffBlock{
+		block = &diffBlock{
 			Old: &diffSpan{
 				Start: lines.oldLine,
 				End:   0,
@@ -170,7 +170,7 @@ func appendUnmodifiedLine(diff *diff, lines *chunkLinesInfo, lineText string) {
 }
 
 func appendAddedLine(diff *diff, lines *chunkLinesInfo, lineText string) {
-	var block *DiffBlock
+	var block *diffBlock
 	if len(diff.blocks) > 0 && !diff.blocks[len(diff.blocks)-1].isContext {
 		block = diff.blocks[len(diff.blocks)-1]
 		if block.New == nil {
@@ -183,7 +183,7 @@ func appendAddedLine(diff *diff, lines *chunkLinesInfo, lineText string) {
 			block.newLine = block.newLine + "\n" + lineText
 		}
 	} else {
-		block = &DiffBlock{
+		block = &diffBlock{
 			New: &diffSpan{
 				Start: lines.newLine,
 				End:   0,
@@ -198,12 +198,12 @@ func appendAddedLine(diff *diff, lines *chunkLinesInfo, lineText string) {
 }
 
 func appendRemovedLine(diff *diff, lines *chunkLinesInfo, lineText string) {
-	var block *DiffBlock
+	var block *diffBlock
 	if len(diff.blocks) > 0 && !diff.blocks[len(diff.blocks)-1].isContext && diff.blocks[len(diff.blocks)-1].New == nil {
 		block = diff.blocks[len(diff.blocks)-1]
 		block.oldLine = block.oldLine + "\n" + lineText
 	} else {
-		block = &DiffBlock{
+		block = &diffBlock{
 			Old: &diffSpan{
 				Start: lines.oldLine,
 				End:   0,

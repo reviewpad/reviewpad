@@ -6,19 +6,20 @@ package aladino_test
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
+	"reflect"
 	"testing"
 
 	"github.com/google/go-github/v42/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
-	"github.com/reviewpad/reviewpad/v2/collector"
 	"github.com/reviewpad/reviewpad/v2/lang/aladino"
 	mocks_aladino "github.com/reviewpad/reviewpad/v2/mocks/aladino"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestGetCtx(t *testing.T) {
+func TestGetCtx_WithDefaultEnv(t *testing.T) {
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(nil, nil)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
@@ -31,20 +32,20 @@ func TestGetCtx(t *testing.T) {
 	assert.Equal(t, wantCtx, gotCtx)
 }
 
-func TestGetCollector(t *testing.T) {
+func TestGetCollector_WithDefaultEnv(t *testing.T) {
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(nil, nil)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
 
-	var wantCollector collector.Collector
+	wantCollector := mocks_aladino.DefaultCollector
 
 	gotCollector := mockedEnv.GetCollector()
 
 	assert.Equal(t, wantCollector, gotCollector)
 }
 
-func TestGetPullRequest(t *testing.T) {
+func TestGetPullRequest_WithDefaultEnv(t *testing.T) {
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(nil, nil)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
@@ -52,9 +53,9 @@ func TestGetPullRequest(t *testing.T) {
 
 	wantPullRequest, _, err := mockedEnv.GetClient().PullRequests.Get(
 		mockedEnv.GetCtx(),
-		"foobar",
-		"default-mock-repo",
-		6,
+		mocks_aladino.DefaultMockPrOwner,
+		mocks_aladino.DefaultMockPrRepoName,
+		mocks_aladino.DefaultMockPrNum,
 	)
 	if err != nil {
 		log.Fatal(err)
@@ -65,12 +66,13 @@ func TestGetPullRequest(t *testing.T) {
 	assert.Equal(t, wantPullRequest, gotPullRequest)
 }
 
-func TestGetPatch(t *testing.T) {
-	filename := "default-mock-repo/file1.ts"
+func TestGetPatch_WithDefaultEnv(t *testing.T) {
+	fileName := fmt.Sprintf("%v/file1.ts", mocks_aladino.DefaultMockPrRepoName)
+	patch := "@@ -2,9 +2,11 @@ package main\n- func previous1() {\n+ func new1() {\n+\nreturn"
 	mockedPullRequestFileList := &[]*github.CommitFile{
 		{
-			Filename: github.String(filename),
-			Patch:    nil,
+			Filename: github.String(fileName),
+			Patch:    github.String(patch),
 		},
 	}
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(
@@ -88,12 +90,16 @@ func TestGetPatch(t *testing.T) {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
 
-	wantPatch := make(aladino.Patch)
-	wantPatch[filename] = &aladino.File{
+	mockedFile1 := &aladino.File{
 		Repr: &github.CommitFile{
-			Filename: github.String(filename),
+			Filename: github.String(fileName),
+			Patch:    github.String(patch),
 		},
-		Diff: []*aladino.DiffBlock{},
+	}
+	mockedFile1.SetDiff(false, 2, 2, 2, 3, " func previous1() {", " func new1() {\n")
+
+	wantPatch := aladino.Patch{
+		fileName: mockedFile1,
 	}
 
 	gotPatch := mockedEnv.GetPatch()
@@ -101,7 +107,7 @@ func TestGetPatch(t *testing.T) {
 	assert.Equal(t, wantPatch, gotPatch)
 }
 
-func TestGetRegisterMap(t *testing.T) {
+func TestGetRegisterMap_WithDefaultEnv(t *testing.T) {
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(nil, nil)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
@@ -114,33 +120,27 @@ func TestGetRegisterMap(t *testing.T) {
 	assert.Equal(t, wantRegisterMap, gotRegisterMap)
 }
 
-func TestGetBuiltIns(t *testing.T) {
+func TestGetBuiltIns_WithDefaultEnv(t *testing.T) {
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(nil, nil)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
 
-	wantBuiltIns := &aladino.BuiltIns{
-		Functions: map[string]*aladino.BuiltInFunction{
-			"emptyFunction": {
-				Type: aladino.BuildFunctionType([]aladino.Type{}, nil),
-				Code: nil,
-			},
-		},
-		Actions: map[string]*aladino.BuiltInAction{
-			"emptyAction": {
-				Type: aladino.BuildFunctionType([]aladino.Type{}, nil),
-				Code: nil,
-			},
-		},
-	}
+	wantBuiltIns := mocks_aladino.MockBuiltIns()
 
 	gotBuiltIns := mockedEnv.GetBuiltIns()
 
-	assert.Equal(t, wantBuiltIns, gotBuiltIns)
+	assert.Equal(t, len(wantBuiltIns.Functions), len(gotBuiltIns.Functions))
+	assert.Equal(t, len(wantBuiltIns.Actions), len(gotBuiltIns.Actions))
+	
+    for functionName, functionCode := range wantBuiltIns.Functions {
+        assert.NotNil(t, gotBuiltIns.Functions[functionName])
+        assert.Equal(t, functionCode.Type, gotBuiltIns.Functions[functionName].Type)
+        assert.Equal(t, reflect.ValueOf(functionCode.Code), reflect.ValueOf(gotBuiltIns.Functions[functionName].Code))
+    }
 }
 
-func TestGetReport(t *testing.T) {
+func TestGetReport_WithDefaultEnv(t *testing.T) {
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(nil, nil)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
@@ -155,7 +155,7 @@ func TestGetReport(t *testing.T) {
 	assert.Equal(t, wantReport, gotReport)
 }
 
-func TestNewTypeEnv(t *testing.T) {
+func TestNewTypeEnv_WithDefaultEnv(t *testing.T) {
 	mockedEnv, err := mocks_aladino.MockDefaultEnv(nil, nil)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
@@ -171,80 +171,167 @@ func TestNewTypeEnv(t *testing.T) {
 	assert.Equal(t, wantTypeEnv, gotTypeEnv)
 }
 
-// The MockDefaultEnv function to create a mocked default env, it uses the NewEvalEnv which is the function we wish to test
 func TestNewEvalEnv_WhenGetPullRequestFilesFails(t *testing.T) {
 	failMessage := "GetPullRequestFilesFail"
-	_, err := mocks_aladino.MockDefaultEnv(
-		[]mock.MockBackendOption{
-			mock.WithRequestMatchHandler(
-				mock.GetReposPullsFilesByOwnerByRepoByPullNumber,
-				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					mock.WriteError(
-						w,
-						http.StatusInternalServerError,
-						failMessage,
-					)
-				}),
-			),
-		},
+	mockedGithubClient := github.NewClient(mock.NewMockedHTTPClient(
+		mock.WithRequestMatch(
+			mock.GetReposPullsByOwnerByRepoByPullNumber,
+			mocks_aladino.GetDefaultMockPullRequestDetails(),
+		),
+        mock.WithRequestMatchHandler(
+            mock.GetReposPullsFilesByOwnerByRepoByPullNumber,
+            http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+                mock.WriteError(
+                    w,
+                    http.StatusInternalServerError,
+                    failMessage,
+                )
+            }),
+        ),
+    ))
+
+    ctx := context.Background()
+	mockedPullRequest, _, err := mockedGithubClient.PullRequests.Get(
+		ctx,
+		mocks_aladino.DefaultMockPrOwner,
+		mocks_aladino.DefaultMockPrRepoName,
+		mocks_aladino.DefaultMockPrNum,
+	)
+	if err != nil {
+		log.Fatalf("couldn't get pull request: %v", err)
+	}
+
+	env, err := aladino.NewEvalEnv(
+		ctx,
+		mockedGithubClient,
 		nil,
+		mocks_aladino.DefaultCollector,
+		mockedPullRequest,
+		mocks_aladino.MockBuiltIns(),
 	)
 
+    assert.Nil(t, env)
 	assert.Equal(t, err.(*github.ErrorResponse).Message, failMessage)
 }
 
 func TestNewEvalEnv_WhenNewFileFails(t *testing.T) {
-	mockedPullRequestFileList := &[]*github.CommitFile{
-		{Patch: github.String("@@a")},
+	mockedGithubClient := github.NewClient(mock.NewMockedHTTPClient(
+		mock.WithRequestMatch(
+			mock.GetReposPullsByOwnerByRepoByPullNumber,
+			mocks_aladino.GetDefaultMockPullRequestDetails(),
+		),
+		mock.WithRequestMatch(
+			mock.GetReposPullsFilesByOwnerByRepoByPullNumber,
+			&[]*github.CommitFile{
+				{Patch: github.String("@@a")},
+			},
+		),
+	))
+
+	ctx := context.Background()
+	mockedPullRequest, _, err := mockedGithubClient.PullRequests.Get(
+		ctx,
+		mocks_aladino.DefaultMockPrOwner,
+		mocks_aladino.DefaultMockPrRepoName,
+		mocks_aladino.DefaultMockPrNum,
+	)
+	if err != nil {
+		log.Fatalf("couldn't get pull request: %v", err)
 	}
-	_, err := mocks_aladino.MockDefaultEnv(
-		[]mock.MockBackendOption{
-			mock.WithRequestMatchHandler(
-				mock.GetReposPullsFilesByOwnerByRepoByPullNumber,
-				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					w.Write(mock.MustMarshal(mockedPullRequestFileList))
-				}),
-			),
-		},
+
+	env, err := aladino.NewEvalEnv(
+		ctx,
+		mockedGithubClient,
 		nil,
+		mocks_aladino.DefaultCollector,
+		mockedPullRequest,
+		mocks_aladino.MockBuiltIns(),
 	)
 
+	assert.Nil(t, env)
 	assert.EqualError(t, err, "error in file patch : error in chunk lines parsing (1): missing lines info: @@a\npatch: @@a")
 }
 
 func TestNewEvalEnv(t *testing.T) {
-	mockedPullRequestFileList := &[]*github.CommitFile{
-		{
-			Filename: github.String("default-mock-repo/file1.ts"),
-			Patch:    nil,
-		},
-	}
-	mockedEnv, err := mocks_aladino.MockDefaultEnv(
-		[]mock.MockBackendOption{
-			mock.WithRequestMatchHandler(
-				mock.GetReposPullsFilesByOwnerByRepoByPullNumber,
-				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					w.Write(mock.MustMarshal(mockedPullRequestFileList))
-				}),
-			),
-		},
-		nil,
+	fileName := "default-mock-repo/file1.ts"
+	patch := "@@ -2,9 +2,11 @@ package main\n- func previous1() {\n+ func new1() {\n+\nreturn"
+	mockedGithubClient := github.NewClient(mock.NewMockedHTTPClient(
+		mock.WithRequestMatch(
+			mock.GetReposPullsByOwnerByRepoByPullNumber,
+			mocks_aladino.GetDefaultMockPullRequestDetails(),
+		),
+		mock.WithRequestMatch(
+			mock.GetReposPullsFilesByOwnerByRepoByPullNumber,
+			&[]*github.CommitFile{
+				{
+					Filename: github.String(fileName),
+					Patch:    github.String(patch),
+				},
+			},
+		),
+	))
+
+	ctx := context.Background()
+	mockedPullRequest, _, err := mockedGithubClient.PullRequests.Get(
+		ctx,
+		mocks_aladino.DefaultMockPrOwner,
+		mocks_aladino.DefaultMockPrRepoName,
+		mocks_aladino.DefaultMockPrNum,
 	)
+
 	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
+		log.Fatalf("couldn't get pull request: %v", err)
 	}
 
-	wantEvalEnv := &aladino.BaseEnv{
-		Ctx:         mockedEnv.GetCtx(),
-		Client:      mockedEnv.GetClient(),
-		ClientGQL:   mockedEnv.GetClientGQL(),
-		Collector:   mockedEnv.GetCollector(),
-		PullRequest: mockedEnv.GetPullRequest(),
-		Patch:       mockedEnv.GetPatch(),
-		RegisterMap: mockedEnv.GetRegisterMap(),
-		BuiltIns:    mockedEnv.GetBuiltIns(),
-		Report:      mockedEnv.GetReport(),
+	gotEnv, err := aladino.NewEvalEnv(
+		ctx,
+		mockedGithubClient,
+		nil,
+		mocks_aladino.DefaultCollector,
+		mockedPullRequest,
+		mocks_aladino.MockBuiltIns(),
+	)
+
+	mockedFile1 := &aladino.File{
+		Repr: &github.CommitFile{
+			Filename: github.String(fileName),
+			Patch:    github.String(patch),
+		},
+	}
+	mockedFile1.SetDiff(false, 2, 2, 2, 3, " func previous1() {", " func new1() {\n")
+
+	mockedPatch := aladino.Patch{
+		fileName: mockedFile1,
 	}
 
-	assert.Equal(t, wantEvalEnv, mockedEnv)
+	wantEnv := &aladino.BaseEnv{
+		Ctx:         ctx,
+		Client:      mockedGithubClient,
+		ClientGQL:   nil,
+		Collector:   mocks_aladino.DefaultCollector,
+		PullRequest: mockedPullRequest,
+		Patch:       mockedPatch,
+		RegisterMap: aladino.RegisterMap(make(map[string]aladino.Value)),
+		BuiltIns:    mocks_aladino.MockBuiltIns(),
+		Report:      &aladino.Report{WorkflowDetails: make(map[string]aladino.ReportWorkflowDetails)},
+	}
+
+	assert.Nil(t, err)
+	assert.Equal(t, wantEnv.Ctx, gotEnv.GetCtx())
+    assert.Equal(t, wantEnv.Client, gotEnv.GetClient())
+    assert.Equal(t, wantEnv.ClientGQL, gotEnv.GetClientGQL())
+    assert.Equal(t, wantEnv.Collector, gotEnv.GetCollector())
+    assert.Equal(t, wantEnv.PullRequest, gotEnv.GetPullRequest())
+    assert.Equal(t, wantEnv.Patch, gotEnv.GetPatch())
+    assert.Equal(t, wantEnv.RegisterMap, gotEnv.GetRegisterMap())
+    
+    assert.Equal(t, len(wantEnv.BuiltIns.Functions), len(gotEnv.GetBuiltIns().Functions))
+	assert.Equal(t, len(wantEnv.BuiltIns.Actions), len(gotEnv.GetBuiltIns().Actions))
+    for functionName, functionCode := range wantEnv.BuiltIns.Functions {
+        assert.NotNil(t, gotEnv.GetBuiltIns().Functions[functionName])
+        assert.Equal(t, functionCode.Type, gotEnv.GetBuiltIns().Functions[functionName].Type)
+        assert.Equal(t, reflect.ValueOf(functionCode.Code), reflect.ValueOf(gotEnv.GetBuiltIns().Functions[functionName].Code))
+    }
+
+    assert.Equal(t, wantEnv.Report, gotEnv.GetReport())
 }

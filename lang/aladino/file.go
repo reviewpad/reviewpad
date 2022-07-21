@@ -13,7 +13,31 @@ import (
 
 type File struct {
 	Repr *github.CommitFile
-	Diff []*DiffBlock
+	Diff []*diffBlock
+}
+
+func (f *File) SetDiff(
+	isContext bool,
+	oldStart int,
+	oldEnd int,
+	newStart int,
+	newEnd int,
+	oldLine string,
+	newLine string,
+) {
+    f.Diff = append(f.Diff, &diffBlock{
+        isContext: isContext,
+        Old: &diffSpan{
+            int32(oldStart),
+            int32(oldEnd),
+        },
+        New: &diffSpan{
+            int32(newStart),
+            int32(newEnd),
+        },
+        oldLine: oldLine,
+        newLine: newLine,
+    })
 }
 
 func NewFile(file *github.CommitFile) (*File, error) {
