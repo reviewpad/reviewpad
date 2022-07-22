@@ -9,13 +9,12 @@ import (
 	"log"
 	"testing"
 
-	"github.com/reviewpad/reviewpad/v2/lang/aladino"
-	mocks_aladino "github.com/reviewpad/reviewpad/v2/mocks/aladino"
+	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestProcessRule(t *testing.T) {
-	mockedEnv, err := mocks_aladino.MockDefaultEnv(nil, nil)
+	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
