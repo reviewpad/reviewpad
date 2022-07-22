@@ -88,7 +88,6 @@ func TestExec_WhenActionBuiltInNonExisting(t *testing.T) {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
 
-	// make sure "tautology" action builtin doesn't exist in mocked environment
 	delete(mockedEnv.GetBuiltIns().Actions, "tautology")
 
 	fc := &FunctionCall{
@@ -109,7 +108,7 @@ func TestExec(t *testing.T) {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
 
-    fcName := "emptyAction"
+	fcName := "emptyAction"
 
 	mockedEnv.GetBuiltIns().Actions["emptyAction"] = &BuiltInAction{
 		Type: BuildFunctionType([]Type{}, nil),
