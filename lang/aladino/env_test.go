@@ -15,17 +15,16 @@ import (
 	"github.com/google/go-github/v42/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
-	mocks_aladino "github.com/reviewpad/reviewpad/v3/mocks/aladino"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestGetCtx_WithDefaultEnv(t *testing.T) {
-	mockedEnv, err := mocks_aladino.MockDefaultEnv(nil, nil)
+	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
 
-	wantCtx := context.Background()
+	wantCtx := aladino.DefaultContext
 
 	gotCtx := mockedEnv.GetCtx()
 
@@ -33,12 +32,12 @@ func TestGetCtx_WithDefaultEnv(t *testing.T) {
 }
 
 func TestGetCollector_WithDefaultEnv(t *testing.T) {
-	mockedEnv, err := mocks_aladino.MockDefaultEnv(nil, nil)
+	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
 
-	wantCollector := mocks_aladino.DefaultCollector
+	wantCollector := aladino.DefaultCollector
 
 	gotCollector := mockedEnv.GetCollector()
 
@@ -46,20 +45,12 @@ func TestGetCollector_WithDefaultEnv(t *testing.T) {
 }
 
 func TestGetPullRequest_WithDefaultEnv(t *testing.T) {
-	mockedEnv, err := mocks_aladino.MockDefaultEnv(nil, nil)
+	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
 
-	wantPullRequest, _, err := mockedEnv.GetClient().PullRequests.Get(
-		mockedEnv.GetCtx(),
-		mocks_aladino.DefaultMockPrOwner,
-		mocks_aladino.DefaultMockPrRepoName,
-		mocks_aladino.DefaultMockPrNum,
-	)
-	if err != nil {
-		log.Fatal(err)
-	}
+	wantPullRequest := aladino.GetDefaultMockPullRequestDetails()
 
 	gotPullRequest := mockedEnv.GetPullRequest()
 
@@ -67,7 +58,7 @@ func TestGetPullRequest_WithDefaultEnv(t *testing.T) {
 }
 
 func TestGetPatch_WithDefaultEnv(t *testing.T) {
-	fileName := fmt.Sprintf("%v/file1.ts", mocks_aladino.DefaultMockPrRepoName)
+	fileName := fmt.Sprintf("%v/file1.ts", aladino.DefaultMockPrRepoName)
 	patch := "@@ -2,9 +2,11 @@ package main\n- func previous1() {\n+ func new1() {\n+\nreturn"
 	mockedPullRequestFileList := &[]*github.CommitFile{
 		{
@@ -75,7 +66,7 @@ func TestGetPatch_WithDefaultEnv(t *testing.T) {
 			Patch:    github.String(patch),
 		},
 	}
-	mockedEnv, err := mocks_aladino.MockDefaultEnv(
+	mockedEnv, err := aladino.MockDefaultEnv(
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsFilesByOwnerByRepoByPullNumber,
@@ -108,7 +99,7 @@ func TestGetPatch_WithDefaultEnv(t *testing.T) {
 }
 
 func TestGetRegisterMap_WithDefaultEnv(t *testing.T) {
-	mockedEnv, err := mocks_aladino.MockDefaultEnv(nil, nil)
+	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
@@ -121,12 +112,12 @@ func TestGetRegisterMap_WithDefaultEnv(t *testing.T) {
 }
 
 func TestGetBuiltIns_WithDefaultEnv(t *testing.T) {
-	mockedEnv, err := mocks_aladino.MockDefaultEnv(nil, nil)
+	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
 
-	wantBuiltIns := mocks_aladino.MockBuiltIns()
+	wantBuiltIns := aladino.MockBuiltIns()
 
 	gotBuiltIns := mockedEnv.GetBuiltIns()
 
@@ -141,7 +132,7 @@ func TestGetBuiltIns_WithDefaultEnv(t *testing.T) {
 }
 
 func TestGetReport_WithDefaultEnv(t *testing.T) {
-	mockedEnv, err := mocks_aladino.MockDefaultEnv(nil, nil)
+	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
@@ -156,7 +147,7 @@ func TestGetReport_WithDefaultEnv(t *testing.T) {
 }
 
 func TestNewTypeEnv_WithDefaultEnv(t *testing.T) {
-	mockedEnv, err := mocks_aladino.MockDefaultEnv(nil, nil)
+	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
@@ -176,7 +167,7 @@ func TestNewEvalEnv_WhenGetPullRequestFilesFails(t *testing.T) {
 	mockedGithubClient := github.NewClient(mock.NewMockedHTTPClient(
 		mock.WithRequestMatch(
 			mock.GetReposPullsByOwnerByRepoByPullNumber,
-			mocks_aladino.GetDefaultMockPullRequestDetails(),
+			aladino.GetDefaultMockPullRequestDetails(),
 		),
         mock.WithRequestMatchHandler(
             mock.GetReposPullsFilesByOwnerByRepoByPullNumber,
@@ -193,9 +184,9 @@ func TestNewEvalEnv_WhenGetPullRequestFilesFails(t *testing.T) {
     ctx := context.Background()
 	mockedPullRequest, _, err := mockedGithubClient.PullRequests.Get(
 		ctx,
-		mocks_aladino.DefaultMockPrOwner,
-		mocks_aladino.DefaultMockPrRepoName,
-		mocks_aladino.DefaultMockPrNum,
+		aladino.DefaultMockPrOwner,
+		aladino.DefaultMockPrRepoName,
+		aladino.DefaultMockPrNum,
 	)
 	if err != nil {
 		log.Fatalf("couldn't get pull request: %v", err)
@@ -205,10 +196,10 @@ func TestNewEvalEnv_WhenGetPullRequestFilesFails(t *testing.T) {
 		ctx,
 		mockedGithubClient,
 		nil,
-		mocks_aladino.DefaultCollector,
+		aladino.DefaultCollector,
 		mockedPullRequest,
         nil,
-		mocks_aladino.MockBuiltIns(),
+		aladino.MockBuiltIns(),
 	)
 
     assert.Nil(t, env)
@@ -219,7 +210,7 @@ func TestNewEvalEnv_WhenNewFileFails(t *testing.T) {
 	mockedGithubClient := github.NewClient(mock.NewMockedHTTPClient(
 		mock.WithRequestMatch(
 			mock.GetReposPullsByOwnerByRepoByPullNumber,
-			mocks_aladino.GetDefaultMockPullRequestDetails(),
+			aladino.GetDefaultMockPullRequestDetails(),
 		),
 		mock.WithRequestMatch(
 			mock.GetReposPullsFilesByOwnerByRepoByPullNumber,
@@ -232,9 +223,9 @@ func TestNewEvalEnv_WhenNewFileFails(t *testing.T) {
 	ctx := context.Background()
 	mockedPullRequest, _, err := mockedGithubClient.PullRequests.Get(
 		ctx,
-		mocks_aladino.DefaultMockPrOwner,
-		mocks_aladino.DefaultMockPrRepoName,
-		mocks_aladino.DefaultMockPrNum,
+		aladino.DefaultMockPrOwner,
+		aladino.DefaultMockPrRepoName,
+		aladino.DefaultMockPrNum,
 	)
 	if err != nil {
 		log.Fatalf("couldn't get pull request: %v", err)
@@ -244,10 +235,10 @@ func TestNewEvalEnv_WhenNewFileFails(t *testing.T) {
 		ctx,
 		mockedGithubClient,
 		nil,
-		mocks_aladino.DefaultCollector,
+		aladino.DefaultCollector,
 		mockedPullRequest,
         nil,
-		mocks_aladino.MockBuiltIns(),
+		aladino.MockBuiltIns(),
 	)
 
 	assert.Nil(t, env)
@@ -260,7 +251,7 @@ func TestNewEvalEnv(t *testing.T) {
 	mockedGithubClient := github.NewClient(mock.NewMockedHTTPClient(
 		mock.WithRequestMatch(
 			mock.GetReposPullsByOwnerByRepoByPullNumber,
-			mocks_aladino.GetDefaultMockPullRequestDetails(),
+			aladino.GetDefaultMockPullRequestDetails(),
 		),
 		mock.WithRequestMatch(
 			mock.GetReposPullsFilesByOwnerByRepoByPullNumber,
@@ -276,9 +267,9 @@ func TestNewEvalEnv(t *testing.T) {
 	ctx := context.Background()
 	mockedPullRequest, _, err := mockedGithubClient.PullRequests.Get(
 		ctx,
-		mocks_aladino.DefaultMockPrOwner,
-		mocks_aladino.DefaultMockPrRepoName,
-		mocks_aladino.DefaultMockPrNum,
+		aladino.DefaultMockPrOwner,
+		aladino.DefaultMockPrRepoName,
+		aladino.DefaultMockPrNum,
 	)
 
 	if err != nil {
@@ -289,10 +280,10 @@ func TestNewEvalEnv(t *testing.T) {
 		ctx,
 		mockedGithubClient,
 		nil,
-		mocks_aladino.DefaultCollector,
+		aladino.DefaultCollector,
 		mockedPullRequest,
         nil,
-		mocks_aladino.MockBuiltIns(),
+		aladino.MockBuiltIns(),
 	)
 
 	mockedFile1 := &aladino.File{
@@ -311,11 +302,11 @@ func TestNewEvalEnv(t *testing.T) {
 		Ctx:         ctx,
 		Client:      mockedGithubClient,
 		ClientGQL:   nil,
-		Collector:   mocks_aladino.DefaultCollector,
+		Collector:   aladino.DefaultCollector,
 		PullRequest: mockedPullRequest,
 		Patch:       mockedPatch,
 		RegisterMap: aladino.RegisterMap(make(map[string]aladino.Value)),
-		BuiltIns:    mocks_aladino.MockBuiltIns(),
+		BuiltIns:    aladino.MockBuiltIns(),
 		Report:      &aladino.Report{WorkflowDetails: make(map[string]aladino.ReportWorkflowDetails)},
 	}
 

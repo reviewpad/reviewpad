@@ -24,6 +24,7 @@ const DefaultMockPrNum = 6
 const DefaultMockPrOwner = "foobar"
 const DefaultMockPrRepoName = "default-mock-repo"
 
+var DefaultContext = context.Background()
 var DefaultCollector = collector.NewCollector("", "")
 
 func GetDefaultMockPullRequestDetails() *github.PullRequest {
@@ -164,7 +165,7 @@ func getDefaultMockPullRequestFileList() *[]*github.CommitFile {
 	}
 }
 
-func mockBuiltIns() *BuiltIns {
+func MockBuiltIns() *BuiltIns {
 	return &BuiltIns{
 		Functions: map[string]*BuiltInFunction{
 			"emptyFunction": {
@@ -203,7 +204,7 @@ func mockEnvWith(prOwner string, prRepoName string, prNum int, client *github.Cl
 		DefaultCollector,
 		pr,
 		eventPayload,
-		mockBuiltIns(),
+		MockBuiltIns(),
 	)
 
 	return env, err
