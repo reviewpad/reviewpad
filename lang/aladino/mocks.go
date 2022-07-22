@@ -50,6 +50,7 @@ func GetDefaultMockPullRequestDetails() *github.PullRequest {
 		Milestone: &github.Milestone{
 			Title: github.String("v1.0"),
 		},
+        URL: github.String("https://foo.bar"),
 		Labels: []*github.Label{
 			{
 				Name: github.String("enhancement"),
