@@ -5,6 +5,7 @@
 package aladino
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -807,4 +808,60 @@ func TestReport_OnVerboseMode_WhenThereIsAlreadyAReviewpadComment(t *testing.T) 
 
 	assert.Nil(t, err)
 	assert.Equal(t, commentUpdated, updatedComment)
+}
+
+func TestNewInterpreter_WhenNewEvalEnvFails(t *testing.T) {
+	ctx := context.Background()
+	failMessage := "GetPullRequestFilesRequestFail"
+	client := github.NewClient(
+		mock.NewMockedHTTPClient(
+			mock.WithRequestMatchHandler(
+				mock.GetReposPullsFilesByOwnerByRepoByPullNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					mock.WriteError(
+						w,
+						http.StatusInternalServerError,
+						failMessage,
+					)
+				}),
+			),
+		),
+	)
+	// TODO: Ideally, we should not have nil arguments in the call to NewInterpreter
+	gotInterpreter, err := NewInterpreter(
+		ctx,
+		client,
+		nil,
+		nil,
+		GetDefaultMockPullRequestDetails(),
+		nil,
+		nil,
+	)
+
+	assert.Nil(t, gotInterpreter)
+	assert.NotNil(t, err)
+}
+
+func TestNewInterpreter(t *testing.T) {
+	mockedEnv, err := MockDefaultEnv(nil, nil)
+	if err != nil {
+		assert.FailNow(t, fmt.Sprintf("MockDefaultEnv failed: %v", err))
+	}
+
+	wantInterpreter := &Interpreter{
+		Env: mockedEnv,
+	}
+
+	gotInterpreter, err := NewInterpreter(
+		mockedEnv.GetCtx(),
+		mockedEnv.GetClient(),
+		mockedEnv.GetClientGQL(),
+		mockedEnv.GetCollector(),
+		mockedEnv.GetPullRequest(),
+		mockedEnv.GetEventPayload(),
+		mockedEnv.GetBuiltIns(),
+	)
+
+	assert.Nil(t, err)
+	assert.Equal(t, wantInterpreter, gotInterpreter)
 }
