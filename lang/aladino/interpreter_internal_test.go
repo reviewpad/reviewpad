@@ -220,3 +220,13 @@ func TestProcessGroup_WhenGroupTypeFilterIsNotSet(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, wantVal, gotVal)
 }
+
+func TestBuildInternalLabelID(t *testing.T) {
+	labelID := "label_id"
+
+	wantVal := fmt.Sprintf("@label:%v", labelID)
+
+	gotVal := BuildInternalLabelID(labelID)
+
+	assert.Equal(t, wantVal, gotVal)
+}
