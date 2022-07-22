@@ -19,7 +19,7 @@ import (
 func TestProcessGroup_WhenGroupTypeFilterIsSetAndBuildGroupASTFails(t *testing.T) {
 	mockedEnv, err := aladino.MockDefaultEnvWithBuiltIns(nil, nil, plugins_aladino.PluginBuiltIns())
 	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
+		log.Fatalf("MockDefaultEnvWithBuiltIns failed: %v", err)
 	}
 
 	mockedInterpreter := &aladino.Interpreter{
@@ -56,7 +56,7 @@ func TestProcessGroup_WhenGroupTypeFilterIsSet(t *testing.T) {
         plugins_aladino.PluginBuiltIns(),
 	)
 	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
+		log.Fatalf("MockDefaultEnvWithBuiltIns failed: %v", err)
 	}
 
 	mockedInterpreter := &aladino.Interpreter{
@@ -87,7 +87,7 @@ func TestProcessGroup_WhenGroupTypeFilterIsSet(t *testing.T) {
 func TestProcessGroup_WhenGroupTypeFilterIsNotSet(t *testing.T) {
 	mockedEnv, err := aladino.MockDefaultEnvWithBuiltIns(nil, nil, plugins_aladino.PluginBuiltIns())
 	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
+		log.Fatalf("MockDefaultEnvWithBuiltIns failed: %v", err)
 	}
 
 	mockedInterpreter := &aladino.Interpreter{
@@ -118,7 +118,7 @@ func TestProcessGroup_WhenGroupTypeFilterIsNotSet(t *testing.T) {
 func TestProcessGroup_WhenGroupTypeFilterIsNotSetAndEvalGroupTypeInferenceFails(t *testing.T) {
 	mockedEnv, err := aladino.MockDefaultEnvWithBuiltIns(nil, nil, plugins_aladino.PluginBuiltIns())
 	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
+		log.Fatalf("MockDefaultEnvWithBuiltIns failed: %v", err)
 	}
 
 	mockedInterpreter := &aladino.Interpreter{
@@ -142,7 +142,7 @@ func TestProcessGroup_WhenGroupTypeFilterIsNotSetAndEvalGroupTypeInferenceFails(
 func TestProcessGroup_WhenGroupTypeFilterIsNotSetAndGroupExprIsNotAnArray(t *testing.T) {
 	mockedEnv, err := aladino.MockDefaultEnvWithBuiltIns(nil, nil, plugins_aladino.PluginBuiltIns())
 	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
+		log.Fatalf("MockDefaultEnvWithBuiltIns failed: %v", err)
 	}
 
 	mockedInterpreter := &aladino.Interpreter{
