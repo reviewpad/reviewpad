@@ -12,17 +12,19 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const testPatch = `@@ -2,9 +2,11 @@ package main
+func getTestPatch() string {
+    return `@@ -2,9 +2,11 @@ package main
 - func previous() {
 + func new() {
 +
 return
 }`
+}
 
 func TestAppendToDiff(t *testing.T) {
     fileName := "default-mock-repo/file1.ts"
 	mockedFile := &github.CommitFile{
-		Patch:    github.String(testPatch),
+		Patch:    github.String(getTestPatch()),
 		Filename: github.String(fileName),
 	}
 
@@ -84,7 +86,7 @@ func TestNewFile_WhenErrorInFilePatch(t *testing.T) {
 func TestNewFile(t *testing.T) {
 	fileName := "default-mock-repo/file1.ts"
 	mockedFile := &github.CommitFile{
-		Patch:    github.String(testPatch),
+		Patch:    github.String(getTestPatch()),
 		Filename: github.String(fileName),
 	}
 
@@ -103,7 +105,7 @@ func TestQuery_WhenCompileFails(t *testing.T) {
 	fileName := "default-mock-repo/file1.ts"
 	mockedFile := &File{
 		Repr: &github.CommitFile{
-			Patch:    github.String(testPatch),
+			Patch:    github.String(getTestPatch()),
 			Filename: github.String(fileName),
 		},
 	}
@@ -119,7 +121,7 @@ func TestQuery_WhenFound(t *testing.T) {
 	fileName := "default-mock-repo/file1.ts"
 	mockedFile := &File{
 		Repr: &github.CommitFile{
-			Patch:    github.String(testPatch),
+			Patch:    github.String(getTestPatch()),
 			Filename: github.String(fileName),
 		},
 	}
@@ -135,7 +137,7 @@ func TestQuery_WhenNotFound(t *testing.T) {
 	fileName := "default-mock-repo/file1.ts"
 	mockedFile := &File{
 		Repr: &github.CommitFile{
-			Patch:    github.String(testPatch),
+			Patch:    github.String(getTestPatch()),
 			Filename: github.String(fileName),
 		},
 	}
