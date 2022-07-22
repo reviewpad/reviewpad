@@ -43,7 +43,7 @@ func GetDefaultMockPullRequestDetails() *github.PullRequest {
 		},
 		Title:     github.String("Amazing new feature"),
 		Body:      github.String("Please pull these awesome changes in!"),
-		URL:       github.String("pullRequestURL"),
+		URL:       github.String("https://foo.bar"),
 		CreatedAt: &prDate,
 		Comments:  github.Int(6),
 		Commits:   github.Int(5),
@@ -51,7 +51,6 @@ func GetDefaultMockPullRequestDetails() *github.PullRequest {
 		Milestone: &github.Milestone{
 			Title: github.String("v1.0"),
 		},
-		URL: github.String("https://foo.bar"),
 		Labels: []*github.Label{
 			{
 				Name: github.String("enhancement"),
