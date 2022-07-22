@@ -263,3 +263,26 @@ func TestBuildInternalRuleName(t *testing.T) {
 
 	assert.Equal(t, wantVal, gotVal)
 }
+
+func TestProcessRule(t *testing.T) {
+	mockedEnv, err := MockDefaultEnv(nil, nil)
+	if err != nil {
+		assert.FailNow(t, fmt.Sprintf("mockDefaultEnv failed: %v", err))
+	}
+
+	mockedInterpreter := &Interpreter{
+		Env: mockedEnv,
+	}
+
+	ruleName := "rule_name"
+	spec := "1 == 1"
+	err = mockedInterpreter.ProcessRule(ruleName, spec)
+
+	internalRuleName := fmt.Sprintf("@rule:%v", ruleName)
+	gotVal := mockedEnv.GetRegisterMap()[internalRuleName]
+
+	wantVal := BuildStringValue(spec)
+
+	assert.Nil(t, err)
+	assert.Equal(t, wantVal, gotVal)
+}
