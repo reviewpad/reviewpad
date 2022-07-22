@@ -16,6 +16,26 @@ type File struct {
 	Diff []*diffBlock
 }
 
+func (f *File) AppendToDiff(
+	isContext bool,
+	oldStart, oldEnd, newStart,	newEnd int,
+	oldLine, newLine string,
+) {
+	f.Diff = append(f.Diff, &diffBlock{
+		isContext: isContext,
+		Old: &diffSpan{
+			int32(oldStart),
+			int32(oldEnd),
+		},
+		New: &diffSpan{
+			int32(newStart),
+			int32(newEnd),
+		},
+		oldLine: oldLine,
+		newLine: newLine,
+	})
+}
+
 func NewFile(file *github.CommitFile) (*File, error) {
 	diffBlocks, err := parseFilePatch(file.GetPatch())
 	if err != nil {
