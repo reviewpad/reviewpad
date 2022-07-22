@@ -171,7 +171,7 @@ func MockBuiltIns() *BuiltIns {
 			"emptyFunction": {
 				Type: BuildFunctionType([]Type{}, nil),
 				Code: func(e Env, args []Value) (Value, error) {
-					return nil, nil
+					return BuildIntValue(0), nil
 				},
 			},
 		},
