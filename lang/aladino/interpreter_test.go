@@ -6,19 +6,17 @@ package aladino_test
 
 import (
 	"log"
-	"net/http"
 	"testing"
 
 	"github.com/google/go-github/v42/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
-	"github.com/reviewpad/reviewpad/v2/engine"
-	"github.com/reviewpad/reviewpad/v2/lang/aladino"
-	mocks_aladino "github.com/reviewpad/reviewpad/v2/mocks/aladino"
+	"github.com/reviewpad/reviewpad/v3/engine"
+	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestProcessGroupWhenGroupTypeFilterIsSetAndBuildGroupASTFails(t *testing.T) {
-	mockedEnv, err := mocks_aladino.MockDefaultEnv(nil, nil)
+	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
@@ -46,23 +44,11 @@ func TestProcessGroupWhenGroupTypeFilterIsSet(t *testing.T) {
 	ghMembers := []*github.User{
 		{Login: github.String(member)},
 	}
-	mockedPullRequestFileList := &[]*github.CommitFile{
-		{
-			Filename: github.String("default-mock-repo/file1.ts"),
-			Patch:    nil,
-		},
-	}
-	mockedEnv, err := mocks_aladino.MockDefaultEnv(
+	mockedEnv, err := aladino.MockDefaultEnv(
 		[]mock.MockBackendOption{
 			mock.WithRequestMatch(
 				mock.GetOrgsMembersByOrg,
 				ghMembers,
-			),
-			mock.WithRequestMatchHandler(
-				mock.GetReposPullsFilesByOwnerByRepoByPullNumber,
-				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					w.Write(mock.MustMarshal(mockedPullRequestFileList))
-				}),
 			),
 		},
 		nil,
@@ -97,7 +83,7 @@ func TestProcessGroupWhenGroupTypeFilterIsSet(t *testing.T) {
 }
 
 func TestProcessGroupWhenGroupTypeFilterIsNotSet(t *testing.T) {
-	mockedEnv, err := mocks_aladino.MockDefaultEnv(nil, nil)
+	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
@@ -128,7 +114,7 @@ func TestProcessGroupWhenGroupTypeFilterIsNotSet(t *testing.T) {
 }
 
 func TestProcessGroupWhenGroupTypeFilterIsNotSetAndEvalGroupTypeInferenceFails(t *testing.T) {
-	mockedEnv, err := mocks_aladino.MockDefaultEnv(nil, nil)
+	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
@@ -152,7 +138,7 @@ func TestProcessGroupWhenGroupTypeFilterIsNotSetAndEvalGroupTypeInferenceFails(t
 }
 
 func TestProcessGroupWhenGroupTypeFilterIsNotSetAndGroupExprIsNotAnArray(t *testing.T) {
-	mockedEnv, err := mocks_aladino.MockDefaultEnv(nil, nil)
+	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
