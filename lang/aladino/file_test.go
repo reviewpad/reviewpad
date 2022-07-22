@@ -13,7 +13,12 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// aladino.MockDefaultEnv calls aladino.NewFile upon creating the new eval env
+const testPatch = `@@ -2,9 +2,11 @@ package main
+- func previous() {
++ func new() {
++
+return`
+
 func TestNewFile_WhenErrorInFilePatch(t *testing.T) {
 	fileName := "default-mock-repo/file1.ts"
 	mockedFile := &github.CommitFile{
@@ -30,7 +35,7 @@ func TestNewFile_WhenErrorInFilePatch(t *testing.T) {
 func TestNewFile(t *testing.T) {
 	fileName := "default-mock-repo/file1.ts"
 	mockedFile := &github.CommitFile{
-		Patch:    github.String("@@ -2,9 +2,11 @@ package main\n- func previous() {\n+ func new() {\n+\nreturn"),
+		Patch:    github.String(testPatch),
 		Filename: github.String(fileName),
 	}
 
@@ -49,7 +54,7 @@ func TestQuery_WhenCompileFails(t *testing.T) {
 	fileName := "default-mock-repo/file1.ts"
 	mockedFile := &aladino.File{
 		Repr: &github.CommitFile{
-			Patch:    github.String("@@ -2,9 +2,11 @@ package main\n- func previous() {\n+ func new() {\n+\nreturn"),
+			Patch:    github.String(testPatch),
 			Filename: github.String(fileName),
 		},
 	}
@@ -65,7 +70,7 @@ func TestQuery_WhenFound(t *testing.T) {
 	fileName := "default-mock-repo/file1.ts"
 	mockedFile := &aladino.File{
 		Repr: &github.CommitFile{
-			Patch:    github.String("@@ -2,9 +2,11 @@ package main\n- func previous() {\n+ func new() {\n+\nreturn"),
+			Patch:    github.String(testPatch),
 			Filename: github.String(fileName),
 		},
 	}
@@ -81,7 +86,7 @@ func TestQuery_WhenNotFound(t *testing.T) {
 	fileName := "default-mock-repo/file1.ts"
 	mockedFile := &aladino.File{
 		Repr: &github.CommitFile{
-			Patch:    github.String("@@ -2,9 +2,11 @@ package main\n- func previous() {\n+ func new() {\n+\nreturn"),
+			Patch:    github.String(testPatch),
 			Filename: github.String(fileName),
 		},
 	}
