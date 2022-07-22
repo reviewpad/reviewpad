@@ -230,3 +230,26 @@ func TestBuildInternalLabelID(t *testing.T) {
 
 	assert.Equal(t, wantVal, gotVal)
 }
+
+func TestProcessLabel(t *testing.T) {
+	mockedEnv, err := MockDefaultEnv(nil, nil)
+	if err != nil {
+		assert.FailNow(t, fmt.Sprintf("mockDefaultEnv failed: %v", err))
+	}
+
+	mockedInterpreter := &Interpreter{
+		Env: mockedEnv,
+	}
+
+	labelID := "label_id"
+	labelName := "label_name"
+	err = mockedInterpreter.ProcessLabel(labelID, labelName)
+
+	internalLabelID := fmt.Sprintf("@label:%v", labelID)
+	gotVal := mockedEnv.GetRegisterMap()[internalLabelID]
+
+	wantVal := BuildStringValue(labelName)
+
+	assert.Nil(t, err)
+	assert.Equal(t, wantVal, gotVal)
+}
