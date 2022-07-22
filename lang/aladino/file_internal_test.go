@@ -2,14 +2,13 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-package aladino_test
+package aladino
 
 import (
 	"fmt"
 	"testing"
 
 	"github.com/google/go-github/v42/github"
-	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -20,6 +19,55 @@ const testPatch = `@@ -2,9 +2,11 @@ package main
 return
 }`
 
+func TestAppendToDiff(t *testing.T) {
+    fileName := "default-mock-repo/file1.ts"
+	mockedFile := &github.CommitFile{
+		Patch:    github.String(testPatch),
+		Filename: github.String(fileName),
+	}
+
+    isContext := false
+    oldStart := 2
+    oldEnd := 2
+    newStart := 2
+    newEnd := 3
+    oldLine := " func previous() {"
+    newLine := " func new() {\n"
+
+	file := &File{
+		Repr: mockedFile,
+	}
+	file.AppendToDiff(
+        isContext,
+        oldStart,
+        oldEnd,
+        newStart,
+        newEnd,
+        oldLine,
+        newLine,
+    )
+
+    gotDiff := file.Diff
+
+    wantDiff := []*diffBlock{
+        {
+            isContext: isContext,
+            Old: &diffSpan{
+                int32(oldStart),
+                int32(oldEnd),
+            },
+            New: &diffSpan{
+                int32(newStart),
+                int32(newEnd),
+            },
+            oldLine: oldLine,
+            newLine: newLine,
+        },
+	}
+
+	assert.Equal(t, wantDiff, gotDiff)
+}
+
 func TestNewFile_WhenErrorInFilePatch(t *testing.T) {
 	fileName := "default-mock-repo/file1.ts"
 	mockedFile := &github.CommitFile{
@@ -27,7 +75,7 @@ func TestNewFile_WhenErrorInFilePatch(t *testing.T) {
 		Filename: github.String(fileName),
 	}
 
-	gotFile, err := aladino.NewFile(mockedFile)
+	gotFile, err := NewFile(mockedFile)
 
 	assert.Nil(t, gotFile)
 	assert.EqualError(t, err, fmt.Sprintf("error in file patch %s: error in chunk lines parsing (1): missing lines info: @@\npatch: @@", fileName))
@@ -40,12 +88,12 @@ func TestNewFile(t *testing.T) {
 		Filename: github.String(fileName),
 	}
 
-	wantFile := &aladino.File{
+	wantFile := &File{
 		Repr: mockedFile,
 	}
 	wantFile.AppendToDiff(false, 2, 2, 2, 3, " func previous() {", " func new() {\n")
 
-	gotFile, err := aladino.NewFile(mockedFile)
+	gotFile, err := NewFile(mockedFile)
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantFile, gotFile)
@@ -53,7 +101,7 @@ func TestNewFile(t *testing.T) {
 
 func TestQuery_WhenCompileFails(t *testing.T) {
 	fileName := "default-mock-repo/file1.ts"
-	mockedFile := &aladino.File{
+	mockedFile := &File{
 		Repr: &github.CommitFile{
 			Patch:    github.String(testPatch),
 			Filename: github.String(fileName),
@@ -69,7 +117,7 @@ func TestQuery_WhenCompileFails(t *testing.T) {
 
 func TestQuery_WhenFound(t *testing.T) {
 	fileName := "default-mock-repo/file1.ts"
-	mockedFile := &aladino.File{
+	mockedFile := &File{
 		Repr: &github.CommitFile{
 			Patch:    github.String(testPatch),
 			Filename: github.String(fileName),
@@ -85,7 +133,7 @@ func TestQuery_WhenFound(t *testing.T) {
 
 func TestQuery_WhenNotFound(t *testing.T) {
 	fileName := "default-mock-repo/file1.ts"
-	mockedFile := &aladino.File{
+	mockedFile := &File{
 		Repr: &github.CommitFile{
 			Patch:    github.String(testPatch),
 			Filename: github.String(fileName),
