@@ -168,10 +168,22 @@ func getDefaultMockPullRequestFileList() *[]*github.CommitFile {
 func MockBuiltIns() *BuiltIns {
 	return &BuiltIns{
 		Functions: map[string]*BuiltInFunction{
-			"emptyFunction": {
+            "emptyFunction": {
 				Type: BuildFunctionType([]Type{}, nil),
 				Code: func(e Env, args []Value) (Value, error) {
+					return nil, nil
+				},
+			},
+			"zeroConst": {
+				Type: BuildFunctionType([]Type{}, BuildIntType()),
+				Code: func(e Env, args []Value) (Value, error) {
 					return BuildIntValue(0), nil
+				},
+			},
+            "returnStr": {
+				Type: BuildFunctionType([]Type{BuildStringType()}, BuildStringType()),
+				Code: func(e Env, args []Value) (Value, error) {
+					return args[0].(*StringValue), nil
 				},
 			},
 		},

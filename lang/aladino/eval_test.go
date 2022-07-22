@@ -185,7 +185,7 @@ func TestEval_OnVariable_WhenVariableIsABuiltIn(t *testing.T) {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
 
-	variable, err := aladino.Parse("$emptyFunction")
+	variable, err := aladino.Parse("$zeroConst")
 	if err != nil {
 		log.Fatalf("parse failed: %v", err)
 	}
@@ -296,14 +296,14 @@ func TestEval_OnFunctionCall_WhenFunctionIsABuiltIn(t *testing.T) {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
 
-	fc, err := aladino.Parse("$emptyFunction()")
+	fc, err := aladino.Parse("$returnStr(\"hello\")")
 	if err != nil {
 		log.Fatalf("parse failed: %v", err)
 	}
 
 	gotVal, err := fc.Eval(mockedEnv)
 
-	wantVal := aladino.BuildIntValue(0)
+	wantVal := aladino.BuildStringValue("hello")
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantVal, gotVal)

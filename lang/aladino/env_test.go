@@ -159,6 +159,8 @@ func TestNewTypeEnv_WithDefaultEnv(t *testing.T) {
 	wantTypeEnv := aladino.TypeEnv(map[string]aladino.Type{
 		"emptyFunction": aladino.BuildFunctionType([]aladino.Type{}, nil),
 		"emptyAction":   aladino.BuildFunctionType([]aladino.Type{}, nil),
+		"zeroConst":     aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildIntType()),
+		"returnStr":     aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, aladino.BuildStringType()),
 	})
 
 	gotTypeEnv := *aladino.NewTypeEnv(mockedEnv)
@@ -306,14 +308,14 @@ func TestNewEvalEnv(t *testing.T) {
 		Ctx:    ctx,
 		Client: mockedGithubClient,
 		// TODO: Mock a ClientGQL
-		ClientGQL:    nil,
-		Collector:    aladino.DefaultMockCollector,
-		PullRequest:  mockedPullRequest,
-		Patch:        mockedPatch,
-		RegisterMap:  aladino.RegisterMap(make(map[string]aladino.Value)),
-		BuiltIns:     aladino.MockBuiltIns(),
-		Report:       &aladino.Report{WorkflowDetails: make(map[string]aladino.ReportWorkflowDetails)},
-        // TODO: Mock an event
+		ClientGQL:   nil,
+		Collector:   aladino.DefaultMockCollector,
+		PullRequest: mockedPullRequest,
+		Patch:       mockedPatch,
+		RegisterMap: aladino.RegisterMap(make(map[string]aladino.Value)),
+		BuiltIns:    aladino.MockBuiltIns(),
+		Report:      &aladino.Report{WorkflowDetails: make(map[string]aladino.ReportWorkflowDetails)},
+		// TODO: Mock an event
 		EventPayload: nil,
 	}
 
