@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/google/go-github/v42/github"
+	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v3/engine"
 	"github.com/stretchr/testify/assert"
 )
@@ -234,7 +236,7 @@ func TestBuildInternalLabelID(t *testing.T) {
 func TestProcessLabel(t *testing.T) {
 	mockedEnv, err := MockDefaultEnv(nil, nil)
 	if err != nil {
-		assert.FailNow(t, fmt.Sprintf("mockDefaultEnv failed: %v", err))
+		assert.FailNow(t, fmt.Sprintf("MockDefaultEnv failed: %v", err))
 	}
 
 	mockedInterpreter := &Interpreter{
@@ -267,7 +269,7 @@ func TestBuildInternalRuleName(t *testing.T) {
 func TestProcessRule(t *testing.T) {
 	mockedEnv, err := MockDefaultEnv(nil, nil)
 	if err != nil {
-		assert.FailNow(t, fmt.Sprintf("mockDefaultEnv failed: %v", err))
+		assert.FailNow(t, fmt.Sprintf("MockDefaultEnv failed: %v", err))
 	}
 
 	mockedInterpreter := &Interpreter{
@@ -290,7 +292,7 @@ func TestProcessRule(t *testing.T) {
 func TestEvalExpr_WhenParseFails(t *testing.T) {
 	mockedEnv, err := MockDefaultEnv(nil, nil)
 	if err != nil {
-		assert.FailNow(t, fmt.Sprintf("mockDefaultEnv failed: %v", err))
+		assert.FailNow(t, fmt.Sprintf("MockDefaultEnv failed: %v", err))
 	}
 
 	gotVal, err := EvalExpr(mockedEnv, "", "1 ==")
@@ -302,7 +304,7 @@ func TestEvalExpr_WhenParseFails(t *testing.T) {
 func TestEvalExpr_WhenTypeInferenceFails(t *testing.T) {
 	mockedEnv, err := MockDefaultEnv(nil, nil)
 	if err != nil {
-		assert.FailNow(t, fmt.Sprintf("mockDefaultEnv failed: %v", err))
+		assert.FailNow(t, fmt.Sprintf("MockDefaultEnv failed: %v", err))
 	}
 
 	gotVal, err := EvalExpr(mockedEnv, "", "1 == \"a\"")
@@ -314,7 +316,7 @@ func TestEvalExpr_WhenTypeInferenceFails(t *testing.T) {
 func TestEvalExpr_WhenExprIsNotBoolType(t *testing.T) {
 	mockedEnv, err := MockDefaultEnv(nil, nil)
 	if err != nil {
-		assert.FailNow(t, fmt.Sprintf("mockDefaultEnv failed: %v", err))
+		assert.FailNow(t, fmt.Sprintf("MockDefaultEnv failed: %v", err))
 	}
 
 	gotVal, err := EvalExpr(mockedEnv, "", "1")
@@ -326,7 +328,7 @@ func TestEvalExpr_WhenExprIsNotBoolType(t *testing.T) {
 func TestEvalExpr(t *testing.T) {
 	mockedEnv, err := MockDefaultEnv(nil, nil)
 	if err != nil {
-		assert.FailNow(t, fmt.Sprintf("mockDefaultEnv failed: %v", err))
+		assert.FailNow(t, fmt.Sprintf("MockDefaultEnv failed: %v", err))
 	}
 
 	gotVal, err := EvalExpr(mockedEnv, "", "1 == 1")
@@ -338,7 +340,7 @@ func TestEvalExpr(t *testing.T) {
 func TestEvalExpr_OnInterpreter(t *testing.T) {
 	mockedEnv, err := MockDefaultEnv(nil, nil)
 	if err != nil {
-		assert.FailNow(t, fmt.Sprintf("mockDefaultEnv failed: %v", err))
+		assert.FailNow(t, fmt.Sprintf("MockDefaultEnv failed: %v", err))
 	}
 
 	mockedInterpreter := &Interpreter{
@@ -349,4 +351,101 @@ func TestEvalExpr_OnInterpreter(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.True(t, gotVal)
+}
+
+func TestExecProgram_WhenExecStatementFails(t *testing.T) {
+	mockedEnv, err := MockDefaultEnv(nil, nil)
+	if err != nil {
+		assert.FailNow(t, fmt.Sprintf("MockDefaultEnv failed: %v", err))
+	}
+
+	mockedInterpreter := &Interpreter{
+		Env: mockedEnv,
+	}
+
+	program := &engine.Program{
+		Statements: []*engine.Statement{
+			{
+				Code:     "$action()",
+				Metadata: nil,
+			},
+		},
+	}
+
+	err = mockedInterpreter.ExecProgram(program)
+
+	assert.EqualError(t, err, "no type for built-in action. Please check if the mode in the reviewpad.yml file supports it.")
+}
+
+func TestExecProgram(t *testing.T) {
+	builtIns := &BuiltIns{
+		Actions: map[string]*BuiltInAction{
+			"addLabel": {
+				Type: BuildFunctionType([]Type{BuildStringType()}, nil),
+				Code: func(e Env, args []Value) error {
+					return nil
+				},
+			},
+		},
+	}
+
+	mockedEnv, err := MockDefaultEnvWithBuiltIns(
+		[]mock.MockBackendOption{
+			mock.WithRequestMatch(
+				mock.GetReposLabelsByOwnerByRepoByName,
+				&github.Label{},
+			),
+			mock.WithRequestMatch(
+				mock.PostReposIssuesLabelsByOwnerByRepoByIssueNumber,
+				[]*github.Label{
+					{Name: github.String("test")},
+				},
+			),
+		},
+		nil,
+		builtIns,
+	)
+	if err != nil {
+		assert.FailNow(t, fmt.Sprintf("MockDefaultEnvWithBuiltIns failed: %v", err))
+	}
+
+	mockedInterpreter := &Interpreter{
+		Env: mockedEnv,
+	}
+
+	statementWorkflowName := "test"
+	statementRule := "testRule"
+	statementCode := "$addLabel(\"test\")"
+	statement := &engine.Statement{
+		Code: statementCode,
+		Metadata: &engine.Metadata{
+			Workflow: engine.PadWorkflow{
+				Name: statementWorkflowName,
+			},
+			TriggeredBy: []engine.PadWorkflowRule{
+				{Rule: statementRule},
+			},
+		},
+	}
+
+	program := &engine.Program{
+		Statements: []*engine.Statement{
+			statement,
+		},
+	}
+
+	err = mockedInterpreter.ExecProgram(program)
+
+	gotVal := mockedEnv.GetReport().WorkflowDetails[statementWorkflowName]
+
+	wantVal := ReportWorkflowDetails{
+		Name: statementWorkflowName,
+		Rules: map[string]bool{
+			statementRule: true,
+		},
+		Actions: []string{statementCode},
+	}
+
+	assert.Nil(t, err)
+	assert.Equal(t, wantVal, gotVal)
 }
