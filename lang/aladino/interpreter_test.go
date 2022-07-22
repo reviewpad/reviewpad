@@ -12,11 +12,12 @@ import (
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v3/engine"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
+	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestProcessGroupWhenGroupTypeFilterIsSetAndBuildGroupASTFails(t *testing.T) {
-	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
+func TestProcessGroup_WhenGroupTypeFilterIsSetAndBuildGroupASTFails(t *testing.T) {
+	mockedEnv, err := aladino.MockDefaultEnvWithBuiltIns(nil, nil, plugins_aladino.PluginBuiltIns())
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
@@ -39,12 +40,12 @@ func TestProcessGroupWhenGroupTypeFilterIsSetAndBuildGroupASTFails(t *testing.T)
 	assert.EqualError(t, err, "buildGroupAST: parse error: failed to build AST on input $hasFileExtensions(")
 }
 
-func TestProcessGroupWhenGroupTypeFilterIsSet(t *testing.T) {
+func TestProcessGroup_WhenGroupTypeFilterIsSet(t *testing.T) {
 	member := "jane"
 	ghMembers := []*github.User{
 		{Login: github.String(member)},
 	}
-	mockedEnv, err := aladino.MockDefaultEnv(
+	mockedEnv, err := aladino.MockDefaultEnvWithBuiltIns(
 		[]mock.MockBackendOption{
 			mock.WithRequestMatch(
 				mock.GetOrgsMembersByOrg,
@@ -52,6 +53,7 @@ func TestProcessGroupWhenGroupTypeFilterIsSet(t *testing.T) {
 			),
 		},
 		nil,
+        plugins_aladino.PluginBuiltIns(),
 	)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
@@ -82,8 +84,8 @@ func TestProcessGroupWhenGroupTypeFilterIsSet(t *testing.T) {
 	assert.Equal(t, wantVal, gotVal)
 }
 
-func TestProcessGroupWhenGroupTypeFilterIsNotSet(t *testing.T) {
-	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
+func TestProcessGroup_WhenGroupTypeFilterIsNotSet(t *testing.T) {
+	mockedEnv, err := aladino.MockDefaultEnvWithBuiltIns(nil, nil, plugins_aladino.PluginBuiltIns())
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
@@ -113,8 +115,8 @@ func TestProcessGroupWhenGroupTypeFilterIsNotSet(t *testing.T) {
 	assert.Equal(t, wantVal, gotVal)
 }
 
-func TestProcessGroupWhenGroupTypeFilterIsNotSetAndEvalGroupTypeInferenceFails(t *testing.T) {
-	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
+func TestProcessGroup_WhenGroupTypeFilterIsNotSetAndEvalGroupTypeInferenceFails(t *testing.T) {
+	mockedEnv, err := aladino.MockDefaultEnvWithBuiltIns(nil, nil, plugins_aladino.PluginBuiltIns())
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
@@ -137,8 +139,8 @@ func TestProcessGroupWhenGroupTypeFilterIsNotSetAndEvalGroupTypeInferenceFails(t
 	assert.EqualError(t, err, "type inference failed: mismatch in arg types on group")
 }
 
-func TestProcessGroupWhenGroupTypeFilterIsNotSetAndGroupExprIsNotAnArray(t *testing.T) {
-	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
+func TestProcessGroup_WhenGroupTypeFilterIsNotSetAndGroupExprIsNotAnArray(t *testing.T) {
+	mockedEnv, err := aladino.MockDefaultEnvWithBuiltIns(nil, nil, plugins_aladino.PluginBuiltIns())
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
