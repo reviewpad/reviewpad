@@ -253,3 +253,13 @@ func TestProcessLabel(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, wantVal, gotVal)
 }
+
+func TestBuildInternalRuleName(t *testing.T) {
+	ruleName := "rule_name"
+
+	wantVal := fmt.Sprintf("@rule:%v", ruleName)
+
+	gotVal := BuildInternalRuleName(ruleName)
+
+	assert.Equal(t, wantVal, gotVal)
+}
