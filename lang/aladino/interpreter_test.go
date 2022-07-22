@@ -8,13 +8,12 @@ import (
 	"log"
 	"testing"
 
-	"github.com/reviewpad/reviewpad/v2/lang/aladino"
-	mocks_aladino "github.com/reviewpad/reviewpad/v2/mocks/aladino"
+	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestEvalExpr_WhenParseFails(t *testing.T) {
-	mockedEnv, err := mocks_aladino.MockDefaultEnv(nil, nil)
+	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
@@ -26,7 +25,7 @@ func TestEvalExpr_WhenParseFails(t *testing.T) {
 }
 
 func TestEvalExpr_WhenTypeInferenceFails(t *testing.T) {
-	mockedEnv, err := mocks_aladino.MockDefaultEnv(nil, nil)
+	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
@@ -38,7 +37,7 @@ func TestEvalExpr_WhenTypeInferenceFails(t *testing.T) {
 }
 
 func TestEvalExpr_WhenExprIsNotBoolType(t *testing.T) {
-	mockedEnv, err := mocks_aladino.MockDefaultEnv(nil, nil)
+	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
@@ -50,7 +49,7 @@ func TestEvalExpr_WhenExprIsNotBoolType(t *testing.T) {
 }
 
 func TestEvalExpr(t *testing.T) {
-	mockedEnv, err := mocks_aladino.MockDefaultEnv(nil, nil)
+	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
@@ -62,7 +61,7 @@ func TestEvalExpr(t *testing.T) {
 }
 
 func TestEvalExpr_OnInterpreter(t *testing.T) {
-	mockedEnv, err := mocks_aladino.MockDefaultEnv(nil, nil)
+	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
 	if err != nil {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
