@@ -36,7 +36,7 @@ func TestGetCollector_WithDefaultEnv(t *testing.T) {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
 
-	wantCollector := aladino.DefaultCollector
+	wantCollector := aladino.DefaultMockCollector
 
 	gotCollector := mockedEnv.GetCollector()
 
@@ -123,6 +123,7 @@ func TestGetBuiltIns_WithDefaultEnv(t *testing.T) {
 	assert.Equal(t, len(wantBuiltIns.Functions), len(gotBuiltIns.Functions))
 	assert.Equal(t, len(wantBuiltIns.Actions), len(gotBuiltIns.Actions))
 
+	// TODO: Search a way to compare functions
 	for functionName, functionCode := range wantBuiltIns.Functions {
 		assert.NotNil(t, gotBuiltIns.Functions[functionName])
 		assert.Equal(t, functionCode.Type, gotBuiltIns.Functions[functionName].Type)
@@ -199,7 +200,7 @@ func TestNewEvalEnv_WhenGetPullRequestFilesFails(t *testing.T) {
 		ctx,
 		mockedGithubClient,
 		nil,
-		aladino.DefaultCollector,
+		aladino.DefaultMockCollector,
 		mockedPullRequest,
 		nil,
 		aladino.MockBuiltIns(),
@@ -238,7 +239,7 @@ func TestNewEvalEnv_WhenNewFileFails(t *testing.T) {
 		ctx,
 		mockedGithubClient,
 		nil,
-		aladino.DefaultCollector,
+		aladino.DefaultMockCollector,
 		mockedPullRequest,
 		nil,
 		aladino.MockBuiltIns(),
@@ -283,7 +284,7 @@ func TestNewEvalEnv(t *testing.T) {
 		ctx,
 		mockedGithubClient,
 		nil,
-		aladino.DefaultCollector,
+		aladino.DefaultMockCollector,
 		mockedPullRequest,
 		nil,
 		aladino.MockBuiltIns(),
@@ -302,15 +303,17 @@ func TestNewEvalEnv(t *testing.T) {
 	}
 
 	wantEnv := &aladino.BaseEnv{
-		Ctx:          ctx,
-		Client:       mockedGithubClient,
+		Ctx:    ctx,
+		Client: mockedGithubClient,
+		// TODO: Mock a ClientGQL
 		ClientGQL:    nil,
-		Collector:    aladino.DefaultCollector,
+		Collector:    aladino.DefaultMockCollector,
 		PullRequest:  mockedPullRequest,
 		Patch:        mockedPatch,
 		RegisterMap:  aladino.RegisterMap(make(map[string]aladino.Value)),
 		BuiltIns:     aladino.MockBuiltIns(),
 		Report:       &aladino.Report{WorkflowDetails: make(map[string]aladino.ReportWorkflowDetails)},
+        // TODO: Mock an event
 		EventPayload: nil,
 	}
 

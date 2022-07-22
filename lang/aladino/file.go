@@ -18,12 +18,8 @@ type File struct {
 
 func (f *File) AppendToDiff(
 	isContext bool,
-	oldStart int,
-	oldEnd int,
-	newStart int,
-	newEnd int,
-	oldLine string,
-	newLine string,
+	oldStart, oldEnd, newStart,	newEnd int,
+	oldLine, newLine string,
 ) {
 	f.Diff = append(f.Diff, &diffBlock{
 		isContext: isContext,

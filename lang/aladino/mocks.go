@@ -25,7 +25,7 @@ const DefaultMockPrOwner = "foobar"
 const DefaultMockPrRepoName = "default-mock-repo"
 
 var DefaultMockContext = context.Background()
-var DefaultCollector = collector.NewCollector("", "")
+var DefaultMockCollector = collector.NewCollector("", "")
 
 func GetDefaultMockPullRequestDetails() *github.PullRequest {
 	prNum := DefaultMockPrNum
@@ -201,7 +201,7 @@ func mockEnvWith(prOwner string, prRepoName string, prNum int, client *github.Cl
 		ctx,
 		client,
 		clientGQL,
-		DefaultCollector,
+		DefaultMockCollector,
 		pr,
 		eventPayload,
 		MockBuiltIns(),
