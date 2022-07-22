@@ -87,7 +87,7 @@ func TestGetPatch_WithDefaultEnv(t *testing.T) {
 			Patch:    github.String(patch),
 		},
 	}
-	mockedFile1.SetDiff(false, 2, 2, 2, 3, " func previous1() {", " func new1() {\n")
+	mockedFile1.AppendToDiff(false, 2, 2, 2, 3, " func previous1() {", " func new1() {\n")
 
 	wantPatch := aladino.Patch{
 		fileName: mockedFile1,
@@ -123,12 +123,12 @@ func TestGetBuiltIns_WithDefaultEnv(t *testing.T) {
 
 	assert.Equal(t, len(wantBuiltIns.Functions), len(gotBuiltIns.Functions))
 	assert.Equal(t, len(wantBuiltIns.Actions), len(gotBuiltIns.Actions))
-	
-    for functionName, functionCode := range wantBuiltIns.Functions {
-        assert.NotNil(t, gotBuiltIns.Functions[functionName])
-        assert.Equal(t, functionCode.Type, gotBuiltIns.Functions[functionName].Type)
-        assert.Equal(t, reflect.ValueOf(functionCode.Code), reflect.ValueOf(gotBuiltIns.Functions[functionName].Code))
-    }
+
+	for functionName, functionCode := range wantBuiltIns.Functions {
+		assert.NotNil(t, gotBuiltIns.Functions[functionName])
+		assert.Equal(t, functionCode.Type, gotBuiltIns.Functions[functionName].Type)
+		assert.Equal(t, reflect.ValueOf(functionCode.Code), reflect.ValueOf(gotBuiltIns.Functions[functionName].Code))
+	}
 }
 
 func TestGetReport_WithDefaultEnv(t *testing.T) {
@@ -169,19 +169,19 @@ func TestNewEvalEnv_WhenGetPullRequestFilesFails(t *testing.T) {
 			mock.GetReposPullsByOwnerByRepoByPullNumber,
 			aladino.GetDefaultMockPullRequestDetails(),
 		),
-        mock.WithRequestMatchHandler(
-            mock.GetReposPullsFilesByOwnerByRepoByPullNumber,
-            http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-                mock.WriteError(
-                    w,
-                    http.StatusInternalServerError,
-                    failMessage,
-                )
-            }),
-        ),
-    ))
+		mock.WithRequestMatchHandler(
+			mock.GetReposPullsFilesByOwnerByRepoByPullNumber,
+			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				mock.WriteError(
+					w,
+					http.StatusInternalServerError,
+					failMessage,
+				)
+			}),
+		),
+	))
 
-    ctx := context.Background()
+	ctx := context.Background()
 	mockedPullRequest, _, err := mockedGithubClient.PullRequests.Get(
 		ctx,
 		aladino.DefaultMockPrOwner,
@@ -198,11 +198,11 @@ func TestNewEvalEnv_WhenGetPullRequestFilesFails(t *testing.T) {
 		nil,
 		aladino.DefaultCollector,
 		mockedPullRequest,
-        nil,
+		nil,
 		aladino.MockBuiltIns(),
 	)
 
-    assert.Nil(t, env)
+	assert.Nil(t, env)
 	assert.Equal(t, err.(*github.ErrorResponse).Message, failMessage)
 }
 
@@ -237,7 +237,7 @@ func TestNewEvalEnv_WhenNewFileFails(t *testing.T) {
 		nil,
 		aladino.DefaultCollector,
 		mockedPullRequest,
-        nil,
+		nil,
 		aladino.MockBuiltIns(),
 	)
 
@@ -282,7 +282,7 @@ func TestNewEvalEnv(t *testing.T) {
 		nil,
 		aladino.DefaultCollector,
 		mockedPullRequest,
-        nil,
+		nil,
 		aladino.MockBuiltIns(),
 	)
 
@@ -292,7 +292,7 @@ func TestNewEvalEnv(t *testing.T) {
 			Patch:    github.String(patch),
 		},
 	}
-	mockedFile1.SetDiff(false, 2, 2, 2, 3, " func previous1() {", " func new1() {\n")
+	mockedFile1.AppendToDiff(false, 2, 2, 2, 3, " func previous1() {", " func new1() {\n")
 
 	mockedPatch := aladino.Patch{
 		fileName: mockedFile1,
@@ -312,21 +312,21 @@ func TestNewEvalEnv(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantEnv.Ctx, gotEnv.GetCtx())
-    assert.Equal(t, wantEnv.Client, gotEnv.GetClient())
-    assert.Equal(t, wantEnv.ClientGQL, gotEnv.GetClientGQL())
-    assert.Equal(t, wantEnv.Collector, gotEnv.GetCollector())
-    assert.Equal(t, wantEnv.PullRequest, gotEnv.GetPullRequest())
-    assert.Equal(t, wantEnv.Patch, gotEnv.GetPatch())
-    assert.Equal(t, wantEnv.RegisterMap, gotEnv.GetRegisterMap())
-    assert.Equal(t, wantEnv.EventPayload, gotEnv.GetEventPayload())
-    
-    assert.Equal(t, len(wantEnv.BuiltIns.Functions), len(gotEnv.GetBuiltIns().Functions))
-	assert.Equal(t, len(wantEnv.BuiltIns.Actions), len(gotEnv.GetBuiltIns().Actions))
-    for functionName, functionCode := range wantEnv.BuiltIns.Functions {
-        assert.NotNil(t, gotEnv.GetBuiltIns().Functions[functionName])
-        assert.Equal(t, functionCode.Type, gotEnv.GetBuiltIns().Functions[functionName].Type)
-        assert.Equal(t, reflect.ValueOf(functionCode.Code), reflect.ValueOf(gotEnv.GetBuiltIns().Functions[functionName].Code))
-    }
+	assert.Equal(t, wantEnv.Client, gotEnv.GetClient())
+	assert.Equal(t, wantEnv.ClientGQL, gotEnv.GetClientGQL())
+	assert.Equal(t, wantEnv.Collector, gotEnv.GetCollector())
+	assert.Equal(t, wantEnv.PullRequest, gotEnv.GetPullRequest())
+	assert.Equal(t, wantEnv.Patch, gotEnv.GetPatch())
+	assert.Equal(t, wantEnv.RegisterMap, gotEnv.GetRegisterMap())
+	assert.Equal(t, wantEnv.EventPayload, gotEnv.GetEventPayload())
 
-    assert.Equal(t, wantEnv.Report, gotEnv.GetReport())
+	assert.Equal(t, len(wantEnv.BuiltIns.Functions), len(gotEnv.GetBuiltIns().Functions))
+	assert.Equal(t, len(wantEnv.BuiltIns.Actions), len(gotEnv.GetBuiltIns().Actions))
+	for functionName, functionCode := range wantEnv.BuiltIns.Functions {
+		assert.NotNil(t, gotEnv.GetBuiltIns().Functions[functionName])
+		assert.Equal(t, functionCode.Type, gotEnv.GetBuiltIns().Functions[functionName].Type)
+		assert.Equal(t, reflect.ValueOf(functionCode.Code), reflect.ValueOf(gotEnv.GetBuiltIns().Functions[functionName].Code))
+	}
+
+	assert.Equal(t, wantEnv.Report, gotEnv.GetReport())
 }
