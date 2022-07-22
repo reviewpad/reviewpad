@@ -286,3 +286,67 @@ func TestProcessRule(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, wantVal, gotVal)
 }
+
+func TestEvalExpr_WhenParseFails(t *testing.T) {
+	mockedEnv, err := MockDefaultEnv(nil, nil)
+	if err != nil {
+		assert.FailNow(t, fmt.Sprintf("mockDefaultEnv failed: %v", err))
+	}
+
+	gotVal, err := EvalExpr(mockedEnv, "", "1 ==")
+
+	assert.False(t, gotVal)
+	assert.EqualError(t, err, "parse error: failed to build AST on input 1 ==")
+}
+
+func TestEvalExpr_WhenTypeInferenceFails(t *testing.T) {
+	mockedEnv, err := MockDefaultEnv(nil, nil)
+	if err != nil {
+		assert.FailNow(t, fmt.Sprintf("mockDefaultEnv failed: %v", err))
+	}
+
+	gotVal, err := EvalExpr(mockedEnv, "", "1 == \"a\"")
+
+	assert.False(t, gotVal)
+	assert.EqualError(t, err, "type inference failed")
+}
+
+func TestEvalExpr_WhenExprIsNotBoolType(t *testing.T) {
+	mockedEnv, err := MockDefaultEnv(nil, nil)
+	if err != nil {
+		assert.FailNow(t, fmt.Sprintf("mockDefaultEnv failed: %v", err))
+	}
+
+	gotVal, err := EvalExpr(mockedEnv, "", "1")
+
+	assert.False(t, gotVal)
+	assert.EqualError(t, err, "expression 1 is not a condition")
+}
+
+func TestEvalExpr(t *testing.T) {
+	mockedEnv, err := MockDefaultEnv(nil, nil)
+	if err != nil {
+		assert.FailNow(t, fmt.Sprintf("mockDefaultEnv failed: %v", err))
+	}
+
+	gotVal, err := EvalExpr(mockedEnv, "", "1 == 1")
+
+	assert.Nil(t, err)
+	assert.True(t, gotVal)
+}
+
+func TestEvalExpr_OnInterpreter(t *testing.T) {
+	mockedEnv, err := MockDefaultEnv(nil, nil)
+	if err != nil {
+		assert.FailNow(t, fmt.Sprintf("mockDefaultEnv failed: %v", err))
+	}
+
+	mockedInterpreter := &Interpreter{
+		Env: mockedEnv,
+	}
+
+	gotVal, err := mockedInterpreter.EvalExpr("", "1 == 1")
+
+	assert.Nil(t, err)
+	assert.True(t, gotVal)
+}
