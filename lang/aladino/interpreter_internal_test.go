@@ -449,3 +449,174 @@ func TestExecProgram(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, wantVal, gotVal)
 }
+
+func TestExecStatement_WhenParseFails(t *testing.T) {
+	mockedEnv, err := MockDefaultEnv(nil, nil)
+	if err != nil {
+		assert.FailNow(t, fmt.Sprintf("MockDefaultEnv failed: %v", err))
+	}
+
+	mockedInterpreter := &Interpreter{
+		Env: mockedEnv,
+	}
+
+	statement := &engine.Statement{
+		Code: "$addLabel(",
+		Metadata: &engine.Metadata{
+			Workflow: engine.PadWorkflow{
+				Name: "test",
+			},
+			TriggeredBy: []engine.PadWorkflowRule{
+				{Rule: "testRule"},
+			},
+		},
+	}
+
+	err = mockedInterpreter.ExecStatement(statement)
+
+	assert.EqualError(t, err, "parse error: failed to build AST on input $addLabel(")
+}
+
+func TestExecStatement_WhenTypeCheckExecFails(t *testing.T) {
+	builtIns := &BuiltIns{
+		Actions: map[string]*BuiltInAction{
+			"addLabel": {
+				Type: BuildFunctionType([]Type{BuildStringType()}, nil),
+				Code: func(e Env, args []Value) error {
+					return nil
+				},
+			},
+		},
+	}
+
+	mockedEnv, err := MockDefaultEnvWithBuiltIns(nil, nil, builtIns)
+	if err != nil {
+		assert.FailNow(t, fmt.Sprintf("MockDefaultEnvWithBuiltIns failed: %v", err))
+	}
+
+	mockedInterpreter := &Interpreter{
+		Env: mockedEnv,
+	}
+
+	statement := &engine.Statement{
+		Code: "$addLabel(1)",
+		Metadata: &engine.Metadata{
+			Workflow: engine.PadWorkflow{
+				Name: "test",
+			},
+			TriggeredBy: []engine.PadWorkflowRule{
+				{Rule: "testRule"},
+			},
+		},
+	}
+
+	err = mockedInterpreter.ExecStatement(statement)
+
+	assert.EqualError(t, err, "type inference failed: mismatch in arg types on addLabel")
+}
+
+func TestExecStatement_WhenActionExecFails(t *testing.T) {
+	devName := "jane"
+	builtIns := &BuiltIns{
+		Functions: map[string]*BuiltInFunction{
+			"author": {
+				Type: BuildFunctionType([]Type{}, BuildArrayOfType(BuildStringType())),
+				Code: func(e Env, args []Value) (Value, error) {
+					return BuildArrayValue([]Value{BuildStringValue(devName)}), nil
+				},
+			},
+		},
+	}
+
+	mockedEnv, err := MockDefaultEnvWithBuiltIns(nil, nil, builtIns)
+	if err != nil {
+		assert.FailNow(t, fmt.Sprintf("MockDefaultEnvWithBuiltIns failed: %v", err))
+	}
+
+	mockedInterpreter := &Interpreter{
+		Env: mockedEnv,
+	}
+
+	statement := &engine.Statement{
+		Code: "$author()",
+		Metadata: &engine.Metadata{
+			Workflow: engine.PadWorkflow{
+				Name: "test",
+			},
+			TriggeredBy: []engine.PadWorkflowRule{
+				{Rule: "testRule"},
+			},
+		},
+	}
+
+	err = mockedInterpreter.ExecStatement(statement)
+
+	assert.EqualError(t, err, "exec: author not found. are you sure this is a built-in function?")
+}
+
+func TestExecStatement(t *testing.T) {
+	builtIns := &BuiltIns{
+		Actions: map[string]*BuiltInAction{
+			"addLabel": {
+				Type: BuildFunctionType([]Type{BuildStringType()}, nil),
+				Code: func(e Env, args []Value) error {
+					return nil
+				},
+			},
+		},
+	}
+
+	mockedEnv, err := MockDefaultEnvWithBuiltIns(
+		[]mock.MockBackendOption{
+			mock.WithRequestMatch(
+				mock.GetReposLabelsByOwnerByRepoByName,
+				&github.Label{},
+			),
+			mock.WithRequestMatch(
+				mock.PostReposIssuesLabelsByOwnerByRepoByIssueNumber,
+				[]*github.Label{
+					{Name: github.String("test")},
+				},
+			),
+		},
+		nil,
+		builtIns,
+	)
+	if err != nil {
+		assert.FailNow(t, fmt.Sprintf("MockDefaultEnvWithBuiltIns failed: %v", err))
+	}
+
+	mockedInterpreter := &Interpreter{
+		Env: mockedEnv,
+	}
+
+	statementWorkflowName := "test"
+	statementRule := "testRule"
+	statementCode := "$addLabel(\"test\")"
+	statement := &engine.Statement{
+		Code: statementCode,
+		Metadata: &engine.Metadata{
+			Workflow: engine.PadWorkflow{
+				Name: statementWorkflowName,
+			},
+			TriggeredBy: []engine.PadWorkflowRule{
+				{Rule: statementRule},
+			},
+		},
+	}
+
+	err = mockedInterpreter.ExecStatement(statement)
+
+	gotVal := mockedEnv.GetReport().WorkflowDetails[statementWorkflowName]
+
+	wantVal := ReportWorkflowDetails{
+		Name: statementWorkflowName,
+		Rules: map[string]bool{
+			statementRule: true,
+		},
+		Actions: []string{statementCode},
+	}
+
+	assert.Nil(t, err)
+	assert.Equal(t, wantVal, gotVal)
+}
