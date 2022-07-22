@@ -17,7 +17,8 @@ const testPatch = `@@ -2,9 +2,11 @@ package main
 - func previous() {
 + func new() {
 +
-return`
+return
+}`
 
 func TestNewFile_WhenErrorInFilePatch(t *testing.T) {
 	fileName := "default-mock-repo/file1.ts"
