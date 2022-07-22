@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"reflect"
 	"testing"
 
 	"github.com/google/go-github/v42/github"
@@ -24,7 +23,7 @@ func TestGetCtx_WithDefaultEnv(t *testing.T) {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
 
-	wantCtx := aladino.DefaultContext
+	wantCtx := aladino.DefaultMockContext
 
 	gotCtx := mockedEnv.GetCtx()
 
@@ -127,7 +126,11 @@ func TestGetBuiltIns_WithDefaultEnv(t *testing.T) {
 	for functionName, functionCode := range wantBuiltIns.Functions {
 		assert.NotNil(t, gotBuiltIns.Functions[functionName])
 		assert.Equal(t, functionCode.Type, gotBuiltIns.Functions[functionName].Type)
-		assert.Equal(t, reflect.ValueOf(functionCode.Code), reflect.ValueOf(gotBuiltIns.Functions[functionName].Code))
+	}
+
+	for actionName, actionCode := range wantBuiltIns.Actions {
+		assert.NotNil(t, gotBuiltIns.Actions[actionName])
+		assert.Equal(t, actionCode.Type, gotBuiltIns.Actions[actionName].Type)
 	}
 }
 
@@ -299,15 +302,16 @@ func TestNewEvalEnv(t *testing.T) {
 	}
 
 	wantEnv := &aladino.BaseEnv{
-		Ctx:         ctx,
-		Client:      mockedGithubClient,
-		ClientGQL:   nil,
-		Collector:   aladino.DefaultCollector,
-		PullRequest: mockedPullRequest,
-		Patch:       mockedPatch,
-		RegisterMap: aladino.RegisterMap(make(map[string]aladino.Value)),
-		BuiltIns:    aladino.MockBuiltIns(),
-		Report:      &aladino.Report{WorkflowDetails: make(map[string]aladino.ReportWorkflowDetails)},
+		Ctx:          ctx,
+		Client:       mockedGithubClient,
+		ClientGQL:    nil,
+		Collector:    aladino.DefaultCollector,
+		PullRequest:  mockedPullRequest,
+		Patch:        mockedPatch,
+		RegisterMap:  aladino.RegisterMap(make(map[string]aladino.Value)),
+		BuiltIns:     aladino.MockBuiltIns(),
+		Report:       &aladino.Report{WorkflowDetails: make(map[string]aladino.ReportWorkflowDetails)},
+		EventPayload: nil,
 	}
 
 	assert.Nil(t, err)
@@ -325,7 +329,10 @@ func TestNewEvalEnv(t *testing.T) {
 	for functionName, functionCode := range wantEnv.BuiltIns.Functions {
 		assert.NotNil(t, gotEnv.GetBuiltIns().Functions[functionName])
 		assert.Equal(t, functionCode.Type, gotEnv.GetBuiltIns().Functions[functionName].Type)
-		assert.Equal(t, reflect.ValueOf(functionCode.Code), reflect.ValueOf(gotEnv.GetBuiltIns().Functions[functionName].Code))
+	}
+	for actionName, actionCode := range wantEnv.BuiltIns.Actions {
+		assert.NotNil(t, gotEnv.GetBuiltIns().Actions[actionName])
+		assert.Equal(t, actionCode.Type, gotEnv.GetBuiltIns().Actions[actionName].Type)
 	}
 
 	assert.Equal(t, wantEnv.Report, gotEnv.GetReport())

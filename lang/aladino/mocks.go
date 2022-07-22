@@ -24,7 +24,7 @@ const DefaultMockPrNum = 6
 const DefaultMockPrOwner = "foobar"
 const DefaultMockPrRepoName = "default-mock-repo"
 
-var DefaultContext = context.Background()
+var DefaultMockContext = context.Background()
 var DefaultCollector = collector.NewCollector("", "")
 
 func GetDefaultMockPullRequestDetails() *github.PullRequest {
