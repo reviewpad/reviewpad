@@ -28,15 +28,6 @@ func execLogf(format string, a ...interface{}) {
 	log.Println(fmtio.Sprintf("aladino", format, a...))
 }
 
-func (i *Interpreter) ProcessGroup(groupName string, kind engine.GroupKind, typeOf engine.GroupType, expr, paramExpr, whereExpr string) error {
-	exprAST, _ := buildGroupAST(typeOf, expr, paramExpr, whereExpr)
-	value, err := evalGroup(i.Env, exprAST)
-
-	i.Env.GetRegisterMap()[groupName] = value
-
-	return err
-}
-
 func buildGroupAST(typeOf engine.GroupType, expr, paramExpr, whereExpr string) (Expr, error) {
 	if typeOf == engine.GroupTypeFilter {
 		whereExprAST, err := Parse(whereExpr)
@@ -61,6 +52,21 @@ func evalGroup(env Env, expr Expr) (Value, error) {
 	}
 
 	return Eval(env, expr)
+}
+
+func (i *Interpreter) ProcessGroup(groupName string, kind engine.GroupKind, typeOf engine.GroupType, expr, paramExpr, whereExpr string) error {
+	exprAST, err := buildGroupAST(typeOf, expr, paramExpr, whereExpr)
+	if err != nil {
+		return fmt.Errorf("ProcessGroup:buildGroupAST: %v", err)
+	}
+
+	value, err := evalGroup(i.Env, exprAST)
+	if err != nil {
+		return fmt.Errorf("ProcessGroup:evalGroup %v", err)
+	}
+
+	i.Env.GetRegisterMap()[groupName] = value
+	return nil
 }
 
 func BuildInternalLabelID(id string) string {
