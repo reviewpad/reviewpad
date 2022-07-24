@@ -71,6 +71,14 @@ func Run(
 			engine.CollectError(evalEnv, err)
 			return nil, err
 		}
+	} else {
+		report := aladino.ReportFromProgram(program)
+
+		err = report.SendReport(ctx, dryRun, reviewpadFile.Mode, pullRequest, client)
+		if err != nil {
+			engine.CollectError(evalEnv, err)
+			return nil, err
+		}
 	}
 
 	err = evalEnv.Collector.Collect("Completed Analysis", map[string]interface{}{

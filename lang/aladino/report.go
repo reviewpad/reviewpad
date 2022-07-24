@@ -5,6 +5,7 @@
 package aladino
 
 import (
+	"context"
 	"fmt"
 	"regexp"
 	"strings"
@@ -42,6 +43,34 @@ func mergeReportWorkflowDetails(left, right ReportWorkflowDetails) ReportWorkflo
 	return left
 }
 
+func (r *Report) SendReport(ctx context.Context, dryRun bool, mode string, pr *github.PullRequest, client *github.Client) error {
+
+	execLog("generating report")
+
+	var err error
+
+	comment, err := FindReportComment(ctx, pr, client)
+	if err != nil {
+		return err
+	}
+
+	if mode == engine.SILENT_MODE {
+		if comment != nil {
+			return DeleteReportComment(ctx, pr, *comment.ID, client)
+		}
+		return nil
+	}
+
+	report := buildReport(dryRun, r)
+
+	if comment == nil {
+		return AddReportComment(ctx, pr, report, client)
+	}
+
+	return UpdateReportComment(ctx, pr, *comment.ID, report, client)
+
+}
+
 func (report *Report) addToReport(statement *engine.Statement) {
 	workflowName := statement.Metadata.Workflow.Name
 
@@ -65,21 +94,39 @@ func (report *Report) addToReport(statement *engine.Statement) {
 	}
 }
 
-func ReportHeader() string {
+func ReportFromProgram(program *engine.Program) *Report {
+
+	report := &Report{
+		WorkflowDetails: make(map[string]ReportWorkflowDetails),
+	}
+
+	for _, statement := range program.Statements {
+		report.addToReport(statement)
+	}
+
+	return report
+
+}
+
+func ReportHeader(dryRun bool) string {
 	var sb strings.Builder
 
 	// Annotation
 	sb.WriteString(fmt.Sprintf("%v\n", ReviewpadReportCommentAnnotation))
 	// Header
-	sb.WriteString("**Reviewpad Report**\n\n")
+	if dryRun {
+		sb.WriteString("**Reviewpad Report** (Reviewpad ran in dry-run mode because reviewpad.yml has changed)\n\n")
+	} else {
+		sb.WriteString("**Reviewpad Report**\n\n")
+	}
 
 	return sb.String()
 }
 
-func buildReport(report *Report) string {
+func buildReport(dryRun bool, report *Report) string {
 	var sb strings.Builder
 
-	sb.WriteString(ReportHeader())
+	sb.WriteString(ReportHeader(dryRun))
 	sb.WriteString(BuildVerboseReport(report))
 
 	return sb.String()
@@ -123,12 +170,11 @@ func BuildVerboseReport(report *Report) string {
 	return sb.String()
 }
 
-func DeleteReportComment(env Env, commentId int64) error {
-	pullRequest := env.GetPullRequest()
-	owner := utils.GetPullRequestBaseOwnerName(pullRequest)
-	repo := utils.GetPullRequestBaseRepoName(pullRequest)
+func DeleteReportComment(ctx context.Context, pr *github.PullRequest, commentId int64, client *github.Client) error {
+	owner := utils.GetPullRequestBaseOwnerName(pr)
+	repo := utils.GetPullRequestBaseRepoName(pr)
 
-	_, err := env.GetClient().Issues.DeleteComment(env.GetCtx(), owner, repo, commentId)
+	_, err := client.Issues.DeleteComment(ctx, owner, repo, commentId)
 
 	if err != nil {
 		return reportError("error on deleting report comment %v", err.(*github.ErrorResponse).Message)
@@ -137,16 +183,15 @@ func DeleteReportComment(env Env, commentId int64) error {
 	return nil
 }
 
-func UpdateReportComment(env Env, commentId int64, report string) error {
+func UpdateReportComment(ctx context.Context, pr *github.PullRequest, commentId int64, report string, client *github.Client) error {
 	gitHubComment := github.IssueComment{
 		Body: &report,
 	}
 
-	pullRequest := env.GetPullRequest()
-	owner := utils.GetPullRequestBaseOwnerName(pullRequest)
-	repo := utils.GetPullRequestBaseRepoName(pullRequest)
+	owner := utils.GetPullRequestBaseOwnerName(pr)
+	repo := utils.GetPullRequestBaseRepoName(pr)
 
-	_, _, err := env.GetClient().Issues.EditComment(env.GetCtx(), owner, repo, commentId, &gitHubComment)
+	_, _, err := client.Issues.EditComment(ctx, owner, repo, commentId, &gitHubComment)
 
 	if err != nil {
 		return reportError("error on updating report comment %v", err.(*github.ErrorResponse).Message)
@@ -155,17 +200,16 @@ func UpdateReportComment(env Env, commentId int64, report string) error {
 	return nil
 }
 
-func AddReportComment(env Env, report string) error {
+func AddReportComment(ctx context.Context, pr *github.PullRequest, report string, client *github.Client) error {
 	gitHubComment := github.IssueComment{
 		Body: &report,
 	}
 
-	pullRequest := env.GetPullRequest()
-	owner := utils.GetPullRequestBaseOwnerName(pullRequest)
-	repo := utils.GetPullRequestBaseRepoName(pullRequest)
-	prNum := utils.GetPullRequestNumber(pullRequest)
+	owner := utils.GetPullRequestBaseOwnerName(pr)
+	repo := utils.GetPullRequestBaseRepoName(pr)
+	prNum := utils.GetPullRequestNumber(pr)
 
-	_, _, err := env.GetClient().Issues.CreateComment(env.GetCtx(), owner, repo, prNum, &gitHubComment)
+	_, _, err := client.Issues.CreateComment(ctx, owner, repo, prNum, &gitHubComment)
 
 	if err != nil {
 		return reportError("error on creating report comment %v", err.(*github.ErrorResponse).Message)
@@ -174,13 +218,12 @@ func AddReportComment(env Env, report string) error {
 	return nil
 }
 
-func FindReportComment(env Env) (*github.IssueComment, error) {
-	pullRequest := env.GetPullRequest()
-	owner := utils.GetPullRequestBaseOwnerName(pullRequest)
-	repo := utils.GetPullRequestBaseRepoName(pullRequest)
-	prNum := utils.GetPullRequestNumber(pullRequest)
+func FindReportComment(ctx context.Context, pr *github.PullRequest, client *github.Client) (*github.IssueComment, error) {
+	owner := utils.GetPullRequestBaseOwnerName(pr)
+	repo := utils.GetPullRequestBaseRepoName(pr)
+	prNum := utils.GetPullRequestNumber(pr)
 
-	comments, err := utils.GetPullRequestComments(env.GetCtx(), env.GetClient(), owner, repo, prNum, &github.IssueListCommentsOptions{
+	comments, err := utils.GetPullRequestComments(ctx, client, owner, repo, prNum, &github.IssueListCommentsOptions{
 		Sort:      github.String("created"),
 		Direction: github.String("asc"),
 	})
