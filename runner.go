@@ -43,6 +43,7 @@ func Run(
 	eventPayload interface{},
 	reviewpadFile *engine.ReviewpadFile,
 	dryRun bool,
+	reviewpadFileChanged bool,
 ) (*engine.Program, error) {
 	aladinoInterpreter, err := aladino.NewInterpreter(ctx, client, clientGQL, collector, pullRequest, eventPayload, plugins_aladino.PluginBuiltIns())
 	if err != nil {
@@ -71,7 +72,9 @@ func Run(
 			engine.CollectError(evalEnv, err)
 			return nil, err
 		}
-	} else {
+	}
+
+	if reviewpadFileChanged {
 		report := aladino.ReportFromProgram(program)
 
 		err = report.SendReport(ctx, dryRun, reviewpadFile.Mode, pullRequest, client)
