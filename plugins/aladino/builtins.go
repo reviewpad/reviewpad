@@ -42,6 +42,7 @@ func PluginBuiltIns() *aladino.BuiltIns {
 			"size":              functions.Size(),
 			"title":             functions.Title(),
 			"workflowStatus":    functions.WorkflowStatus(),
+			"reviewerStatus":    functions.ReviewerStatus(),
 			// Organization
 			"organization": functions.Organization(),
 			"team":         functions.Team(),
