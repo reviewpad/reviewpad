@@ -6,6 +6,9 @@
 *.dylib
 main
 
+# Generated files
+lang/aladino/parser.go
+
 # Test binary, built with `go test -c`
 *.test
 
