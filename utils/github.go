@@ -249,3 +249,29 @@ func GetPullRequestCommits(ctx context.Context, client *github.Client, owner str
 
 	return commits.([]*github.RepositoryCommit), nil
 }
+
+// GetPullRequestReviews fetch pull request reviews
+func GetPullRequestReviews(ctx context.Context, client *github.Client, owner string, repo string, number int, opts *github.ListOptions) ([]*github.PullRequestReview, error) {
+	reviews, err := PaginatedRequest(
+		func() interface{} {
+			return []*github.PullRequestReview{}
+		},
+		func(i interface{}, page int) (interface{}, *github.Response, error) {
+			currentReviews := i.([]*github.PullRequestReview)
+			reviews, resp, err := client.PullRequests.ListReviews(ctx, owner, repo, number, &github.ListOptions{
+				Page:    page,
+				PerPage: maxPerPage,
+			})
+			if err != nil {
+				return nil, nil, err
+			}
+			currentReviews = append(currentReviews, reviews...)
+			return currentReviews, resp, nil
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return reviews.([]*github.PullRequestReview), nil
+}
