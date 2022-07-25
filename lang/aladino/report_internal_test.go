@@ -177,7 +177,14 @@ func TestBuildReport_ExpectReportWithTestWorkflowDetails(t *testing.T) {
 		},
 	}
 
-	wantReport := "<!--@annotation-reviewpad-report-->\n**Reviewpad Report**\n\n:scroll: **Explanation**\n| Workflows <sub><sup>activated</sup></sub> | Rules <sub><sup>triggered</sup></sub> | Actions <sub><sup>ran</sub></sup> | Description |\n| - | - | - | - |\n| test-workflow | tautology<br> | `$addLabel(\"test\")`<br> | Testing workflow |\n"
+	wantReport := `<!--@annotation-reviewpad-report-->
+**Reviewpad Report**
+
+:scroll: **Explanation**
+| Workflows <sub><sup>activated</sup></sub> | Rules <sub><sup>triggered</sup></sub> | Actions <sub><sup>ran</sub></sup> | Description |
+| - | - | - | - |
+| test-workflow | tautology<br> | ` + "`$addLabel(\"test\")`" + `<br> | Testing workflow |
+`
 
 	gotReport := buildReport(&report)
 
