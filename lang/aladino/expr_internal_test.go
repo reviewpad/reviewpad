@@ -69,6 +69,13 @@ func TestGreaterEqThanOperator_ExpectGreaterEqThanOperator(t *testing.T) {
 	assert.Equal(t, wantVal, gotVal)
 }
 
+func TestGetOperator_ExpectNotOp(t *testing.T) {
+	wantVal := NOT_OP
+	gotVal := notOperator().getOperator()
+
+	assert.Equal(t, wantVal, gotVal)
+}
+
 func TestGetOperator_ExpectEqOp(t *testing.T) {
 	wantVal := EQ_OP
 	gotVal := eqOperator().getOperator()
