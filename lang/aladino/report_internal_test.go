@@ -252,7 +252,7 @@ func TestDeleteReportComment_ExpectDeleteCommetRequestFail(t *testing.T) {
 		nil,
 	)
 	if err != nil {
-		assert.Fail(t, "MockDefaultEnv returned unexpected error: %v", err)
+		assert.FailNow(t, "MockDefaultEnv returned unexpected error: %v", err)
 	}
 
 	testCommentId := int64(1234)
@@ -272,7 +272,7 @@ func TestDeleteReportComment_ExpectNoError(t *testing.T) {
 					vars := mux.Vars(r)
 					deletedCommentId, err := strconv.Atoi(vars["comment_id"])
 					if err != nil {
-						assert.Fail(t, "Delete comment request returned unexpected error: %v", err)
+						assert.FailNow(t, "Delete comment request returned unexpected error: %v", err)
 					}
 					deletedComment = int64(deletedCommentId)
 				}),
@@ -281,7 +281,7 @@ func TestDeleteReportComment_ExpectNoError(t *testing.T) {
 		nil,
 	)
 	if err != nil {
-		assert.Fail(t, "MockDefaultEnv returned unexpected error: %v", err)
+		assert.FailNow(t, "MockDefaultEnv returned unexpected error: %v", err)
 	}
 
 	commentToBeDeleted := int64(1234)
@@ -310,7 +310,7 @@ func TestUpdateReportComment_ExpectEditCommentRequestFail(t *testing.T) {
 		nil,
 	)
 	if err != nil {
-		assert.Fail(t, "MockDefaultEnv returned unexpected error: %v", err)
+		assert.FailNow(t, "MockDefaultEnv returned unexpected error: %v", err)
 	}
 
 	testCommentId := int64(1234)
@@ -340,7 +340,7 @@ func TestUpdateReportComment_ExpectNoError(t *testing.T) {
 		nil,
 	)
 	if err != nil {
-		assert.Fail(t, "MockDefaultEnv returned unexpected error: %v", err)
+		assert.FailNow(t, "MockDefaultEnv returned unexpected error: %v", err)
 	}
 
 	testCommentId := int64(1234)
@@ -370,7 +370,7 @@ func TestAddReportComment_ExpectCreateCommentRequestFail(t *testing.T) {
 		nil,
 	)
 	if err != nil {
-		assert.Fail(t, "MockDefaultEnv returned unexpected error: %v", err)
+		assert.FailNow(t, "MockDefaultEnv returned unexpected error: %v", err)
 	}
 
 	comment := "Test add report comment"
@@ -401,7 +401,7 @@ func TestAddReportComment_ExpectNoError(t *testing.T) {
 		nil,
 	)
 	if err != nil {
-		assert.Fail(t, "MockDefaultEnv returned unexpected error: %v", err)
+		assert.FailNow(t, "MockDefaultEnv returned unexpected error: %v", err)
 	}
 
 	err = AddReportComment(mockedEnv, commentToBeCreated)
@@ -428,7 +428,7 @@ func TestFindReportComment_ExpectGetPullRequestCommentsFail(t *testing.T) {
 		nil,
 	)
 	if err != nil {
-		assert.Fail(t, "MockDefaultEnv returned unexpected error: %v", err)
+		assert.FailNow(t, "MockDefaultEnv returned unexpected error: %v", err)
 	}
 
 	gotComment, err := FindReportComment(mockedEnv)
@@ -453,7 +453,7 @@ func TestFindReportComment_ExpectReviewpadComment(t *testing.T) {
 		nil,
 	)
 	if err != nil {
-		assert.Fail(t, "MockDefaultEnv returned unexpected error: %v", err)
+		assert.FailNow(t, "MockDefaultEnv returned unexpected error: %v", err)
 	}
 
 	gotComment, err := FindReportComment(mockedEnv)
@@ -478,7 +478,7 @@ func TestFindReportComment_ExpectNoReviewpadComment(t *testing.T) {
 		nil,
 	)
 	if err != nil {
-		assert.Fail(t, "MockDefaultEnv returned unexpected error: %v", err)
+		assert.FailNow(t, "MockDefaultEnv returned unexpected error: %v", err)
 	}
 
 	gotComment, err := FindReportComment(mockedEnv)
