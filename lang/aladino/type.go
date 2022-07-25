@@ -16,7 +16,6 @@ const (
 	FUNCTION_TYPE string = "FunctionType"
 	ARRAY_TYPE    string = "ArrayType"
 	ARRAY_OF_TYPE string = "ArrayOfType"
-	TIME_TYPE     string = "TimeType"
 )
 
 type StringType struct{}
@@ -24,8 +23,6 @@ type StringType struct{}
 type IntType struct{}
 
 type BoolType struct{}
-
-type TimeType struct{}
 
 type FunctionType struct {
 	paramTypes []Type
@@ -79,10 +76,6 @@ func (aTy *ArrayType) Kind() string {
 
 func (aTy *ArrayOfType) Kind() string {
 	return ARRAY_OF_TYPE
-}
-
-func (tTy *TimeType) Kind() string {
-	return TIME_TYPE
 }
 
 // Equals
@@ -152,8 +145,4 @@ func (thisTy *ArrayOfType) equals(thatTy Type) bool {
 		return thisTy.elemType.equals(thatTyArrayOf.elemType)
 	}
 	return false
-}
-
-func (thisTy *TimeType) equals(thatTy Type) bool {
-	return thatTy.Kind() == thisTy.Kind()
 }
