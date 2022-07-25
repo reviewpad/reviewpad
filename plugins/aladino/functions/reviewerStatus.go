@@ -47,21 +47,19 @@ func reviewerStatusCdoe(e aladino.Env, args []aladino.Value) (aladino.Value, err
 			continue
 		}
 
+		fmt.Println("State:", *r.State)
+
 		switch *r.State {
-
-		case ReviewerStatusStateCommented:
-			status = "neutral"
-
 		case ReviewerStatusStateRequestChanges:
 			status = "requested_changes"
-
 		case ReviewerStatusStateRequestApproved:
 			status = "approved"
 
 		}
+
 	}
 
-	fmt.Println("Hello", status)
+	fmt.Println("Status:", status)
 
 	return aladino.BuildStringValue(status), nil
 }
