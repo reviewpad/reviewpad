@@ -223,7 +223,11 @@ func TestBuildVerboseReport_ExpectReportWithTestWorkflowDetails(t *testing.T) {
 		},
 	}
 
-	wantReport := ":scroll: **Explanation**\n| Workflows <sub><sup>activated</sup></sub> | Rules <sub><sup>triggered</sup></sub> | Actions <sub><sup>ran</sub></sup> | Description |\n| - | - | - | - |\n| test-workflow | tautology<br> | `$addLabel(\"test\")`<br> | Testing workflow |\n"
+	wantReport := `:scroll: **Explanation**
+| Workflows <sub><sup>activated</sup></sub> | Rules <sub><sup>triggered</sup></sub> | Actions <sub><sup>ran</sub></sup> | Description |
+| - | - | - | - |
+| test-workflow | tautology<br> | ` + "`$addLabel(\"test\")`" + `<br> | Testing workflow |
+`
 
 	gotReport := BuildVerboseReport(&report)
 
