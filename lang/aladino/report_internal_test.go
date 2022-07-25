@@ -23,7 +23,7 @@ type EditCommentRequestPostBody struct {
 	Body string `json:"body"`
 }
 
-func TestReport_ExpectErrorWithTestingErrorMsg(t *testing.T) {
+func TestReportError(t *testing.T) {
 	errorMsg := "Testing Error"
 
 	wantErr := fmt.Sprintf("[report] %v", errorMsg)
@@ -32,7 +32,7 @@ func TestReport_ExpectErrorWithTestingErrorMsg(t *testing.T) {
 	assert.EqualError(t, gotErr, wantErr)
 }
 
-func TestMergeReportWorkflowDetails_ExpectReportWorkflowWithTwoRules(t *testing.T) {
+func TestMergeReportWorkflowDetails(t *testing.T) {
 	left := ReportWorkflowDetails{
 		Name:        "test-workflow",
 		Description: "Test workflow",
@@ -71,7 +71,7 @@ func TestMergeReportWorkflowDetails_ExpectReportWorkflowWithTwoRules(t *testing.
 	assert.Equal(t, wantReportWorkflow, gotReportWorkflow)
 }
 
-func TestAddToReport_WhenWorkflowIsNonExisting_ExpectNewWorkflowInReport(t *testing.T) {
+func TestAddToReport_WhenWorkflowIsNonExisting(t *testing.T) {
 	statement := engine.Statement{
 		Code: "$addLabel(\"test\")",
 		Metadata: &engine.Metadata{
@@ -114,7 +114,7 @@ func TestAddToReport_WhenWorkflowIsNonExisting_ExpectNewWorkflowInReport(t *test
 	assert.Equal(t, wantReport, report)
 }
 
-func TestAddToReport_WhenWorkflowAlreadyExists_ExpectWorkflowWithAdditionalRule(t *testing.T) {
+func TestAddToReport_WhenWorkflowAlreadyExists(t *testing.T) {
 	statement := engine.Statement{
 		Code: "$addLabel(\"test\")",
 		Metadata: &engine.Metadata{
@@ -157,7 +157,7 @@ func TestAddToReport_WhenWorkflowAlreadyExists_ExpectWorkflowWithAdditionalRule(
 	assert.Equal(t, wantReport, report)
 }
 
-func TestReportHeader_ExpectReviewpadReportHeader(t *testing.T) {
+func TestReportHeader(t *testing.T) {
 	wantReportHeader := "<!--@annotation-reviewpad-report-->\n**Reviewpad Report**\n\n"
 
 	gotReportHeader := ReportHeader()
@@ -165,7 +165,7 @@ func TestReportHeader_ExpectReviewpadReportHeader(t *testing.T) {
 	assert.Equal(t, wantReportHeader, gotReportHeader)
 }
 
-func TestBuildReport_ExpectReportWithTestWorkflowDetails(t *testing.T) {
+func TestBuildReport(t *testing.T) {
 	report := Report{
 		WorkflowDetails: map[string]ReportWorkflowDetails{
 			"test-workflow": {
@@ -191,7 +191,7 @@ func TestBuildReport_ExpectReportWithTestWorkflowDetails(t *testing.T) {
 	assert.Equal(t, wantReport, gotReport)
 }
 
-func TestBuildVerboseReport_WhenNoReportProvided_ExpectEmptyReport(t *testing.T) {
+func TestBuildVerboseReport_WhenNoReportProvided(t *testing.T) {
 	var emptyReport *Report
 
 	wantReport := ""
@@ -201,7 +201,7 @@ func TestBuildVerboseReport_WhenNoReportProvided_ExpectEmptyReport(t *testing.T)
 	assert.Equal(t, wantReport, gotReport)
 }
 
-func TestBuildVerboseReport_WhenIsProvidedReportWithNoWorkflowDetails_ExpectReportWithNoWorkflowsActivated(t *testing.T) {
+func TestBuildVerboseReport_WhenIsProvidedReportWithNoWorkflowDetails(t *testing.T) {
 	reportWithNoWorkflowDetails := &Report{}
 
 	wantReport := ":scroll: **Explanation**\nNo workflows activated"
@@ -211,7 +211,7 @@ func TestBuildVerboseReport_WhenIsProvidedReportWithNoWorkflowDetails_ExpectRepo
 	assert.Equal(t, wantReport, gotReport)
 }
 
-func TestBuildVerboseReport_ExpectReportWithTestWorkflowDetails(t *testing.T) {
+func TestBuildVerboseReport(t *testing.T) {
 	report := Report{
 		WorkflowDetails: map[string]ReportWorkflowDetails{
 			"test-workflow": {
@@ -234,7 +234,7 @@ func TestBuildVerboseReport_ExpectReportWithTestWorkflowDetails(t *testing.T) {
 	assert.Equal(t, wantReport, gotReport)
 }
 
-func TestDeleteReportComment_ExpectDeleteCommetRequestFail(t *testing.T) {
+func TestDeleteReportComment_WhenCommentCannotBeDeleted(t *testing.T) {
 	failMessage := "DeleteCommentRequestFailed"
 	mockedEnv, err := MockDefaultEnv(
 		[]mock.MockBackendOption{
@@ -262,7 +262,7 @@ func TestDeleteReportComment_ExpectDeleteCommetRequestFail(t *testing.T) {
 	assert.EqualError(t, err, fmt.Sprintf("[report] error on deleting report comment %v", failMessage))
 }
 
-func TestDeleteReportComment_ExpectNoError(t *testing.T) {
+func TestDeleteReportComment_WhenCommentCanBeDeleted(t *testing.T) {
 	var deletedComment int64
 	mockedEnv, err := MockDefaultEnv(
 		[]mock.MockBackendOption{
@@ -292,7 +292,7 @@ func TestDeleteReportComment_ExpectNoError(t *testing.T) {
 	assert.Equal(t, commentToBeDeleted, deletedComment)
 }
 
-func TestUpdateReportComment_ExpectEditCommentRequestFail(t *testing.T) {
+func TestUpdateReportComment_WhenCommentCannotBeEdited(t *testing.T) {
 	failMessage := "EditCommentRequestFailed"
 	mockedEnv, err := MockDefaultEnv(
 		[]mock.MockBackendOption{
@@ -321,7 +321,7 @@ func TestUpdateReportComment_ExpectEditCommentRequestFail(t *testing.T) {
 	assert.EqualError(t, err, fmt.Sprintf("[report] error on updating report comment %v", failMessage))
 }
 
-func TestUpdateReportComment_ExpectNoError(t *testing.T) {
+func TestUpdateReportComment_WhenCommentCanBeEdited(t *testing.T) {
 	var gotUpdatedComment string
 	mockedEnv, err := MockDefaultEnv(
 		[]mock.MockBackendOption{
@@ -352,7 +352,7 @@ func TestUpdateReportComment_ExpectNoError(t *testing.T) {
 	assert.Equal(t, wantUpdatedComment, gotUpdatedComment)
 }
 
-func TestAddReportComment_ExpectCreateCommentRequestFail(t *testing.T) {
+func TestAddReportComment_WhenCommentCannotBeCreated(t *testing.T) {
 	failMessage := "CreateCommentRequestFailed"
 	mockedEnv, err := MockDefaultEnv(
 		[]mock.MockBackendOption{
@@ -380,7 +380,7 @@ func TestAddReportComment_ExpectCreateCommentRequestFail(t *testing.T) {
 	assert.EqualError(t, err, fmt.Sprintf("[report] error on creating report comment %v", failMessage))
 }
 
-func TestAddReportComment_ExpectNoError(t *testing.T) {
+func TestAddReportComment_WhenCommentCanBeCreated(t *testing.T) {
 	var createdComment string
 	commentToBeCreated := "Test add report comment"
 
@@ -410,7 +410,7 @@ func TestAddReportComment_ExpectNoError(t *testing.T) {
 	assert.Equal(t, createdComment, commentToBeCreated)
 }
 
-func TestFindReportComment_ExpectGetPullRequestCommentsFail(t *testing.T) {
+func TestFindReportComment_WhenPullRequestCommentsListingFails(t *testing.T) {
 	failMessage := "ListCommentsRequestFailed"
 	mockedEnv, err := MockDefaultEnv(
 		[]mock.MockBackendOption{
@@ -437,7 +437,7 @@ func TestFindReportComment_ExpectGetPullRequestCommentsFail(t *testing.T) {
 	assert.EqualError(t, err, fmt.Sprintf("[report] error getting issues %v", failMessage))
 }
 
-func TestFindReportComment_ExpectReviewpadComment(t *testing.T) {
+func TestFindReportComment_WhenThereIsReviewpadComment(t *testing.T) {
 	wantComment := &github.IssueComment{
 		Body: github.String("<!--@annotation-reviewpad-report-->\n**Reviewpad Report**\n\n:scroll: **Explanation**\nNo workflows activated"),
 	}
@@ -462,7 +462,7 @@ func TestFindReportComment_ExpectReviewpadComment(t *testing.T) {
 	assert.Equal(t, wantComment, gotComment)
 }
 
-func TestFindReportComment_ExpectNoReviewpadComment(t *testing.T) {
+func TestFindReportComment_WhenThereIsNoReviewpadComment(t *testing.T) {
 	comment := &github.IssueComment{
 		Body: github.String("Test comment"),
 	}
