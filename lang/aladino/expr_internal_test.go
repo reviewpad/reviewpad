@@ -5,8 +5,6 @@
 package aladino
 
 import (
-	"regexp"
-	"strconv"
 	"testing"
 	"time"
 
@@ -239,11 +237,8 @@ func TestIntConstEquals_ExpectTrue(t *testing.T) {
 
 func TestBuildRelativeTimeConst_WhenTimeUnitIsYear_ExpectIntConstWithAValue(t *testing.T) {
 	now := time.Now()
-
 	val := "1 year ago"
-
-	timeValueRegex := regexp.MustCompile(`^[0-9]+`)
-	timeValue, _ := strconv.Atoi(timeValueRegex.FindString(val))
+	timeValue := 1
 
 	wantVal := &IntConst{
 		value: int(now.AddDate(-timeValue, 0, 0).Unix()),
@@ -256,11 +251,8 @@ func TestBuildRelativeTimeConst_WhenTimeUnitIsYear_ExpectIntConstWithAValue(t *t
 
 func TestBuildRelativeTimeConst_WhenTimeUnitIsMonth_ExpectIntConstWithAValue(t *testing.T) {
 	now := time.Now()
-
 	val := "1 month ago"
-
-	timeValueRegex := regexp.MustCompile(`^[0-9]+`)
-	timeValue, _ := strconv.Atoi(timeValueRegex.FindString(val))
+	timeValue := 1
 
 	wantVal := &IntConst{
 		value: int(now.AddDate(0, -timeValue, 0).Unix()),
@@ -272,11 +264,8 @@ func TestBuildRelativeTimeConst_WhenTimeUnitIsMonth_ExpectIntConstWithAValue(t *
 
 func TestBuildRelativeTimeConst_WhenTimeUnitIsDay_ExpectIntConstWithAValue(t *testing.T) {
 	now := time.Now()
-
 	val := "1 day ago"
-
-	timeValueRegex := regexp.MustCompile(`^[0-9]+`)
-	timeValue, _ := strconv.Atoi(timeValueRegex.FindString(val))
+	timeValue := 1
 
 	wantVal := &IntConst{
 		value: int(now.AddDate(0, 0, -timeValue).Unix()),
@@ -289,11 +278,8 @@ func TestBuildRelativeTimeConst_WhenTimeUnitIsDay_ExpectIntConstWithAValue(t *te
 
 func TestBuildRelativeTimeConst_WhenTimeUnitIsWeek_ExpectIntConstWithAValue(t *testing.T) {
 	now := time.Now()
-
 	val := "1 week ago"
-
-	timeValueRegex := regexp.MustCompile(`^[0-9]+`)
-	timeValue, _ := strconv.Atoi(timeValueRegex.FindString(val))
+	timeValue := 1
 
 	wantVal := &IntConst{
 		value: int(now.Add(-(time.Hour * 24 * 7) * time.Duration(timeValue)).Unix()),
@@ -306,11 +292,8 @@ func TestBuildRelativeTimeConst_WhenTimeUnitIsWeek_ExpectIntConstWithAValue(t *t
 
 func TestBuildRelativeTimeConst_WhenTimeUnitIsHour_ExpectIntConstWithAValue(t *testing.T) {
 	now := time.Now()
-
 	val := "1 hour ago"
-
-	timeValueRegex := regexp.MustCompile(`^[0-9]+`)
-	timeValue, _ := strconv.Atoi(timeValueRegex.FindString(val))
+	timeValue := 1
 
 	wantVal := &IntConst{
 		value: int(now.Add(-time.Hour * time.Duration(timeValue)).Unix()),
@@ -323,11 +306,8 @@ func TestBuildRelativeTimeConst_WhenTimeUnitIsHour_ExpectIntConstWithAValue(t *t
 
 func TestBuildRelativeTimeConst_WhenTimeUnitIsMinute_ExpectIntConstWithAValue(t *testing.T) {
 	now := time.Now()
-
 	val := "1 minute ago"
-
-	timeValueRegex := regexp.MustCompile(`^[0-9]+`)
-	timeValue, _ := strconv.Atoi(timeValueRegex.FindString(val))
+	timeValue := 1
 
 	wantVal := &IntConst{
 		value: int(now.Add(-time.Minute * time.Duration(timeValue)).Unix()),
@@ -664,9 +644,9 @@ func TestTypedExprEquals_ExpectTrue(t *testing.T) {
 
 func TestBuildLambda_ExpectLambdaWithTypedExprParamAndBinaryOpBody(t *testing.T) {
 	wantVal := &Lambda{
-        []Expr{&TypedExpr{&Variable{"foo"}, &StringType{}}}, 
-        &BinaryOp{&IntConst{1}, &EqOp{}, &IntConst{1}},
-    }
+		[]Expr{&TypedExpr{&Variable{"foo"}, &StringType{}}},
+		&BinaryOp{&IntConst{1}, &EqOp{}, &IntConst{1}},
+	}
 	gotVal := BuildLambda(
 		[]Expr{BuildTypedExpr(BuildVariable("foo"), BuildStringType())},
 		BuildBinaryOp(BuildIntConst(1), eqOperator(), BuildIntConst(1)),
@@ -716,6 +696,6 @@ func TestLambdaEquals_ExpectTrue(t *testing.T) {
 		[]Expr{BuildTypedExpr(BuildVariable("foo"), BuildStringType())},
 		BuildBinaryOp(BuildIntConst(1), eqOperator(), BuildIntConst(1)),
 	)
-    
+
 	assert.True(t, lambda.equals(otherVal))
 }
