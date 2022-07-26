@@ -48,6 +48,7 @@ tasks:
       Run with --watch or -w to watch for changes on _test.go files.
     cmds:
       - gotestsum -- -coverprofile=coverage.out ./...
+      - . scripts/exclude-from-code-coverage.sh
     sources:
       - ./**/*_test.go
 
