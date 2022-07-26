@@ -44,7 +44,6 @@ func mergeReportWorkflowDetails(left, right ReportWorkflowDetails) ReportWorkflo
 }
 
 func (r *Report) SendReport(ctx context.Context, reviewpadFileChanged bool, mode string, pr *github.PullRequest, client *github.Client) error {
-
 	execLog("generating report")
 
 	var err error
@@ -68,7 +67,6 @@ func (r *Report) SendReport(ctx context.Context, reviewpadFileChanged bool, mode
 	}
 
 	return UpdateReportComment(ctx, pr, *comment.ID, report, client)
-
 }
 
 func (report *Report) addToReport(statement *engine.Statement) {
@@ -95,7 +93,6 @@ func (report *Report) addToReport(statement *engine.Statement) {
 }
 
 func ReportFromProgram(program *engine.Program) *Report {
-
 	report := &Report{
 		WorkflowDetails: make(map[string]ReportWorkflowDetails),
 	}
@@ -105,7 +102,6 @@ func ReportFromProgram(program *engine.Program) *Report {
 	}
 
 	return report
-
 }
 
 func ReportHeader(reviewpadFileChanged bool) string {
