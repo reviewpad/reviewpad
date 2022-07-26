@@ -250,7 +250,6 @@ func GetPullRequestCommits(ctx context.Context, client *github.Client, owner str
 	return commits.([]*github.RepositoryCommit), nil
 }
 
-// GetPullRequestReviews fetch pull request reviews
 func GetPullRequestReviews(ctx context.Context, client *github.Client, owner string, repo string, number int, opts *github.ListOptions) ([]*github.PullRequestReview, error) {
 	reviews, err := PaginatedRequest(
 		func() interface{} {

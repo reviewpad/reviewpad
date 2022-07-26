@@ -617,7 +617,7 @@ func TestGetPullRequestCommits(t *testing.T) {
 	assert.Equal(t, wantCommits, gotCommits)
 }
 
-func TestGetPullRequestReviewsWithCommentedState(t *testing.T) {
+func TestGetPullRequestReviews(t *testing.T) {
 	wantReviews := []*github.PullRequestReview{
 		{
 			State: github.String("COMMENTED"),
@@ -653,7 +653,7 @@ func TestGetPullRequestReviewsWithCommentedState(t *testing.T) {
 	assert.Equal(t, wantReviews, gotReviews)
 }
 
-func TestGetPullRequestReviewsFails(t *testing.T) {
+func TestGetPullRequestReviews_WhenRequestFails(t *testing.T) {
 	failMessage := "ListPullRequestReviewsFail"
 	mockedEnv, err := aladino.MockDefaultEnv(
 		[]mock.MockBackendOption{
