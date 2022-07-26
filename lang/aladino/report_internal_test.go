@@ -160,7 +160,7 @@ func TestAddToReport_WhenWorkflowAlreadyExists(t *testing.T) {
 func TestReportHeader(t *testing.T) {
 	wantReportHeader := "<!--@annotation-reviewpad-report-->\n**Reviewpad Report**\n\n"
 
-	gotReportHeader := ReportHeader()
+	gotReportHeader := ReportHeader(false)
 
 	assert.Equal(t, wantReportHeader, gotReportHeader)
 }
@@ -186,7 +186,7 @@ func TestBuildReport(t *testing.T) {
 | test-workflow | tautology<br> | ` + "`$addLabel(\"test\")`" + `<br> | Testing workflow |
 `
 
-	gotReport := buildReport(&report)
+	gotReport := buildReport(false, &report)
 
 	assert.Equal(t, wantReport, gotReport)
 }
@@ -257,7 +257,7 @@ func TestDeleteReportComment_WhenCommentCannotBeDeleted(t *testing.T) {
 
 	testCommentId := int64(1234)
 
-	err = DeleteReportComment(mockedEnv, testCommentId)
+	err = DeleteReportComment(mockedEnv.GetCtx(), mockedEnv.GetPullRequest(), testCommentId, mockedEnv.GetClient())
 
 	assert.EqualError(t, err, fmt.Sprintf("[report] error on deleting report comment %v", failMessage))
 }
@@ -286,7 +286,7 @@ func TestDeleteReportComment_WhenCommentCanBeDeleted(t *testing.T) {
 
 	commentToBeDeleted := int64(1234)
 
-	err = DeleteReportComment(mockedEnv, commentToBeDeleted)
+	err = DeleteReportComment(mockedEnv.GetCtx(), mockedEnv.GetPullRequest(), commentToBeDeleted, mockedEnv.GetClient())
 
 	assert.Nil(t, err)
 	assert.Equal(t, commentToBeDeleted, deletedComment)
@@ -316,7 +316,7 @@ func TestUpdateReportComment_WhenCommentCannotBeEdited(t *testing.T) {
 	testCommentId := int64(1234)
 	wantUpdatedComment := "Test update report comment"
 
-	err = UpdateReportComment(mockedEnv, testCommentId, wantUpdatedComment)
+	err = UpdateReportComment(mockedEnv.GetCtx(), mockedEnv.GetPullRequest(), testCommentId, wantUpdatedComment, mockedEnv.GetClient())
 
 	assert.EqualError(t, err, fmt.Sprintf("[report] error on updating report comment %v", failMessage))
 }
@@ -346,7 +346,7 @@ func TestUpdateReportComment_WhenCommentCanBeEdited(t *testing.T) {
 	testCommentId := int64(1234)
 	wantUpdatedComment := "Test update report comment"
 
-	err = UpdateReportComment(mockedEnv, testCommentId, wantUpdatedComment)
+	err = UpdateReportComment(mockedEnv.GetCtx(), mockedEnv.GetPullRequest(), testCommentId, wantUpdatedComment, mockedEnv.GetClient())
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantUpdatedComment, gotUpdatedComment)
@@ -375,7 +375,7 @@ func TestAddReportComment_WhenCommentCannotBeCreated(t *testing.T) {
 
 	comment := "Test add report comment"
 
-	err = AddReportComment(mockedEnv, comment)
+	err = AddReportComment(mockedEnv.GetCtx(), mockedEnv.GetPullRequest(), comment, mockedEnv.GetClient())
 
 	assert.EqualError(t, err, fmt.Sprintf("[report] error on creating report comment %v", failMessage))
 }
@@ -404,7 +404,7 @@ func TestAddReportComment_WhenCommentCanBeCreated(t *testing.T) {
 		assert.FailNow(t, "MockDefaultEnv returned unexpected error: %v", err)
 	}
 
-	err = AddReportComment(mockedEnv, commentToBeCreated)
+	err = AddReportComment(mockedEnv.GetCtx(), mockedEnv.GetPullRequest(), commentToBeCreated, mockedEnv.GetClient())
 
 	assert.Nil(t, err)
 	assert.Equal(t, createdComment, commentToBeCreated)
@@ -431,7 +431,7 @@ func TestFindReportComment_WhenPullRequestCommentsListingFails(t *testing.T) {
 		assert.FailNow(t, "MockDefaultEnv returned unexpected error: %v", err)
 	}
 
-	gotComment, err := FindReportComment(mockedEnv)
+	gotComment, err := FindReportComment(mockedEnv.GetCtx(), mockedEnv.GetPullRequest(), mockedEnv.GetClient())
 
 	assert.Nil(t, gotComment)
 	assert.EqualError(t, err, fmt.Sprintf("[report] error getting issues %v", failMessage))
@@ -456,7 +456,7 @@ func TestFindReportComment_WhenThereIsReviewpadComment(t *testing.T) {
 		assert.FailNow(t, "MockDefaultEnv returned unexpected error: %v", err)
 	}
 
-	gotComment, err := FindReportComment(mockedEnv)
+	gotComment, err := FindReportComment(mockedEnv.GetCtx(), mockedEnv.GetPullRequest(), mockedEnv.GetClient())
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantComment, gotComment)
@@ -481,7 +481,7 @@ func TestFindReportComment_WhenThereIsNoReviewpadComment(t *testing.T) {
 		assert.FailNow(t, "MockDefaultEnv returned unexpected error: %v", err)
 	}
 
-	gotComment, err := FindReportComment(mockedEnv)
+	gotComment, err := FindReportComment(mockedEnv.GetCtx(), mockedEnv.GetPullRequest(), mockedEnv.GetClient())
 
 	assert.Nil(t, err)
 	assert.Nil(t, gotComment)
