@@ -18,20 +18,10 @@ import (
 
 var reviewerStatus = plugins_aladino.PluginBuiltIns().Functions["reviewerStatus"].Code
 
-func TestReviewerStatusRequestFails(t *testing.T) {
+func TestReviewerStatus_whenRequestFails(t *testing.T) {
 	failMessage := "ReviewerStatusRequestFail"
 	mockedEnv, err := aladino.MockDefaultEnv(
 		[]mock.MockBackendOption{
-			mock.WithRequestMatchHandler(
-				mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
-				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					mock.WriteError(
-						w,
-						http.StatusInternalServerError,
-						failMessage,
-					)
-				}),
-			),
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
 				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -56,7 +46,35 @@ func TestReviewerStatusRequestFails(t *testing.T) {
 	assert.Equal(t, err.(*github.ErrorResponse).Message, failMessage)
 }
 
-func TestReviewerStatusNeutral(t *testing.T) {
+func TestReviewerStatus_WhenUserIsNil(t *testing.T) {
+	reviews := []*github.PullRequestReview{
+		{
+			State: github.String("COMMENTED"),
+		},
+	}
+	mockedEnv, err := aladino.MockDefaultEnv(
+		[]mock.MockBackendOption{
+			mock.WithRequestMatch(
+				mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
+				reviews,
+			),
+		},
+		nil,
+	)
+	if err != nil {
+		log.Fatalf("mockDefaultEnv failed: %v", err)
+	}
+
+	wantReviewState := aladino.BuildStringValue("")
+
+	args := []aladino.Value{aladino.BuildStringValue("mary")}
+	gotReviewState, err := reviewerStatus(mockedEnv, args)
+
+	assert.Nil(t, err)
+	assert.Equal(t, wantReviewState, gotReviewState)
+}
+
+func TestReviewerStatus_WhenStateUnknown(t *testing.T) {
 	reviews := []*github.PullRequestReview{
 		{
 			State: github.String("COMMENTED"),
@@ -78,7 +96,7 @@ func TestReviewerStatusNeutral(t *testing.T) {
 		log.Fatalf("mockDefaultEnv failed: %v", err)
 	}
 
-	wantReviewState := aladino.BuildStringValue("neutral")
+	wantReviewState := aladino.BuildStringValue("")
 
 	args := []aladino.Value{aladino.BuildStringValue("mary")}
 	gotReviewState, err := reviewerStatus(mockedEnv, args)
@@ -87,7 +105,44 @@ func TestReviewerStatusNeutral(t *testing.T) {
 	assert.Equal(t, wantReviewState, gotReviewState)
 }
 
-func TestReviewerStatusApproved(t *testing.T) {
+func TestReviewerStatus_WhenStateCommented(t *testing.T) {
+	reviews := []*github.PullRequestReview{
+		{
+			State: github.String("COMMENTED"),
+			User: &github.User{
+				Login: github.String("mary"),
+			},
+		},
+		{
+			State: github.String("COMMENTED"),
+			User: &github.User{
+				Login: github.String("john"),
+			},
+		},
+	}
+	mockedEnv, err := aladino.MockDefaultEnv(
+		[]mock.MockBackendOption{
+			mock.WithRequestMatch(
+				mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
+				reviews,
+			),
+		},
+		nil,
+	)
+	if err != nil {
+		log.Fatalf("mockDefaultEnv failed: %v", err)
+	}
+
+	wantReviewState := aladino.BuildStringValue("commented")
+
+	args := []aladino.Value{aladino.BuildStringValue("mary")}
+	gotReviewState, err := reviewerStatus(mockedEnv, args)
+
+	assert.Nil(t, err)
+	assert.Equal(t, wantReviewState, gotReviewState)
+}
+
+func TestReviewerStatus_WhenStateApproved(t *testing.T) {
 	reviews := []*github.PullRequestReview{
 		{
 			State: github.String("COMMENTED"),
@@ -98,11 +153,17 @@ func TestReviewerStatusApproved(t *testing.T) {
 		{
 			State: github.String("APPROVED"),
 			User: &github.User{
+				Login: github.String("john"),
+			},
+		},
+		{
+			State: github.String("CHANGES_REQUESTED"),
+			User: &github.User{
 				Login: github.String("mary"),
 			},
 		},
 		{
-			State: github.String("COMMENTED"),
+			State: github.String("APPROVED"),
 			User: &github.User{
 				Login: github.String("mary"),
 			},
@@ -130,7 +191,7 @@ func TestReviewerStatusApproved(t *testing.T) {
 	assert.Equal(t, wantReviewState, gotReviewState)
 }
 
-func TestReviewerStatusRequestedChanges(t *testing.T) {
+func TestReviewerStatus_whenStateRequestedChanges(t *testing.T) {
 	reviews := []*github.PullRequestReview{
 		{
 			State: github.String("COMMENTED"),
