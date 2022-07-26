@@ -365,7 +365,7 @@ func TestVariableEquals_WhenEqual(t *testing.T) {
 	assert.True(t, variable.equals(otherVal))
 }
 
-func TestBuildUnaryOp_(t *testing.T) {
+func TestBuildUnaryOp(t *testing.T) {
 	wantVal := &UnaryOp{&NotOp{}, &BoolConst{true}}
 	gotVal := BuildUnaryOp(notOperator(), BuildBoolConst(true))
 
