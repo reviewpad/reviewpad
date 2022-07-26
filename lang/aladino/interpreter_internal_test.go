@@ -830,6 +830,8 @@ func TestNewInterpreter_WhenNewEvalEnvFails(t *testing.T) {
 	// TODO: Ideally, we should not have nil arguments in the call to NewInterpreter
 	gotInterpreter, err := NewInterpreter(
 		ctx,
+		false,
+		false,
 		client,
 		nil,
 		nil,
@@ -854,6 +856,8 @@ func TestNewInterpreter(t *testing.T) {
 
 	gotInterpreter, err := NewInterpreter(
 		mockedEnv.GetCtx(),
+		mockedEnv.GetDryRun(),
+		mockedEnv.GetSafeMode(),
 		mockedEnv.GetClient(),
 		mockedEnv.GetClientGQL(),
 		mockedEnv.GetCollector(),

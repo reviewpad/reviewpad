@@ -114,7 +114,10 @@ func (i *Interpreter) EvalExpr(kind, expr string) (bool, error) {
 }
 
 func (i *Interpreter) ExecProgram(program *engine.Program) error {
-	execLog("executing program:")
+	safeMode := i.Env.GetSafeMode()
+	dryRun := i.Env.GetDryRun()
+
+	execLogf("executing program: safe mode: %v, dry run: %v", safeMode, dryRun)
 
 	for _, statement := range program.Statements {
 		err := i.ExecStatement(statement)
@@ -123,12 +126,14 @@ func (i *Interpreter) ExecProgram(program *engine.Program) error {
 		}
 	}
 
-	execLog("execution done")
+	execLogf("execution done: safe mode: %v, dry run: %v", safeMode, dryRun)
 
 	return nil
 }
 
 func (i *Interpreter) ExecStatement(statement *engine.Statement) error {
+	safeMode := i.Env.GetSafeMode()
+	dryRun := i.Env.GetDryRun()
 	statRaw := statement.Code
 	statAST, err := Parse(statRaw)
 	if err != nil {
@@ -140,14 +145,16 @@ func (i *Interpreter) ExecStatement(statement *engine.Statement) error {
 		return err
 	}
 
-	err = execStatAST.exec(i.Env)
-	if err != nil {
-		return err
+	if !i.Env.GetDryRun() {
+		err = execStatAST.exec(i.Env)
+		if err != nil {
+			return err
+		}
 	}
 
 	i.Env.GetReport().addToReport(statement)
 
-	execLogf("\taction %v executed", statRaw)
+	execLogf("\taction %v executed: safe mode: %v, dry run: %v", statRaw, safeMode, dryRun)
 	return nil
 }
 
@@ -155,12 +162,14 @@ func (i *Interpreter) Report(mode string) error {
 
 	env := i.Env
 
-	return i.Env.GetReport().SendReport(env.GetCtx(), false, mode, env.GetPullRequest(), env.GetClient())
+	return i.Env.GetReport().SendReport(env.GetCtx(), env.GetSafeMode(), mode, env.GetPullRequest(), env.GetClient())
 
 }
 
 func NewInterpreter(
 	ctx context.Context,
+	dryRun bool,
+	safeMode bool,
 	gitHubClient *github.Client,
 	gitHubClientGQL *githubv4.Client,
 	collector collector.Collector,
@@ -169,7 +178,7 @@ func NewInterpreter(
 	builtIns *BuiltIns,
 
 ) (engine.Interpreter, error) {
-	evalEnv, err := NewEvalEnv(ctx, gitHubClient, gitHubClientGQL, collector, pullRequest, eventPayload, builtIns)
+	evalEnv, err := NewEvalEnv(ctx, dryRun, safeMode, gitHubClient, gitHubClientGQL, collector, pullRequest, eventPayload, builtIns)
 	if err != nil {
 		return nil, err
 	}

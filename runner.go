@@ -50,7 +50,7 @@ func Run(
 		return nil, fmt.Errorf("when reviewpad is running in safe mode, it must also run in dry-run")
 	}
 
-	aladinoInterpreter, err := aladino.NewInterpreter(ctx, client, clientGQL, collector, pullRequest, eventPayload, plugins_aladino.PluginBuiltIns())
+	aladinoInterpreter, err := aladino.NewInterpreter(ctx, dryRun, safeMode, client, clientGQL, collector, pullRequest, eventPayload, plugins_aladino.PluginBuiltIns())
 	if err != nil {
 		return nil, err
 	}
@@ -65,28 +65,19 @@ func Run(
 		return nil, err
 	}
 
-	if !dryRun {
-		err := aladinoInterpreter.ExecProgram(program)
-		if err != nil {
-			engine.CollectError(evalEnv, err)
-			return nil, err
-		}
+	err = aladinoInterpreter.ExecProgram(program)
+	if err != nil {
+		engine.CollectError(evalEnv, err)
+		return nil, err
+	}
 
-		err = aladinoInterpreter.Report(reviewpadFile.Mode)
-		if err != nil {
-			engine.CollectError(evalEnv, err)
-			return nil, err
-		}
+	err = aladinoInterpreter.Report(reviewpadFile.Mode)
+	if err != nil {
+		engine.CollectError(evalEnv, err)
+		return nil, err
 	}
 
 	if safeMode {
-		report := aladino.ReportFromProgram(program)
-
-		err = report.SendReport(ctx, dryRun, reviewpadFile.Mode, pullRequest, client)
-		if err != nil {
-			engine.CollectError(evalEnv, err)
-			return nil, err
-		}
 	}
 
 	err = evalEnv.Collector.Collect("Completed Analysis", map[string]interface{}{

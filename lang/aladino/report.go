@@ -43,7 +43,7 @@ func mergeReportWorkflowDetails(left, right ReportWorkflowDetails) ReportWorkflo
 	return left
 }
 
-func (r *Report) SendReport(ctx context.Context, reviewpadFileChanged bool, mode string, pr *github.PullRequest, client *github.Client) error {
+func (r *Report) SendReport(ctx context.Context, safeMode bool, mode string, pr *github.PullRequest, client *github.Client) error {
 	execLog("generating report")
 
 	var err error
@@ -60,7 +60,7 @@ func (r *Report) SendReport(ctx context.Context, reviewpadFileChanged bool, mode
 		return nil
 	}
 
-	report := buildReport(reviewpadFileChanged, r)
+	report := buildReport(safeMode, r)
 
 	if comment == nil {
 		return AddReportComment(ctx, pr, report, client)
@@ -92,25 +92,13 @@ func (report *Report) addToReport(statement *engine.Statement) {
 	}
 }
 
-func ReportFromProgram(program *engine.Program) *Report {
-	report := &Report{
-		WorkflowDetails: make(map[string]ReportWorkflowDetails),
-	}
-
-	for _, statement := range program.Statements {
-		report.addToReport(statement)
-	}
-
-	return report
-}
-
-func ReportHeader(reviewpadFileChanged bool) string {
+func ReportHeader(safeMode bool) string {
 	var sb strings.Builder
 
 	// Annotation
 	sb.WriteString(fmt.Sprintf("%v\n", ReviewpadReportCommentAnnotation))
 	// Header
-	if reviewpadFileChanged {
+	if safeMode {
 		sb.WriteString("**Reviewpad Report** (Reviewpad ran in dry-run mode because configuration has changed)\n\n")
 	} else {
 		sb.WriteString("**Reviewpad Report**\n\n")
@@ -119,10 +107,10 @@ func ReportHeader(reviewpadFileChanged bool) string {
 	return sb.String()
 }
 
-func buildReport(reviewpadFileChanged bool, report *Report) string {
+func buildReport(safeMode bool, report *Report) string {
 	var sb strings.Builder
 
-	sb.WriteString(ReportHeader(reviewpadFileChanged))
+	sb.WriteString(ReportHeader(safeMode))
 	sb.WriteString(BuildVerboseReport(report))
 
 	return sb.String()
