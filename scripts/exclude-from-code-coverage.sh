@@ -3,4 +3,4 @@
 # found in the LICENSE file.
 
 #!/bin/sh
-grep -vf exclude-from-code-coverage.txt coverage.out > coverage.out.tmp && mv coverage.out.tmp coverage.out
+grep -vf scripts/resources/exclude-from-code-coverage.txt coverage.out > coverage.out.tmp && mv coverage.out.tmp coverage.out
