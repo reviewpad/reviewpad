@@ -27,7 +27,7 @@ type PadRule struct {
 }
 
 func (p PadRule) equals(o PadRule) bool {
-	return p.Name != o.Name &&
+	return p.Name == o.Name &&
 		p.Kind == o.Kind &&
 		p.Description == o.Description &&
 		p.Spec == o.Spec

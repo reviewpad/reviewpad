@@ -10,19 +10,19 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestEquals_OnPadImport_WhenTrue(t *testing.T) {
+func TestEquals_WhenPadImportsAreEqual(t *testing.T) {
 	padImport := PadImport{"http://foo.bar"}
 	otherPadImport := PadImport{"http://foo.bar"}
 	assert.True(t, padImport.equals(otherPadImport))
 }
 
-func TestEquals_OnPadImport_WhenFalse(t *testing.T) {
+func TestEquals_WhenPadImportsAreDiff(t *testing.T) {
 	padImport := PadImport{"http://foo.bar1"}
 	otherPadImport := PadImport{"http://foo.bar2"}
 	assert.False(t, padImport.equals(otherPadImport))
 }
 
-func TestEquals_OnPadRule_WhenTrue(t *testing.T) {
+func TestEquals_WhenPadRulesAreEqual(t *testing.T) {
 	padRule := PadRule{
 		Name:        "test-rule",
 		Kind:        "patch",
@@ -40,7 +40,7 @@ func TestEquals_OnPadRule_WhenTrue(t *testing.T) {
 	assert.True(t, padRule.equals(otherPadRule))
 }
 
-func TestEquals_OnPadRule_WhenFalse(t *testing.T) {
+func TestEquals_WhenPadRulesAreDiff(t *testing.T) {
 	padRule := PadRule{
 		Name:        "test-rule-1",
 		Kind:        "patch",
@@ -58,7 +58,7 @@ func TestEquals_OnPadRule_WhenFalse(t *testing.T) {
 	assert.False(t, padRule.equals(otherPadRule))
 }
 
-func TestEquals_OnPadWorkflowRules_WhenTrue(t *testing.T) {
+func TestEquals_WhenPadWorkflowRulesAreEqual(t *testing.T) {
 	padWorkflowRule := PadWorkflowRule{
 		Rule: "test-rule",
 		ExtraActions: []string{
@@ -76,7 +76,7 @@ func TestEquals_OnPadWorkflowRules_WhenTrue(t *testing.T) {
 	assert.True(t, padWorkflowRule.equals(otherPadWorkflowRule))
 }
 
-func TestEquals_OnPadWorkflowRules_WhenDiffRules(t *testing.T) {
+func TestEquals_WhenPadWorkflowRulesHaveDiffRules(t *testing.T) {
 	padWorkflowRule := PadWorkflowRule{
 		Rule: "test-rule-1",
 		ExtraActions: []string{
@@ -94,7 +94,7 @@ func TestEquals_OnPadWorkflowRules_WhenDiffRules(t *testing.T) {
 	assert.False(t, padWorkflowRule.equals(otherPadWorkflowRule))
 }
 
-func TestEquals_OnPadWorkflowRules_WhenDiffExtraActionsLength(t *testing.T) {
+func TestEquals_WhenPadWorkflowRulesHaveDiffExtraActionsLength(t *testing.T) {
 	padWorkflowRule := PadWorkflowRule{
 		Rule: "test-rule",
 		ExtraActions: []string{
@@ -113,7 +113,7 @@ func TestEquals_OnPadWorkflowRules_WhenDiffExtraActionsLength(t *testing.T) {
 	assert.False(t, padWorkflowRule.equals(otherPadWorkflowRule))
 }
 
-func TestEquals_OnPadWorkflowRules_WhenDiffExtraActions(t *testing.T) {
+func TestEquals_WhenPadWorkflowRulesHaveDiffExtraActions(t *testing.T) {
 	padWorkflowRule := PadWorkflowRule{
 		Rule: "test-rule",
 		ExtraActions: []string{
@@ -131,7 +131,7 @@ func TestEquals_OnPadWorkflowRules_WhenDiffExtraActions(t *testing.T) {
 	assert.False(t, padWorkflowRule.equals(otherPadWorkflowRule))
 }
 
-func TestEquals_OnPadLabel_WhenTrue(t *testing.T) {
+func TestEquals_WhenPadLabelsAreEqual(t *testing.T) {
 	padLabel := PadLabel{
 		Name:        "bug",
 		Color:       "f29513",
@@ -147,7 +147,7 @@ func TestEquals_OnPadLabel_WhenTrue(t *testing.T) {
 	assert.True(t, padLabel.equals(otherPadLabel))
 }
 
-func TestEquals_OnPadLabel_WhenDiffName(t *testing.T) {
+func TestEquals_WhenPadLabelsHaveDiffName(t *testing.T) {
 	padLabel := PadLabel{
 		Name:        "bug#1",
 		Color:       "f29513",
@@ -163,7 +163,7 @@ func TestEquals_OnPadLabel_WhenDiffName(t *testing.T) {
 	assert.False(t, padLabel.equals(otherPadLabel))
 }
 
-func TestEquals_OnPadLabel_WhenDiffColor(t *testing.T) {
+func TestEquals_WhenPadLabelsHaveDiffColor(t *testing.T) {
 	padLabel := PadLabel{
 		Name:        "bug",
 		Color:       "f29513",
@@ -179,7 +179,7 @@ func TestEquals_OnPadLabel_WhenDiffColor(t *testing.T) {
 	assert.False(t, padLabel.equals(otherPadLabel))
 }
 
-func TestEquals_OnPadLabel_WhenDiffDescription(t *testing.T) {
+func TestEquals_WhenPadLabelsHaveDiffDescription(t *testing.T) {
 	padLabel := PadLabel{
 		Name:        "bug",
 		Color:       "f29513",
@@ -195,7 +195,7 @@ func TestEquals_OnPadLabel_WhenDiffDescription(t *testing.T) {
 	assert.False(t, padLabel.equals(otherPadLabel))
 }
 
-func TestEquals_OnPadWorkflow_WhenTrue(t *testing.T) {
+func TestEquals_WhenPadWorkflowAreEqual(t *testing.T) {
 	padWorkflow := PadWorkflow{
 		Name:        "test",
 		Description: "Test process",
@@ -229,7 +229,7 @@ func TestEquals_OnPadWorkflow_WhenTrue(t *testing.T) {
 	assert.True(t, padWorkflow.equals(otherPadWorkflow))
 }
 
-func TestEquals_OnPadWorkflow_WhenDiffName(t *testing.T) {
+func TestEquals_WhenPadWorkflowHaveDiffName(t *testing.T) {
 	padWorkflow := PadWorkflow{
 		Name:        "test#1",
 		Description: "Test process",
@@ -263,7 +263,7 @@ func TestEquals_OnPadWorkflow_WhenDiffName(t *testing.T) {
 	assert.False(t, padWorkflow.equals(otherPadWorkflow))
 }
 
-func TestEquals_OnPadWorkflow_WhenDiffDescription(t *testing.T) {
+func TestEquals_WhenPadWorkflowsHaveDiffDescription(t *testing.T) {
 	padWorkflow := PadWorkflow{
 		Name:        "test",
 		Description: "Test process #1",
@@ -297,7 +297,7 @@ func TestEquals_OnPadWorkflow_WhenDiffDescription(t *testing.T) {
 	assert.False(t, padWorkflow.equals(otherPadWorkflow))
 }
 
-func TestEquals_OnPadWorkflow_WhenDiffRulesLength(t *testing.T) {
+func TestEquals_WhenPadWorkflowsHaveDiffRulesLength(t *testing.T) {
 	padWorkflow := PadWorkflow{
 		Name:        "test",
 		Description: "Test process",
@@ -335,7 +335,7 @@ func TestEquals_OnPadWorkflow_WhenDiffRulesLength(t *testing.T) {
 	assert.False(t, padWorkflow.equals(otherPadWorkflow))
 }
 
-func TestEquals_OnPadWorkflow_WhenDiffRules(t *testing.T) {
+func TestEquals_WhenPadWorkflowsHaveDiffRules(t *testing.T) {
 	padWorkflow := PadWorkflow{
 		Name:        "test",
 		Description: "Test process",
@@ -369,7 +369,7 @@ func TestEquals_OnPadWorkflow_WhenDiffRules(t *testing.T) {
 	assert.False(t, padWorkflow.equals(otherPadWorkflow))
 }
 
-func TestEquals_OnPadWorkflow_WhenDiffActionsLength(t *testing.T) {
+func TestEquals_WhenPadWorkflowsHaveDiffActionsLength(t *testing.T) {
 	padWorkflow := PadWorkflow{
 		Name:        "test",
 		Description: "Test process",
@@ -404,7 +404,7 @@ func TestEquals_OnPadWorkflow_WhenDiffActionsLength(t *testing.T) {
 	assert.False(t, padWorkflow.equals(otherPadWorkflow))
 }
 
-func TestEquals_OnPadWorkflow_WhenDiffActions(t *testing.T) {
+func TestEquals_WhenPadWorkflowsHaveDiffActions(t *testing.T) {
 	padWorkflow := PadWorkflow{
 		Name:        "test",
 		Description: "Test process",
@@ -438,7 +438,7 @@ func TestEquals_OnPadWorkflow_WhenDiffActions(t *testing.T) {
 	assert.False(t, padWorkflow.equals(otherPadWorkflow))
 }
 
-func TestEquals_OnPadWorkflow_WhenDiffAlwaysRun(t *testing.T) {
+func TestEquals_WhenPadWorkflowsHaveDiffAlwaysRun(t *testing.T) {
 	padWorkflow := PadWorkflow{
 		Name:        "test",
 		Description: "Test process",
@@ -472,7 +472,7 @@ func TestEquals_OnPadWorkflow_WhenDiffAlwaysRun(t *testing.T) {
 	assert.False(t, padWorkflow.equals(otherPadWorkflow))
 }
 
-func TestEquals_OnPadGroup_WhenTrue(t *testing.T) {
+func TestEquals_WhenPadGroupsAreEqual(t *testing.T) {
 	padGroup := PadGroup{
 		Name:        "juniors",
 		Description: "Group of junior developers",
@@ -494,7 +494,7 @@ func TestEquals_OnPadGroup_WhenTrue(t *testing.T) {
 	assert.True(t, padGroup.equals(otherPadGroup))
 }
 
-func TestEquals_OnPadGroup_WhenFalse(t *testing.T) {
+func TestEquals_WhenPadGroupsDiff(t *testing.T) {
 	padGroup := PadGroup{
 		Name:        "juniors",
 		Description: "Group of junior developers",
@@ -514,7 +514,7 @@ func TestEquals_OnPadGroup_WhenFalse(t *testing.T) {
 	assert.False(t, padGroup.equals(otherPadGroup))
 }
 
-func TestEquals_OnReviewpadFile_WhenTrue(t *testing.T) {
+func TestEquals_WhenReviewpadFilesAreEqual(t *testing.T) {
 	reviewpadFile := &ReviewpadFile{
 		Version:      "reviewpad.com/v1alpha",
 		Edition:      "professional",
@@ -616,7 +616,7 @@ func TestEquals_OnReviewpadFile_WhenTrue(t *testing.T) {
 	assert.True(t, reviewpadFile.equals(otherReviewpadFile))
 }
 
-func TestEquals_OnReviewpadFile_WhenDiffVersion(t *testing.T) {
+func TestEquals_WhenReviewpadFilesHaveDiffVersion(t *testing.T) {
 	reviewpadFile := &ReviewpadFile{
 		Version:      "reviewpad.com/v1alpha",
 		Edition:      "professional",
@@ -718,7 +718,7 @@ func TestEquals_OnReviewpadFile_WhenDiffVersion(t *testing.T) {
 	assert.False(t, reviewpadFile.equals(otherReviewpadFile))
 }
 
-func TestEquals_OnReviewpadFile_WhenDiffEdition(t *testing.T) {
+func TestEquals_WhenReviewpadFilesHaveDiffEdition(t *testing.T) {
 	reviewpadFile := &ReviewpadFile{
 		Version:      "reviewpad.com/v1alpha",
 		Edition:      "professional",
@@ -820,7 +820,7 @@ func TestEquals_OnReviewpadFile_WhenDiffEdition(t *testing.T) {
 	assert.False(t, reviewpadFile.equals(otherReviewpadFile))
 }
 
-func TestEquals_OnReviewpadFile_WhenDiffIgnoreErrors(t *testing.T) {
+func TestEquals_WhenReviewpadFilesHaveDiffIgnoreErrors(t *testing.T) {
 	reviewpadFile := &ReviewpadFile{
 		Version:      "reviewpad.com/v1alpha",
 		Edition:      "professional",
@@ -922,7 +922,7 @@ func TestEquals_OnReviewpadFile_WhenDiffIgnoreErrors(t *testing.T) {
 	assert.False(t, reviewpadFile.equals(otherReviewpadFile))
 }
 
-func TestEquals_OnReviewpadFile_WhenDiffNumberOfImports(t *testing.T) {
+func TestEquals_WhenReviewpadFilesHaveDiffNumberOfImports(t *testing.T) {
 	reviewpadFile := &ReviewpadFile{
 		Version:      "reviewpad.com/v1alpha",
 		Edition:      "professional",
@@ -1025,7 +1025,7 @@ func TestEquals_OnReviewpadFile_WhenDiffNumberOfImports(t *testing.T) {
 	assert.False(t, reviewpadFile.equals(otherReviewpadFile))
 }
 
-func TestEquals_OnReviewpadFile_WhenDiffImports(t *testing.T) {
+func TestEquals_WhenReviewpadFilesHaveDiffImports(t *testing.T) {
 	reviewpadFile := &ReviewpadFile{
 		Version:      "reviewpad.com/v1alpha",
 		Edition:      "professional",
@@ -1127,7 +1127,7 @@ func TestEquals_OnReviewpadFile_WhenDiffImports(t *testing.T) {
 	assert.False(t, reviewpadFile.equals(otherReviewpadFile))
 }
 
-func TestEquals_OnReviewpadFile_WhenDiffNumberOfRules(t *testing.T) {
+func TestEquals_WhenReviewpadFilesHaveDiffNumberOfRules(t *testing.T) {
 	reviewpadFile := &ReviewpadFile{
 		Version:      "reviewpad.com/v1alpha",
 		Edition:      "professional",
@@ -1235,7 +1235,7 @@ func TestEquals_OnReviewpadFile_WhenDiffNumberOfRules(t *testing.T) {
 	assert.False(t, reviewpadFile.equals(otherReviewpadFile))
 }
 
-func TestEquals_OnReviewpadFile_WhenDiffRules(t *testing.T) {
+func TestEquals_WhenReviewpadFilesHaveDiffRules(t *testing.T) {
 	reviewpadFile := &ReviewpadFile{
 		Version:      "reviewpad.com/v1alpha",
 		Edition:      "professional",
@@ -1337,7 +1337,7 @@ func TestEquals_OnReviewpadFile_WhenDiffRules(t *testing.T) {
 	assert.False(t, reviewpadFile.equals(otherReviewpadFile))
 }
 
-func TestEquals_OnReviewpadFile_WhenDiffNumberOfLabels(t *testing.T) {
+func TestEquals_WhenReviewpadFilesHaveDiffNumberOfLabels(t *testing.T) {
 	reviewpadFile := &ReviewpadFile{
 		Version:      "reviewpad.com/v1alpha",
 		Edition:      "professional",
@@ -1444,7 +1444,7 @@ func TestEquals_OnReviewpadFile_WhenDiffNumberOfLabels(t *testing.T) {
 	assert.False(t, reviewpadFile.equals(otherReviewpadFile))
 }
 
-func TestEquals_OnReviewpadFile_WhenDiffLabels(t *testing.T) {
+func TestEquals_WhenReviewpadFilesHaveDiffLabels(t *testing.T) {
 	reviewpadFile := &ReviewpadFile{
 		Version:      "reviewpad.com/v1alpha",
 		Edition:      "professional",
@@ -1546,7 +1546,7 @@ func TestEquals_OnReviewpadFile_WhenDiffLabels(t *testing.T) {
 	assert.False(t, reviewpadFile.equals(otherReviewpadFile))
 }
 
-func TestEquals_OnReviewpadFile_WhenDiffNumberOfWorkflows(t *testing.T) {
+func TestEquals_WhenReviewpadFilesHaveDiffNumberOfWorkflows(t *testing.T) {
 	reviewpadFile := &ReviewpadFile{
 		Version:      "reviewpad.com/v1alpha",
 		Edition:      "professional",
@@ -1662,7 +1662,7 @@ func TestEquals_OnReviewpadFile_WhenDiffNumberOfWorkflows(t *testing.T) {
 	assert.False(t, reviewpadFile.equals(otherReviewpadFile))
 }
 
-func TestEquals_OnReviewpadFile_WhenDiffWorkflows(t *testing.T) {
+func TestEquals_WhenReviewpadFilesHaveDiffWorkflows(t *testing.T) {
 	reviewpadFile := &ReviewpadFile{
 		Version:      "reviewpad.com/v1alpha",
 		Edition:      "professional",
@@ -1764,7 +1764,7 @@ func TestEquals_OnReviewpadFile_WhenDiffWorkflows(t *testing.T) {
 	assert.False(t, reviewpadFile.equals(otherReviewpadFile))
 }
 
-func TestEquals_OnReviewpadFile_WhenDiffNumberOfGroups(t *testing.T) {
+func TestEquals_WhenReviewpadFilesHaveDiffNumberOfGroups(t *testing.T) {
 	reviewpadFile := &ReviewpadFile{
 		Version:      "reviewpad.com/v1alpha",
 		Edition:      "professional",
@@ -1874,7 +1874,7 @@ func TestEquals_OnReviewpadFile_WhenDiffNumberOfGroups(t *testing.T) {
 	assert.False(t, reviewpadFile.equals(otherReviewpadFile))
 }
 
-func TestEquals_OnReviewpadFile_WhenDiffGroups(t *testing.T) {
+func TestEquals_WhenReviewpadFilesHaveDiffGroups(t *testing.T) {
 	reviewpadFile := &ReviewpadFile{
 		Version:      "reviewpad.com/v1alpha",
 		Edition:      "professional",
