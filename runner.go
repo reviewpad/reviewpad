@@ -47,7 +47,7 @@ func Run(
 	safeMode bool,
 ) (*engine.Program, error) {
 	if safeMode && !dryRun {
-		return nil, fmt.Errorf("reviewpad can only be run in dry-run when in safe mode")
+		return nil, fmt.Errorf("when reviewpad is running in safe mode, it must also run in dry-run")
 	}
 
 	aladinoInterpreter, err := aladino.NewInterpreter(ctx, client, clientGQL, collector, pullRequest, eventPayload, plugins_aladino.PluginBuiltIns())
