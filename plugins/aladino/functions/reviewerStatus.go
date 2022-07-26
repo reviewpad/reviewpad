@@ -10,23 +10,14 @@ import (
 	"github.com/reviewpad/reviewpad/v3/utils"
 )
 
-// contain all the available reviewer status states
-const (
-	ReviewerStatusStateCommented       string = "COMMENTED"
-	ReviewerStatusStateRequestChanges  string = "CHANGES_REQUESTED"
-	ReviewerStatusStateRequestApproved string = "APPROVED"
-)
-
-// ReviewerStatus return the lastest review status of reviewer on a pull request
 func ReviewerStatus() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
 		Type: aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, aladino.BuildStringType()),
-		Code: reviewerStatusCdoe,
+		Code: reviewerStatusCode,
 	}
 }
 
-// reviewerStatusCdoe return the lastest review status (neutral, requested_changes, approved) of the reviewerLogin on a pull request
-func reviewerStatusCdoe(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
+func reviewerStatusCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
 	reviewerLogin := args[0].(*aladino.StringValue)
 
 	prNum := utils.GetPullRequestNumber(e.GetPullRequest())
@@ -38,21 +29,25 @@ func reviewerStatusCdoe(e aladino.Env, args []aladino.Value) (aladino.Value, err
 		return nil, err
 	}
 
-	status := "neutral"
+	status := ""
 
-	for _, r := range reviews {
-		if *r.User.Login != *&reviewerLogin.Val {
+	for _, review := range reviews {
+		if review.User == nil {
 			continue
 		}
 
-		switch *r.State {
-		case ReviewerStatusStateRequestChanges:
-			status = "requested_changes"
-		case ReviewerStatusStateRequestApproved:
-			status = "approved"
-
+		if *review.User.Login != reviewerLogin.Val {
+			continue
 		}
 
+		switch *review.State {
+		case "COMMENTED":
+			status = "commented"
+		case "CHANGES_REQUESTED":
+			status = "requested_changes"
+		case "APPROVED":
+			status = "approved"
+		}
 	}
 
 	return aladino.BuildStringValue(status), nil
