@@ -39,7 +39,7 @@ func reviewerStatusCdoe(e aladino.Env, args []aladino.Value) (aladino.Value, err
 	}
 
 	status := "neutral"
-	// iterate over the reviewersLogin and update the status for the reviewerLogin
+
 	for _, r := range reviews {
 		if *r.User.Login != *&reviewerLogin.Val {
 			continue
