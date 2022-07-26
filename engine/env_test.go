@@ -5,33 +5,46 @@
 package engine_test
 
 import (
-	"log"
 	"testing"
 
+	"github.com/google/go-github/v42/github"
 	"github.com/reviewpad/reviewpad/v3/engine"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
-	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestNewEvalEnv(t *testing.T) {
-	ctx := engine.DefaultCtx
+	ctx := engine.DefaultMockCtx
 	client := engine.MockGithubClient(nil)
-	collector := engine.DefaultCollector
+	collector := engine.DefaultMockCollector
 	mockedPullRequest := engine.GetDefaultMockPullRequestDetails()
+	fileName := "default-mock-repo/file1.ts"
+	patch := "@@ -2,9 +2,11 @@ package main\n- func previous1() {\n+ func new1() {\n+\nreturn"
+	
+    mockedFile := &aladino.File{
+		Repr: &github.CommitFile{
+			Filename: github.String(fileName),
+			Patch:    github.String(patch),
+		},
+	}
+	mockedFile.AppendToDiff(false, 2, 2, 2, 3, " func previous1() {", " func new1() {\n")
+	mockedPatch := aladino.Patch{
+		fileName: mockedFile,
+	}
 
-	mockedAladinoInterpreter, err := aladino.NewInterpreter(
-		ctx,
-		client,
-		nil,
-		collector,
-		mockedPullRequest,
-		nil,
-		// TODO: This needs to be mocked (PR #155)
-		plugins_aladino.PluginBuiltIns(),
-	)
-	if err != nil {
-		log.Fatalf("aladino NewInterpreter failed: %v", err)
+	mockedAladinoInterpreter := &aladino.Interpreter{
+		Env: &aladino.BaseEnv{
+			Ctx:          ctx,
+			Client:       client,
+			ClientGQL:    nil,
+			Collector:    collector,
+			PullRequest:  mockedPullRequest,
+			Patch:        mockedPatch,
+			RegisterMap:  aladino.RegisterMap(make(map[string]aladino.Value)),
+			BuiltIns:     aladino.MockBuiltIns(),
+			Report:       &aladino.Report{WorkflowDetails: make(map[string]aladino.ReportWorkflowDetails)},
+			EventPayload: engine.MockedEventPayload,
+		},
 	}
 
 	wantEnv := &engine.Env{
@@ -41,7 +54,7 @@ func TestNewEvalEnv(t *testing.T) {
 		ClientGQL:    nil,
 		Collector:    collector,
 		PullRequest:  mockedPullRequest,
-		EventPayload: nil,
+		EventPayload: engine.MockedEventPayload,
 		Interpreter:  mockedAladinoInterpreter,
 	}
 
@@ -52,7 +65,7 @@ func TestNewEvalEnv(t *testing.T) {
 		nil,
 		collector,
 		mockedPullRequest,
-		nil,
+		engine.MockedEventPayload,
 		mockedAladinoInterpreter,
 	)
 

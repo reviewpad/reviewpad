@@ -17,130 +17,25 @@ import (
 
 const defaultMockPrID = 1234
 const defaultMockPrNum = 6
-const defaultMockPrOwner = "foobar"
 const defaultMockPrRepoName = "default-mock-repo"
 
-var DefaultCtx = context.Background()
-var DefaultCollector = collector.NewCollector("", "")
+var DefaultMockCtx = context.Background()
+var DefaultMockCollector = collector.NewCollector("", "")
+var MockedEventPayload = &github.CheckRunEvent{}
 
 func GetDefaultMockPullRequestDetails() *github.PullRequest {
 	prNum := defaultMockPrNum
 	prId := int64(defaultMockPrID)
-	prOwner := defaultMockPrOwner
-	prRepoName := defaultMockPrRepoName
-	prUrl := fmt.Sprintf("https://api.github.com/repos/%v/%v/pulls/%v", prOwner, prRepoName, prNum)
 	prDate := time.Date(2009, 11, 17, 20, 34, 58, 651387237, time.UTC)
 
 	return &github.PullRequest{
-		ID:   &prId,
-		User: &github.User{Login: github.String("john")},
-		Assignees: []*github.User{
-			{Login: github.String("jane")},
-		},
+		ID:        &prId,
+		User:      &github.User{Login: github.String("john")},
 		Title:     github.String("Amazing new feature"),
 		Body:      github.String("Please pull these awesome changes in!"),
 		CreatedAt: &prDate,
-		Comments:  github.Int(6),
-		Commits:   github.Int(5),
 		Number:    github.Int(prNum),
-		Milestone: &github.Milestone{
-			Title: github.String("v1.0"),
-		},
-		Labels: []*github.Label{
-			{
-				Name: github.String("enhancement"),
-			},
-		},
-		Head: &github.PullRequestBranch{
-			Repo: &github.Repository{
-				Owner: &github.User{
-					Login: github.String("john"),
-				},
-				URL:  github.String(prUrl),
-				Name: github.String(prRepoName),
-			},
-			Ref: github.String("new-topic"),
-		},
-		Base: &github.PullRequestBranch{
-			Repo: &github.Repository{
-				Owner: &github.User{
-					Login: github.String("john"),
-				},
-				URL:  github.String(prUrl),
-				Name: github.String(prRepoName),
-			},
-			Ref: github.String("master"),
-		},
-		RequestedReviewers: []*github.User{
-			{Login: github.String("jane")},
-		},
 	}
-}
-
-func GetDefaultMockPullRequestDetailsWith(pr *github.PullRequest) *github.PullRequest {
-	defaultPullRequest := GetDefaultMockPullRequestDetails()
-
-	if pr.User != nil {
-		defaultPullRequest.User = pr.User
-	}
-
-	if pr.Number != nil {
-		defaultPullRequest.Number = pr.Number
-	}
-
-	if pr.Head != nil {
-		defaultPullRequest.Head = pr.Head
-	}
-
-	if pr.Base != nil {
-		defaultPullRequest.Base = pr.Base
-	}
-
-	if pr.Assignees != nil {
-		defaultPullRequest.Assignees = pr.Assignees
-	}
-
-	if pr.Commits != nil {
-		defaultPullRequest.Commits = pr.Commits
-	}
-
-	if pr.Labels != nil {
-		defaultPullRequest.Labels = pr.Labels
-	}
-
-	if pr.Milestone != nil {
-		defaultPullRequest.Milestone = pr.Milestone
-	}
-
-	if pr.RequestedReviewers != nil {
-		defaultPullRequest.RequestedReviewers = pr.RequestedReviewers
-	}
-
-	if pr.RequestedTeams != nil {
-		defaultPullRequest.RequestedTeams = pr.RequestedTeams
-	}
-
-	if pr.Additions != nil {
-		defaultPullRequest.Additions = pr.Additions
-	}
-
-	if pr.Deletions != nil {
-		defaultPullRequest.Deletions = pr.Deletions
-	}
-
-	if pr.Title != nil {
-		defaultPullRequest.Title = pr.Title
-	}
-
-	if pr.Body != nil {
-		defaultPullRequest.Body = pr.Body
-	}
-
-	if pr.Draft != nil {
-		defaultPullRequest.Draft = pr.Draft
-	}
-
-	return defaultPullRequest
 }
 
 func getDefaultMockPullRequestFileList() *[]*github.CommitFile {
@@ -148,15 +43,15 @@ func getDefaultMockPullRequestFileList() *[]*github.CommitFile {
 	return &[]*github.CommitFile{
 		{
 			Filename: github.String(fmt.Sprintf("%v/file1.ts", prRepoName)),
-			Patch:    nil,
+			Patch:    github.String("@@ -2,9 +2,11 @@ package main\n- func previous1() {\n+ func new1() {\n+\nreturn"),
 		},
 		{
 			Filename: github.String(fmt.Sprintf("%v/file2.ts", prRepoName)),
-			Patch:    nil,
+			Patch:    github.String("@@ -2,9 +2,11 @@ package main\n- func previous2() {\n+ func new2() {\n+\nreturn"),
 		},
 		{
 			Filename: github.String(fmt.Sprintf("%v/file3.ts", prRepoName)),
-			Patch:    nil,
+			Patch:    github.String("@@ -2,9 +2,11 @@ package main\n- func previous3() {\n+ func new3() {\n+\nreturn"),
 		},
 	}
 }
