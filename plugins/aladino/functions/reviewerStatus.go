@@ -5,8 +5,6 @@
 package plugins_aladino_functions
 
 import (
-	"fmt"
-
 	"github.com/google/go-github/v42/github"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	"github.com/reviewpad/reviewpad/v3/utils"
@@ -47,8 +45,6 @@ func reviewerStatusCdoe(e aladino.Env, args []aladino.Value) (aladino.Value, err
 			continue
 		}
 
-		fmt.Println("State:", *r.State)
-
 		switch *r.State {
 		case ReviewerStatusStateRequestChanges:
 			status = "requested_changes"
@@ -58,8 +54,6 @@ func reviewerStatusCdoe(e aladino.Env, args []aladino.Value) (aladino.Value, err
 		}
 
 	}
-
-	fmt.Println("Status:", status)
 
 	return aladino.BuildStringValue(status), nil
 }
