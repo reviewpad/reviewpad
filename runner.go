@@ -7,6 +7,7 @@ package reviewpad
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/google/go-github/v42/github"
@@ -43,8 +44,12 @@ func Run(
 	eventPayload interface{},
 	reviewpadFile *engine.ReviewpadFile,
 	dryRun bool,
-	reviewpadFileChanged bool,
+	safeMode bool,
 ) (*engine.Program, error) {
+	if safeMode && !dryRun {
+		return nil, fmt.Errorf("reviewpad can only be run in dry-run when in safe mode")
+	}
+
 	aladinoInterpreter, err := aladino.NewInterpreter(ctx, client, clientGQL, collector, pullRequest, eventPayload, plugins_aladino.PluginBuiltIns())
 	if err != nil {
 		return nil, err
@@ -74,7 +79,7 @@ func Run(
 		}
 	}
 
-	if reviewpadFileChanged {
+	if safeMode {
 		report := aladino.ReportFromProgram(program)
 
 		err = report.SendReport(ctx, dryRun, reviewpadFile.Mode, pullRequest, client)
