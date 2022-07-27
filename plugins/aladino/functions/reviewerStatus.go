@@ -30,9 +30,10 @@ func reviewerStatusCode(e aladino.Env, args []aladino.Value) (aladino.Value, err
 	}
 
 	status := ""
+	reviewerHasDecision := false
 
 	for _, review := range reviews {
-		if review.User == nil {
+		if review.User == nil || review.State == nil {
 			continue
 		}
 
@@ -40,13 +41,16 @@ func reviewerStatusCode(e aladino.Env, args []aladino.Value) (aladino.Value, err
 			continue
 		}
 
-		switch *review.State {
-		case "COMMENTED":
-			status = "commented"
-		case "CHANGES_REQUESTED":
-			status = "requested_changes"
-		case "APPROVED":
-			status = "approved"
+		reviewState := *review.State
+		if reviewState == "COMMENTED" {
+			if reviewerHasDecision {
+				continue
+			} else {
+				status = reviewState
+			}
+		} else {
+			status = reviewState
+			reviewerHasDecision = true
 		}
 	}
 
