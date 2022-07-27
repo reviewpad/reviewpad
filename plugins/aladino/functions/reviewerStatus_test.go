@@ -18,7 +18,7 @@ import (
 
 var reviewerStatus = plugins_aladino.PluginBuiltIns().Functions["reviewerStatus"].Code
 
-func TestReviewerStatus_whenRequestFails(t *testing.T) {
+func TestReviewerStatus_WhenRequestFails(t *testing.T) {
 	failMessage := "ReviewerStatusRequestFail"
 	mockedEnv, err := aladino.MockDefaultEnv(
 		[]mock.MockBackendOption{
