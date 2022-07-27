@@ -150,12 +150,31 @@ type PadGroup struct {
 }
 
 func (p PadGroup) equals(o PadGroup) bool {
-	return p.Name == o.Name &&
-		p.Description == o.Description &&
-		p.Kind == o.Kind &&
-		p.Type == o.Type &&
-		p.Spec == o.Spec &&
-		p.Where == o.Where
+    if p.Name != o.Name {
+		return false
+	}
+
+	if p.Description != o.Description {
+        return false
+	}
+    
+    if p.Kind != o.Kind {
+        return false
+    }
+
+    if p.Type != o.Type {
+        return false
+    }
+
+    if p.Spec != o.Spec {
+        return false
+    }
+
+    if p.Where != o.Where {
+        return false
+    }
+	
+    return true
 }
 
 type ReviewpadFile struct {

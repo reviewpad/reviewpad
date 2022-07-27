@@ -600,7 +600,7 @@ func TestEquals_WhenPadGroupsAreEqual(t *testing.T) {
 	assert.True(t, padGroup.equals(otherPadGroup))
 }
 
-func TestEquals_WhenPadGroupsDiff(t *testing.T) {
+func TestEquals_WhenPadGroupsHaveDiffName(t *testing.T) {
 	padGroup := PadGroup{
 		Name:        "juniors",
 		Description: "Group of junior developers",
@@ -617,6 +617,103 @@ func TestEquals_WhenPadGroupsDiff(t *testing.T) {
 		Spec:        "[\"john\"]",
 	}
 
+	assert.False(t, padGroup.equals(otherPadGroup))
+}
+
+func TestEquals_WhenPadGroupsHaveDiffDescription(t *testing.T) {
+	padGroup := PadGroup{
+		Name:        "seniors",
+		Description: "Senior developers",
+		Kind:        "developers",
+		Spec:        "[\"john\"]",
+	}
+
+	otherPadGroup := PadGroup{
+		Name:        "seniors",
+		Description: "Senior developers #2",
+		Kind:        "developers",
+		Spec:        "[\"john\"]",
+	}
+
+	assert.False(t, padGroup.equals(otherPadGroup))
+}
+
+func TestEquals_WhenPadGroupsHaveDiffKind(t *testing.T) {
+	padGroup := PadGroup{
+		Name:        "seniors",
+		Description: "Senior developers",
+		Kind:        "developers",
+		Spec:        "[\"john\"]",
+	}
+
+	otherPadGroup := PadGroup{
+		Name:        "seniors",
+		Description: "Senior developers",
+		Kind:        "",
+		Spec:        "[\"john\"]",
+	}
+
+	assert.False(t, padGroup.equals(otherPadGroup))
+}
+
+func TestEquals_WhenPadGroupsHaveDiffType(t *testing.T) {
+	padGroup := PadGroup{
+		Name:        "juniors",
+		Description: "Group of junior developers",
+		Kind:        "developers",
+		Type:        "filter",
+		Param:       "dev",
+		Where:       "$totalCreatedPullRequests($dev) < 10",
+	}
+
+	otherPadGroup := PadGroup{
+		Name:        "juniors",
+		Description: "Group of junior developers",
+		Kind:        "developers",
+		Type:        "static",
+		Param:       "dev",
+		Where:       "$totalCreatedPullRequests($dev) < 10",
+	}
+
+	assert.False(t, padGroup.equals(otherPadGroup))
+}
+
+func TestEquals_WhenPadGroupsHaveDiffSpec(t *testing.T) {
+	padGroup := PadGroup{
+		Name:        "seniors",
+		Description: "Senior developers",
+		Kind:        "developers",
+		Spec:        "[\"john\"]",
+	}
+
+	otherPadGroup := PadGroup{
+		Name:        "seniors",
+		Description: "Senior developers",
+		Kind:        "developers",
+		Spec:        "[\"jane\"]",
+	}
+
+	assert.False(t, padGroup.equals(otherPadGroup))
+}
+
+func TestEquals_WhenPadGroupsHaveDiffWhere(t *testing.T) {
+	padGroup := PadGroup{
+		Name:        "juniors",
+		Description: "Group of junior developers",
+		Kind:        "developers",
+		Type:        "filter",
+		Param:       "dev",
+		Where:       "$totalCreatedPullRequests($dev) < 10",
+	}
+
+	otherPadGroup := PadGroup{
+		Name:        "juniors",
+		Description: "Group of junior developers",
+		Kind:        "developers",
+		Type:        "filter",
+		Param:       "dev",
+		Where:       "$totalCreatedPullRequests($dev) == 10",
+	}
 	assert.False(t, padGroup.equals(otherPadGroup))
 }
 
