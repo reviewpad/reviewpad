@@ -10,7 +10,7 @@ func TypeInference(e Env, expr Expr) (Type, error) {
 	return expr.typeinfer(NewTypeEnv(e))
 }
 
-func typesinfer(env *TypeEnv, exprs []Expr) ([]Type, error) {
+func typesinfer(env TypeEnv, exprs []Expr) ([]Type, error) {
 	exprsTy := make([]Type, len(exprs))
 	for i, expr := range exprs {
 		exprTy, err := expr.typeinfer(env)
@@ -24,7 +24,7 @@ func typesinfer(env *TypeEnv, exprs []Expr) ([]Type, error) {
 	return exprsTy, nil
 }
 
-func (u *UnaryOp) typeinfer(env *TypeEnv) (Type, error) {
+func (u *UnaryOp) typeinfer(env TypeEnv) (Type, error) {
 	exprType, exprErr := u.expr.typeinfer(env)
 	if exprErr != nil {
 		return nil, exprErr
@@ -39,7 +39,7 @@ func (u *UnaryOp) typeinfer(env *TypeEnv) (Type, error) {
 	return nil, fmt.Errorf("type inference failed")
 }
 
-func (b *BinaryOp) typeinfer(env *TypeEnv) (Type, error) {
+func (b *BinaryOp) typeinfer(env TypeEnv) (Type, error) {
 	lhsType, errLeft := b.lhs.typeinfer(env)
 	if errLeft != nil {
 		return nil, errLeft
@@ -68,7 +68,7 @@ func (b *BinaryOp) typeinfer(env *TypeEnv) (Type, error) {
 	return nil, fmt.Errorf("type inference failed")
 }
 
-func (fc *FunctionCall) typeinfer(env *TypeEnv) (Type, error) {
+func (fc *FunctionCall) typeinfer(env TypeEnv) (Type, error) {
 	argsTy, err := typesinfer(env, fc.arguments)
 	if err != nil {
 		return nil, err
@@ -87,7 +87,7 @@ func (fc *FunctionCall) typeinfer(env *TypeEnv) (Type, error) {
 	return nil, fmt.Errorf("type inference failed: mismatch in arg types on %v", fc.name.ident)
 }
 
-func (l *Lambda) typeinfer(env *TypeEnv) (Type, error) {
+func (l *Lambda) typeinfer(env TypeEnv) (Type, error) {
 	paramsTy, err := typesinfer(env, l.parameters)
 	if err != nil {
 		return nil, err
@@ -101,21 +101,21 @@ func (l *Lambda) typeinfer(env *TypeEnv) (Type, error) {
 	return BuildFunctionType(paramsTy, bodyType), nil
 }
 
-func (te *TypedExpr) typeinfer(env *TypeEnv) (Type, error) {
+func (te *TypedExpr) typeinfer(env TypeEnv) (Type, error) {
 	if te.expr.Kind() != VARIABLE_CONST {
 		return nil, fmt.Errorf("typed expression %v is not a variable", te.expr)
 	}
 
 	varIdent := te.expr.(*Variable).ident
-	(*env)[varIdent] = te.typeOf
+	env[varIdent] = te.typeOf
 
 	return te.typeOf, nil
 }
 
 // TODO: Fix variable shadowing
-func (v *Variable) typeinfer(env *TypeEnv) (Type, error) {
+func (v *Variable) typeinfer(env TypeEnv) (Type, error) {
 	varName := v.ident
-	varType, ok := (*env)[varName]
+	varType, ok := env[varName]
 	if !ok {
 		return nil, fmt.Errorf("no type for built-in %v. Please check if the mode in the reviewpad.yml file supports it", varName)
 	}
@@ -123,19 +123,19 @@ func (v *Variable) typeinfer(env *TypeEnv) (Type, error) {
 	return varType, nil
 }
 
-func (c *StringConst) typeinfer(env *TypeEnv) (Type, error) {
+func (c *StringConst) typeinfer(env TypeEnv) (Type, error) {
 	return BuildStringType(), nil
 }
 
-func (i *IntConst) typeinfer(env *TypeEnv) (Type, error) {
+func (i *IntConst) typeinfer(env TypeEnv) (Type, error) {
 	return BuildIntType(), nil
 }
 
-func (b *BoolConst) typeinfer(env *TypeEnv) (Type, error) {
+func (b *BoolConst) typeinfer(env TypeEnv) (Type, error) {
 	return BuildBoolType(), nil
 }
 
-func (a *Array) typeinfer(env *TypeEnv) (Type, error) {
+func (a *Array) typeinfer(env TypeEnv) (Type, error) {
 	elemsTy, err := typesinfer(env, a.elems)
 	if err != nil {
 		return nil, err
