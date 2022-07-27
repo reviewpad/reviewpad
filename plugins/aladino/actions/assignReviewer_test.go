@@ -259,6 +259,67 @@ func TestAssignReviewer_WhenPullRequestAlreadyHasReviews(t *testing.T) {
 	assert.ElementsMatch(t, wantReviewers, gotReviewers)
 }
 
+func TestAssignReviewer_WhenPullRequestAlreadyHasApproval(t *testing.T) {
+	var gotReviewers []string
+	authorLogin := "john"
+	reviewerLogin := "mary"
+	wantReviewers := []string{}
+
+	mockedPullRequest := aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
+		User:               &github.User{Login: github.String(authorLogin)},
+		RequestedReviewers: []*github.User{},
+	})
+	mockedEnv, err := aladino.MockDefaultEnv(
+		[]mock.MockBackendOption{
+			mock.WithRequestMatchHandler(
+				mock.GetReposPullsByOwnerByRepoByPullNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+					w.Write(mock.MustMarshal(mockedPullRequest))
+				}),
+			),
+			mock.WithRequestMatch(
+				mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
+				[]*github.PullRequestReview{
+					{
+						User: &github.User{
+							Login: github.String(reviewerLogin),
+						},
+						State: github.String("APPROVED"),
+					},
+				},
+			),
+			mock.WithRequestMatchHandler(
+				mock.PostReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					rawBody, _ := ioutil.ReadAll(r.Body)
+					body := ReviewersRequestPostBody{}
+
+					json.Unmarshal(rawBody, &body)
+
+					gotReviewers = body.Reviewers
+				}),
+			),
+		},
+		nil,
+	)
+	if err != nil {
+		log.Fatalf("mockDefaultEnv failed: %v", err)
+	}
+
+	args := []aladino.Value{
+		aladino.BuildArrayValue(
+			[]aladino.Value{
+				aladino.BuildStringValue(reviewerLogin),
+			},
+		),
+		aladino.BuildIntValue(1),
+	}
+	err = assignReviewer(mockedEnv, args)
+
+	assert.Nil(t, err)
+	assert.ElementsMatch(t, wantReviewers, gotReviewers)
+}
+
 func TestAssignReviewer_WhenPullRequestAlreadyHasRequestedReviewers(t *testing.T) {
 	var gotReviewers []string
 	authorLogin := "john"
