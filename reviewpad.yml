@@ -1,4 +1,4 @@
-api-version: reviewpad.com/v2.x
+api-version: reviewpad.com/v3.x
 
 mode: silent
 edition: professional
@@ -254,14 +254,17 @@ workflows:
       - rule: authored-by-rising-stars
         extra-actions:
           - '$assignReviewer($group("maintainers"))'
+          - '$assignAssignees([$author()])'
       - rule: authored-by-maintainers
         extra-actions:
           - '$assignReviewer($group("maintainers"), 1)'
           - '$assignReviewer($group("rising-stars"), 1)'
+          - '$assignAssignees([$author()])'
       - rule: authored-by-external-contributors
         extra-actions:
           - '$addLabel("external-contribution")'
           - '$assignReviewer($group("maintainers"), 1)'
+          - '$assignAssignees(["marcelosousa"])'
 
   - name: label-plugins
     description: Label changes to plugins
