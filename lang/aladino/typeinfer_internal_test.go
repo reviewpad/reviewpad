@@ -11,24 +11,40 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type nilUnaryOp struct{}
+// Use for test only
+type mockUnaryOperator struct{}
 
-type nilBinaryOp struct{}
+// Use for test only
+type mockBinaryOperator struct{}
 
-func (op *nilUnaryOp) getOperator() string {
-	return "NIL_UNARY_OP"
+func (op *mockUnaryOperator) getOperator() string {
+	return "MOCK_UNARY_OPERATOR"
 }
 
-func (op *nilBinaryOp) getOperator() string {
-	return "NIL_BINARY_OP"
+func (op *mockBinaryOperator) getOperator() string {
+	return "MOCK_BINARY_OPERATOR"
 }
 
-func (op *nilUnaryOp) Eval(exprVal Value) Value {
+func (op *mockUnaryOperator) Eval(exprVal Value) Value {
 	return nil
 }
 
-func (op *nilBinaryOp) Eval(lhs, rhs Value) Value {
+func (op *mockBinaryOperator) Eval(lhs, rhs Value) Value {
 	return nil
+}
+
+func TestTypeInference_WhenGivenNonExistingBuiltIn(t *testing.T) {
+	mockedEnv, err := MockDefaultEnv(nil, nil)
+	if err != nil {
+		assert.FailNow(t, "MockDefaultEnv returned unexpected error: %v", err)
+	}
+
+	expr := BuildVariable("nonBuiltIn")
+
+	gotType, err := TypeInference(mockedEnv, expr)
+
+	assert.Nil(t, gotType)
+	assert.EqualError(t, err, "no type for built-in nonBuiltIn. Please check if the mode in the reviewpad.yml file supports it")
 }
 
 func TestTypeInference_WhenGivenBoolConst(t *testing.T) {
@@ -47,20 +63,6 @@ func TestTypeInference_WhenGivenBoolConst(t *testing.T) {
 	assert.Equal(t, wantType, gotType, "bool type is expected")
 }
 
-func TestTypeInference_WhenGivenNonExistingBuiltIn(t *testing.T) {
-	mockedEnv, err := MockDefaultEnv(nil, nil)
-	if err != nil {
-		assert.FailNow(t, "MockDefaultEnv returned unexpected error: %v", err)
-	}
-
-	expr := BuildVariable("nonBuiltIn")
-
-	gotType, err := TypeInference(mockedEnv, expr)
-
-	assert.Nil(t, gotType)
-	assert.EqualError(t, err, "no type for built-in nonBuiltIn. Please check if the mode in the reviewpad.yml file supports it")
-}
-
 func TestTypesInfer_WhenGivenArrayOfExprThatContainsNonExistingBuiltIn(t *testing.T) {
 	mockedTypeEnv := MockTypeEnv()
 
@@ -75,6 +77,7 @@ func TestTypesInfer_WhenGivenArrayOfExprThatContainsNonExistingBuiltIn(t *testin
 func TestTypesInfer_WhenGivenArrayOfExprThatContainsExistingBuiltInWithArgs(t *testing.T) {
 	mockedTypeEnv := MockTypeEnv()
 
+	// returnStr is a mocked built-in that receives and returns a string value
 	exprs := []Expr{BuildFunctionCall(BuildVariable("returnStr"), []Expr{BuildStringConst("hello")})}
 
 	gotType, err := typesinfer(mockedTypeEnv, exprs)
@@ -98,7 +101,7 @@ func TestTypeInfer_WhenUnaryOpExprIsANonExistingBuiltIn(t *testing.T) {
 func TestTypeInfer_WhenUnaryOpOperatorIsNotANotOp(t *testing.T) {
 	mockedTypeEnv := MockTypeEnv()
 
-	unaryOp := BuildUnaryOp(&nilUnaryOp{}, BuildBoolConst(true))
+	unaryOp := BuildUnaryOp(&mockUnaryOperator{}, BuildBoolConst(true))
 	gotType, err := unaryOp.typeinfer(mockedTypeEnv)
 
 	assert.Nil(t, gotType)
@@ -173,7 +176,7 @@ func TestTypeInfer_WhenBinaryOpHasGreaterEqThanOperator(t *testing.T) {
 	assert.Equal(t, wantType, gotType)
 }
 
-func TestTypeInfer_WhenBinaryOpHasGreqaterThanOperator(t *testing.T) {
+func TestTypeInfer_WhenBinaryOpHasGreaterThanOperator(t *testing.T) {
 	mockedTypeEnv := MockTypeEnv()
 
 	binaryOp := BuildBinaryOp(BuildIntConst(1), greaterThanOperator(), BuildIntConst(1))
@@ -236,7 +239,7 @@ func TestTypeInfer_WhenBinaryOpHasOrOperator(t *testing.T) {
 func TestTypeInfer_WhenBinaryOpOperatorIsNotAValidOp(t *testing.T) {
 	mockedTypeEnv := MockTypeEnv()
 
-	binaryOp := BuildBinaryOp(BuildBoolConst(true), &nilBinaryOp{}, BuildBoolConst(true))
+	binaryOp := BuildBinaryOp(BuildBoolConst(true), &mockBinaryOperator{}, BuildBoolConst(true))
 	gotType, err := binaryOp.typeinfer(mockedTypeEnv)
 
 	assert.Nil(t, gotType)
@@ -246,6 +249,7 @@ func TestTypeInfer_WhenBinaryOpOperatorIsNotAValidOp(t *testing.T) {
 func TestTypeInfer_WhenFunctionCallArgsHasTypeError(t *testing.T) {
 	mockedTypeEnv := MockTypeEnv()
 
+	// returnStr is a mocked built-in that receives and returns a string value
 	fc := BuildFunctionCall(BuildVariable("returnStr"), []Expr{BuildVariable("nonBuiltIn")})
 	gotType, err := fc.typeinfer(mockedTypeEnv)
 
@@ -266,6 +270,7 @@ func TestTypeInfer_WhenFunctionCallNameHasTypeError(t *testing.T) {
 func TestTypeInfer_WhenFunctionCallHasCorrectTypes(t *testing.T) {
 	mockedTypeEnv := MockTypeEnv()
 
+	// returnStr is a mocked built-in that receives and returns a string value
 	fc := BuildFunctionCall(BuildVariable("returnStr"), []Expr{BuildStringConst("hello")})
 	gotType, err := fc.typeinfer(mockedTypeEnv)
 
@@ -278,6 +283,7 @@ func TestTypeInfer_WhenFunctionCallHasCorrectTypes(t *testing.T) {
 func TestTypeInfer_WhenFunctionCallHasMismatchInArgTypes(t *testing.T) {
 	mockedTypeEnv := MockTypeEnv()
 
+	// returnStr is a mocked built-in that receives and returns a string value
 	fc := BuildFunctionCall(BuildVariable("returnStr"), []Expr{BuildIntConst(1)})
 	gotType, err := fc.typeinfer(mockedTypeEnv)
 
@@ -302,7 +308,7 @@ func TestTypeInfer_WhenLambdaBodyTypeHasError(t *testing.T) {
 	mockedTypeEnv := MockTypeEnv()
 
 	lambda := BuildLambda(
-		[]Expr{BuildIntConst(1)},
+		[]Expr{},
 		BuildVariable("nonBuiltIn"),
 	)
 	gotType, err := lambda.typeinfer(mockedTypeEnv)
@@ -315,12 +321,27 @@ func TestTypeInfer_WhenLambdaHasCorrectTypes(t *testing.T) {
 	mockedTypeEnv := MockTypeEnv()
 
 	lambda := BuildLambda(
-		[]Expr{BuildVariable("returnStr")},
+		[]Expr{},
 		BuildStringConst("hello"),
 	)
 	gotType, err := lambda.typeinfer(mockedTypeEnv)
 
-	wantType := BuildFunctionType([]Type{BuildFunctionType([]Type{BuildStringType()}, BuildStringType())}, BuildStringType())
+	wantType := BuildFunctionType([]Type{}, BuildStringType())
+
+	assert.Nil(t, err)
+	assert.Equal(t, wantType, gotType)
+}
+
+func TestTypeInfer_WhenLambdaHasCorrectArgumentTypes(t *testing.T) {
+	mockedTypeEnv := MockTypeEnv()
+
+	lambda := BuildLambda(
+		[]Expr{BuildTypedExpr(BuildVariable("x"), BuildStringType())},
+		BuildVariable("x"),
+	)
+	gotType, err := lambda.typeinfer(mockedTypeEnv)
+
+	wantType := BuildFunctionType([]Type{BuildStringType()}, BuildStringType())
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantType, gotType)
@@ -339,13 +360,19 @@ func TestTypeInfer_WhenTypedExprExprIsNotVariable(t *testing.T) {
 func TestTypeInfer_WhenTypedExprHasCorrectTypes(t *testing.T) {
 	mockedTypeEnv := MockTypeEnv()
 
-	typedExpr := BuildTypedExpr(BuildVariable("zeroConst"), BuildIntType())
+	variableName := "dummyVariable"
+
+	typedExpr := BuildTypedExpr(BuildVariable(variableName), BuildIntType())
 	gotType, err := typedExpr.typeinfer(mockedTypeEnv)
+
+	gotStoredType, ok := mockedTypeEnv[variableName]
 
 	wantType := BuildIntType()
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantType, gotType)
+	assert.True(t, ok)
+	assert.Equal(t, wantType, gotStoredType)
 }
 
 func TestTypeInfer_WhenVariableIsNotABuiltIn(t *testing.T) {
@@ -361,6 +388,7 @@ func TestTypeInfer_WhenVariableIsNotABuiltIn(t *testing.T) {
 func TestTypeInfer_WhenVariableIsABuiltIn(t *testing.T) {
 	mockedTypeEnv := MockTypeEnv()
 
+	// zeroConst is a mocked built-in that is a constant function of type int
 	variable := BuildVariable("zeroConst")
 	gotType, err := variable.typeinfer(mockedTypeEnv)
 
@@ -370,7 +398,7 @@ func TestTypeInfer_WhenVariableIsABuiltIn(t *testing.T) {
 	assert.Equal(t, wantType, gotType)
 }
 
-func TestTypeInfer_WhenInferingStringConst(t *testing.T) {
+func TestTypeInfer_WhenStringConst(t *testing.T) {
 	mockedTypeEnv := MockTypeEnv()
 
 	stringConst := BuildStringConst("hello")
@@ -382,7 +410,7 @@ func TestTypeInfer_WhenInferingStringConst(t *testing.T) {
 	assert.Equal(t, wantType, gotType)
 }
 
-func TestTypeInfer_WhenInferingIntConst(t *testing.T) {
+func TestTypeInfer_WhenIntConst(t *testing.T) {
 	mockedTypeEnv := MockTypeEnv()
 
 	intConst := BuildIntConst(1)
@@ -394,7 +422,7 @@ func TestTypeInfer_WhenInferingIntConst(t *testing.T) {
 	assert.Equal(t, wantType, gotType)
 }
 
-func TestTypeInfer_WhenInferingBoolConst(t *testing.T) {
+func TestTypeInfer_WhenBoolConst(t *testing.T) {
 	mockedTypeEnv := MockTypeEnv()
 
 	boolConst := BuildBoolConst(true)
