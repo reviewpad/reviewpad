@@ -646,7 +646,6 @@ func TestGetPullRequestReviews(t *testing.T) {
 		mockedPullRequest.GetUser().GetLogin(),
 		mockedPullRequest.GetBase().GetRepo().GetName(),
 		mockedPullRequest.GetNumber(),
-		&github.ListOptions{},
 	)
 
 	assert.Nil(t, err)
@@ -681,7 +680,72 @@ func TestGetPullRequestReviews_WhenRequestFails(t *testing.T) {
 		mockedPullRequest.GetUser().GetLogin(),
 		mockedPullRequest.GetBase().GetRepo().GetName(),
 		mockedPullRequest.GetNumber(),
-		&github.ListOptions{},
+	)
+
+	assert.Nil(t, gotReviews)
+	assert.Equal(t, err.(*github.ErrorResponse).Message, failMessage)
+}
+
+func TestGetPullRequests(t *testing.T) {
+	ownerName := "testOrg"
+	repoName := "testRepo"
+
+	wantPullRequests := []*github.PullRequest{}
+
+	mockedEnv, err := aladino.MockDefaultEnv(
+		[]mock.MockBackendOption{
+			mock.WithRequestMatch(
+				mock.GetReposPullsByOwnerByRepo,
+				wantPullRequests,
+			),
+		},
+		nil,
+	)
+	if err != nil {
+		log.Fatalf("mockDefaultEnv failed: %v", err)
+	}
+
+	gotReviews, err := utils.GetPullRequests(
+		mockedEnv.GetCtx(),
+		mockedEnv.GetClient(),
+		ownerName,
+		repoName,
+	)
+
+	assert.Nil(t, err)
+	assert.Equal(t, wantPullRequests, gotReviews)
+}
+
+func TestGetPullRequests_WhenRequestFails(t *testing.T) {
+	failMessage := "ListPullRequests"
+
+	ownerName := "testOrg"
+	repoName := "testRepo"
+
+	mockedEnv, err := aladino.MockDefaultEnv(
+		[]mock.MockBackendOption{
+			mock.WithRequestMatchHandler(
+				mock.GetReposPullsByOwnerByRepo,
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					mock.WriteError(
+						w,
+						http.StatusInternalServerError,
+						failMessage,
+					)
+				}),
+			),
+		},
+		nil,
+	)
+	if err != nil {
+		log.Fatalf("mockDefaultEnv failed: %v", err)
+	}
+
+	gotReviews, err := utils.GetPullRequests(
+		mockedEnv.GetCtx(),
+		mockedEnv.GetClient(),
+		ownerName,
+		repoName,
 	)
 
 	assert.Nil(t, gotReviews)
