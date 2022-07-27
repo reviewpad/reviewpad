@@ -24,35 +24,25 @@ func TestAppend(t *testing.T) {
 	rules := []PadWorkflowRule{
 		{Rule: "test-rule-B"},
 	}
-	program := &Program{
-		Statements: []*Statement{
-			{
-				Code: "$actionC()",
-				Metadata: &Metadata{
-					Workflow: PadWorkflow{
-						Name: "test-workflow-C",
-					},
-					TriggeredBy: []PadWorkflowRule{
-						{Rule: "test-rule-C"},
-					},
-				},
+
+	statement := &Statement{
+		Code: "$actionC()",
+		Metadata: &Metadata{
+			Workflow: PadWorkflow{
+				Name: "test-workflow-C",
+			},
+			TriggeredBy: []PadWorkflowRule{
+				{Rule: "test-rule-C"},
 			},
 		},
+	}
+	program := &Program{
+		Statements: []*Statement{statement},
 	}
 
 	wantProgram := &Program{
 		Statements: []*Statement{
-			{
-				Code: "$actionC()",
-				Metadata: &Metadata{
-					Workflow: PadWorkflow{
-						Name: "test-workflow-C",
-					},
-					TriggeredBy: []PadWorkflowRule{
-						{Rule: "test-rule-C"},
-					},
-				},
-			},
+			statement,
 			{
 				Code: "$actionB()",
 				Metadata: &Metadata{
