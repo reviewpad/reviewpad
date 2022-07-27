@@ -52,6 +52,7 @@ func PluginBuiltIns() *aladino.BuiltIns {
 			"contains":    functions.Contains(),
 			"isElementOf": functions.IsElementOf(),
 			"startsWith":  functions.StartsWith(),
+			"length":      functions.Length(),
 			// Engine
 			"group": functions.Group(),
 			"rule":  functions.Rule(),
