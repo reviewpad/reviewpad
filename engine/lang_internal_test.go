@@ -7,6 +7,7 @@ package engine
 import (
 	"testing"
 
+	"github.com/jinzhu/copier"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -62,12 +63,14 @@ var mockedReviewpadFile = &ReviewpadFile{
 func TestEquals_WhenPadImportsAreEqual(t *testing.T) {
 	padImport := PadImport{"http://foo.bar"}
 	otherPadImport := PadImport{"http://foo.bar"}
+
 	assert.True(t, padImport.equals(otherPadImport))
 }
 
 func TestEquals_WhenPadImportsAreDiff(t *testing.T) {
 	padImport := PadImport{"http://foo.bar1"}
 	otherPadImport := PadImport{"http://foo.bar2"}
+
 	assert.False(t, padImport.equals(otherPadImport))
 }
 
@@ -89,7 +92,7 @@ func TestEquals_WhenPadRulesAreEqual(t *testing.T) {
 	assert.True(t, padRule.equals(otherPadRule))
 }
 
-func TestEquals_WhenPadRulesAreDiff(t *testing.T) {
+func TestEquals_WhenPadRulesHaveDiffName(t *testing.T) {
 	padRule := PadRule{
 		Name:        "test-rule-1",
 		Kind:        "patch",
@@ -100,8 +103,62 @@ func TestEquals_WhenPadRulesAreDiff(t *testing.T) {
 	otherPadRule := PadRule{
 		Name:        "test-rule-2",
 		Kind:        "patch",
+		Description: "testing rule #1",
+		Spec:        "1 == 1",
+	}
+
+	assert.False(t, padRule.equals(otherPadRule))
+}
+
+func TestEquals_WhenPadRulesHaveDiffKind(t *testing.T) {
+	padRule := PadRule{
+		Name:        "test-rule-1",
+		Kind:        "patch",
+		Description: "testing rule #1",
+		Spec:        "1 == 1",
+	}
+
+	otherPadRule := PadRule{
+		Name:        "test-rule-1",
+		Kind:        "author",
+		Description: "testing rule #1",
+		Spec:        "1 == 1",
+	}
+
+	assert.False(t, padRule.equals(otherPadRule))
+}
+
+func TestEquals_WhenPadRulesHaveDiffDescription(t *testing.T) {
+	padRule := PadRule{
+		Name:        "test-rule-1",
+		Kind:        "patch",
+		Description: "testing rule #1",
+		Spec:        "1 == 1",
+	}
+
+	otherPadRule := PadRule{
+		Name:        "test-rule-1",
+		Kind:        "patch",
 		Description: "testing rule #2",
-		Spec:        "1 < 2",
+		Spec:        "1 == 1",
+	}
+
+	assert.False(t, padRule.equals(otherPadRule))
+}
+
+func TestEquals_WhenPadRulesHaveDiffSpec(t *testing.T) {
+	padRule := PadRule{
+		Name:        "test-rule-1",
+		Kind:        "patch",
+		Description: "testing rule #1",
+		Spec:        "1 == 1",
+	}
+
+	otherPadRule := PadRule{
+		Name:        "test-rule-1",
+		Kind:        "patch",
+		Description: "testing rule #1",
+		Spec:        "1 != 1",
 	}
 
 	assert.False(t, padRule.equals(otherPadRule))
@@ -565,14 +622,14 @@ func TestEquals_WhenPadGroupsDiff(t *testing.T) {
 
 func TestEquals_WhenReviewpadFilesAreEqual(t *testing.T) {
 	otherReviewpadFile := &ReviewpadFile{}
-	*otherReviewpadFile = *mockedReviewpadFile
+	copier.Copy(otherReviewpadFile, mockedReviewpadFile)
 
 	assert.True(t, mockedReviewpadFile.equals(otherReviewpadFile))
 }
 
 func TestEquals_WhenReviewpadFilesHaveDiffVersion(t *testing.T) {
 	otherReviewpadFile := &ReviewpadFile{}
-	*otherReviewpadFile = *mockedReviewpadFile
+	copier.Copy(otherReviewpadFile, mockedReviewpadFile)
 
 	otherReviewpadFile.Version = "reviewpad.com/v1beta"
 
@@ -581,7 +638,7 @@ func TestEquals_WhenReviewpadFilesHaveDiffVersion(t *testing.T) {
 
 func TestEquals_WhenReviewpadFilesHaveDiffEdition(t *testing.T) {
 	otherReviewpadFile := &ReviewpadFile{}
-	*otherReviewpadFile = *mockedReviewpadFile
+	copier.Copy(otherReviewpadFile, mockedReviewpadFile)
 
 	otherReviewpadFile.Edition = ""
 
@@ -590,7 +647,7 @@ func TestEquals_WhenReviewpadFilesHaveDiffEdition(t *testing.T) {
 
 func TestEquals_WhenReviewpadFilesHaveDiffMode(t *testing.T) {
 	otherReviewpadFile := &ReviewpadFile{}
-	*otherReviewpadFile = *mockedReviewpadFile
+	copier.Copy(otherReviewpadFile, mockedReviewpadFile)
 
 	otherReviewpadFile.Mode = "verbose"
 
@@ -599,7 +656,7 @@ func TestEquals_WhenReviewpadFilesHaveDiffMode(t *testing.T) {
 
 func TestEquals_WhenReviewpadFilesHaveDiffIgnoreErrors(t *testing.T) {
 	otherReviewpadFile := &ReviewpadFile{}
-	*otherReviewpadFile = *mockedReviewpadFile
+	copier.Copy(otherReviewpadFile, mockedReviewpadFile)
 
 	otherReviewpadFile.IgnoreErrors = true
 
@@ -608,7 +665,7 @@ func TestEquals_WhenReviewpadFilesHaveDiffIgnoreErrors(t *testing.T) {
 
 func TestEquals_WhenReviewpadFilesHaveDiffNumberOfImports(t *testing.T) {
 	otherReviewpadFile := &ReviewpadFile{}
-	*otherReviewpadFile = *mockedReviewpadFile
+	copier.Copy(otherReviewpadFile, mockedReviewpadFile)
 
 	otherReviewpadFile.Imports = []PadImport{
 		{Url: "https://foo.bar/draft-rule.yml"},
@@ -620,7 +677,7 @@ func TestEquals_WhenReviewpadFilesHaveDiffNumberOfImports(t *testing.T) {
 
 func TestEquals_WhenReviewpadFilesHaveDiffImports(t *testing.T) {
 	otherReviewpadFile := &ReviewpadFile{}
-	*otherReviewpadFile = *mockedReviewpadFile
+	copier.Copy(otherReviewpadFile, mockedReviewpadFile)
 
 	otherReviewpadFile.Imports = []PadImport{
 		{Url: "https://foo.bar/tautology-rule.yml"},
@@ -631,7 +688,7 @@ func TestEquals_WhenReviewpadFilesHaveDiffImports(t *testing.T) {
 
 func TestEquals_WhenReviewpadFilesHaveDiffNumberOfRules(t *testing.T) {
 	otherReviewpadFile := &ReviewpadFile{}
-	*otherReviewpadFile = *mockedReviewpadFile
+	copier.Copy(otherReviewpadFile, mockedReviewpadFile)
 
 	otherReviewpadFile.Rules = []PadRule{
 		{
@@ -653,7 +710,7 @@ func TestEquals_WhenReviewpadFilesHaveDiffNumberOfRules(t *testing.T) {
 
 func TestEquals_WhenReviewpadFilesHaveDiffRules(t *testing.T) {
 	otherReviewpadFile := &ReviewpadFile{}
-	*otherReviewpadFile = *mockedReviewpadFile
+	copier.Copy(otherReviewpadFile, mockedReviewpadFile)
 
 	otherReviewpadFile.Rules = []PadRule{
 		{
@@ -669,7 +726,7 @@ func TestEquals_WhenReviewpadFilesHaveDiffRules(t *testing.T) {
 
 func TestEquals_WhenReviewpadFilesHaveDiffNumberOfLabels(t *testing.T) {
 	otherReviewpadFile := &ReviewpadFile{}
-	*otherReviewpadFile = *mockedReviewpadFile
+	copier.Copy(otherReviewpadFile, mockedReviewpadFile)
 
 	otherReviewpadFile.Labels = map[string]PadLabel{
 		"bug": {
@@ -689,7 +746,7 @@ func TestEquals_WhenReviewpadFilesHaveDiffNumberOfLabels(t *testing.T) {
 
 func TestEquals_WhenReviewpadFilesHaveDiffLabels(t *testing.T) {
 	otherReviewpadFile := &ReviewpadFile{}
-	*otherReviewpadFile = *mockedReviewpadFile
+	copier.Copy(otherReviewpadFile, mockedReviewpadFile)
 
 	otherReviewpadFile.Labels = map[string]PadLabel{
 		"bug#2": {
@@ -704,7 +761,7 @@ func TestEquals_WhenReviewpadFilesHaveDiffLabels(t *testing.T) {
 
 func TestEquals_WhenReviewpadFilesHaveDiffNumberOfWorkflows(t *testing.T) {
 	otherReviewpadFile := &ReviewpadFile{}
-	*otherReviewpadFile = *mockedReviewpadFile
+	copier.Copy(otherReviewpadFile, mockedReviewpadFile)
 
 	otherReviewpadFile.Workflows = []PadWorkflow{
 		{
@@ -742,7 +799,7 @@ func TestEquals_WhenReviewpadFilesHaveDiffNumberOfWorkflows(t *testing.T) {
 
 func TestEquals_WhenReviewpadFilesHaveDiffWorkflows(t *testing.T) {
 	otherReviewpadFile := &ReviewpadFile{}
-	*otherReviewpadFile = *mockedReviewpadFile
+	copier.Copy(otherReviewpadFile, mockedReviewpadFile)
 
 	otherReviewpadFile.Workflows = []PadWorkflow{
 		{
@@ -766,7 +823,7 @@ func TestEquals_WhenReviewpadFilesHaveDiffWorkflows(t *testing.T) {
 
 func TestEquals_WhenReviewpadFilesHaveDiffNumberOfGroups(t *testing.T) {
 	otherReviewpadFile := &ReviewpadFile{}
-	*otherReviewpadFile = *mockedReviewpadFile
+	copier.Copy(otherReviewpadFile, mockedReviewpadFile)
 
 	otherReviewpadFile.Groups = []PadGroup{
 		{
@@ -790,7 +847,7 @@ func TestEquals_WhenReviewpadFilesHaveDiffNumberOfGroups(t *testing.T) {
 
 func TestEquals_WhenReviewpadFilesHaveDiffGroups(t *testing.T) {
 	otherReviewpadFile := &ReviewpadFile{}
-	*otherReviewpadFile = *mockedReviewpadFile
+	copier.Copy(otherReviewpadFile, mockedReviewpadFile)
 
 	otherReviewpadFile.Groups = []PadGroup{
 		{
@@ -808,7 +865,7 @@ func TestEquals_WhenReviewpadFilesHaveDiffGroups(t *testing.T) {
 
 func TestAppendLabels_WhenReviewpadFileHasNoLabels(t *testing.T) {
 	otherReviewpadFile := &ReviewpadFile{}
-	*otherReviewpadFile = *mockedReviewpadFile
+	copier.Copy(otherReviewpadFile, mockedReviewpadFile)
 
 	otherReviewpadFile.Labels = nil
 
@@ -827,7 +884,7 @@ func TestAppendLabels_WhenReviewpadFileHasNoLabels(t *testing.T) {
 
 func TestAppendLabels_WhenReviewpadFileHasLabels(t *testing.T) {
 	otherReviewpadFile := &ReviewpadFile{}
-	*otherReviewpadFile = *mockedReviewpadFile
+	copier.Copy(otherReviewpadFile, mockedReviewpadFile)
 
 	otherReviewpadFile.Labels = map[string]PadLabel{
 		"bug#2": {
@@ -857,7 +914,7 @@ func TestAppendLabels_WhenReviewpadFileHasLabels(t *testing.T) {
 
 func TestAppendRules_WhenReviewpadFileHasNoRules(t *testing.T) {
 	otherReviewpadFile := &ReviewpadFile{}
-	*otherReviewpadFile = *mockedReviewpadFile
+	copier.Copy(otherReviewpadFile, mockedReviewpadFile)
 
 	otherReviewpadFile.Rules = nil
 
@@ -877,7 +934,7 @@ func TestAppendRules_WhenReviewpadFileHasNoRules(t *testing.T) {
 
 func TestAppendRules_WhenReviewpadFileHasRules(t *testing.T) {
 	otherReviewpadFile := &ReviewpadFile{}
-	*otherReviewpadFile = *mockedReviewpadFile
+	copier.Copy(otherReviewpadFile, mockedReviewpadFile)
 
 	otherReviewpadFile.Rules = []PadRule{
 		{
@@ -910,7 +967,7 @@ func TestAppendRules_WhenReviewpadFileHasRules(t *testing.T) {
 
 func TestAppendGroups_WhenReviewpadFileHasNoGroups(t *testing.T) {
 	otherReviewpadFile := &ReviewpadFile{}
-	*otherReviewpadFile = *mockedReviewpadFile
+	copier.Copy(otherReviewpadFile, mockedReviewpadFile)
 
 	otherReviewpadFile.Groups = nil
 
@@ -930,7 +987,7 @@ func TestAppendGroups_WhenReviewpadFileHasNoGroups(t *testing.T) {
 
 func TestAppendGroups_WhenReviewpadFileHasGroups(t *testing.T) {
 	otherReviewpadFile := &ReviewpadFile{}
-	*otherReviewpadFile = *mockedReviewpadFile
+	copier.Copy(otherReviewpadFile, mockedReviewpadFile)
 
 	otherReviewpadFile.Groups = []PadGroup{
 		{
@@ -967,7 +1024,7 @@ func TestAppendGroups_WhenReviewpadFileHasGroups(t *testing.T) {
 
 func TestAppendWorkflows_WhenReviewpadFileHasNoWorkflows(t *testing.T) {
 	otherReviewpadFile := &ReviewpadFile{}
-	*otherReviewpadFile = *mockedReviewpadFile
+	copier.Copy(otherReviewpadFile, mockedReviewpadFile)
 
 	otherReviewpadFile.Workflows = nil
 
@@ -995,7 +1052,7 @@ func TestAppendWorkflows_WhenReviewpadFileHasNoWorkflows(t *testing.T) {
 
 func TestAppendWorkflows_WhenReviewpadFileHasWorkflows(t *testing.T) {
 	otherReviewpadFile := &ReviewpadFile{}
-	*otherReviewpadFile = *mockedReviewpadFile
+	copier.Copy(otherReviewpadFile, mockedReviewpadFile)
 
 	otherReviewpadFile.Workflows = []PadWorkflow{
 		{

@@ -27,10 +27,23 @@ type PadRule struct {
 }
 
 func (p PadRule) equals(o PadRule) bool {
-	return p.Name == o.Name &&
-		p.Kind == o.Kind &&
-		p.Description == o.Description &&
-		p.Spec == o.Spec
+	if p.Name != o.Name {
+		return false
+	}
+
+	if p.Kind != o.Kind {
+		return false
+	}
+
+	if p.Description != o.Description {
+		return false
+	}
+
+	if p.Spec != o.Spec {
+		return false
+	}
+
+	return true
 }
 
 var kinds = []string{"patch", "author"}
