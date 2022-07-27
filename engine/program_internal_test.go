@@ -11,6 +11,7 @@ import (
 )
 
 func TestAppend(t *testing.T) {
+	action := "$actionA()"
 	workflow := PadWorkflow{
 		Name:        "test-workflow-A",
 		Description: "Testing workflow",
@@ -18,10 +19,10 @@ func TestAppend(t *testing.T) {
 		Rules: []PadWorkflowRule{
 			{Rule: "test-rule-A"},
 		},
-		Actions: []string{"$actionA()"},
+		Actions: []string{action},
 	}
 
-	statement := &Statement{
+	initialStatement := &Statement{
 		Code: "$actionB()",
 		Metadata: &Metadata{
 			Workflow: PadWorkflow{
@@ -32,15 +33,16 @@ func TestAppend(t *testing.T) {
 			},
 		},
 	}
-	program := &Program{
-		Statements: []*Statement{statement},
+
+	programUnderTest := &Program{
+		Statements: []*Statement{initialStatement},
 	}
 
 	wantProgram := &Program{
 		Statements: []*Statement{
-			statement,
+			initialStatement,
 			{
-				Code: "$actionA()",
+				Code: action,
 				Metadata: &Metadata{
 					Workflow:    workflow,
 					TriggeredBy: workflow.Rules,
@@ -49,7 +51,7 @@ func TestAppend(t *testing.T) {
 		},
 	}
 
-	program.append(workflow.Actions, workflow, workflow.Rules)
+	programUnderTest.append(workflow.Actions, workflow, workflow.Rules)
 
-	assert.Equal(t, wantProgram, program)
+	assert.Equal(t, wantProgram, programUnderTest)
 }

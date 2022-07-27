@@ -19,9 +19,9 @@ type Program struct {
 }
 
 func (program *Program) append(workflowActions []string, workflow PadWorkflow, workflowRules []PadWorkflowRule) {
-	for _, action := range workflowActions {
+	for _, workflowAction := range workflowActions {
 		statement := &Statement{
-			Code: action,
+			Code: workflowAction,
 			Metadata: &Metadata{
 				Workflow:    workflow,
 				TriggeredBy: workflowRules,
