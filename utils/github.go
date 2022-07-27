@@ -250,7 +250,7 @@ func GetPullRequestCommits(ctx context.Context, client *github.Client, owner str
 	return commits.([]*github.RepositoryCommit), nil
 }
 
-func GetPullRequestReviews(ctx context.Context, client *github.Client, owner string, repo string, number int, opts *github.ListOptions) ([]*github.PullRequestReview, error) {
+func GetPullRequestReviews(ctx context.Context, client *github.Client, owner string, repo string, number int) ([]*github.PullRequestReview, error) {
 	reviews, err := PaginatedRequest(
 		func() interface{} {
 			return []*github.PullRequestReview{}
@@ -273,4 +273,31 @@ func GetPullRequestReviews(ctx context.Context, client *github.Client, owner str
 	}
 
 	return reviews.([]*github.PullRequestReview), nil
+}
+
+func GetPullRequests(ctx context.Context, client *github.Client, owner string, repo string) ([]*github.PullRequest, error) {
+	prs, err := PaginatedRequest(
+		func() interface{} {
+			return []*github.PullRequest{}
+		},
+		func(i interface{}, page int) (interface{}, *github.Response, error) {
+			allPrs := i.([]*github.PullRequest)
+			prs, resp, err := client.PullRequests.List(ctx, owner, repo, &github.PullRequestListOptions{
+				ListOptions: github.ListOptions{
+					Page:    page,
+					PerPage: maxPerPage,
+				},
+			})
+			if err != nil {
+				return nil, nil, err
+			}
+			allPrs = append(allPrs, prs...)
+			return allPrs, resp, nil
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return prs.([]*github.PullRequest), nil
 }

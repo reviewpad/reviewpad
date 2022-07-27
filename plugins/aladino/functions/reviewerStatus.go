@@ -5,7 +5,6 @@
 package plugins_aladino_functions
 
 import (
-	"github.com/google/go-github/v42/github"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	"github.com/reviewpad/reviewpad/v3/utils"
 )
@@ -24,7 +23,7 @@ func reviewerStatusCode(e aladino.Env, args []aladino.Value) (aladino.Value, err
 	owner := utils.GetPullRequestBaseOwnerName(e.GetPullRequest())
 	repo := utils.GetPullRequestBaseRepoName(e.GetPullRequest())
 
-	reviews, err := utils.GetPullRequestReviews(e.GetCtx(), e.GetClient(), owner, repo, prNum, &github.ListOptions{})
+	reviews, err := utils.GetPullRequestReviews(e.GetCtx(), e.GetClient(), owner, repo, prNum)
 	if err != nil {
 		return nil, err
 	}
