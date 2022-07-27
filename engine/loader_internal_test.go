@@ -449,30 +449,30 @@ func TestLoadImport_WhenContentIsInInvalidYamlFormat(t *testing.T) {
 }
 
 func TestLoadImport(t *testing.T) {
-    httpmock.Activate()
+	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
-    simpleReviewpadFileImport := PadImport{
-        Url: "https://foo.bar/simpleReviewpadFile.yml",
-    }
+	simpleReviewpadFileImport := PadImport{
+		Url: "https://foo.bar/simpleReviewpadFile.yml",
+	}
 
 	httpmock.RegisterResponder("GET", simpleReviewpadFileImport.Url,
 		httpmock.NewBytesResponder(200, simpleReviewpadFileData),
 	)
 
-    wantReviewpadFile := &ReviewpadFile{
-        Version: "reviewpad.com/v1alpha",
-        Mode: "silent",
-        Edition: "professional",
-        Rules: []PadRule{
-            {
+	wantReviewpadFile := &ReviewpadFile{
+		Version: "reviewpad.com/v1alpha",
+		Mode:    "silent",
+		Edition: "professional",
+		Rules: []PadRule{
+			{
 				Name:        "tautology",
 				Kind:        "patch",
 				Description: "testing rule",
 				Spec:        "true",
 			},
-        },
-        Workflows: []PadWorkflow{
+		},
+		Workflows: []PadWorkflow{
 			{
 				Name:        "simple-workflow",
 				Description: "Test process",
@@ -483,15 +483,15 @@ func TestLoadImport(t *testing.T) {
 				Actions: []string{"$merge(\"merge\")"},
 			},
 		},
-    }
+	}
 
-    wantHashContent := fmt.Sprintf("%x", sha256.Sum256(simpleReviewpadFileData))
+	wantHashContent := fmt.Sprintf("%x", sha256.Sum256(simpleReviewpadFileData))
 
-    gotReviewpadFile, gotHashContent, err := loadImport(simpleReviewpadFileImport)
+	gotReviewpadFile, gotHashContent, err := loadImport(simpleReviewpadFileImport)
 
-    assert.Nil(t, err)
-    assert.Equal(t, wantReviewpadFile, gotReviewpadFile)
-    assert.Equal(t, wantHashContent, gotHashContent)
+	assert.Nil(t, err)
+	assert.Equal(t, wantReviewpadFile, gotReviewpadFile)
+	assert.Equal(t, wantHashContent, gotHashContent)
 }
 
 func TestInlineImports_WhenPadImportUrlIsNotProvided(t *testing.T) {
@@ -606,7 +606,7 @@ func TestInlineImports_WhenSubTreeFileInlineImportsFails(t *testing.T) {
 		httpmock.NewBytesResponder(200, simpleReviewpadFileWithImportsData),
 	)
 
-    httpmock.RegisterResponder("GET", "https://foo.bar/anotherSimpleReviewpadFile.yml",
+	httpmock.RegisterResponder("GET", "https://foo.bar/anotherSimpleReviewpadFile.yml",
 		httpmock.NewBytesResponder(200, simpleReviewpadFileWithImportsData),
 	)
 
@@ -621,7 +621,7 @@ func TestInlineImports_WhenSubTreeFileInlineImportsFails(t *testing.T) {
 	gotReviewpadFile, err := inlineImports(reviewpadFile, loadEnv)
 
 	assert.Nil(t, gotReviewpadFile)
-    assert.EqualError(t, err, "loader: cyclic dependency")
+	assert.EqualError(t, err, "loader: cyclic dependency")
 }
 
 func TestInlineImports(t *testing.T) {
