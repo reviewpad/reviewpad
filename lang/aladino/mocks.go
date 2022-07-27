@@ -199,6 +199,25 @@ func MockBuiltIns() *BuiltIns {
 	}
 }
 
+func mockTypes() map[string]Type {
+	mockedBuiltIns := MockBuiltIns()
+	builtInsType := make(map[string]Type)
+
+	for builtInName, builtInFunction := range mockedBuiltIns.Functions {
+		builtInsType[builtInName] = builtInFunction.Type
+	}
+
+	for builtInName, builtInAction := range mockedBuiltIns.Actions {
+		builtInsType[builtInName] = builtInAction.Type
+	}
+
+	return builtInsType
+}
+
+func MockTypeEnv() TypeEnv {
+	return TypeEnv(mockTypes())
+}
+
 func mockHttpClientWith(clientOptions ...mock.MockBackendOption) *http.Client {
 	return mock.NewMockedHTTPClient(clientOptions...)
 }

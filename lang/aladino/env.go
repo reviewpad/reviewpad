@@ -85,7 +85,7 @@ func (e *BaseEnv) GetEventPayload() interface{} {
 	return e.EventPayload
 }
 
-func NewTypeEnv(e Env) *TypeEnv {
+func NewTypeEnv(e Env) TypeEnv {
 	builtInsType := make(map[string]Type)
 	for builtInName, builtInFunction := range e.GetBuiltIns().Functions {
 		builtInsType[builtInName] = builtInFunction.Type
@@ -95,9 +95,7 @@ func NewTypeEnv(e Env) *TypeEnv {
 		builtInsType[builtInName] = builtInAction.Type
 	}
 
-	typeEnv := TypeEnv(builtInsType)
-
-	return &typeEnv
+	return TypeEnv(builtInsType)
 }
 
 func NewEvalEnv(

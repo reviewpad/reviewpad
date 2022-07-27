@@ -378,7 +378,7 @@ func TestExecProgram_WhenExecStatementFails(t *testing.T) {
 
 	err = mockedInterpreter.ExecProgram(program)
 
-	assert.EqualError(t, err, "no type for built-in action. Please check if the mode in the reviewpad.yml file supports it.")
+	assert.EqualError(t, err, "no type for built-in action. Please check if the mode in the reviewpad.yml file supports it")
 }
 
 func TestExecProgram(t *testing.T) {

@@ -163,7 +163,7 @@ func TestNewTypeEnv_WithDefaultEnv(t *testing.T) {
 		"returnStr":     aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, aladino.BuildStringType()),
 	})
 
-	gotTypeEnv := *aladino.NewTypeEnv(mockedEnv)
+	gotTypeEnv := aladino.NewTypeEnv(mockedEnv)
 
 	assert.Equal(t, wantTypeEnv, gotTypeEnv)
 }

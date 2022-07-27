@@ -16,7 +16,7 @@ import (
 
 type Expr interface {
 	Kind() string
-	typeinfer(env *TypeEnv) (Type, error)
+	typeinfer(env TypeEnv) (Type, error)
 	Eval(Env) (Value, error)
 	equals(Expr) bool
 }
