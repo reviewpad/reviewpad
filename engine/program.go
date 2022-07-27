@@ -18,13 +18,13 @@ type Program struct {
 	Statements []*Statement
 }
 
-func (program *Program) append(actions []string, workflow PadWorkflow, rules []PadWorkflowRule) {
-	for _, action := range actions {
+func (program *Program) append(workflowActions []string, workflow PadWorkflow, workflowRules []PadWorkflowRule) {
+	for _, workflowAction := range workflowActions {
 		statement := &Statement{
-			Code: action,
+			Code: workflowAction,
 			Metadata: &Metadata{
 				Workflow:    workflow,
-				TriggeredBy: rules,
+				TriggeredBy: workflowRules,
 			},
 		}
 
