@@ -38,24 +38,8 @@ func GetDefaultMockPullRequestDetails() *github.PullRequest {
 	}
 }
 
-// mockDefaultHttpClient mocks an HTTP client with default values and ready for Engine.
-// Being ready for Engine means that at least the request to build Engine Env need to be mocked.
-// As for now, at least two github request need to be mocked in order to build Engine Env, mainly:
-// - Get pull request details (i.e. /repos/{owner}/{repo}/pulls/{pull_number})
 func mockDefaultHttpClient(clientOptions []mock.MockBackendOption) *http.Client {
-	defaultMocks := []mock.MockBackendOption{
-		mock.WithRequestMatchHandler(
-			// Mock request to get pull request details
-			mock.GetReposPullsByOwnerByRepoByPullNumber,
-			http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-				w.Write(mock.MustMarshal(GetDefaultMockPullRequestDetails()))
-			}),
-		),
-	}
-
-	mocks := append(clientOptions, defaultMocks...)
-
-	return mockHttpClientWith(mocks...)
+	return mockHttpClientWith(clientOptions...)
 }
 
 func mockHttpClientWith(clientOptions ...mock.MockBackendOption) *http.Client {
