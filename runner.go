@@ -77,9 +77,6 @@ func Run(
 		return nil, err
 	}
 
-	if safeMode {
-	}
-
 	err = evalEnv.Collector.Collect("Completed Analysis", map[string]interface{}{
 		"pullRequestUrl": evalEnv.PullRequest.URL,
 	})
