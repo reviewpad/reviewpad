@@ -15,13 +15,15 @@ import (
 	"github.com/reviewpad/reviewpad/v3/collector"
 )
 
+// Use only for tests
 const defaultMockPrID = 1234
 const defaultMockPrNum = 6
 const defaultMockPrRepoName = "default-mock-repo"
 
+// Use only for tests
 var DefaultMockCtx = context.Background()
 var DefaultMockCollector = collector.NewCollector("", "")
-var MockedEventPayload = &github.CheckRunEvent{}
+var DefaultMockEventPayload = &github.CheckRunEvent{}
 
 func GetDefaultMockPullRequestDetails() *github.PullRequest {
 	prNum := defaultMockPrNum
@@ -68,9 +70,9 @@ return`),
 	}
 }
 
-// mockDefaultHttpClient mocks an HTTP client with default values and ready for Aladino.
-// Being ready for Aladino means that at least the request to build Aladino Env need to be mocked.
-// As for now, at least two github request need to be mocked in order to build Aladino Env, mainly:
+// mockDefaultHttpClient mocks an HTTP client with default values and ready for Engine.
+// Being ready for Engine means that at least the request to build Engine Env need to be mocked.
+// As for now, at least two github request need to be mocked in order to build Engine Env, mainly:
 // - Get pull request details (i.e. /repos/{owner}/{repo}/pulls/{pull_number})
 // - Get pull request files (i.e. /repos/{owner}/{repo}/pulls/{pull_number}/files)
 func mockDefaultHttpClient(clientOptions []mock.MockBackendOption) *http.Client {

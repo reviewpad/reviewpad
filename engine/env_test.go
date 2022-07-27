@@ -47,7 +47,7 @@ return`
 			RegisterMap:  aladino.RegisterMap(make(map[string]aladino.Value)),
 			BuiltIns:     aladino.MockBuiltIns(),
 			Report:       &aladino.Report{WorkflowDetails: make(map[string]aladino.ReportWorkflowDetails)},
-			EventPayload: engine.MockedEventPayload,
+			EventPayload: engine.DefaultMockEventPayload,
 		},
 	}
 
@@ -58,7 +58,7 @@ return`
 		ClientGQL:    nil,
 		Collector:    collector,
 		PullRequest:  mockedPullRequest,
-		EventPayload: engine.MockedEventPayload,
+		EventPayload: engine.DefaultMockEventPayload,
 		Interpreter:  mockedAladinoInterpreter,
 	}
 
@@ -69,7 +69,7 @@ return`
 		nil,
 		collector,
 		mockedPullRequest,
-		engine.MockedEventPayload,
+		engine.DefaultMockEventPayload,
 		mockedAladinoInterpreter,
 	)
 
