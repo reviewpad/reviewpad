@@ -223,6 +223,7 @@ func TestAssignReviewer_WhenPullRequestAlreadyHasReviews(t *testing.T) {
 						User: &github.User{
 							Login: github.String(reviewerLogin),
 						},
+						State: github.String("COMMENTED"),
 					},
 				},
 			),
@@ -255,7 +256,7 @@ func TestAssignReviewer_WhenPullRequestAlreadyHasReviews(t *testing.T) {
 	err = assignReviewer(mockedEnv, args)
 
 	assert.Nil(t, err)
-	assert.ElementsMatch(t, wantReviewers, gotReviewers, "when a provided reviewer already has review then a review needs to be re-requested")
+	assert.ElementsMatch(t, wantReviewers, gotReviewers)
 }
 
 func TestAssignReviewer_WhenPullRequestAlreadyHasRequestedReviewers(t *testing.T) {
