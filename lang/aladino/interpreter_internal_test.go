@@ -657,7 +657,7 @@ func TestReport_WhenFindReportCommentFails(t *testing.T) {
 		Env: mockedEnv,
 	}
 
-	err = mockedInterpreter.Report(engine.SILENT_MODE)
+	err = mockedInterpreter.Report(engine.SILENT_MODE, false)
 
 	assert.EqualError(t, err, "[report] error getting issues mock response not found for /repos/john/default-mock-repo/issues/6/comments")
 }
@@ -693,7 +693,7 @@ func TestReport_OnSilentMode_WhenThereIsAlreadyAReviewpadComment(t *testing.T) {
 		Env: mockedEnv,
 	}
 
-	err = mockedInterpreter.Report(engine.SILENT_MODE)
+	err = mockedInterpreter.Report(engine.SILENT_MODE, false)
 
 	assert.Nil(t, err)
 	assert.True(t, isDeletedCommentRequested)
@@ -725,7 +725,7 @@ func TestReport_OnSilentMode_WhenNoReviewpadCommentIsFound(t *testing.T) {
 		Env: mockedEnv,
 	}
 
-	err = mockedInterpreter.Report(engine.SILENT_MODE)
+	err = mockedInterpreter.Report(engine.SILENT_MODE, false)
 
 	assert.Nil(t, err)
 	assert.False(t, isDeletedCommentRequested)
@@ -762,7 +762,7 @@ func TestReport_OnVerboseMode_WhenNoReviewpadCommentIsFound(t *testing.T) {
 		Env: mockedEnv,
 	}
 
-	err = mockedInterpreter.Report(engine.VERBOSE_MODE)
+	err = mockedInterpreter.Report(engine.VERBOSE_MODE, false)
 
 	assert.Nil(t, err)
 	assert.Equal(t, commentToBeAdded, addedComment)
@@ -804,7 +804,7 @@ func TestReport_OnVerboseMode_WhenThereIsAlreadyAReviewpadComment(t *testing.T) 
 		Env: mockedEnv,
 	}
 
-	err = mockedInterpreter.Report(engine.VERBOSE_MODE)
+	err = mockedInterpreter.Report(engine.VERBOSE_MODE, false)
 
 	assert.Nil(t, err)
 	assert.Equal(t, commentUpdated, updatedComment)
@@ -831,7 +831,6 @@ func TestNewInterpreter_WhenNewEvalEnvFails(t *testing.T) {
 	gotInterpreter, err := NewInterpreter(
 		ctx,
 		false,
-		false,
 		client,
 		nil,
 		nil,
@@ -857,7 +856,6 @@ func TestNewInterpreter(t *testing.T) {
 	gotInterpreter, err := NewInterpreter(
 		mockedEnv.GetCtx(),
 		mockedEnv.GetDryRun(),
-		mockedEnv.GetSafeMode(),
 		mockedEnv.GetClient(),
 		mockedEnv.GetClientGQL(),
 		mockedEnv.GetCollector(),

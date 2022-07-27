@@ -31,13 +31,11 @@ type Env interface {
 	GetReport() *Report
 	GetEventPayload() interface{}
 	GetDryRun() bool
-	GetSafeMode() bool
 }
 
 type BaseEnv struct {
 	Ctx          context.Context
 	DryRun       bool
-	SafeMode     bool
 	Client       *github.Client
 	ClientGQL    *githubv4.Client
 	Collector    collector.Collector
@@ -55,10 +53,6 @@ func (e *BaseEnv) GetCtx() context.Context {
 
 func (e *BaseEnv) GetDryRun() bool {
 	return e.DryRun
-}
-
-func (e *BaseEnv) GetSafeMode() bool {
-	return e.SafeMode
 }
 
 func (e *BaseEnv) GetClient() *github.Client {
@@ -113,7 +107,6 @@ func NewTypeEnv(e Env) TypeEnv {
 func NewEvalEnv(
 	ctx context.Context,
 	dryRun bool,
-	safeMode bool,
 	gitHubClient *github.Client,
 	gitHubClientGQL *githubv4.Client,
 	collector collector.Collector,
@@ -148,7 +141,6 @@ func NewEvalEnv(
 	input := &BaseEnv{
 		Ctx:          ctx,
 		DryRun:       dryRun,
-		SafeMode:     safeMode,
 		Client:       gitHubClient,
 		ClientGQL:    gitHubClientGQL,
 		Collector:    collector,

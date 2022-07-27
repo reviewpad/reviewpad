@@ -5,7 +5,6 @@
 package aladino
 
 import (
-	"context"
 	"fmt"
 	"regexp"
 	"strings"
@@ -41,32 +40,6 @@ func mergeReportWorkflowDetails(left, right ReportWorkflowDetails) ReportWorkflo
 	}
 
 	return left
-}
-
-func (r *Report) SendReport(ctx context.Context, safeMode bool, mode string, pr *github.PullRequest, client *github.Client) error {
-	execLog("generating report")
-
-	var err error
-
-	comment, err := FindReportComment(ctx, pr, client)
-	if err != nil {
-		return err
-	}
-
-	if mode == engine.SILENT_MODE {
-		if comment != nil {
-			return DeleteReportComment(ctx, pr, *comment.ID, client)
-		}
-		return nil
-	}
-
-	report := buildReport(safeMode, r)
-
-	if comment == nil {
-		return AddReportComment(ctx, pr, report, client)
-	}
-
-	return UpdateReportComment(ctx, pr, *comment.ID, report, client)
 }
 
 func (report *Report) addToReport(statement *engine.Statement) {
@@ -154,11 +127,12 @@ func BuildVerboseReport(report *Report) string {
 	return sb.String()
 }
 
-func DeleteReportComment(ctx context.Context, pr *github.PullRequest, commentId int64, client *github.Client) error {
-	owner := utils.GetPullRequestBaseOwnerName(pr)
-	repo := utils.GetPullRequestBaseRepoName(pr)
+func DeleteReportComment(env Env, commentId int64) error {
+	pullRequest := env.GetPullRequest()
+	owner := utils.GetPullRequestBaseOwnerName(pullRequest)
+	repo := utils.GetPullRequestBaseRepoName(pullRequest)
 
-	_, err := client.Issues.DeleteComment(ctx, owner, repo, commentId)
+	_, err := env.GetClient().Issues.DeleteComment(env.GetCtx(), owner, repo, commentId)
 
 	if err != nil {
 		return reportError("error on deleting report comment %v", err.(*github.ErrorResponse).Message)
@@ -167,15 +141,16 @@ func DeleteReportComment(ctx context.Context, pr *github.PullRequest, commentId 
 	return nil
 }
 
-func UpdateReportComment(ctx context.Context, pr *github.PullRequest, commentId int64, report string, client *github.Client) error {
+func UpdateReportComment(env Env, commentId int64, report string) error {
 	gitHubComment := github.IssueComment{
 		Body: &report,
 	}
 
-	owner := utils.GetPullRequestBaseOwnerName(pr)
-	repo := utils.GetPullRequestBaseRepoName(pr)
+	pullRequest := env.GetPullRequest()
+	owner := utils.GetPullRequestBaseOwnerName(pullRequest)
+	repo := utils.GetPullRequestBaseRepoName(pullRequest)
 
-	_, _, err := client.Issues.EditComment(ctx, owner, repo, commentId, &gitHubComment)
+	_, _, err := env.GetClient().Issues.EditComment(env.GetCtx(), owner, repo, commentId, &gitHubComment)
 
 	if err != nil {
 		return reportError("error on updating report comment %v", err.(*github.ErrorResponse).Message)
@@ -184,16 +159,17 @@ func UpdateReportComment(ctx context.Context, pr *github.PullRequest, commentId 
 	return nil
 }
 
-func AddReportComment(ctx context.Context, pr *github.PullRequest, report string, client *github.Client) error {
+func AddReportComment(env Env, report string) error {
 	gitHubComment := github.IssueComment{
 		Body: &report,
 	}
 
-	owner := utils.GetPullRequestBaseOwnerName(pr)
-	repo := utils.GetPullRequestBaseRepoName(pr)
-	prNum := utils.GetPullRequestNumber(pr)
+	pullRequest := env.GetPullRequest()
+	owner := utils.GetPullRequestBaseOwnerName(pullRequest)
+	repo := utils.GetPullRequestBaseRepoName(pullRequest)
+	prNum := utils.GetPullRequestNumber(pullRequest)
 
-	_, _, err := client.Issues.CreateComment(ctx, owner, repo, prNum, &gitHubComment)
+	_, _, err := env.GetClient().Issues.CreateComment(env.GetCtx(), owner, repo, prNum, &gitHubComment)
 
 	if err != nil {
 		return reportError("error on creating report comment %v", err.(*github.ErrorResponse).Message)
@@ -202,12 +178,13 @@ func AddReportComment(ctx context.Context, pr *github.PullRequest, report string
 	return nil
 }
 
-func FindReportComment(ctx context.Context, pr *github.PullRequest, client *github.Client) (*github.IssueComment, error) {
-	owner := utils.GetPullRequestBaseOwnerName(pr)
-	repo := utils.GetPullRequestBaseRepoName(pr)
-	prNum := utils.GetPullRequestNumber(pr)
+func FindReportComment(env Env) (*github.IssueComment, error) {
+	pullRequest := env.GetPullRequest()
+	owner := utils.GetPullRequestBaseOwnerName(pullRequest)
+	repo := utils.GetPullRequestBaseRepoName(pullRequest)
+	prNum := utils.GetPullRequestNumber(pullRequest)
 
-	comments, err := utils.GetPullRequestComments(ctx, client, owner, repo, prNum, &github.IssueListCommentsOptions{
+	comments, err := utils.GetPullRequestComments(env.GetCtx(), env.GetClient(), owner, repo, prNum, &github.IssueListCommentsOptions{
 		Sort:      github.String("created"),
 		Direction: github.String("asc"),
 	})

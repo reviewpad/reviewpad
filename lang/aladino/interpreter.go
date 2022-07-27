@@ -114,10 +114,7 @@ func (i *Interpreter) EvalExpr(kind, expr string) (bool, error) {
 }
 
 func (i *Interpreter) ExecProgram(program *engine.Program) error {
-	safeMode := i.Env.GetSafeMode()
-	dryRun := i.Env.GetDryRun()
-
-	execLogf("executing program: safe mode: %v, dry run: %v", safeMode, dryRun)
+	execLog("executing program")
 
 	for _, statement := range program.Statements {
 		err := i.ExecStatement(statement)
@@ -126,14 +123,12 @@ func (i *Interpreter) ExecProgram(program *engine.Program) error {
 		}
 	}
 
-	execLogf("execution done: safe mode: %v, dry run: %v", safeMode, dryRun)
+	execLog("execution done")
 
 	return nil
 }
 
 func (i *Interpreter) ExecStatement(statement *engine.Statement) error {
-	safeMode := i.Env.GetSafeMode()
-	dryRun := i.Env.GetDryRun()
 	statRaw := statement.Code
 	statAST, err := Parse(statRaw)
 	if err != nil {
@@ -154,22 +149,42 @@ func (i *Interpreter) ExecStatement(statement *engine.Statement) error {
 
 	i.Env.GetReport().addToReport(statement)
 
-	execLogf("\taction %v executed: safe mode: %v, dry run: %v", statRaw, safeMode, dryRun)
+	execLogf("\taction %v executed", statRaw)
 	return nil
 }
 
-func (i *Interpreter) Report(mode string) error {
-
+func (i *Interpreter) Report(mode string, safeMode bool) error {
 	env := i.Env
 
-	return i.Env.GetReport().SendReport(env.GetCtx(), env.GetSafeMode(), mode, env.GetPullRequest(), env.GetClient())
+	execLog("generating report")
+
+	var err error
+
+	comment, err := FindReportComment(env)
+	if err != nil {
+		return err
+	}
+
+	if mode == engine.SILENT_MODE {
+		if comment != nil {
+			return DeleteReportComment(env, *comment.ID)
+		}
+		return nil
+	}
+
+	report := buildReport(safeMode, env.GetReport())
+
+	if comment == nil {
+		return AddReportComment(i.Env, report)
+	}
+
+	return UpdateReportComment(i.Env, *comment.ID, report)
 
 }
 
 func NewInterpreter(
 	ctx context.Context,
 	dryRun bool,
-	safeMode bool,
 	gitHubClient *github.Client,
 	gitHubClientGQL *githubv4.Client,
 	collector collector.Collector,
@@ -178,7 +193,7 @@ func NewInterpreter(
 	builtIns *BuiltIns,
 
 ) (engine.Interpreter, error) {
-	evalEnv, err := NewEvalEnv(ctx, dryRun, safeMode, gitHubClient, gitHubClientGQL, collector, pullRequest, eventPayload, builtIns)
+	evalEnv, err := NewEvalEnv(ctx, dryRun, gitHubClient, gitHubClientGQL, collector, pullRequest, eventPayload, builtIns)
 	if err != nil {
 		return nil, err
 	}
