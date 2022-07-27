@@ -19,7 +19,11 @@ func TestNewEvalEnv(t *testing.T) {
 	collector := engine.DefaultMockCollector
 	mockedPullRequest := engine.GetDefaultMockPullRequestDetails()
 	fileName := "default-mock-repo/file1.ts"
-	patch := "@@ -2,9 +2,11 @@ package main\n- func previous1() {\n+ func new1() {\n+\nreturn"
+	patch := `@@ -2,9 +2,11 @@ package main
+- func previous1() {
++ func new1() {
++
+return`
 	
     mockedFile := &aladino.File{
 		Repr: &github.CommitFile{

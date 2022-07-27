@@ -43,15 +43,27 @@ func getDefaultMockPullRequestFileList() *[]*github.CommitFile {
 	return &[]*github.CommitFile{
 		{
 			Filename: github.String(fmt.Sprintf("%v/file1.ts", prRepoName)),
-			Patch:    github.String("@@ -2,9 +2,11 @@ package main\n- func previous1() {\n+ func new1() {\n+\nreturn"),
+			Patch:    github.String(`@@ -2,9 +2,11 @@ package main
+- func previous1() {
++ func new1() {
++
+return`),
 		},
 		{
 			Filename: github.String(fmt.Sprintf("%v/file2.ts", prRepoName)),
-			Patch:    github.String("@@ -2,9 +2,11 @@ package main\n- func previous2() {\n+ func new2() {\n+\nreturn"),
+			Patch:    github.String(`@@ -2,9 +2,11 @@ package main
+- func previous2() {
++ func new2() {
++
+return`),
 		},
 		{
 			Filename: github.String(fmt.Sprintf("%v/file3.ts", prRepoName)),
-			Patch:    github.String("@@ -2,9 +2,11 @@ package main\n- func previous3() {\n+ func new3() {\n+\nreturn"),
+			Patch:    github.String(`@@ -2,9 +2,11 @@ package main
+- func previous3() {
++ func new3() {
++
+return`),
 		},
 	}
 }
