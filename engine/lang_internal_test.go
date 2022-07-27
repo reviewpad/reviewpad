@@ -10,6 +10,55 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+var mockedReviewpadFile = &ReviewpadFile{
+	Version:      "reviewpad.com/v1alpha",
+	Edition:      "professional",
+	Mode:         "silent",
+	IgnoreErrors: false,
+	Imports: []PadImport{
+		{Url: "https://foo.bar/draft-rule.yml"},
+	},
+	Groups: []PadGroup{
+		{
+			Name:        "seniors",
+			Description: "Senior developers",
+			Kind:        "developers",
+			Spec:        "[\"john\"]",
+		},
+	},
+	Rules: []PadRule{
+		{
+			Name:        "test-rule",
+			Kind:        "patch",
+			Description: "testing rule",
+			Spec:        "1 == 1",
+		},
+	},
+	Labels: map[string]PadLabel{
+		"bug": {
+			Name:        "bug",
+			Color:       "f29513",
+			Description: "Something isn't working",
+		},
+	},
+	Workflows: []PadWorkflow{
+		{
+			Name:        "test",
+			Description: "Test process",
+			AlwaysRun:   true,
+			Rules: []PadWorkflowRule{
+				{
+					Rule:         "tautology",
+					ExtraActions: []string{},
+				},
+			},
+			Actions: []string{
+				"$action()",
+			},
+		},
+	},
+}
+
 func TestEquals_WhenPadImportsAreEqual(t *testing.T) {
 	padImport := PadImport{"http://foo.bar"}
 	otherPadImport := PadImport{"http://foo.bar"}
@@ -188,7 +237,7 @@ func TestEquals_WhenPadLabelsHaveDiffDescription(t *testing.T) {
 
 	otherPadLabel := PadLabel{
 		Name:        "bug",
-		Color:       "a2eeef",
+		Color:       "f29513",
 		Description: "Something isn't working x2",
 	}
 
@@ -515,1465 +564,596 @@ func TestEquals_WhenPadGroupsDiff(t *testing.T) {
 }
 
 func TestEquals_WhenReviewpadFilesAreEqual(t *testing.T) {
-	reviewpadFile := &ReviewpadFile{
-		Version:      "reviewpad.com/v1alpha",
-		Edition:      "professional",
-		Mode:         "silent",
-		IgnoreErrors: false,
-		Imports: []PadImport{
-			{Url: "https://foo.bar/draft-rule.yml"},
-		},
-		Groups: []PadGroup{
-			{
-				Name:        "seniors",
-				Description: "Senior developers",
-				Kind:        "developers",
-				Spec:        "[\"john\"]",
-			},
-		},
-		Rules: []PadRule{
-			{
-				Name:        "test-rule",
-				Kind:        "patch",
-				Description: "testing rule",
-				Spec:        "1 == 1",
-			},
-		},
-		Labels: map[string]PadLabel{
-			"bug": {
-				Name:        "bug",
-				Color:       "f29513",
-				Description: "Something isn't working",
-			},
-		},
-		Workflows: []PadWorkflow{
-			{
-				Name:        "test",
-				Description: "Test process",
-				AlwaysRun:   true,
-				Rules: []PadWorkflowRule{
-					{
-						Rule:         "tautology",
-						ExtraActions: []string{},
-					},
-				},
-				Actions: []string{
-					"$action()",
-				},
-			},
-		},
-	}
+	otherReviewpadFile := &ReviewpadFile{}
+	*otherReviewpadFile = *mockedReviewpadFile
 
-	otherReviewpadFile := &ReviewpadFile{
-		Version:      "reviewpad.com/v1alpha",
-		Edition:      "professional",
-		Mode:         "silent",
-		IgnoreErrors: false,
-		Imports: []PadImport{
-			{Url: "https://foo.bar/draft-rule.yml"},
-		},
-		Groups: []PadGroup{
-			{
-				Name:        "seniors",
-				Description: "Senior developers",
-				Kind:        "developers",
-				Spec:        "[\"john\"]",
-			},
-		},
-		Rules: []PadRule{
-			{
-				Name:        "test-rule",
-				Kind:        "patch",
-				Description: "testing rule",
-				Spec:        "1 == 1",
-			},
-		},
-		Labels: map[string]PadLabel{
-			"bug": {
-				Name:        "bug",
-				Color:       "f29513",
-				Description: "Something isn't working",
-			},
-		},
-		Workflows: []PadWorkflow{
-			{
-				Name:        "test",
-				Description: "Test process",
-				AlwaysRun:   true,
-				Rules: []PadWorkflowRule{
-					{
-						Rule:         "tautology",
-						ExtraActions: []string{},
-					},
-				},
-				Actions: []string{
-					"$action()",
-				},
-			},
-		},
-	}
-
-	assert.True(t, reviewpadFile.equals(otherReviewpadFile))
+	assert.True(t, mockedReviewpadFile.equals(otherReviewpadFile))
 }
 
 func TestEquals_WhenReviewpadFilesHaveDiffVersion(t *testing.T) {
-	reviewpadFile := &ReviewpadFile{
-		Version:      "reviewpad.com/v1alpha",
-		Edition:      "professional",
-		Mode:         "silent",
-		IgnoreErrors: false,
-		Imports: []PadImport{
-			{Url: "https://foo.bar/draft-rule.yml"},
-		},
-		Groups: []PadGroup{
-			{
-				Name:        "seniors",
-				Description: "Senior developers",
-				Kind:        "developers",
-				Spec:        "[\"john\"]",
-			},
-		},
-		Rules: []PadRule{
-			{
-				Name:        "test-rule",
-				Kind:        "patch",
-				Description: "testing rule",
-				Spec:        "1 == 1",
-			},
-		},
-		Labels: map[string]PadLabel{
-			"bug": {
-				Name:        "bug",
-				Color:       "f29513",
-				Description: "Something isn't working",
-			},
-		},
-		Workflows: []PadWorkflow{
-			{
-				Name:        "test",
-				Description: "Test process",
-				AlwaysRun:   true,
-				Rules: []PadWorkflowRule{
-					{
-						Rule:         "tautology",
-						ExtraActions: []string{},
-					},
-				},
-				Actions: []string{
-					"$action()",
-				},
-			},
-		},
-	}
+	otherReviewpadFile := &ReviewpadFile{}
+	*otherReviewpadFile = *mockedReviewpadFile
 
-	otherReviewpadFile := &ReviewpadFile{
-		Version:      "reviewpad.com/v1beta",
-		Edition:      "professional",
-		Mode:         "silent",
-		IgnoreErrors: false,
-		Imports: []PadImport{
-			{Url: "https://foo.bar/draft-rule.yml"},
-		},
-		Groups: []PadGroup{
-			{
-				Name:        "seniors",
-				Description: "Senior developers",
-				Kind:        "developers",
-				Spec:        "[\"john\"]",
-			},
-		},
-		Rules: []PadRule{
-			{
-				Name:        "test-rule",
-				Kind:        "patch",
-				Description: "testing rule",
-				Spec:        "1 == 1",
-			},
-		},
-		Labels: map[string]PadLabel{
-			"bug": {
-				Name:        "bug",
-				Color:       "f29513",
-				Description: "Something isn't working",
-			},
-		},
-		Workflows: []PadWorkflow{
-			{
-				Name:        "test",
-				Description: "Test process",
-				AlwaysRun:   true,
-				Rules: []PadWorkflowRule{
-					{
-						Rule:         "tautology",
-						ExtraActions: []string{},
-					},
-				},
-				Actions: []string{
-					"$action()",
-				},
-			},
-		},
-	}
+	otherReviewpadFile.Version = "reviewpad.com/v1beta"
 
-	assert.False(t, reviewpadFile.equals(otherReviewpadFile))
+	assert.False(t, mockedReviewpadFile.equals(otherReviewpadFile))
 }
 
 func TestEquals_WhenReviewpadFilesHaveDiffEdition(t *testing.T) {
-	reviewpadFile := &ReviewpadFile{
-		Version:      "reviewpad.com/v1alpha",
-		Edition:      "professional",
-		Mode:         "silent",
-		IgnoreErrors: false,
-		Imports: []PadImport{
-			{Url: "https://foo.bar/draft-rule.yml"},
-		},
-		Groups: []PadGroup{
-			{
-				Name:        "seniors",
-				Description: "Senior developers",
-				Kind:        "developers",
-				Spec:        "[\"john\"]",
-			},
-		},
-		Rules: []PadRule{
-			{
-				Name:        "test-rule",
-				Kind:        "patch",
-				Description: "testing rule",
-				Spec:        "1 == 1",
-			},
-		},
-		Labels: map[string]PadLabel{
-			"bug": {
-				Name:        "bug",
-				Color:       "f29513",
-				Description: "Something isn't working",
-			},
-		},
-		Workflows: []PadWorkflow{
-			{
-				Name:        "test",
-				Description: "Test process",
-				AlwaysRun:   true,
-				Rules: []PadWorkflowRule{
-					{
-						Rule:         "tautology",
-						ExtraActions: []string{},
-					},
-				},
-				Actions: []string{
-					"$action()",
-				},
-			},
-		},
-	}
+	otherReviewpadFile := &ReviewpadFile{}
+	*otherReviewpadFile = *mockedReviewpadFile
 
-	otherReviewpadFile := &ReviewpadFile{
-		Version:      "reviewpad.com/v1alpha",
-		Edition:      "",
-		Mode:         "silent",
-		IgnoreErrors: false,
-		Imports: []PadImport{
-			{Url: "https://foo.bar/draft-rule.yml"},
-		},
-		Groups: []PadGroup{
-			{
-				Name:        "seniors",
-				Description: "Senior developers",
-				Kind:        "developers",
-				Spec:        "[\"john\"]",
-			},
-		},
-		Rules: []PadRule{
-			{
-				Name:        "test-rule",
-				Kind:        "patch",
-				Description: "testing rule",
-				Spec:        "1 == 1",
-			},
-		},
-		Labels: map[string]PadLabel{
-			"bug": {
-				Name:        "bug",
-				Color:       "f29513",
-				Description: "Something isn't working",
-			},
-		},
-		Workflows: []PadWorkflow{
-			{
-				Name:        "test",
-				Description: "Test process",
-				AlwaysRun:   true,
-				Rules: []PadWorkflowRule{
-					{
-						Rule:         "tautology",
-						ExtraActions: []string{},
-					},
-				},
-				Actions: []string{
-					"$action()",
-				},
-			},
-		},
-	}
+	otherReviewpadFile.Edition = ""
 
-	assert.False(t, reviewpadFile.equals(otherReviewpadFile))
+	assert.False(t, mockedReviewpadFile.equals(otherReviewpadFile))
+}
+
+func TestEquals_WhenReviewpadFilesHaveDiffMode(t *testing.T) {
+	otherReviewpadFile := &ReviewpadFile{}
+	*otherReviewpadFile = *mockedReviewpadFile
+
+	otherReviewpadFile.Mode = "verbose"
+
+	assert.False(t, mockedReviewpadFile.equals(otherReviewpadFile))
 }
 
 func TestEquals_WhenReviewpadFilesHaveDiffIgnoreErrors(t *testing.T) {
-	reviewpadFile := &ReviewpadFile{
-		Version:      "reviewpad.com/v1alpha",
-		Edition:      "professional",
-		Mode:         "silent",
-		IgnoreErrors: true,
-		Imports: []PadImport{
-			{Url: "https://foo.bar/draft-rule.yml"},
-		},
-		Groups: []PadGroup{
-			{
-				Name:        "seniors",
-				Description: "Senior developers",
-				Kind:        "developers",
-				Spec:        "[\"john\"]",
-			},
-		},
-		Rules: []PadRule{
-			{
-				Name:        "test-rule",
-				Kind:        "patch",
-				Description: "testing rule",
-				Spec:        "1 == 1",
-			},
-		},
-		Labels: map[string]PadLabel{
-			"bug": {
-				Name:        "bug",
-				Color:       "f29513",
-				Description: "Something isn't working",
-			},
-		},
-		Workflows: []PadWorkflow{
-			{
-				Name:        "test",
-				Description: "Test process",
-				AlwaysRun:   true,
-				Rules: []PadWorkflowRule{
-					{
-						Rule:         "tautology",
-						ExtraActions: []string{},
-					},
-				},
-				Actions: []string{
-					"$action()",
-				},
-			},
-		},
-	}
+	otherReviewpadFile := &ReviewpadFile{}
+	*otherReviewpadFile = *mockedReviewpadFile
 
-	otherReviewpadFile := &ReviewpadFile{
-		Version:      "reviewpad.com/v1alpha",
-		Edition:      "professional",
-		Mode:         "silent",
-		IgnoreErrors: false,
-		Imports: []PadImport{
-			{Url: "https://foo.bar/draft-rule.yml"},
-		},
-		Groups: []PadGroup{
-			{
-				Name:        "seniors",
-				Description: "Senior developers",
-				Kind:        "developers",
-				Spec:        "[\"john\"]",
-			},
-		},
-		Rules: []PadRule{
-			{
-				Name:        "test-rule",
-				Kind:        "patch",
-				Description: "testing rule",
-				Spec:        "1 == 1",
-			},
-		},
-		Labels: map[string]PadLabel{
-			"bug": {
-				Name:        "bug",
-				Color:       "f29513",
-				Description: "Something isn't working",
-			},
-		},
-		Workflows: []PadWorkflow{
-			{
-				Name:        "test",
-				Description: "Test process",
-				AlwaysRun:   true,
-				Rules: []PadWorkflowRule{
-					{
-						Rule:         "tautology",
-						ExtraActions: []string{},
-					},
-				},
-				Actions: []string{
-					"$action()",
-				},
-			},
-		},
-	}
+	otherReviewpadFile.IgnoreErrors = true
 
-	assert.False(t, reviewpadFile.equals(otherReviewpadFile))
+	assert.False(t, mockedReviewpadFile.equals(otherReviewpadFile))
 }
 
 func TestEquals_WhenReviewpadFilesHaveDiffNumberOfImports(t *testing.T) {
-	reviewpadFile := &ReviewpadFile{
-		Version:      "reviewpad.com/v1alpha",
-		Edition:      "professional",
-		Mode:         "silent",
-		IgnoreErrors: false,
-		Imports: []PadImport{
-			{Url: "https://foo.bar/draft-rule.yml"},
-			{Url: "https://foo.bar/tautology-rule.yml"},
-		},
-		Groups: []PadGroup{
-			{
-				Name:        "seniors",
-				Description: "Senior developers",
-				Kind:        "developers",
-				Spec:        "[\"john\"]",
-			},
-		},
-		Rules: []PadRule{
-			{
-				Name:        "test-rule",
-				Kind:        "patch",
-				Description: "testing rule",
-				Spec:        "1 == 1",
-			},
-		},
-		Labels: map[string]PadLabel{
-			"bug": {
-				Name:        "bug",
-				Color:       "f29513",
-				Description: "Something isn't working",
-			},
-		},
-		Workflows: []PadWorkflow{
-			{
-				Name:        "test",
-				Description: "Test process",
-				AlwaysRun:   true,
-				Rules: []PadWorkflowRule{
-					{
-						Rule:         "tautology",
-						ExtraActions: []string{},
-					},
-				},
-				Actions: []string{
-					"$action()",
-				},
-			},
-		},
+	otherReviewpadFile := &ReviewpadFile{}
+	*otherReviewpadFile = *mockedReviewpadFile
+
+	otherReviewpadFile.Imports = []PadImport{
+		{Url: "https://foo.bar/draft-rule.yml"},
+		{Url: "https://foo.bar/tautology-rule.yml"},
 	}
 
-	otherReviewpadFile := &ReviewpadFile{
-		Version:      "reviewpad.com/v1alpha",
-		Edition:      "professional",
-		Mode:         "silent",
-		IgnoreErrors: false,
-		Imports: []PadImport{
-			{Url: "https://foo.bar/draft-rule.yml"},
-		},
-		Groups: []PadGroup{
-			{
-				Name:        "seniors",
-				Description: "Senior developers",
-				Kind:        "developers",
-				Spec:        "[\"john\"]",
-			},
-		},
-		Rules: []PadRule{
-			{
-				Name:        "test-rule",
-				Kind:        "patch",
-				Description: "testing rule",
-				Spec:        "1 == 1",
-			},
-		},
-		Labels: map[string]PadLabel{
-			"bug": {
-				Name:        "bug",
-				Color:       "f29513",
-				Description: "Something isn't working",
-			},
-		},
-		Workflows: []PadWorkflow{
-			{
-				Name:        "test",
-				Description: "Test process",
-				AlwaysRun:   true,
-				Rules: []PadWorkflowRule{
-					{
-						Rule:         "tautology",
-						ExtraActions: []string{},
-					},
-				},
-				Actions: []string{
-					"$action()",
-				},
-			},
-		},
-	}
-
-	assert.False(t, reviewpadFile.equals(otherReviewpadFile))
+	assert.False(t, mockedReviewpadFile.equals(otherReviewpadFile))
 }
 
 func TestEquals_WhenReviewpadFilesHaveDiffImports(t *testing.T) {
-	reviewpadFile := &ReviewpadFile{
-		Version:      "reviewpad.com/v1alpha",
-		Edition:      "professional",
-		Mode:         "silent",
-		IgnoreErrors: false,
-		Imports: []PadImport{
-			{Url: "https://foo.bar/tautology-rule.yml"},
-		},
-		Groups: []PadGroup{
-			{
-				Name:        "seniors",
-				Description: "Senior developers",
-				Kind:        "developers",
-				Spec:        "[\"john\"]",
-			},
-		},
-		Rules: []PadRule{
-			{
-				Name:        "test-rule",
-				Kind:        "patch",
-				Description: "testing rule",
-				Spec:        "1 == 1",
-			},
-		},
-		Labels: map[string]PadLabel{
-			"bug": {
-				Name:        "bug",
-				Color:       "f29513",
-				Description: "Something isn't working",
-			},
-		},
-		Workflows: []PadWorkflow{
-			{
-				Name:        "test",
-				Description: "Test process",
-				AlwaysRun:   true,
-				Rules: []PadWorkflowRule{
-					{
-						Rule:         "tautology",
-						ExtraActions: []string{},
-					},
-				},
-				Actions: []string{
-					"$action()",
-				},
-			},
-		},
+	otherReviewpadFile := &ReviewpadFile{}
+	*otherReviewpadFile = *mockedReviewpadFile
+
+	otherReviewpadFile.Imports = []PadImport{
+		{Url: "https://foo.bar/tautology-rule.yml"},
 	}
 
-	otherReviewpadFile := &ReviewpadFile{
-		Version:      "reviewpad.com/v1alpha",
-		Edition:      "professional",
-		Mode:         "silent",
-		IgnoreErrors: false,
-		Imports: []PadImport{
-			{Url: "https://foo.bar/draft-rule.yml"},
-		},
-		Groups: []PadGroup{
-			{
-				Name:        "seniors",
-				Description: "Senior developers",
-				Kind:        "developers",
-				Spec:        "[\"john\"]",
-			},
-		},
-		Rules: []PadRule{
-			{
-				Name:        "test-rule",
-				Kind:        "patch",
-				Description: "testing rule",
-				Spec:        "1 == 1",
-			},
-		},
-		Labels: map[string]PadLabel{
-			"bug": {
-				Name:        "bug",
-				Color:       "f29513",
-				Description: "Something isn't working",
-			},
-		},
-		Workflows: []PadWorkflow{
-			{
-				Name:        "test",
-				Description: "Test process",
-				AlwaysRun:   true,
-				Rules: []PadWorkflowRule{
-					{
-						Rule:         "tautology",
-						ExtraActions: []string{},
-					},
-				},
-				Actions: []string{
-					"$action()",
-				},
-			},
-		},
-	}
-
-	assert.False(t, reviewpadFile.equals(otherReviewpadFile))
+	assert.False(t, mockedReviewpadFile.equals(otherReviewpadFile))
 }
 
 func TestEquals_WhenReviewpadFilesHaveDiffNumberOfRules(t *testing.T) {
-	reviewpadFile := &ReviewpadFile{
-		Version:      "reviewpad.com/v1alpha",
-		Edition:      "professional",
-		Mode:         "silent",
-		IgnoreErrors: false,
-		Imports: []PadImport{
-			{Url: "https://foo.bar/draft-rule.yml"},
+	otherReviewpadFile := &ReviewpadFile{}
+	*otherReviewpadFile = *mockedReviewpadFile
+
+	otherReviewpadFile.Rules = []PadRule{
+		{
+			Name:        "test-rule",
+			Kind:        "patch",
+			Description: "testing rule",
+			Spec:        "1 == 1",
 		},
-		Groups: []PadGroup{
-			{
-				Name:        "seniors",
-				Description: "Senior developers",
-				Kind:        "developers",
-				Spec:        "[\"john\"]",
-			},
-		},
-		Rules: []PadRule{
-			{
-				Name:        "test-rule",
-				Kind:        "patch",
-				Description: "testing rule",
-				Spec:        "1 == 1",
-			},
-			{
-				Name:        "test-rule-2",
-				Kind:        "patch",
-				Description: "testing rule #2",
-				Spec:        "1 < 2",
-			},
-		},
-		Labels: map[string]PadLabel{
-			"bug": {
-				Name:        "bug",
-				Color:       "f29513",
-				Description: "Something isn't working",
-			},
-		},
-		Workflows: []PadWorkflow{
-			{
-				Name:        "test",
-				Description: "Test process",
-				AlwaysRun:   true,
-				Rules: []PadWorkflowRule{
-					{
-						Rule:         "tautology",
-						ExtraActions: []string{},
-					},
-				},
-				Actions: []string{
-					"$action()",
-				},
-			},
+		{
+			Name:        "test-rule-2",
+			Kind:        "patch",
+			Description: "testing rule #2",
+			Spec:        "1 < 2",
 		},
 	}
 
-	otherReviewpadFile := &ReviewpadFile{
-		Version:      "reviewpad.com/v1alpha",
-		Edition:      "professional",
-		Mode:         "silent",
-		IgnoreErrors: false,
-		Imports: []PadImport{
-			{Url: "https://foo.bar/draft-rule.yml"},
-		},
-		Groups: []PadGroup{
-			{
-				Name:        "seniors",
-				Description: "Senior developers",
-				Kind:        "developers",
-				Spec:        "[\"john\"]",
-			},
-		},
-		Rules: []PadRule{
-			{
-				Name:        "test-rule",
-				Kind:        "patch",
-				Description: "testing rule",
-				Spec:        "1 == 1",
-			},
-		},
-		Labels: map[string]PadLabel{
-			"bug": {
-				Name:        "bug",
-				Color:       "f29513",
-				Description: "Something isn't working",
-			},
-		},
-		Workflows: []PadWorkflow{
-			{
-				Name:        "test",
-				Description: "Test process",
-				AlwaysRun:   true,
-				Rules: []PadWorkflowRule{
-					{
-						Rule:         "tautology",
-						ExtraActions: []string{},
-					},
-				},
-				Actions: []string{
-					"$action()",
-				},
-			},
-		},
-	}
-
-	assert.False(t, reviewpadFile.equals(otherReviewpadFile))
+	assert.False(t, mockedReviewpadFile.equals(otherReviewpadFile))
 }
 
 func TestEquals_WhenReviewpadFilesHaveDiffRules(t *testing.T) {
-	reviewpadFile := &ReviewpadFile{
-		Version:      "reviewpad.com/v1alpha",
-		Edition:      "professional",
-		Mode:         "silent",
-		IgnoreErrors: false,
-		Imports: []PadImport{
-			{Url: "https://foo.bar/draft-rule.yml"},
-		},
-		Groups: []PadGroup{
-			{
-				Name:        "seniors",
-				Description: "Senior developers",
-				Kind:        "developers",
-				Spec:        "[\"john\"]",
-			},
-		},
-		Rules: []PadRule{
-			{
-				Name:        "test-rule-2",
-				Kind:        "patch",
-				Description: "testing rule #2",
-				Spec:        "1 < 2",
-			},
-		},
-		Labels: map[string]PadLabel{
-			"bug": {
-				Name:        "bug",
-				Color:       "f29513",
-				Description: "Something isn't working",
-			},
-		},
-		Workflows: []PadWorkflow{
-			{
-				Name:        "test",
-				Description: "Test process",
-				AlwaysRun:   true,
-				Rules: []PadWorkflowRule{
-					{
-						Rule:         "tautology",
-						ExtraActions: []string{},
-					},
-				},
-				Actions: []string{
-					"$action()",
-				},
-			},
+	otherReviewpadFile := &ReviewpadFile{}
+	*otherReviewpadFile = *mockedReviewpadFile
+
+	otherReviewpadFile.Rules = []PadRule{
+		{
+			Name:        "test-rule-2",
+			Kind:        "patch",
+			Description: "testing rule #2",
+			Spec:        "1 < 2",
 		},
 	}
 
-	otherReviewpadFile := &ReviewpadFile{
-		Version:      "reviewpad.com/v1alpha",
-		Edition:      "professional",
-		Mode:         "silent",
-		IgnoreErrors: false,
-		Imports: []PadImport{
-			{Url: "https://foo.bar/draft-rule.yml"},
-		},
-		Groups: []PadGroup{
-			{
-				Name:        "seniors",
-				Description: "Senior developers",
-				Kind:        "developers",
-				Spec:        "[\"john\"]",
-			},
-		},
-		Rules: []PadRule{
-			{
-				Name:        "test-rule",
-				Kind:        "patch",
-				Description: "testing rule",
-				Spec:        "1 == 1",
-			},
-		},
-		Labels: map[string]PadLabel{
-			"bug": {
-				Name:        "bug",
-				Color:       "f29513",
-				Description: "Something isn't working",
-			},
-		},
-		Workflows: []PadWorkflow{
-			{
-				Name:        "test",
-				Description: "Test process",
-				AlwaysRun:   true,
-				Rules: []PadWorkflowRule{
-					{
-						Rule:         "tautology",
-						ExtraActions: []string{},
-					},
-				},
-				Actions: []string{
-					"$action()",
-				},
-			},
-		},
-	}
-
-	assert.False(t, reviewpadFile.equals(otherReviewpadFile))
+	assert.False(t, mockedReviewpadFile.equals(otherReviewpadFile))
 }
 
 func TestEquals_WhenReviewpadFilesHaveDiffNumberOfLabels(t *testing.T) {
-	reviewpadFile := &ReviewpadFile{
-		Version:      "reviewpad.com/v1alpha",
-		Edition:      "professional",
-		Mode:         "silent",
-		IgnoreErrors: false,
-		Imports: []PadImport{
-			{Url: "https://foo.bar/draft-rule.yml"},
+	otherReviewpadFile := &ReviewpadFile{}
+	*otherReviewpadFile = *mockedReviewpadFile
+
+	otherReviewpadFile.Labels = map[string]PadLabel{
+		"bug": {
+			Name:        "bug",
+			Color:       "f29513",
+			Description: "Something isn't working",
 		},
-		Groups: []PadGroup{
-			{
-				Name:        "seniors",
-				Description: "Senior developers",
-				Kind:        "developers",
-				Spec:        "[\"john\"]",
-			},
-		},
-		Rules: []PadRule{
-			{
-				Name:        "test-rule",
-				Kind:        "patch",
-				Description: "testing rule",
-				Spec:        "1 == 1",
-			},
-		},
-		Labels: map[string]PadLabel{
-			"bug": {
-				Name:        "bug",
-				Color:       "f29513",
-				Description: "Something isn't working",
-			},
-		},
-		Workflows: []PadWorkflow{
-			{
-				Name:        "test",
-				Description: "Test process",
-				AlwaysRun:   true,
-				Rules: []PadWorkflowRule{
-					{
-						Rule:         "tautology",
-						ExtraActions: []string{},
-					},
-				},
-				Actions: []string{
-					"$action()",
-				},
-			},
+		"bug#2": {
+			Name:        "bug#2",
+			Color:       "f29513",
+			Description: "Something isn't working",
 		},
 	}
 
-	otherReviewpadFile := &ReviewpadFile{
-		Version:      "reviewpad.com/v1alpha",
-		Edition:      "professional",
-		Mode:         "silent",
-		IgnoreErrors: false,
-		Imports: []PadImport{
-			{Url: "https://foo.bar/draft-rule.yml"},
-		},
-		Groups: []PadGroup{
-			{
-				Name:        "seniors",
-				Description: "Senior developers",
-				Kind:        "developers",
-				Spec:        "[\"john\"]",
-			},
-		},
-		Rules: []PadRule{
-			{
-				Name:        "test-rule",
-				Kind:        "patch",
-				Description: "testing rule",
-				Spec:        "1 == 1",
-			},
-		},
-		Labels: map[string]PadLabel{
-			"bug": {
-				Name:        "bug",
-				Color:       "f29513",
-				Description: "Something isn't working",
-			},
-			"bug#2": {
-				Name:        "bug#2",
-				Color:       "f29513",
-				Description: "Something isn't working",
-			},
-		},
-		Workflows: []PadWorkflow{
-			{
-				Name:        "test",
-				Description: "Test process",
-				AlwaysRun:   true,
-				Rules: []PadWorkflowRule{
-					{
-						Rule:         "tautology",
-						ExtraActions: []string{},
-					},
-				},
-				Actions: []string{
-					"$action()",
-				},
-			},
-		},
-	}
-
-	assert.False(t, reviewpadFile.equals(otherReviewpadFile))
+	assert.False(t, mockedReviewpadFile.equals(otherReviewpadFile))
 }
 
 func TestEquals_WhenReviewpadFilesHaveDiffLabels(t *testing.T) {
-	reviewpadFile := &ReviewpadFile{
-		Version:      "reviewpad.com/v1alpha",
-		Edition:      "professional",
-		Mode:         "silent",
-		IgnoreErrors: false,
-		Imports: []PadImport{
-			{Url: "https://foo.bar/draft-rule.yml"},
-		},
-		Groups: []PadGroup{
-			{
-				Name:        "seniors",
-				Description: "Senior developers",
-				Kind:        "developers",
-				Spec:        "[\"john\"]",
-			},
-		},
-		Rules: []PadRule{
-			{
-				Name:        "test-rule",
-				Kind:        "patch",
-				Description: "testing rule",
-				Spec:        "1 == 1",
-			},
-		},
-		Labels: map[string]PadLabel{
-			"bug": {
-				Name:        "bug",
-				Color:       "f29513",
-				Description: "Something isn't working",
-			},
-		},
-		Workflows: []PadWorkflow{
-			{
-				Name:        "test",
-				Description: "Test process",
-				AlwaysRun:   true,
-				Rules: []PadWorkflowRule{
-					{
-						Rule:         "tautology",
-						ExtraActions: []string{},
-					},
-				},
-				Actions: []string{
-					"$action()",
-				},
-			},
+	otherReviewpadFile := &ReviewpadFile{}
+	*otherReviewpadFile = *mockedReviewpadFile
+
+	otherReviewpadFile.Labels = map[string]PadLabel{
+		"bug#2": {
+			Name:        "bug#2",
+			Color:       "f29513",
+			Description: "Something isn't working",
 		},
 	}
 
-	otherReviewpadFile := &ReviewpadFile{
-		Version:      "reviewpad.com/v1alpha",
-		Edition:      "professional",
-		Mode:         "silent",
-		IgnoreErrors: false,
-		Imports: []PadImport{
-			{Url: "https://foo.bar/draft-rule.yml"},
-		},
-		Groups: []PadGroup{
-			{
-				Name:        "seniors",
-				Description: "Senior developers",
-				Kind:        "developers",
-				Spec:        "[\"john\"]",
-			},
-		},
-		Rules: []PadRule{
-			{
-				Name:        "test-rule",
-				Kind:        "patch",
-				Description: "testing rule",
-				Spec:        "1 == 1",
-			},
-		},
-		Labels: map[string]PadLabel{
-			"bug#2": {
-				Name:        "bug#2",
-				Color:       "f29513",
-				Description: "Something isn't working",
-			},
-		},
-		Workflows: []PadWorkflow{
-			{
-				Name:        "test",
-				Description: "Test process",
-				AlwaysRun:   true,
-				Rules: []PadWorkflowRule{
-					{
-						Rule:         "tautology",
-						ExtraActions: []string{},
-					},
-				},
-				Actions: []string{
-					"$action()",
-				},
-			},
-		},
-	}
-
-	assert.False(t, reviewpadFile.equals(otherReviewpadFile))
+	assert.False(t, mockedReviewpadFile.equals(otherReviewpadFile))
 }
 
 func TestEquals_WhenReviewpadFilesHaveDiffNumberOfWorkflows(t *testing.T) {
-	reviewpadFile := &ReviewpadFile{
-		Version:      "reviewpad.com/v1alpha",
-		Edition:      "professional",
-		Mode:         "silent",
-		IgnoreErrors: false,
-		Imports: []PadImport{
-			{Url: "https://foo.bar/draft-rule.yml"},
-		},
-		Groups: []PadGroup{
-			{
-				Name:        "seniors",
-				Description: "Senior developers",
-				Kind:        "developers",
-				Spec:        "[\"john\"]",
-			},
-		},
-		Rules: []PadRule{
-			{
-				Name:        "test-rule",
-				Kind:        "patch",
-				Description: "testing rule",
-				Spec:        "1 == 1",
-			},
-		},
-		Labels: map[string]PadLabel{
-			"bug": {
-				Name:        "bug",
-				Color:       "f29513",
-				Description: "Something isn't working",
-			},
-		},
-		Workflows: []PadWorkflow{
-			{
-				Name:        "test",
-				Description: "Test process",
-				AlwaysRun:   true,
-				Rules: []PadWorkflowRule{
-					{
-						Rule:         "tautology",
-						ExtraActions: []string{},
-					},
+	otherReviewpadFile := &ReviewpadFile{}
+	*otherReviewpadFile = *mockedReviewpadFile
+
+	otherReviewpadFile.Workflows = []PadWorkflow{
+		{
+			Name:        "test",
+			Description: "Test process",
+			AlwaysRun:   true,
+			Rules: []PadWorkflowRule{
+				{
+					Rule:         "tautology",
+					ExtraActions: []string{},
 				},
-				Actions: []string{
-					"$action()",
+			},
+			Actions: []string{
+				"$action()",
+			},
+		},
+		{
+			Name:        "test#2",
+			Description: "Test process x2",
+			AlwaysRun:   true,
+			Rules: []PadWorkflowRule{
+				{
+					Rule:         "test-rule",
+					ExtraActions: []string{},
 				},
+			},
+			Actions: []string{
+				"$action2()",
 			},
 		},
 	}
 
-	otherReviewpadFile := &ReviewpadFile{
-		Version:      "reviewpad.com/v1alpha",
-		Edition:      "professional",
-		Mode:         "silent",
-		IgnoreErrors: false,
-		Imports: []PadImport{
-			{Url: "https://foo.bar/draft-rule.yml"},
-		},
-		Groups: []PadGroup{
-			{
-				Name:        "seniors",
-				Description: "Senior developers",
-				Kind:        "developers",
-				Spec:        "[\"john\"]",
-			},
-		},
-		Rules: []PadRule{
-			{
-				Name:        "test-rule",
-				Kind:        "patch",
-				Description: "testing rule",
-				Spec:        "1 == 1",
-			},
-		},
-		Labels: map[string]PadLabel{
-			"bug": {
-				Name:        "bug",
-				Color:       "f29513",
-				Description: "Something isn't working",
-			},
-		},
-		Workflows: []PadWorkflow{
-			{
-				Name:        "test",
-				Description: "Test process",
-				AlwaysRun:   true,
-				Rules: []PadWorkflowRule{
-					{
-						Rule:         "tautology",
-						ExtraActions: []string{},
-					},
-				},
-				Actions: []string{
-					"$action()",
-				},
-			},
-			{
-				Name:        "test#2",
-				Description: "Test process x2",
-				AlwaysRun:   true,
-				Rules: []PadWorkflowRule{
-					{
-						Rule:         "test-rule",
-						ExtraActions: []string{},
-					},
-				},
-				Actions: []string{
-					"$action2()",
-				},
-			},
-		},
-	}
-
-	assert.False(t, reviewpadFile.equals(otherReviewpadFile))
+	assert.False(t, mockedReviewpadFile.equals(otherReviewpadFile))
 }
 
 func TestEquals_WhenReviewpadFilesHaveDiffWorkflows(t *testing.T) {
-	reviewpadFile := &ReviewpadFile{
-		Version:      "reviewpad.com/v1alpha",
-		Edition:      "professional",
-		Mode:         "silent",
-		IgnoreErrors: false,
-		Imports: []PadImport{
-			{Url: "https://foo.bar/draft-rule.yml"},
-		},
-		Groups: []PadGroup{
-			{
-				Name:        "seniors",
-				Description: "Senior developers",
-				Kind:        "developers",
-				Spec:        "[\"john\"]",
-			},
-		},
-		Rules: []PadRule{
-			{
-				Name:        "test-rule",
-				Kind:        "patch",
-				Description: "testing rule",
-				Spec:        "1 == 1",
-			},
-		},
-		Labels: map[string]PadLabel{
-			"bug": {
-				Name:        "bug",
-				Color:       "f29513",
-				Description: "Something isn't working",
-			},
-		},
-		Workflows: []PadWorkflow{
-			{
-				Name:        "test",
-				Description: "Test process",
-				AlwaysRun:   true,
-				Rules: []PadWorkflowRule{
-					{
-						Rule:         "tautology",
-						ExtraActions: []string{},
-					},
+	otherReviewpadFile := &ReviewpadFile{}
+	*otherReviewpadFile = *mockedReviewpadFile
+
+	otherReviewpadFile.Workflows = []PadWorkflow{
+		{
+			Name:        "test#2",
+			Description: "Test process x2",
+			AlwaysRun:   true,
+			Rules: []PadWorkflowRule{
+				{
+					Rule:         "test-rule",
+					ExtraActions: []string{},
 				},
-				Actions: []string{
-					"$action()",
-				},
+			},
+			Actions: []string{
+				"$action2()",
 			},
 		},
 	}
 
-	otherReviewpadFile := &ReviewpadFile{
-		Version:      "reviewpad.com/v1alpha",
-		Edition:      "professional",
-		Mode:         "silent",
-		IgnoreErrors: false,
-		Imports: []PadImport{
-			{Url: "https://foo.bar/draft-rule.yml"},
-		},
-		Groups: []PadGroup{
-			{
-				Name:        "seniors",
-				Description: "Senior developers",
-				Kind:        "developers",
-				Spec:        "[\"john\"]",
-			},
-		},
-		Rules: []PadRule{
-			{
-				Name:        "test-rule",
-				Kind:        "patch",
-				Description: "testing rule",
-				Spec:        "1 == 1",
-			},
-		},
-		Labels: map[string]PadLabel{
-			"bug": {
-				Name:        "bug",
-				Color:       "f29513",
-				Description: "Something isn't working",
-			},
-		},
-		Workflows: []PadWorkflow{
-			{
-				Name:        "test#2",
-				Description: "Test process x2",
-				AlwaysRun:   true,
-				Rules: []PadWorkflowRule{
-					{
-						Rule:         "test-rule",
-						ExtraActions: []string{},
-					},
-				},
-				Actions: []string{
-					"$action2()",
-				},
-			},
-		},
-	}
-
-	assert.False(t, reviewpadFile.equals(otherReviewpadFile))
+	assert.False(t, mockedReviewpadFile.equals(otherReviewpadFile))
 }
 
 func TestEquals_WhenReviewpadFilesHaveDiffNumberOfGroups(t *testing.T) {
-	reviewpadFile := &ReviewpadFile{
-		Version:      "reviewpad.com/v1alpha",
-		Edition:      "professional",
-		Mode:         "silent",
-		IgnoreErrors: false,
-		Imports: []PadImport{
-			{Url: "https://foo.bar/draft-rule.yml"},
+	otherReviewpadFile := &ReviewpadFile{}
+	*otherReviewpadFile = *mockedReviewpadFile
+
+	otherReviewpadFile.Groups = []PadGroup{
+		{
+			Name:        "seniors",
+			Description: "Senior developers",
+			Kind:        "developers",
+			Spec:        "[\"john\"]",
 		},
-		Groups: []PadGroup{
-			{
-				Name:        "seniors",
-				Description: "Senior developers",
-				Kind:        "developers",
-				Spec:        "[\"john\"]",
-			},
-		},
-		Rules: []PadRule{
-			{
-				Name:        "test-rule",
-				Kind:        "patch",
-				Description: "testing rule",
-				Spec:        "1 == 1",
-			},
-		},
-		Labels: map[string]PadLabel{
-			"bug": {
-				Name:        "bug",
-				Color:       "f29513",
-				Description: "Something isn't working",
-			},
-		},
-		Workflows: []PadWorkflow{
-			{
-				Name:        "test",
-				Description: "Test process",
-				AlwaysRun:   true,
-				Rules: []PadWorkflowRule{
-					{
-						Rule:         "tautology",
-						ExtraActions: []string{},
-					},
-				},
-				Actions: []string{
-					"$action()",
-				},
-			},
+		{
+			Name:        "juniors",
+			Description: "Group of junior developers",
+			Kind:        "developers",
+			Type:        "filter",
+			Param:       "dev",
+			Where:       "$totalCreatedPullRequests($dev) < 10",
 		},
 	}
 
-	otherReviewpadFile := &ReviewpadFile{
-		Version:      "reviewpad.com/v1alpha",
-		Edition:      "professional",
-		Mode:         "silent",
-		IgnoreErrors: false,
-		Imports: []PadImport{
-			{Url: "https://foo.bar/draft-rule.yml"},
-		},
-		Groups: []PadGroup{
-			{
-				Name:        "seniors",
-				Description: "Senior developers",
-				Kind:        "developers",
-				Spec:        "[\"john\"]",
-			},
-			{
-				Name:        "juniors",
-				Description: "Group of junior developers",
-				Kind:        "developers",
-				Type:        "filter",
-				Param:       "dev",
-				Where:       "$totalCreatedPullRequests($dev) < 10",
-			},
-		},
-		Rules: []PadRule{
-			{
-				Name:        "test-rule",
-				Kind:        "patch",
-				Description: "testing rule",
-				Spec:        "1 == 1",
-			},
-		},
-		Labels: map[string]PadLabel{
-			"bug": {
-				Name:        "bug",
-				Color:       "f29513",
-				Description: "Something isn't working",
-			},
-		},
-		Workflows: []PadWorkflow{
-			{
-				Name:        "test",
-				Description: "Test process",
-				AlwaysRun:   true,
-				Rules: []PadWorkflowRule{
-					{
-						Rule:         "tautology",
-						ExtraActions: []string{},
-					},
-				},
-				Actions: []string{
-					"$action()",
-				},
-			},
-		},
-	}
-
-	assert.False(t, reviewpadFile.equals(otherReviewpadFile))
+	assert.False(t, mockedReviewpadFile.equals(otherReviewpadFile))
 }
 
 func TestEquals_WhenReviewpadFilesHaveDiffGroups(t *testing.T) {
-	reviewpadFile := &ReviewpadFile{
-		Version:      "reviewpad.com/v1alpha",
-		Edition:      "professional",
-		Mode:         "silent",
-		IgnoreErrors: false,
-		Imports: []PadImport{
-			{Url: "https://foo.bar/draft-rule.yml"},
+	otherReviewpadFile := &ReviewpadFile{}
+	*otherReviewpadFile = *mockedReviewpadFile
+
+	otherReviewpadFile.Groups = []PadGroup{
+		{
+			Name:        "juniors",
+			Description: "Group of junior developers",
+			Kind:        "developers",
+			Type:        "filter",
+			Param:       "dev",
+			Where:       "$totalCreatedPullRequests($dev) < 10",
 		},
-		Groups: []PadGroup{
-			{
-				Name:        "seniors",
-				Description: "Senior developers",
-				Kind:        "developers",
-				Spec:        "[\"john\"]",
-			},
+	}
+
+	assert.False(t, mockedReviewpadFile.equals(otherReviewpadFile))
+}
+
+func TestAppendLabels_WhenReviewpadFileHasNoLabels(t *testing.T) {
+	otherReviewpadFile := &ReviewpadFile{}
+	*otherReviewpadFile = *mockedReviewpadFile
+
+	otherReviewpadFile.Labels = nil
+
+	otherReviewpadFile.appendLabels(mockedReviewpadFile)
+
+	wantLabels := map[string]PadLabel{
+		"bug": {
+			Name:        "bug",
+			Color:       "f29513",
+			Description: "Something isn't working",
 		},
-		Rules: []PadRule{
-			{
-				Name:        "test-rule",
-				Kind:        "patch",
-				Description: "testing rule",
-				Spec:        "1 == 1",
-			},
+	}
+
+	assert.Equal(t, wantLabels, otherReviewpadFile.Labels)
+}
+
+func TestAppendLabels_WhenReviewpadFileHasLabels(t *testing.T) {
+	otherReviewpadFile := &ReviewpadFile{}
+	*otherReviewpadFile = *mockedReviewpadFile
+
+	otherReviewpadFile.Labels = map[string]PadLabel{
+		"bug#2": {
+			Name:        "bug#2",
+			Color:       "f29513",
+			Description: "Something isn't working",
 		},
-		Labels: map[string]PadLabel{
-			"bug": {
-				Name:        "bug",
-				Color:       "f29513",
-				Description: "Something isn't working",
-			},
+	}
+
+	otherReviewpadFile.appendLabels(mockedReviewpadFile)
+
+	wantLabels := map[string]PadLabel{
+		"bug": {
+			Name:        "bug",
+			Color:       "f29513",
+			Description: "Something isn't working",
 		},
-		Workflows: []PadWorkflow{
-			{
-				Name:        "test",
-				Description: "Test process",
-				AlwaysRun:   true,
-				Rules: []PadWorkflowRule{
-					{
-						Rule:         "tautology",
-						ExtraActions: []string{},
-					},
+		"bug#2": {
+			Name:        "bug#2",
+			Color:       "f29513",
+			Description: "Something isn't working",
+		},
+	}
+
+	assert.Equal(t, wantLabels, otherReviewpadFile.Labels)
+}
+
+func TestAppendRules_WhenReviewpadFileHasNoRules(t *testing.T) {
+	otherReviewpadFile := &ReviewpadFile{}
+	*otherReviewpadFile = *mockedReviewpadFile
+
+	otherReviewpadFile.Rules = nil
+
+	otherReviewpadFile.appendRules(mockedReviewpadFile)
+
+	wantRules := []PadRule{
+		{
+			Name:        "test-rule",
+			Kind:        "patch",
+			Description: "testing rule",
+			Spec:        "1 == 1",
+		},
+	}
+
+	assert.Equal(t, wantRules, otherReviewpadFile.Rules)
+}
+
+func TestAppendRules_WhenReviewpadFileHasRules(t *testing.T) {
+	otherReviewpadFile := &ReviewpadFile{}
+	*otherReviewpadFile = *mockedReviewpadFile
+
+	otherReviewpadFile.Rules = []PadRule{
+		{
+			Name:        "test-rule-2",
+			Kind:        "patch",
+			Description: "testing rule #2",
+			Spec:        "1 < 2",
+		},
+	}
+
+	otherReviewpadFile.appendRules(mockedReviewpadFile)
+
+	wantRules := []PadRule{
+		{
+			Name:        "test-rule-2",
+			Kind:        "patch",
+			Description: "testing rule #2",
+			Spec:        "1 < 2",
+		},
+		{
+			Name:        "test-rule",
+			Kind:        "patch",
+			Description: "testing rule",
+			Spec:        "1 == 1",
+		},
+	}
+
+	assert.Equal(t, wantRules, otherReviewpadFile.Rules)
+}
+
+func TestAppendGroups_WhenReviewpadFileHasNoGroups(t *testing.T) {
+	otherReviewpadFile := &ReviewpadFile{}
+	*otherReviewpadFile = *mockedReviewpadFile
+
+	otherReviewpadFile.Groups = nil
+
+	otherReviewpadFile.appendGroups(mockedReviewpadFile)
+
+	wantGroups := []PadGroup{
+		{
+			Name:        "seniors",
+			Description: "Senior developers",
+			Kind:        "developers",
+			Spec:        "[\"john\"]",
+		},
+	}
+
+	assert.Equal(t, wantGroups, otherReviewpadFile.Groups)
+}
+
+func TestAppendGroups_WhenReviewpadFileHasGroups(t *testing.T) {
+	otherReviewpadFile := &ReviewpadFile{}
+	*otherReviewpadFile = *mockedReviewpadFile
+
+	otherReviewpadFile.Groups = []PadGroup{
+		{
+			Name:        "juniors",
+			Description: "Group of junior developers",
+			Kind:        "developers",
+			Type:        "filter",
+			Param:       "dev",
+			Where:       "$totalCreatedPullRequests($dev) < 10",
+		},
+	}
+
+	otherReviewpadFile.appendGroups(mockedReviewpadFile)
+
+	wantGroups := []PadGroup{
+		{
+			Name:        "juniors",
+			Description: "Group of junior developers",
+			Kind:        "developers",
+			Type:        "filter",
+			Param:       "dev",
+			Where:       "$totalCreatedPullRequests($dev) < 10",
+		},
+		{
+			Name:        "seniors",
+			Description: "Senior developers",
+			Kind:        "developers",
+			Spec:        "[\"john\"]",
+		},
+	}
+
+	assert.Equal(t, wantGroups, otherReviewpadFile.Groups)
+}
+
+func TestAppendWorkflows_WhenReviewpadFileHasNoWorkflows(t *testing.T) {
+	otherReviewpadFile := &ReviewpadFile{}
+	*otherReviewpadFile = *mockedReviewpadFile
+
+	otherReviewpadFile.Workflows = nil
+
+	otherReviewpadFile.appendWorkflows(mockedReviewpadFile)
+
+	wantWorkflows := []PadWorkflow{
+		{
+			Name:        "test",
+			Description: "Test process",
+			AlwaysRun:   true,
+			Rules: []PadWorkflowRule{
+				{
+					Rule:         "tautology",
+					ExtraActions: []string{},
 				},
-				Actions: []string{
-					"$action()",
-				},
+			},
+			Actions: []string{
+				"$action()",
 			},
 		},
 	}
 
-	otherReviewpadFile := &ReviewpadFile{
-		Version:      "reviewpad.com/v1alpha",
-		Edition:      "professional",
-		Mode:         "silent",
-		IgnoreErrors: false,
-		Imports: []PadImport{
-			{Url: "https://foo.bar/draft-rule.yml"},
-		},
-		Groups: []PadGroup{
-			{
-				Name:        "juniors",
-				Description: "Group of junior developers",
-				Kind:        "developers",
-				Type:        "filter",
-				Param:       "dev",
-				Where:       "$totalCreatedPullRequests($dev) < 10",
-			},
-		},
-		Rules: []PadRule{
-			{
-				Name:        "test-rule",
-				Kind:        "patch",
-				Description: "testing rule",
-				Spec:        "1 == 1",
-			},
-		},
-		Labels: map[string]PadLabel{
-			"bug": {
-				Name:        "bug",
-				Color:       "f29513",
-				Description: "Something isn't working",
-			},
-		},
-		Workflows: []PadWorkflow{
-			{
-				Name:        "test",
-				Description: "Test process",
-				AlwaysRun:   true,
-				Rules: []PadWorkflowRule{
-					{
-						Rule:         "tautology",
-						ExtraActions: []string{},
-					},
+	assert.Equal(t, wantWorkflows, otherReviewpadFile.Workflows)
+}
+
+func TestAppendWorkflows_WhenReviewpadFileHasWorkflows(t *testing.T) {
+	otherReviewpadFile := &ReviewpadFile{}
+	*otherReviewpadFile = *mockedReviewpadFile
+
+	otherReviewpadFile.Workflows = []PadWorkflow{
+		{
+			Name:        "test#2",
+			Description: "Test process",
+			AlwaysRun:   true,
+			Rules: []PadWorkflowRule{
+				{
+					Rule:         "tautology",
+					ExtraActions: []string{},
 				},
-				Actions: []string{
-					"$action()",
-				},
+			},
+			Actions: []string{
+				"$action()",
 			},
 		},
 	}
 
-	assert.False(t, reviewpadFile.equals(otherReviewpadFile))
+	otherReviewpadFile.appendWorkflows(mockedReviewpadFile)
+
+	wantWorkflows := []PadWorkflow{
+		{
+			Name:        "test#2",
+			Description: "Test process",
+			AlwaysRun:   true,
+			Rules: []PadWorkflowRule{
+				{
+					Rule:         "tautology",
+					ExtraActions: []string{},
+				},
+			},
+			Actions: []string{
+				"$action()",
+			},
+		},
+		{
+			Name:        "test",
+			Description: "Test process",
+			AlwaysRun:   true,
+			Rules: []PadWorkflowRule{
+				{
+					Rule:         "tautology",
+					ExtraActions: []string{},
+				},
+			},
+			Actions: []string{
+				"$action()",
+			},
+		},
+	}
+
+	assert.Equal(t, wantWorkflows, otherReviewpadFile.Workflows)
+}
+
+func TestFindGroup_WhenGroupExists(t *testing.T) {
+	groups := []PadGroup{
+		{
+			Name:        "juniors",
+			Description: "Group of junior developers",
+			Kind:        "developers",
+			Type:        "filter",
+			Param:       "dev",
+			Where:       "$totalCreatedPullRequests($dev) < 10",
+		},
+		{
+			Name:        "seniors",
+			Description: "Senior developers",
+			Kind:        "developers",
+			Spec:        "[\"john\"]",
+		},
+	}
+
+	wantGroup := &PadGroup{
+		Name:        "juniors",
+		Description: "Group of junior developers",
+		Kind:        "developers",
+		Type:        "filter",
+		Param:       "dev",
+		Where:       "$totalCreatedPullRequests($dev) < 10",
+	}
+
+	gotGroup, found := findGroup(groups, "juniors")
+
+	assert.True(t, found)
+	assert.Equal(t, wantGroup, gotGroup)
+}
+
+func TestFindGroup_WhenGroupDoesNotExists(t *testing.T) {
+	groups := []PadGroup{
+		{
+			Name:        "juniors",
+			Description: "Group of junior developers",
+			Kind:        "developers",
+			Type:        "filter",
+			Param:       "dev",
+			Where:       "$totalCreatedPullRequests($dev) < 10",
+		},
+		{
+			Name:        "seniors",
+			Description: "Senior developers",
+			Kind:        "developers",
+			Spec:        "[\"john\"]",
+		},
+	}
+
+	gotGroup, found := findGroup(groups, "devs")
+
+	assert.False(t, found)
+	assert.Nil(t, gotGroup)
+}
+
+func TestFindRule_WhenRuleExists(t *testing.T) {
+	rules := []PadRule{
+		{
+			Name:        "test-rule-1",
+			Kind:        "patch",
+			Description: "testing rule #1",
+			Spec:        "1 == 1",
+		},
+		{
+			Name:        "test-rule-2",
+			Kind:        "patch",
+			Description: "testing rule #2",
+			Spec:        "1 < 2",
+		},
+	}
+
+	wantRule := &PadRule{
+		Name:        "test-rule-2",
+		Kind:        "patch",
+		Description: "testing rule #2",
+		Spec:        "1 < 2",
+	}
+
+	gotRule, found := findRule(rules, "test-rule-2")
+
+	assert.True(t, found)
+	assert.Equal(t, wantRule, gotRule)
+}
+
+func TestFindRule_WhenRuleDoesNotExists(t *testing.T) {
+	rules := []PadRule{
+		{
+			Name:        "test-rule-1",
+			Kind:        "patch",
+			Description: "testing rule #1",
+			Spec:        "1 == 1",
+		},
+		{
+			Name:        "test-rule-2",
+			Kind:        "patch",
+			Description: "testing rule #2",
+			Spec:        "1 < 2",
+		},
+	}
+
+	gotRule, found := findRule(rules, "test-rule-3")
+
+	assert.False(t, found)
+	assert.Nil(t, gotRule)
 }
