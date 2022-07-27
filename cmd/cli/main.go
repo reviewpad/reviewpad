@@ -77,7 +77,7 @@ func main() {
 	var rawEvent string
 
 	if *eventFilePath == "" {
-		rawEvent = "{}"
+		rawEvent = defaultEvent
 	} else {
 		content, err := ioutil.ReadFile(*eventFilePath)
 		if err != nil {
