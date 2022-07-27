@@ -20,19 +20,15 @@ func TestAppend(t *testing.T) {
 		},
 		Actions: []string{"$actionA()"},
 	}
-	actions := []string{"$actionB()"}
-	rules := []PadWorkflowRule{
-		{Rule: "test-rule-B"},
-	}
 
 	statement := &Statement{
-		Code: "$actionC()",
+		Code: "$actionB()",
 		Metadata: &Metadata{
 			Workflow: PadWorkflow{
-				Name: "test-workflow-C",
+				Name: "test-workflow-B",
 			},
 			TriggeredBy: []PadWorkflowRule{
-				{Rule: "test-rule-C"},
+				{Rule: "test-rule-B"},
 			},
 		},
 	}
@@ -44,16 +40,16 @@ func TestAppend(t *testing.T) {
 		Statements: []*Statement{
 			statement,
 			{
-				Code: "$actionB()",
+				Code: "$actionA()",
 				Metadata: &Metadata{
 					Workflow:    workflow,
-					TriggeredBy: rules,
+					TriggeredBy: workflow.Rules,
 				},
 			},
 		},
 	}
 
-	program.append(actions, workflow, rules)
+	program.append(workflow.Actions, workflow, workflow.Rules)
 
 	assert.Equal(t, wantProgram, program)
 }
