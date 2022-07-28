@@ -7,7 +7,6 @@ package aladino_test
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 	"testing"
 
@@ -172,7 +171,7 @@ func TestNewEvalEnv_WhenGetPullRequestFilesFails(t *testing.T) {
 		aladino.DefaultMockPrNum,
 	)
 	if err != nil {
-		log.Fatalf("couldn't get pull request: %v", err)
+		assert.FailNow(t, "couldn't get pull request", err)
 	}
 
 	env, err := aladino.NewEvalEnv(
@@ -212,7 +211,7 @@ func TestNewEvalEnv_WhenNewFileFails(t *testing.T) {
 		aladino.DefaultMockPrNum,
 	)
 	if err != nil {
-		log.Fatalf("couldn't get pull request: %v", err)
+		assert.FailNow(t, "couldn't get pull request", err)
 	}
 
 	env, err := aladino.NewEvalEnv(
@@ -258,7 +257,7 @@ func TestNewEvalEnv(t *testing.T) {
 	)
 
 	if err != nil {
-		log.Fatalf("couldn't get pull request: %v", err)
+		assert.FailNow(t, "couldn't get pull request", err)
 	}
 
 	gotEnv, err := aladino.NewEvalEnv(

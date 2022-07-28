@@ -5,7 +5,6 @@
 package aladino_test
 
 import (
-	"log"
 	"testing"
 
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
@@ -17,7 +16,7 @@ func TestEval_OnUnaryOp_WhenExprEvalFails(t *testing.T) {
 
 	unaryOp, err := aladino.Parse("!$nonBuiltIn")
 	if err != nil {
-		log.Fatalf("parse failed: %v", err)
+		assert.FailNow(t, "parse failed", err)
 	}
 
 	gotVal, err := unaryOp.Eval(mockedEnv)
@@ -31,7 +30,7 @@ func TestEval_OnUnaryOp(t *testing.T) {
 
 	unaryOp, err := aladino.Parse("!true")
 	if err != nil {
-		log.Fatalf("parse failed: %v", err)
+		assert.FailNow(t, "parse failed", err)
 	}
 
 	gotVal, err := unaryOp.Eval(mockedEnv)
@@ -47,7 +46,7 @@ func TestEval_OnBinaryOp_WhenLeftOperandEvalFails(t *testing.T) {
 
 	binaryOp, err := aladino.Parse("$nonBuiltIn() == 1")
 	if err != nil {
-		log.Fatalf("parse failed: %v", err)
+		assert.FailNow(t, "parse failed", err)
 	}
 
 	gotVal, err := binaryOp.Eval(mockedEnv)
@@ -61,7 +60,7 @@ func TestEval_OnBinaryOp_WhenRightOperandEvalFails(t *testing.T) {
 
 	binaryOp, err := aladino.Parse("1 == $nonBuiltIn()")
 	if err != nil {
-		log.Fatalf("parse failed: %v", err)
+		assert.FailNow(t, "parse failed", err)
 	}
 
 	gotVal, err := binaryOp.Eval(mockedEnv)
@@ -75,7 +74,7 @@ func TestEval_OnBinaryOp_WhenDiffKinds(t *testing.T) {
 
 	binaryOp, err := aladino.Parse("1 == \"a\"")
 	if err != nil {
-		log.Fatalf("parse failed: %v", err)
+		assert.FailNow(t, "parse failed", err)
 	}
 
 	gotVal, err := binaryOp.Eval(mockedEnv)
@@ -89,7 +88,7 @@ func TestEval_OnBinaryOp_WhenTrue(t *testing.T) {
 
 	binaryOp, err := aladino.Parse("1 == 1")
 	if err != nil {
-		log.Fatalf("parse failed: %v", err)
+		assert.FailNow(t, "parse failed", err)
 	}
 
 	gotVal, err := binaryOp.Eval(mockedEnv)
@@ -105,7 +104,7 @@ func TestEval_OnBinaryOp_WhenFalse(t *testing.T) {
 
 	binaryOp, err := aladino.Parse("1 == 2")
 	if err != nil {
-		log.Fatalf("parse failed: %v", err)
+		assert.FailNow(t, "parse failed", err)
 	}
 
 	gotVal, err := binaryOp.Eval(mockedEnv)
@@ -121,7 +120,7 @@ func TestEval_OnVariable_WhenVariableIsRegistered(t *testing.T) {
 
 	variable, err := aladino.Parse("$size")
 	if err != nil {
-		log.Fatalf("parse failed: %v", err)
+		assert.FailNow(t, "parse failed", err)
 	}
 
 	variableName := "size"
@@ -143,7 +142,7 @@ func TestEval_OnVariable_WhenVariableIsNotABuiltIn(t *testing.T) {
 
 	variable, err := aladino.Parse("$nonBuiltIn")
 	if err != nil {
-		log.Fatalf("parse failed: %v", err)
+		assert.FailNow(t, "parse failed", err)
 	}
 
 	gotVal, err := variable.Eval(mockedEnv)
@@ -157,7 +156,7 @@ func TestEval_OnVariable_WhenVariableIsABuiltIn(t *testing.T) {
 
 	variable, err := aladino.Parse("$zeroConst")
 	if err != nil {
-		log.Fatalf("parse failed: %v", err)
+		assert.FailNow(t, "parse failed", err)
 	}
 
 	gotVal, err := variable.Eval(mockedEnv)
@@ -173,7 +172,7 @@ func TestEval_OnBoolConst(t *testing.T) {
 
 	boolConst, err := aladino.Parse("true")
 	if err != nil {
-		log.Fatalf("parse failed: %v", err)
+		assert.FailNow(t, "parse fa", err)
 	}
 
 	gotVal, err := boolConst.Eval(mockedEnv)
@@ -190,7 +189,7 @@ func TestEval_OnStringConst(t *testing.T) {
 	str := "test string"
 	strConst, err := aladino.Parse("\"" + str + "\"")
 	if err != nil {
-		log.Fatalf("parse failed: %v", err)
+		assert.FailNow(t, "parse failed", err)
 	}
 
 	gotVal, err := strConst.Eval(mockedEnv)
@@ -206,7 +205,7 @@ func TestEval_OnIntConst(t *testing.T) {
 
 	intConst, err := aladino.Parse("1")
 	if err != nil {
-		log.Fatalf("parse failed: %v", err)
+		assert.FailNow(t, "parse failed", err)
 	}
 
 	gotVal, err := intConst.Eval(mockedEnv)
@@ -222,7 +221,7 @@ func TestEval_OnFunctionCall_WhenArgEvalFails(t *testing.T) {
 
 	fc, err := aladino.Parse("$addLabel($nonBuiltIn)")
 	if err != nil {
-		log.Fatalf("parse failed: %v", err)
+		assert.FailNow(t, "parse failed", err)
 	}
 
 	gotVal, err := fc.Eval(mockedEnv)
@@ -236,7 +235,7 @@ func TestEval_OnFunctionCall_WhenFunctionIsNotABuiltIn(t *testing.T) {
 
 	fc, err := aladino.Parse("$nonBuiltIn()")
 	if err != nil {
-		log.Fatalf("parse failed: %v", err)
+		assert.FailNow(t, "parse failed", err)
 	}
 
 	gotVal, err := fc.Eval(mockedEnv)
@@ -250,7 +249,7 @@ func TestEval_OnFunctionCall_WhenFunctionIsABuiltIn(t *testing.T) {
 
 	fc, err := aladino.Parse("$returnStr(\"hello\")")
 	if err != nil {
-		log.Fatalf("parse failed: %v", err)
+		assert.FailNow(t, "parse failed", err)
 	}
 
 	gotVal, err := fc.Eval(mockedEnv)
@@ -266,7 +265,7 @@ func TestEval_OnLambda_WhenLambdaBodyEvalFails(t *testing.T) {
 
 	lambdaBody, err := aladino.Parse("1 == $nonBuiltIn")
 	if err != nil {
-		log.Fatalf("parse failed: %v", err)
+		assert.FailNow(t, "parse failed", err)
 	}
 
 	lambda := aladino.BuildLambda([]aladino.Expr{}, lambdaBody)
@@ -284,12 +283,12 @@ func TestEval_OnLambda(t *testing.T) {
 
 	variable, err := aladino.Parse("$size")
 	if err != nil {
-		log.Fatalf("parse failed: %v", err)
+		assert.FailNow(t, "parse failed", err)
 	}
 	lambdaParam := aladino.BuildTypedExpr(variable, aladino.BuildStringType())
 	lambdaBody, err := aladino.Parse("1 == 1")
 	if err != nil {
-		log.Fatalf("parse failed: %v", err)
+		assert.FailNow(t, "parse failed", err)
 	}
 	lambda := aladino.BuildLambda([]aladino.Expr{lambdaParam}, lambdaBody)
 
@@ -308,7 +307,7 @@ func TestEval_OnTypedExpr(t *testing.T) {
 
 	expr, err := aladino.Parse("1 == 1")
 	if err != nil {
-		log.Fatalf("parse failed: %v", err)
+		assert.FailNow(t, "parse failed", err)
 	}
 
 	typedExpr := aladino.BuildTypedExpr(expr, aladino.BuildBoolType())
@@ -326,7 +325,7 @@ func TestEval_OnArray_WhenElemEvalFails(t *testing.T) {
 
 	array, err := aladino.Parse("[$nonBuiltIn()]")
 	if err != nil {
-		log.Fatalf("parse failed: %v", err)
+		assert.FailNow(t, "parse failed", err)
 	}
 
 	gotVal, err := array.Eval(mockedEnv)
@@ -340,7 +339,7 @@ func TestEval_OnArray(t *testing.T) {
 
 	array, err := aladino.Parse("[\"a\"]")
 	if err != nil {
-		log.Fatalf("parse failed: %v", err)
+		assert.FailNow(t, "parse failed", err)
 	}
 
 	gotVal, err := array.Eval(mockedEnv)
@@ -356,7 +355,7 @@ func TestEval_WhenExprEvalFails(t *testing.T) {
 
 	expr, err := aladino.Parse("1 == \"a\"")
 	if err != nil {
-		log.Fatalf("parse failed: %v", err)
+		assert.FailNow(t, "parse failed", err)
 	}
 
 	gotVal, err := aladino.Eval(mockedEnv, expr)
@@ -370,7 +369,7 @@ func TestEval(t *testing.T) {
 
 	expr, err := aladino.Parse("1 == 1")
 	if err != nil {
-		log.Fatalf("parse failed: %v", err)
+		assert.FailNow(t, "parse failed", err)
 	}
 
 	gotVal, err := aladino.Eval(mockedEnv, expr)
@@ -386,7 +385,7 @@ func TestEvalCondition_WhenExprEvalFails(t *testing.T) {
 
 	expr, err := aladino.Parse("1 == \"a\"")
 	if err != nil {
-		log.Fatalf("parse failed: %v", err)
+		assert.FailNow(t, "parse failed", err)
 	}
 
 	gotVal, err := aladino.EvalCondition(mockedEnv, expr)
@@ -400,7 +399,7 @@ func TestEvalCondition_WhenConditionIsTrue(t *testing.T) {
 
 	expr, err := aladino.Parse("1 == 1")
 	if err != nil {
-		log.Fatalf("parse failed: %v", err)
+		assert.FailNow(t, "parse failed", err)
 	}
 
 	gotVal, err := aladino.EvalCondition(mockedEnv, expr)
@@ -414,7 +413,7 @@ func TestEvalCondition_WhenConditionIsFalse(t *testing.T) {
 
 	expr, err := aladino.Parse("1 == 2")
 	if err != nil {
-		log.Fatalf("parse failed: %v", err)
+		assert.FailNow(t, "parse failed", err)
 	}
 
 	gotVal, err := aladino.EvalCondition(mockedEnv, expr)
