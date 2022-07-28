@@ -5,7 +5,6 @@
 package aladino
 
 import (
-	"log"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -16,7 +15,7 @@ func TestTypeCheckExec_WhenTypeInferenceFails(t *testing.T) {
 
 	expr, err := Parse("$emptyAction(1)")
 	if err != nil {
-		log.Fatalf("parse failed: %v", err)
+		assert.FailNow(t, "parse failed", err)
 	}
 
 	execExpr, err := TypeCheckExec(mockedEnv, expr)
@@ -30,7 +29,7 @@ func TestTypeCheck(t *testing.T) {
 
 	expr, err := Parse("$emptyAction()")
 	if err != nil {
-		log.Fatalf("parse failed: %v", err)
+		assert.FailNow(t, "parse failed", err)
 	}
 
 	gotExecExpr, err := TypeCheckExec(mockedEnv, expr)
@@ -46,7 +45,7 @@ func TestTypeCheck_WhenExprIsNotFunctionCall(t *testing.T) {
 
 	expr, err := Parse("\"not a function call\"")
 	if err != nil {
-		log.Fatalf("parse failed: %v", err)
+		assert.FailNow(t, "parse failed", err)
 	}
 
 	gotExecExpr, err := TypeCheckExec(mockedEnv, expr)
