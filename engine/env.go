@@ -25,7 +25,7 @@ type Interpreter interface {
 	ProcessRule(name, spec string) error
 	EvalExpr(kind, expr string) (bool, error)
 	ExecProgram(program *Program) error
-	ExecStatement(statement *Statement) error
+	ExecStatement(statement *Statement, isReportEnabled bool) error
 	Report(mode string, safeMode bool) error
 }
 

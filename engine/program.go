@@ -15,7 +15,8 @@ type Statement struct {
 }
 
 type Program struct {
-	Statements []*Statement
+	IsReportEnabled bool
+	Statements      []*Statement
 }
 
 func (program *Program) append(workflowActions []string, workflow PadWorkflow, workflowRules []PadWorkflowRule) {

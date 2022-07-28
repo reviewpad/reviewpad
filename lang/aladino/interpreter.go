@@ -8,6 +8,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"regexp"
 
 	"github.com/google/go-github/v42/github"
 	"github.com/reviewpad/reviewpad/v3/collector"
@@ -117,7 +118,7 @@ func (i *Interpreter) ExecProgram(program *engine.Program) error {
 	execLog("executing program")
 
 	for _, statement := range program.Statements {
-		err := i.ExecStatement(statement)
+		err := i.ExecStatement(statement, program.IsReportEnabled)
 		if err != nil {
 			return err
 		}
@@ -128,7 +129,7 @@ func (i *Interpreter) ExecProgram(program *engine.Program) error {
 	return nil
 }
 
-func (i *Interpreter) ExecStatement(statement *engine.Statement) error {
+func (i *Interpreter) ExecStatement(statement *engine.Statement, isReportEnabled bool) error {
 	statRaw := statement.Code
 	statAST, err := Parse(statRaw)
 	if err != nil {
@@ -138,6 +139,23 @@ func (i *Interpreter) ExecStatement(statement *engine.Statement) error {
 	execStatAST, err := TypeCheckExec(i.Env, statAST)
 	if err != nil {
 		return err
+	}
+
+	m := regexp.MustCompile("\\$fail\\(\"(.*)\"\\)")
+
+	isFailAction := m.FindString(statement.Code) != ""
+	if isFailAction {
+		i.Env.GetReport().addToReport(statement)
+
+		mode := engine.SILENT_MODE
+		if isReportEnabled {
+			mode = engine.VERBOSE_MODE
+		}
+
+		err := i.Report(mode, false)
+		if err != nil {
+			return err
+		}
 	}
 
 	if !i.Env.GetDryRun() {
