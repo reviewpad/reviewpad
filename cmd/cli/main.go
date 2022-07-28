@@ -24,6 +24,7 @@ import (
 
 var (
 	dryRun         = flag.Bool("dry-run", false, "Dry run mode")
+	safeModeRun    = flag.Bool("safe-mode-run", false, "Safe mode")
 	reviewpadFile  = flag.String("reviewpad", "", "File path to reviewpad.yml")
 	pullRequestUrl = flag.String("pull-request", "", "Pull request GitHub url")
 	gitHubToken    = flag.String("github-token", "", "GitHub token")
@@ -155,7 +156,7 @@ func main() {
 		log.Fatalf("Error running reviewpad team edition. Details %v", err.Error())
 	}
 
-	_, err = reviewpad.Run(ctx, gitHubClient, gitHubClientGQL, collectorClient, ghPullRequest, ev, file, *dryRun, false)
+	_, err = reviewpad.Run(ctx, gitHubClient, gitHubClientGQL, collectorClient, ghPullRequest, ev, file, *dryRun, *safeModeRun)
 	if err != nil {
 		log.Fatalf("Error running reviewpad team edition. Details %v", err.Error())
 	}
