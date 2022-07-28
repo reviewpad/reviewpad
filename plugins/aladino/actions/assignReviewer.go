@@ -61,7 +61,6 @@ func assignReviewerCode(e aladino.Env, args []aladino.Value) error {
 		for index, availableReviewer := range availableReviewers {
 			if availableReviewer.(*aladino.StringValue).Val == *review.User.Login {
 				totalRequiredReviewers--
-				// Skip reviewer if pull request is already reviewed
 				if *review.State != "APPROVED" {
 					reviewers = append(reviewers, *review.User.Login)
 				}
