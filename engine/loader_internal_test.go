@@ -7,194 +7,12 @@ package engine
 import (
 	"crypto/sha256"
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/jarcoal/httpmock"
 	"github.com/stretchr/testify/assert"
 )
-
-var mockedReviewpadFile = &ReviewpadFile{
-	Version:      "reviewpad.com/v1alpha",
-	Edition:      "professional",
-	Mode:         "silent",
-	IgnoreErrors: false,
-	Imports: []PadImport{
-		{Url: "https://foo.bar/mockedImportedReviewpadFile.yml"},
-	},
-	Groups: []PadGroup{
-		{
-			Name:        "seniors",
-			Description: "Senior developers",
-			Kind:        "developers",
-			Spec:        "[\"john\"]",
-		},
-	},
-	Rules: []PadRule{
-		{
-			Name:        "tautology",
-			Kind:        "patch",
-			Description: "testing rule",
-			Spec:        "1 == 1",
-		},
-	},
-	Labels: map[string]PadLabel{
-		"bug": {
-			Color:       "f29513",
-			Description: "Something isn't working",
-		},
-	},
-	Workflows: []PadWorkflow{
-		{
-			Name:        "test-workflow-A",
-			Description: "Test process",
-			AlwaysRun:   false,
-			Rules: []PadWorkflowRule{
-				{Rule: "tautology"},
-				{ExtraActions: []string{"$merge()"}},
-			},
-			Actions: []string{
-				"$merge()",
-			},
-		},
-	},
-}
-
-var mockedReviewpadFileData = []byte(`
-api-version:  reviewpad.com/v1alpha
-mode:         silent
-edition:      professional
-ignore-errors: false
-imports:
-    - url: https://foo.bar/mockedImportedReviewpadFile.yml
-groups:
-    - name: seniors
-      description: Senior developers
-      kind: developers
-      spec: '["john"]'
-rules:
-    - name: tautology
-      kind: patch
-      description: testing rule
-      spec: 1 == 1
-labels:
-    bug:
-      color: f29513
-      description: Something isn't working
-workflows:
-    - name: test-workflow-A
-      description: Test process
-      alwaysRun:   true
-      if:
-        - rule: tautology
-          extra-actions:
-            - $merge()
-      then:
-        - $merge()
-`)
-
-var mockedImportedReviewpadFile = &ReviewpadFile{
-	Version:      "reviewpad.com/v1alpha",
-	Edition:      "professional",
-	Mode:         "silent",
-	IgnoreErrors: false,
-	Imports:      []PadImport{},
-	Rules: []PadRule{
-		{
-			Name:        "tautology",
-			Kind:        "patch",
-			Description: "testing rule",
-			Spec:        "1 == 1",
-		},
-	},
-	Labels: map[string]PadLabel{
-		"enhancement": {
-			Color:       "a2eeef",
-			Description: "New feature or request",
-		},
-	},
-	Workflows: []PadWorkflow{
-		{
-			Name:        "test-workflow-B",
-			Description: "Test process",
-			AlwaysRun:   false,
-			Rules: []PadWorkflowRule{
-				{Rule: "tautology"},
-			},
-			Actions: []string{
-				"$action()",
-			},
-		},
-	},
-}
-
-var mockedImportedReviewpadFileData = []byte(`
-api-version:  reviewpad.com/v1alpha
-mode:         silent
-edition:      professional
-ignore-errors: false
-groups:
-    - name: seniors
-      description: Senior developers
-      kind: developers
-      spec: '["john"]'
-rules:
-    - name: tautology
-      kind: patch
-      description: testing rule
-      spec: 1 == 1
-labels:
-    bug:
-      color: f29513
-      description: Something isn't working
-workflows:
-    - name: test-workflow-A
-      description: Test process
-      alwaysRun:   true
-      if:
-        - rule: tautology
-      then:
-        - $action()
-`)
-
-var simpleReviewpadFileData = []byte(`
-api-version:  reviewpad.com/v1alpha
-mode:         silent
-edition:      professional
-rules:
-    - name: tautology
-      kind: patch
-      description: testing rule
-      spec: true
-workflows:
-    - name: simple-workflow
-      description: Test process
-      alwaysRun:   true
-      if:
-        - rule: tautology
-      then:
-        - $merge()
-`)
-
-var simpleReviewpadFileWithImportsData = []byte(`
-api-version:  reviewpad.com/v1alpha
-mode:         silent
-edition:      professional
-imports:
-    - url: https://foo.bar/anotherSimpleReviewpadFile.yml
-rules:
-    - name: tautology
-      kind: patch
-      description: testing rule
-      spec: true
-workflows:
-    - name: simple-workflow
-      description: Test process
-      alwaysRun:   true
-      if:
-        - rule: tautology
-      then:
-        - $merge()
-`)
 
 func TestHash(t *testing.T) {
 	data := []byte("hello")
@@ -334,24 +152,12 @@ func TestParse(t *testing.T) {
 				Description: "Something isn't working",
 			},
 		},
-		Workflows: []PadWorkflow{
-			{
-				Name:        "test-workflow-A",
-				Description: "Test process",
-				AlwaysRun:   false,
-				Rules: []PadWorkflowRule{
-					{
-						Rule: "tautology",
-						ExtraActions: []string{
-							"$merge()",
-						},
-					},
-				},
-				Actions: []string{
-					"$merge()",
-				},
-			},
-		},
+		Workflows: []PadWorkflow{mockedReviewpadFilePadWorkflow},
+	}
+
+    mockedReviewpadFileData, err := os.ReadFile("../resources/test/engine/mockedReviewpadFile.yml")
+    if err != nil {
+		assert.FailNow(t, fmt.Sprintf("Couldn't get ../resources/test/engine/mockedReviewpadFile.yml: %v", err))
 	}
 
 	gotReviewpadFile, err := parse(mockedReviewpadFileData)
@@ -399,8 +205,10 @@ func TestTransform(t *testing.T) {
 				Description: "Test process",
 				AlwaysRun:   false,
 				Rules: []PadWorkflowRule{
-					{Rule: "tautology"},
-					{ExtraActions: []string{"$merge(\"merge\")"}},
+					{
+						Rule:         "tautology",
+						ExtraActions: []string{"$addLabel(\"test-workflow-a\")"},
+					},
 				},
 				Actions: []string{
 					"$merge(\"merge\")",
@@ -451,6 +259,11 @@ func TestLoadImport_WhenContentIsInInvalidYamlFormat(t *testing.T) {
 func TestLoadImport(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
+
+    simpleReviewpadFileData, err := os.ReadFile("../resources/test/engine/simpleReviewpadFile.yml")
+    if err != nil {
+		assert.FailNow(t, fmt.Sprintf("Couldn't get ../resources/test/engine/simpleReviewpadFile.yml: %v", err))
+	}
 
 	simpleReviewpadFileImport := PadImport{
 		Url: "https://foo.bar/simpleReviewpadFile.yml",
@@ -524,6 +337,11 @@ func TestInlineImports_WhenThereIsCycleDependency(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
+    mockedImportedReviewpadFileData, err := os.ReadFile("../resources/test/engine/mockedImportedReviewpadFile.yml")
+    if err != nil {
+		assert.FailNow(t, fmt.Sprintf("Couldn't get ../resources/test/engine/mockedImportedReviewpadFile.yml: %v", err))
+	}
+    
 	importUrl := "https://foo.bar/mockedImportedReviewpadFile.yml"
 	reviewpadFile := &ReviewpadFile{}
 	*reviewpadFile = *mockedImportedReviewpadFile
@@ -557,6 +375,11 @@ func TestInlineImports_WhenThereIsCycleDependency(t *testing.T) {
 func TestInlineImports_WhenVisitsAreOptimized(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
+
+    mockedImportedReviewpadFileData, err := os.ReadFile("../resources/test/engine/mockedImportedReviewpadFile.yml")
+    if err != nil {
+		assert.FailNow(t, fmt.Sprintf("Couldn't get ../resources/test/engine/mockedImportedReviewpadFile.yml: %v", err))
+	}
 
 	mockedImportedReviewpadFileUrl := "https://foo.bar/mockedImportedReviewpadFile.yml"
 	reviewpadFile := &ReviewpadFile{}
@@ -595,6 +418,11 @@ func TestInlineImports_WhenSubTreeFileInlineImportsFails(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
+    simpleReviewpadFileWithImportsData, err := os.ReadFile("../resources/test/engine/simpleReviewpadFileWithImports.yml")
+    if err != nil {
+		assert.FailNow(t, fmt.Sprintf("Couldn't get ../resources/test/engine/simpleReviewpadFileWithImports.yml: %v", err))
+	}
+
 	mockedSimpleReviewpadFileUrl := "https://foo.bar/simpleReviewpadFile.yml"
 	reviewpadFile := &ReviewpadFile{}
 	*reviewpadFile = *mockedReviewpadFile
@@ -627,6 +455,11 @@ func TestInlineImports_WhenSubTreeFileInlineImportsFails(t *testing.T) {
 func TestInlineImports(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
+
+    simpleReviewpadFileData, err := os.ReadFile("../resources/test/engine/simpleReviewpadFile.yml")
+    if err != nil {
+		assert.FailNow(t, fmt.Sprintf("Couldn't get ../resources/test/engine/simpleReviewpadFile.yml: %v", err))
+	}
 
 	mockedSimpleReviewpadFileUrl := "https://foo.bar/simpleReviewpadFile.yml"
 	reviewpadFile := &ReviewpadFile{}
@@ -682,14 +515,7 @@ func TestInlineImports(t *testing.T) {
 			},
 		},
 		Workflows: []PadWorkflow{
-			{
-				Name:        "test-workflow-A",
-				Description: "Test process",
-				AlwaysRun:   false,
-				Rules: []PadWorkflowRule{
-					{Rule: "tautology"},
-					{ExtraActions: []string{"$merge()"}}},
-				Actions: []string{"$merge()"}},
+			mockedReviewpadFilePadWorkflow,
 			{
 				Name:        "simple-workflow",
 				Description: "Test process",
