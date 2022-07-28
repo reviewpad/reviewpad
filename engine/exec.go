@@ -108,9 +108,7 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 	}
 
 	// a program is a list of statements to be executed based on the workflow rules and actions.
-	program := &Program{
-		Statements: make([]*Statement, 0),
-	}
+	program := BuildProgram(make([]*Statement, 0))
 
 	// triggeredExclusiveWorkflow is a control variable to denote if a workflow `always-run: false` has been triggered.
 	triggeredExclusiveWorkflow := false
