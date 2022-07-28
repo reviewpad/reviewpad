@@ -92,6 +92,7 @@ func TestEval_WhenDryModeIsNotSetAndGetLabelRequestFails(t *testing.T) {
 
 	mockedAladinoInterpreter, err := aladino.NewInterpreter(
 		mockedCtx,
+		dryRun,
 		mockedClient,
 		nil,
 		mockedCollector,
@@ -137,7 +138,7 @@ func TestEval_WhenDryModeIsNotSetAndCreateLabelFails(t *testing.T) {
 						Response: &http.Response{
 							StatusCode: 404,
 						},
-                        Message: "Resource not found",
+						Message: "Resource not found",
 					}))
 				}),
 			),
@@ -159,6 +160,7 @@ func TestEval_WhenDryModeIsNotSetAndCreateLabelFails(t *testing.T) {
 
 	mockedAladinoInterpreter, err := aladino.NewInterpreter(
 		mockedCtx,
+		dryRun,
 		mockedClient,
 		nil,
 		mockedCollector,
@@ -237,6 +239,7 @@ func TestEval_WhenWorkflowRuleEvalExprFails(t *testing.T) {
 
 	mockedAladinoInterpreter, err := aladino.NewInterpreter(
 		mockedCtx,
+		dryRun,
 		mockedClient,
 		nil,
 		mockedCollector,
@@ -307,6 +310,7 @@ func TestEval_WhenWorkflowIsTriggered(t *testing.T) {
 
 	mockedAladinoInterpreter, err := aladino.NewInterpreter(
 		mockedCtx,
+		dryRun,
 		mockedClient,
 		nil,
 		mockedCollector,
@@ -392,7 +396,7 @@ func TestEval_WhenWorkflowIsSkipped(t *testing.T) {
 		Spec:        "true",
 	}
 
-    otherReviewpadFile.Rules = append(otherReviewpadFile.Rules, rule)
+	otherReviewpadFile.Rules = append(otherReviewpadFile.Rules, rule)
 
 	otherReviewpadFile.Workflows = []engine.PadWorkflow{
 		executedWorkflow,
@@ -414,6 +418,7 @@ func TestEval_WhenWorkflowIsSkipped(t *testing.T) {
 
 	mockedAladinoInterpreter, err := aladino.NewInterpreter(
 		mockedCtx,
+		dryRun,
 		mockedClient,
 		nil,
 		mockedCollector,
@@ -477,7 +482,7 @@ func TestEval_WhenNoWorkflowRulesAreActivated(t *testing.T) {
 	otherReviewpadFile := &engine.ReviewpadFile{}
 	copier.Copy(otherReviewpadFile, mockedReviewpadFile)
 
-    notTriggeredRule := engine.PadRule{
+	notTriggeredRule := engine.PadRule{
 		Name:        "dummy-rule",
 		Kind:        "patch",
 		Description: "testing rule",
@@ -499,11 +504,12 @@ func TestEval_WhenNoWorkflowRulesAreActivated(t *testing.T) {
 		},
 	}
 
-    otherReviewpadFile.Rules = []engine.PadRule{notTriggeredRule}
+	otherReviewpadFile.Rules = []engine.PadRule{notTriggeredRule}
 	otherReviewpadFile.Workflows = []engine.PadWorkflow{analyzedWorkflow}
 
 	mockedAladinoInterpreter, err := aladino.NewInterpreter(
 		mockedCtx,
+		dryRun,
 		mockedClient,
 		nil,
 		mockedCollector,
@@ -531,7 +537,7 @@ func TestEval_WhenNoWorkflowRulesAreActivated(t *testing.T) {
 
 	gotProgram, err := engine.Eval(otherReviewpadFile, mockedEnv)
 
-    wantProgram := &engine.Program{Statements:[]*engine.Statement{}}
+	wantProgram := &engine.Program{Statements: []*engine.Statement{}}
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantProgram, gotProgram)

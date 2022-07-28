@@ -42,7 +42,7 @@ func GetDefaultMockPullRequestDetails() *github.PullRequest {
 		CreatedAt: &prDate,
 		Number:    github.Int(prNum),
 		URL:       github.String(prUrl),
-        Head: &github.PullRequestBranch{
+		Head: &github.PullRequestBranch{
 			Repo: &github.Repository{
 				Owner: &github.User{
 					Login: github.String("john"),
@@ -88,22 +88,22 @@ func mockHttpClientWith(clientOptions ...mock.MockBackendOption) *http.Client {
 }
 
 func MockGithubClient(clientOptions []mock.MockBackendOption) *github.Client {
-    defaultMocks := []mock.MockBackendOption{
-        mock.WithRequestMatchHandler(
-				mock.GetReposPullsByOwnerByRepoByPullNumber,
-				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					w.Write(mock.MustMarshal(GetDefaultMockPullRequestDetails()))
-				}),
-			),
-			mock.WithRequestMatchHandler(
-				mock.GetReposPullsFilesByOwnerByRepoByPullNumber,
-				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					w.Write(mock.MustMarshal(getDefaultMockPullRequestFileList()))
-				}),
-			),
-    }
+	defaultMocks := []mock.MockBackendOption{
+		mock.WithRequestMatchHandler(
+			mock.GetReposPullsByOwnerByRepoByPullNumber,
+			http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+				w.Write(mock.MustMarshal(GetDefaultMockPullRequestDetails()))
+			}),
+		),
+		mock.WithRequestMatchHandler(
+			mock.GetReposPullsFilesByOwnerByRepoByPullNumber,
+			http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+				w.Write(mock.MustMarshal(getDefaultMockPullRequestFileList()))
+			}),
+		),
+	}
 
-    mocks := append(clientOptions, defaultMocks...)
+	mocks := append(clientOptions, defaultMocks...)
 
 	return github.NewClient(mockDefaultHttpClient(mocks))
 }

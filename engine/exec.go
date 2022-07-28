@@ -25,14 +25,14 @@ func execLog(val string) {
 }
 
 func CollectError(env *Env, err error) {
-    var errDetails string
+	var errDetails string
 	ghError, isGitHubError := err.(*github.ErrorResponse)
 
-    if isGitHubError {
-        errDetails = ghError.Message
-    } else {
-        errDetails = err.Error()
-    }
+	if isGitHubError {
+		errDetails = ghError.Message
+	} else {
+		errDetails = err.Error()
+	}
 
 	env.Collector.Collect("Error", map[string]interface{}{
 		"pullRequestUrl": env.PullRequest.URL,
