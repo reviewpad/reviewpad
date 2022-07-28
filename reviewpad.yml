@@ -253,7 +253,7 @@ workflows:
           - '$commentOnce("Thank you so much for your first contribution!")'
       - rule: authored-by-rising-stars
         extra-actions:
-          - '$assignReviewer($group("maintainers", 1))'
+          - '$assignReviewer($group("maintainers"), 1)'
           - '$assignAssignees([$author()])'
       - rule: authored-by-maintainers
         extra-actions:
