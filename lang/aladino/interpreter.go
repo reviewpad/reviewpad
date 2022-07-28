@@ -154,9 +154,9 @@ func (i *Interpreter) ExecStatement(statement *engine.Statement) error {
 }
 
 func (i *Interpreter) Report(mode string, safeMode bool) error {
-	env := i.Env
-
 	execLog("generating report")
+
+	env := i.Env
 
 	var err error
 
@@ -175,10 +175,10 @@ func (i *Interpreter) Report(mode string, safeMode bool) error {
 	report := buildReport(safeMode, env.GetReport())
 
 	if comment == nil {
-		return AddReportComment(i.Env, report)
+		return AddReportComment(env, report)
 	}
 
-	return UpdateReportComment(i.Env, *comment.ID, report)
+	return UpdateReportComment(env, *comment.ID, report)
 
 }
 
