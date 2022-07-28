@@ -61,36 +61,35 @@ func main() {
 	}
 
 	if *reviewpadFile == "" {
-		log.Printf("Missing argument reviewpad.")
+		log.Printf("[ERROR] Missing argument reviewpad.")
 		usage()
 	}
 
 	if *pullRequestUrl == "" {
-		log.Printf("Missing argument pull-request.")
+		log.Printf("[ERROR] Missing argument pull-request.")
 		usage()
 	}
 
 	if *gitHubToken == "" {
-		log.Printf("Missing argument github-token.")
+		log.Printf("[ERROR] Missing argument github-token.")
 		usage()
 	}
 
-	var rawEvent string
+	var ev interface{}
 
 	if *eventFilePath == "" {
-		rawEvent = "{}"
+		log.Print("[WARN] No event payload provided. Assuming empty event.")
 	} else {
 		content, err := ioutil.ReadFile(*eventFilePath)
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		rawEvent = string(content)
-	}
-
-	ev, err := parseEvent(rawEvent)
-	if err != nil {
-		log.Fatal(err)
+		rawEvent := string(content)
+		ev, err = parseEvent(rawEvent)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	pullRequestDetailsRegex := regexp.MustCompile(`github\.com\/(.+)\/(.+)\/pull\/(\d+)`)
