@@ -30,10 +30,12 @@ type Env interface {
 	GetBuiltIns() *BuiltIns
 	GetReport() *Report
 	GetEventPayload() interface{}
+	GetDryRun() bool
 }
 
 type BaseEnv struct {
 	Ctx          context.Context
+	DryRun       bool
 	Client       *github.Client
 	ClientGQL    *githubv4.Client
 	Collector    collector.Collector
@@ -47,6 +49,10 @@ type BaseEnv struct {
 
 func (e *BaseEnv) GetCtx() context.Context {
 	return e.Ctx
+}
+
+func (e *BaseEnv) GetDryRun() bool {
+	return e.DryRun
 }
 
 func (e *BaseEnv) GetClient() *github.Client {
@@ -100,6 +106,7 @@ func NewTypeEnv(e Env) TypeEnv {
 
 func NewEvalEnv(
 	ctx context.Context,
+	dryRun bool,
 	gitHubClient *github.Client,
 	gitHubClientGQL *githubv4.Client,
 	collector collector.Collector,
@@ -133,6 +140,7 @@ func NewEvalEnv(
 
 	input := &BaseEnv{
 		Ctx:          ctx,
+		DryRun:       dryRun,
 		Client:       gitHubClient,
 		ClientGQL:    gitHubClientGQL,
 		Collector:    collector,

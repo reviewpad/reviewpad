@@ -200,6 +200,7 @@ func TestNewEvalEnv_WhenGetPullRequestFilesFails(t *testing.T) {
 
 	env, err := aladino.NewEvalEnv(
 		ctx,
+		false,
 		mockedGithubClient,
 		nil,
 		aladino.DefaultMockCollector,
@@ -239,6 +240,7 @@ func TestNewEvalEnv_WhenNewFileFails(t *testing.T) {
 
 	env, err := aladino.NewEvalEnv(
 		ctx,
+		false,
 		mockedGithubClient,
 		nil,
 		aladino.DefaultMockCollector,
@@ -284,6 +286,7 @@ func TestNewEvalEnv(t *testing.T) {
 
 	gotEnv, err := aladino.NewEvalEnv(
 		ctx,
+		false,
 		mockedGithubClient,
 		nil,
 		aladino.DefaultMockCollector,

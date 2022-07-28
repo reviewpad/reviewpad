@@ -26,7 +26,7 @@ type Interpreter interface {
 	EvalExpr(kind, expr string) (bool, error)
 	ExecProgram(program *Program) error
 	ExecStatement(statement *Statement) error
-	Report(mode string) error
+	Report(mode string, safeMode bool) error
 }
 
 type Env struct {

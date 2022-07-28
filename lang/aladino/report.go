@@ -65,21 +65,25 @@ func (report *Report) addToReport(statement *engine.Statement) {
 	}
 }
 
-func ReportHeader() string {
+func ReportHeader(safeMode bool) string {
 	var sb strings.Builder
 
 	// Annotation
 	sb.WriteString(fmt.Sprintf("%v\n", ReviewpadReportCommentAnnotation))
 	// Header
-	sb.WriteString("**Reviewpad Report**\n\n")
+	if safeMode {
+		sb.WriteString("**Reviewpad Report** (Reviewpad ran in dry-run mode because configuration has changed)\n\n")
+	} else {
+		sb.WriteString("**Reviewpad Report**\n\n")
+	}
 
 	return sb.String()
 }
 
-func buildReport(report *Report) string {
+func buildReport(safeMode bool, report *Report) string {
 	var sb strings.Builder
 
-	sb.WriteString(ReportHeader())
+	sb.WriteString(ReportHeader(safeMode))
 	sb.WriteString(BuildVerboseReport(report))
 
 	return sb.String()

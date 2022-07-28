@@ -160,7 +160,7 @@ func TestAddToReport_WhenWorkflowAlreadyExists(t *testing.T) {
 func TestReportHeader(t *testing.T) {
 	wantReportHeader := "<!--@annotation-reviewpad-report-->\n**Reviewpad Report**\n\n"
 
-	gotReportHeader := ReportHeader()
+	gotReportHeader := ReportHeader(false)
 
 	assert.Equal(t, wantReportHeader, gotReportHeader)
 }
@@ -186,7 +186,7 @@ func TestBuildReport(t *testing.T) {
 | test-workflow | tautology<br> | ` + "`$addLabel(\"test\")`" + `<br> | Testing workflow |
 `
 
-	gotReport := buildReport(&report)
+	gotReport := buildReport(false, &report)
 
 	assert.Equal(t, wantReport, gotReport)
 }
