@@ -56,20 +56,14 @@ func assignReviewerCode(e aladino.Env, args []aladino.Value) error {
 		return err
 	}
 
-	// Skip current requested reviewers if pull request already reviewed
-	for _, review := range reviews {
-		if review.State != nil && *review.State == "APPROVED" {
-			log.Printf("assignReviewer: skipping request reviewers. the pull request already reviewed")
-			return nil
-		}
-	}
-
 	// Re-request current reviewers if mention on the provided reviewers list
 	for _, review := range reviews {
 		for index, availableReviewer := range availableReviewers {
 			if availableReviewer.(*aladino.StringValue).Val == *review.User.Login {
 				totalRequiredReviewers--
-				reviewers = append(reviewers, *review.User.Login)
+				if *review.State != "APPROVED" {
+					reviewers = append(reviewers, *review.User.Login)
+				}
 				availableReviewers = append(availableReviewers[:index], availableReviewers[index+1:]...)
 				break
 			}
@@ -88,6 +82,7 @@ func assignReviewerCode(e aladino.Env, args []aladino.Value) error {
 		}
 	}
 
+	// TODO: #164 - Improve reviewer selection
 	// Select random reviewers from the list of all provided reviewers
 	for i := 0; i < totalRequiredReviewers; i++ {
 		selectedElementIndex := utils.GenerateRandom(len(availableReviewers))
