@@ -71,8 +71,6 @@ func Run(
 		return nil, err
 	}
 
-	// only send report if reviewpad is running in safe mode
-	// or not in dry run mode
 	if safeMode || !dryRun {
 		err = aladinoInterpreter.Report(reviewpadFile.Mode, safeMode)
 		if err != nil {
