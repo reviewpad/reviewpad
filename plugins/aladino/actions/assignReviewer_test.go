@@ -7,7 +7,6 @@ package plugins_aladino_actions_test
 import (
 	"encoding/json"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"testing"
 
@@ -20,10 +19,53 @@ import (
 
 var assignReviewer = plugins_aladino.PluginBuiltIns().Actions["assignReviewer"].Code
 
+func TestAssignReviewer_WhenPullRequestIsInDraft(t *testing.T) {
+	var isListReviewersRequestPerformed bool
+	reviewer := "jane"
+	mockedPullRequest := aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
+		Draft: github.Bool(true),
+	})
+	mockedEnv, err := aladino.MockDefaultEnv(
+		[]mock.MockBackendOption{
+			mock.WithRequestMatchHandler(
+				mock.GetReposPullsByOwnerByRepoByPullNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+					w.Write(mock.MustMarshal(mockedPullRequest))
+				}),
+			),
+			mock.WithRequestMatchHandler(
+				mock.GetReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					// If the list reviewers request was performed then the execution of the AssignReviewer action
+					// is ongoing even though the pull request is in draft
+					isListReviewersRequestPerformed = true
+				}),
+			),
+		},
+		nil,
+	)
+	if err != nil {
+		assert.FailNow(t, "MockDefaultEnv returned unexpected error: %v", err)
+	}
+
+	args := []aladino.Value{
+		aladino.BuildArrayValue(
+			[]aladino.Value{
+				aladino.BuildStringValue(reviewer),
+			},
+		),
+		aladino.BuildIntValue(1),
+	}
+	err = assignReviewer(mockedEnv, args)
+
+	assert.Nil(t, err)
+	assert.False(t, isListReviewersRequestPerformed, "the action shouldn't request the listing of reviewers")
+}
+
 func TestAssignReviewer_WhenTotalRequiredReviewersIsZero(t *testing.T) {
 	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
 	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
+		assert.FailNow(t, "MockDefaultEnv returned unexpected error: %v", err)
 	}
 
 	args := []aladino.Value{
@@ -42,7 +84,7 @@ func TestAssignReviewer_WhenTotalRequiredReviewersIsZero(t *testing.T) {
 func TestAssignReviewer_WhenListOfReviewersIsEmpty(t *testing.T) {
 	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
 	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
+		assert.FailNow(t, "MockDefaultEnv returned unexpected error: %v", err)
 	}
 
 	args := []aladino.Value{aladino.BuildArrayValue([]aladino.Value{}), aladino.BuildIntValue(1)}
@@ -89,7 +131,7 @@ func TestAssignReviewer_WhenAuthorIsInListOfReviewers(t *testing.T) {
 		nil,
 	)
 	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
+		assert.FailNow(t, "MockDefaultEnv returned unexpected error: %v", err)
 	}
 
 	args := []aladino.Value{
@@ -146,7 +188,7 @@ func TestAssignReviewer_WhenTotalRequiredReviewersIsMoreThanTotalAvailableReview
 		nil,
 	)
 	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
+		assert.FailNow(t, "MockDefaultEnv returned unexpected error: %v", err)
 	}
 
 	args := []aladino.Value{
@@ -181,7 +223,7 @@ func TestAssignReviewer_WhenListReviewsRequestFails(t *testing.T) {
 		nil,
 	)
 	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
+		assert.FailNow(t, "MockDefaultEnv returned unexpected error: %v", err)
 	}
 
 	args := []aladino.Value{
@@ -242,7 +284,7 @@ func TestAssignReviewer_WhenPullRequestAlreadyHasReviews(t *testing.T) {
 		nil,
 	)
 	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
+		assert.FailNow(t, "MockDefaultEnv returned unexpected error: %v", err)
 	}
 
 	args := []aladino.Value{
@@ -303,7 +345,7 @@ func TestAssignReviewer_WhenPullRequestAlreadyHasApproval(t *testing.T) {
 		nil,
 	)
 	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
+		assert.FailNow(t, "MockDefaultEnv returned unexpected error: %v", err)
 	}
 
 	args := []aladino.Value{
@@ -361,7 +403,7 @@ func TestAssignReviewer_WhenPullRequestAlreadyHasRequestedReviewers(t *testing.T
 		nil,
 	)
 	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
+		assert.FailNow(t, "MockDefaultEnv returned unexpected error: %v", err)
 	}
 
 	args := []aladino.Value{
@@ -417,7 +459,7 @@ func TestAssignReviewer_HasNoAvailableReviewers(t *testing.T) {
 		nil,
 	)
 	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
+		assert.FailNow(t, "MockDefaultEnv returned unexpected error: %v", err)
 	}
 
 	args := []aladino.Value{
@@ -476,7 +518,7 @@ func TestAssignReviewer_WhenPullRequestAlreadyApproved(t *testing.T) {
 		nil,
 	)
 	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
+		assert.FailNow(t, "MockDefaultEnv returned unexpected error: %v", err)
 	}
 
 	args := []aladino.Value{

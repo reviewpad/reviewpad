@@ -21,6 +21,10 @@ func AssignReviewer() *aladino.BuiltInAction {
 }
 
 func assignReviewerCode(e aladino.Env, args []aladino.Value) error {
+    if e.GetPullRequest().GetDraft() {
+        return nil
+    }
+
 	totalRequiredReviewers := args[1].(*aladino.IntValue).Val
 	if totalRequiredReviewers == 0 {
 		return fmt.Errorf("assignReviewer: total required reviewers can't be 0")

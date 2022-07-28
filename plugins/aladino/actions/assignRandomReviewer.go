@@ -20,6 +20,10 @@ func AssignRandomReviewer() *aladino.BuiltInAction {
 }
 
 func assignRandomReviewerCode(e aladino.Env, _ []aladino.Value) error {
+	if e.GetPullRequest().GetDraft() {
+		return nil
+	}
+
 	prNum := utils.GetPullRequestNumber(e.GetPullRequest())
 	owner := utils.GetPullRequestBaseOwnerName(e.GetPullRequest())
 	repo := utils.GetPullRequestBaseRepoName(e.GetPullRequest())
