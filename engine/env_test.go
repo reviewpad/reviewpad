@@ -24,8 +24,8 @@ func TestNewEvalEnv(t *testing.T) {
 + func new1() {
 +
 return`
-	
-    mockedFile := &aladino.File{
+
+	mockedFile := &aladino.File{
 		Repr: &github.CommitFile{
 			Filename: github.String(fileName),
 			Patch:    github.String(patch),

@@ -13,7 +13,7 @@ import (
 )
 
 func getTestPatch() string {
-    return `@@ -2,9 +2,11 @@ package main
+	return `@@ -2,9 +2,11 @@ package main
 - func previous() {
 + func new() {
 +
@@ -22,49 +22,49 @@ return
 }
 
 func TestAppendToDiff(t *testing.T) {
-    fileName := "default-mock-repo/file1.ts"
+	fileName := "default-mock-repo/file1.ts"
 	mockedFile := &github.CommitFile{
 		Patch:    github.String(getTestPatch()),
 		Filename: github.String(fileName),
 	}
 
-    isContext := false
-    oldStart := 2
-    oldEnd := 2
-    newStart := 2
-    newEnd := 3
-    oldLine := " func previous() {"
-    newLine := " func new() {\n"
+	isContext := false
+	oldStart := 2
+	oldEnd := 2
+	newStart := 2
+	newEnd := 3
+	oldLine := " func previous() {"
+	newLine := " func new() {\n"
 
 	file := &File{
 		Repr: mockedFile,
 	}
 	file.AppendToDiff(
-        isContext,
-        oldStart,
-        oldEnd,
-        newStart,
-        newEnd,
-        oldLine,
-        newLine,
-    )
+		isContext,
+		oldStart,
+		oldEnd,
+		newStart,
+		newEnd,
+		oldLine,
+		newLine,
+	)
 
-    gotDiff := file.Diff
+	gotDiff := file.Diff
 
-    wantDiff := []*diffBlock{
-        {
-            isContext: isContext,
-            Old: &diffSpan{
-                int32(oldStart),
-                int32(oldEnd),
-            },
-            New: &diffSpan{
-                int32(newStart),
-                int32(newEnd),
-            },
-            oldLine: oldLine,
-            newLine: newLine,
-        },
+	wantDiff := []*diffBlock{
+		{
+			isContext: isContext,
+			Old: &diffSpan{
+				int32(oldStart),
+				int32(oldEnd),
+			},
+			New: &diffSpan{
+				int32(newStart),
+				int32(newEnd),
+			},
+			oldLine: oldLine,
+			newLine: newLine,
+		},
 	}
 
 	assert.Equal(t, wantDiff, gotDiff)

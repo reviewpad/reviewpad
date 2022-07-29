@@ -208,16 +208,16 @@ func TestEquals_WhenArrayTypeComparedToStringType(t *testing.T) {
 
 func TestEquals_WhenArrayOfTypeAndArrayTypeHaveDiffKinds(t *testing.T) {
 	arrayOfType := BuildArrayOfType(BuildIntType())
-    arrayType := BuildArrayType([]Type{BuildStringType()})
+	arrayType := BuildArrayType([]Type{BuildStringType()})
 
-    assert.False(t, arrayOfType.equals(arrayType))
+	assert.False(t, arrayOfType.equals(arrayType))
 }
 
 func TestEquals_WhenArrayOfTypeAndArrayTypeHaveSameKind(t *testing.T) {
 	arrayOfType := BuildArrayOfType(BuildIntType())
-    arrayType := BuildArrayType([]Type{BuildIntType()})
+	arrayType := BuildArrayType([]Type{BuildIntType()})
 
-    assert.True(t, arrayOfType.equals(arrayType))
+	assert.True(t, arrayOfType.equals(arrayType))
 }
 
 func TestEquals_WhenArraysOfTypesHaveDiffKind(t *testing.T) {
