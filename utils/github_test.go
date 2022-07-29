@@ -6,6 +6,7 @@ package utils_test
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"testing"
 
@@ -710,4 +711,79 @@ func TestGetPullRequests_WhenRequestFails(t *testing.T) {
 
 	assert.Nil(t, gotReviews)
 	assert.Equal(t, err.(*github.ErrorResponse).Message, failMessage)
+}
+
+func TestGetReviewThreads_WhenRequestFails(t *testing.T) {
+	failMessage := "GetReviewThreads"
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
+		nil,
+		func(w http.ResponseWriter, req *http.Request) {
+			http.Error(w, failMessage, http.StatusNotFound)
+		},
+	)
+
+	gotThreads, err := utils.GetReviewThreads(
+		mockedEnv.GetCtx(),
+		mockedEnv.GetClientGQL(),
+		aladino.DefaultMockPrOwner,
+		aladino.DefaultMockPrRepoName,
+		aladino.DefaultMockPrNum,
+		2,
+	)
+
+	assert.Nil(t, gotThreads)
+	assert.Equal(t, err.Error(), fmt.Sprintf("non-200 OK status code: 404 Not Found body: \"%s\\n\"", failMessage))
+}
+
+func TestGetReviewThreads(t *testing.T) {
+	mockedGraphQLQuery := fmt.Sprintf(
+		"{\"query\":\"query($pullRequestNumber:Int!$repositoryName:String!$repositoryOwner:String!$reviewThreadsCursor:String){repository(owner: $repositoryOwner, name: $repositoryName){pullRequest(number: $pullRequestNumber){reviewThreads(first: 10, after: $reviewThreadsCursor){nodes{isResolved,isOutdated},pageInfo{endCursor,hasNextPage}}}}}\",\"variables\":{\"pullRequestNumber\":%d,\"repositoryName\":\"%s\",\"repositoryOwner\":\"%s\",\"reviewThreadsCursor\":null}}\n",
+		aladino.DefaultMockPrNum,
+		aladino.DefaultMockPrRepoName,
+		aladino.DefaultMockPrOwner,
+	)
+
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
+		nil,
+		func(w http.ResponseWriter, req *http.Request) {
+			query := aladino.MustRead(req.Body)
+			switch query {
+			case mockedGraphQLQuery:
+				aladino.MustWrite(
+					w,
+					`{"data": {
+                        "repository": {
+                            "pullRequest": {
+                                "reviewThreads": {
+                                    "nodes": [{
+                                        "isResolved": true,
+                                        "isOutdated": false
+                                    }]
+                                }
+                            }
+                        }
+                    }}`,
+				)
+			}
+		},
+	)
+
+	wantReviewThreads := []utils.GQLReviewThread{{
+		IsResolved: true,
+		IsOutdated: false,
+	}}
+	gotReviewThreads, err := utils.GetReviewThreads(
+		mockedEnv.GetCtx(),
+		mockedEnv.GetClientGQL(),
+		aladino.DefaultMockPrOwner,
+		aladino.DefaultMockPrRepoName,
+		aladino.DefaultMockPrNum,
+		2,
+	)
+
+	assert.Nil(t, err)
+	assert.Equal(t, gotReviewThreads, wantReviewThreads)
+
 }

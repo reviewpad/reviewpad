@@ -11,8 +11,28 @@ import (
 	"strings"
 
 	"github.com/google/go-github/v42/github"
+	"github.com/shurcooL/githubv4"
 	"github.com/tomnomnom/linkheader"
 )
+
+type GQLReviewThread struct {
+	IsResolved githubv4.Boolean
+	IsOutdated githubv4.Boolean
+}
+
+type ReviewThreadsQuery struct {
+	Repository struct {
+		PullRequest struct {
+			ReviewThreads struct {
+				Nodes    []GQLReviewThread
+				PageInfo struct {
+					EndCursor   githubv4.String
+					HasNextPage bool
+				}
+			} `graphql:"reviewThreads(first: 10, after: $reviewThreadsCursor)"`
+		} `graphql:"pullRequest(number: $pullRequestNumber)"`
+	} `graphql:"repository(owner: $repositoryOwner, name: $repositoryName)"`
+}
 
 const maxPerPage int = 100
 
@@ -300,4 +320,39 @@ func GetPullRequests(ctx context.Context, client *github.Client, owner string, r
 	}
 
 	return prs.([]*github.PullRequest), nil
+}
+
+func GetReviewThreads(ctx context.Context, client *githubv4.Client, owner string, repo string, number int, retryCount int) ([]GQLReviewThread, error) {
+	var reviewThreadsQuery ReviewThreadsQuery
+	reviewThreads := make([]GQLReviewThread, 0)
+	hasNextPage := true
+
+	varGQLReviewThreads := map[string]interface{}{
+		"repositoryOwner":     githubv4.String(owner),
+		"repositoryName":      githubv4.String(repo),
+		"pullRequestNumber":   githubv4.Int(number),
+		"reviewThreadsCursor": (*githubv4.String)(nil),
+	}
+
+	currentRequestRetry := 1
+
+	for hasNextPage {
+		err := client.Query(context.Background(), &reviewThreadsQuery, varGQLReviewThreads)
+		if err != nil {
+			currentRequestRetry++
+			if currentRequestRetry <= retryCount {
+				continue
+			} else {
+				return nil, err
+			}
+		} else {
+			currentRequestRetry = 0
+		}
+
+		reviewThreads = append(reviewThreads, reviewThreadsQuery.Repository.PullRequest.ReviewThreads.Nodes...)
+		hasNextPage = reviewThreadsQuery.Repository.PullRequest.ReviewThreads.PageInfo.HasNextPage
+		varGQLReviewThreads["reviewThreadsCursor"] = githubv4.NewString(reviewThreadsQuery.Repository.PullRequest.ReviewThreads.PageInfo.EndCursor)
+	}
+
+	return reviewThreads, nil
 }
