@@ -5,7 +5,6 @@
 package plugins_aladino_actions_test
 
 import (
-	"fmt"
 	"log"
 	"testing"
 
@@ -24,7 +23,7 @@ func TestDisableActions(t *testing.T) {
 			builtInName: {
 				Type: aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, aladino.BuildArrayOfType(aladino.BuildStringType())),
 				Code: func(e aladino.Env, args []aladino.Value) error {
-					return fmt.Errorf("%v is called", builtInName)
+					return nil
 				},
 				Disabled: false,
 			},

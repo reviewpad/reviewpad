@@ -5,7 +5,6 @@
 package aladino
 
 import (
-	"fmt"
 	"log"
 	"testing"
 
@@ -91,14 +90,15 @@ func TestExec_WhenActionBuiltInNonExisting(t *testing.T) {
 func TestExec_WhenActionIsEnabled(t *testing.T) {
 	builtInName := "emptyAction"
 
-	wantErrorMsg := fmt.Sprintf("%v is called", builtInName)
+	isBuiltInCalled := false
 
 	builtIns := &BuiltIns{
 		Actions: map[string]*BuiltInAction{
 			builtInName: {
 				Type: BuildFunctionType([]Type{BuildStringType()}, BuildArrayOfType(BuildStringType())),
 				Code: func(e Env, args []Value) error {
-					return fmt.Errorf(wantErrorMsg)
+					isBuiltInCalled = true
+					return nil
 				},
 			},
 		},
@@ -115,18 +115,22 @@ func TestExec_WhenActionIsEnabled(t *testing.T) {
 
 	err := fc.exec(mockedEnv)
 
-	assert.EqualError(t, err, wantErrorMsg)
+	assert.Nil(t, err)
+	assert.True(t, isBuiltInCalled)
 }
 
 func TestExec_WhenActionIsDisabled(t *testing.T) {
 	builtInName := "emptyAction"
+
+	isBuiltInCalled := false
 
 	builtIns := &BuiltIns{
 		Actions: map[string]*BuiltInAction{
 			builtInName: {
 				Type: BuildFunctionType([]Type{BuildStringType()}, BuildArrayOfType(BuildStringType())),
 				Code: func(e Env, args []Value) error {
-					return fmt.Errorf("%v is called", builtInName)
+					isBuiltInCalled = true
+					return nil
 				},
 				Disabled: true,
 			},
@@ -145,4 +149,5 @@ func TestExec_WhenActionIsDisabled(t *testing.T) {
 	err = fc.exec(mockedEnv)
 
 	assert.Nil(t, err)
+	assert.False(t, isBuiltInCalled)
 }
