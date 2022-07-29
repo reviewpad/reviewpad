@@ -37,6 +37,7 @@ func PluginBuiltIns() *aladino.BuiltIns {
 			"hasUnaddressedReviewThreads": functions.HasUnaddressedReviewThreads(),
 			"head":                        functions.Head(),
 			"isDraft":                     functions.IsDraft(),
+			"isWaitingForReview":          functions.IsWaitingForReview(),
 			"labels":                      functions.Labels(),
 			"milestone":                   functions.Milestone(),
 			"reviewers":                   functions.Reviewers(),
