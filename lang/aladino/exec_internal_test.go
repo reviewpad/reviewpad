@@ -103,10 +103,7 @@ func TestExec_WhenActionIsEnabled(t *testing.T) {
 			},
 		},
 	}
-	mockedEnv, err := MockDefaultEnvWithBuiltIns(nil, nil, builtIns)
-	if err != nil {
-		log.Fatalf("mockDefaultEnvWithBuiltIns failed: %v", err)
-	}
+	mockedEnv := MockDefaultEnvBuiltIns(t, nil, nil, builtIns)
 
 	fc := &FunctionCall{
 		name:      BuildVariable(builtInName),
@@ -136,17 +133,14 @@ func TestExec_WhenActionIsDisabled(t *testing.T) {
 			},
 		},
 	}
-	mockedEnv, err := MockDefaultEnvWithBuiltIns(nil, nil, builtIns)
-	if err != nil {
-		log.Fatalf("mockDefaultEnvWithBuiltIns failed: %v", err)
-	}
+	mockedEnv := MockDefaultEnvBuiltIns(t, nil, nil, builtIns)
 
 	fc := &FunctionCall{
 		name:      BuildVariable(builtInName),
 		arguments: []Expr{},
 	}
 
-	err = fc.exec(mockedEnv)
+	err := fc.exec(mockedEnv)
 
 	assert.Nil(t, err)
 	assert.False(t, isBuiltInCalled)
