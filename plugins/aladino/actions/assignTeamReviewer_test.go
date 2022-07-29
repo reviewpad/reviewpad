@@ -7,7 +7,6 @@ package plugins_aladino_actions_test
 import (
 	"encoding/json"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"testing"
 
@@ -24,13 +23,10 @@ type TeamReviewersRequestPostBody struct {
 }
 
 func TestAssignTeamReviewer_WhenNoTeamSlugsAreProvided(t *testing.T) {
-	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
 
 	args := []aladino.Value{aladino.BuildArrayValue([]aladino.Value{})}
-	err = assignTeamReviewer(mockedEnv, args)
+	err := assignTeamReviewer(mockedEnv, args)
 
 	assert.EqualError(t, err, "assignTeamReviewer: requires at least 1 team to request for review")
 }
@@ -40,7 +36,8 @@ func TestAssignTeamReviewer(t *testing.T) {
 	teamB := "reviewpad-project"
 	wantTeamReviewers := []string{teamA, teamB}
 	gotTeamReviewers := []string{}
-	mockedEnv, err := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.PostReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
@@ -56,12 +53,9 @@ func TestAssignTeamReviewer(t *testing.T) {
 		},
 		nil,
 	)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
 
 	args := []aladino.Value{aladino.BuildArrayValue([]aladino.Value{aladino.BuildStringValue(teamA), aladino.BuildStringValue(teamB)})}
-	err = assignTeamReviewer(mockedEnv, args)
+	err := assignTeamReviewer(mockedEnv, args)
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantTeamReviewers, gotTeamReviewers)

@@ -5,7 +5,6 @@
 package plugins_aladino_functions_test
 
 import (
-	"log"
 	"testing"
 
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
@@ -16,10 +15,7 @@ import (
 var isElementOf = plugins_aladino.PluginBuiltIns().Functions["isElementOf"].Code
 
 func TestIsElementOf_WhenTrue(t *testing.T) {
-	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
 
 	args := []aladino.Value{
 		aladino.BuildStringValue("elemA"),
@@ -37,10 +33,7 @@ func TestIsElementOf_WhenTrue(t *testing.T) {
 }
 
 func TestIsElementOf_WhenFalse(t *testing.T) {
-	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
 
 	args := []aladino.Value{
 		aladino.BuildStringValue("elemA"),

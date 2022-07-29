@@ -5,7 +5,6 @@
 package plugins_aladino_functions_test
 
 import (
-	"log"
 	"net/http"
 	"testing"
 
@@ -25,7 +24,8 @@ func TestComments(t *testing.T) {
 		},
 	)
 
-	mockedEnv, err := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatch(
 				mock.GetReposIssuesCommentsByOwnerByRepoByIssueNumber,
@@ -39,10 +39,6 @@ func TestComments(t *testing.T) {
 		nil,
 	)
 
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
-
 	args := []aladino.Value{}
 	gotComments, err := comments(mockedEnv, args)
 
@@ -52,8 +48,8 @@ func TestComments(t *testing.T) {
 
 func TestComments_WhenGetCommentsRequestFailed(t *testing.T) {
 	failMessage := "GetCommentsRequestFailed"
-
-	mockedEnv, err := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.GetReposIssuesCommentsByOwnerByRepoByIssueNumber,
@@ -68,10 +64,6 @@ func TestComments_WhenGetCommentsRequestFailed(t *testing.T) {
 		},
 		nil,
 	)
-
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
 
 	args := []aladino.Value{}
 	gotComments, err := comments(mockedEnv, args)

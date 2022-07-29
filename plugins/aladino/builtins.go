@@ -39,10 +39,10 @@ func PluginBuiltIns() *aladino.BuiltIns {
 			"labels":            functions.Labels(),
 			"milestone":         functions.Milestone(),
 			"reviewers":         functions.Reviewers(),
+			"reviewerStatus":    functions.ReviewerStatus(),
 			"size":              functions.Size(),
 			"title":             functions.Title(),
 			"workflowStatus":    functions.WorkflowStatus(),
-			"reviewerStatus":    functions.ReviewerStatus(),
 			// Organization
 			"organization": functions.Organization(),
 			"team":         functions.Team(),

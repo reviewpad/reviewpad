@@ -5,7 +5,6 @@
 package plugins_aladino_functions_test
 
 import (
-	"log"
 	"net/http"
 	"testing"
 
@@ -24,7 +23,8 @@ func TestHasCodePattern_WhenPullRequestPatchHasNilFile(t *testing.T) {
 		Patch:    nil,
 		Filename: github.String(fileName),
 	}}
-	mockedEnv, err := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsFilesByOwnerByRepoByPullNumber,
@@ -35,9 +35,6 @@ func TestHasCodePattern_WhenPullRequestPatchHasNilFile(t *testing.T) {
 		},
 		nil,
 	)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
 
 	mockedEnv.GetPatch()[fileName] = nil
 
@@ -51,10 +48,7 @@ func TestHasCodePattern_WhenPullRequestPatchHasNilFile(t *testing.T) {
 }
 
 func TestHasCodePattern_WhenPatternIsInvalid(t *testing.T) {
-	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
 
 	args := []aladino.Value{aladino.BuildStringValue("a(")}
 	gotVal, err := hasCodePattern(mockedEnv, args)
@@ -68,7 +62,8 @@ func TestHasCodePattern(t *testing.T) {
 		Patch:    github.String("@@ -2,9 +2,11 @@ package main\n- func previous() {\n+ func new() {\n+\nreturn"),
 		Filename: github.String("default-mock-repo/file1.ts"),
 	}}
-	mockedEnv, err := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsFilesByOwnerByRepoByPullNumber,
@@ -79,9 +74,6 @@ func TestHasCodePattern(t *testing.T) {
 		},
 		nil,
 	)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
 
 	args := []aladino.Value{aladino.BuildStringValue("new\\(.*\\)")}
 	gotVal, err := hasCodePattern(mockedEnv, args)

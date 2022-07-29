@@ -8,7 +8,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"testing"
 
@@ -26,7 +25,8 @@ var commentOnce = plugins_aladino.PluginBuiltIns().Actions["commentOnce"].Code
 func TestCommentOnce_WhenGetCommentsRequestFails(t *testing.T) {
 	failMessage := "GetCommentRequestFail"
 	comment := "Lorem Ipsum"
-	mockedEnv, err := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.GetReposIssuesCommentsByOwnerByRepoByIssueNumber,
@@ -41,12 +41,9 @@ func TestCommentOnce_WhenGetCommentsRequestFails(t *testing.T) {
 		},
 		nil,
 	)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
 
 	args := []aladino.Value{aladino.BuildStringValue(fmt.Sprintf("%v%v", ReviewpadCommentAnnotation, comment))}
-	err = commentOnce(mockedEnv, args)
+	err := commentOnce(mockedEnv, args)
 
 	assert.Equal(t, err.(*github.ErrorResponse).Message, failMessage)
 }
@@ -55,7 +52,8 @@ func TestCommentOnce_WhenCommentAlreadyExists(t *testing.T) {
 	existingComment := "Lorem Ipsum"
 	commentCreated := false
 
-	mockedEnv, err := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatch(
 				mock.GetReposIssuesCommentsByOwnerByRepoByIssueNumber,
@@ -75,12 +73,9 @@ func TestCommentOnce_WhenCommentAlreadyExists(t *testing.T) {
 		},
 		nil,
 	)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
 
 	args := []aladino.Value{aladino.BuildStringValue(existingComment)}
-	err = commentOnce(mockedEnv, args)
+	err := commentOnce(mockedEnv, args)
 
 	assert.Nil(t, err)
 	assert.False(t, commentCreated, "The comment should not be created")
@@ -90,7 +85,8 @@ func TestCommentOnce_WhenFirstTime(t *testing.T) {
 	commentToAdd := "Lorem Ipsum"
 	addedComment := ""
 
-	mockedEnv, err := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatch(
 				mock.GetReposIssuesCommentsByOwnerByRepoByIssueNumber,
@@ -110,12 +106,9 @@ func TestCommentOnce_WhenFirstTime(t *testing.T) {
 		},
 		nil,
 	)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
 
 	args := []aladino.Value{aladino.BuildStringValue(commentToAdd)}
-	err = commentOnce(mockedEnv, args)
+	err := commentOnce(mockedEnv, args)
 
 	assert.Nil(t, err)
 	assert.Equal(t, fmt.Sprintf("%v%v", ReviewpadCommentAnnotation, commentToAdd), addedComment)

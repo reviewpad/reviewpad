@@ -5,7 +5,6 @@
 package plugins_aladino_functions_test
 
 import (
-	"log"
 	"net/http"
 	"testing"
 
@@ -19,10 +18,7 @@ import (
 var hasFilePattern = plugins_aladino.PluginBuiltIns().Functions["hasFilePattern"].Code
 
 func TestHasFilePattern_WhenFileBadPattern(t *testing.T) {
-	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
 
 	args := []aladino.Value{aladino.BuildStringValue("[0-9")}
 	gotVal, err := hasFilePattern(mockedEnv, args)
@@ -41,7 +37,8 @@ func TestHasFilePattern_WhenTrue(t *testing.T) {
 			Patch:    nil,
 		},
 	}
-	mockedEnv, err := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsFilesByOwnerByRepoByPullNumber,
@@ -52,9 +49,6 @@ func TestHasFilePattern_WhenTrue(t *testing.T) {
 		},
 		nil,
 	)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
 
 	args := []aladino.Value{aladino.BuildStringValue("default-mock-repo/**")}
 	gotVal, err := hasFilePattern(mockedEnv, args)
@@ -73,7 +67,8 @@ func TestHasFilePattern_WhenFalse(t *testing.T) {
 			Patch:    nil,
 		},
 	}
-	mockedEnv, err := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsFilesByOwnerByRepoByPullNumber,
@@ -84,9 +79,6 @@ func TestHasFilePattern_WhenFalse(t *testing.T) {
 		},
 		nil,
 	)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
 
 	args := []aladino.Value{aladino.BuildStringValue("default-mock-repo/test/**")}
 	gotVal, err := hasFilePattern(mockedEnv, args)

@@ -5,7 +5,6 @@
 package plugins_aladino_functions_test
 
 import (
-	"log"
 	"net/http"
 	"testing"
 
@@ -21,7 +20,8 @@ var totalCreatedPullRequests = plugins_aladino.PluginBuiltIns().Functions["total
 func TestTotalCreatedPullRequests_WhenListIssuesByRepoRequestFails(t *testing.T) {
 	devName := "steve"
 	failMessage := "ListListIssuesByRepoRequestFail"
-	mockedEnv, err := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.GetReposIssuesByOwnerByRepo,
@@ -36,9 +36,6 @@ func TestTotalCreatedPullRequests_WhenListIssuesByRepoRequestFails(t *testing.T)
 		},
 		nil,
 	)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
 
 	args := []aladino.Value{aladino.BuildStringValue(devName)}
 	gotTotal, err := totalCreatedPullRequests(mockedEnv, args)
@@ -61,7 +58,8 @@ func TestTotalCreatedPullRequests_WhenThereIsPullRequestIssues(t *testing.T) {
 			},
 		},
 	}
-	mockedEnv, err := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatch(
 				mock.GetReposIssuesByOwnerByRepo,
@@ -70,9 +68,6 @@ func TestTotalCreatedPullRequests_WhenThereIsPullRequestIssues(t *testing.T) {
 		},
 		nil,
 	)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
 
 	wantTotal := aladino.BuildIntValue(1)
 

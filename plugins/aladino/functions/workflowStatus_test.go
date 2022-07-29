@@ -5,7 +5,6 @@
 package plugins_aladino_functions_test
 
 import (
-	"log"
 	"net/http"
 	"testing"
 
@@ -23,14 +22,12 @@ func TestWorkflowStatus_WhenEventPayloadIsNotWorkflowRunEvent(t *testing.T) {
 	wantValue := aladino.BuildStringValue("")
 
 	eventPayload := &github.CheckRunEvent{}
-	mockedEnv, err := aladino.MockDefaultEnvWithEvent(
+	mockedEnv := aladino.MockDefaultEnvEvent(
+		t,
 		nil,
 		nil,
 		eventPayload,
 	)
-	if err != nil {
-		log.Fatalf("mockDefaultEnvWithEvent failed: %v", err)
-	}
 
 	args := []aladino.Value{aladino.BuildStringValue(checkName)}
 	gotValue, err := workflowStatus(mockedEnv, args)
@@ -46,14 +43,12 @@ func TestWorkflowStatus_WhenWorkflowRunIsNil(t *testing.T) {
 	eventPayload := &github.WorkflowRunEvent{
 		WorkflowRun: nil,
 	}
-	mockedEnv, err := aladino.MockDefaultEnvWithEvent(
+	mockedEnv := aladino.MockDefaultEnvEvent(
+		t,
 		nil,
 		nil,
 		eventPayload,
 	)
-	if err != nil {
-		log.Fatalf("mockDefaultEnvWithEvent failed: %v", err)
-	}
 
 	args := []aladino.Value{aladino.BuildStringValue(checkName)}
 	gotValue, err := workflowStatus(mockedEnv, args)
@@ -72,7 +67,8 @@ func TestWorkflowStatus_WhenListCheckRunsForRefRequestFails(t *testing.T) {
 			HeadSHA: &headSHA,
 		},
 	}
-	mockedEnv, err := aladino.MockDefaultEnvWithEvent(
+	mockedEnv := aladino.MockDefaultEnvEvent(
+		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.GetReposCommitsCheckRunsByOwnerByRepoByRef,
@@ -88,9 +84,6 @@ func TestWorkflowStatus_WhenListCheckRunsForRefRequestFails(t *testing.T) {
 		nil,
 		eventPayload,
 	)
-	if err != nil {
-		log.Fatalf("mockDefaultEnvWithEvent failed: %v", err)
-	}
 
 	args := []aladino.Value{aladino.BuildStringValue(checkName)}
 	gotValue, err := workflowStatus(mockedEnv, args)
@@ -113,7 +106,8 @@ func TestWorkflowStatus_WhenCheckRunNotFoundDueToEmptyCheckRuns(t *testing.T) {
 	emptyCheckRuns := &github.ListCheckRunsResults{
 		CheckRuns: []*github.CheckRun{},
 	}
-	mockedEnv, err := aladino.MockDefaultEnvWithEvent(
+	mockedEnv := aladino.MockDefaultEnvEvent(
+		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.GetReposCommitsCheckRunsByOwnerByRepoByRef,
@@ -125,9 +119,6 @@ func TestWorkflowStatus_WhenCheckRunNotFoundDueToEmptyCheckRuns(t *testing.T) {
 		nil,
 		eventPayload,
 	)
-	if err != nil {
-		log.Fatalf("mockDefaultEnvWithEvent failed: %v", err)
-	}
 
 	args := []aladino.Value{aladino.BuildStringValue(checkName)}
 	gotValue, err := workflowStatus(mockedEnv, args)
@@ -155,7 +146,8 @@ func TestWorkflowStatus_WhenCheckRunIsMissingInNonEmptyCheckRuns(t *testing.T) {
 			},
 		},
 	}
-	mockedEnv, err := aladino.MockDefaultEnvWithEvent(
+	mockedEnv := aladino.MockDefaultEnvEvent(
+		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.GetReposCommitsCheckRunsByOwnerByRepoByRef,
@@ -167,9 +159,6 @@ func TestWorkflowStatus_WhenCheckRunIsMissingInNonEmptyCheckRuns(t *testing.T) {
 		nil,
 		eventPayload,
 	)
-	if err != nil {
-		log.Fatalf("mockDefaultEnvWithEvent failed: %v", err)
-	}
 
 	args := []aladino.Value{aladino.BuildStringValue(checkName)}
 	gotValue, err := workflowStatus(mockedEnv, args)
@@ -204,7 +193,8 @@ func TestWorkflowStatus_WhenEventIsCompleted(t *testing.T) {
 			},
 		},
 	}
-	mockedEnv, err := aladino.MockDefaultEnvWithEvent(
+	mockedEnv := aladino.MockDefaultEnvEvent(
+		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.GetReposCommitsCheckRunsByOwnerByRepoByRef,
@@ -216,9 +206,6 @@ func TestWorkflowStatus_WhenEventIsCompleted(t *testing.T) {
 		nil,
 		eventPayload,
 	)
-	if err != nil {
-		log.Fatalf("mockDefaultEnvWithEvent failed: %v", err)
-	}
 
 	args := []aladino.Value{aladino.BuildStringValue(checkName)}
 	gotValue, err := workflowStatus(mockedEnv, args)
@@ -251,7 +238,8 @@ func TestWorkflowStatus_WhenEventIsNotCompleted(t *testing.T) {
 			},
 		},
 	}
-	mockedEnv, err := aladino.MockDefaultEnvWithEvent(
+	mockedEnv := aladino.MockDefaultEnvEvent(
+		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.GetReposCommitsCheckRunsByOwnerByRepoByRef,
@@ -263,9 +251,6 @@ func TestWorkflowStatus_WhenEventIsNotCompleted(t *testing.T) {
 		nil,
 		eventPayload,
 	)
-	if err != nil {
-		log.Fatalf("mockDefaultEnvWithEvent failed: %v", err)
-	}
 
 	args := []aladino.Value{aladino.BuildStringValue(checkName)}
 	gotValue, err := workflowStatus(mockedEnv, args)

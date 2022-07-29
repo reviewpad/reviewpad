@@ -5,7 +5,6 @@
 package plugins_aladino_functions_test
 
 import (
-	"log"
 	"net/http"
 	"testing"
 
@@ -21,7 +20,8 @@ var team = plugins_aladino.PluginBuiltIns().Functions["team"].Code
 func TestTeam_WhenListTeamMembersBySlugRequestFails(t *testing.T) {
 	teamSlug := "reviewpad-team"
 	failMessage := "ListTeamMembersBySlugRequestFail"
-	mockedEnv, err := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.GetOrgsTeamsMembersByOrgByTeamSlug,
@@ -36,9 +36,6 @@ func TestTeam_WhenListTeamMembersBySlugRequestFails(t *testing.T) {
 		},
 		nil,
 	)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
 
 	args := []aladino.Value{aladino.BuildStringValue(teamSlug)}
 	gotMembers, err := team(mockedEnv, args)
@@ -53,7 +50,8 @@ func TestTeam(t *testing.T) {
 		{Login: github.String("john")},
 		{Login: github.String("jane")},
 	}
-	mockedEnv, err := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatch(
 				mock.GetOrgsTeamsMembersByOrgByTeamSlug,
@@ -62,9 +60,6 @@ func TestTeam(t *testing.T) {
 		},
 		nil,
 	)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
 
 	wantMembers := aladino.BuildArrayValue([]aladino.Value{
 		aladino.BuildStringValue("john"),

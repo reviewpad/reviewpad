@@ -7,7 +7,6 @@ package plugins_aladino_actions_test
 import (
 	"encoding/json"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"testing"
 
@@ -25,22 +24,16 @@ type AssigneesRequestPostBody struct {
 }
 
 func TestAssignAssignees_WhenListOfAssigneesIsEmpty(t *testing.T) {
-	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
 
 	args := []aladino.Value{aladino.BuildArrayValue([]aladino.Value{})}
-	err = assignAssignees(mockedEnv, args)
+	err := assignAssignees(mockedEnv, args)
 
 	assert.EqualError(t, err, "assignAssignees: list of assignees can't be empty")
 }
 
 func TestAssignAssignees_WhenListOfAssigneesExceeds10Users(t *testing.T) {
-	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
 
 	args := []aladino.Value{aladino.BuildArrayValue([]aladino.Value{
 		aladino.BuildStringValue("john"),
@@ -55,7 +48,7 @@ func TestAssignAssignees_WhenListOfAssigneesExceeds10Users(t *testing.T) {
 		aladino.BuildStringValue("michael"),
 		aladino.BuildStringValue("tom"),
 	})}
-	err = assignAssignees(mockedEnv, args)
+	err := assignAssignees(mockedEnv, args)
 
 	assert.EqualError(t, err, "assignAssignees: can only assign up to 10 assignees")
 }
@@ -69,7 +62,8 @@ func TestAssignAssignees(t *testing.T) {
 		Assignees: []*github.User{},
 	})
 
-	mockedEnv, err := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsByOwnerByRepoByPullNumber,
@@ -91,9 +85,6 @@ func TestAssignAssignees(t *testing.T) {
 		},
 		nil,
 	)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
 
 	assignees := make([]aladino.Value, len(wantAssignees))
 	for i, assignee := range wantAssignees {
@@ -101,7 +92,7 @@ func TestAssignAssignees(t *testing.T) {
 	}
 
 	args := []aladino.Value{aladino.BuildArrayValue(assignees)}
-	err = assignAssignees(mockedEnv, args)
+	err := assignAssignees(mockedEnv, args)
 
 	assert.Nil(t, err)
 	assert.ElementsMatch(t, wantAssignees, gotAssignees)

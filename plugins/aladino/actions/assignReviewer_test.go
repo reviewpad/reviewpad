@@ -7,7 +7,6 @@ package plugins_aladino_actions_test
 import (
 	"encoding/json"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"testing"
 
@@ -21,10 +20,7 @@ import (
 var assignReviewer = plugins_aladino.PluginBuiltIns().Actions["assignReviewer"].Code
 
 func TestAssignReviewer_WhenTotalRequiredReviewersIsZero(t *testing.T) {
-	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
 
 	args := []aladino.Value{
 		aladino.BuildArrayValue(
@@ -34,19 +30,16 @@ func TestAssignReviewer_WhenTotalRequiredReviewersIsZero(t *testing.T) {
 		),
 		aladino.BuildIntValue(0),
 	}
-	err = assignReviewer(mockedEnv, args)
+	err := assignReviewer(mockedEnv, args)
 
 	assert.EqualError(t, err, "assignReviewer: total required reviewers can't be 0")
 }
 
 func TestAssignReviewer_WhenListOfReviewersIsEmpty(t *testing.T) {
-	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
 
 	args := []aladino.Value{aladino.BuildArrayValue([]aladino.Value{}), aladino.BuildIntValue(1)}
-	err = assignReviewer(mockedEnv, args)
+	err := assignReviewer(mockedEnv, args)
 
 	assert.EqualError(t, err, "assignReviewer: list of reviewers can't be empty")
 }
@@ -62,7 +55,8 @@ func TestAssignReviewer_WhenAuthorIsInListOfReviewers(t *testing.T) {
 		User:               &github.User{Login: github.String(authorLogin)},
 		RequestedReviewers: []*github.User{},
 	})
-	mockedEnv, err := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsByOwnerByRepoByPullNumber,
@@ -88,9 +82,6 @@ func TestAssignReviewer_WhenAuthorIsInListOfReviewers(t *testing.T) {
 		},
 		nil,
 	)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
 
 	args := []aladino.Value{
 		aladino.BuildArrayValue(
@@ -101,7 +92,7 @@ func TestAssignReviewer_WhenAuthorIsInListOfReviewers(t *testing.T) {
 		),
 		aladino.BuildIntValue(1),
 	}
-	err = assignReviewer(mockedEnv, args)
+	err := assignReviewer(mockedEnv, args)
 
 	assert.Nil(t, err)
 	assert.ElementsMatch(t, wantReviewers, gotReviewers, "pr author shouldn't be assigned as a reviewer")
@@ -119,7 +110,8 @@ func TestAssignReviewer_WhenTotalRequiredReviewersIsMoreThanTotalAvailableReview
 	wantReviewers := []string{
 		reviewerLogin,
 	}
-	mockedEnv, err := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsByOwnerByRepoByPullNumber,
@@ -145,9 +137,6 @@ func TestAssignReviewer_WhenTotalRequiredReviewersIsMoreThanTotalAvailableReview
 		},
 		nil,
 	)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
 
 	args := []aladino.Value{
 		aladino.BuildArrayValue(
@@ -157,7 +146,7 @@ func TestAssignReviewer_WhenTotalRequiredReviewersIsMoreThanTotalAvailableReview
 		),
 		aladino.BuildIntValue(totalRequiredReviewers),
 	}
-	err = assignReviewer(mockedEnv, args)
+	err := assignReviewer(mockedEnv, args)
 
 	assert.Nil(t, err)
 	assert.ElementsMatch(t, wantReviewers, gotReviewers, "the list of assign reviewers should be all provided reviewers")
@@ -165,7 +154,8 @@ func TestAssignReviewer_WhenTotalRequiredReviewersIsMoreThanTotalAvailableReview
 
 func TestAssignReviewer_WhenListReviewsRequestFails(t *testing.T) {
 	failMessage := "ListReviewsRequestFail"
-	mockedEnv, err := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
@@ -180,9 +170,6 @@ func TestAssignReviewer_WhenListReviewsRequestFails(t *testing.T) {
 		},
 		nil,
 	)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
 
 	args := []aladino.Value{
 		aladino.BuildArrayValue(
@@ -192,7 +179,7 @@ func TestAssignReviewer_WhenListReviewsRequestFails(t *testing.T) {
 		),
 		aladino.BuildIntValue(3),
 	}
-	err = assignReviewer(mockedEnv, args)
+	err := assignReviewer(mockedEnv, args)
 
 	assert.Equal(t, err.(*github.ErrorResponse).Message, failMessage)
 }
@@ -208,7 +195,8 @@ func TestAssignReviewer_WhenPullRequestAlreadyHasReviews(t *testing.T) {
 		User:               &github.User{Login: github.String(authorLogin)},
 		RequestedReviewers: []*github.User{},
 	})
-	mockedEnv, err := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsByOwnerByRepoByPullNumber,
@@ -241,9 +229,6 @@ func TestAssignReviewer_WhenPullRequestAlreadyHasReviews(t *testing.T) {
 		},
 		nil,
 	)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
 
 	args := []aladino.Value{
 		aladino.BuildArrayValue(
@@ -253,7 +238,7 @@ func TestAssignReviewer_WhenPullRequestAlreadyHasReviews(t *testing.T) {
 		),
 		aladino.BuildIntValue(1),
 	}
-	err = assignReviewer(mockedEnv, args)
+	err := assignReviewer(mockedEnv, args)
 
 	assert.Nil(t, err)
 	assert.ElementsMatch(t, wantReviewers, gotReviewers)
@@ -269,7 +254,8 @@ func TestAssignReviewer_WhenPullRequestAlreadyHasApproval(t *testing.T) {
 		User:               &github.User{Login: github.String(authorLogin)},
 		RequestedReviewers: []*github.User{},
 	})
-	mockedEnv, err := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsByOwnerByRepoByPullNumber,
@@ -302,9 +288,6 @@ func TestAssignReviewer_WhenPullRequestAlreadyHasApproval(t *testing.T) {
 		},
 		nil,
 	)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
 
 	args := []aladino.Value{
 		aladino.BuildArrayValue(
@@ -314,7 +297,7 @@ func TestAssignReviewer_WhenPullRequestAlreadyHasApproval(t *testing.T) {
 		),
 		aladino.BuildIntValue(1),
 	}
-	err = assignReviewer(mockedEnv, args)
+	err := assignReviewer(mockedEnv, args)
 
 	assert.Nil(t, err)
 	assert.ElementsMatch(t, wantReviewers, gotReviewers)
@@ -334,7 +317,8 @@ func TestAssignReviewer_WhenPullRequestAlreadyHasRequestedReviewers(t *testing.T
 			{Login: github.String(reviewerA)},
 		},
 	})
-	mockedEnv, err := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsByOwnerByRepoByPullNumber,
@@ -360,9 +344,6 @@ func TestAssignReviewer_WhenPullRequestAlreadyHasRequestedReviewers(t *testing.T
 		},
 		nil,
 	)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
 
 	args := []aladino.Value{
 		aladino.BuildArrayValue(
@@ -373,7 +354,7 @@ func TestAssignReviewer_WhenPullRequestAlreadyHasRequestedReviewers(t *testing.T
 		),
 		aladino.BuildIntValue(2),
 	}
-	err = assignReviewer(mockedEnv, args)
+	err := assignReviewer(mockedEnv, args)
 
 	assert.Nil(t, err)
 	assert.ElementsMatch(t, wantReviewers, gotReviewers, "when a reviewer already has a requested review, then it shouldn't be re-requested")
@@ -394,7 +375,8 @@ func TestAssignReviewer_HasNoAvailableReviewers(t *testing.T) {
 			{Login: github.String(reviewerLogin)},
 		},
 	})
-	mockedEnv, err := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsByOwnerByRepoByPullNumber,
@@ -416,9 +398,6 @@ func TestAssignReviewer_HasNoAvailableReviewers(t *testing.T) {
 		},
 		nil,
 	)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
 
 	args := []aladino.Value{
 		aladino.BuildArrayValue(
@@ -428,7 +407,7 @@ func TestAssignReviewer_HasNoAvailableReviewers(t *testing.T) {
 		),
 		aladino.BuildIntValue(totalRequiredReviewers),
 	}
-	err = assignReviewer(mockedEnv, args)
+	err := assignReviewer(mockedEnv, args)
 
 	assert.Nil(t, err)
 	assert.False(t, isRequestReviewersRequestPerformed, "the action shouldn't request for reviewers")
@@ -453,7 +432,8 @@ func TestAssignReviewer_WhenPullRequestAlreadyApproved(t *testing.T) {
 			User:  &github.User{Login: github.String(reviewerA)},
 		},
 	}
-	mockedEnv, err := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsByOwnerByRepoByPullNumber,
@@ -475,9 +455,6 @@ func TestAssignReviewer_WhenPullRequestAlreadyApproved(t *testing.T) {
 		},
 		nil,
 	)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
 
 	args := []aladino.Value{
 		aladino.BuildArrayValue(
@@ -487,7 +464,7 @@ func TestAssignReviewer_WhenPullRequestAlreadyApproved(t *testing.T) {
 		),
 		aladino.BuildIntValue(1),
 	}
-	err = assignReviewer(mockedEnv, args)
+	err := assignReviewer(mockedEnv, args)
 	assert.Nil(t, err)
 	assert.False(t, isRequestReviewersRequestPerformed, "the action shouldn't request for reviewers")
 }
