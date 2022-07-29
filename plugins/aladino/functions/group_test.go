@@ -6,7 +6,6 @@ package plugins_aladino_functions_test
 
 import (
 	"fmt"
-	"log"
 	"testing"
 
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
@@ -18,10 +17,7 @@ var group = plugins_aladino.PluginBuiltIns().Functions["group"].Code
 
 func TestGroup(t *testing.T) {
 	groupName := "techLeads"
-	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
 
 	wantGroup := aladino.BuildArrayValue([]aladino.Value{aladino.BuildStringValue("john"), aladino.BuildStringValue("arthur")})
 
@@ -36,10 +32,7 @@ func TestGroup(t *testing.T) {
 
 func TestGroup_WhenGroupIsNonExisting(t *testing.T) {
 	groupName := "techLeads"
-	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
 
 	// Make sure that the group 'techLeads' doesn't exist
 	delete(mockedEnv.GetRegisterMap(), groupName)

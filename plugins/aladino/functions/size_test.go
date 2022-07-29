@@ -5,7 +5,6 @@
 package plugins_aladino_functions_test
 
 import (
-	"log"
 	"net/http"
 	"testing"
 
@@ -25,7 +24,8 @@ func TestSize(t *testing.T) {
 		Additions: github.Int(additions),
 		Deletions: github.Int(deletions),
 	})
-	mockedEnv, err := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsByOwnerByRepoByPullNumber,
@@ -36,9 +36,6 @@ func TestSize(t *testing.T) {
 		},
 		nil,
 	)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
 
 	wantSize := aladino.BuildIntValue(additions + deletions)
 

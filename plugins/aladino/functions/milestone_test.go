@@ -5,7 +5,6 @@
 package plugins_aladino_functions_test
 
 import (
-	"log"
 	"net/http"
 	"testing"
 
@@ -25,7 +24,8 @@ func TestMilestone(t *testing.T) {
 			Title: github.String(milestoneTitle),
 		},
 	})
-	mockedEnv, err := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsByOwnerByRepoByPullNumber,
@@ -36,9 +36,6 @@ func TestMilestone(t *testing.T) {
 		},
 		nil,
 	)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
 
 	args := []aladino.Value{}
 	gotMilestoneTitle, err := milestone(mockedEnv, args)

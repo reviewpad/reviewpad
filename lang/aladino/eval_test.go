@@ -13,10 +13,7 @@ import (
 )
 
 func TestEval_OnUnaryOp_WhenExprEvalFails(t *testing.T) {
-	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
 
 	unaryOp, err := aladino.Parse("!$nonBuiltIn")
 	if err != nil {
@@ -30,10 +27,7 @@ func TestEval_OnUnaryOp_WhenExprEvalFails(t *testing.T) {
 }
 
 func TestEval_OnUnaryOp(t *testing.T) {
-	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
 
 	unaryOp, err := aladino.Parse("!true")
 	if err != nil {
@@ -49,10 +43,7 @@ func TestEval_OnUnaryOp(t *testing.T) {
 }
 
 func TestEval_OnBinaryOp_WhenLeftOperandEvalFails(t *testing.T) {
-	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
 
 	binaryOp, err := aladino.Parse("$nonBuiltIn() == 1")
 	if err != nil {
@@ -66,10 +57,7 @@ func TestEval_OnBinaryOp_WhenLeftOperandEvalFails(t *testing.T) {
 }
 
 func TestEval_OnBinaryOp_WhenRightOperandEvalFails(t *testing.T) {
-	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
 
 	binaryOp, err := aladino.Parse("1 == $nonBuiltIn()")
 	if err != nil {
@@ -83,10 +71,7 @@ func TestEval_OnBinaryOp_WhenRightOperandEvalFails(t *testing.T) {
 }
 
 func TestEval_OnBinaryOp_WhenDiffKinds(t *testing.T) {
-	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
 
 	binaryOp, err := aladino.Parse("1 == \"a\"")
 	if err != nil {
@@ -100,10 +85,7 @@ func TestEval_OnBinaryOp_WhenDiffKinds(t *testing.T) {
 }
 
 func TestEval_OnBinaryOp_WhenTrue(t *testing.T) {
-	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
 
 	binaryOp, err := aladino.Parse("1 == 1")
 	if err != nil {
@@ -119,10 +101,7 @@ func TestEval_OnBinaryOp_WhenTrue(t *testing.T) {
 }
 
 func TestEval_OnBinaryOp_WhenFalse(t *testing.T) {
-	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
 
 	binaryOp, err := aladino.Parse("1 == 2")
 	if err != nil {
@@ -138,10 +117,7 @@ func TestEval_OnBinaryOp_WhenFalse(t *testing.T) {
 }
 
 func TestEval_OnVariable_WhenVariableIsRegistered(t *testing.T) {
-	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
 
 	variable, err := aladino.Parse("$size")
 	if err != nil {
@@ -163,10 +139,7 @@ func TestEval_OnVariable_WhenVariableIsRegistered(t *testing.T) {
 }
 
 func TestEval_OnVariable_WhenVariableIsNotABuiltIn(t *testing.T) {
-	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
 
 	variable, err := aladino.Parse("$nonBuiltIn")
 	if err != nil {
@@ -180,10 +153,7 @@ func TestEval_OnVariable_WhenVariableIsNotABuiltIn(t *testing.T) {
 }
 
 func TestEval_OnVariable_WhenVariableIsABuiltIn(t *testing.T) {
-	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
 
 	variable, err := aladino.Parse("$zeroConst")
 	if err != nil {
@@ -199,10 +169,7 @@ func TestEval_OnVariable_WhenVariableIsABuiltIn(t *testing.T) {
 }
 
 func TestEval_OnBoolConst(t *testing.T) {
-	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
 
 	boolConst, err := aladino.Parse("true")
 	if err != nil {
@@ -218,10 +185,7 @@ func TestEval_OnBoolConst(t *testing.T) {
 }
 
 func TestEval_OnStringConst(t *testing.T) {
-	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
 
 	str := "test string"
 	strConst, err := aladino.Parse("\"" + str + "\"")
@@ -238,10 +202,7 @@ func TestEval_OnStringConst(t *testing.T) {
 }
 
 func TestEval_OnIntConst(t *testing.T) {
-	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
 
 	intConst, err := aladino.Parse("1")
 	if err != nil {
@@ -257,10 +218,7 @@ func TestEval_OnIntConst(t *testing.T) {
 }
 
 func TestEval_OnFunctionCall_WhenArgEvalFails(t *testing.T) {
-	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
 
 	fc, err := aladino.Parse("$addLabel($nonBuiltIn)")
 	if err != nil {
@@ -274,10 +232,7 @@ func TestEval_OnFunctionCall_WhenArgEvalFails(t *testing.T) {
 }
 
 func TestEval_OnFunctionCall_WhenFunctionIsNotABuiltIn(t *testing.T) {
-	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
 
 	fc, err := aladino.Parse("$nonBuiltIn()")
 	if err != nil {
@@ -291,10 +246,7 @@ func TestEval_OnFunctionCall_WhenFunctionIsNotABuiltIn(t *testing.T) {
 }
 
 func TestEval_OnFunctionCall_WhenFunctionIsABuiltIn(t *testing.T) {
-	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
 
 	fc, err := aladino.Parse("$returnStr(\"hello\")")
 	if err != nil {
@@ -310,10 +262,7 @@ func TestEval_OnFunctionCall_WhenFunctionIsABuiltIn(t *testing.T) {
 }
 
 func TestEval_OnLambda_WhenLambdaBodyEvalFails(t *testing.T) {
-	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
 
 	lambdaBody, err := aladino.Parse("1 == $nonBuiltIn")
 	if err != nil {
@@ -331,10 +280,7 @@ func TestEval_OnLambda_WhenLambdaBodyEvalFails(t *testing.T) {
 }
 
 func TestEval_OnLambda(t *testing.T) {
-	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
 
 	variable, err := aladino.Parse("$size")
 	if err != nil {
@@ -358,10 +304,7 @@ func TestEval_OnLambda(t *testing.T) {
 }
 
 func TestEval_OnTypedExpr(t *testing.T) {
-	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
 
 	expr, err := aladino.Parse("1 == 1")
 	if err != nil {
@@ -379,10 +322,7 @@ func TestEval_OnTypedExpr(t *testing.T) {
 }
 
 func TestEval_OnArray_WhenElemEvalFails(t *testing.T) {
-	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
 
 	array, err := aladino.Parse("[$nonBuiltIn()]")
 	if err != nil {
@@ -396,10 +336,7 @@ func TestEval_OnArray_WhenElemEvalFails(t *testing.T) {
 }
 
 func TestEval_OnArray(t *testing.T) {
-	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
 
 	array, err := aladino.Parse("[\"a\"]")
 	if err != nil {
@@ -415,10 +352,7 @@ func TestEval_OnArray(t *testing.T) {
 }
 
 func TestEval_WhenExprEvalFails(t *testing.T) {
-	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
 
 	expr, err := aladino.Parse("1 == \"a\"")
 	if err != nil {
@@ -432,10 +366,7 @@ func TestEval_WhenExprEvalFails(t *testing.T) {
 }
 
 func TestEval(t *testing.T) {
-	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
 
 	expr, err := aladino.Parse("1 == 1")
 	if err != nil {
@@ -451,10 +382,7 @@ func TestEval(t *testing.T) {
 }
 
 func TestEvalCondition_WhenExprEvalFails(t *testing.T) {
-	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
 
 	expr, err := aladino.Parse("1 == \"a\"")
 	if err != nil {
@@ -468,10 +396,7 @@ func TestEvalCondition_WhenExprEvalFails(t *testing.T) {
 }
 
 func TestEvalCondition_WhenConditionIsTrue(t *testing.T) {
-	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
 
 	expr, err := aladino.Parse("1 == 1")
 	if err != nil {
@@ -485,10 +410,7 @@ func TestEvalCondition_WhenConditionIsTrue(t *testing.T) {
 }
 
 func TestEvalCondition_WhenConditionIsFalse(t *testing.T) {
-	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
 
 	expr, err := aladino.Parse("1 == 2")
 	if err != nil {

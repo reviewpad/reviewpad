@@ -5,7 +5,6 @@
 package plugins_aladino_functions_test
 
 import (
-	"log"
 	"net/http"
 	"testing"
 
@@ -20,7 +19,8 @@ var commits = plugins_aladino.PluginBuiltIns().Functions["commits"].Code
 
 func TestCommits_WhenListCommitsRequestFails(t *testing.T) {
 	failMessage := "ListCommitsRequestFail"
-	mockedEnv, err := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsCommitsByOwnerByRepoByPullNumber,
@@ -35,9 +35,6 @@ func TestCommits_WhenListCommitsRequestFails(t *testing.T) {
 		},
 		nil,
 	)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
 
 	args := []aladino.Value{}
 	gotCommits, err := commits(mockedEnv, args)
@@ -54,7 +51,8 @@ func TestCommits(t *testing.T) {
 			},
 		},
 	}
-	mockedEnv, err := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatch(
 				mock.GetReposPullsCommitsByOwnerByRepoByPullNumber,
@@ -63,9 +61,6 @@ func TestCommits(t *testing.T) {
 		},
 		nil,
 	)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
 
 	wantCommitsMessages := make([]aladino.Value, len(repoCommits))
 	for i, repoCommit := range repoCommits {

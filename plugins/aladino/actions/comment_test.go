@@ -7,7 +7,6 @@ package plugins_aladino_actions_test
 import (
 	"encoding/json"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"testing"
 
@@ -24,7 +23,8 @@ func TestComment(t *testing.T) {
 	wantComment := "Lorem Ipsum"
 	gotComment := ""
 
-	mockedEnv, err := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatch(
 				mock.GetReposIssuesCommentsByOwnerByRepoByIssueNumber,
@@ -44,12 +44,9 @@ func TestComment(t *testing.T) {
 		},
 		nil,
 	)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
 
 	args := []aladino.Value{aladino.BuildStringValue(wantComment)}
-	err = comment(mockedEnv, args)
+	err := comment(mockedEnv, args)
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantComment, gotComment)

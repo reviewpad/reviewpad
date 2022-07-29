@@ -5,7 +5,6 @@
 package plugins_aladino_functions_test
 
 import (
-	"log"
 	"net/http"
 	"testing"
 
@@ -20,7 +19,8 @@ var hasLinearHistory = plugins_aladino.PluginBuiltIns().Functions["hasLinearHist
 
 func TestHasLinearHistory_WhenListCommitsRequestFails(t *testing.T) {
 	failMessage := "ListCommitsRequestFail"
-	mockedEnv, err := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsCommitsByOwnerByRepoByPullNumber,
@@ -35,9 +35,6 @@ func TestHasLinearHistory_WhenListCommitsRequestFails(t *testing.T) {
 		},
 		nil,
 	)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
 
 	args := []aladino.Value{}
 	gotVal, err := hasLinearHistory(mockedEnv, args)
@@ -62,7 +59,8 @@ func TestHasLinearHistory_WhenFalse(t *testing.T) {
 			},
 		},
 	}
-	mockedEnv, err := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatch(
 				mock.GetReposPullsCommitsByOwnerByRepoByPullNumber,
@@ -71,9 +69,6 @@ func TestHasLinearHistory_WhenFalse(t *testing.T) {
 		},
 		nil,
 	)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
 
 	args := []aladino.Value{}
 	gotVal, err := hasLinearHistory(mockedEnv, args)
@@ -98,7 +93,8 @@ func TestHasLinearHistory_WhenTrue(t *testing.T) {
 			},
 		},
 	}
-	mockedEnv, err := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatch(
 				mock.GetReposPullsCommitsByOwnerByRepoByPullNumber,
@@ -107,9 +103,6 @@ func TestHasLinearHistory_WhenTrue(t *testing.T) {
 		},
 		nil,
 	)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
 
 	args := []aladino.Value{}
 	gotVal, err := hasLinearHistory(mockedEnv, args)

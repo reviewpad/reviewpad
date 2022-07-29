@@ -5,7 +5,6 @@
 package plugins_aladino_functions_test
 
 import (
-	"log"
 	"net/http"
 	"testing"
 
@@ -32,7 +31,8 @@ func TestReviewers(t *testing.T) {
 		RequestedReviewers: ghUsersReviewers,
 		RequestedTeams:     ghTeamReviewers,
 	})
-	mockedEnv, err := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsByOwnerByRepoByPullNumber,
@@ -43,9 +43,6 @@ func TestReviewers(t *testing.T) {
 		},
 		nil,
 	)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
 
 	wantReviewers := aladino.BuildArrayValue([]aladino.Value{
 		aladino.BuildStringValue("mary"),

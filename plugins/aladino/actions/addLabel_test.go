@@ -7,7 +7,6 @@ package plugins_aladino_actions_test
 import (
 	"encoding/json"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"testing"
 
@@ -23,7 +22,8 @@ var addLabel = plugins_aladino.PluginBuiltIns().Actions["addLabel"].Code
 func TestAddLabel_WhenAddLabelToIssueRequestFails(t *testing.T) {
 	label := "bug"
 	failMessage := "AddLabelsToIssueRequestFail"
-	mockedEnv, err := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatch(
 				mock.GetReposLabelsByOwnerByRepoByName,
@@ -44,12 +44,9 @@ func TestAddLabel_WhenAddLabelToIssueRequestFails(t *testing.T) {
 		},
 		nil,
 	)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
 
 	args := []aladino.Value{aladino.BuildStringValue(label)}
-	err = addLabel(mockedEnv, args)
+	err := addLabel(mockedEnv, args)
 
 	assert.Equal(t, err.(*github.ErrorResponse).Message, failMessage)
 }
@@ -60,7 +57,8 @@ func TestAddLabel_WhenLabelIsInEnvironment(t *testing.T) {
 		label,
 	}
 	gotLabels := []string{}
-	mockedEnv, err := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatch(
 				mock.GetReposLabelsByOwnerByRepoByName,
@@ -80,14 +78,11 @@ func TestAddLabel_WhenLabelIsInEnvironment(t *testing.T) {
 		},
 		nil,
 	)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
 	internalLabelID := aladino.BuildInternalLabelID(label)
 	mockedEnv.GetRegisterMap()[internalLabelID] = aladino.BuildStringValue(label)
 
 	args := []aladino.Value{aladino.BuildStringValue(label)}
-	err = addLabel(mockedEnv, args)
+	err := addLabel(mockedEnv, args)
 
 	assert.Nil(t, err)
 	assert.ElementsMatch(t, wantLabels, gotLabels)
@@ -99,7 +94,8 @@ func TestAddLabel_WhenLabelIsNotInEnvironment(t *testing.T) {
 		label,
 	}
 	gotLabels := []string{}
-	mockedEnv, err := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatch(
 				mock.GetReposLabelsByOwnerByRepoByName,
@@ -119,12 +115,9 @@ func TestAddLabel_WhenLabelIsNotInEnvironment(t *testing.T) {
 		},
 		nil,
 	)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
 
 	args := []aladino.Value{aladino.BuildStringValue(label)}
-	err = addLabel(mockedEnv, args)
+	err := addLabel(mockedEnv, args)
 
 	assert.Nil(t, err)
 	assert.ElementsMatch(t, wantLabels, gotLabels)

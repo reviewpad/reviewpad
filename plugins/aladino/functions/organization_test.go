@@ -5,7 +5,6 @@
 package plugins_aladino_functions_test
 
 import (
-	"log"
 	"net/http"
 	"testing"
 
@@ -20,7 +19,8 @@ var organization = plugins_aladino.PluginBuiltIns().Functions["organization"].Co
 
 func TestOrganization_WhenListMembersRequestFails(t *testing.T) {
 	failMessage := "ListMembersRequestFail"
-	mockedEnv, err := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.GetOrgsPublicMembersByOrg,
@@ -45,9 +45,6 @@ func TestOrganization_WhenListMembersRequestFails(t *testing.T) {
 		},
 		nil,
 	)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
 
 	args := []aladino.Value{}
 	gotMembers, err := organization(mockedEnv, args)
@@ -61,7 +58,8 @@ func TestOrganization(t *testing.T) {
 		{Login: github.String("john")},
 		{Login: github.String("jane")},
 	}
-	mockedEnv, err := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatch(
 				mock.GetOrgsMembersByOrg,
@@ -70,9 +68,6 @@ func TestOrganization(t *testing.T) {
 		},
 		nil,
 	)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
 
 	wantMembers := aladino.BuildArrayValue([]aladino.Value{
 		aladino.BuildStringValue("john"),

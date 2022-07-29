@@ -7,7 +7,6 @@ package plugins_aladino_actions_test
 import (
 	"encoding/json"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"testing"
 
@@ -24,13 +23,10 @@ type MergeRequestPostBody struct {
 }
 
 func TestMerge_WhenMergeMethodIsUnsupported(t *testing.T) {
-	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
 
 	args := []aladino.Value{aladino.BuildStringValue("INVALID")}
-	err = merge(mockedEnv, args)
+	err := merge(mockedEnv, args)
 
 	assert.EqualError(t, err, "merge: unsupported merge method INVALID")
 }
@@ -38,7 +34,8 @@ func TestMerge_WhenMergeMethodIsUnsupported(t *testing.T) {
 func TestMerge_WhenNoMergeMethodIsProvided(t *testing.T) {
 	wantMergeMethod := "merge"
 	var gotMergeMethod string
-	mockedEnv, err := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.PutReposPullsMergeByOwnerByRepoByPullNumber,
@@ -54,12 +51,9 @@ func TestMerge_WhenNoMergeMethodIsProvided(t *testing.T) {
 		},
 		nil,
 	)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
 
 	args := []aladino.Value{}
-	err = merge(mockedEnv, args)
+	err := merge(mockedEnv, args)
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantMergeMethod, gotMergeMethod)
@@ -68,7 +62,8 @@ func TestMerge_WhenNoMergeMethodIsProvided(t *testing.T) {
 func TestMerge_WhenMergeMethodIsProvided(t *testing.T) {
 	wantMergeMethod := "rebase"
 	var gotMergeMethod string
-	mockedEnv, err := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.PutReposPullsMergeByOwnerByRepoByPullNumber,
@@ -84,12 +79,9 @@ func TestMerge_WhenMergeMethodIsProvided(t *testing.T) {
 		},
 		nil,
 	)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
 
 	args := []aladino.Value{aladino.BuildStringValue(wantMergeMethod)}
-	err = merge(mockedEnv, args)
+	err := merge(mockedEnv, args)
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantMergeMethod, gotMergeMethod)

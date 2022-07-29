@@ -6,7 +6,6 @@ package plugins_aladino_functions_test
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"testing"
 
@@ -20,17 +19,15 @@ import (
 var hasLinkedIssues = plugins_aladino.PluginBuiltIns().Functions["hasLinkedIssues"].Code
 
 func TestHasLinkedIssues_WhenRequestFails(t *testing.T) {
-	mockedEnv, err := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
 		nil,
 		func(w http.ResponseWriter, req *http.Request) {
 			http.Error(w, "404 Not Found", http.StatusNotFound)
 		},
 	)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
 
-	_, err = hasLinkedIssues(mockedEnv, []aladino.Value{})
+	_, err := hasLinkedIssues(mockedEnv, []aladino.Value{})
 
 	assert.NotNil(t, err)
 }
@@ -58,7 +55,8 @@ func TestHasLinkedIssues_WhenHasLinkedIssues(t *testing.T) {
 			},
 		},
 	})
-	mockedEnv, err := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsByOwnerByRepoByPullNumber,
@@ -86,9 +84,6 @@ func TestHasLinkedIssues_WhenHasLinkedIssues(t *testing.T) {
 			}
 		},
 	)
-	if err != nil {
-		log.Fatalf("mockDefaultEvalEnvWithGQ failed: %v", err)
-	}
 
 	wantVal := aladino.BuildBoolValue(true)
 	gotVal, err := hasLinkedIssues(mockedEnv, []aladino.Value{})
@@ -120,7 +115,8 @@ func TestHasLinkedIssues_WhenNoLinkedIssues(t *testing.T) {
 			},
 		},
 	})
-	mockedEnv, err := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsByOwnerByRepoByPullNumber,
@@ -148,9 +144,7 @@ func TestHasLinkedIssues_WhenNoLinkedIssues(t *testing.T) {
 			}
 		},
 	)
-	if err != nil {
-		log.Fatalf("mockDefaultEvalEnvWithGQ failed: %v", err)
-	}
+
 	wantVal := aladino.BuildBoolValue(false)
 	gotVal, err := hasLinkedIssues(mockedEnv, []aladino.Value{})
 

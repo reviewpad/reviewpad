@@ -34,10 +34,7 @@ func (op *mockBinaryOperator) Eval(lhs, rhs Value) Value {
 }
 
 func TestTypeInference_WhenGivenNonExistingBuiltIn(t *testing.T) {
-	mockedEnv, err := MockDefaultEnv(nil, nil)
-	if err != nil {
-		assert.FailNow(t, "MockDefaultEnv returned unexpected error: %v", err)
-	}
+	mockedEnv := MockDefaultEnv(t, nil, nil)
 
 	expr := BuildVariable("nonBuiltIn")
 
@@ -48,10 +45,7 @@ func TestTypeInference_WhenGivenNonExistingBuiltIn(t *testing.T) {
 }
 
 func TestTypeInference_WhenGivenBoolConst(t *testing.T) {
-	mockedEnv, err := MockDefaultEnv(nil, nil)
-	if err != nil {
-		assert.FailNow(t, "MockDefaultEnv returned unexpected error: %v", err)
-	}
+	mockedEnv := MockDefaultEnv(t, nil, nil)
 
 	expr := BuildBoolConst(true)
 

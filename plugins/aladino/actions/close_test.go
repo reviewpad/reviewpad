@@ -7,7 +7,6 @@ package plugins_aladino_actions_test
 import (
 	"encoding/json"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"testing"
 
@@ -22,7 +21,8 @@ var close = plugins_aladino.PluginBuiltIns().Actions["close"].Code
 
 func TestClose_WhenEditRequestFails(t *testing.T) {
 	failMessage := "EditRequestFail"
-	mockedEnv, err := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.PatchReposPullsByOwnerByRepoByPullNumber,
@@ -37,12 +37,9 @@ func TestClose_WhenEditRequestFails(t *testing.T) {
 		},
 		nil,
 	)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
 
 	args := []aladino.Value{}
-	err = close(mockedEnv, args)
+	err := close(mockedEnv, args)
 
 	assert.Equal(t, err.(*github.ErrorResponse).Message, failMessage)
 }
@@ -50,7 +47,8 @@ func TestClose_WhenEditRequestFails(t *testing.T) {
 func TestClose(t *testing.T) {
 	wantState := "closed"
 	var gotState string
-	mockedEnv, err := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.PatchReposPullsByOwnerByRepoByPullNumber,
@@ -66,12 +64,9 @@ func TestClose(t *testing.T) {
 		},
 		nil,
 	)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
 
 	args := []aladino.Value{}
-	err = close(mockedEnv, args)
+	err := close(mockedEnv, args)
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantState, gotState)

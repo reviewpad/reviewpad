@@ -5,7 +5,6 @@
 package plugins_aladino_functions_test
 
 import (
-	"log"
 	"net/http"
 	"testing"
 
@@ -20,7 +19,8 @@ var reviewerStatus = plugins_aladino.PluginBuiltIns().Functions["reviewerStatus"
 
 func TestReviewerStatus_WhenRequestFails(t *testing.T) {
 	failMessage := "ReviewerStatusRequestFail"
-	mockedEnv, err := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
@@ -35,9 +35,6 @@ func TestReviewerStatus_WhenRequestFails(t *testing.T) {
 		},
 		nil,
 	)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
 
 	args := []aladino.Value{aladino.BuildStringValue("mary")}
 	gotReviewState, err := reviewerStatus(mockedEnv, args)
@@ -52,7 +49,8 @@ func TestReviewerStatus_WhenUserIsNil(t *testing.T) {
 			State: github.String("COMMENTED"),
 		},
 	}
-	mockedEnv, err := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatch(
 				mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
@@ -61,9 +59,6 @@ func TestReviewerStatus_WhenUserIsNil(t *testing.T) {
 		},
 		nil,
 	)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
 
 	wantReviewState := aladino.BuildStringValue("")
 
@@ -82,7 +77,8 @@ func TestReviewerStatus_WhenStateIsNil(t *testing.T) {
 			},
 		},
 	}
-	mockedEnv, err := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatch(
 				mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
@@ -91,9 +87,6 @@ func TestReviewerStatus_WhenStateIsNil(t *testing.T) {
 		},
 		nil,
 	)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
 
 	wantReviewState := aladino.BuildStringValue("")
 
@@ -113,7 +106,8 @@ func TestReviewerStatus_WhenStateUnknown(t *testing.T) {
 			},
 		},
 	}
-	mockedEnv, err := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatch(
 				mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
@@ -122,9 +116,6 @@ func TestReviewerStatus_WhenStateUnknown(t *testing.T) {
 		},
 		nil,
 	)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
 
 	wantReviewState := aladino.BuildStringValue("")
 
@@ -150,7 +141,8 @@ func TestReviewerStatus_WhenStateCommented(t *testing.T) {
 			},
 		},
 	}
-	mockedEnv, err := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatch(
 				mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
@@ -159,9 +151,6 @@ func TestReviewerStatus_WhenStateCommented(t *testing.T) {
 		},
 		nil,
 	)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
 
 	wantReviewState := aladino.BuildStringValue("COMMENTED")
 
@@ -205,7 +194,8 @@ func TestReviewerStatus_WhenStateApproved(t *testing.T) {
 			},
 		},
 	}
-	mockedEnv, err := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatch(
 				mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
@@ -214,9 +204,6 @@ func TestReviewerStatus_WhenStateApproved(t *testing.T) {
 		},
 		nil,
 	)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
 
 	wantReviewState := aladino.BuildStringValue("APPROVED")
 
@@ -254,7 +241,8 @@ func TestReviewerStatus_WhenStateRequestedChanges(t *testing.T) {
 			},
 		},
 	}
-	mockedEnv, err := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatch(
 				mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
@@ -263,9 +251,6 @@ func TestReviewerStatus_WhenStateRequestedChanges(t *testing.T) {
 		},
 		nil,
 	)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
 
 	wantReviewState := aladino.BuildStringValue("CHANGES_REQUESTED")
 

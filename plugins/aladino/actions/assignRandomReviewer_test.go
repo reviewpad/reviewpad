@@ -7,7 +7,6 @@ package plugins_aladino_actions_test
 import (
 	"encoding/json"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"testing"
 
@@ -26,7 +25,8 @@ type ReviewersRequestPostBody struct {
 
 func TestAssignRandomReviewer_WhenListReviewersRequestFails(t *testing.T) {
 	failMessage := "ListReviewersRequestFail"
-	mockedEnv, err := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
@@ -41,12 +41,9 @@ func TestAssignRandomReviewer_WhenListReviewersRequestFails(t *testing.T) {
 		},
 		nil,
 	)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
 
 	args := []aladino.Value{}
-	err = assignRandomReviewer(mockedEnv, args)
+	err := assignRandomReviewer(mockedEnv, args)
 
 	assert.Equal(t, err.(*github.ErrorResponse).Message, failMessage)
 }
@@ -54,7 +51,8 @@ func TestAssignRandomReviewer_WhenListReviewersRequestFails(t *testing.T) {
 func TestAssignRandomReviewer_WhenPullRequestAlreadyHasReviewers(t *testing.T) {
 	var isListAssigneesFetched bool
 	requestedReviewer := "jane"
-	mockedEnv, err := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatch(
 				mock.GetReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
@@ -74,12 +72,9 @@ func TestAssignRandomReviewer_WhenPullRequestAlreadyHasReviewers(t *testing.T) {
 		},
 		nil,
 	)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
 
 	args := []aladino.Value{}
-	err = assignRandomReviewer(mockedEnv, args)
+	err := assignRandomReviewer(mockedEnv, args)
 
 	assert.Nil(t, err)
 	assert.False(t, isListAssigneesFetched, "shouldn't fetch the list of available assignees since the pull request already has reviewers")
@@ -87,7 +82,8 @@ func TestAssignRandomReviewer_WhenPullRequestAlreadyHasReviewers(t *testing.T) {
 
 func TestAssignRandomReviewer_WhenListAssigneesRequestFails(t *testing.T) {
 	failMessage := "ListAssigneesRequestFail"
-	mockedEnv, err := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatch(
 				mock.GetReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
@@ -106,12 +102,9 @@ func TestAssignRandomReviewer_WhenListAssigneesRequestFails(t *testing.T) {
 		},
 		nil,
 	)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
 
 	args := []aladino.Value{}
-	err = assignRandomReviewer(mockedEnv, args)
+	err := assignRandomReviewer(mockedEnv, args)
 
 	assert.Equal(t, err.(*github.ErrorResponse).Message, failMessage)
 }
@@ -123,7 +116,8 @@ func TestAssignRandomReviewer_ShouldFilterPullRequestAuthor(t *testing.T) {
 	mockedPullRequest := aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
 		User: &github.User{Login: github.String(authorLogin)},
 	})
-	mockedEnv, err := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsByOwnerByRepoByPullNumber,
@@ -156,12 +150,9 @@ func TestAssignRandomReviewer_ShouldFilterPullRequestAuthor(t *testing.T) {
 		},
 		nil,
 	)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
 
 	args := []aladino.Value{}
-	err = assignRandomReviewer(mockedEnv, args)
+	err := assignRandomReviewer(mockedEnv, args)
 
 	assert.Nil(t, err)
 	assert.ElementsMatch(t, []string{assigneeLogin}, selectedReviewers)
@@ -172,7 +163,8 @@ func TestAssignRandomReviewer_WhenThereIsNoUsers(t *testing.T) {
 	mockedPullRequest := aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
 		User: &github.User{Login: github.String(authorLogin)},
 	})
-	mockedEnv, err := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsByOwnerByRepoByPullNumber,
@@ -193,12 +185,9 @@ func TestAssignRandomReviewer_WhenThereIsNoUsers(t *testing.T) {
 		},
 		nil,
 	)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
 
 	args := []aladino.Value{}
-	err = assignRandomReviewer(mockedEnv, args)
+	err := assignRandomReviewer(mockedEnv, args)
 
 	assert.EqualError(t, err, "can't assign a random user because there is no users")
 }

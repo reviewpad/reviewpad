@@ -18,10 +18,7 @@ import (
 )
 
 func TestGetCtx_WithDefaultEnv(t *testing.T) {
-	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
 
 	wantCtx := aladino.DefaultMockContext
 
@@ -31,10 +28,7 @@ func TestGetCtx_WithDefaultEnv(t *testing.T) {
 }
 
 func TestGetCollector_WithDefaultEnv(t *testing.T) {
-	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
 
 	wantCollector := aladino.DefaultMockCollector
 
@@ -44,10 +38,7 @@ func TestGetCollector_WithDefaultEnv(t *testing.T) {
 }
 
 func TestGetPullRequest_WithDefaultEnv(t *testing.T) {
-	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
 
 	wantPullRequest := aladino.GetDefaultMockPullRequestDetails()
 
@@ -65,7 +56,8 @@ func TestGetPatch_WithDefaultEnv(t *testing.T) {
 			Patch:    github.String(patch),
 		},
 	}
-	mockedEnv, err := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsFilesByOwnerByRepoByPullNumber,
@@ -76,9 +68,6 @@ func TestGetPatch_WithDefaultEnv(t *testing.T) {
 		},
 		nil,
 	)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
 
 	mockedFile1 := &aladino.File{
 		Repr: &github.CommitFile{
@@ -98,10 +87,7 @@ func TestGetPatch_WithDefaultEnv(t *testing.T) {
 }
 
 func TestGetRegisterMap_WithDefaultEnv(t *testing.T) {
-	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
 
 	wantRegisterMap := make(aladino.RegisterMap)
 
@@ -111,10 +97,7 @@ func TestGetRegisterMap_WithDefaultEnv(t *testing.T) {
 }
 
 func TestGetBuiltIns_WithDefaultEnv(t *testing.T) {
-	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
 
 	wantBuiltIns := aladino.MockBuiltIns()
 
@@ -136,10 +119,7 @@ func TestGetBuiltIns_WithDefaultEnv(t *testing.T) {
 }
 
 func TestGetReport_WithDefaultEnv(t *testing.T) {
-	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
 
 	wantReport := &aladino.Report{
 		WorkflowDetails: make(map[string]aladino.ReportWorkflowDetails),
@@ -151,10 +131,7 @@ func TestGetReport_WithDefaultEnv(t *testing.T) {
 }
 
 func TestNewTypeEnv_WithDefaultEnv(t *testing.T) {
-	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
 
 	wantTypeEnv := aladino.TypeEnv(map[string]aladino.Type{
 		"emptyFunction": aladino.BuildFunctionType([]aladino.Type{}, nil),

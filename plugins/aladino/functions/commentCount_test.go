@@ -5,7 +5,6 @@
 package plugins_aladino_functions_test
 
 import (
-	"log"
 	"testing"
 
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
@@ -18,10 +17,7 @@ var commentCount = plugins_aladino.PluginBuiltIns().Functions["commentCount"].Co
 func TestCommentCount(t *testing.T) {
 	wantCommentCount := aladino.BuildIntValue(6)
 
-	mockedEnv, err := aladino.MockDefaultEnv(nil, nil)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
 
 	args := []aladino.Value{}
 	gotCommentCount, err := commentCount(mockedEnv, args)

@@ -236,7 +236,8 @@ func TestBuildVerboseReport(t *testing.T) {
 
 func TestDeleteReportComment_WhenCommentCannotBeDeleted(t *testing.T) {
 	failMessage := "DeleteCommentRequestFailed"
-	mockedEnv, err := MockDefaultEnv(
+	mockedEnv := MockDefaultEnv(
+		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.DeleteReposIssuesCommentsByOwnerByRepoByCommentId,
@@ -251,20 +252,18 @@ func TestDeleteReportComment_WhenCommentCannotBeDeleted(t *testing.T) {
 		},
 		nil,
 	)
-	if err != nil {
-		assert.FailNow(t, "MockDefaultEnv returned unexpected error: %v", err)
-	}
 
 	testCommentId := int64(1234)
 
-	err = DeleteReportComment(mockedEnv, testCommentId)
+	err := DeleteReportComment(mockedEnv, testCommentId)
 
 	assert.EqualError(t, err, fmt.Sprintf("[report] error on deleting report comment %v", failMessage))
 }
 
 func TestDeleteReportComment_WhenCommentCanBeDeleted(t *testing.T) {
 	var deletedComment int64
-	mockedEnv, err := MockDefaultEnv(
+	mockedEnv := MockDefaultEnv(
+		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.DeleteReposIssuesCommentsByOwnerByRepoByCommentId,
@@ -280,13 +279,10 @@ func TestDeleteReportComment_WhenCommentCanBeDeleted(t *testing.T) {
 		},
 		nil,
 	)
-	if err != nil {
-		assert.FailNow(t, "MockDefaultEnv returned unexpected error: %v", err)
-	}
 
 	commentToBeDeleted := int64(1234)
 
-	err = DeleteReportComment(mockedEnv, commentToBeDeleted)
+	err := DeleteReportComment(mockedEnv, commentToBeDeleted)
 
 	assert.Nil(t, err)
 	assert.Equal(t, commentToBeDeleted, deletedComment)
@@ -294,7 +290,8 @@ func TestDeleteReportComment_WhenCommentCanBeDeleted(t *testing.T) {
 
 func TestUpdateReportComment_WhenCommentCannotBeEdited(t *testing.T) {
 	failMessage := "EditCommentRequestFailed"
-	mockedEnv, err := MockDefaultEnv(
+	mockedEnv := MockDefaultEnv(
+		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.PatchReposIssuesCommentsByOwnerByRepoByCommentId,
@@ -309,21 +306,19 @@ func TestUpdateReportComment_WhenCommentCannotBeEdited(t *testing.T) {
 		},
 		nil,
 	)
-	if err != nil {
-		assert.FailNow(t, "MockDefaultEnv returned unexpected error: %v", err)
-	}
 
 	testCommentId := int64(1234)
 	wantUpdatedComment := "Test update report comment"
 
-	err = UpdateReportComment(mockedEnv, testCommentId, wantUpdatedComment)
+	err := UpdateReportComment(mockedEnv, testCommentId, wantUpdatedComment)
 
 	assert.EqualError(t, err, fmt.Sprintf("[report] error on updating report comment %v", failMessage))
 }
 
 func TestUpdateReportComment_WhenCommentCanBeEdited(t *testing.T) {
 	var gotUpdatedComment string
-	mockedEnv, err := MockDefaultEnv(
+	mockedEnv := MockDefaultEnv(
+		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.PatchReposIssuesCommentsByOwnerByRepoByCommentId,
@@ -339,14 +334,11 @@ func TestUpdateReportComment_WhenCommentCanBeEdited(t *testing.T) {
 		},
 		nil,
 	)
-	if err != nil {
-		assert.FailNow(t, "MockDefaultEnv returned unexpected error: %v", err)
-	}
 
 	testCommentId := int64(1234)
 	wantUpdatedComment := "Test update report comment"
 
-	err = UpdateReportComment(mockedEnv, testCommentId, wantUpdatedComment)
+	err := UpdateReportComment(mockedEnv, testCommentId, wantUpdatedComment)
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantUpdatedComment, gotUpdatedComment)
@@ -354,7 +346,8 @@ func TestUpdateReportComment_WhenCommentCanBeEdited(t *testing.T) {
 
 func TestAddReportComment_WhenCommentCannotBeCreated(t *testing.T) {
 	failMessage := "CreateCommentRequestFailed"
-	mockedEnv, err := MockDefaultEnv(
+	mockedEnv := MockDefaultEnv(
+		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.PostReposIssuesCommentsByOwnerByRepoByIssueNumber,
@@ -369,13 +362,10 @@ func TestAddReportComment_WhenCommentCannotBeCreated(t *testing.T) {
 		},
 		nil,
 	)
-	if err != nil {
-		assert.FailNow(t, "MockDefaultEnv returned unexpected error: %v", err)
-	}
 
 	comment := "Test add report comment"
 
-	err = AddReportComment(mockedEnv, comment)
+	err := AddReportComment(mockedEnv, comment)
 
 	assert.EqualError(t, err, fmt.Sprintf("[report] error on creating report comment %v", failMessage))
 }
@@ -384,7 +374,8 @@ func TestAddReportComment_WhenCommentCanBeCreated(t *testing.T) {
 	var createdComment string
 	commentToBeCreated := "Test add report comment"
 
-	mockedEnv, err := MockDefaultEnv(
+	mockedEnv := MockDefaultEnv(
+		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.PostReposIssuesCommentsByOwnerByRepoByIssueNumber,
@@ -400,11 +391,8 @@ func TestAddReportComment_WhenCommentCanBeCreated(t *testing.T) {
 		},
 		nil,
 	)
-	if err != nil {
-		assert.FailNow(t, "MockDefaultEnv returned unexpected error: %v", err)
-	}
 
-	err = AddReportComment(mockedEnv, commentToBeCreated)
+	err := AddReportComment(mockedEnv, commentToBeCreated)
 
 	assert.Nil(t, err)
 	assert.Equal(t, createdComment, commentToBeCreated)
@@ -412,7 +400,8 @@ func TestAddReportComment_WhenCommentCanBeCreated(t *testing.T) {
 
 func TestFindReportComment_WhenPullRequestCommentsListingFails(t *testing.T) {
 	failMessage := "ListCommentsRequestFailed"
-	mockedEnv, err := MockDefaultEnv(
+	mockedEnv := MockDefaultEnv(
+		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
 				mock.GetReposIssuesCommentsByOwnerByRepoByIssueNumber,
@@ -427,9 +416,6 @@ func TestFindReportComment_WhenPullRequestCommentsListingFails(t *testing.T) {
 		},
 		nil,
 	)
-	if err != nil {
-		assert.FailNow(t, "MockDefaultEnv returned unexpected error: %v", err)
-	}
 
 	gotComment, err := FindReportComment(mockedEnv)
 
@@ -441,7 +427,8 @@ func TestFindReportComment_WhenThereIsReviewpadComment(t *testing.T) {
 	wantComment := &github.IssueComment{
 		Body: github.String("<!--@annotation-reviewpad-report-->\n**Reviewpad Report**\n\n:scroll: **Explanation**\nNo workflows activated"),
 	}
-	mockedEnv, err := MockDefaultEnv(
+	mockedEnv := MockDefaultEnv(
+		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatch(
 				mock.GetReposIssuesCommentsByOwnerByRepoByIssueNumber,
@@ -452,9 +439,6 @@ func TestFindReportComment_WhenThereIsReviewpadComment(t *testing.T) {
 		},
 		nil,
 	)
-	if err != nil {
-		assert.FailNow(t, "MockDefaultEnv returned unexpected error: %v", err)
-	}
 
 	gotComment, err := FindReportComment(mockedEnv)
 
@@ -466,7 +450,8 @@ func TestFindReportComment_WhenThereIsNoReviewpadComment(t *testing.T) {
 	comment := &github.IssueComment{
 		Body: github.String("Test comment"),
 	}
-	mockedEnv, err := MockDefaultEnv(
+	mockedEnv := MockDefaultEnv(
+		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatch(
 				mock.GetReposIssuesCommentsByOwnerByRepoByIssueNumber,
@@ -477,9 +462,6 @@ func TestFindReportComment_WhenThereIsNoReviewpadComment(t *testing.T) {
 		},
 		nil,
 	)
-	if err != nil {
-		assert.FailNow(t, "MockDefaultEnv returned unexpected error: %v", err)
-	}
 
 	gotComment, err := FindReportComment(mockedEnv)
 

@@ -12,10 +12,7 @@ import (
 )
 
 func TestTypeCheckExec_WhenTypeInferenceFails(t *testing.T) {
-	mockedEnv, err := MockDefaultEnv(nil, nil)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
+	mockedEnv := MockDefaultEnv(t, nil, nil)
 
 	expr, err := Parse("$emptyAction(1)")
 	if err != nil {
@@ -29,10 +26,7 @@ func TestTypeCheckExec_WhenTypeInferenceFails(t *testing.T) {
 }
 
 func TestTypeCheck(t *testing.T) {
-	mockedEnv, err := MockDefaultEnv(nil, nil)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
+	mockedEnv := MockDefaultEnv(t, nil, nil)
 
 	expr, err := Parse("$emptyAction()")
 	if err != nil {
@@ -48,10 +42,7 @@ func TestTypeCheck(t *testing.T) {
 }
 
 func TestTypeCheck_WhenExprIsNotFunctionCall(t *testing.T) {
-	mockedEnv, err := MockDefaultEnv(nil, nil)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
+	mockedEnv := MockDefaultEnv(t, nil, nil)
 
 	expr, err := Parse("\"not a function call\"")
 	if err != nil {
@@ -65,10 +56,7 @@ func TestTypeCheck_WhenExprIsNotFunctionCall(t *testing.T) {
 }
 
 func TestExec_WhenFunctionArgsEvalFails(t *testing.T) {
-	mockedEnv, err := MockDefaultEnv(nil, nil)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
+	mockedEnv := MockDefaultEnv(t, nil, nil)
 
 	fc := &FunctionCall{
 		name: BuildVariable("invalidCmpOp"),
@@ -77,16 +65,13 @@ func TestExec_WhenFunctionArgsEvalFails(t *testing.T) {
 		},
 	}
 
-	err = fc.exec(mockedEnv)
+	err := fc.exec(mockedEnv)
 
 	assert.EqualError(t, err, "eval: left and right operand have different kinds")
 }
 
 func TestExec_WhenActionBuiltInNonExisting(t *testing.T) {
-	mockedEnv, err := MockDefaultEnv(nil, nil)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
+	mockedEnv := MockDefaultEnv(t, nil, nil)
 
 	delete(mockedEnv.GetBuiltIns().Actions, "tautology")
 
@@ -97,16 +82,13 @@ func TestExec_WhenActionBuiltInNonExisting(t *testing.T) {
 		},
 	}
 
-	err = fc.exec(mockedEnv)
+	err := fc.exec(mockedEnv)
 
 	assert.EqualError(t, err, "exec: tautology not found. are you sure this is a built-in function?")
 }
 
 func TestExec(t *testing.T) {
-	mockedEnv, err := MockDefaultEnv(nil, nil)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
+	mockedEnv := MockDefaultEnv(t, nil, nil)
 
 	fcName := "emptyAction"
 
@@ -122,7 +104,7 @@ func TestExec(t *testing.T) {
 		arguments: []Expr{},
 	}
 
-	err = fc.exec(mockedEnv)
+	err := fc.exec(mockedEnv)
 
 	assert.Nil(t, err)
 }
