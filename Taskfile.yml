@@ -5,6 +5,16 @@
 version: "3"
 
 tasks:
+  format:
+    summary: |
+      Formats Go files.
+
+      Run with --watch or -w to watch for changes on Go files.
+    cmds:
+      - gofmt -s -w .
+    sources:
+      - ./**/*.go
+
   build:
     deps:
       - build-cmd
@@ -61,5 +71,6 @@ tasks:
 
   check:
     deps:
+      - format
       - build
       - test
