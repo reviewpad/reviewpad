@@ -6,7 +6,6 @@ package aladino
 
 import (
 	"fmt"
-	"log"
 )
 
 type ExecExpr interface {
@@ -45,7 +44,7 @@ func (fc *FunctionCall) exec(env Env) error {
 	}
 
 	if action.Disabled {
-		log.Printf("exec: skipping %v because it was disabled", fc.name.ident)
+		execLogf("action %v is disabled - skipping", fc.name.ident)
 		return nil
 	}
 
