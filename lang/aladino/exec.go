@@ -4,7 +4,10 @@
 
 package aladino
 
-import "fmt"
+import (
+	"fmt"
+	"log"
+)
 
 type ExecExpr interface {
 	exec(env Env) error
@@ -39,6 +42,11 @@ func (fc *FunctionCall) exec(env Env) error {
 	action, ok := env.GetBuiltIns().Actions[fc.name.ident]
 	if !ok {
 		return fmt.Errorf("exec: %v not found. are you sure this is a built-in function?", fc.name.ident)
+	}
+
+	if action.Disabled {
+		log.Printf("exec: skipping %v because it was disabled", fc.name.ident)
+		return nil
 	}
 
 	env.GetCollector().Collect("Ran Builtin", map[string]interface{}{

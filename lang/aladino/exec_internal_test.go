@@ -5,6 +5,7 @@
 package aladino
 
 import (
+	"fmt"
 	"log"
 	"testing"
 
@@ -87,15 +88,19 @@ func TestExec_WhenActionBuiltInNonExisting(t *testing.T) {
 	assert.EqualError(t, err, "exec: tautology not found. are you sure this is a built-in function?")
 }
 
-func TestExec(t *testing.T) {
-	mockedEnv := MockDefaultEnv(t, nil, nil)
+func TestExec_WhenActionIsEnabled(t *testing.T) {
+	wantErrorMsg := "emptyAction is called"
+	mockedEnv, err := MockDefaultEnv(nil, nil)
+	if err != nil {
+		log.Fatalf("mockDefaultEnv failed: %v", err)
+	}
 
 	fcName := "emptyAction"
 
 	mockedEnv.GetBuiltIns().Actions["emptyAction"] = &BuiltInAction{
 		Type: BuildFunctionType([]Type{}, nil),
 		Code: func(e Env, args []Value) error {
-			return nil
+			return fmt.Errorf(wantErrorMsg)
 		},
 	}
 
@@ -105,6 +110,32 @@ func TestExec(t *testing.T) {
 	}
 
 	err := fc.exec(mockedEnv)
+
+	assert.EqualError(t, err, wantErrorMsg)
+}
+
+func TestExec_WhenActionIsDisabled(t *testing.T) {
+	mockedEnv, err := MockDefaultEnv(nil, nil)
+	if err != nil {
+		log.Fatalf("mockDefaultEnv failed: %v", err)
+	}
+
+	fcName := "emptyAction"
+
+	mockedEnv.GetBuiltIns().Actions["emptyAction"] = &BuiltInAction{
+		Type: BuildFunctionType([]Type{}, nil),
+		Code: func(e Env, args []Value) error {
+			return fmt.Errorf("emptyAction is called")
+		},
+		Disabled: true,
+	}
+
+	fc := &FunctionCall{
+		name:      BuildVariable(fcName),
+		arguments: []Expr{},
+	}
+
+	err = fc.exec(mockedEnv)
 
 	assert.Nil(t, err)
 }
