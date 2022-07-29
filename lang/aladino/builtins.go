@@ -15,8 +15,9 @@ type BuiltInFunction struct {
 }
 
 type BuiltInAction struct {
-	Type Type
-	Code func(e Env, args []Value) error
+	Type     Type
+	Code     func(e Env, args []Value) error
+	Disabled bool
 }
 
 func MergeAladinoBuiltIns(builtInsList ...*BuiltIns) *BuiltIns {

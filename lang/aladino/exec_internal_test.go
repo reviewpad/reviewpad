@@ -87,24 +87,61 @@ func TestExec_WhenActionBuiltInNonExisting(t *testing.T) {
 	assert.EqualError(t, err, "exec: tautology not found. are you sure this is a built-in function?")
 }
 
-func TestExec(t *testing.T) {
-	mockedEnv := MockDefaultEnv(t, nil, nil)
+func TestExec_WhenActionIsEnabled(t *testing.T) {
+	builtInName := "emptyAction"
 
-	fcName := "emptyAction"
+	isBuiltInCalled := false
 
-	mockedEnv.GetBuiltIns().Actions["emptyAction"] = &BuiltInAction{
-		Type: BuildFunctionType([]Type{}, nil),
-		Code: func(e Env, args []Value) error {
-			return nil
+	builtIns := &BuiltIns{
+		Actions: map[string]*BuiltInAction{
+			builtInName: {
+				Type: BuildFunctionType([]Type{BuildStringType()}, BuildArrayOfType(BuildStringType())),
+				Code: func(e Env, args []Value) error {
+					isBuiltInCalled = true
+					return nil
+				},
+			},
 		},
 	}
+	mockedEnv := MockDefaultEnvBuiltIns(t, nil, nil, builtIns)
 
 	fc := &FunctionCall{
-		name:      BuildVariable(fcName),
+		name:      BuildVariable(builtInName),
 		arguments: []Expr{},
 	}
 
 	err := fc.exec(mockedEnv)
 
 	assert.Nil(t, err)
+	assert.True(t, isBuiltInCalled)
+}
+
+func TestExec_WhenActionIsDisabled(t *testing.T) {
+	builtInName := "emptyAction"
+
+	isBuiltInCalled := false
+
+	builtIns := &BuiltIns{
+		Actions: map[string]*BuiltInAction{
+			builtInName: {
+				Type: BuildFunctionType([]Type{BuildStringType()}, BuildArrayOfType(BuildStringType())),
+				Code: func(e Env, args []Value) error {
+					isBuiltInCalled = true
+					return nil
+				},
+				Disabled: true,
+			},
+		},
+	}
+	mockedEnv := MockDefaultEnvBuiltIns(t, nil, nil, builtIns)
+
+	fc := &FunctionCall{
+		name:      BuildVariable(builtInName),
+		arguments: []Expr{},
+	}
+
+	err := fc.exec(mockedEnv)
+
+	assert.Nil(t, err)
+	assert.False(t, isBuiltInCalled)
 }
