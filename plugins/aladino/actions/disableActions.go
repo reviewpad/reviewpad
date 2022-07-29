@@ -16,5 +16,12 @@ func DisableActions() *aladino.BuiltInAction {
 }
 
 func disableActionsCode(e aladino.Env, args []aladino.Value) error {
+	actionNames := args[0].(*aladino.ArrayValue).Vals
+
+	for _, actionName := range actionNames {
+		actionName := actionName.(*aladino.StringValue).Val
+		e.GetBuiltIns().Actions[actionName].Disabled = true
+	}
+
 	return nil
 }
