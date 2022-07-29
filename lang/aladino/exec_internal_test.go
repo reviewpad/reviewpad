@@ -89,23 +89,27 @@ func TestExec_WhenActionBuiltInNonExisting(t *testing.T) {
 }
 
 func TestExec_WhenActionIsEnabled(t *testing.T) {
-	wantErrorMsg := "emptyAction is called"
-	mockedEnv, err := MockDefaultEnv(nil, nil)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
+	builtInName := "emptyAction"
 
-	fcName := "emptyAction"
+	wantErrorMsg := fmt.Sprintf("%v is called", builtInName)
 
-	mockedEnv.GetBuiltIns().Actions["emptyAction"] = &BuiltInAction{
-		Type: BuildFunctionType([]Type{}, nil),
-		Code: func(e Env, args []Value) error {
-			return fmt.Errorf(wantErrorMsg)
+	builtIns := &BuiltIns{
+		Actions: map[string]*BuiltInAction{
+			builtInName: {
+				Type: BuildFunctionType([]Type{BuildStringType()}, BuildArrayOfType(BuildStringType())),
+				Code: func(e Env, args []Value) error {
+					return fmt.Errorf(wantErrorMsg)
+				},
+			},
 		},
+	}
+	mockedEnv, err := MockDefaultEnvWithBuiltIns(nil, nil, builtIns)
+	if err != nil {
+		log.Fatalf("mockDefaultEnvWithBuiltIns failed: %v", err)
 	}
 
 	fc := &FunctionCall{
-		name:      BuildVariable(fcName),
+		name:      BuildVariable(builtInName),
 		arguments: []Expr{},
 	}
 
@@ -115,23 +119,26 @@ func TestExec_WhenActionIsEnabled(t *testing.T) {
 }
 
 func TestExec_WhenActionIsDisabled(t *testing.T) {
-	mockedEnv, err := MockDefaultEnv(nil, nil)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
+	builtInName := "emptyAction"
 
-	fcName := "emptyAction"
-
-	mockedEnv.GetBuiltIns().Actions["emptyAction"] = &BuiltInAction{
-		Type: BuildFunctionType([]Type{}, nil),
-		Code: func(e Env, args []Value) error {
-			return fmt.Errorf("emptyAction is called")
+	builtIns := &BuiltIns{
+		Actions: map[string]*BuiltInAction{
+			builtInName: {
+				Type: BuildFunctionType([]Type{BuildStringType()}, BuildArrayOfType(BuildStringType())),
+				Code: func(e Env, args []Value) error {
+					return fmt.Errorf("%v is called", builtInName)
+				},
+				Disabled: true,
+			},
 		},
-		Disabled: true,
+	}
+	mockedEnv, err := MockDefaultEnvWithBuiltIns(nil, nil, builtIns)
+	if err != nil {
+		log.Fatalf("mockDefaultEnvWithBuiltIns failed: %v", err)
 	}
 
 	fc := &FunctionCall{
-		name:      BuildVariable(fcName),
+		name:      BuildVariable(builtInName),
 		arguments: []Expr{},
 	}
 
