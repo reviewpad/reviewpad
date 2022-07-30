@@ -63,6 +63,7 @@ func PluginBuiltIns() *aladino.BuiltIns {
 			"filter": functions.Filter(),
 		},
 		Actions: map[string]*aladino.BuiltInAction{
+			"addToProject":         actions.AddToProject(),
 			"addLabel":             actions.AddLabel(),
 			"assignAssignees":      actions.AssignAssignees(),
 			"assignRandomReviewer": actions.AssignRandomReviewer(),
