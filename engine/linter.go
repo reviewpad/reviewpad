@@ -190,13 +190,7 @@ func lintRulesMentions(rules []PadRule, groups []PadGroup, workflows []PadWorkfl
 		}
 	}
 
-	allRuleFunctionCalls := getAllMatches(`\$rule\(".*"\)`, groups, rules, workflows)
-	reRuleMention := regexp.MustCompile(`"(.*?)"`)
-	for _, ruleFunctionCall := range allRuleFunctionCalls {
-		ruleName := reRuleMention.FindString(ruleFunctionCall)
-		// Remove quotation marks
-		ruleName = ruleName[1 : len(ruleName)-1]
-
+	for _, ruleName := range getCallsToRuleBuiltIn(groups, rules, workflows) {
 		_, ok := findRule(rules, ruleName)
 		if !ok {
 			return lintError("the rule %v isn't defined", ruleName)
@@ -211,6 +205,23 @@ func lintRulesMentions(rules []PadRule, groups []PadGroup, workflows []PadWorkfl
 	}
 
 	return nil
+}
+
+func getCallsToRuleBuiltIn(groups []PadGroup, rules []PadRule, workflows []PadWorkflow) []string {
+	allRuleFunctionCalls := make([]string, 0)
+
+	gotFunctionCalls := getAllMatches(`\$rule\("[^)]*"\)`, groups, rules, workflows)
+
+	reRuleMention := regexp.MustCompile(`"(.*?)"`)
+	for _, ruleWithRuleCall := range gotFunctionCalls {
+		for _, ruleCall := range reRuleMention.FindAllString(ruleWithRuleCall, -1) {
+			ruleName := ruleCall[1 : len(ruleCall)-1]
+
+			allRuleFunctionCalls = append(allRuleFunctionCalls, ruleName)
+		}
+	}
+
+	return allRuleFunctionCalls
 }
 
 // Validations
