@@ -26,6 +26,12 @@ labels:
   ship:
     description: Ship mode
     color: "76dbbe"
+  show:
+    description: Show mode
+    color: "2986cc"
+  ask:
+    description: Ask mode
+    color: "c90076"
 
 groups:
   - name: owners
@@ -88,16 +94,6 @@ rules:
     kind: patch
     description: Pipeline is green
     spec: '$workflowStatus("pr-build") == "success" && $workflowStatus("reviewpad") == "success"'
-
-  - name: shipPullRequestsAreAutomerged
-    kind: patch
-    description: owners of pull requests with ship in the title
-    spec: '$contains($title(), "[ship]: ") && $isElementOf($author(), $group("owners")) && $rule("ci-is-green")'
-
-  - name: shipSimplePullRequests
-    kind: patch
-    description: owners can ship simple pull requests
-    spec: '$contains($title(), "[ship]: ") && $isElementOf($author(), $group("owners")) && $rule("changes-are-in-markdown")'
 
   - name: is-first-time-contributor
     kind: patch
@@ -171,10 +167,50 @@ rules:
     description: Pull request was authored by external contributors
     spec: '!$isElementOf($author(), $group("official-contributors"))'
 
-  - name: is-draft
+  - name: work-in-progress
     kind: patch
     description: Pull request is WIP
     spec: '$isDraft()'
+
+  - name: ship-state
+    kind: patch
+    description: Ship pull requests
+    spec: '$contains($description(), "[x]: Ship") || $isElementOf("ship", $labels())'
+
+  - name: show-state
+    kind: patch
+    description: Show pull requests
+    spec: '$contains($description(), "[x]: Show") || $isElementOf("show", $labels())'
+
+  - name: explicit-ask-state
+    kind: patch
+    description: Explicit ask pull requests
+    spec: '$contains($description(), "[x]: Ask") || $isElementOf("ask", $labels()) || $rule("authored-by-external-contributors")'
+
+  - name: ask-state
+    kind: patch
+    description: Ask pull request
+    spec: '(!$rule("ship-state") && !rule("show-state")) || $rule("explicit-ask-state")'
+
+  - name: inconsistent-state
+    kind: patch
+    description: pull request is in an inconsistent state
+    spec: '$rule("work-in-progress") && $rule("ship-state")'
+
+  - name: ship-authored-by-owners
+    kind: patch
+    description: Ship pull requests authored by owners
+    spec: '$rule("ship-state") && $isElementOf($author(), $group("owners"))'
+
+  - name: auto-merge-authored-by-owners-with-ship-and-green-ci
+    kind: patch
+    description: auto merge pull requests authored by owners with ship and green ci
+    spec: '$rule("ship-authored-by-owners") &&  && $rule("ci-is-green")'
+
+  - name: ship-markdown-changes
+    kind: patch
+    description: owners can ship simple pull requests
+    spec: '$rule("ship-authored-by-owners") && $rule("changes-are-in-markdown")'
 
 workflows:
   - name: add-label-with-size
@@ -202,12 +238,40 @@ workflows:
         extra-actions:
           - '$commitLint()'
 
-  - name: only-assign-reviewers-after-draft
+
+  - name: label-ship-show-ask
+    # at all times we only have one label
     always-run: true
     if:
-      - rule: is-draft
+      - rule: ship-state
+        extra-actions:
+          - '$removeLabel("ask")'
+          - '$removeLabel("show")'
+          - '$addLabel("ship")'
+      - rule: show-state
+        extra-actions:
+          - '$removeLabel("ask")'
+          - '$removeLabel("ship")'
+          - '$addLabel("show")'
+      - rule: ask-state
+        extra-actions:
+          - '$removeLabel("ship")'
+          - '$removeLabel("show")'
+          - '$addLabel("ask")'
+
+  - name: setup-reviewer-assignment
+    always-run: true
+    if:
+      - rule: work-in-progress
+      - rule: ship-authored-by-owners
     then:
-      - '$disableActions(["assignRandomReviewer", "assignReviewer", "assignTeamReviewer"])'
+        - '$disableActions(["assignRandomReviewer", "assignReviewer", "assignTeamReviewer"])'
+
+  - name: check-inconsistent-state
+    if:
+      - rule: inconsistent-state
+    then:
+      - '$error("Pull request cannot be in ship state when it is a work in progress!")'
 
   - name: unauthorized-license-workflow
     description: Protect unauthorized modifications to the LICENSE
@@ -239,10 +303,10 @@ workflows:
   - name: auto-merge-owner-pull-requests
     description: auto merge pull requests
     if:
-      - rule: shipPullRequestsAreAutomerged
-      - rule: shipSimplePullRequests
+      - rule: auto-merge-authored-by-owners-with-ship-and-green-ci
+      - rule: ship-markdown-changes
     then:
-      - '$addLabel("ship")'
+      - '$addLabel("ship")' # redundant?
       - '$merge("rebase")'
 
   - name: changes-to-critical-code
