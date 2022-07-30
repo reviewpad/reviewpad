@@ -171,6 +171,11 @@ rules:
     description: Pull request was authored by external contributors
     spec: '!$isElementOf($author(), $group("official-contributors"))'
 
+  - name: is-draft
+    kind: patch
+    description: Pull request is WIP
+    spec: '$isDraft()'
+
 workflows:
   - name: add-label-with-size
     description: Add label with size of the pull request
@@ -196,6 +201,13 @@ workflows:
       - rule: tautology
         extra-actions:
           - '$commitLint()'
+
+  - name: only-assign-reviewers-after-draft
+    always-run: true
+    if:
+      - rule: is-draft
+    then:
+      - '$disableActions(["assignRandomReviewer", "assignReviewer", "assignTeamReviewer"])'
 
   - name: unauthorized-license-workflow
     description: Protect unauthorized modifications to the LICENSE
