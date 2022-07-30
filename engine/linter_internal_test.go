@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestGetAllMatches(t *testing.T) {
+func TestGetCallsToRuleBuiltIn(t *testing.T) {
 	wantRuleNames := []string{
 		"rule1",
 		"rule2",
@@ -42,7 +42,7 @@ func TestGetAllMatches(t *testing.T) {
 	}
 	workflows := []PadWorkflow{}
 
-	gotRuleNames := getAllRuleCalls(groups, rules, workflows)
+	gotRuleNames := getCallsToRuleBuiltIn(groups, rules, workflows)
 
 	assert.Equal(t, wantRuleNames, gotRuleNames)
 }

@@ -190,7 +190,7 @@ func lintRulesMentions(rules []PadRule, groups []PadGroup, workflows []PadWorkfl
 		}
 	}
 
-	for _, ruleName := range getAllRuleCalls(groups, rules, workflows) {
+	for _, ruleName := range getCallsToRuleBuiltIn(groups, rules, workflows) {
 		_, ok := findRule(rules, ruleName)
 		if !ok {
 			return lintError("the rule %v isn't defined", ruleName)
@@ -207,7 +207,7 @@ func lintRulesMentions(rules []PadRule, groups []PadGroup, workflows []PadWorkfl
 	return nil
 }
 
-func getAllRuleCalls(groups []PadGroup, rules []PadRule, workflows []PadWorkflow) []string {
+func getCallsToRuleBuiltIn(groups []PadGroup, rules []PadRule, workflows []PadWorkflow) []string {
 	allRuleFunctionCalls := make([]string, 0)
 
 	gotFunctionCalls := getAllMatches(`\$rule\("[^)]*"\)`, groups, rules, workflows)
