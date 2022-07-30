@@ -5,7 +5,6 @@ package plugins_aladino_actions_test
 
 import (
 	"io"
-	"log"
 	"net/http"
 	"testing"
 
@@ -20,17 +19,15 @@ import (
 var addToProject = plugins_aladino.PluginBuiltIns().Actions["addToProject"].Code
 
 func TestAddToProject_WhenRequestFails(t *testing.T) {
-	mockedEnv, err := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
 		nil,
 		func(w http.ResponseWriter, req *http.Request) {
 			http.Error(w, "404 Not Found", http.StatusNotFound)
 		},
 	)
-	if err != nil {
-		log.Fatalf("mockDefaultEnv failed: %v", err)
-	}
 
-	err = addToProject(mockedEnv, []aladino.Value{aladino.BuildStringValue("reviewpad"), aladino.BuildStringValue("to do")})
+	err := addToProject(mockedEnv, []aladino.Value{aladino.BuildStringValue("reviewpad"), aladino.BuildStringValue("to do")})
 
 	assert.NotNil(t, err)
 }
@@ -88,7 +85,8 @@ func TestAddToProject_WhenProjectNotFound(t *testing.T) {
 
 	for _, testCase := range gqlTestCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			mockedEnv, err := aladino.MockDefaultEnv(
+			mockedEnv := aladino.MockDefaultEnv(
+				t,
 				[]mock.MockBackendOption{
 					mock.WithRequestMatchHandler(
 						mock.GetReposPullsByOwnerByRepoByPullNumber,
@@ -118,11 +116,8 @@ func TestAddToProject_WhenProjectNotFound(t *testing.T) {
 					}
 				},
 			)
-			if err != nil {
-				log.Fatalf("mockDefaultEvalEnvWithGQ failed: %v", err)
-			}
 
-			err = addToProject(mockedEnv, []aladino.Value{aladino.BuildStringValue("reviewpad"), aladino.BuildStringValue("to do")})
+			err := addToProject(mockedEnv, []aladino.Value{aladino.BuildStringValue("reviewpad"), aladino.BuildStringValue("to do")})
 
 			assert.Equal(t, testCase.expectedError, err)
 		})
