@@ -26,7 +26,7 @@ In Reviewpad, you can automate actions over the pull requests such as:
 As an example, the following workflow:
 
 ```yml
-api-version: reviewpad.com/v2.x
+api-version: reviewpad.com/v3.x
 
 labels:
   ship:
@@ -56,7 +56,7 @@ You can execute Reviewpad through the CLI or through the Reviewpad [GitHub actio
 ## Architecture
 This repository generates two artifacts:
 
-1. CLI [cmd/cli](cmd/cli/main.go) that runs reviewpad open source edition.
+1. CLI [cli](cli/main.go) that runs reviewpad open source edition.
 2. Reviewpad library packages:  
     ├ github.com/reviewpad/reviewpad/collector  
     ├ github.com/reviewpad/reviewpad/engine  
@@ -94,26 +94,31 @@ task build
 To generate the CLI of the team edition run:
 
 ```sh
-task build-cmd
+task build-cli
 ```
 
-This command generate the Reviewpad CLI `main` which you can run to try Reviewpad directly. The CLI has the following argument list:
+This command generate the binary `reviewpad-cli` which you can run to try Reviewpad directly. 
+
+The CLI has the following argument list:
 
 ```sh
-./main --help
-Usage of ./main:
-  -dry-run bool
-        Dry run mode
-  -event-payload string (optional)
-        File path to github action event in JSON format
-  -github-token string
-        GitHub token
-  -mixpanel-token string (optional)
-        Mixpanel token
-  -pull-request string
-        Pull request GitHub url
-  -reviewpad string
-        File path to reviewpad.yml
+./reviewpad-cli 
+reviewpad-cli is command line interface to run reviewpad commands.
+
+Usage:
+  reviewpad-cli [command]
+
+Available Commands:
+  check       Check if input reviewpad file is valid
+  completion  Generate the autocompletion script for the specified shell
+  help        Help about any command
+  run         Runs reviewpad
+
+Flags:
+  -f, --file string   input reviewpad file
+  -h, --help          help for reviewpad-cli
+
+Use "reviewpad-cli [command] --help" for more information about a command.
 ```
 
 ### VSCode
@@ -162,6 +167,7 @@ Add the following to your `.vscode/launch.json`.
             "request": "launch",
             "mode": "debug",
             "args": [
+                "run",
                 // Flag to run on dry run
                 "-dry-run",
                 // Absolute path to reviewpad.yml file to run
