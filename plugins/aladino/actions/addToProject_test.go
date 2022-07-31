@@ -13,6 +13,7 @@ import (
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
 	plugins_aladino_actions "github.com/reviewpad/reviewpad/v3/plugins/aladino/actions"
+	"github.com/reviewpad/reviewpad/v3/utils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -32,54 +33,79 @@ func TestAddToProject_WhenRequestFails(t *testing.T) {
 	assert.NotNil(t, err)
 }
 
-func TestAddToProject_WhenProjectNotFound(t *testing.T) {
+func TestAddToProject(t *testing.T) {
 	prNodeId := "PR_nodeId"
 	mockedPullRequest := aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
 		NodeID: &prNodeId,
 	})
-	mockedRepositoryProjectQuery := "{\"query\":\"query($name:String!$repositoryName:String!$repositoryOwner:String!){repository(owner: $repositoryOwner, name: $repositoryName){projectsV2(query: $name, first: 1, orderBy: {field: TITLE, direction: ASC}){nodes{id,fields(first: 50, orderBy: {field: NAME, direction: ASC}){nodes{... on ProjectV2SingleSelectField{id,name,options{id,name}}}}}}}}\",\"variables\":{\"name\":\"reviewpad\",\"repositoryName\":\"default-mock-repo\",\"repositoryOwner\":\"john\"}}\n"
+	mockedGetProjectQuery := "{\"query\":\"query($name:String!$repositoryName:String!$repositoryOwner:String!){repository(owner: $repositoryOwner, name: $repositoryName){projectsV2(query: $name, first: 1, orderBy: {field: TITLE, direction: ASC}){nodes{id,number}}}}\",\"variables\":{\"name\":\"reviewpad\",\"repositoryName\":\"default-mock-repo\",\"repositoryOwner\":\"john\"}}\n"
+	mockedGetProjectFieldsQuery := "{\"query\":\"query($afterCursor:String!$projectNumber:Int!$repositoryName:String!$repositoryOwner:String!){repository(owner: $repositoryOwner, name: $repositoryName){projectV2(number: $projectNumber){fields(first: 50, after: $afterCursor, orderBy: {field: NAME, direction: ASC}){pageInfo{hasNextPage,endCursor},nodes{... on ProjectV2SingleSelectField{id,name,options{id,name}}}}}}}\",\"variables\":{\"afterCursor\":\"\",\"projectNumber\":1,\"repositoryName\":\"default-mock-repo\",\"repositoryOwner\":\"john\"}}\n"
 	mockedAddProjectV2ItemByIdMutation := "{\"query\":\"mutation($input:AddProjectV2ItemByIdInput!){addProjectV2ItemById(input: $input){item{id}}}\",\"variables\":{\"input\":{\"projectId\":\"1\",\"contentId\":\"PR_nodeId\"}}}\n"
 	mockedUpdateProjectV2ItemFieldValueMutation := "{\"query\":\"mutation($input:UpdateProjectV2ItemFieldValueInput!){updateProjectV2ItemFieldValue(input: $input){clientMutationId}}\",\"variables\":{\"input\":{\"itemId\":\"item_id\",\"value\":{\"singleSelectOptionId\":\"1\"},\"projectId\":\"1\",\"fieldId\":\"1\"}}}\n"
 
 	gqlTestCases := []struct {
-		name                              string
-		query                             string
-		body                              string
-		addProjectV2ItemByIdBody          string
-		updateProjectV2ItemFieldValueBody string
-		expectedError                     error
+		name                                  string
+		getProjectQuery                       string
+		getProjectQueryBody                   string
+		getProjectFieldsQuery                 string
+		getProjectFieldsBody                  string
+		addProjectV2ItemByIdMutation          string
+		updateProjectV2ItemFieldValueMutation string
+		body                                  string
+		addProjectV2ItemByIdBody              string
+		updateProjectV2ItemFieldValueBody     string
+		expectedError                         error
 	}{
 		{
-			name:          "when project not found",
-			query:         mockedRepositoryProjectQuery,
-			body:          `{"data": {"repository":{"projectsV2":{"nodes":[]}}}}`,
-			expectedError: plugins_aladino_actions.ErrProjectNotFound,
+			name:                "when project not found",
+			getProjectQuery:     mockedGetProjectQuery,
+			getProjectQueryBody: `{"data": {"repository":{"projectsV2":{"nodes":[]}}}}`,
+			expectedError:       utils.ErrProjectNotFound,
 		},
 		{
-			name:          "when project has no status field",
-			query:         mockedRepositoryProjectQuery,
-			body:          `{"data": {"repository":{"projectsV2":{"nodes":[{"id": "1", "fields": {}}]}}}}`,
-			expectedError: plugins_aladino_actions.ErrProjectHasNoStatusField,
+			name:                  "error getting project fields",
+			getProjectQuery:       mockedGetProjectQuery,
+			getProjectQueryBody:   `{"data": {"repository":{"projectsV2":{"nodes":[{"id": "1", "number": 1}]}}}}`,
+			getProjectFieldsQuery: mockedGetProjectFieldsQuery,
+			getProjectFieldsBody:  ``,
+			expectedError:         io.EOF,
 		},
 		{
-			name:          "when project status is not found",
-			query:         mockedRepositoryProjectQuery,
-			body:          `{"data":{"repository":{"projectsV2":{"nodes":[{"id":"1","fields":{"nodes":[{"id":"1","name":"status","options":[{"id":"1","name":"bug"},{"id":"2","name":"feature"}]}]}}]}}}}`,
-			expectedError: plugins_aladino_actions.ErrProjectStatusNotFound,
+			name:                  "when project has no status field",
+			getProjectQuery:       mockedGetProjectQuery,
+			getProjectQueryBody:   `{"data": {"repository":{"projectsV2":{"nodes":[{"id": "1", "number": 1}]}}}}`,
+			getProjectFieldsQuery: mockedGetProjectFieldsQuery,
+			getProjectFieldsBody:  `{"data": {"repository":{"projectV2": {"fields": {"pageInfo": {"hasNextPage": false, "endCursor": null}, "nodes": []}}}}}`,
+			expectedError:         plugins_aladino_actions.ErrProjectHasNoStatusField,
 		},
 		{
-			name:          "add project item error",
-			query:         mockedRepositoryProjectQuery,
-			body:          `{"data":{"repository":{"projectsV2":{"nodes":[{"id":"1","fields":{"nodes":[{"id":"1","name":"status","options":[{"id":"1","name":"to do"},{"id":"2","name":"in progress"}]}]}}]}}}}`,
-			expectedError: io.EOF,
+			name:                  "when project status option is not found",
+			getProjectQuery:       mockedGetProjectQuery,
+			getProjectQueryBody:   `{"data": {"repository":{"projectsV2":{"nodes":[{"id": "1", "number": 1}]}}}}`,
+			getProjectFieldsQuery: mockedGetProjectFieldsQuery,
+			getProjectFieldsBody:  `{"data": {"repository":{"projectV2": {"fields": {"pageInfo": {"hasNextPage": false, "endCursor": null}, "nodes": [{"id": "1", "name": "status", "options": []}]}}}}}`,
+			expectedError:         plugins_aladino_actions.ErrProjectStatusNotFound,
 		},
 		{
-			name:                              "no error",
-			query:                             mockedRepositoryProjectQuery,
-			body:                              `{"data":{"repository":{"projectsV2":{"nodes":[{"id":"1","fields":{"nodes":[{"id":"1","name":"status","options":[{"id":"1","name":"to do"},{"id":"2","name":"in progress"}]}]}}]}}}}`,
-			addProjectV2ItemByIdBody:          `{"data": {"addProjectV2ItemById": {"item": {"id": "item_id"}}}}`,
-			updateProjectV2ItemFieldValueBody: `{"data": {"updateProjectV2ItemFieldValue": {"clientMutationId": "client_mutation_id"}}}}`,
-			expectedError:                     nil,
+			name:                         "add project item error",
+			getProjectQuery:              mockedGetProjectQuery,
+			getProjectQueryBody:          `{"data": {"repository":{"projectsV2":{"nodes":[{"id": "1", "number": 1}]}}}}`,
+			getProjectFieldsQuery:        mockedGetProjectFieldsQuery,
+			getProjectFieldsBody:         `{"data": {"repository":{"projectV2": {"fields": {"pageInfo": {"hasNextPage": false, "endCursor": null}, "nodes": [{"id": "1", "name": "status", "options": [{"id": "1", "name": "to do"}]}]}}}}}`,
+			addProjectV2ItemByIdMutation: mockedAddProjectV2ItemByIdMutation,
+			expectedError:                io.EOF,
+		},
+		{
+			name:                                  "no error",
+			getProjectQuery:                       mockedGetProjectQuery,
+			getProjectQueryBody:                   `{"data": {"repository":{"projectsV2":{"nodes":[{"id": "1", "number": 1}]}}}}`,
+			getProjectFieldsQuery:                 mockedGetProjectFieldsQuery,
+			getProjectFieldsBody:                  `{"data": {"repository":{"projectV2": {"fields": {"pageInfo": {"hasNextPage": false, "endCursor": null}, "nodes": [{"id": "1", "name": "status", "options": [{"id": "1", "name": "to do"}]}]}}}}}`,
+			addProjectV2ItemByIdMutation:          mockedAddProjectV2ItemByIdMutation,
+			addProjectV2ItemByIdBody:              `{"data": {"addProjectV2ItemById": {"item": {"id": "item_id"}}}}`,
+			updateProjectV2ItemFieldValueMutation: mockedUpdateProjectV2ItemFieldValueMutation,
+			updateProjectV2ItemFieldValueBody:     `{"data": {"updateProjectV2ItemFieldValue": {"clientMutationId": "client_mutation_id"}}}}`,
+			expectedError:                         nil,
 		},
 	}
 
@@ -98,21 +124,14 @@ func TestAddToProject_WhenProjectNotFound(t *testing.T) {
 				func(res http.ResponseWriter, req *http.Request) {
 					query := aladino.MustRead(req.Body)
 					switch query {
-					case testCase.query:
-						aladino.MustWrite(
-							res,
-							testCase.body,
-						)
-					case mockedAddProjectV2ItemByIdMutation:
-						aladino.MustWrite(
-							res,
-							testCase.addProjectV2ItemByIdBody,
-						)
-					case mockedUpdateProjectV2ItemFieldValueMutation:
-						aladino.MustWrite(
-							res,
-							testCase.updateProjectV2ItemFieldValueBody,
-						)
+					case testCase.getProjectQuery:
+						aladino.MustWrite(res, testCase.getProjectQueryBody)
+					case testCase.getProjectFieldsQuery:
+						aladino.MustWrite(res, testCase.getProjectFieldsBody)
+					case testCase.addProjectV2ItemByIdMutation:
+						aladino.MustWrite(res, testCase.addProjectV2ItemByIdBody)
+					case testCase.updateProjectV2ItemFieldValueMutation:
+						aladino.MustWrite(res, testCase.updateProjectV2ItemFieldValueBody)
 					}
 				},
 			)
@@ -122,5 +141,4 @@ func TestAddToProject_WhenProjectNotFound(t *testing.T) {
 			assert.Equal(t, testCase.expectedError, err)
 		})
 	}
-
 }
