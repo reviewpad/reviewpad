@@ -10,7 +10,6 @@ import (
 
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	"github.com/reviewpad/reviewpad/v3/utils"
-	"github.com/shurcooL/githubv4"
 )
 
 var (
@@ -37,15 +36,6 @@ type UpdateProjectV2ItemFieldValueInput struct {
 	FieldID   string     `json:"fieldId"`
 }
 
-type FieldDetails struct {
-	ID      string
-	Name    string
-	Options []struct {
-		ID   string
-		Name string
-	}
-}
-
 func AddToProject() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
 		Type: aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType(), aladino.BuildStringType()}, aladino.BuildStringType()),
@@ -60,40 +50,19 @@ func addToProjectCode(e aladino.Env, args []aladino.Value) error {
 	projectName := args[0].(*aladino.StringValue).Val
 	projectStatus := strings.ToLower(args[1].(*aladino.StringValue).Val)
 
-	var repositoryProjectsQuery struct {
-		Repository struct {
-			ProjectsV2 struct {
-				Nodes []struct {
-					ID     string
-					Fields struct {
-						Nodes []struct {
-							Details FieldDetails `graphql:"... on ProjectV2SingleSelectField"`
-						}
-					} `graphql:"fields(first: 50, orderBy: {field: NAME, direction: ASC})"`
-				}
-			} `graphql:"projectsV2(query: $name, first: 1, orderBy: {field: TITLE, direction: ASC})"`
-		} `graphql:"repository(owner: $repositoryOwner, name: $repositoryName)"`
-	}
-
-	varGQLRepositoryProjectsQuery := map[string]interface{}{
-		"repositoryOwner": githubv4.String(owner),
-		"repositoryName":  githubv4.String(repo),
-		"name":            githubv4.String(projectName),
-	}
-
-	if err := e.GetClientGQL().Query(e.GetCtx(), &repositoryProjectsQuery, varGQLRepositoryProjectsQuery); err != nil {
+	project, err := utils.GetProjectV2ByName(e.GetCtx(), e.GetClientGQL(), owner, repo, projectName)
+	if err != nil {
 		return err
 	}
 
-	if len(repositoryProjectsQuery.Repository.ProjectsV2.Nodes) == 0 {
-		return ErrProjectNotFound
+	fields, err := utils.GetProjectFieldsByProjectNumber(e.GetCtx(), e.GetClientGQL(), owner, repo, "", project.Number)
+	if err != nil {
+		return err
 	}
 
-	project := repositoryProjectsQuery.Repository.ProjectsV2.Nodes[0]
+	statusField := utils.FieldDetails{}
 
-	statusField := FieldDetails{}
-
-	for _, field := range project.Fields.Nodes {
+	for _, field := range fields {
 		if strings.EqualFold(field.Details.Name, "status") {
 			statusField = field.Details
 			break
@@ -130,7 +99,7 @@ func addToProjectCode(e aladino.Env, args []aladino.Value) error {
 		ContentID: *pr.NodeID,
 	}
 
-	err := e.GetClientGQL().Mutate(e.GetCtx(), &addProjectV2ItemByIdMutation, input, nil)
+	err = e.GetClientGQL().Mutate(e.GetCtx(), &addProjectV2ItemByIdMutation, input, nil)
 
 	if err != nil {
 		return err
@@ -152,5 +121,4 @@ func addToProjectCode(e aladino.Env, args []aladino.Value) error {
 	}
 
 	return e.GetClientGQL().Mutate(e.GetCtx(), &updateProjectV2ItemFieldValueMutation, updateInput, nil)
-
 }
