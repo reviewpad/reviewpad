@@ -17,7 +17,7 @@ tasks:
 
   build:
     deps:
-      - build-cmd
+      - build-cli
       - build-aladino-parser
     summary: |
       Builds Go files.
@@ -41,15 +41,15 @@ tasks:
     generates:
       - lang/aladino/parser.go
 
-  build-cmd:
+  build-cli:
     summary: |
       Builds commands.
 
       Run with --watch or -w to watch for changes on Go files.
     cmds:
-      - go build ./cmd/cli/main.go
+      - go build -o reviewpad-cli ./cli/main.go
     sources:
-      - ./cmd/cli/*.go
+      - ./cli/**/*.go
 
   test:
     summary: |
