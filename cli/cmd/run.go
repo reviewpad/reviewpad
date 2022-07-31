@@ -2,13 +2,13 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-package main
+package cmd
 
 import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"flag"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -19,22 +19,21 @@ import (
 	"github.com/reviewpad/reviewpad/v3"
 	"github.com/reviewpad/reviewpad/v3/collector"
 	"github.com/shurcooL/githubv4"
+	"github.com/spf13/cobra"
 	"golang.org/x/oauth2"
 )
 
-var (
-	dryRun         = flag.Bool("dry-run", false, "Dry run mode")
-	safeModeRun    = flag.Bool("safe-mode-run", false, "Safe mode")
-	reviewpadFile  = flag.String("reviewpad", "", "File path to reviewpad.yml")
-	pullRequestUrl = flag.String("pull-request", "", "Pull request GitHub url")
-	gitHubToken    = flag.String("github-token", "", "GitHub token")
-	eventFilePath  = flag.String("event-payload", "", "File path to github action event in JSON format")
-	mixpanelToken  = flag.String("mixpanel-token", "", "Mixpanel token")
-)
+func init() {
+	rootCmd.AddCommand(runCmd)
+	runCmd.Flags().BoolVarP(&dryRun, "dry-run", "d", false, "Dry run mode")
+	runCmd.Flags().BoolVarP(&safeModeRun, "safe-mode-run", "s", false, "Safe mode")
+	runCmd.Flags().StringVarP(&pullRequestUrl, "pull-request", "p", "", "GitHub pull request url")
+	runCmd.Flags().StringVarP(&gitHubToken, "github-token", "t", "", "GitHub personal access token")
+	runCmd.Flags().StringVarP(&eventFilePath, "event-payload", "e", "", "File path to github action event in JSON format")
+	runCmd.Flags().StringVarP(&mixpanelToken, "mixpanel-token", "m", "", "Mixpanel token")
 
-func usage() {
-	flag.PrintDefaults()
-	os.Exit(2)
+	runCmd.MarkFlagRequired("pull-request")
+	runCmd.MarkFlagRequired("github-token")
 }
 
 type Event struct {
@@ -53,47 +52,26 @@ func parseEvent(rawEvent string) (interface{}, error) {
 	return github.ParseWebHook(*ev.Name, *ev.Payload)
 }
 
-func main() {
-	flag.Parse()
-
-	if flag.Arg(0) == "help" {
-		usage()
-	}
-
-	if *reviewpadFile == "" {
-		log.Printf("[ERROR] Missing argument reviewpad.")
-		usage()
-	}
-
-	if *pullRequestUrl == "" {
-		log.Printf("[ERROR] Missing argument pull-request.")
-		usage()
-	}
-
-	if *gitHubToken == "" {
-		log.Printf("[ERROR] Missing argument github-token.")
-		usage()
-	}
-
+func run() error {
 	var ev interface{}
 
-	if *eventFilePath == "" {
+	if eventFilePath == "" {
 		log.Print("[WARN] No event payload provided. Assuming empty event.")
 	} else {
-		content, err := ioutil.ReadFile(*eventFilePath)
+		content, err := ioutil.ReadFile(eventFilePath)
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 
 		rawEvent := string(content)
 		ev, err = parseEvent(rawEvent)
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 	}
 
 	pullRequestDetailsRegex := regexp.MustCompile(`github\.com\/(.+)\/(.+)\/pull\/(\d+)`)
-	pullRequestDetails := pullRequestDetailsRegex.FindSubmatch([]byte(*pullRequestUrl))
+	pullRequestDetails := pullRequestDetailsRegex.FindSubmatch([]byte(pullRequestUrl))
 
 	repositoryOwner := string(pullRequestDetails[1][:])
 	repositoryName := string(pullRequestDetails[2][:])
@@ -104,13 +82,13 @@ func main() {
 
 	ctx := context.Background()
 	ts := oauth2.StaticTokenSource(
-		&oauth2.Token{AccessToken: *gitHubToken},
+		&oauth2.Token{AccessToken: gitHubToken},
 	)
 	tc := oauth2.NewClient(ctx, ts)
 
 	gitHubClient := github.NewClient(tc)
 	gitHubClientGQL := githubv4.NewClient(tc)
-	collectorClient := collector.NewCollector(*mixpanelToken, repositoryOwner)
+	collectorClient := collector.NewCollector(mixpanelToken, repositoryOwner)
 
 	ghPullRequest, _, err := gitHubClient.PullRequests.Get(ctx, repositoryOwner, repositoryName, pullRequestNumber)
 	if err != nil {
@@ -123,40 +101,46 @@ func main() {
 
 	if *ghPullRequest.Merged {
 		if ghPullRequest.Head == nil {
-			log.Fatal("team-edition: pull request is merged and head branched was automatically deleted\n")
-			return
+			return fmt.Errorf("team-edition: pull request is merged and head branched was automatically deleted")
 		}
 
 		if ghPullRequest.Head.Repo == nil {
-			log.Fatal("team-edition: pull request is merged and head repo branched was automatically deleted\n")
-			return
+			return fmt.Errorf("team-edition: pull request is merged and head repo branched was automatically deleted")
 		}
 
 		if ghPullRequest.Head.Repo.DeleteBranchOnMerge == nil || *ghPullRequest.Head.Repo.DeleteBranchOnMerge {
-			log.Fatal("team-edition: pull request is merged and head branched was automatically deleted\n")
-			return
+			return fmt.Errorf("team-edition: pull request is merged and head branched was automatically deleted")
 		}
 
 		_, _, err := gitHubClient.Repositories.GetBranch(ctx, headRepoOwner, headRepoName, headRef, true)
 		if err != nil {
-			log.Fatal("team-edition: pull request is merged and head branched cannot be retrieved\n")
-			return
+			return fmt.Errorf("team-edition: pull request is merged and head branched cannot be retrieved")
 		}
 	}
 
-	data, err := os.ReadFile(*reviewpadFile)
+	data, err := os.ReadFile(reviewpadFile)
 	if err != nil {
-		log.Fatalf("Error reading reviewpad file. Details: %v", err.Error())
+		return fmt.Errorf("error reading reviewpad file. Details: %v", err.Error())
 	}
 
 	buf := bytes.NewBuffer(data)
 	file, err := reviewpad.Load(buf)
 	if err != nil {
-		log.Fatalf("Error running reviewpad team edition. Details %v", err.Error())
+		return fmt.Errorf("error running reviewpad team edition. Details %v", err.Error())
 	}
 
-	_, err = reviewpad.Run(ctx, gitHubClient, gitHubClientGQL, collectorClient, ghPullRequest, ev, file, *dryRun, *safeModeRun)
+	_, err = reviewpad.Run(ctx, gitHubClient, gitHubClientGQL, collectorClient, ghPullRequest, ev, file, dryRun, safeModeRun)
 	if err != nil {
-		log.Fatalf("Error running reviewpad team edition. Details %v", err.Error())
+		return fmt.Errorf("error running reviewpad team edition. Details %v", err.Error())
 	}
+
+	return nil
+}
+
+var runCmd = &cobra.Command{
+	Use:   "run",
+	Short: "Runs reviewpad",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		return run()
+	},
 }
