@@ -190,7 +190,7 @@ rules:
   - name: ask-state
     kind: patch
     description: Ask pull request
-    spec: '(!$rule("ship-state") && !rule("show-state")) || $rule("explicit-ask-state")'
+    spec: '(!$rule("ship-state") && !$rule("show-state")) || $rule("explicit-ask-state")'
 
   - name: inconsistent-state
     kind: patch
@@ -205,7 +205,7 @@ rules:
   - name: auto-merge-authored-by-owners-with-ship-and-green-ci
     kind: patch
     description: auto merge pull requests authored by owners with ship and green ci
-    spec: '$rule("ship-authored-by-owners") &&  && $rule("ci-is-green")'
+    spec: '$rule("ship-authored-by-owners") && $rule("ci-is-green")'
 
   - name: ship-markdown-changes
     kind: patch
