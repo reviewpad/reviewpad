@@ -31,10 +31,12 @@ type Env interface {
 	GetReport() *Report
 	GetEventPayload() interface{}
 	GetDryRun() bool
+	GetSafeMode() bool
 }
 
 type BaseEnv struct {
 	Ctx          context.Context
+	SafeMode     bool
 	DryRun       bool
 	Client       *github.Client
 	ClientGQL    *githubv4.Client
@@ -49,6 +51,10 @@ type BaseEnv struct {
 
 func (e *BaseEnv) GetCtx() context.Context {
 	return e.Ctx
+}
+
+func (e *BaseEnv) GetSafeMode() bool {
+	return e.SafeMode
 }
 
 func (e *BaseEnv) GetDryRun() bool {
@@ -107,6 +113,8 @@ func NewTypeEnv(e Env) TypeEnv {
 func NewEvalEnv(
 	ctx context.Context,
 	dryRun bool,
+	safeMode bool,
+	commentReport bool,
 	gitHubClient *github.Client,
 	gitHubClientGQL *githubv4.Client,
 	collector collector.Collector,
@@ -136,10 +144,17 @@ func NewEvalEnv(
 
 	patch := Patch(patchMap)
 	registerMap := RegisterMap(make(map[string]Value))
-	report := &Report{WorkflowDetails: make(map[string]ReportWorkflowDetails, 0)}
+	report := &Report{
+		Settings: &ReportSettings{
+			CommentReport:     commentReport,
+			UseSafeModeHeader: safeMode,
+		},
+		WorkflowDetails: make(map[string]ReportWorkflowDetails, 0),
+	}
 
 	input := &BaseEnv{
 		Ctx:          ctx,
+		SafeMode:     safeMode,
 		DryRun:       dryRun,
 		Client:       gitHubClient,
 		ClientGQL:    gitHubClientGQL,

@@ -15,7 +15,13 @@ import (
 	"github.com/reviewpad/reviewpad/v3/utils/fmtio"
 )
 
+type ReportSettings struct {
+	CommentReport     bool
+	UseSafeModeHeader bool
+}
+
 type Report struct {
+	Settings        *ReportSettings
 	WorkflowDetails map[string]ReportWorkflowDetails
 }
 

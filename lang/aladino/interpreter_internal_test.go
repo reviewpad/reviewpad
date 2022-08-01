@@ -429,7 +429,7 @@ func TestExecStatement_WhenParseFails(t *testing.T) {
 		},
 	}
 
-	err := mockedInterpreter.ExecStatement(statement, engine.ReportSettings{})
+	err := mockedInterpreter.ExecStatement(statement)
 
 	assert.EqualError(t, err, "parse error: failed to build AST on input $addLabel(")
 }
@@ -464,7 +464,7 @@ func TestExecStatement_WhenTypeCheckExecFails(t *testing.T) {
 		},
 	}
 
-	err := mockedInterpreter.ExecStatement(statement, engine.ReportSettings{})
+	err := mockedInterpreter.ExecStatement(statement)
 
 	assert.EqualError(t, err, "type inference failed: mismatch in arg types on addLabel")
 }
@@ -500,7 +500,7 @@ func TestExecStatement_WhenActionExecFails(t *testing.T) {
 		},
 	}
 
-	err := mockedInterpreter.ExecStatement(statement, engine.ReportSettings{})
+	err := mockedInterpreter.ExecStatement(statement)
 
 	assert.EqualError(t, err, "exec: author not found. are you sure this is a built-in function?")
 }
@@ -554,7 +554,7 @@ func TestExecStatement(t *testing.T) {
 		},
 	}
 
-	err := mockedInterpreter.ExecStatement(statement, engine.ReportSettings{})
+	err := mockedInterpreter.ExecStatement(statement)
 
 	gotVal := mockedEnv.GetReport().WorkflowDetails[statementWorkflowName]
 
@@ -766,6 +766,8 @@ func TestNewInterpreter_WhenNewEvalEnvFails(t *testing.T) {
 	gotInterpreter, err := NewInterpreter(
 		ctx,
 		false,
+		false,
+		false,
 		client,
 		nil,
 		nil,
@@ -787,7 +789,9 @@ func TestNewInterpreter(t *testing.T) {
 
 	gotInterpreter, err := NewInterpreter(
 		mockedEnv.GetCtx(),
+		mockedEnv.GetSafeMode(),
 		mockedEnv.GetDryRun(),
+		false,
 		mockedEnv.GetClient(),
 		mockedEnv.GetClientGQL(),
 		mockedEnv.GetCollector(),

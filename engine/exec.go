@@ -32,7 +32,7 @@ func CollectError(env *Env, err error) {
 
 // Eval: main function that generates the program to be executed
 // Pre-condition Lint(file) == nil
-func Eval(file *ReviewpadFile, env *Env, reportSettings ReportSettings) (*Program, error) {
+func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 	execLogf("file to evaluate:\n%+v", file)
 
 	interpreter := env.Interpreter
@@ -109,8 +109,7 @@ func Eval(file *ReviewpadFile, env *Env, reportSettings ReportSettings) (*Progra
 
 	// a program is a list of statements to be executed based on the workflow rules and actions.
 	program := &Program{
-		ReportSettings: reportSettings,
-		Statements:     make([]*Statement, 0),
+		Statements: make([]*Statement, 0),
 	}
 
 	// triggeredExclusiveWorkflow is a control variable to denote if a workflow `always-run: false` has been triggered.

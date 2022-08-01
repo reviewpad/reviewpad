@@ -118,7 +118,7 @@ func (i *Interpreter) ExecProgram(program *engine.Program) error {
 	execLog("executing program")
 
 	for _, statement := range program.Statements {
-		err := i.ExecStatement(statement, program.ReportSettings)
+		err := i.ExecStatement(statement)
 		if err != nil {
 			return err
 		}
@@ -129,7 +129,7 @@ func (i *Interpreter) ExecProgram(program *engine.Program) error {
 	return nil
 }
 
-func (i *Interpreter) ExecStatement(statement *engine.Statement, reportSettings engine.ReportSettings) error {
+func (i *Interpreter) ExecStatement(statement *engine.Statement) error {
 	statRaw := statement.Code
 	statAST, err := Parse(statRaw)
 	if err != nil {
@@ -151,11 +151,11 @@ func (i *Interpreter) ExecStatement(statement *engine.Statement, reportSettings 
 		i.Env.GetReport().addToReport(statement)
 
 		mode := engine.SILENT_MODE
-		if reportSettings.IsReportEnabled {
+		if i.Env.GetReport().Settings.CommentReport {
 			mode = engine.VERBOSE_MODE
 		}
 
-		err := i.Report(mode, reportSettings.UseSafeModeHeader)
+		err := i.Report(mode, i.Env.GetReport().Settings.UseSafeModeHeader)
 		if err != nil {
 			return err
 		}
@@ -205,7 +205,9 @@ func (i *Interpreter) Report(mode string, safeMode bool) error {
 
 func NewInterpreter(
 	ctx context.Context,
+	safeMode bool,
 	dryRun bool,
+	commentReport bool,
 	gitHubClient *github.Client,
 	gitHubClientGQL *githubv4.Client,
 	collector collector.Collector,
@@ -214,7 +216,7 @@ func NewInterpreter(
 	builtIns *BuiltIns,
 
 ) (engine.Interpreter, error) {
-	evalEnv, err := NewEvalEnv(ctx, dryRun, gitHubClient, gitHubClientGQL, collector, pullRequest, eventPayload, builtIns)
+	evalEnv, err := NewEvalEnv(ctx, safeMode, dryRun, commentReport, gitHubClient, gitHubClientGQL, collector, pullRequest, eventPayload, builtIns)
 	if err != nil {
 		return nil, err
 	}
