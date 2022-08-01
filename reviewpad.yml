@@ -218,15 +218,25 @@ rules:
     description: Owners can ship simple pull requests
     spec: '$rule("ship-authored-by-owners") && $rule("changes-are-in-markdown")'
 
-  - name: is-waiting-for-review
+  - name: waiting-for-review
     kind: patch
     description: Pull request is waiting to be reviewed
     spec: '!$rule("work-in-progress") && $isWaitingForReview()'
 
-  - name: requires-author-attention
+  - name: not-waiting-for-review
+    kind: patch
+    description: Pull request is not waiting to be reviewed
+    spec: '!$rule("waiting-for-review")'
+
+  - name: author-attention-required
     kind: patch
     description: Pull request requires author attention
     spec: '!$rule("work-in-progress") && $hasUnaddressedReviewThreads()'
+
+  - name: author-attention-not-required
+    kind: patch
+    description: Pull request does not require author attention
+    spec: '!$rule("author-attention-required")'
 
   - name: ci-is-completed
     kind: patch
@@ -400,11 +410,15 @@ workflows:
     description: Defines pull request attention set
     always-run: true
     if:
-      - rule: is-waiting-for-review
+      - rule: waiting-for-review
         extra-actions:
         - '$addLabel("waiting-review")'
-        - '$removeLabel("requires-author-attention")'
-      - rule: requires-author-attention
+      - rule: not-waiting-for-review
         extra-actions:
         - '$removeLabel("waiting-review")'
+      - rule: author-attention-required
+        extra-actions:
         - '$addLabel("requires-author-attention")'
+      - rule: author-attention-not-required
+        extra-actions:
+        - '$removeLabel("requires-author-attention")'
