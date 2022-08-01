@@ -53,7 +53,7 @@ return`
 
 	wantEnv := &engine.Env{
 		Ctx:          ctx,
-		DryRun:       false,
+		DryRun:       aladino.DefaultMockDryRun,
 		Client:       client,
 		ClientGQL:    nil,
 		Collector:    collector,
@@ -64,7 +64,7 @@ return`
 
 	gotEnv, err := engine.NewEvalEnv(
 		ctx,
-		false,
+		aladino.DefaultMockDryRun,
 		client,
 		nil,
 		collector,

@@ -143,25 +143,21 @@ func (i *Interpreter) ExecStatement(statement *engine.Statement) error {
 
 	m := regexp.MustCompile("\\$fail\\(\"(.*)\"\\)")
 
-	// The report is generated after the program is executed.
-	// $fail built-in action will fail the GitHub action before the report is generated.
-	// In this case, when we encounter the $fail built-in action we need to first generate the report before executing the action.
 	isFailAction := m.FindString(statement.Code) != ""
-	if isFailAction {
-		i.Env.GetReport().addToReport(statement)
-
-		mode := engine.SILENT_MODE
-		if i.Env.GetReport().Settings.CommentReport {
-			mode = engine.VERBOSE_MODE
-		}
-
-		err := i.Report(mode, i.Env.GetReport().Settings.UseSafeModeHeader)
-		if err != nil {
-			return err
-		}
-	}
 
 	if !i.Env.GetDryRun() {
+		// The report is generated after the program is executed.
+		// $fail built-in action will fail the GitHub action before the report is generated.
+		// In this case, when we encounter the $fail built-in action we need to first generate the report before executing the action.
+		if isFailAction {
+			i.Env.GetReport().addToReport(statement)
+
+			err := i.Report()
+			if err != nil {
+				return err
+			}
+		}
+
 		err = execStatAST.exec(i.Env)
 		if err != nil {
 			return err
@@ -174,10 +170,13 @@ func (i *Interpreter) ExecStatement(statement *engine.Statement) error {
 	return nil
 }
 
-func (i *Interpreter) Report(mode string, safeMode bool) error {
+func (i *Interpreter) Report() error {
 	execLog("generating report")
 
 	env := i.Env
+
+	useSafeModeHeader := env.GetReport().Settings.UseSafeModeHeader
+	commentReport := env.GetReport().Settings.CommentReport
 
 	var err error
 
@@ -186,14 +185,14 @@ func (i *Interpreter) Report(mode string, safeMode bool) error {
 		return err
 	}
 
-	if mode == engine.SILENT_MODE {
+	if !commentReport {
 		if comment != nil {
 			return DeleteReportComment(env, *comment.ID)
 		}
 		return nil
 	}
 
-	report := buildReport(safeMode, env.GetReport())
+	report := buildReport(useSafeModeHeader, env.GetReport())
 
 	if comment == nil {
 		return AddReportComment(env, report)

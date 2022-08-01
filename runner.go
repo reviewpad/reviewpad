@@ -73,7 +73,7 @@ func Run(
 	}
 
 	if safeMode || !dryRun {
-		err = aladinoInterpreter.Report(reviewpadFile.Mode, safeMode)
+		err = aladinoInterpreter.Report()
 		if err != nil {
 			engine.CollectError(evalEnv, err)
 			return nil, err

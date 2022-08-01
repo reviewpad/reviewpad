@@ -233,9 +233,9 @@ func mockEnvWith(prOwner string, prRepoName string, prNum int, client *github.Cl
 
 	env, err := NewEvalEnv(
 		ctx,
-		false,
-		false,
-		false,
+		DefaultMockDryRun,
+		DefaultMockSafeMode,
+		DefaultMockCommentReport,
 		client,
 		clientGQL,
 		DefaultMockCollector,
