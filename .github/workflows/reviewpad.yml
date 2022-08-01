@@ -9,8 +9,6 @@ on:
       - ready_for_review
       - converted_to_draft
       - edited
-      - review_requested
-      - review_request_removed
   pull_request_review:
   workflow_run:
     workflows: ["Pull Request Build"]
