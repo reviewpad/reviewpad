@@ -59,7 +59,6 @@ func TestGetProjectV2ByName_WhenProjectNotFound(t *testing.T) {
 	assert.Equal(t, plugins_aladino_actions.ErrProjectNotFound, err)
 
 	assert.Nil(t, project)
-
 }
 
 func TestGetProjectV2ByName_WhenProjectFound(t *testing.T) {
