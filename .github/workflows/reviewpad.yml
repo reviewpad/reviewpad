@@ -17,6 +17,7 @@ on:
 
 jobs:
   reviewpad:
+    if: ${{ github.event.actor != 'reviewpad-bot' }}
     runs-on: ubuntu-latest
     steps:
       - name: Reviewpad
