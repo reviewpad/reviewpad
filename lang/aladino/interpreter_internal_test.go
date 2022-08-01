@@ -325,14 +325,9 @@ func TestExecProgram_WhenExecStatementFails(t *testing.T) {
 		Env: mockedEnv,
 	}
 
-	program := &engine.Program{
-		Statements: []*engine.Statement{
-			{
-				Code:     "$action()",
-				Metadata: nil,
-			},
-		},
-	}
+	statement := engine.BuildStatement("$action()", nil)
+	statements := []*engine.Statement{statement}
+	program := engine.BuildProgram(statements)
 
 	err := mockedInterpreter.ExecProgram(program)
 
@@ -373,37 +368,30 @@ func TestExecProgram(t *testing.T) {
 		Env: mockedEnv,
 	}
 
-	statementWorkflowName := "test"
-	statementRule := "testRule"
-	statementCode := "$addLabel(\"test\")"
-	statement := &engine.Statement{
-		Code: statementCode,
-		Metadata: &engine.Metadata{
-			Workflow: engine.PadWorkflow{
-				Name: statementWorkflowName,
-			},
-			TriggeredBy: []engine.PadWorkflowRule{
-				{Rule: statementRule},
-			},
+	statWorkflowName := "test"
+	statRule := "test-rule"
+	statCode := "$addLabel(\"test\")"
+	statMetadata := engine.BuildMetadata(
+		engine.PadWorkflow{
+			Name: statWorkflowName,
 		},
-	}
-
-	program := &engine.Program{
-		Statements: []*engine.Statement{
-			statement,
+		[]engine.PadWorkflowRule{
+			{Rule: statRule},
 		},
-	}
+	)
+	statement := engine.BuildStatement(statCode, statMetadata)
+	program := engine.BuildProgram([]*engine.Statement{statement})
 
 	err := mockedInterpreter.ExecProgram(program)
 
-	gotVal := mockedEnv.GetReport().WorkflowDetails[statementWorkflowName]
+	gotVal := mockedEnv.GetReport().WorkflowDetails[statWorkflowName]
 
 	wantVal := ReportWorkflowDetails{
-		Name: statementWorkflowName,
+		Name: statWorkflowName,
 		Rules: map[string]bool{
-			statementRule: true,
+			statRule: true,
 		},
-		Actions: []string{statementCode},
+		Actions: []string{statCode},
 	}
 
 	assert.Nil(t, err)
@@ -417,17 +405,15 @@ func TestExecStatement_WhenParseFails(t *testing.T) {
 		Env: mockedEnv,
 	}
 
-	statement := &engine.Statement{
-		Code: "$addLabel(",
-		Metadata: &engine.Metadata{
-			Workflow: engine.PadWorkflow{
-				Name: "test",
-			},
-			TriggeredBy: []engine.PadWorkflowRule{
-				{Rule: "testRule"},
-			},
+	statMetadata := engine.BuildMetadata(
+		engine.PadWorkflow{
+			Name: "test",
 		},
-	}
+		[]engine.PadWorkflowRule{
+			{Rule: "test-rule"},
+		},
+	)
+	statement := engine.BuildStatement("$addLabel(", statMetadata)
 
 	err := mockedInterpreter.ExecStatement(statement)
 
@@ -452,17 +438,15 @@ func TestExecStatement_WhenTypeCheckExecFails(t *testing.T) {
 		Env: mockedEnv,
 	}
 
-	statement := &engine.Statement{
-		Code: "$addLabel(1)",
-		Metadata: &engine.Metadata{
-			Workflow: engine.PadWorkflow{
-				Name: "test",
-			},
-			TriggeredBy: []engine.PadWorkflowRule{
-				{Rule: "testRule"},
-			},
+	statMetadata := engine.BuildMetadata(
+		engine.PadWorkflow{
+			Name: "test",
 		},
-	}
+		[]engine.PadWorkflowRule{
+			{Rule: "test-rule"},
+		},
+	)
+	statement := engine.BuildStatement("$addLabel(1)", statMetadata)
 
 	err := mockedInterpreter.ExecStatement(statement)
 
@@ -488,17 +472,15 @@ func TestExecStatement_WhenActionExecFails(t *testing.T) {
 		Env: mockedEnv,
 	}
 
-	statement := &engine.Statement{
-		Code: "$author()",
-		Metadata: &engine.Metadata{
-			Workflow: engine.PadWorkflow{
-				Name: "test",
-			},
-			TriggeredBy: []engine.PadWorkflowRule{
-				{Rule: "testRule"},
-			},
+	statMetadata := engine.BuildMetadata(
+		engine.PadWorkflow{
+			Name: "test",
 		},
-	}
+		[]engine.PadWorkflowRule{
+			{Rule: "test-rule"},
+		},
+	)
+	statement := engine.BuildStatement("$author()", statMetadata)
 
 	err := mockedInterpreter.ExecStatement(statement)
 
@@ -539,31 +521,29 @@ func TestExecStatement(t *testing.T) {
 		Env: mockedEnv,
 	}
 
-	statementWorkflowName := "test"
-	statementRule := "testRule"
-	statementCode := "$addLabel(\"test\")"
-	statement := &engine.Statement{
-		Code: statementCode,
-		Metadata: &engine.Metadata{
-			Workflow: engine.PadWorkflow{
-				Name: statementWorkflowName,
-			},
-			TriggeredBy: []engine.PadWorkflowRule{
-				{Rule: statementRule},
-			},
+	statWorkflowName := "test"
+	statRule := "test-rule"
+	statCode := "$addLabel(\"test\")"
+	statMetadata := engine.BuildMetadata(
+		engine.PadWorkflow{
+			Name: statWorkflowName,
 		},
-	}
+		[]engine.PadWorkflowRule{
+			{Rule: statRule},
+		},
+	)
+	statement := engine.BuildStatement(statCode, statMetadata)
 
 	err := mockedInterpreter.ExecStatement(statement)
 
-	gotVal := mockedEnv.GetReport().WorkflowDetails[statementWorkflowName]
+	gotVal := mockedEnv.GetReport().WorkflowDetails[statWorkflowName]
 
 	wantVal := ReportWorkflowDetails{
-		Name: statementWorkflowName,
+		Name: statWorkflowName,
 		Rules: map[string]bool{
-			statementRule: true,
+			statRule: true,
 		},
-		Actions: []string{statementCode},
+		Actions: []string{statCode},
 	}
 
 	assert.Nil(t, err)
