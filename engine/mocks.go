@@ -79,14 +79,6 @@ return`),
 	}
 }
 
-func mockDefaultHttpClient(clientOptions []mock.MockBackendOption) *http.Client {
-	return mockHttpClientWith(clientOptions...)
-}
-
-func mockHttpClientWith(clientOptions ...mock.MockBackendOption) *http.Client {
-	return mock.NewMockedHTTPClient(clientOptions...)
-}
-
 func MockGithubClient(clientOptions []mock.MockBackendOption) *github.Client {
 	defaultMocks := []mock.MockBackendOption{
 		mock.WithRequestMatchHandler(
@@ -105,5 +97,5 @@ func MockGithubClient(clientOptions []mock.MockBackendOption) *github.Client {
 
 	mocks := append(clientOptions, defaultMocks...)
 
-	return github.NewClient(mockDefaultHttpClient(mocks))
+	return github.NewClient(mock.NewMockedHTTPClient(mocks...))
 }
