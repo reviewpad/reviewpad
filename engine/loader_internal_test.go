@@ -35,7 +35,7 @@ func TestLoad_WhenDataParseFails(t *testing.T) {
 }
 
 func TestLoad(t *testing.T) {
-	data, err := os.ReadFile("../resources/test/engine/simpleReviewpadFile.yml")
+	data, err := os.ReadFile("../testdata/engine/simpleReviewpadFile.yml")
 	if err != nil {
 		assert.FailNow(t, fmt.Sprintf("Error reading reviewpad file: %v", err))
 	}
@@ -63,7 +63,7 @@ func TestParse_WhenProvidedANonYamlFormat(t *testing.T) {
 func TestParse(t *testing.T) {
 	wantReviewpadFile := mockedReviewpadFile
 
-	mockedReviewpadFileData, err := os.ReadFile("../resources/test/engine/mockedReviewpadFile.yml")
+	mockedReviewpadFileData, err := os.ReadFile("../testdata/engine/mockedReviewpadFile.yml")
 	if err != nil {
 		assert.FailNow(t, fmt.Sprintf("Error getting reviewpad file: %v", err))
 	}
@@ -168,7 +168,7 @@ func TestLoadImport(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
-	simpleReviewpadFileData, err := os.ReadFile("../resources/test/engine/simpleReviewpadFile.yml")
+	simpleReviewpadFileData, err := os.ReadFile("../testdata/engine/simpleReviewpadFile.yml")
 	if err != nil {
 		assert.FailNow(t, fmt.Sprintf("Error reading reviewpad file: %v", err))
 	}
@@ -223,7 +223,7 @@ func TestInlineImports_WhenThereIsCycleDependency(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
-	mockedImportedReviewpadFileData, err := os.ReadFile("../resources/test/engine/mockedImportedReviewpadFile.yml")
+	mockedImportedReviewpadFileData, err := os.ReadFile("../testdata/engine/mockedImportedReviewpadFile.yml")
 	if err != nil {
 		assert.FailNow(t, fmt.Sprintf("Error getting reviewpad file: %v", err))
 	}
@@ -264,7 +264,7 @@ func TestInlineImports_WhenVisitsAreOptimized(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
-	mockedImportedReviewpadFileData, err := os.ReadFile("../resources/test/engine/mockedImportedReviewpadFile.yml")
+	mockedImportedReviewpadFileData, err := os.ReadFile("../testdata/engine/mockedImportedReviewpadFile.yml")
 	if err != nil {
 		assert.FailNow(t, fmt.Sprintf("Error getting reviewpad file: %v", err))
 	}
@@ -309,7 +309,7 @@ func TestInlineImports_WhenSubTreeFileInlineImportsFails(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
-	simpleReviewpadFileWithImportsData, err := os.ReadFile("../resources/test/engine/simpleReviewpadFileWithImports.yml")
+	simpleReviewpadFileWithImportsData, err := os.ReadFile("../testdata/engine/simpleReviewpadFileWithImports.yml")
 	if err != nil {
 		assert.FailNow(t, fmt.Sprintf("Error getting reviewpad file: %v", err))
 	}
@@ -349,7 +349,7 @@ func TestInlineImports(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
-	simpleReviewpadFileData, err := os.ReadFile("../resources/test/engine/simpleReviewpadFile.yml")
+	simpleReviewpadFileData, err := os.ReadFile("../testdata/engine/simpleReviewpadFile.yml")
 	if err != nil {
 		assert.FailNow(t, fmt.Sprintf("Error getting reviewpad file: %v", err))
 	}
