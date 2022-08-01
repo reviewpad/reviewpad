@@ -181,9 +181,9 @@ func TestNewEvalEnv_WhenGetPullRequestFilesFails(t *testing.T) {
 
 	env, err := aladino.NewEvalEnv(
 		ctx,
-		false,
-		false,
-		false,
+		aladino.DefaultMockDryRun,
+		aladino.DefaultMockSafeMode,
+		aladino.DefaultMockCommentReport,
 		mockedGithubClient,
 		nil,
 		aladino.DefaultMockCollector,
@@ -223,9 +223,9 @@ func TestNewEvalEnv_WhenNewFileFails(t *testing.T) {
 
 	env, err := aladino.NewEvalEnv(
 		ctx,
-		false,
-		false,
-		false,
+		aladino.DefaultMockDryRun,
+		aladino.DefaultMockSafeMode,
+		aladino.DefaultMockCommentReport,
 		mockedGithubClient,
 		nil,
 		aladino.DefaultMockCollector,
@@ -271,9 +271,9 @@ func TestNewEvalEnv(t *testing.T) {
 
 	gotEnv, err := aladino.NewEvalEnv(
 		ctx,
-		false,
-		false,
-		false,
+		aladino.DefaultMockDryRun,
+		aladino.DefaultMockSafeMode,
+		aladino.DefaultMockCommentReport,
 		mockedGithubClient,
 		nil,
 		aladino.DefaultMockCollector,
@@ -306,8 +306,8 @@ func TestNewEvalEnv(t *testing.T) {
 		BuiltIns:    aladino.MockBuiltIns(),
 		Report: &aladino.Report{
 			Settings: &aladino.ReportSettings{
-				UseSafeModeHeader: false,
 				CommentReport:     false,
+				UseSafeModeHeader: false,
 			},
 			WorkflowDetails: make(map[string]aladino.ReportWorkflowDetails),
 		},

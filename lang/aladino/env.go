@@ -36,8 +36,8 @@ type Env interface {
 
 type BaseEnv struct {
 	Ctx          context.Context
-	SafeMode     bool
 	DryRun       bool
+	SafeMode     bool
 	Client       *github.Client
 	ClientGQL    *githubv4.Client
 	Collector    collector.Collector
@@ -154,8 +154,8 @@ func NewEvalEnv(
 
 	input := &BaseEnv{
 		Ctx:          ctx,
-		SafeMode:     safeMode,
 		DryRun:       dryRun,
+		SafeMode:     safeMode,
 		Client:       gitHubClient,
 		ClientGQL:    gitHubClientGQL,
 		Collector:    collector,

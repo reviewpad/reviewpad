@@ -27,6 +27,7 @@ const DefaultMockPrRepoName = "default-mock-repo"
 
 var DefaultMockContext = context.Background()
 var DefaultMockCollector = collector.NewCollector("", "")
+var DefaultMockDryRun, DefaultMockSafeMode, DefaultMockCommentReport bool // initializes to false value
 
 func GetDefaultMockPullRequestDetails() *github.PullRequest {
 	prNum := DefaultMockPrNum

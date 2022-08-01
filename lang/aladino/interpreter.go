@@ -205,8 +205,8 @@ func (i *Interpreter) Report(mode string, safeMode bool) error {
 
 func NewInterpreter(
 	ctx context.Context,
-	safeMode bool,
 	dryRun bool,
+	safeMode bool,
 	commentReport bool,
 	gitHubClient *github.Client,
 	gitHubClientGQL *githubv4.Client,
@@ -216,7 +216,7 @@ func NewInterpreter(
 	builtIns *BuiltIns,
 
 ) (engine.Interpreter, error) {
-	evalEnv, err := NewEvalEnv(ctx, safeMode, dryRun, commentReport, gitHubClient, gitHubClientGQL, collector, pullRequest, eventPayload, builtIns)
+	evalEnv, err := NewEvalEnv(ctx, dryRun, safeMode, commentReport, gitHubClient, gitHubClientGQL, collector, pullRequest, eventPayload, builtIns)
 	if err != nil {
 		return nil, err
 	}
