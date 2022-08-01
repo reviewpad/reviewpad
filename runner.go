@@ -60,7 +60,12 @@ func Run(
 		return nil, err
 	}
 
-	program, err := engine.Eval(reviewpadFile, evalEnv)
+	reportSettings := engine.ReportSettings{
+		UseSafeModeHeader: safeMode,
+		IsReportEnabled:   reviewpadFile.Mode == "VERBOSE",
+	}
+
+	program, err := engine.Eval(reviewpadFile, evalEnv, reportSettings)
 	if err != nil {
 		return nil, err
 	}

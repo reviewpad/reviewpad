@@ -4,6 +4,11 @@
 
 package engine
 
+type ReportSettings struct {
+	IsReportEnabled   bool
+	UseSafeModeHeader bool
+}
+
 type Metadata struct {
 	Workflow    PadWorkflow
 	TriggeredBy []PadWorkflowRule
@@ -15,8 +20,8 @@ type Statement struct {
 }
 
 type Program struct {
-	IsReportEnabled bool
-	Statements      []*Statement
+	ReportSettings ReportSettings
+	Statements     []*Statement
 }
 
 func (program *Program) append(workflowActions []string, workflow PadWorkflow, workflowRules []PadWorkflowRule) {

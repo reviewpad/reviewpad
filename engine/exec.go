@@ -32,15 +32,10 @@ func CollectError(env *Env, err error) {
 
 // Eval: main function that generates the program to be executed
 // Pre-condition Lint(file) == nil
-func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
+func Eval(file *ReviewpadFile, env *Env, reportSettings ReportSettings) (*Program, error) {
 	execLogf("file to evaluate:\n%+v", file)
 
 	interpreter := env.Interpreter
-
-	var isReviewpadReportEnabled bool
-	if file.Mode == VERBOSE_MODE {
-		isReviewpadReportEnabled = true
-	}
 
 	reg := regexp.MustCompile(`github\.com\/repos\/(.*)\/pulls\/\d+$$`)
 	matches := reg.FindStringSubmatch(*env.PullRequest.URL)
@@ -114,8 +109,8 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 
 	// a program is a list of statements to be executed based on the workflow rules and actions.
 	program := &Program{
-		IsReportEnabled: isReviewpadReportEnabled,
-		Statements:      make([]*Statement, 0),
+		ReportSettings: reportSettings,
+		Statements:     make([]*Statement, 0),
 	}
 
 	// triggeredExclusiveWorkflow is a control variable to denote if a workflow `always-run: false` has been triggered.

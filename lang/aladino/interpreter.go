@@ -118,7 +118,7 @@ func (i *Interpreter) ExecProgram(program *engine.Program) error {
 	execLog("executing program")
 
 	for _, statement := range program.Statements {
-		err := i.ExecStatement(statement, program.IsReportEnabled)
+		err := i.ExecStatement(statement, program.ReportSettings)
 		if err != nil {
 			return err
 		}
@@ -129,7 +129,7 @@ func (i *Interpreter) ExecProgram(program *engine.Program) error {
 	return nil
 }
 
-func (i *Interpreter) ExecStatement(statement *engine.Statement, isReportEnabled bool) error {
+func (i *Interpreter) ExecStatement(statement *engine.Statement, reportSettings engine.ReportSettings) error {
 	statRaw := statement.Code
 	statAST, err := Parse(statRaw)
 	if err != nil {
@@ -143,16 +143,19 @@ func (i *Interpreter) ExecStatement(statement *engine.Statement, isReportEnabled
 
 	m := regexp.MustCompile("\\$fail\\(\"(.*)\"\\)")
 
+	// The report is generated after the program is executed.
+	// $fail built-in action will fail the GitHub action before the report is generated.
+	// In this case, when we encounter the $fail built-in action we need to first generate the report before executing the action.
 	isFailAction := m.FindString(statement.Code) != ""
 	if isFailAction {
 		i.Env.GetReport().addToReport(statement)
 
 		mode := engine.SILENT_MODE
-		if isReportEnabled {
+		if reportSettings.IsReportEnabled {
 			mode = engine.VERBOSE_MODE
 		}
 
-		err := i.Report(mode, false)
+		err := i.Report(mode, reportSettings.UseSafeModeHeader)
 		if err != nil {
 			return err
 		}
