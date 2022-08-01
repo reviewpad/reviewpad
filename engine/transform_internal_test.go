@@ -11,45 +11,44 @@ import (
 )
 
 func TestAddDefaultTotalRequestedReviewers_WhenRegexMatchNotFound(t *testing.T) {
-    wantStr := "$addLabel(\"dummy\")"
+	wantStr := "$addLabel(\"dummy\")"
 
-    gotStr := addDefaultTotalRequestedReviewers(wantStr)
+	gotStr := addDefaultTotalRequestedReviewers(wantStr)
 
-    assert.Equal(t, wantStr, gotStr)
+	assert.Equal(t, wantStr, gotStr)
 }
 
 func TestAddDefaultTotalRequestedReviewers_WhenRegexMatchFound(t *testing.T) {
-    str := "$assignReviewer([\"john\", \"jane\"])"
-    wantStr := "$assignReviewer([\"john\", \"jane\"], 99)"
+	str := "$assignReviewer([\"john\", \"jane\"])"
+	wantStr := "$assignReviewer([\"john\", \"jane\"], 99)"
 
-    gotStr := addDefaultTotalRequestedReviewers(str)
+	gotStr := addDefaultTotalRequestedReviewers(str)
 
-    assert.Equal(t, wantStr, gotStr)
+	assert.Equal(t, wantStr, gotStr)
 }
 
-func TestAddDefaultMergeMethod_WhenGivenStringDoesNotContainMergeAction(t *testing.T) {
-    wantStr := "$addLabel(\"dummy\")"
+func TestAddDefaultMergeMethod_WhenStringDoesNotContainMergeAction(t *testing.T) {
+	wantStr := "$addLabel(\"dummy\")"
 
-    gotStr := addDefaultMergeMethod(wantStr)
-    
-    assert.Equal(t, wantStr, gotStr)
+	gotStr := addDefaultMergeMethod(wantStr)
+
+	assert.Equal(t, wantStr, gotStr)
 }
 
+func TestAddDefaultMergeMethod_WhenStringContainsMergeAction(t *testing.T) {
+	str := "$merge()"
+	wantStr := "$merge(\"merge\")"
 
-func TestAddDefaultMergeMethod_WhenGivenStringContainsMergeAction(t *testing.T) {
-    str := "$merge()"
-    wantStr := "$merge(\"merge\")"
+	gotStr := addDefaultMergeMethod(str)
 
-    gotStr := addDefaultMergeMethod(str)
-    
-    assert.Equal(t, wantStr, gotStr)
+	assert.Equal(t, wantStr, gotStr)
 }
 
 func TestTransformActionStr(t *testing.T) {
-    str := "$assignReviewer([\"john\", \"jane\"]) $merge()"
-    wantStr := "$assignReviewer([\"john\", \"jane\"], 99) $merge(\"merge\")"
+	str := "$assignReviewer([\"john\", \"jane\"]) $merge()"
+	wantStr := "$assignReviewer([\"john\", \"jane\"], 99) $merge(\"merge\")"
 
-    gotStr := transformActionStr(str)
-    
-    assert.Equal(t, wantStr, gotStr)
+	gotStr := transformActionStr(str)
+
+	assert.Equal(t, wantStr, gotStr)
 }
