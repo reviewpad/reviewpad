@@ -32,6 +32,12 @@ labels:
   ask:
     description: Ask mode
     color: "c90076"
+  waiting-review:
+    description: PR waiting for review
+    color: "cccc00"
+  requires-author-attention:
+    description: PR requires author attention
+    color: "b20000"
 
 groups:
   - name: owners
@@ -53,7 +59,7 @@ groups:
     description: Rising stars in the team
     kind: developers
     spec: '["shay2025"]'
-  
+
   - name: official-contributors
     description: Reviewpad core contributors
     kind: developers
@@ -62,22 +68,22 @@ groups:
 rules:
   - name: tautology
     kind: patch
-    description: always true
+    description: Always true
     spec: 'true'
 
   - name: is-small
     kind: patch
-    description: small pull request
+    description: Small pull request
     spec: $size() <= 30
 
   - name: is-medium
     kind: patch
-    description: medium-sized pull request
+    description: Medium-sized pull request
     spec: $size() > 30 && $size() <= 100
 
   - name: is-large
     kind: patch
-    description: large-sized pull request
+    description: Large-sized pull request
     spec: $size() > 100
 
   - name: changes-are-in-markdown
@@ -102,37 +108,37 @@ rules:
 
   - name: touchesLicense
     kind: patch
-    description: modifies the LICENSE file
+    description: Modifies the LICENSE file
     spec: '$hasFileName("LICENSE")'
 
   - name: touchesMoreThanLicense
     kind: patch
-    description: modifies the LICENSE file and other files
+    description: Modifies the LICENSE file and other files
     spec: '$rule("touchesLicense") && $fileCount() > 1'
 
   - name: touchesLicenseByNonOwner
     kind: patch
-    description: non-owner modifies the LICENSE file
+    description: Non-owner modifies the LICENSE file
     spec: '$rule("touchesLicense") && !$isElementOf($author(), $group("owners"))'
 
   - name: touchesPluginsFunctions
     kind: patch
-    description: modifies the plugin functions
+    description: Modifies the plugin functions
     spec: '$hasFilePattern("plugins/aladino/functions/**")'
 
   - name: touchesPluginsActions
     kind: patch
-    description: modifies the plugin actions
+    description: Modifies the plugin actions
     spec: '$hasFilePattern("plugins/aladino/actions/**")'
 
   - name: touchesPluginsFunctionsAndActions
     kind: patch
-    description: modifies both plugin actions and functions
+    description: Modifies both plugin actions and functions
     spec: '$rule("touchesPluginsActions") && $rule("touchesPluginsFunctions")'
 
   - name: touchesPluginsFunctionsOrActionsAndNotBuiltins
     kind: patch
-    description: modifies plugins but not built-ins
+    description: Modifies plugins but not built-ins
     spec: '($rule("touchesPluginsActions") || $rule("touchesPluginsFunctions")) && !$hasFileName("plugins/aladino/builtins.go")'
 
   - name: changes-critical-functions
@@ -194,7 +200,7 @@ rules:
 
   - name: inconsistent-state
     kind: patch
-    description: pull request is in an inconsistent state
+    description: Pull request is in an inconsistent state
     spec: '$rule("work-in-progress") && $rule("ship-state")'
 
   - name: ship-authored-by-owners
@@ -204,13 +210,23 @@ rules:
 
   - name: auto-merge-authored-by-owners-with-ship-and-green-ci
     kind: patch
-    description: auto merge pull requests authored by owners with ship and green ci
+    description: Auto merge pull requests authored by owners with ship and green ci
     spec: '$rule("ship-authored-by-owners") && $rule("ci-is-green")'
 
   - name: ship-markdown-changes
     kind: patch
-    description: owners can ship simple pull requests
+    description: Owners can ship simple pull requests
     spec: '$rule("ship-authored-by-owners") && $rule("changes-are-in-markdown")'
+
+  - name: is-waiting-for-review
+    kind: patch
+    description: Pull request is waiting to be reviewed
+    spec: '$isWaitingForReview()'
+
+  - name: requires-author-attention
+    kind: patch
+    description: Pull request requires author attention
+    spec: '$hasUnaddressedReviewThreads()'
 
 workflows:
   - name: add-label-with-size
@@ -237,7 +253,6 @@ workflows:
       - rule: tautology
         extra-actions:
           - '$commitLint()'
-
 
   - name: label-ship-show-ask
     # at all times we only have one label
@@ -301,7 +316,7 @@ workflows:
       - '$addLabel("run-build")'
 
   - name: auto-merge-owner-pull-requests
-    description: auto merge pull requests
+    description: Auto merge pull requests
     if:
       - rule: auto-merge-authored-by-owners-with-ship-and-green-ci
       - rule: ship-markdown-changes
@@ -310,7 +325,7 @@ workflows:
       - '$merge("rebase")'
 
   - name: changes-to-critical-code
-    description: changes to critical code
+    description: Changes to critical code
     always-run: true
     if:
       - rule: changes-critical-functions
@@ -321,7 +336,7 @@ workflows:
       - '$info("@marcelosousa: you are being notified because critical code was modified")'
 
   - name: default-review-process
-    description: default review process
+    description: Default review process
     # only runs if the pull request is not automatically merged
     if:
       - rule: is-first-time-contributor
@@ -368,3 +383,16 @@ workflows:
       - rule: touchesPluginsFunctionsOrActionsAndNotBuiltins
     then:
       - '$info("If you have added a new function or action do not forget to include it in the built-in list!")'
+
+  - name: attention-set
+    description: Defines pull request attention set
+    always-run: true
+    if:
+      - rule: is-waiting-for-review
+        extra-actions:
+        - '$addLabel("waiting-review")'
+        - '$removeLabel("requires-author-attention")'
+      - rule: requires-author-attention
+        extra-actions:
+        - '$removeLabel("waiting-review")'
+        - '$addLabel("requires-author-attention")'
