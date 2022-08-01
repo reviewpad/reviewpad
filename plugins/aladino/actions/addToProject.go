@@ -100,7 +100,6 @@ func addToProjectCode(e aladino.Env, args []aladino.Value) error {
 	}
 
 	err = e.GetClientGQL().Mutate(e.GetCtx(), &addProjectV2ItemByIdMutation, input, nil)
-
 	if err != nil {
 		return err
 	}

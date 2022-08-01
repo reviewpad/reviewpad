@@ -91,7 +91,6 @@ func GetProjectFieldsByProjectNumber(ctx context.Context, client *githubv4.Clien
 	}
 
 	project := repositoryProjectsQuery.Repository.ProjectV2
-
 	if project == nil {
 		return nil, ErrProjectNotFound
 	}
@@ -101,7 +100,6 @@ func GetProjectFieldsByProjectNumber(ctx context.Context, client *githubv4.Clien
 	fields = append(fields, project.Fields.Nodes...)
 
 	if project.Fields.PageInfo.HasNextPage {
-
 		fs, err := GetProjectFieldsByProjectNumber(ctx, client, owner, repo, afterCursor, projectNumber)
 
 		if err != nil {
@@ -109,7 +107,6 @@ func GetProjectFieldsByProjectNumber(ctx context.Context, client *githubv4.Clien
 		}
 
 		fields = append(fields, fs...)
-
 	}
 
 	return fields, nil
