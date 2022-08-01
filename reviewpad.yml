@@ -175,17 +175,17 @@ rules:
   - name: ship-state
     kind: patch
     description: Ship pull requests
-    spec: '$contains($description(), "[x]: Ship") || $isElementOf("ship", $labels())'
+    spec: '$contains($description(), "[x] Ship:") || $isElementOf("ship", $labels())'
 
   - name: show-state
     kind: patch
     description: Show pull requests
-    spec: '$contains($description(), "[x]: Show") || $isElementOf("show", $labels())'
+    spec: '$contains($description(), "[x] Show:") || $isElementOf("show", $labels())'
 
   - name: explicit-ask-state
     kind: patch
     description: Explicit ask pull requests
-    spec: '$contains($description(), "[x]: Ask") || $isElementOf("ask", $labels()) || $rule("authored-by-external-contributors")'
+    spec: '$contains($description(), "[x] Ask:") || $isElementOf("ask", $labels()) || $rule("authored-by-external-contributors")'
 
   - name: ask-state
     kind: patch
