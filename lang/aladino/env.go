@@ -114,7 +114,7 @@ func NewEvalEnv(
 	ctx context.Context,
 	dryRun bool,
 	safeMode bool,
-	commentReport bool,
+	createReportComment bool,
 	gitHubClient *github.Client,
 	gitHubClientGQL *githubv4.Client,
 	collector collector.Collector,
@@ -146,8 +146,8 @@ func NewEvalEnv(
 	registerMap := RegisterMap(make(map[string]Value))
 	report := &Report{
 		Settings: &ReportSettings{
-			CommentReport:     commentReport,
-			UseSafeModeHeader: safeMode,
+			CreateReportComment: createReportComment,
+			UseSafeModeHeader:   safeMode,
 		},
 		WorkflowDetails: make(map[string]ReportWorkflowDetails, 0),
 	}

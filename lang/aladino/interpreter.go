@@ -176,7 +176,7 @@ func (i *Interpreter) Report() error {
 	env := i.Env
 
 	useSafeModeHeader := env.GetReport().Settings.UseSafeModeHeader
-	commentReport := env.GetReport().Settings.CommentReport
+	createReportComment := env.GetReport().Settings.CreateReportComment
 
 	var err error
 
@@ -185,7 +185,7 @@ func (i *Interpreter) Report() error {
 		return err
 	}
 
-	if !commentReport {
+	if !createReportComment {
 		if comment != nil {
 			return DeleteReportComment(env, *comment.ID)
 		}
@@ -206,7 +206,7 @@ func NewInterpreter(
 	ctx context.Context,
 	dryRun bool,
 	safeMode bool,
-	commentReport bool,
+	createReportComment bool,
 	gitHubClient *github.Client,
 	gitHubClientGQL *githubv4.Client,
 	collector collector.Collector,
@@ -215,7 +215,7 @@ func NewInterpreter(
 	builtIns *BuiltIns,
 
 ) (engine.Interpreter, error) {
-	evalEnv, err := NewEvalEnv(ctx, dryRun, safeMode, commentReport, gitHubClient, gitHubClientGQL, collector, pullRequest, eventPayload, builtIns)
+	evalEnv, err := NewEvalEnv(ctx, dryRun, safeMode, createReportComment, gitHubClient, gitHubClientGQL, collector, pullRequest, eventPayload, builtIns)
 	if err != nil {
 		return nil, err
 	}

@@ -16,8 +16,8 @@ import (
 )
 
 type ReportSettings struct {
-	CommentReport     bool
-	UseSafeModeHeader bool
+	CreateReportComment bool
+	UseSafeModeHeader   bool
 }
 
 type Report struct {

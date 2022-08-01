@@ -696,7 +696,7 @@ func TestReport_OnVerboseMode_WhenNoReviewpadCommentIsFound(t *testing.T) {
 	)
 
 	mockedEnv.GetReport().Settings = &ReportSettings{
-		CommentReport: true,
+		CreateReportComment: true,
 	}
 	mockedInterpreter := &Interpreter{
 		Env: mockedEnv,
@@ -743,7 +743,7 @@ func TestReport_OnVerboseMode_WhenThereIsAlreadyAReviewpadComment(t *testing.T) 
 	}
 
 	mockedEnv.GetReport().Settings = &ReportSettings{
-		CommentReport: true,
+		CreateReportComment: true,
 	}
 	err := mockedInterpreter.Report()
 

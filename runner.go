@@ -50,8 +50,8 @@ func Run(
 		return nil, fmt.Errorf("when reviewpad is running in safe mode, it must also run in dry-run")
 	}
 
-	commentReport := reviewpadFile.Mode == engine.VERBOSE_MODE
-	aladinoInterpreter, err := aladino.NewInterpreter(ctx, safeMode, dryRun, commentReport, client, clientGQL, collector, pullRequest, eventPayload, plugins_aladino.PluginBuiltIns())
+	createReportComment := reviewpadFile.Mode == engine.VERBOSE_MODE
+	aladinoInterpreter, err := aladino.NewInterpreter(ctx, safeMode, dryRun, createReportComment, client, clientGQL, collector, pullRequest, eventPayload, plugins_aladino.PluginBuiltIns())
 	if err != nil {
 		return nil, err
 	}
