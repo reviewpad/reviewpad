@@ -94,7 +94,7 @@ rules:
   - name: changes-should-be-built
     kind: patch
     description: Verifies if changes are not only in markdown files
-    spec: '!$rule("changes-are-in-markdown")'
+    spec: '!$rule("changes-are-in-markdown") && !$isElementOf("run-build", $labels())'
 
   - name: ci-is-green
     kind: patch
@@ -257,14 +257,6 @@ workflows:
         extra-actions:
           - '$addLabel("large")'
 
-  - name: remove-ci-label
-    description: If the build is completed, remove the label
-    always-run: true
-    if:
-      - rule: ci-is-completed
-    then:
-      - '$removeLabel("run-build")'
-
   - name: lint-commits
     description: Lint commits
     always-run: true
@@ -336,6 +328,14 @@ workflows:
       - rule: changes-should-be-built
     then:
       - '$addLabel("run-build")'
+
+  - name: remove-ci-label
+    description: If the build is completed, remove the label
+    always-run: true
+    if:
+      - rule: ci-is-completed
+    then:
+      - '$removeLabel("run-build")'
 
   - name: auto-merge-owner-pull-requests
     description: Auto merge pull requests
