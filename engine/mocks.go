@@ -106,6 +106,34 @@ var mockedImportedReviewpadFile = &ReviewpadFile{
 	},
 }
 
+var simpleReviewpadFile = &ReviewpadFile{
+	Version:      "reviewpad.com/v1alpha",
+	Edition:      "professional",
+	Mode:         "silent",
+	IgnoreErrors: false,
+	Rules: []PadRule{
+		{
+			Name:        "tautology",
+			Kind:        "patch",
+			Description: "testing rule",
+			Spec:        "true",
+		},
+	},
+	Workflows: []PadWorkflow{
+		{
+			Name:        "simple-workflow",
+			Description: "Test process",
+			AlwaysRun:   false,
+			Rules: []PadWorkflowRule{
+				{Rule: "tautology"},
+			},
+			Actions: []string{
+				"$merge(\"merge\")",
+			},
+		},
+	},
+}
+
 func GetDefaultMockPullRequestDetails() *github.PullRequest {
 	prNum := defaultMockPrNum
 	prId := int64(defaultMockPrID)
