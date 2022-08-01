@@ -17,6 +17,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// TODO: Move this to resources/test/engine once #174 is accepted
 var mockedReviewpadFile = &engine.ReviewpadFile{
 	Version:      "reviewpad.com/v1alpha",
 	Edition:      "professional",
@@ -50,7 +51,7 @@ var mockedReviewpadFile = &engine.ReviewpadFile{
 	},
 	Workflows: []engine.PadWorkflow{
 		{
-			Name:        "test",
+			Name:        "test-workflow",
 			Description: "Test process",
 			AlwaysRun:   true,
 			Rules: []engine.PadWorkflowRule{
@@ -67,9 +68,7 @@ var mockedReviewpadFile = &engine.ReviewpadFile{
 }
 
 func TestEval_WhenDryModeIsNotSetAndGetLabelRequestFails(t *testing.T) {
-	dryRun := false
 	failMessage := "GetLabelRequestFailed"
-	mockedCtx := engine.DefaultMockCtx
 	mockedClient := engine.MockGithubClient(
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
@@ -77,6 +76,9 @@ func TestEval_WhenDryModeIsNotSetAndGetLabelRequestFails(t *testing.T) {
 				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 					w.WriteHeader(http.StatusInternalServerError)
 					w.Write(mock.MustMarshal(github.ErrorResponse{
+						// An error response may also consist of a 404 status code.
+						// However, in this context, such response is not an error since it only means a label does not exist.
+						// So we force an error by setting it to a status code different than 404.
 						Response: &http.Response{
 							StatusCode: 500,
 						},
@@ -86,6 +88,9 @@ func TestEval_WhenDryModeIsNotSetAndGetLabelRequestFails(t *testing.T) {
 			),
 		},
 	)
+
+	dryRun := false
+	mockedCtx := engine.DefaultMockCtx
 	mockedCollector := engine.DefaultMockCollector
 	mockedEvent := engine.DefaultMockEventPayload
 	mockedPullRequest := engine.GetDefaultMockPullRequestDetails()
@@ -94,6 +99,7 @@ func TestEval_WhenDryModeIsNotSetAndGetLabelRequestFails(t *testing.T) {
 		mockedCtx,
 		dryRun,
 		mockedClient,
+		// TODO: add mocked github GQL client
 		nil,
 		mockedCollector,
 		mockedPullRequest,
@@ -108,6 +114,7 @@ func TestEval_WhenDryModeIsNotSetAndGetLabelRequestFails(t *testing.T) {
 		mockedCtx,
 		dryRun,
 		mockedClient,
+		// TODO: add mocked github GQL client
 		nil,
 		mockedCollector,
 		mockedPullRequest,
@@ -124,10 +131,8 @@ func TestEval_WhenDryModeIsNotSetAndGetLabelRequestFails(t *testing.T) {
 	assert.Equal(t, err.(*github.ErrorResponse).Message, failMessage)
 }
 
-func TestEval_WhenDryModeIsNotSetAndCreateLabelFails(t *testing.T) {
-	dryRun := false
+func TestEval_WhenDryModeIsNotSetAndCreateLabelRequestFails(t *testing.T) {
 	failMessage := "CreateLabelRequestFailed"
-	mockedCtx := engine.DefaultMockCtx
 	mockedClient := engine.MockGithubClient(
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
@@ -154,6 +159,9 @@ func TestEval_WhenDryModeIsNotSetAndCreateLabelFails(t *testing.T) {
 			),
 		},
 	)
+
+	dryRun := false
+	mockedCtx := engine.DefaultMockCtx
 	mockedCollector := engine.DefaultMockCollector
 	mockedEvent := engine.DefaultMockEventPayload
 	mockedPullRequest := engine.GetDefaultMockPullRequestDetails()
@@ -162,6 +170,7 @@ func TestEval_WhenDryModeIsNotSetAndCreateLabelFails(t *testing.T) {
 		mockedCtx,
 		dryRun,
 		mockedClient,
+		// TODO: add mocked github GQL client
 		nil,
 		mockedCollector,
 		mockedPullRequest,
@@ -176,6 +185,7 @@ func TestEval_WhenDryModeIsNotSetAndCreateLabelFails(t *testing.T) {
 		mockedCtx,
 		dryRun,
 		mockedClient,
+		// TODO: add mocked github GQL client
 		nil,
 		mockedCollector,
 		mockedPullRequest,
@@ -193,8 +203,6 @@ func TestEval_WhenDryModeIsNotSetAndCreateLabelFails(t *testing.T) {
 }
 
 func TestEval_WhenWorkflowRuleEvalExprFails(t *testing.T) {
-	dryRun := false
-	mockedCtx := engine.DefaultMockCtx
 	mockedClient := engine.MockGithubClient(
 		[]mock.MockBackendOption{
 			mock.WithRequestMatch(
@@ -205,6 +213,9 @@ func TestEval_WhenWorkflowRuleEvalExprFails(t *testing.T) {
 			),
 		},
 	)
+
+	dryRun := false
+	mockedCtx := engine.DefaultMockCtx
 	mockedCollector := engine.DefaultMockCollector
 	mockedEvent := engine.DefaultMockEventPayload
 	mockedPullRequest := engine.GetDefaultMockPullRequestDetails()
@@ -213,12 +224,12 @@ func TestEval_WhenWorkflowRuleEvalExprFails(t *testing.T) {
 	copier.Copy(otherReviewpadFile, mockedReviewpadFile)
 
 	executedWorkflow := engine.PadWorkflow{
-		Name:        "test",
+		Name:        "test-workflow",
 		Description: "Test process",
 		AlwaysRun:   true,
 		Rules: []engine.PadWorkflowRule{
 			{
-				Rule:         "tautology",
+				Rule:         "wrong-typed-rule",
 				ExtraActions: []string{},
 			},
 		},
@@ -228,9 +239,9 @@ func TestEval_WhenWorkflowRuleEvalExprFails(t *testing.T) {
 	}
 
 	wrongTypedRule := engine.PadRule{
-		Name:        "tautology",
+		Name:        "wrong-typed-rule",
 		Kind:        "patch",
-		Description: "testing rule",
+		Description: "Rule with non boolean spec",
 		Spec:        "\"notBoolType\"",
 	}
 
@@ -241,6 +252,7 @@ func TestEval_WhenWorkflowRuleEvalExprFails(t *testing.T) {
 		mockedCtx,
 		dryRun,
 		mockedClient,
+		// TODO: add mocked github GQL client
 		nil,
 		mockedCollector,
 		mockedPullRequest,
@@ -255,6 +267,7 @@ func TestEval_WhenWorkflowRuleEvalExprFails(t *testing.T) {
 		mockedCtx,
 		dryRun,
 		mockedClient,
+		// TODO: add mocked github GQL client
 		nil,
 		mockedCollector,
 		mockedPullRequest,
@@ -272,8 +285,6 @@ func TestEval_WhenWorkflowRuleEvalExprFails(t *testing.T) {
 }
 
 func TestEval_WhenWorkflowIsTriggered(t *testing.T) {
-	dryRun := false
-	mockedCtx := engine.DefaultMockCtx
 	mockedClient := engine.MockGithubClient(
 		[]mock.MockBackendOption{
 			mock.WithRequestMatch(
@@ -284,6 +295,9 @@ func TestEval_WhenWorkflowIsTriggered(t *testing.T) {
 			),
 		},
 	)
+
+	dryRun := false
+	mockedCtx := engine.DefaultMockCtx
 	mockedCollector := engine.DefaultMockCollector
 	mockedEvent := engine.DefaultMockEventPayload
 	mockedPullRequest := engine.GetDefaultMockPullRequestDetails()
@@ -292,7 +306,7 @@ func TestEval_WhenWorkflowIsTriggered(t *testing.T) {
 	copier.Copy(otherReviewpadFile, mockedReviewpadFile)
 
 	executedWorkflow := engine.PadWorkflow{
-		Name:        "test",
+		Name:        "test-workflow",
 		Description: "Test process",
 		AlwaysRun:   false,
 		Rules: []engine.PadWorkflowRule{
@@ -312,6 +326,7 @@ func TestEval_WhenWorkflowIsTriggered(t *testing.T) {
 		mockedCtx,
 		dryRun,
 		mockedClient,
+		// TODO: add mocked github GQL client
 		nil,
 		mockedCollector,
 		mockedPullRequest,
@@ -326,6 +341,7 @@ func TestEval_WhenWorkflowIsTriggered(t *testing.T) {
 		mockedCtx,
 		dryRun,
 		mockedClient,
+		// TODO: add mocked github GQL client
 		nil,
 		mockedCollector,
 		mockedPullRequest,
@@ -355,8 +371,6 @@ func TestEval_WhenWorkflowIsTriggered(t *testing.T) {
 }
 
 func TestEval_WhenWorkflowIsSkipped(t *testing.T) {
-	dryRun := false
-	mockedCtx := engine.DefaultMockCtx
 	mockedClient := engine.MockGithubClient(
 		[]mock.MockBackendOption{
 			mock.WithRequestMatch(
@@ -367,6 +381,9 @@ func TestEval_WhenWorkflowIsSkipped(t *testing.T) {
 			),
 		},
 	)
+
+	dryRun := false
+	mockedCtx := engine.DefaultMockCtx
 	mockedCollector := engine.DefaultMockCollector
 	mockedEvent := engine.DefaultMockEventPayload
 	mockedPullRequest := engine.GetDefaultMockPullRequestDetails()
@@ -375,8 +392,8 @@ func TestEval_WhenWorkflowIsSkipped(t *testing.T) {
 	copier.Copy(otherReviewpadFile, mockedReviewpadFile)
 
 	executedWorkflow := engine.PadWorkflow{
-		Name:        "test",
-		Description: "Test process",
+		Name:        "test-workflow-A",
+		Description: "Test process A",
 		AlwaysRun:   false,
 		Rules: []engine.PadWorkflowRule{
 			{
@@ -385,7 +402,7 @@ func TestEval_WhenWorkflowIsSkipped(t *testing.T) {
 			},
 		},
 		Actions: []string{
-			"$action()",
+			"$actionA()",
 		},
 	}
 
@@ -401,8 +418,8 @@ func TestEval_WhenWorkflowIsSkipped(t *testing.T) {
 	otherReviewpadFile.Workflows = []engine.PadWorkflow{
 		executedWorkflow,
 		{
-			Name:        "test#2",
-			Description: "Test process x2",
+			Name:        "test-workflow-B",
+			Description: "Test process B",
 			AlwaysRun:   false,
 			Rules: []engine.PadWorkflowRule{
 				{
@@ -411,7 +428,7 @@ func TestEval_WhenWorkflowIsSkipped(t *testing.T) {
 				},
 			},
 			Actions: []string{
-				"$action2()",
+				"$actionB()",
 			},
 		},
 	}
@@ -420,6 +437,7 @@ func TestEval_WhenWorkflowIsSkipped(t *testing.T) {
 		mockedCtx,
 		dryRun,
 		mockedClient,
+		// TODO: add mocked github GQL client
 		nil,
 		mockedCollector,
 		mockedPullRequest,
@@ -434,6 +452,7 @@ func TestEval_WhenWorkflowIsSkipped(t *testing.T) {
 		mockedCtx,
 		dryRun,
 		mockedClient,
+		// TODO: add mocked github GQL client
 		nil,
 		mockedCollector,
 		mockedPullRequest,
@@ -463,8 +482,6 @@ func TestEval_WhenWorkflowIsSkipped(t *testing.T) {
 }
 
 func TestEval_WhenNoWorkflowRulesAreActivated(t *testing.T) {
-	dryRun := false
-	mockedCtx := engine.DefaultMockCtx
 	mockedClient := engine.MockGithubClient(
 		[]mock.MockBackendOption{
 			mock.WithRequestMatch(
@@ -475,6 +492,9 @@ func TestEval_WhenNoWorkflowRulesAreActivated(t *testing.T) {
 			),
 		},
 	)
+
+	dryRun := false
+	mockedCtx := engine.DefaultMockCtx
 	mockedCollector := engine.DefaultMockCollector
 	mockedEvent := engine.DefaultMockEventPayload
 	mockedPullRequest := engine.GetDefaultMockPullRequestDetails()
@@ -490,7 +510,7 @@ func TestEval_WhenNoWorkflowRulesAreActivated(t *testing.T) {
 	}
 
 	analyzedWorkflow := engine.PadWorkflow{
-		Name:        "test",
+		Name:        "test-workflow",
 		Description: "Test process",
 		AlwaysRun:   false,
 		Rules: []engine.PadWorkflowRule{
@@ -511,6 +531,7 @@ func TestEval_WhenNoWorkflowRulesAreActivated(t *testing.T) {
 		mockedCtx,
 		dryRun,
 		mockedClient,
+		// TODO: add mocked github GQL client
 		nil,
 		mockedCollector,
 		mockedPullRequest,
@@ -525,6 +546,7 @@ func TestEval_WhenNoWorkflowRulesAreActivated(t *testing.T) {
 		mockedCtx,
 		dryRun,
 		mockedClient,
+		// TODO: add mocked github GQL client
 		nil,
 		mockedCollector,
 		mockedPullRequest,
