@@ -123,8 +123,8 @@ func TestGetReport_WithDefaultEnv(t *testing.T) {
 
 	wantReport := &aladino.Report{
 		Settings: &aladino.ReportSettings{
-			UseSafeModeHeader:   mockedEnv.GetSafeMode(),
-			CreateReportComment: false,
+			UseSafeModeHeader:   aladino.DefaultMockSafeMode,
+			CreateReportComment: aladino.DefaultMockCommentReport,
 		},
 		WorkflowDetails: make(map[string]aladino.ReportWorkflowDetails),
 	}
@@ -306,8 +306,8 @@ func TestNewEvalEnv(t *testing.T) {
 		BuiltIns:    aladino.MockBuiltIns(),
 		Report: &aladino.Report{
 			Settings: &aladino.ReportSettings{
-				CreateReportComment: false,
-				UseSafeModeHeader:   false,
+				CreateReportComment: aladino.DefaultMockCommentReport,
+				UseSafeModeHeader:   aladino.DefaultMockSafeMode,
 			},
 			WorkflowDetails: make(map[string]aladino.ReportWorkflowDetails),
 		},
