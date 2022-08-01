@@ -1,1 +1,1 @@
-\/parser\.go\|\/mocks\.go
+\/\(parser\|mocks\)\.go
