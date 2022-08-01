@@ -116,6 +116,26 @@ Usage of ./main:
         File path to reviewpad.yml
 ```
 
+### Running tests
+
+Run the tests with:
+
+```
+task test
+```
+
+If you get the error:
+
+```
+panic: httptest: failed to listen on a port: listen tcp6 [::1]:0: socket: too many open files [recovered]
+        panic: httptest: failed to listen on a port: listen tcp6 [::1]:0: socket: too many open files
+```
+
+You can solve with:
+```
+ulimit -Sn 500
+```
+
 ### VSCode
 
 We strongly recommend the use of VSCode but feel free to use the IDE of your choice. For the case of VSCode we also recommend the installation of the following extensions:
