@@ -38,10 +38,85 @@ func TestAddToProject(t *testing.T) {
 	mockedPullRequest := aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
 		NodeID: &prNodeId,
 	})
-	mockedGetProjectQuery := "{\"query\":\"query($name:String!$repositoryName:String!$repositoryOwner:String!){repository(owner: $repositoryOwner, name: $repositoryName){projectsV2(query: $name, first: 1, orderBy: {field: TITLE, direction: ASC}){nodes{id,number}}}}\",\"variables\":{\"name\":\"reviewpad\",\"repositoryName\":\"default-mock-repo\",\"repositoryOwner\":\"john\"}}\n"
-	mockedGetProjectFieldsQuery := "{\"query\":\"query($afterCursor:String!$projectNumber:Int!$repositoryName:String!$repositoryOwner:String!){repository(owner: $repositoryOwner, name: $repositoryName){projectV2(number: $projectNumber){fields(first: 50, after: $afterCursor, orderBy: {field: NAME, direction: ASC}){pageInfo{hasNextPage,endCursor},nodes{... on ProjectV2SingleSelectField{id,name,options{id,name}}}}}}}\",\"variables\":{\"afterCursor\":\"\",\"projectNumber\":1,\"repositoryName\":\"default-mock-repo\",\"repositoryOwner\":\"john\"}}\n"
-	mockedAddProjectV2ItemByIdMutation := "{\"query\":\"mutation($input:AddProjectV2ItemByIdInput!){addProjectV2ItemById(input: $input){item{id}}}\",\"variables\":{\"input\":{\"projectId\":\"1\",\"contentId\":\"PR_nodeId\"}}}\n"
-	mockedUpdateProjectV2ItemFieldValueMutation := "{\"query\":\"mutation($input:UpdateProjectV2ItemFieldValueInput!){updateProjectV2ItemFieldValue(input: $input){clientMutationId}}\",\"variables\":{\"input\":{\"itemId\":\"item_id\",\"value\":{\"singleSelectOptionId\":\"1\"},\"projectId\":\"1\",\"fieldId\":\"1\"}}}\n"
+	mockedGetProjectQuery := `{
+        "query":"query($name: String! $repositoryName: String! $repositoryOwner: String!) {
+            repository(owner: $repositoryOwner, name: $repositoryName) {
+                projectsV2(query: $name, first: 1, orderBy: {field: TITLE, direction: ASC}) {
+                    nodes{
+                        id,
+                        number
+                    }
+                }
+            }
+        }",
+        "variables":{
+            "name":"reviewpad",
+            "repositoryName":"default-mock-repo",
+            "repositoryOwner":"john"
+            }
+        }`
+	mockedGetProjectFieldsQuery := `{
+        "query":"query($afterCursor:String !$projectNumber:Int! $repositoryName:String! $repositoryOwner:String!) {
+            repository(owner: $repositoryOwner, name: $repositoryName) {
+                projectV2(number: $projectNumber) {
+                    fields(first: 50, after: $afterCursor, orderBy: {field: NAME, direction: ASC}) {
+                        pageInfo {
+                            hasNextPage,
+                            endCursor
+                        },
+                        nodes {
+                            ... on ProjectV2SingleSelectField {
+                                id,
+                                name,
+                                options {
+                                    id,
+                                    name
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }",
+        "variables": {
+            "afterCursor":"",
+            "projectNumber":1,
+            "repositoryName":"default-mock-repo",
+            "repositoryOwner":"john"
+        }
+    }`
+	mockedAddProjectV2ItemByIdMutation := `{
+        "query": "mutation($input:AddProjectV2ItemByIdInput!) {
+            addProjectV2ItemById(input: $input) {
+                item {
+                    id
+                }
+            }
+        }",
+        "variables":{
+            "input":{
+                "projectId": "1",
+                "contentId": "PR_nodeId"
+            }
+        }
+    }`
+	mockedUpdateProjectV2ItemFieldValueMutation := `{
+        "query": "mutation($input:UpdateProjectV2ItemFieldValueInput!) {
+            updateProjectV2ItemFieldValue(input: $input) {
+                clientMutationId
+            }
+        }",
+        "variables": {
+            "input":{
+                "itemId": "item_id",
+                "value": {
+                    "singleSelectOptionId": "1"
+                },
+                "projectId": "1",
+                "fieldId": "1"
+            }
+        }
+    }`
 
 	gqlTestCases := []struct {
 		name                                  string
@@ -123,14 +198,15 @@ func TestAddToProject(t *testing.T) {
 				},
 				func(res http.ResponseWriter, req *http.Request) {
 					query := aladino.MustRead(req.Body)
+					query = utils.MinifyQuery(query)
 					switch query {
-					case testCase.getProjectQuery:
+					case utils.MinifyQuery(testCase.getProjectQuery):
 						aladino.MustWrite(res, testCase.getProjectQueryBody)
-					case testCase.getProjectFieldsQuery:
+					case utils.MinifyQuery(testCase.getProjectFieldsQuery):
 						aladino.MustWrite(res, testCase.getProjectFieldsBody)
-					case testCase.addProjectV2ItemByIdMutation:
+					case utils.MinifyQuery(testCase.addProjectV2ItemByIdMutation):
 						aladino.MustWrite(res, testCase.addProjectV2ItemByIdBody)
-					case testCase.updateProjectV2ItemFieldValueMutation:
+					case utils.MinifyQuery(testCase.updateProjectV2ItemFieldValueMutation):
 						aladino.MustWrite(res, testCase.updateProjectV2ItemFieldValueBody)
 					}
 				},
