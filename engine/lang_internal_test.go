@@ -740,7 +740,7 @@ func TestEquals_WhenReviewpadFilesHaveDiffNumberOfRules(t *testing.T) {
 
 	otherReviewpadFile.Rules = []PadRule{
 		{
-			Name:        "tautology",
+			Name:        "test-rule-1",
 			Kind:        "patch",
 			Description: "testing rule",
 			Spec:        "1 == 1",
