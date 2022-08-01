@@ -221,12 +221,12 @@ rules:
   - name: is-waiting-for-review
     kind: patch
     description: Pull request is waiting to be reviewed
-    spec: '$isWaitingForReview()'
+    spec: '!$rule("work-in-progress") && $isWaitingForReview()'
 
   - name: requires-author-attention
     kind: patch
     description: Pull request requires author attention
-    spec: '$hasUnaddressedReviewThreads()'
+    spec: '!$rule("work-in-progress") && $hasUnaddressedReviewThreads()'
 
 workflows:
   - name: add-label-with-size
