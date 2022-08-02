@@ -150,9 +150,9 @@ func TestGetProjectFieldsByProjectNumber_WhenRequestFails(t *testing.T) {
 	mockOwner := utils.GetPullRequestBaseOwnerName(mockedEnv.GetPullRequest())
 	mockRepo := utils.GetPullRequestBaseRepoName(mockedEnv.GetPullRequest())
 	mockProjectNumber := 1
-	mockEndCursor := ""
+	mockRetryCount := 1
 
-	project, err := utils.GetProjectFieldsByProjectNumber(mockedEnv.GetCtx(), mockedEnv.GetClientGQL(), mockOwner, mockRepo, mockEndCursor, uint64(mockProjectNumber))
+	project, err := utils.GetProjectFieldsByProjectNumber(mockedEnv.GetCtx(), mockedEnv.GetClientGQL(), mockOwner, mockRepo, uint64(mockProjectNumber), mockRetryCount)
 
 	assert.NotNil(t, err)
 
@@ -214,9 +214,9 @@ func TestGetProjectFieldsByProjectNumber_WhenProjectNotFound(t *testing.T) {
 	mockOwner := utils.GetPullRequestBaseOwnerName(mockedEnv.GetPullRequest())
 	mockRepo := utils.GetPullRequestBaseRepoName(mockedEnv.GetPullRequest())
 	mockProjectNumber := 1
-	mockEndCursor := ""
+	mockRetryCount := 1
 
-	project, err := utils.GetProjectFieldsByProjectNumber(mockedEnv.GetCtx(), mockedEnv.GetClientGQL(), mockOwner, mockRepo, mockEndCursor, uint64(mockProjectNumber))
+	project, err := utils.GetProjectFieldsByProjectNumber(mockedEnv.GetCtx(), mockedEnv.GetClientGQL(), mockOwner, mockRepo, uint64(mockProjectNumber), mockRetryCount)
 
 	assert.Equal(t, plugins_aladino_actions.ErrProjectNotFound, err)
 
@@ -224,7 +224,7 @@ func TestGetProjectFieldsByProjectNumber_WhenProjectNotFound(t *testing.T) {
 
 }
 
-func TestGetProjectFieldsByProjectNumber_WhenSuccessful(t *testing.T) {
+func TestGetProjectFieldsByProjectNumber_WhenRetrySuccessful(t *testing.T) {
 	mockedGetProjectByNameQuery := `{
         "query":"query($afterCursor:String! $projectNumber:Int! $repositoryName:String! $repositoryOwner:String!) {
             repository(owner: $repositoryOwner, name: $repositoryName) {
@@ -256,35 +256,28 @@ func TestGetProjectFieldsByProjectNumber_WhenSuccessful(t *testing.T) {
             "repositoryOwner":"john"
         }
     }`
-	mockedGetProjectByNameQueryNACursor := `{
-        "query":"query($afterCursor:String! $projectNumber:Int! $repositoryName:String! $repositoryOwner:String!) {
-            repository(owner: $repositoryOwner, name: $repositoryName) {
-                projectV2(number: $projectNumber) {
-                    fields(first: 50, after: $afterCursor, orderBy: {field: NAME, direction: ASC}) {
-                        pageInfo{hasNextPage,endCursor},
-                        nodes{
-                            ... on ProjectV2SingleSelectField {
-                                id,
-                                name,
-                                options {
-                                    id,
-                                    name
-                                }
+	mockedGetProjectFieldsQueryBody := `{
+        "data": {
+            "repository":{
+                "projectV2": {
+                    "fields": {
+                        "pageInfo": {
+                            "hasNextPage": false,
+                            "endCursor": ""
+                        },
+                        "nodes": [
+                            {
+                                "id": "1",
+                                "name": "status",
+                                "options": []
                             }
-                        }
+                        ]
                     }
                 }
             }
-        }",
-        "variables": {
-            "afterCursor": "NA",
-            "projectNumber": 1,
-            "repositoryName": "default-mock-repo",
-            "repositoryOwner": "john"
         }
     }`
-	mockedGetProjectByNameQueryBody := `{"data": {"repository":{"projectV2": {"fields": {"pageInfo": {"hasNextPage": true, "endCursor": "NA"}, "nodes": [{"id": "1", "name": "status", "options": []}]}}}}}`
-	mockedGetProjectByNameQueryBodyNACursor := `{"data": {"repository":{"projectV2": {"fields": {"pageInfo": {"hasNextPage": false, "endCursor": "MG"}, "nodes": [{"id": "1", "name": "priority", "options": []}]}}}}}`
+	currentTry := 1
 	mockedEnv := aladino.MockDefaultEnv(
 		t,
 		[]mock.MockBackendOption{},
@@ -292,28 +285,28 @@ func TestGetProjectFieldsByProjectNumber_WhenSuccessful(t *testing.T) {
 			query := utils.MinifyQuery(aladino.MustRead(req.Body))
 			switch query {
 			case utils.MinifyQuery(mockedGetProjectByNameQuery):
-				aladino.MustWrite(
-					res,
-					mockedGetProjectByNameQueryBody,
-				)
-			case utils.MinifyQuery(mockedGetProjectByNameQueryNACursor):
-				aladino.MustWrite(
-					res,
-					mockedGetProjectByNameQueryBodyNACursor,
-				)
+				if currentTry == 2 {
+					aladino.MustWrite(
+						res,
+						mockedGetProjectFieldsQueryBody,
+					)
+					return
+				}
+				currentTry++
+				aladino.MustWrite(res, "")
 			}
 		},
 	)
 	mockOwner := utils.GetPullRequestBaseOwnerName(mockedEnv.GetPullRequest())
 	mockRepo := utils.GetPullRequestBaseRepoName(mockedEnv.GetPullRequest())
 	mockProjectNumber := 1
-	mockEndCursor := ""
+	mockRetryCount := 2
 
-	fields, err := utils.GetProjectFieldsByProjectNumber(mockedEnv.GetCtx(), mockedEnv.GetClientGQL(), mockOwner, mockRepo, mockEndCursor, uint64(mockProjectNumber))
+	fields, err := utils.GetProjectFieldsByProjectNumber(mockedEnv.GetCtx(), mockedEnv.GetClientGQL(), mockOwner, mockRepo, uint64(mockProjectNumber), mockRetryCount)
 
 	assert.Equal(t, nil, err)
 
 	assert.NotNil(t, fields)
 
-	assert.Equal(t, 2, len(fields))
+	assert.Equal(t, 1, len(fields))
 }
