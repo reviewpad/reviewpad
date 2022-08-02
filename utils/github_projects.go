@@ -68,10 +68,12 @@ func GetProjectV2ByName(ctx context.Context, client *githubv4.Client, owner, rep
 	return &getProjectV2ByNameQuery.Repository.ProjectsV2.Nodes[0], nil
 }
 
-func GetProjectFieldsByProjectNumber(ctx context.Context, client *githubv4.Client, owner, repo, endCursor string, projectNumber uint64) ([]FieldNode, error) {
+func GetProjectFieldsByProjectNumber(ctx context.Context, client *githubv4.Client, owner, repo string, projectNumber uint64, retryCount int) ([]FieldNode, error) {
 	fields := []FieldNode{}
+	hasNextPage := true
+	currentRequestRetry := 1
 
-	var repositoryProjectsQuery struct {
+	var getProjectFieldsQuery struct {
 		Repository struct {
 			ProjectV2 *struct {
 				Fields Fields `graphql:"fields(first: 50, after: $afterCursor, orderBy: {field: NAME, direction: ASC})"`
@@ -79,34 +81,32 @@ func GetProjectFieldsByProjectNumber(ctx context.Context, client *githubv4.Clien
 		} `graphql:"repository(owner: $repositoryOwner, name: $repositoryName)"`
 	}
 
-	varGQLRepositoryProjectsQuery := map[string]interface{}{
+	varGQLGetProjectFieldsQuery := map[string]interface{}{
 		"repositoryOwner": githubv4.String(owner),
 		"repositoryName":  githubv4.String(repo),
 		"projectNumber":   githubv4.Int(projectNumber),
-		"afterCursor":     githubv4.String(endCursor),
+		"afterCursor":     githubv4.String(""),
 	}
 
-	if err := client.Query(ctx, &repositoryProjectsQuery, varGQLRepositoryProjectsQuery); err != nil {
-		return nil, err
-	}
-
-	project := repositoryProjectsQuery.Repository.ProjectV2
-	if project == nil {
-		return nil, ErrProjectNotFound
-	}
-
-	afterCursor := project.Fields.PageInfo.EndCursor
-
-	fields = append(fields, project.Fields.Nodes...)
-
-	if project.Fields.PageInfo.HasNextPage {
-		fs, err := GetProjectFieldsByProjectNumber(ctx, client, owner, repo, afterCursor, projectNumber)
-
-		if err != nil {
+	for hasNextPage {
+		if err := client.Query(ctx, &getProjectFieldsQuery, varGQLGetProjectFieldsQuery); err != nil {
+			currentRequestRetry++
+			if currentRequestRetry <= retryCount {
+				continue
+			}
 			return nil, err
 		}
 
-		fields = append(fields, fs...)
+		project := getProjectFieldsQuery.Repository.ProjectV2
+		if project == nil {
+			return nil, ErrProjectNotFound
+		}
+
+		fields = append(fields, project.Fields.Nodes...)
+
+		hasNextPage = project.Fields.PageInfo.HasNextPage
+
+		varGQLGetProjectFieldsQuery["afterCursor"] = githubv4.String(project.Fields.PageInfo.EndCursor)
 	}
 
 	return fields, nil

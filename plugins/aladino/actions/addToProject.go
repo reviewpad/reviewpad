@@ -49,13 +49,14 @@ func addToProjectCode(e aladino.Env, args []aladino.Value) error {
 	repo := utils.GetPullRequestBaseRepoName(pr)
 	projectName := args[0].(*aladino.StringValue).Val
 	projectStatus := strings.ToLower(args[1].(*aladino.StringValue).Val)
+	totalRequestTries := 2
 
 	project, err := utils.GetProjectV2ByName(e.GetCtx(), e.GetClientGQL(), owner, repo, projectName)
 	if err != nil {
 		return err
 	}
 
-	fields, err := utils.GetProjectFieldsByProjectNumber(e.GetCtx(), e.GetClientGQL(), owner, repo, "", project.Number)
+	fields, err := utils.GetProjectFieldsByProjectNumber(e.GetCtx(), e.GetClientGQL(), owner, repo, project.Number, totalRequestTries)
 	if err != nil {
 		return err
 	}
