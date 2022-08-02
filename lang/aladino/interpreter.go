@@ -121,6 +121,11 @@ func (i *Interpreter) ExecProgram(program *engine.Program) error {
 		if err != nil {
 			return err
 		}
+
+		if len(i.Env.GetActionsBuiltInsMessages()[SEVERITY_FATAL]) != 0 {
+			execLog("execution stopped")
+			break
+		}
 	}
 
 	execLog("execution done")
@@ -182,6 +187,13 @@ func (i *Interpreter) Report(mode string, safeMode bool) error {
 
 }
 
+func (i *Interpreter) CheckForFatalAction() {
+	if len(i.Env.GetActionsBuiltInsMessages()[SEVERITY_FATAL]) != 0 {
+		// Only the first fatal error encountered is registered since we only need one fatal error for the whole execution to stop.
+		log.Fatal(i.Env.GetActionsBuiltInsMessages()[SEVERITY_FATAL][0])
+	}
+}
+
 func NewInterpreter(
 	ctx context.Context,
 	dryRun bool,
@@ -191,7 +203,6 @@ func NewInterpreter(
 	pullRequest *github.PullRequest,
 	eventPayload interface{},
 	builtIns *BuiltIns,
-
 ) (engine.Interpreter, error) {
 	evalEnv, err := NewEvalEnv(ctx, dryRun, gitHubClient, gitHubClientGQL, collector, pullRequest, eventPayload, builtIns)
 	if err != nil {
