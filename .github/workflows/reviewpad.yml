@@ -21,6 +21,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Reviewpad
-        uses: reviewpad/action@dev/fail-action
+        uses: reviewpad/action@canary
         with:
           token: ${{ secrets.REVIEWPAD_TOKEN }}
