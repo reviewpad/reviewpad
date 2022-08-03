@@ -2,7 +2,7 @@ name: Build
 
 on:
   push:
-    tags:        
+    tags:
       - '**'
 
 jobs:
@@ -29,7 +29,7 @@ jobs:
       - name: Test
         run: task test
 
-      - name: Convert coverage to lcov
+      - name: Convert coverage to lcovreb
         run: gcov2lcov -infile=coverage.out -outfile=coverage.lcov
 
       - name: Verify that minium coverage is covered
