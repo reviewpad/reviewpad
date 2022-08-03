@@ -113,16 +113,16 @@ func TestAddToReport_WhenWorkflowIsNonExisting(t *testing.T) {
 }
 
 func TestAddToReport_WhenWorkflowAlreadyExists(t *testing.T) {
-    statMetadata := engine.BuildMetadata(
-        engine.PadWorkflow{
-				Name:        "test-workflow",
-				Description: "Testing workflow",
-			},
-            []engine.PadWorkflowRule{
-				{Rule: "test-rule"},
-			},
-    )
-    statement := engine.BuildStatement("$addLabel(\"test\")", statMetadata)
+	statMetadata := engine.BuildMetadata(
+		engine.PadWorkflow{
+			Name:        "test-workflow",
+			Description: "Testing workflow",
+		},
+		[]engine.PadWorkflowRule{
+			{Rule: "test-rule"},
+		},
+	)
+	statement := engine.BuildStatement("$addLabel(\"test\")", statMetadata)
 
 	report := Report{
 		WorkflowDetails: map[string]ReportWorkflowDetails{

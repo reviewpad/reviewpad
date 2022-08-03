@@ -43,7 +43,7 @@ func mergeReportWorkflowDetails(left, right ReportWorkflowDetails) ReportWorkflo
 }
 
 func (report *Report) addToReport(statement *engine.Statement) {
-    statMetadata := statement.GetStatementMetadata()
+	statMetadata := statement.GetStatementMetadata()
 	workflowName := statMetadata.GetMetadataWorkflow().Name
 
 	rules := make(map[string]bool, len(statMetadata.GetMetadataTriggeredBy()))

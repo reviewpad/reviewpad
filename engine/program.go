@@ -19,49 +19,49 @@ type Program struct {
 }
 
 func BuildMetadata(workflow PadWorkflow, triggeredBy []PadWorkflowRule) *Metadata {
-    return &Metadata{
-        workflow,
-        triggeredBy,
-    }
+	return &Metadata{
+		workflow,
+		triggeredBy,
+	}
 }
 
 func BuildStatement(code string, metadata *Metadata) *Statement {
-    return &Statement{
-        code,
-        metadata,
-    }
+	return &Statement{
+		code,
+		metadata,
+	}
 }
 
 func BuildProgram(statements []*Statement) *Program {
-    return &Program{
-        statements,
-    }
+	return &Program{
+		statements,
+	}
 }
 
 func (m *Metadata) GetMetadataWorkflow() PadWorkflow {
-    return m.workflow
+	return m.workflow
 }
 
 func (m *Metadata) GetMetadataTriggeredBy() []PadWorkflowRule {
-    return m.triggeredBy
+	return m.triggeredBy
 }
 
 func (s *Statement) GetStatementCode() string {
-    return s.code
+	return s.code
 }
 
 func (s *Statement) GetStatementMetadata() *Metadata {
-    return s.metadata
+	return s.metadata
 }
 
 func (p *Program) GetProgramStatements() []*Statement {
-    return p.statements
+	return p.statements
 }
 
 func (program *Program) append(workflowActions []string, workflow PadWorkflow, workflowRules []PadWorkflowRule) {
 	for _, workflowAction := range workflowActions {
-        metadata := BuildMetadata(workflow, workflowRules)
-        statement := BuildStatement(workflowAction, metadata)
+		metadata := BuildMetadata(workflow, workflowRules)
+		statement := BuildStatement(workflowAction, metadata)
 
 		program.statements = append(program.statements, statement)
 	}
