@@ -43,6 +43,7 @@ type FieldDetails struct {
 }
 
 func GetProjectV2ByName(ctx context.Context, client *githubv4.Client, owner, repo, name string) (*ProjectV2, error) {
+	// Warning: we've faced trouble before with the Github GraphQL API, we'll update this later when we find a better alternative.
 	var getProjectV2ByNameQuery struct {
 		Repository struct {
 			ProjectsV2 struct {
