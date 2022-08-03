@@ -6,9 +6,11 @@ package utils
 
 import (
 	"context"
+	"errors"
 	"net/url"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/google/go-github/v45/github"
 	"github.com/shurcooL/githubv4"
@@ -30,6 +32,21 @@ type ReviewThreadsQuery struct {
 					HasNextPage bool
 				}
 			} `graphql:"reviewThreads(first: 10, after: $reviewThreadsCursor)"`
+		} `graphql:"pullRequest(number: $pullRequestNumber)"`
+	} `graphql:"repository(owner: $repositoryOwner, name: $repositoryName)"`
+}
+
+type PRLastPushedDateQuery struct {
+	Repository struct {
+		PullRequest struct {
+			Commits struct {
+				Nodes []struct {
+					Commit struct {
+						Oid        string
+						PushedDate string
+					}
+				}
+			} `graphql:"commits(last: 1)"`
 		} `graphql:"pullRequest(number: $pullRequestNumber)"`
 	} `graphql:"repository(owner: $repositoryOwner, name: $repositoryName)"`
 }
@@ -355,4 +372,23 @@ func GetReviewThreads(ctx context.Context, client *githubv4.Client, owner string
 	}
 
 	return reviewThreads, nil
+}
+
+func GetPRLastPushedCommitDate(ctx context.Context, client *githubv4.Client, owner string, repo string, number int) (time.Time, error) {
+	var pullRequestQuery PRLastPushedDateQuery
+	varGQPullRequest := map[string]interface{}{
+		"repositoryOwner":   githubv4.String(owner),
+		"repositoryName":    githubv4.String(repo),
+		"pullRequestNumber": githubv4.Int(number),
+	}
+
+	err := client.Query(ctx, &pullRequestQuery, varGQPullRequest)
+	if err != nil {
+		return time.Time{}, err
+	}
+	if len(pullRequestQuery.Repository.PullRequest.Commits.Nodes) == 0 {
+		return time.Time{}, errors.New("pushedDate not found")
+	}
+	pushedDate := pullRequestQuery.Repository.PullRequest.Commits.Nodes[0].Commit.PushedDate
+	return time.Parse(time.RFC3339, pushedDate)
 }
