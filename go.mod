@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/bmatcuk/doublestar/v4 v4.2.0
 	github.com/dukex/mixpanel v1.0.1
-	github.com/google/go-github/v42 v42.0.0
+	github.com/google/go-github/v45 v45.2.0
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/mux v1.8.0
 	github.com/jinzhu/copier v0.3.5

@@ -7,7 +7,7 @@ package engine_test
 import (
 	"testing"
 
-	"github.com/google/go-github/v42/github"
+	"github.com/google/go-github/v45/github"
 	"github.com/reviewpad/reviewpad/v3/engine"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	"github.com/stretchr/testify/assert"

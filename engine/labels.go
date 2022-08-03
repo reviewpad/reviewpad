@@ -8,7 +8,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/google/go-github/v42/github"
+	"github.com/google/go-github/v45/github"
 	"github.com/reviewpad/reviewpad/v3/utils"
 )
 
