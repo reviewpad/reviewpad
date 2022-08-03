@@ -222,6 +222,10 @@ rules:
     kind: patch
     spec: '$workflowStatus("pr-build") != "queued" && $workflowStatus("pr-build") != "in_progress"'
 
+  - name: does-not-have-linked-issues
+    kind: patch
+    spec: '!$hasLinkedIssues() && !$rule("work-in-progress")'
+
 workflows:
   - name: add-label-with-size
     description: Add label with size of the pull request
@@ -236,6 +240,14 @@ workflows:
       - rule: is-large
         extra-actions:
           - '$addLabel("large")'
+
+  - name: add-to-project
+    description: Pull requests without linked issues are added to the project
+    always-run: true
+    if:
+      - rule: does-not-have-linked-issues
+    then:
+      - '$addToProject("Reviewpad", "In Review")'
 
   - name: lint-commits
     description: Lint commits
