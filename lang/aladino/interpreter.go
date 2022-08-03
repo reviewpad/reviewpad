@@ -122,6 +122,8 @@ func (i *Interpreter) ExecProgram(program *engine.Program) error {
 			return err
 		}
 
+        log.Println(i.Env.GetActionsBuiltInsMessages()[SEVERITY_FATAL])
+
 		// Once we encounter a fatal error, we stop the program execution.
 		if len(i.Env.GetActionsBuiltInsMessages()[SEVERITY_FATAL]) != 0 {
 			execLog("execution stopped")
