@@ -198,8 +198,6 @@ func TestAddToProject(t *testing.T) {
 				},
 				func(res http.ResponseWriter, req *http.Request) {
 					query := utils.MinifyQuery(aladino.MustRead(req.Body))
-					t.Log(query)
-					t.Log(utils.MinifyQuery(testCase.getProjectFieldsQuery))
 					switch query {
 					case utils.MinifyQuery(testCase.getProjectQuery):
 						aladino.MustWrite(res, testCase.getProjectQueryBody)
