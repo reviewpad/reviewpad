@@ -122,6 +122,7 @@ func (i *Interpreter) ExecProgram(program *engine.Program) error {
 			return err
 		}
 
+		// Once we encounter a fatal error, we stop the program execution.
 		if len(i.Env.GetActionsBuiltInsMessages()[SEVERITY_FATAL]) != 0 {
 			execLog("execution stopped")
 			break
@@ -187,7 +188,7 @@ func (i *Interpreter) Report(mode string, safeMode bool) error {
 
 }
 
-func (i *Interpreter) CheckForFatalAction() {
+func (i *Interpreter) CheckForFatal() {
 	if len(i.Env.GetActionsBuiltInsMessages()[SEVERITY_FATAL]) != 0 {
 		// Only the first fatal error encountered is registered since we only need one fatal error for the whole execution to stop.
 		log.Fatal(i.Env.GetActionsBuiltInsMessages()[SEVERITY_FATAL][0])

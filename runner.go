@@ -78,7 +78,7 @@ func Run(
 			return nil, err
 		}
 
-		aladinoInterpreter.CheckForFatalAction()
+		aladinoInterpreter.CheckForFatal()
 	}
 
 	err = evalEnv.Collector.Collect("Completed Analysis", map[string]interface{}{

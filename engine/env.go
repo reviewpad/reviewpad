@@ -27,7 +27,7 @@ type Interpreter interface {
 	ExecProgram(program *Program) error
 	ExecStatement(statement *Statement) error
 	Report(mode string, safeMode bool) error
-	CheckForFatalAction()
+	CheckForFatal()
 }
 
 type Env struct {
