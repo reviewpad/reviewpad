@@ -72,24 +72,22 @@ func TestMergeReportWorkflowDetails(t *testing.T) {
 }
 
 func TestAddToReport_WhenWorkflowIsNonExisting(t *testing.T) {
-	statement := engine.Statement{
-		Code: "$addLabel(\"test\")",
-		Metadata: &engine.Metadata{
-			Workflow: engine.PadWorkflow{
-				Name:        "new-test-workflow",
-				Description: "Testing workflow",
-			},
-			TriggeredBy: []engine.PadWorkflowRule{
-				{Rule: "test-rule"},
-			},
+	statMetadata := engine.BuildMetadata(
+		engine.PadWorkflow{
+			Name:        "new-test-workflow",
+			Description: "Testing workflow",
 		},
-	}
+		[]engine.PadWorkflowRule{
+			{Rule: "test-rule"},
+		},
+	)
+	statement := engine.BuildStatement("$addLabel(\"test\")", statMetadata)
 
 	testWorkflow := ReportWorkflowDetails{
-		Name:        statement.Metadata.Workflow.Name,
-		Description: statement.Metadata.Workflow.Description,
+		Name:        statMetadata.GetMetadataWorkflow().Name,
+		Description: statMetadata.GetMetadataWorkflow().Description,
 		Rules:       map[string]bool{"tautology": true},
-		Actions:     []string{statement.Code},
+		Actions:     []string{statement.GetStatementCode()},
 	}
 	report := Report{
 		WorkflowDetails: map[string]ReportWorkflowDetails{
@@ -101,39 +99,38 @@ func TestAddToReport_WhenWorkflowIsNonExisting(t *testing.T) {
 		WorkflowDetails: map[string]ReportWorkflowDetails{
 			"test-workflow": testWorkflow,
 			"new-test-workflow": {
-				Name:        statement.Metadata.Workflow.Name,
-				Description: statement.Metadata.Workflow.Description,
+				Name:        statMetadata.GetMetadataWorkflow().Name,
+				Description: statMetadata.GetMetadataWorkflow().Description,
 				Rules:       map[string]bool{"test-rule": true},
-				Actions:     []string{statement.Code},
+				Actions:     []string{statement.GetStatementCode()},
 			},
 		},
 	}
 
-	report.addToReport(&statement)
+	report.addToReport(statement)
 
 	assert.Equal(t, wantReport, report)
 }
 
 func TestAddToReport_WhenWorkflowAlreadyExists(t *testing.T) {
-	statement := engine.Statement{
-		Code: "$addLabel(\"test\")",
-		Metadata: &engine.Metadata{
-			Workflow: engine.PadWorkflow{
-				Name:        "test-workflow",
-				Description: "Testing workflow",
-			},
-			TriggeredBy: []engine.PadWorkflowRule{
-				{Rule: "test-rule"},
-			},
+	statMetadata := engine.BuildMetadata(
+		engine.PadWorkflow{
+			Name:        "test-workflow",
+			Description: "Testing workflow",
 		},
-	}
+		[]engine.PadWorkflowRule{
+			{Rule: "test-rule"},
+		},
+	)
+	statement := engine.BuildStatement("$addLabel(\"test\")", statMetadata)
+
 	report := Report{
 		WorkflowDetails: map[string]ReportWorkflowDetails{
 			"test-workflow": {
-				Name:        statement.Metadata.Workflow.Name,
-				Description: statement.Metadata.Workflow.Description,
+				Name:        statMetadata.GetMetadataWorkflow().Name,
+				Description: statMetadata.GetMetadataWorkflow().Description,
 				Rules:       map[string]bool{"tautology": true},
-				Actions:     []string{statement.Code},
+				Actions:     []string{statement.GetStatementCode()},
 			},
 		},
 	}
@@ -141,18 +138,18 @@ func TestAddToReport_WhenWorkflowAlreadyExists(t *testing.T) {
 	wantReport := Report{
 		WorkflowDetails: map[string]ReportWorkflowDetails{
 			"test-workflow": {
-				Name:        statement.Metadata.Workflow.Name,
-				Description: statement.Metadata.Workflow.Description,
+				Name:        statMetadata.GetMetadataWorkflow().Name,
+				Description: statMetadata.GetMetadataWorkflow().Description,
 				Rules: map[string]bool{
 					"tautology": true,
 					"test-rule": true,
 				},
-				Actions: []string{statement.Code},
+				Actions: []string{statement.GetStatementCode()},
 			},
 		},
 	}
 
-	report.addToReport(&statement)
+	report.addToReport(statement)
 
 	assert.Equal(t, wantReport, report)
 }
