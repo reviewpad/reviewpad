@@ -5,6 +5,8 @@
 package plugins_aladino_actions
 
 import (
+    "log"
+    
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 )
 
@@ -19,6 +21,8 @@ func failCode(e aladino.Env, args []aladino.Value) error {
 	failMessage := args[0].(*aladino.StringValue).Val
 
 	e.GetActionsBuiltInsMessages()[aladino.SEVERITY_FATAL] = []string{failMessage}
+
+    log.Println(e.GetActionsBuiltInsMessages()[aladino.SEVERITY_FATAL])
 
 	return nil
 }
