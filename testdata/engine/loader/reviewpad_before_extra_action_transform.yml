@@ -1,0 +1,27 @@
+# Copyright 2022 Explore.dev Unipessoal Lda. All Rights Reserved.
+# Use of this source code is governed by a license that can be
+# found in the LICENSE file.
+
+api-version: reviewpad.com/v1alpha
+
+rules:
+  - name: changes-to-main-file
+    description: Changes to the main file
+    kind: patch
+    spec: '$hasFileName("runner.go")'
+  - name: changes-critical-functions
+    kind: patch
+    description: Changes to functions considered critical
+    spec: '$hasAnnotation("critical")'
+
+workflows:
+  - name: changes-to-critical-code
+    description: Changes to critical code
+    always-run: true
+    if:
+      - rule: changes-to-main-file
+      - rule: changes-critical-functions
+        extra-actions:
+          - '$assignReviewer(["jane", "john"])'
+    then:
+      - '$addLabel("critical")'

@@ -71,69 +71,6 @@ var mockedReviewpadFile = &ReviewpadFile{
 	Workflows: []PadWorkflow{mockedReviewpadFilePadWorkflow},
 }
 
-var mockedImportedReviewpadFile = &ReviewpadFile{
-	Version:      "reviewpad.com/v1alpha",
-	Edition:      "professional",
-	Mode:         "silent",
-	IgnoreErrors: false,
-	Imports:      []PadImport{},
-	Rules: []PadRule{
-		{
-			Name:        "tautology",
-			Kind:        "patch",
-			Description: "testing rule",
-			Spec:        "1 == 1",
-		},
-	},
-	Labels: map[string]PadLabel{
-		"enhancement": {
-			Color:       "a2eeef",
-			Description: "New feature or request",
-		},
-	},
-	Workflows: []PadWorkflow{
-		{
-			Name:        "test-workflow-B",
-			Description: "Test process",
-			AlwaysRun:   false,
-			Rules: []PadWorkflowRule{
-				{Rule: "tautology"},
-			},
-			Actions: []string{
-				"$action()",
-			},
-		},
-	},
-}
-
-var simpleReviewpadFile = &ReviewpadFile{
-	Version:      "reviewpad.com/v1alpha",
-	Edition:      "professional",
-	Mode:         "silent",
-	IgnoreErrors: false,
-	Rules: []PadRule{
-		{
-			Name:        "tautology",
-			Kind:        "patch",
-			Description: "testing rule",
-			Spec:        "true",
-		},
-	},
-	Workflows: []PadWorkflow{
-		{
-			Name:        "simple-workflow",
-			Description: "Test process",
-			AlwaysRun:   false,
-			Rules: []PadWorkflowRule{
-				{Rule: "tautology"},
-			},
-			Actions: []string{
-				"$merge(\"merge\")",
-			},
-		},
-	},
-}
-
 func GetDefaultMockPullRequestDetails() *github.PullRequest {
 	prNum := defaultMockPrNum
 	prId := int64(defaultMockPrID)
