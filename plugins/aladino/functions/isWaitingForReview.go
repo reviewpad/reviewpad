@@ -43,13 +43,7 @@ func isWaitingForReviewCode(e aladino.Env, _ []aladino.Value) (aladino.Value, er
 		return aladino.BuildBoolValue(false), nil
 	}
 
-	lastCommit := commits[len(commits)-1]
-	if lastCommit.Commit == nil || lastCommit.Commit.Committer == nil || lastCommit.Commit.Committer.Date == nil {
-		log.Printf("[WARN] Commit %v has no value for pull request %s/%s#%d.", lastCommit, owner, repo, prNum)
-		return aladino.BuildBoolValue(false), nil
-	}
-
-	lastPushedDate, err := utils.GetPRLastPushedCommitDate(e.GetCtx(), e.GetClientGQL(), owner, repo, prNum)
+	lastPushedDate, err := utils.GetPullRequestLastPushedEventDate(e.GetCtx(), e.GetClientGQL(), owner, repo, prNum)
 	if err != nil {
 		return nil, err
 	}
