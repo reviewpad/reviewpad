@@ -23,54 +23,6 @@ var DefaultMockCtx = context.Background()
 var DefaultMockCollector = collector.NewCollector("", "")
 var DefaultMockEventPayload = &github.CheckRunEvent{}
 
-// Use only for tests
-var mockedReviewpadFilePadWorkflow = PadWorkflow{
-	Name:        "test-workflow-A",
-	Description: "Test process",
-	AlwaysRun:   false,
-	Rules: []PadWorkflowRule{
-		{
-			Rule:         "tautology",
-			ExtraActions: []string{"$addLabel(\"test-workflow-a\")"},
-		},
-	},
-	Actions: []string{
-		"$merge()",
-	},
-}
-var mockedReviewpadFile = &ReviewpadFile{
-	Version:      "reviewpad.com/v1alpha",
-	Edition:      "professional",
-	Mode:         "silent",
-	IgnoreErrors: false,
-	Imports: []PadImport{
-		{Url: "https://foo.bar/mockedImportedReviewpadFile.yml"},
-	},
-	Groups: []PadGroup{
-		{
-			Name:        "seniors",
-			Description: "Senior developers",
-			Kind:        "developers",
-			Spec:        "[\"john\"]",
-		},
-	},
-	Rules: []PadRule{
-		{
-			Name:        "tautology",
-			Kind:        "patch",
-			Description: "testing rule",
-			Spec:        "1 == 1",
-		},
-	},
-	Labels: map[string]PadLabel{
-		"bug": {
-			Color:       "f29513",
-			Description: "Something isn't working",
-		},
-	},
-	Workflows: []PadWorkflow{mockedReviewpadFilePadWorkflow},
-}
-
 func GetDefaultMockPullRequestDetails() *github.PullRequest {
 	prNum := defaultMockPrNum
 	prId := int64(defaultMockPrID)

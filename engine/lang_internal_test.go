@@ -11,6 +11,55 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+var mockedReviewpadFile = &ReviewpadFile{
+	Version:      "reviewpad.com/v1alpha",
+	Edition:      "professional",
+	Mode:         "silent",
+	IgnoreErrors: false,
+	Imports: []PadImport{
+		{Url: "https://foo.bar/draft-rule.yml"},
+	},
+	Groups: []PadGroup{
+		{
+			Name:        "seniors",
+			Description: "Senior developers",
+			Kind:        "developers",
+			Spec:        "[\"john\"]",
+		},
+	},
+	Rules: []PadRule{
+		{
+			Name:        "test-rule",
+			Kind:        "patch",
+			Description: "testing rule",
+			Spec:        "1 == 1",
+		},
+	},
+	Labels: map[string]PadLabel{
+		"bug": {
+			Name:        "bug",
+			Color:       "f29513",
+			Description: "Something isn't working",
+		},
+	},
+	Workflows: []PadWorkflow{
+		{
+			Name:        "test",
+			Description: "Test process",
+			AlwaysRun:   true,
+			Rules: []PadWorkflowRule{
+				{
+					Rule:         "tautology",
+					ExtraActions: []string{},
+				},
+			},
+			Actions: []string{
+				"$action()",
+			},
+		},
+	},
+}
+
 func TestEquals_WhenPadImportsAreEqual(t *testing.T) {
 	padImport := PadImport{"http://foo.bar"}
 	otherPadImport := PadImport{"http://foo.bar"}
@@ -740,7 +789,7 @@ func TestEquals_WhenReviewpadFilesHaveDiffNumberOfRules(t *testing.T) {
 
 	otherReviewpadFile.Rules = []PadRule{
 		{
-			Name:        "test-rule-1",
+			Name:        "test-rule",
 			Kind:        "patch",
 			Description: "testing rule",
 			Spec:        "1 == 1",
@@ -778,10 +827,12 @@ func TestEquals_WhenReviewpadFilesHaveDiffNumberOfLabels(t *testing.T) {
 
 	otherReviewpadFile.Labels = map[string]PadLabel{
 		"bug": {
+			Name:        "bug",
 			Color:       "f29513",
 			Description: "Something isn't working",
 		},
 		"bug#2": {
+			Name:        "bug#2",
 			Color:       "f29513",
 			Description: "Something isn't working",
 		},
@@ -796,6 +847,7 @@ func TestEquals_WhenReviewpadFilesHaveDiffLabels(t *testing.T) {
 
 	otherReviewpadFile.Labels = map[string]PadLabel{
 		"bug#2": {
+			Name:        "bug#2",
 			Color:       "f29513",
 			Description: "Something isn't working",
 		},
@@ -809,10 +861,23 @@ func TestEquals_WhenReviewpadFilesHaveDiffNumberOfWorkflows(t *testing.T) {
 	copier.Copy(otherReviewpadFile, mockedReviewpadFile)
 
 	otherReviewpadFile.Workflows = []PadWorkflow{
-		mockedReviewpadFilePadWorkflow,
 		{
-			Name:        "test-workflow-B",
-			Description: "Test process B",
+			Name:        "test",
+			Description: "Test process",
+			AlwaysRun:   true,
+			Rules: []PadWorkflowRule{
+				{
+					Rule:         "tautology",
+					ExtraActions: []string{},
+				},
+			},
+			Actions: []string{
+				"$action()",
+			},
+		},
+		{
+			Name:        "test#2",
+			Description: "Test process x2",
 			AlwaysRun:   true,
 			Rules: []PadWorkflowRule{
 				{
@@ -821,7 +886,7 @@ func TestEquals_WhenReviewpadFilesHaveDiffNumberOfWorkflows(t *testing.T) {
 				},
 			},
 			Actions: []string{
-				"$actionB()",
+				"$action2()",
 			},
 		},
 	}
@@ -835,8 +900,8 @@ func TestEquals_WhenReviewpadFilesHaveDiffWorkflows(t *testing.T) {
 
 	otherReviewpadFile.Workflows = []PadWorkflow{
 		{
-			Name:        "test-workflow-B",
-			Description: "Test process B",
+			Name:        "test#2",
+			Description: "Test process x2",
 			AlwaysRun:   true,
 			Rules: []PadWorkflowRule{
 				{
@@ -845,7 +910,7 @@ func TestEquals_WhenReviewpadFilesHaveDiffWorkflows(t *testing.T) {
 				},
 			},
 			Actions: []string{
-				"$actionB()",
+				"$action2()",
 			},
 		},
 	}
@@ -905,6 +970,7 @@ func TestAppendLabels_WhenReviewpadFileHasNoLabels(t *testing.T) {
 
 	wantLabels := map[string]PadLabel{
 		"bug": {
+			Name:        "bug",
 			Color:       "f29513",
 			Description: "Something isn't working",
 		},
@@ -919,6 +985,7 @@ func TestAppendLabels_WhenReviewpadFileHasLabels(t *testing.T) {
 
 	otherReviewpadFile.Labels = map[string]PadLabel{
 		"bug#2": {
+			Name:        "bug#2",
 			Color:       "f29513",
 			Description: "Something isn't working",
 		},
@@ -928,10 +995,12 @@ func TestAppendLabels_WhenReviewpadFileHasLabels(t *testing.T) {
 
 	wantLabels := map[string]PadLabel{
 		"bug": {
+			Name:        "bug",
 			Color:       "f29513",
 			Description: "Something isn't working",
 		},
 		"bug#2": {
+			Name:        "bug#2",
 			Color:       "f29513",
 			Description: "Something isn't working",
 		},
@@ -950,7 +1019,7 @@ func TestAppendRules_WhenReviewpadFileHasNoRules(t *testing.T) {
 
 	wantRules := []PadRule{
 		{
-			Name:        "tautology",
+			Name:        "test-rule",
 			Kind:        "patch",
 			Description: "testing rule",
 			Spec:        "1 == 1",
@@ -983,7 +1052,7 @@ func TestAppendRules_WhenReviewpadFileHasRules(t *testing.T) {
 			Spec:        "1 < 2",
 		},
 		{
-			Name:        "tautology",
+			Name:        "test-rule",
 			Kind:        "patch",
 			Description: "testing rule",
 			Spec:        "1 == 1",
@@ -1058,7 +1127,22 @@ func TestAppendWorkflows_WhenReviewpadFileHasNoWorkflows(t *testing.T) {
 
 	otherReviewpadFile.appendWorkflows(mockedReviewpadFile)
 
-	wantWorkflows := []PadWorkflow{mockedReviewpadFilePadWorkflow}
+	wantWorkflows := []PadWorkflow{
+		{
+			Name:        "test",
+			Description: "Test process",
+			AlwaysRun:   true,
+			Rules: []PadWorkflowRule{
+				{
+					Rule:         "tautology",
+					ExtraActions: []string{},
+				},
+			},
+			Actions: []string{
+				"$action()",
+			},
+		},
+	}
 
 	assert.Equal(t, wantWorkflows, otherReviewpadFile.Workflows)
 }
@@ -1069,17 +1153,17 @@ func TestAppendWorkflows_WhenReviewpadFileHasWorkflows(t *testing.T) {
 
 	otherReviewpadFile.Workflows = []PadWorkflow{
 		{
-			Name:        "test-workflow-B",
-			Description: "Test process B",
+			Name:        "test#2",
+			Description: "Test process",
 			AlwaysRun:   true,
 			Rules: []PadWorkflowRule{
 				{
-					Rule:         "test-rule",
+					Rule:         "tautology",
 					ExtraActions: []string{},
 				},
 			},
 			Actions: []string{
-				"$actionB()",
+				"$action()",
 			},
 		},
 	}
@@ -1088,20 +1172,33 @@ func TestAppendWorkflows_WhenReviewpadFileHasWorkflows(t *testing.T) {
 
 	wantWorkflows := []PadWorkflow{
 		{
-			Name:        "test-workflow-B",
-			Description: "Test process B",
+			Name:        "test#2",
+			Description: "Test process",
 			AlwaysRun:   true,
 			Rules: []PadWorkflowRule{
 				{
-					Rule:         "test-rule",
+					Rule:         "tautology",
 					ExtraActions: []string{},
 				},
 			},
 			Actions: []string{
-				"$actionB()",
+				"$action()",
 			},
 		},
-		mockedReviewpadFilePadWorkflow,
+		{
+			Name:        "test",
+			Description: "Test process",
+			AlwaysRun:   true,
+			Rules: []PadWorkflowRule{
+				{
+					Rule:         "tautology",
+					ExtraActions: []string{},
+				},
+			},
+			Actions: []string{
+				"$action()",
+			},
+		},
 	}
 
 	assert.Equal(t, wantWorkflows, otherReviewpadFile.Workflows)
