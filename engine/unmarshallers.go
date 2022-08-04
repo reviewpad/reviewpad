@@ -4,6 +4,8 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// UnmarshalYAML our custom implementation of unmarshaller yaml interface.
+// On this stage we can inject normalizers for property values without affecting existing codebase.
 func (r *ReviewpadFile) UnmarshalYAML(value *yaml.Node) error {
 	var interim struct {
 		Version      string    `yaml:"api-version"`
@@ -20,9 +22,11 @@ func (r *ReviewpadFile) UnmarshalYAML(value *yaml.Node) error {
 		return err
 	}
 
-	r.Version, _ = normalizers[_defaultApiVersion].Do(interim.Version)
-	r.Edition, _ = normalizers[_defaultEdition].Do(interim.Edition)
-	r.Mode, _ = normalizers[_defaultMode].Do(interim.Mode)
+	// we need only default property values if incorrect or empty for these fields.
+	// so the errors are ignored here
+	r.Version, _ = normalizers[defaultApiVersion].Do(interim.Version)
+	r.Edition, _ = normalizers[defaultEdition].Do(interim.Edition)
+	r.Mode, _ = normalizers[defaultMode].Do(interim.Mode)
 	r.IgnoreErrors = interim.IgnoreErrors
 
 	_ = interim.Imports.Decode(&r.Imports)
