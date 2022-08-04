@@ -193,7 +193,7 @@ type ReviewpadFile struct {
 type PadPipeline struct {
 	Name        string     `yaml:"name"`
 	Description string     `yaml:"description"`
-	Trigger     []PadRule  `yaml:"trigger"`
+	Trigger     string     `yaml:"trigger"`
 	Stages      []PadStage `yaml:"stages"`
 }
 
