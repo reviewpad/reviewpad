@@ -160,14 +160,19 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 	for _, pipeline := range file.Pipelines {
 		execLogf("evaluating pipeline %v:", pipeline.Name)
 
-		activated, err := interpreter.EvalExpr("patch", pipeline.Trigger)
-		if err != nil {
-			CollectError(env, err)
-			return nil, err
+		var err error
+		activated := pipeline.Trigger == ""
+		if !activated {
+			activated, err = interpreter.EvalExpr("patch", pipeline.Trigger)
+			if err != nil {
+				CollectError(env, err)
+				return nil, err
+			}
 		}
 
 		if activated {
-			for _, stage := range pipeline.Stages {
+			for num, stage := range pipeline.Stages {
+				execLogf("evaluating pipeline stage %v", num)
 				if stage.Until == "" {
 					program.append(stage.Actions, pipeline.Name)
 					break
