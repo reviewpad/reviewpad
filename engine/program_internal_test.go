@@ -22,34 +22,24 @@ func TestAppend(t *testing.T) {
 		Actions: []string{action},
 	}
 
-	initialStatement := &Statement{
-		Code: "$actionB()",
-		Metadata: &Metadata{
-			Workflow: PadWorkflow{
-				Name: "test-workflow-B",
-			},
-			TriggeredBy: []PadWorkflowRule{
-				{Rule: "test-rule-B"},
-			},
+	initialStatMetadata := BuildMetadata(
+		PadWorkflow{
+			Name: "test-workflow-B",
 		},
-	}
-
-	programUnderTest := &Program{
-		Statements: []*Statement{initialStatement},
-	}
-
-	wantProgram := &Program{
-		Statements: []*Statement{
-			initialStatement,
-			{
-				Code: action,
-				Metadata: &Metadata{
-					Workflow:    workflow,
-					TriggeredBy: workflow.Rules,
-				},
-			},
+		[]PadWorkflowRule{
+			{Rule: "test-rule-B"},
 		},
-	}
+	)
+	initialStat := BuildStatement("$actionB()", initialStatMetadata)
+
+	programUnderTest := BuildProgram([]*Statement{initialStat})
+
+	addedStatMetadata := BuildMetadata(workflow, workflow.Rules)
+	addedStat := BuildStatement(action, addedStatMetadata)
+	wantProgram := BuildProgram([]*Statement{
+		initialStat,
+		addedStat,
+	})
 
 	programUnderTest.append(workflow.Actions, workflow, workflow.Rules)
 

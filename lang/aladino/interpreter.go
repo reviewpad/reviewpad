@@ -116,7 +116,7 @@ func (i *Interpreter) EvalExpr(kind, expr string) (bool, error) {
 func (i *Interpreter) ExecProgram(program *engine.Program) error {
 	execLog("executing program")
 
-	for _, statement := range program.Statements {
+	for _, statement := range program.GetProgramStatements() {
 		err := i.ExecStatement(statement)
 		if err != nil {
 			return err
@@ -129,7 +129,7 @@ func (i *Interpreter) ExecProgram(program *engine.Program) error {
 }
 
 func (i *Interpreter) ExecStatement(statement *engine.Statement) error {
-	statRaw := statement.Code
+	statRaw := statement.GetStatementCode()
 	statAST, err := Parse(statRaw)
 	if err != nil {
 		return err

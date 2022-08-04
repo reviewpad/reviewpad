@@ -146,6 +146,10 @@ func GetDefaultMockPullRequestDetailsWith(pr *github.PullRequest) *github.PullRe
 		defaultPullRequest.Draft = pr.Draft
 	}
 
+	if pr.NodeID != nil {
+		defaultPullRequest.NodeID = pr.NodeID
+	}
+
 	return defaultPullRequest
 }
 
