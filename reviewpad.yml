@@ -218,9 +218,9 @@ rules:
     description: Owners can ship simple pull requests
     spec: '$rule("ship-authored-by-owners") && $rule("changes-are-in-markdown")'
 
-  - name: ci-is-completed
-    kind: patch
-    spec: '$workflowStatus("pr-build") != "queued" && $workflowStatus("pr-build") != "in_progress"'
+  # - name: ci-is-completed
+  #   kind: patch
+  #   spec: '$workflowStatus("pr-build") != "queued" && $workflowStatus("pr-build") != "in_progress"'
 
   - name: does-not-have-linked-issues
     kind: patch
@@ -264,7 +264,7 @@ workflows:
     # at all times we only have one label
     always-run: true
     if:
-      - rule: ship-state
+      - rule: ship-authored-by-owners
         extra-actions:
           - '$removeLabel("ask")'
           - '$removeLabel("show")'
@@ -321,13 +321,13 @@ workflows:
     then:
       - '$addLabel("run-build")'
 
-  - name: remove-ci-label
-    description: If the build is completed, remove the label
-    always-run: true
-    if:
-      - rule: ci-is-completed
-    then:
-      - '$removeLabel("run-build")'
+  # - name: remove-ci-label
+  #   description: If the build is completed, remove the label
+  #   always-run: true
+  #   if:
+  #     - rule: ci-is-completed
+  #   then:
+  #     - '$removeLabel("run-build")'
 
   - name: auto-merge-owner-pull-requests
     description: Auto merge pull requests
