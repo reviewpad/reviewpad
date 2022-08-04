@@ -24,11 +24,11 @@ func TestLoad(t *testing.T) {
 		reviewpadFilePath     string
 		httpMockResponders    []httpMockResponder
 		wantReviewpadFilePath string
-		wantError             string
+		wantErr               string
 	}{
 		"when the file has a parsing error": {
 			reviewpadFilePath: "../testdata/engine/loader/reviewpad_with_parse_error.yml",
-			wantError:         "yaml: unmarshal errors:\n  line 5: cannot unmarshal !!str `parse-e...` into engine.ReviewpadFile",
+			wantErr:           "yaml: unmarshal errors:\n  line 5: cannot unmarshal !!str `parse-e...` into engine.ReviewpadFile",
 		},
 		"when the file has an import of a non existing file": {
 			reviewpadFilePath: "../testdata/engine/loader/reviewpad_with_import_of_nonexisting_file.yml",
@@ -38,7 +38,7 @@ func TestLoad(t *testing.T) {
 					responder: httpmock.NewErrorResponder(fmt.Errorf("invalid import url")),
 				},
 			},
-			wantError: "Get \"https://foo.bar/invalid-url\": invalid import url",
+			wantErr: "Get \"https://foo.bar/invalid-url\": invalid import url",
 		},
 		"when the file has an import of a file with a parsing error": {
 			reviewpadFilePath: "../testdata/engine/loader/reviewpad_with_import_file_with_parse_error.yml",
@@ -48,7 +48,7 @@ func TestLoad(t *testing.T) {
 					responder: httpmock.NewBytesResponder(200, httpmock.File("../testdata/engine/loader/reviewpad_with_parse_error.yml").Bytes()),
 				},
 			},
-			wantError: "yaml: unmarshal errors:\n  line 5: cannot unmarshal !!str `parse-e...` into engine.ReviewpadFile",
+			wantErr: "yaml: unmarshal errors:\n  line 5: cannot unmarshal !!str `parse-e...` into engine.ReviewpadFile",
 		},
 		"when the file imports other files": {
 			reviewpadFilePath: "../testdata/engine/loader/reviewpad_with_chain_of_imports.yml",
@@ -76,7 +76,7 @@ func TestLoad(t *testing.T) {
 					responder: httpmock.NewBytesResponder(200, httpmock.File("../testdata/engine/loader/reviewpad_with_cyclic_dependency_a.yml").Bytes()),
 				},
 			},
-			wantError: "loader: cyclic dependency",
+			wantErr: "loader: cyclic dependency",
 		},
 		"when the file has no issues": {
 			reviewpadFilePath:     "../testdata/engine/loader/reviewpad_with_no_imports.yml",
@@ -117,8 +117,8 @@ func TestLoad(t *testing.T) {
 
 			gotReviewpadFile, err := engine.Load(reviewpadFileData)
 
-			if err != nil {
-				assert.Equal(t, test.wantError, err.Error())
+			if err != nil && err.Error() != test.wantErr {
+				assert.FailNow(t, "Load() error = %v, wantErr %v", err, test.wantErr)
 			}
 			assert.Equal(t, wantReviewpadFile, gotReviewpadFile)
 		})
