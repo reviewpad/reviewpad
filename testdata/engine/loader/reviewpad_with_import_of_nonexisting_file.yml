@@ -5,4 +5,4 @@
 api-version: reviewpad.com/v1alpha
 
 imports:
-  - url: https://foo.bar/invalid-url
+  - url: https://foo.bar/nonexistent_file
