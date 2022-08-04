@@ -54,11 +54,7 @@ func TestNormalization(t *testing.T) {
 	})
 
 	//debug output
-	/*reviewpadFile, err := Load([]byte(testNormalizeNoEditionNoMode))
-	  if err != nil {
-	  	t.Fatalf("err Load: %s", err.Error())
-	  }
-	  y, err := yaml.Marshal(reviewpadFile)
+	/*y, err := yaml.Marshal(reviewpadFile)
 	  if err != nil {
 	  	t.Fatalf("err marshalling reviewpadFile: %s", err.Error())
 	  }
@@ -66,14 +62,11 @@ func TestNormalization(t *testing.T) {
 }
 
 const (
-	testNormalizeIncorrectApiVersionNumber = "api-version: reviewpad.com/v6.x"
-
 	testNormalizeCorrectExpectedVersion       = "reviewpad.com/v2.x"
 	testNormalizeCorrectLowerApiVersionNumber = "api-version: " + testNormalizeCorrectExpectedVersion
-
-	testNormalizeIncorrectCase = "edition: TeaM"
-
-	testNormalizeNoEditionNoMode = `api-version: reviewpad.com/v3.x
+	testNormalizeIncorrectApiVersionNumber    = "api-version: reviewpad.com/v6.x"
+	testNormalizeIncorrectCase                = "edition: TeaM"
+	testNormalizeNoEditionNoMode              = `api-version: reviewpad.com/v3.x
 
 labels:
   small:

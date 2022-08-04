@@ -19,10 +19,17 @@ var (
 	allowedModes    = []string{"silent", "verbose"}
 )
 
+type propertyKey string
+
+const (
+	_version propertyKey = "Version"
+	_edition propertyKey = "Edition"
+	_mode    propertyKey = "Mode"
+)
+
 // normalizers contains all we need to properly normalize property values
-// default property values are used here as keys, but can be changed to appropriate if needed
-var normalizers = map[string]*Normalize{
-	defaultApiVersion: NewNormalize(defaultApiVersion).
+var normalizers = map[propertyKey]*Normalize{
+	_version: NewNormalize(defaultApiVersion).
 		WithValidators(func(val string) error {
 			apiVersReg := regexp.MustCompile(`^reviewpad\.com/v[0-3]\.[\dx]$`)
 			if apiVersReg.MatchString(val) {
@@ -30,8 +37,8 @@ var normalizers = map[string]*Normalize{
 			}
 			return fmt.Errorf("incorrect api-version: %s", val)
 		}),
-	defaultEdition: NewNormalize(defaultEdition, allowedEditions...),
-	defaultMode:    NewNormalize(defaultMode, allowedModes...),
+	_edition: NewNormalize(defaultEdition, allowedEditions...),
+	_mode:    NewNormalize(defaultMode, allowedModes...),
 }
 
 // validator & modificator functions signature

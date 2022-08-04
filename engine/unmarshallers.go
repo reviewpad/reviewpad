@@ -24,9 +24,9 @@ func (r *ReviewpadFile) UnmarshalYAML(value *yaml.Node) error {
 
 	// we need only default property values if incorrect or empty for these fields.
 	// so the errors are ignored here
-	r.Version, _ = normalizers[defaultApiVersion].Do(interim.Version)
-	r.Edition, _ = normalizers[defaultEdition].Do(interim.Edition)
-	r.Mode, _ = normalizers[defaultMode].Do(interim.Mode)
+	r.Version, _ = normalizers[_version].Do(interim.Version)
+	r.Edition, _ = normalizers[_edition].Do(interim.Edition)
+	r.Mode, _ = normalizers[_mode].Do(interim.Mode)
 	r.IgnoreErrors = interim.IgnoreErrors
 
 	_ = interim.Imports.Decode(&r.Imports)
