@@ -5,22 +5,16 @@
 api-version: reviewpad.com/v1alpha
 
 rules:
-  - name: changes-to-main-file
-    description: Changes to the main file
+  - name: tautology
     kind: patch
-    spec: '$hasFileName("runner.go")'
-  - name: changes-critical-functions
-    kind: patch
-    description: Changes to functions considered critical
-    spec: '$hasAnnotation("critical")'
+    description: Always true
+    spec: true
 
 workflows:
-  - name: changes-to-critical-code
-    description: Changes to critical code
-    always-run: true
+  - name: test-process
+    description: Test process
     if:
-      - rule: changes-to-main-file
-      - rule: changes-critical-functions
+      - rule: tautology
         extra-actions:
           - '$assignReviewer(["jane", "john"], 99)'
     then:

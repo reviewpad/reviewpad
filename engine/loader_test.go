@@ -65,7 +65,7 @@ func TestLoad(t *testing.T) {
 		},
 		// Pass
 		"when the file imports other files": {
-			inputReviewpadFilePath: "../testdata/engine/loader/reviewpad_with_chain_of_imports.yml",
+			inputReviewpadFilePath: "../testdata/engine/loader/reviewpad_with_imports_chain.yml",
 			httpMockResponders: []httpMockResponder{
 				{
 					url:       "https://foo.bar/reviewpad_with_no_imports.yml",

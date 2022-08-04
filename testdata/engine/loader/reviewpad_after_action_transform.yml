@@ -4,22 +4,16 @@
 
 api-version: reviewpad.com/v1alpha
 
-groups:
-  - name: owners
-    description: Group of owners
-    kind: developers
-    spec: '["jane", "john"]'
-
 rules:
-  - name: auto-merge-authored-by-owners
+  - name: tautology
     kind: patch
-    description: Auto merge pull requests authored by owners
-    spec: '$isElementOf($author(), $group("owners"))'
+    description: Always true
+    spec: true
 
 workflows:
-  - name: auto-merge-owner-pull-requests
-    description: Auto merge pull requests
+  - name: test-process
+    description: Test process
     if:
-      - rule: auto-merge-authored-by-owners
+      - rule: tautology
     then:
       - '$merge("merge")'
