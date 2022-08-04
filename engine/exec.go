@@ -157,5 +157,35 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 		}
 	}
 
+	for _, pipeline := range file.Pipelines {
+		execLogf("evaluating pipeline %v:", pipeline.Name)
+
+		activated, err := interpreter.EvalExpr("patch", pipeline.Trigger)
+		if err != nil {
+			CollectError(env, err)
+			return nil, err
+		}
+
+		if activated {
+			for _, stage := range pipeline.Stages {
+				if stage.Until == "" {
+					program.append(stage.Actions, pipeline.Name)
+					break
+				}
+
+				isDone, err := interpreter.EvalExpr("patch", stage.Until)
+				if err != nil {
+					CollectError(env, err)
+					return nil, err
+				}
+
+				if !isDone {
+					program.append(stage.Actions, pipeline.Name)
+					break
+				}
+			}
+		}
+	}
+
 	return program, nil
 }

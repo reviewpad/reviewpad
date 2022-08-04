@@ -198,8 +198,8 @@ type PadPipeline struct {
 }
 
 type PadStage struct {
-	Actions    []string `yaml:"actions"`
-	ContinueIf string   `yaml:"continue-if"`
+	Actions []string `yaml:"actions"`
+	Until   string   `yaml:"until"`
 }
 
 func (r *ReviewpadFile) equals(o *ReviewpadFile) bool {

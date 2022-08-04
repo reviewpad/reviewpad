@@ -24,7 +24,7 @@ pipelines:
     stages:
       - actions:
         - '$assignReviewer(["marcelosousa"])'
-        continue-if: '$reviewerStatus("marcelosousa") == "APPROVED"'
+        until: '$reviewerStatus("marcelosousa") == "APPROVED"'
       - actions:
         - '$assignReviewer(["ferreiratiago"])'
 `
@@ -44,7 +44,7 @@ pipelines:
 						Actions: []string{
 							"$assignReviewer([\"marcelosousa\"])",
 						},
-						ContinueIf: "$reviewerStatus(\"marcelosousa\") == \"APPROVED\"",
+						Until: "$reviewerStatus(\"marcelosousa\") == \"APPROVED\"",
 					},
 					{
 						Actions: []string{
