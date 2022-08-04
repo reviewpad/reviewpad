@@ -189,19 +189,19 @@ Add the following to your `.vscode/launch.json`.
             "args": [
                 "run",
                 // Flag to run on dry run
-                "-dry-run",
+                "--dry-run",
                 // Absolute path to reviewpad.yml file to run
-                "-reviewpad=_PATH_TO_REVIEWPAD_FILE_",
+                "--reviewpad=_PATH_TO_REVIEWPAD_FILE_",
                 // GitHub url to run the reviewpad.yml against to
                 // e.g. https://github.com/reviewpad/action-demo/pull/1
-                "-pull-request=_PULL_REQUEST_URL_",
+                "--pull-request=_PULL_REQUEST_URL_",
                 // GiHub personal access token
                 // https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token
-                "-github-token=_GIT_HUB_TOKEN_",
+                "--github-token=_GIT_HUB_TOKEN_",
                 // Absolute path to JSON file with GitHub event payload
-                "-event-payload=_PATH_TO_EVENT_JSON",
+                "--event-payload=_PATH_TO_EVENT_JSON",
             ],
-            "program": "${workspaceFolder}/cmd/cli/main.go"
+            "program": "${workspaceFolder}/cli/main.go"
         }
     ]
 }
