@@ -87,6 +87,8 @@ func transform(file *ReviewpadFile) *ReviewpadFile {
 		})
 	}
 
+	// TODO: transform the actions of the pipelines
+
 	return &ReviewpadFile{
 		Version:      file.Version,
 		Edition:      file.Edition,
@@ -97,6 +99,7 @@ func transform(file *ReviewpadFile) *ReviewpadFile {
 		Rules:        file.Rules,
 		Labels:       file.Labels,
 		Workflows:    transformedWorkflows,
+		Pipelines:    file.Pipelines,
 	}
 }
 
