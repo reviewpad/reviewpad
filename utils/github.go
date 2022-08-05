@@ -8,7 +8,6 @@ import (
 	"context"
 	"errors"
 	"net/url"
-	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -37,7 +36,7 @@ type ReviewThreadsQuery struct {
 	} `graphql:"repository(owner: $repositoryOwner, name: $repositoryName)"`
 }
 
-type LastPushedEventDateQuery struct {
+type LastPushQuery struct {
 	Repository struct {
 		PullRequest struct {
 			TimelineItems struct {
@@ -51,7 +50,7 @@ type LastPushedEventDateQuery struct {
 						}
 					} `graphql:"... on PullRequestCommit"`
 				}
-			} `graphql:"timelineItems(last: 2, itemTypes: [HEAD_REF_FORCE_PUSHED_EVENT, PULL_REQUEST_COMMIT])"`
+			} `graphql:"timelineItems(last: 1, itemTypes: [HEAD_REF_FORCE_PUSHED_EVENT, PULL_REQUEST_COMMIT])"`
 		} `graphql:"pullRequest(number: $pullRequestNumber)"`
 	} `graphql:"repository(owner: $repositoryOwner, name: $repositoryName)"`
 }
@@ -379,45 +378,33 @@ func GetReviewThreads(ctx context.Context, client *githubv4.Client, owner string
 	return reviewThreads, nil
 }
 
-func GetPullRequestLastPushedEventDate(ctx context.Context, client *githubv4.Client, owner string, repo string, number int) (time.Time, error) {
-	var lastPushedEventDateQuery LastPushedEventDateQuery
-	varGQLastPushedEventDate := map[string]interface{}{
+func GetPullRequestLastPushDate(ctx context.Context, client *githubv4.Client, owner string, repo string, number int) (time.Time, error) {
+	var lastPushQuery LastPushQuery
+	varGQLastPush := map[string]interface{}{
 		"repositoryOwner":   githubv4.String(owner),
 		"repositoryName":    githubv4.String(repo),
 		"pullRequestNumber": githubv4.Int(number),
 	}
 
-	err := client.Query(ctx, &lastPushedEventDateQuery, varGQLastPushedEventDate)
+	err := client.Query(ctx, &lastPushQuery, varGQLastPush)
 	if err != nil {
 		return time.Time{}, err
 	}
-	if len(lastPushedEventDateQuery.Repository.PullRequest.TimelineItems.Nodes) == 0 {
-		return time.Time{}, errors.New("pushedDate not found")
+
+	hasLastPush := len(lastPushQuery.Repository.PullRequest.TimelineItems.Nodes) > 0
+	if !hasLastPush {
+		return time.Time{}, errors.New("last push not found")
 	}
-	pushedEventDates := make([]time.Time, 0)
-	for _, node := range lastPushedEventDateQuery.Repository.PullRequest.TimelineItems.Nodes {
-		commitPushedDate := node.PullRequestCommit.Commit.PushedDate
-		if commitPushedDate != "" {
-			commitDate, err := time.Parse(time.RFC3339, commitPushedDate)
-			if err != nil {
-				return time.Time{}, err
-			}
-			pushedEventDates = append(pushedEventDates, commitDate)
-		}
-		forcedPushedDate := node.HeadRefForcePushedEvent.CreatedAt
-		if forcedPushedDate != "" {
-			pushedDate, err := time.Parse(time.RFC3339, forcedPushedDate)
-			if err != nil {
-				return time.Time{}, err
-			}
-			pushedEventDates = append(pushedEventDates, pushedDate)
-		}
+	var pushDate string
+	node := lastPushQuery.Repository.PullRequest.TimelineItems.Nodes[0]
+	if node.PullRequestCommit.Commit.PushedDate != "" {
+		pushDate = node.PullRequestCommit.Commit.PushedDate
+	} else if node.HeadRefForcePushedEvent.CreatedAt != "" {
+		pushDate = node.HeadRefForcePushedEvent.CreatedAt
 	}
-	if len(pushedEventDates) == 0 {
-		return time.Time{}, errors.New("pushedDate not found")
+
+	if pushDate == "" {
+		return time.Time{}, errors.New("last push not found")
 	}
-	sort.Slice(pushedEventDates, func(i, j int) bool {
-		return pushedEventDates[i].After(pushedEventDates[j])
-	})
-	return pushedEventDates[0], nil
+	return time.Parse(time.RFC3339, pushDate)
 }

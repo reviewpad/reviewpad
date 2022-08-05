@@ -43,7 +43,7 @@ func isWaitingForReviewCode(e aladino.Env, _ []aladino.Value) (aladino.Value, er
 		return aladino.BuildBoolValue(false), nil
 	}
 
-	lastPushedDate, err := utils.GetPullRequestLastPushedEventDate(e.GetCtx(), e.GetClientGQL(), owner, repo, prNum)
+	lastPushedDate, err := utils.GetPullRequestLastPushDate(e.GetCtx(), e.GetClientGQL(), owner, repo, prNum)
 	if err != nil {
 		return nil, err
 	}
