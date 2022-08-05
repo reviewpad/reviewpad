@@ -32,121 +32,15 @@ func TestReportError(t *testing.T) {
 	assert.EqualError(t, gotErr, wantErr)
 }
 
-func TestMergeReportWorkflowDetails(t *testing.T) {
-	left := ReportWorkflowDetails{
-		Name:        "test-workflow",
-		Description: "Test workflow",
-		Rules: map[string]bool{
-			"test-rule": true,
-		},
-		Actions: []string{
-			"$addLabel(\"test\")",
-		},
-	}
-	right := ReportWorkflowDetails{
-		Name:        "test-workflow",
-		Description: "Test workflow",
-		Rules: map[string]bool{
-			"tautology": true,
-		},
-		Actions: []string{
-			"$addLabel(\"test\")",
-		},
-	}
+func TestAddToReport(t *testing.T) {
+	statement := engine.BuildStatement("$addLabel(\"test\")")
 
-	gotReportWorkflow := mergeReportWorkflowDetails(left, right)
-
-	wantReportWorkflow := ReportWorkflowDetails{
-		Name:        "test-workflow",
-		Description: "Test workflow",
-		Rules: map[string]bool{
-			"test-rule": true,
-			"tautology": true,
-		},
-		Actions: []string{
-			"$addLabel(\"test\")",
-		},
-	}
-
-	assert.Equal(t, wantReportWorkflow, gotReportWorkflow)
-}
-
-func TestAddToReport_WhenWorkflowIsNonExisting(t *testing.T) {
-	statMetadata := engine.BuildMetadata(
-		engine.PadWorkflow{
-			Name:        "new-test-workflow",
-			Description: "Testing workflow",
-		},
-		[]engine.PadWorkflowRule{
-			{Rule: "test-rule"},
-		},
-	)
-	statement := engine.BuildStatement("$addLabel(\"test\")", statMetadata)
-
-	testWorkflow := ReportWorkflowDetails{
-		Name:        statMetadata.GetMetadataWorkflow().Name,
-		Description: statMetadata.GetMetadataWorkflow().Description,
-		Rules:       map[string]bool{"tautology": true},
-		Actions:     []string{statement.GetStatementCode()},
-	}
 	report := Report{
-		WorkflowDetails: map[string]ReportWorkflowDetails{
-			"test-workflow": testWorkflow,
-		},
+		Actions: []string{statement.GetStatementCode()},
 	}
 
 	wantReport := Report{
-		WorkflowDetails: map[string]ReportWorkflowDetails{
-			"test-workflow": testWorkflow,
-			"new-test-workflow": {
-				Name:        statMetadata.GetMetadataWorkflow().Name,
-				Description: statMetadata.GetMetadataWorkflow().Description,
-				Rules:       map[string]bool{"test-rule": true},
-				Actions:     []string{statement.GetStatementCode()},
-			},
-		},
-	}
-
-	report.addToReport(statement)
-
-	assert.Equal(t, wantReport, report)
-}
-
-func TestAddToReport_WhenWorkflowAlreadyExists(t *testing.T) {
-	statMetadata := engine.BuildMetadata(
-		engine.PadWorkflow{
-			Name:        "test-workflow",
-			Description: "Testing workflow",
-		},
-		[]engine.PadWorkflowRule{
-			{Rule: "test-rule"},
-		},
-	)
-	statement := engine.BuildStatement("$addLabel(\"test\")", statMetadata)
-
-	report := Report{
-		WorkflowDetails: map[string]ReportWorkflowDetails{
-			"test-workflow": {
-				Name:        statMetadata.GetMetadataWorkflow().Name,
-				Description: statMetadata.GetMetadataWorkflow().Description,
-				Rules:       map[string]bool{"tautology": true},
-				Actions:     []string{statement.GetStatementCode()},
-			},
-		},
-	}
-
-	wantReport := Report{
-		WorkflowDetails: map[string]ReportWorkflowDetails{
-			"test-workflow": {
-				Name:        statMetadata.GetMetadataWorkflow().Name,
-				Description: statMetadata.GetMetadataWorkflow().Description,
-				Rules: map[string]bool{
-					"tautology": true,
-					"test-rule": true,
-				},
-				Actions: []string{statement.GetStatementCode()},
-			},
-		},
+		Actions: []string{statement.GetStatementCode(), statement.GetStatementCode()},
 	}
 
 	report.addToReport(statement)
@@ -162,26 +56,24 @@ func TestReportHeader(t *testing.T) {
 	assert.Equal(t, wantReportHeader, gotReportHeader)
 }
 
+func TestReportHeader_WhenSafeMode(t *testing.T) {
+	wantReportHeader := "<!--@annotation-reviewpad-report-->\n**Reviewpad Report** (Reviewpad ran in dry-run mode because configuration has changed)\n\n"
+
+	gotReportHeader := ReportHeader(true)
+
+	assert.Equal(t, wantReportHeader, gotReportHeader)
+}
+
 func TestBuildReport(t *testing.T) {
 	report := Report{
-		WorkflowDetails: map[string]ReportWorkflowDetails{
-			"test-workflow": {
-				Name:        "test-workflow",
-				Description: "Testing workflow",
-				Rules:       map[string]bool{"tautology": true},
-				Actions:     []string{"$addLabel(\"test\")"},
-			},
-		},
+		Actions: []string{"$addLabel(\"test\")"},
 	}
 
 	wantReport := `<!--@annotation-reviewpad-report-->
 **Reviewpad Report**
 
-:scroll: **Explanation**
-| Workflows <sub><sup>activated</sup></sub> | Rules <sub><sup>triggered</sup></sub> | Actions <sub><sup>ran</sub></sup> | Description |
-| - | - | - | - |
-| test-workflow | tautology<br> | ` + "`$addLabel(\"test\")`" + `<br> | Testing workflow |
-`
+:scroll: **Executed actions**
+` + "```yaml\n$addLabel(\"test\")\n```\n"
 
 	gotReport := buildReport(false, &report)
 
@@ -201,7 +93,7 @@ func TestBuildVerboseReport_WhenNoReportProvided(t *testing.T) {
 func TestBuildVerboseReport_WhenIsProvidedReportWithNoWorkflowDetails(t *testing.T) {
 	reportWithNoWorkflowDetails := &Report{}
 
-	wantReport := ":scroll: **Explanation**\nNo workflows activated"
+	wantReport := ":scroll: **Executed actions**\n```yaml\n```\n"
 
 	gotReport := BuildVerboseReport(reportWithNoWorkflowDetails)
 
@@ -210,21 +102,10 @@ func TestBuildVerboseReport_WhenIsProvidedReportWithNoWorkflowDetails(t *testing
 
 func TestBuildVerboseReport(t *testing.T) {
 	report := Report{
-		WorkflowDetails: map[string]ReportWorkflowDetails{
-			"test-workflow": {
-				Name:        "test-workflow",
-				Description: "Testing workflow",
-				Rules:       map[string]bool{"tautology": true},
-				Actions:     []string{"$addLabel(\"test\")"},
-			},
-		},
+		Actions: []string{"$addLabel(\"test\")"},
 	}
 
-	wantReport := `:scroll: **Explanation**
-| Workflows <sub><sup>activated</sup></sub> | Rules <sub><sup>triggered</sup></sub> | Actions <sub><sup>ran</sub></sup> | Description |
-| - | - | - | - |
-| test-workflow | tautology<br> | ` + "`$addLabel(\"test\")`" + `<br> | Testing workflow |
-`
+	wantReport := ":scroll: **Executed actions**\n```yaml\n$addLabel(\"test\")\n```\n"
 
 	gotReport := BuildVerboseReport(&report)
 

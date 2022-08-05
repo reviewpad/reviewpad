@@ -136,7 +136,7 @@ func NewEvalEnv(
 
 	patch := Patch(patchMap)
 	registerMap := RegisterMap(make(map[string]Value))
-	report := &Report{WorkflowDetails: make(map[string]ReportWorkflowDetails, 0)}
+	report := &Report{Actions: make([]string, 0)}
 
 	input := &BaseEnv{
 		Ctx:          ctx,

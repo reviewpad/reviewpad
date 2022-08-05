@@ -143,10 +143,10 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 		}
 
 		if len(ruleActivatedQueue) > 0 {
-			program.append(workflow.Actions, workflow, ruleActivatedQueue)
+			program.append(workflow.Actions)
 
 			for _, activatedRule := range ruleActivatedQueue {
-				program.append(activatedRule.ExtraActions, workflow, []PadWorkflowRule{activatedRule})
+				program.append(activatedRule.ExtraActions)
 			}
 
 			if !workflow.AlwaysRun {

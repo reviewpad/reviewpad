@@ -16,14 +16,7 @@ import (
 )
 
 type Report struct {
-	WorkflowDetails map[string]ReportWorkflowDetails
-}
-
-type ReportWorkflowDetails struct {
-	Name        string
-	Description string
-	Rules       map[string]bool
-	Actions     []string
+	Actions []string
 }
 
 const ReviewpadReportCommentAnnotation = "<!--@annotation-reviewpad-report-->"
@@ -32,38 +25,8 @@ func reportError(format string, a ...interface{}) error {
 	return fmtio.Errorf("report", format, a...)
 }
 
-func mergeReportWorkflowDetails(left, right ReportWorkflowDetails) ReportWorkflowDetails {
-	for rule := range right.Rules {
-		if _, ok := left.Rules[rule]; !ok {
-			left.Rules[rule] = true
-		}
-	}
-
-	return left
-}
-
 func (report *Report) addToReport(statement *engine.Statement) {
-	statMetadata := statement.GetStatementMetadata()
-	workflowName := statMetadata.GetMetadataWorkflow().Name
-
-	rules := make(map[string]bool, len(statMetadata.GetMetadataTriggeredBy()))
-	for _, rule := range statMetadata.GetMetadataTriggeredBy() {
-		rules[rule.Rule] = true
-	}
-
-	reportWorkflow := ReportWorkflowDetails{
-		Name:        workflowName,
-		Description: statMetadata.GetMetadataWorkflow().Description,
-		Rules:       rules,
-		Actions:     []string{statement.GetStatementCode()},
-	}
-
-	workflow, ok := report.WorkflowDetails[workflowName]
-	if !ok {
-		report.WorkflowDetails[workflowName] = reportWorkflow
-	} else {
-		report.WorkflowDetails[workflowName] = mergeReportWorkflowDetails(workflow, reportWorkflow)
-	}
+	report.Actions = append(report.Actions, statement.GetStatementCode())
 }
 
 func ReportHeader(safeMode bool) string {
@@ -97,34 +60,16 @@ func BuildVerboseReport(report *Report) string {
 
 	var sb strings.Builder
 
-	sb.WriteString(":scroll: **Explanation**\n")
+	sb.WriteString(":scroll: **Executed actions**\n")
 
-	reportDetails := report.WorkflowDetails
-
-	if len(reportDetails) == 0 {
-		sb.WriteString("No workflows activated")
-		msg := sb.String()
-		return msg
-	}
+	sb.WriteString("```yaml\n")
 
 	// Report
-	sb.WriteString("| Workflows <sub><sup>activated</sup></sub> | Rules <sub><sup>triggered</sup></sub> | Actions <sub><sup>ran</sub></sup> | Description |\n")
-	sb.WriteString("| - | - | - | - |\n")
-
-	for _, workflow := range reportDetails {
-		actRules := ""
-		for actRule := range workflow.Rules {
-			actRules += fmt.Sprintf("%v<br>", actRule)
-		}
-
-		actActions := ""
-		for _, actAction := range workflow.Actions {
-			actActions += fmt.Sprintf("`%v`<br>", actAction)
-		}
-
-		sb.WriteString(fmt.Sprintf("| %v | %v | %v | %v |\n", workflow.Name, actRules, actActions, workflow.Description))
+	for _, action := range report.Actions {
+		sb.WriteString(fmt.Sprintf("%v\n", action))
 	}
 
+	sb.WriteString("```\n")
 	return sb.String()
 }
 

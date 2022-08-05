@@ -325,7 +325,7 @@ func TestExecProgram_WhenExecStatementFails(t *testing.T) {
 		Env: mockedEnv,
 	}
 
-	statement := engine.BuildStatement("$action()", nil)
+	statement := engine.BuildStatement("$action()")
 	statements := []*engine.Statement{statement}
 	program := engine.BuildProgram(statements)
 
@@ -368,29 +368,16 @@ func TestExecProgram(t *testing.T) {
 		Env: mockedEnv,
 	}
 
-	statWorkflowName := "test"
-	statRule := "test-rule"
 	statCode := "$addLabel(\"test\")"
-	statMetadata := engine.BuildMetadata(
-		engine.PadWorkflow{
-			Name: statWorkflowName,
-		},
-		[]engine.PadWorkflowRule{
-			{Rule: statRule},
-		},
-	)
-	statement := engine.BuildStatement(statCode, statMetadata)
+
+	statement := engine.BuildStatement(statCode)
 	program := engine.BuildProgram([]*engine.Statement{statement})
 
 	err := mockedInterpreter.ExecProgram(program)
 
-	gotVal := mockedEnv.GetReport().WorkflowDetails[statWorkflowName]
+	gotVal := mockedEnv.GetReport()
 
-	wantVal := ReportWorkflowDetails{
-		Name: statWorkflowName,
-		Rules: map[string]bool{
-			statRule: true,
-		},
+	wantVal := &Report{
 		Actions: []string{statCode},
 	}
 
@@ -405,15 +392,7 @@ func TestExecStatement_WhenParseFails(t *testing.T) {
 		Env: mockedEnv,
 	}
 
-	statMetadata := engine.BuildMetadata(
-		engine.PadWorkflow{
-			Name: "test",
-		},
-		[]engine.PadWorkflowRule{
-			{Rule: "test-rule"},
-		},
-	)
-	statement := engine.BuildStatement("$addLabel(", statMetadata)
+	statement := engine.BuildStatement("$addLabel(")
 
 	err := mockedInterpreter.ExecStatement(statement)
 
@@ -438,15 +417,7 @@ func TestExecStatement_WhenTypeCheckExecFails(t *testing.T) {
 		Env: mockedEnv,
 	}
 
-	statMetadata := engine.BuildMetadata(
-		engine.PadWorkflow{
-			Name: "test",
-		},
-		[]engine.PadWorkflowRule{
-			{Rule: "test-rule"},
-		},
-	)
-	statement := engine.BuildStatement("$addLabel(1)", statMetadata)
+	statement := engine.BuildStatement("$addLabel(1)")
 
 	err := mockedInterpreter.ExecStatement(statement)
 
@@ -472,15 +443,7 @@ func TestExecStatement_WhenActionExecFails(t *testing.T) {
 		Env: mockedEnv,
 	}
 
-	statMetadata := engine.BuildMetadata(
-		engine.PadWorkflow{
-			Name: "test",
-		},
-		[]engine.PadWorkflowRule{
-			{Rule: "test-rule"},
-		},
-	)
-	statement := engine.BuildStatement("$author()", statMetadata)
+	statement := engine.BuildStatement("$author()")
 
 	err := mockedInterpreter.ExecStatement(statement)
 
@@ -521,28 +484,15 @@ func TestExecStatement(t *testing.T) {
 		Env: mockedEnv,
 	}
 
-	statWorkflowName := "test"
-	statRule := "test-rule"
 	statCode := "$addLabel(\"test\")"
-	statMetadata := engine.BuildMetadata(
-		engine.PadWorkflow{
-			Name: statWorkflowName,
-		},
-		[]engine.PadWorkflowRule{
-			{Rule: statRule},
-		},
-	)
-	statement := engine.BuildStatement(statCode, statMetadata)
+
+	statement := engine.BuildStatement(statCode)
 
 	err := mockedInterpreter.ExecStatement(statement)
 
-	gotVal := mockedEnv.GetReport().WorkflowDetails[statWorkflowName]
+	gotVal := mockedEnv.GetReport()
 
-	wantVal := ReportWorkflowDetails{
-		Name: statWorkflowName,
-		Rules: map[string]bool{
-			statRule: true,
-		},
+	wantVal := &Report{
 		Actions: []string{statCode},
 	}
 
@@ -652,7 +602,7 @@ func TestReport_OnSilentMode_WhenNoReviewpadCommentIsFound(t *testing.T) {
 
 func TestReport_OnVerboseMode_WhenNoReviewpadCommentIsFound(t *testing.T) {
 	var addedComment string
-	commentToBeAdded := "<!--@annotation-reviewpad-report-->\n**Reviewpad Report**\n\n:scroll: **Explanation**\nNo workflows activated"
+	commentToBeAdded := "<!--@annotation-reviewpad-report-->\n**Reviewpad Report**\n\n:scroll: **Executed actions**\n```yaml\n```\n"
 	mockedEnv := MockDefaultEnv(
 		t,
 		[]mock.MockBackendOption{
@@ -687,7 +637,7 @@ func TestReport_OnVerboseMode_WhenNoReviewpadCommentIsFound(t *testing.T) {
 
 func TestReport_OnVerboseMode_WhenThereIsAlreadyAReviewpadComment(t *testing.T) {
 	var updatedComment string
-	commentUpdated := "<!--@annotation-reviewpad-report-->\n**Reviewpad Report**\n\n:scroll: **Explanation**\nNo workflows activated"
+	commentUpdated := "<!--@annotation-reviewpad-report-->\n**Reviewpad Report**\n\n:scroll: **Executed actions**\n```yaml\n```\n"
 	mockedEnv := MockDefaultEnv(
 		t,
 		[]mock.MockBackendOption{

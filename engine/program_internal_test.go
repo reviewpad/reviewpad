@@ -22,26 +22,17 @@ func TestAppend(t *testing.T) {
 		Actions: []string{action},
 	}
 
-	initialStatMetadata := BuildMetadata(
-		PadWorkflow{
-			Name: "test-workflow-B",
-		},
-		[]PadWorkflowRule{
-			{Rule: "test-rule-B"},
-		},
-	)
-	initialStat := BuildStatement("$actionB()", initialStatMetadata)
+	initialStat := BuildStatement("$actionB()")
 
 	programUnderTest := BuildProgram([]*Statement{initialStat})
 
-	addedStatMetadata := BuildMetadata(workflow, workflow.Rules)
-	addedStat := BuildStatement(action, addedStatMetadata)
+	addedStat := BuildStatement(action)
 	wantProgram := BuildProgram([]*Statement{
 		initialStat,
 		addedStat,
 	})
 
-	programUnderTest.append(workflow.Actions, workflow, workflow.Rules)
+	programUnderTest.append(workflow.Actions)
 
 	assert.Equal(t, wantProgram, programUnderTest)
 }
