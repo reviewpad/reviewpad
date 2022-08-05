@@ -28,11 +28,11 @@ func TestLoad(t *testing.T) {
 		wantErr                string
 	}{
 		"when the file has a parsing error": {
-			inputReviewpadFilePath: "../testdata/engine/loader/reviewpad_with_parse_error.yml",
+			inputReviewpadFilePath: "testdata/loader/reviewpad_with_parse_error.yml",
 			wantErr:                "yaml: unmarshal errors:\n  line 5: cannot unmarshal !!str `parse-e...` into engine.ReviewpadFile",
 		},
 		"when the file imports a nonexistent file": {
-			inputReviewpadFilePath: "../testdata/engine/loader/reviewpad_with_import_of_nonexistent_file.yml",
+			inputReviewpadFilePath: "testdata/loader/reviewpad_with_import_of_nonexistent_file.yml",
 			httpMockResponders: []httpMockResponder{
 				{
 					url:       "https://foo.bar/nonexistent_file",
@@ -42,54 +42,54 @@ func TestLoad(t *testing.T) {
 			wantErr: "Get \"https://foo.bar/nonexistent_file\": file doesn't exist",
 		},
 		"when the file imports a file that has a parsing error": {
-			inputReviewpadFilePath: "../testdata/engine/loader/reviewpad_with_import_file_with_parse_error.yml",
+			inputReviewpadFilePath: "testdata/loader/reviewpad_with_import_file_with_parse_error.yml",
 			httpMockResponders: []httpMockResponder{
 				{
 					url:       "https://foo.bar/reviewpad_with_parse_error.yml",
-					responder: httpmock.NewBytesResponder(200, httpmock.File("../testdata/engine/loader/reviewpad_with_parse_error.yml").Bytes()),
+					responder: httpmock.NewBytesResponder(200, httpmock.File("testdata/loader/reviewpad_with_parse_error.yml").Bytes()),
 				},
 			},
 			wantErr: "yaml: unmarshal errors:\n  line 5: cannot unmarshal !!str `parse-e...` into engine.ReviewpadFile",
 		},
 		"when the file has cyclic imports": {
-			inputReviewpadFilePath: "../testdata/engine/loader/reviewpad_with_cyclic_dependency_a.yml",
+			inputReviewpadFilePath: "testdata/loader/reviewpad_with_cyclic_dependency_a.yml",
 			httpMockResponders: []httpMockResponder{
 				{
 					url:       "https://foo.bar/reviewpad_with_cyclic_dependency_b.yml",
-					responder: httpmock.NewBytesResponder(200, httpmock.File("../testdata/engine/loader/reviewpad_with_cyclic_dependency_b.yml").Bytes()),
+					responder: httpmock.NewBytesResponder(200, httpmock.File("testdata/loader/reviewpad_with_cyclic_dependency_b.yml").Bytes()),
 				},
 				{
 					url:       "https://foo.bar/reviewpad_with_cyclic_dependency_a.yml",
-					responder: httpmock.NewBytesResponder(200, httpmock.File("../testdata/engine/loader/reviewpad_with_cyclic_dependency_a.yml").Bytes()),
+					responder: httpmock.NewBytesResponder(200, httpmock.File("testdata/loader/reviewpad_with_cyclic_dependency_a.yml").Bytes()),
 				},
 			},
 			wantErr: "loader: cyclic dependency",
 		},
 		"when the file has import chains": {
-			inputReviewpadFilePath: "../testdata/engine/loader/reviewpad_with_imports_chain.yml",
+			inputReviewpadFilePath: "testdata/loader/reviewpad_with_imports_chain.yml",
 			httpMockResponders: []httpMockResponder{
 				{
 					url:       "https://foo.bar/reviewpad_with_no_imports.yml",
-					responder: httpmock.NewBytesResponder(200, httpmock.File("../testdata/engine/loader/reviewpad_with_no_imports.yml").Bytes()),
+					responder: httpmock.NewBytesResponder(200, httpmock.File("testdata/loader/reviewpad_with_no_imports.yml").Bytes()),
 				},
 				{
 					url:       "https://foo.bar/reviewpad_with_one_import.yml",
-					responder: httpmock.NewBytesResponder(200, httpmock.File("../testdata/engine/loader/reviewpad_with_one_import.yml").Bytes()),
+					responder: httpmock.NewBytesResponder(200, httpmock.File("testdata/loader/reviewpad_with_one_import.yml").Bytes()),
 				},
 			},
-			wantReviewpadFilePath: "../testdata/engine/loader/reviewpad_appended.yml",
+			wantReviewpadFilePath: "testdata/loader/reviewpad_appended.yml",
 		},
 		"when the file has no issues": {
-			inputReviewpadFilePath: "../testdata/engine/loader/reviewpad_with_no_imports.yml",
-			wantReviewpadFilePath:  "../testdata/engine/loader/reviewpad_with_no_imports.yml",
+			inputReviewpadFilePath: "testdata/loader/reviewpad_with_no_imports.yml",
+			wantReviewpadFilePath:  "testdata/loader/reviewpad_with_no_imports.yml",
 		},
 		"when the file requires action transformation": {
-			inputReviewpadFilePath: "../testdata/engine/loader/transform/reviewpad_before_action_transform.yml",
-			wantReviewpadFilePath:  "../testdata/engine/loader/transform/reviewpad_after_action_transform.yml",
+			inputReviewpadFilePath: "testdata/loader/transform/reviewpad_before_action_transform.yml",
+			wantReviewpadFilePath:  "testdata/loader/transform/reviewpad_after_action_transform.yml",
 		},
 		"when the file requires extra action transformation": {
-			inputReviewpadFilePath: "../testdata/engine/loader/transform/reviewpad_before_extra_action_transform.yml",
-			wantReviewpadFilePath:  "../testdata/engine/loader/transform/reviewpad_after_extra_action_transform.yml",
+			inputReviewpadFilePath: "testdata/loader/transform/reviewpad_before_extra_action_transform.yml",
+			wantReviewpadFilePath:  "testdata/loader/transform/reviewpad_after_extra_action_transform.yml",
 		},
 	}
 

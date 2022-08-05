@@ -4,9 +4,9 @@
 
 # We use this file for as mocked reviewpad file output for the test with the use case of when a file has import chains.
 # This file should result in the merge of the files:
-# - reviewpad/testdata/engine/loader/reviewpad_with_imports_chain.yml
-# - reviewpad/testdata/engine/loader/reviewpad_with_no_imports.yml
-# - reviewpad/testdata/engine/loader/reviewpad_with_one_import.yml
+# - reviewpad/testdata/loader/reviewpad_with_imports_chain.yml
+# - reviewpad/testdata/loader/reviewpad_with_no_imports.yml
+# - reviewpad/testdata/loader/reviewpad_with_one_import.yml
 # This merge is caused by the appends that are performed in the Load functions: appendLabels, appendGroups, appendRules and appendWorkflows.
 
 api-version: reviewpad.com/v1alpha
