@@ -174,7 +174,7 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 			for num, stage := range pipeline.Stages {
 				execLogf("evaluating pipeline stage %v", num)
 				if stage.Until == "" {
-					program.append(stage.Actions, pipeline.Name)
+					program.append(stage.Actions)
 					break
 				}
 
@@ -185,7 +185,7 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 				}
 
 				if !isDone {
-					program.append(stage.Actions, pipeline.Name)
+					program.append(stage.Actions)
 					break
 				}
 			}
