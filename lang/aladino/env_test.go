@@ -121,7 +121,7 @@ func TestGetReport_WithDefaultEnv(t *testing.T) {
 	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
 
 	wantReport := &aladino.Report{
-		WorkflowDetails: make(map[string]aladino.ReportWorkflowDetails),
+		Actions: make([]string, 0),
 	}
 
 	gotReport := mockedEnv.GetReport()
@@ -293,7 +293,7 @@ func TestNewEvalEnv(t *testing.T) {
 		Patch:       mockedPatch,
 		RegisterMap: aladino.RegisterMap(make(map[string]aladino.Value)),
 		BuiltIns:    aladino.MockBuiltIns(),
-		Report:      &aladino.Report{WorkflowDetails: make(map[string]aladino.ReportWorkflowDetails)},
+		Report:      &aladino.Report{Actions: make([]string, 0)},
 		// TODO: Mock an event
 		EventPayload: nil,
 	}

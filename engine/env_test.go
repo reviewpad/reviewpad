@@ -46,7 +46,7 @@ return`
 			Patch:        mockedPatch,
 			RegisterMap:  aladino.RegisterMap(make(map[string]aladino.Value)),
 			BuiltIns:     aladino.MockBuiltIns(),
-			Report:       &aladino.Report{WorkflowDetails: make(map[string]aladino.ReportWorkflowDetails)},
+			Report:       &aladino.Report{Actions: make([]string, 0)},
 			EventPayload: engine.DefaultMockEventPayload,
 		},
 	}
