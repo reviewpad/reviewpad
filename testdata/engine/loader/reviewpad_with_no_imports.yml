@@ -6,18 +6,15 @@ api-version: reviewpad.com/v1alpha
 
 labels:
   medium:
-    description: Medium changes
     color: "a8c3f7"
 
 rules:
   - name: is-medium
     kind: patch
-    description: Medium-sized pull request
     spec: $size() > 30 && $size() <= 100
 
 workflows:
   - name: add-label-with-medium-size
-    description: Add label with medium size
     alwaysRun: false
     if:
       - rule: is-medium

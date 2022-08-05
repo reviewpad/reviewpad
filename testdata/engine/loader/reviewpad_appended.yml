@@ -2,51 +2,49 @@
 # Use of this source code is governed by a license that can be
 # found in the LICENSE file.
 
+# We use this file for as mocked reviewpad file output for the test with the use case of when a file has import chains.
+# This file should result in the merge of the files:
+# - reviewpad/testdata/engine/loader/reviewpad_with_imports_chain.yml
+# - reviewpad/testdata/engine/loader/reviewpad_with_no_imports.yml
+# - reviewpad/testdata/engine/loader/reviewpad_with_one_import.yml
+# This merge is caused by the appends that are performed in the Load functions: appendLabels, appendGroups, appendRules and appendWorkflows.
+
 api-version: reviewpad.com/v1alpha
 
 labels:
   small:
-    description: Small changes
     color: "294b69"
   medium:
-    description: Medium changes
     color: "a8c3f7"
 
 groups:
   - name: owners
-    description: Group of owners
     kind: developers
     spec: '["jane", "john"]'
 
 rules:
   - name: is-small
     kind: patch
-    description: Small pull request
     spec: $size() <= 30
   - name: is-medium
     kind: patch
-    description: Medium-sized pull request
     spec: $size() > 30 && $size() <= 100
   - name: auto-merge-authored-by-owners
     kind: patch
-    description: Auto merge pull requests authored by owners
     spec: '$isElementOf($author(), $group("owners"))'
 
 workflows:
   - name: add-label-with-small-size
-    description: Add label with small size
     if:
       - rule: is-small
     then:
       - '$addLabel("small")'
   - name: add-label-with-medium-size
-    description: Add label with medium size
     if:
       - rule: is-medium
     then:
       - '$addLabel("medium")'
   - name: auto-merge-owner-pull-requests
-    description: Auto merge pull requests
     if:
       - rule: auto-merge-authored-by-owners
     then:

@@ -7,13 +7,11 @@ api-version: reviewpad.com/v1alpha
 rules:
   - name: tautology
     kind: patch
-    description: Always true
     spec: true
 
 workflows:
   - name: test-process
-    description: Test process
     if:
       - rule: tautology
     then:
-      - '$merge()'
+      - '$merge("merge")'

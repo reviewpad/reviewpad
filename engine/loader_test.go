@@ -6,6 +6,7 @@ package engine_test
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/jarcoal/httpmock"
@@ -14,23 +15,24 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-func TestLoad(t *testing.T) {
-	type httpMockResponder struct {
-		url       string
-		responder httpmock.Responder
-	}
+type httpMockResponder struct {
+	url       string
+	responder httpmock.Responder
+}
 
+func TestLoad(t *testing.T) {
 	tests := map[string]struct {
-		httpMockResponders                                     []httpMockResponder
-		inputReviewpadFilePath, wantReviewpadFilePath, wantErr string
+		httpMockResponders     []httpMockResponder
+		inputReviewpadFilePath string
+		wantReviewpadFilePath  string
+		wantErr                string
 	}{
-		// Fail
 		"when the file has a parsing error": {
 			inputReviewpadFilePath: "../testdata/engine/loader/reviewpad_with_parse_error.yml",
 			wantErr:                "yaml: unmarshal errors:\n  line 5: cannot unmarshal !!str `parse-e...` into engine.ReviewpadFile",
 		},
-		"when the file has an import of a nonexisting file": {
-			inputReviewpadFilePath: "../testdata/engine/loader/reviewpad_with_import_of_nonexisting_file.yml",
+		"when the file imports a nonexistent file": {
+			inputReviewpadFilePath: "../testdata/engine/loader/reviewpad_with_import_of_nonexistent_file.yml",
 			httpMockResponders: []httpMockResponder{
 				{
 					url:       "https://foo.bar/nonexistent_file",
@@ -63,8 +65,7 @@ func TestLoad(t *testing.T) {
 			},
 			wantErr: "loader: cyclic dependency",
 		},
-		// Pass
-		"when the file imports other files": {
+		"when the file has import chains": {
 			inputReviewpadFilePath: "../testdata/engine/loader/reviewpad_with_imports_chain.yml",
 			httpMockResponders: []httpMockResponder{
 				{
@@ -83,48 +84,79 @@ func TestLoad(t *testing.T) {
 			wantReviewpadFilePath:  "../testdata/engine/loader/reviewpad_with_no_imports.yml",
 		},
 		"when the file requires action transformation": {
-			inputReviewpadFilePath: "../testdata/engine/loader/reviewpad_before_action_transform.yml",
-			wantReviewpadFilePath:  "../testdata/engine/loader/reviewpad_after_action_transform.yml",
+			inputReviewpadFilePath: "../testdata/engine/loader/transform/reviewpad_before_action_transform.yml",
+			wantReviewpadFilePath:  "../testdata/engine/loader/transform/reviewpad_after_action_transform.yml",
 		},
 		"when the file requires extra action transformation": {
-			inputReviewpadFilePath: "../testdata/engine/loader/reviewpad_before_extra_action_transform.yml",
-			wantReviewpadFilePath:  "../testdata/engine/loader/reviewpad_after_extra_action_transform.yml",
+			inputReviewpadFilePath: "../testdata/engine/loader/transform/reviewpad_before_extra_action_transform.yml",
+			wantReviewpadFilePath:  "../testdata/engine/loader/transform/reviewpad_after_extra_action_transform.yml",
 		},
 	}
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			reviewpadFileData := httpmock.File(test.inputReviewpadFilePath).Bytes()
 			if test.httpMockResponders != nil {
+				// Starts the mock environment
 				httpmock.Activate()
+				// Shuts down the mock environment, removes the registered mocks and returns the mock environment to its initial state.
 				defer httpmock.DeactivateAndReset()
 
-				for _, httpMockResponder := range test.httpMockResponders {
-					httpmock.RegisterResponder("GET", httpMockResponder.url, httpMockResponder.responder)
-				}
+				registerHttpResponders(test.httpMockResponders)
 			}
 
 			var wantReviewpadFile *engine.ReviewpadFile
+			if test.wantReviewpadFilePath != "" {
+				wantReviewpadFileData, err := loadReviewpadFile(test.wantReviewpadFilePath)
+				if err != nil {
+					assert.FailNow(t, "Error reading reviewpad file: %v", err)
+				}
 
-			isReviewpadFileExpected := test.wantReviewpadFilePath != ""
-
-			if isReviewpadFileExpected {
-				wantReviewpadFileData := httpmock.File(test.wantReviewpadFilePath).Bytes()
-
-				wantReviewpadFile = &engine.ReviewpadFile{}
-				yaml.Unmarshal(wantReviewpadFileData, &wantReviewpadFile)
-
-				// At the end of loading all imports from the file, its imports are reset to []engine.PadImport{}.
-				// However, the parsing of the wanted reviewpad file, sets the imports to []engine.PadImport(nil).
-				wantReviewpadFile.Imports = []engine.PadImport{}
+				wantReviewpadFile, err = parseReviewpadFile(wantReviewpadFileData)
+				if err != nil {
+					assert.FailNow(t, "Error parsing reviewpad file: %v", err)
+				}
 			}
 
-			gotReviewpadFile, err := engine.Load(reviewpadFileData)
+			reviewpadFileData, err := loadReviewpadFile(test.inputReviewpadFilePath)
+			if err != nil {
+				assert.FailNow(t, "Error reading reviewpad file: %v", err)
+			}
 
-			if err != nil && err.Error() != test.wantErr {
-				assert.FailNow(t, "Load() error = %v, wantErr %v", err, test.wantErr)
+			gotReviewpadFile, gotErr := engine.Load(reviewpadFileData)
+
+			if gotErr != nil && gotErr.Error() != test.wantErr {
+				assert.FailNow(t, "Load() error = %v, wantErr %v", gotErr, test.wantErr)
 			}
 			assert.Equal(t, wantReviewpadFile, gotReviewpadFile)
 		})
 	}
+}
+
+func registerHttpResponders(httpMockResponders []httpMockResponder) {
+	for _, httpMockResponder := range httpMockResponders {
+		httpmock.RegisterResponder("GET", httpMockResponder.url, httpMockResponder.responder)
+	}
+}
+
+func loadReviewpadFile(filepath string) ([]byte, error) {
+	reviewpadFileData, err := os.ReadFile(filepath)
+	if err != nil {
+		return nil, err
+	}
+
+	return reviewpadFileData, nil
+}
+
+func parseReviewpadFile(data []byte) (*engine.ReviewpadFile, error) {
+	reviewpadFile := &engine.ReviewpadFile{}
+	err := yaml.Unmarshal(data, &reviewpadFile)
+	if err != nil {
+		return nil, err
+	}
+
+	// At the end of loading all imports from the file, its imports are reset to []engine.PadImport{}.
+	// However, the parsing of the wanted reviewpad file, sets the imports to []engine.PadImport(nil).
+	reviewpadFile.Imports = []engine.PadImport{}
+
+	return reviewpadFile, nil
 }

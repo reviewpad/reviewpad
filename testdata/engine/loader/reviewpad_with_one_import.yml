@@ -9,19 +9,16 @@ imports:
 
 groups:
   - name: owners
-    description: Group of owners
     kind: developers
     spec: '["jane", "john"]'
 
 rules:
   - name: auto-merge-authored-by-owners
     kind: patch
-    description: Auto merge pull requests authored by owners
     spec: '$isElementOf($author(), $group("owners"))'
 
 workflows:
   - name: auto-merge-owner-pull-requests
-    description: Auto merge pull requests
     if:
       - rule: auto-merge-authored-by-owners
     then:

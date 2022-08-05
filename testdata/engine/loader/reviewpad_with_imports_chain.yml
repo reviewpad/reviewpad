@@ -10,19 +10,15 @@ imports:
 
 labels:
   small:
-    description: Small changes
     color: "294b69"
 
 rules:
   - name: is-small
     kind: patch
-    description: Small pull request
     spec: $size() <= 30
 
 workflows:
   - name: add-label-with-small-size
-    description: Add label with small size
-    alwaysRun: false
     if:
       - rule: is-small
     then:
