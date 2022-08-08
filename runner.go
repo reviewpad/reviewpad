@@ -68,14 +68,14 @@ func Run(
 	exitStatus, err := aladinoInterpreter.ExecProgram(program)
 	if err != nil {
 		engine.CollectError(evalEnv, err)
-		return exitStatus, err
+		return 1, err
 	}
 
 	if safeMode || !dryRun {
 		err = aladinoInterpreter.Report(reviewpadFile.Mode, safeMode)
 		if err != nil {
 			engine.CollectError(evalEnv, err)
-			return exitStatus, err
+			return 1, err
 		}
 	}
 
