@@ -96,9 +96,7 @@ func TestLoad(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			if test.httpMockResponders != nil {
-				// Starts the mock environment
 				httpmock.Activate()
-				// Shuts down the mock environment, removes the registered mocks and returns the mock environment to its initial state.
 				defer httpmock.DeactivateAndReset()
 
 				registerHttpResponders(test.httpMockResponders)

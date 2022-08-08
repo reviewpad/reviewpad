@@ -2,8 +2,7 @@
 # Use of this source code is governed by a license that can be
 # found in the LICENSE file.
 
-# We use this file for as mocked reviewpad file output for the test with the use case of when a file has import chains.
-# This file should result in the merge of the files:
+# This file is the result of merging the following files:
 # - reviewpad/testdata/loader/reviewpad_with_imports_chain.yml
 # - reviewpad/testdata/loader/reviewpad_with_no_imports.yml
 # - reviewpad/testdata/loader/reviewpad_with_one_import.yml
