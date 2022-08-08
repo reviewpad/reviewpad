@@ -17,7 +17,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestEval_WhenRequestFails(t *testing.T) {
+func TestEval_WhenGitHubRequestsFails(t *testing.T) {
 	tests := map[string]struct {
 		inputReviewpadFilePath string
 		clientOptions          []mock.MockBackendOption
