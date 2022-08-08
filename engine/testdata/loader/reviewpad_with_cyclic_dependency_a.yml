@@ -1,0 +1,8 @@
+# Copyright 2022 Explore.dev Unipessoal Lda. All Rights Reserved.
+# Use of this source code is governed by a license that can be
+# found in the LICENSE file.
+
+api-version: reviewpad.com/v1alpha
+
+imports:
+  - url: https://foo.bar/reviewpad_with_cyclic_dependency_b.yml

@@ -1,0 +1,50 @@
+# Copyright 2022 Explore.dev Unipessoal Lda. All Rights Reserved.
+# Use of this source code is governed by a license that can be
+# found in the LICENSE file.
+
+# This file is the result of merging the following files:
+# - reviewpad/testdata/loader/reviewpad_with_imports_chain.yml
+# - reviewpad/testdata/loader/reviewpad_with_no_imports.yml
+# - reviewpad/testdata/loader/reviewpad_with_one_import.yml
+# This merge is caused by the appends that are performed in the Load functions: appendLabels, appendGroups, appendRules and appendWorkflows.
+
+api-version: reviewpad.com/v1alpha
+
+labels:
+  small:
+    color: "294b69"
+  medium:
+    color: "a8c3f7"
+
+groups:
+  - name: owners
+    kind: developers
+    spec: '["jane", "john"]'
+
+rules:
+  - name: is-small
+    kind: patch
+    spec: $size() <= 30
+  - name: is-medium
+    kind: patch
+    spec: $size() > 30 && $size() <= 100
+  - name: auto-merge-authored-by-owners
+    kind: patch
+    spec: '$isElementOf($author(), $group("owners"))'
+
+workflows:
+  - name: add-label-with-small-size
+    if:
+      - rule: is-small
+    then:
+      - '$addLabel("small")'
+  - name: add-label-with-medium-size
+    if:
+      - rule: is-medium
+    then:
+      - '$addLabel("medium")'
+  - name: auto-merge-owner-pull-requests
+    if:
+      - rule: auto-merge-authored-by-owners
+    then:
+      - '$merge("merge")'

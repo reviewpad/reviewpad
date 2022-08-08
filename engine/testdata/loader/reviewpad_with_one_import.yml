@@ -1,0 +1,25 @@
+# Copyright 2022 Explore.dev Unipessoal Lda. All Rights Reserved.
+# Use of this source code is governed by a license that can be
+# found in the LICENSE file.
+
+api-version: reviewpad.com/v1alpha
+
+imports:
+  - url: https://foo.bar/reviewpad_with_no_imports.yml
+
+groups:
+  - name: owners
+    kind: developers
+    spec: '["jane", "john"]'
+
+rules:
+  - name: auto-merge-authored-by-owners
+    kind: patch
+    spec: '$isElementOf($author(), $group("owners"))'
+
+workflows:
+  - name: auto-merge-owner-pull-requests
+    if:
+      - rule: auto-merge-authored-by-owners
+    then:
+      - "$merge()"
