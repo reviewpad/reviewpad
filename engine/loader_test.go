@@ -6,13 +6,13 @@ package engine_test
 
 import (
 	"fmt"
-	"os"
 	"testing"
 
 	"github.com/jarcoal/httpmock"
 	"github.com/reviewpad/reviewpad/v3/engine"
+	"github.com/reviewpad/reviewpad/v3/engine/testutils"
+	"github.com/reviewpad/reviewpad/v3/utils"
 	"github.com/stretchr/testify/assert"
-	"gopkg.in/yaml.v3"
 )
 
 type httpMockResponder struct {
@@ -104,18 +104,18 @@ func TestLoad(t *testing.T) {
 
 			var wantReviewpadFile *engine.ReviewpadFile
 			if test.wantReviewpadFilePath != "" {
-				wantReviewpadFileData, err := loadReviewpadFile(test.wantReviewpadFilePath)
+				wantReviewpadFileData, err := utils.LoadFile(test.wantReviewpadFilePath)
 				if err != nil {
 					assert.FailNow(t, "Error reading reviewpad file: %v", err)
 				}
 
-				wantReviewpadFile, err = parseReviewpadFile(wantReviewpadFileData)
+				wantReviewpadFile, err = testutils.ParseReviewpadFile(wantReviewpadFileData)
 				if err != nil {
 					assert.FailNow(t, "Error parsing reviewpad file: %v", err)
 				}
 			}
 
-			reviewpadFileData, err := loadReviewpadFile(test.inputReviewpadFilePath)
+			reviewpadFileData, err := utils.LoadFile(test.inputReviewpadFilePath)
 			if err != nil {
 				assert.FailNow(t, "Error reading reviewpad file: %v", err)
 			}
@@ -134,27 +134,4 @@ func registerHttpResponders(httpMockResponders []httpMockResponder) {
 	for _, httpMockResponder := range httpMockResponders {
 		httpmock.RegisterResponder("GET", httpMockResponder.url, httpMockResponder.responder)
 	}
-}
-
-func loadReviewpadFile(filepath string) ([]byte, error) {
-	reviewpadFileData, err := os.ReadFile(filepath)
-	if err != nil {
-		return nil, err
-	}
-
-	return reviewpadFileData, nil
-}
-
-func parseReviewpadFile(data []byte) (*engine.ReviewpadFile, error) {
-	reviewpadFile := &engine.ReviewpadFile{}
-	err := yaml.Unmarshal(data, &reviewpadFile)
-	if err != nil {
-		return nil, err
-	}
-
-	// At the end of loading all imports from the file, its imports are reset to []engine.PadImport{}.
-	// However, the parsing of the wanted reviewpad file, sets the imports to []engine.PadImport(nil).
-	reviewpadFile.Imports = []engine.PadImport{}
-
-	return reviewpadFile, nil
 }

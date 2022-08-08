@@ -66,15 +66,16 @@ func GetDefaultMockPullRequestDetails() *github.PullRequest {
 }
 
 func getDefaultMockPullRequestFileList() *[]*github.CommitFile {
-	prRepoName := defaultMockPrRepoName
 	return &[]*github.CommitFile{
 		{
-			Filename: github.String(fmt.Sprintf("%v/file1.ts", prRepoName)),
-			Patch: github.String(`@@ -2,9 +2,11 @@ package main
+			Filename: github.String(fmt.Sprintf("%v/file1.ts", defaultMockPrRepoName)),
+			Patch: github.String(
+				`@@ -2,9 +2,11 @@ package main
 - func previous1() {
 + func new1() {
 +
-return`),
+return`,
+			),
 		},
 	}
 }
@@ -100,7 +101,7 @@ func MockGithubClient(clientOptions []mock.MockBackendOption) *github.Client {
 	return github.NewClient(mock.NewMockedHTTPClient(mocks...))
 }
 
-func MockDefaultEnvWith(client *github.Client, mockedAladinoInterpreter Interpreter) (*Env, error) {
+func MockEnvWith(client *github.Client, interpreter Interpreter) (*Env, error) {
 	dryRun := false
 	mockedEnv, err := NewEvalEnv(
 		DefaultMockCtx,
@@ -111,7 +112,7 @@ func MockDefaultEnvWith(client *github.Client, mockedAladinoInterpreter Interpre
 		DefaultMockCollector,
 		GetDefaultMockPullRequestDetails(),
 		DefaultMockEventPayload,
-		mockedAladinoInterpreter,
+		interpreter,
 	)
 
 	if err != nil {

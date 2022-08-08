@@ -2,23 +2,12 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-package file
+package testutils
 
 import (
-	"os"
-
 	"github.com/reviewpad/reviewpad/v3/engine"
 	"gopkg.in/yaml.v3"
 )
-
-func LoadReviewpadFile(filepath string) ([]byte, error) {
-	reviewpadFileData, err := os.ReadFile(filepath)
-	if err != nil {
-		return nil, err
-	}
-
-	return reviewpadFileData, nil
-}
 
 func ParseReviewpadFile(data []byte) (*engine.ReviewpadFile, error) {
 	reviewpadFile := &engine.ReviewpadFile{}

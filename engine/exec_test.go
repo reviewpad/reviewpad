@@ -12,8 +12,9 @@ import (
 	"github.com/google/go-github/v45/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v3/engine"
+	"github.com/reviewpad/reviewpad/v3/engine/testutils"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
-	"github.com/reviewpad/reviewpad/v3/utils/file"
+	"github.com/reviewpad/reviewpad/v3/utils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -82,17 +83,17 @@ func TestEval_WhenGitHubRequestsFail(t *testing.T) {
 				assert.FailNow(t, "mockDefaultAladinoInterpreterWith: %v", err)
 			}
 
-			mockedEnv, err := engine.MockDefaultEnvWith(mockedClient, mockedAladinoInterpreter)
+			mockedEnv, err := engine.MockEnvWith(mockedClient, mockedAladinoInterpreter)
 			if err != nil {
 				assert.FailNow(t, "engine MockDefaultEnvWith: %v", err)
 			}
 
-			reviewpadFileData, err := file.LoadReviewpadFile(test.inputReviewpadFilePath)
+			reviewpadFileData, err := utils.LoadFile(test.inputReviewpadFilePath)
 			if err != nil {
 				assert.FailNow(t, "Error reading reviewpad file: %v", err)
 			}
 
-			reviewpadFile, err := file.ParseReviewpadFile(reviewpadFileData)
+			reviewpadFile, err := testutils.ParseReviewpadFile(reviewpadFileData)
 			if err != nil {
 				assert.FailNow(t, "Error parsing reviewpad file: %v", err)
 			}
@@ -211,17 +212,17 @@ func TestEval(t *testing.T) {
 				assert.FailNow(t, "mockDefaultAladinoInterpreterWith: %v", err)
 			}
 
-			mockedEnv, err := engine.MockDefaultEnvWith(mockedClient, mockedAladinoInterpreter)
+			mockedEnv, err := engine.MockEnvWith(mockedClient, mockedAladinoInterpreter)
 			if err != nil {
 				assert.FailNow(t, "engine MockDefaultEnvWith: %v", err)
 			}
 
-			reviewpadFileData, err := file.LoadReviewpadFile(test.inputReviewpadFilePath)
+			reviewpadFileData, err := utils.LoadFile(test.inputReviewpadFilePath)
 			if err != nil {
 				assert.FailNow(t, "Error reading reviewpad file: %v", err)
 			}
 
-			reviewpadFile, err := file.ParseReviewpadFile(reviewpadFileData)
+			reviewpadFile, err := testutils.ParseReviewpadFile(reviewpadFileData)
 			if err != nil {
 				assert.FailNow(t, "Error parsing reviewpad file: %v", err)
 			}
