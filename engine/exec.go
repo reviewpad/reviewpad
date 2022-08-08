@@ -8,6 +8,7 @@ import (
 	"log"
 	"regexp"
 
+	"github.com/google/go-github/v45/github"
 	"github.com/reviewpad/reviewpad/v3/utils/fmtio"
 )
 
@@ -24,9 +25,18 @@ func execLog(val string) {
 }
 
 func CollectError(env *Env, err error) {
+	var errMsg string
+	ghError, isGitHubError := err.(*github.ErrorResponse)
+
+	if isGitHubError {
+		errMsg = ghError.Message
+	} else {
+		errMsg = err.Error()
+	}
+
 	env.Collector.Collect("Error", map[string]interface{}{
 		"pullRequestUrl": env.PullRequest.URL,
-		"details":        err.Error(),
+		"details":        errMsg,
 	})
 }
 
