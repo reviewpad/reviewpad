@@ -113,25 +113,25 @@ func (i *Interpreter) EvalExpr(kind, expr string) (bool, error) {
 	return EvalExpr(i.Env, kind, expr)
 }
 
-func (i *Interpreter) ExecProgram(program *engine.Program) error {
+func (i *Interpreter) ExecProgram(program *engine.Program) (int, error) {
 	execLog("executing program")
 
 	for _, statement := range program.GetProgramStatements() {
 		err := i.ExecStatement(statement)
 		if err != nil {
-			return err
+			return 1, err
 		}
 
-		// Once we encounter a fatal error, we stop the program execution.
-		if len(i.Env.GetActionsBuiltInsMessages()[SEVERITY_FATAL]) != 0 {
+		hasFatalError := len(i.Env.GetBuiltInsReportedMessages()[SEVERITY_FATAL]) > 0
+		if hasFatalError {
 			execLog("execution stopped")
-			break
+			return 1, nil
 		}
 	}
 
 	execLog("execution done")
 
-	return nil
+	return 0, nil
 }
 
 func (i *Interpreter) ExecStatement(statement *engine.Statement) error {
@@ -186,13 +186,6 @@ func (i *Interpreter) Report(mode string, safeMode bool) error {
 
 	return UpdateReportComment(env, *comment.ID, report)
 
-}
-
-func (i *Interpreter) CheckForFatal() {
-	if len(i.Env.GetActionsBuiltInsMessages()[SEVERITY_FATAL]) != 0 {
-		// Only the first fatal error encountered is registered since we only need one fatal error for the whole execution to stop.
-		log.Fatal(i.Env.GetActionsBuiltInsMessages()[SEVERITY_FATAL][0])
-	}
 }
 
 func NewInterpreter(

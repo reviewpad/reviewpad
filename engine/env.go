@@ -24,10 +24,9 @@ type Interpreter interface {
 	ProcessLabel(id, name string) error
 	ProcessRule(name, spec string) error
 	EvalExpr(kind, expr string) (bool, error)
-	ExecProgram(program *Program) error
+	ExecProgram(program *Program) (int, error)
 	ExecStatement(statement *Statement) error
 	Report(mode string, safeMode bool) error
-	CheckForFatal()
 }
 
 type Env struct {

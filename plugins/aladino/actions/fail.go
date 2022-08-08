@@ -18,7 +18,7 @@ func Fail() *aladino.BuiltInAction {
 func failCode(e aladino.Env, args []aladino.Value) error {
 	failMessage := args[0].(*aladino.StringValue).Val
 
-	e.GetActionsBuiltInsMessages()[aladino.SEVERITY_FATAL] = []string{failMessage}
+	e.GetBuiltInsReportedMessages()[aladino.SEVERITY_FATAL] = append(e.GetBuiltInsReportedMessages()[aladino.SEVERITY_FATAL], failMessage)
 
 	return nil
 }

@@ -15,10 +15,7 @@ import (
 
 type Severity int
 
-const (
-	SEVERITY_FATAL Severity = 1
-	SEVERITY_ERROR Severity = 2
-)
+const SEVERITY_FATAL Severity = 1
 
 type TypeEnv map[string]Type
 
@@ -27,41 +24,41 @@ type Patch map[string]*File
 type RegisterMap map[string]Value
 
 type Env interface {
-	GetCtx() context.Context
+	GetBuiltIns() *BuiltIns
+	GetBuiltInsReportedMessages() map[Severity][]string
 	GetClient() *github.Client
 	GetClientGQL() *githubv4.Client
 	GetCollector() collector.Collector
-	GetPullRequest() *github.PullRequest
-	GetPatch() Patch
-	GetRegisterMap() RegisterMap
-	GetBuiltIns() *BuiltIns
-	GetReport() *Report
-	GetEventPayload() interface{}
+	GetCtx() context.Context
 	GetDryRun() bool
-	GetActionsBuiltInsMessages() map[Severity][]string
+	GetEventPayload() interface{}
+	GetPatch() Patch
+	GetPullRequest() *github.PullRequest
+	GetRegisterMap() RegisterMap
+	GetReport() *Report
 }
 
 type BaseEnv struct {
-	Ctx                     context.Context
-	DryRun                  bool
-	Client                  *github.Client
-	ClientGQL               *githubv4.Client
-	Collector               collector.Collector
-	PullRequest             *github.PullRequest
-	Patch                   Patch
-	RegisterMap             RegisterMap
-	BuiltIns                *BuiltIns
-	Report                  *Report
-	EventPayload            interface{}
-	ActionsBuiltInsMessages map[Severity][]string
+	BuiltIns                 *BuiltIns
+	BuiltInsReportedMessages map[Severity][]string
+	Client                   *github.Client
+	ClientGQL                *githubv4.Client
+	Collector                collector.Collector
+	Ctx                      context.Context
+	DryRun                   bool
+	EventPayload             interface{}
+	Patch                    Patch
+	PullRequest              *github.PullRequest
+	RegisterMap              RegisterMap
+	Report                   *Report
 }
 
-func (e *BaseEnv) GetCtx() context.Context {
-	return e.Ctx
+func (e *BaseEnv) GetBuiltIns() *BuiltIns {
+	return e.BuiltIns
 }
 
-func (e *BaseEnv) GetDryRun() bool {
-	return e.DryRun
+func (e *BaseEnv) GetBuiltInsReportedMessages() map[Severity][]string {
+	return e.BuiltInsReportedMessages
 }
 
 func (e *BaseEnv) GetClient() *github.Client {
@@ -76,32 +73,32 @@ func (e *BaseEnv) GetCollector() collector.Collector {
 	return e.Collector
 }
 
-func (e *BaseEnv) GetPullRequest() *github.PullRequest {
-	return e.PullRequest
+func (e *BaseEnv) GetCtx() context.Context {
+	return e.Ctx
 }
 
-func (e *BaseEnv) GetPatch() Patch {
-	return e.Patch
-}
-
-func (e *BaseEnv) GetRegisterMap() RegisterMap {
-	return e.RegisterMap
-}
-
-func (e *BaseEnv) GetBuiltIns() *BuiltIns {
-	return e.BuiltIns
-}
-
-func (e *BaseEnv) GetReport() *Report {
-	return e.Report
+func (e *BaseEnv) GetDryRun() bool {
+	return e.DryRun
 }
 
 func (e *BaseEnv) GetEventPayload() interface{} {
 	return e.EventPayload
 }
 
-func (e *BaseEnv) GetActionsBuiltInsMessages() map[Severity][]string {
-	return e.ActionsBuiltInsMessages
+func (e *BaseEnv) GetPatch() Patch {
+	return e.Patch
+}
+
+func (e *BaseEnv) GetPullRequest() *github.PullRequest {
+	return e.PullRequest
+}
+
+func (e *BaseEnv) GetRegisterMap() RegisterMap {
+	return e.RegisterMap
+}
+
+func (e *BaseEnv) GetReport() *Report {
+	return e.Report
 }
 
 func NewTypeEnv(e Env) TypeEnv {
@@ -150,21 +147,23 @@ func NewEvalEnv(
 	patch := Patch(patchMap)
 	registerMap := RegisterMap(make(map[string]Value))
 	report := &Report{Actions: make([]string, 0)}
-    actionsBuiltInsMessages := make(map[Severity][]string, 0)
+	builtInsReportedMessages := map[Severity][]string{
+		SEVERITY_FATAL: make([]string, 0),
+	}
 
 	input := &BaseEnv{
-		Ctx:                     ctx,
-		DryRun:                  dryRun,
-		Client:                  gitHubClient,
-		ClientGQL:               gitHubClientGQL,
-		Collector:               collector,
-		PullRequest:             pullRequest,
-		Patch:                   patch,
-		RegisterMap:             registerMap,
-		BuiltIns:                builtIns,
-		Report:                  report,
-		EventPayload:            eventPayload,
-		ActionsBuiltInsMessages: actionsBuiltInsMessages,
+		BuiltIns:                 builtIns,
+		BuiltInsReportedMessages: builtInsReportedMessages,
+		Client:                   gitHubClient,
+		ClientGQL:                gitHubClientGQL,
+		Collector:                collector,
+		Ctx:                      ctx,
+		DryRun:                   dryRun,
+		EventPayload:             eventPayload,
+		Patch:                    patch,
+		PullRequest:              pullRequest,
+		RegisterMap:              registerMap,
+		Report:                   report,
 	}
 
 	return input, nil
