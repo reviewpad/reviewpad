@@ -119,17 +119,7 @@ func TestEval(t *testing.T) {
 			clientOptions:          []mock.MockBackendOption{getLabelRequest("bug")},
 			wantProgram: engine.BuildProgram(
 				[]*engine.Statement{
-					engine.BuildStatement(
-						"$addLabel(\"test-unnamed-label\")",
-						engine.BuildMetadata(
-							engine.PadWorkflow{
-								Name:    "test-workflow",
-								Rules:   []engine.PadWorkflowRule{{Rule: "tautology"}},
-								Actions: []string{"$addLabel(\"test-unnamed-label\")"},
-							},
-							[]engine.PadWorkflowRule{{Rule: "tautology"}},
-						),
-					),
+					engine.BuildStatement("$addLabel(\"test-unnamed-label\")"),
 				},
 			),
 		},
@@ -138,17 +128,7 @@ func TestEval(t *testing.T) {
 			clientOptions:          []mock.MockBackendOption{getLabelRequest("bug")},
 			wantProgram: engine.BuildProgram(
 				[]*engine.Statement{
-					engine.BuildStatement(
-						"$addLabel(\"test-valid-label\")",
-						engine.BuildMetadata(
-							engine.PadWorkflow{
-								Name:    "test-workflow",
-								Rules:   []engine.PadWorkflowRule{{Rule: "tautology"}},
-								Actions: []string{"$addLabel(\"test-valid-label\")"},
-							},
-							[]engine.PadWorkflowRule{{Rule: "tautology"}},
-						),
-					),
+					engine.BuildStatement("$addLabel(\"test-valid-label\")"),
 				},
 			),
 		},
@@ -160,17 +140,7 @@ func TestEval(t *testing.T) {
 			},
 			wantProgram: engine.BuildProgram(
 				[]*engine.Statement{
-					engine.BuildStatement(
-						"$addLabel(\"test-valid-label\")",
-						engine.BuildMetadata(
-							engine.PadWorkflow{
-								Name:    "test-workflow",
-								Rules:   []engine.PadWorkflowRule{{Rule: "tautology"}},
-								Actions: []string{"$addLabel(\"test-valid-label\")"},
-							},
-							[]engine.PadWorkflowRule{{Rule: "tautology"}},
-						),
-					),
+					engine.BuildStatement("$addLabel(\"test-valid-label\")"),
 				},
 			),
 		},
@@ -180,17 +150,7 @@ func TestEval(t *testing.T) {
 			clientOptions:          []mock.MockBackendOption{getLabelRequest("test-valid-group")},
 			wantProgram: engine.BuildProgram(
 				[]*engine.Statement{
-					engine.BuildStatement(
-						"$addLabel(\"test-valid-group\")",
-						engine.BuildMetadata(
-							engine.PadWorkflow{
-								Name:    "test-workflow",
-								Rules:   []engine.PadWorkflowRule{{Rule: "tautology"}},
-								Actions: []string{"$addLabel(\"test-valid-group\")"},
-							},
-							[]engine.PadWorkflowRule{{Rule: "tautology"}},
-						),
-					),
+					engine.BuildStatement("$addLabel(\"test-valid-group\")"),
 				},
 			),
 		},
@@ -214,17 +174,7 @@ func TestEval(t *testing.T) {
 			inputReviewpadFilePath: "testdata/exec/reviewpad_with_one_activated_workflow.yml",
 			wantProgram: engine.BuildProgram(
 				[]*engine.Statement{
-					engine.BuildStatement(
-						"$addLabel(\"activate-one-workflow\")",
-						engine.BuildMetadata(
-							engine.PadWorkflow{
-								Name:    "activated-workflow",
-								Rules:   []engine.PadWorkflowRule{{Rule: "tautology"}},
-								Actions: []string{"$addLabel(\"activate-one-workflow\")"},
-							},
-							[]engine.PadWorkflowRule{{Rule: "tautology"}},
-						),
-					),
+					engine.BuildStatement("$addLabel(\"activate-one-workflow\")"),
 				},
 			),
 		},
@@ -232,29 +182,8 @@ func TestEval(t *testing.T) {
 			inputReviewpadFilePath: "testdata/exec/reviewpad_with_multiple_activated_workflows.yml",
 			wantProgram: engine.BuildProgram(
 				[]*engine.Statement{
-					engine.BuildStatement(
-						"$addLabel(\"activated-workflow-a\")",
-						engine.BuildMetadata(
-							engine.PadWorkflow{
-								Name:    "activated-workflow-a",
-								Rules:   []engine.PadWorkflowRule{{Rule: "tautology"}},
-								Actions: []string{"$addLabel(\"activated-workflow-a\")"},
-							},
-							[]engine.PadWorkflowRule{{Rule: "tautology"}},
-						),
-					),
-					engine.BuildStatement(
-						"$addLabel(\"activated-workflow-b\")",
-						engine.BuildMetadata(
-							engine.PadWorkflow{
-								Name:      "activated-workflow-b",
-								AlwaysRun: true,
-								Rules:     []engine.PadWorkflowRule{{Rule: "tautology"}},
-								Actions:   []string{"$addLabel(\"activated-workflow-b\")"},
-							},
-							[]engine.PadWorkflowRule{{Rule: "tautology"}},
-						),
-					),
+					engine.BuildStatement("$addLabel(\"activated-workflow-a\")"),
+					engine.BuildStatement("$addLabel(\"activated-workflow-b\")"),
 				},
 			),
 		},
@@ -262,48 +191,8 @@ func TestEval(t *testing.T) {
 			inputReviewpadFilePath: "testdata/exec/reviewpad_with_activated_workflow_with_extra_actions.yml",
 			wantProgram: engine.BuildProgram(
 				[]*engine.Statement{
-					engine.BuildStatement(
-						"$addLabel(\"activated-workflow\")",
-						engine.BuildMetadata(
-							engine.PadWorkflow{
-								Name: "activated-workflow",
-								Rules: []engine.PadWorkflowRule{
-									{
-										Rule:         "tautology",
-										ExtraActions: []string{"$addLabel(\"workflow-with-extra-actions\")"},
-									},
-								},
-								Actions: []string{"$addLabel(\"activated-workflow\")"},
-							},
-							[]engine.PadWorkflowRule{
-								{
-									Rule:         "tautology",
-									ExtraActions: []string{"$addLabel(\"workflow-with-extra-actions\")"},
-								},
-							},
-						),
-					),
-					engine.BuildStatement(
-						"$addLabel(\"workflow-with-extra-actions\")",
-						engine.BuildMetadata(
-							engine.PadWorkflow{
-								Name: "activated-workflow",
-								Rules: []engine.PadWorkflowRule{
-									{
-										Rule:         "tautology",
-										ExtraActions: []string{"$addLabel(\"workflow-with-extra-actions\")"},
-									},
-								},
-								Actions: []string{"$addLabel(\"activated-workflow\")"},
-							},
-							[]engine.PadWorkflowRule{
-								{
-									Rule:         "tautology",
-									ExtraActions: []string{"$addLabel(\"workflow-with-extra-actions\")"},
-								},
-							},
-						),
-					),
+					engine.BuildStatement("$addLabel(\"activated-workflow\")"),
+					engine.BuildStatement("$addLabel(\"workflow-with-extra-actions\")"),
 				},
 			),
 		},
@@ -311,17 +200,7 @@ func TestEval(t *testing.T) {
 			inputReviewpadFilePath: "testdata/exec/reviewpad_with_skipped_workflow.yml",
 			wantProgram: engine.BuildProgram(
 				[]*engine.Statement{
-					engine.BuildStatement(
-						"$addLabel(\"activated-workflow\")",
-						engine.BuildMetadata(
-							engine.PadWorkflow{
-								Name:    "activated-workflow",
-								Rules:   []engine.PadWorkflowRule{{Rule: "tautology"}},
-								Actions: []string{"$addLabel(\"activated-workflow\")"},
-							},
-							[]engine.PadWorkflowRule{{Rule: "tautology"}},
-						),
-					),
+					engine.BuildStatement("$addLabel(\"activated-workflow\")"),
 				},
 			),
 		},
