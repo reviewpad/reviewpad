@@ -113,25 +113,25 @@ func (i *Interpreter) EvalExpr(kind, expr string) (bool, error) {
 	return EvalExpr(i.Env, kind, expr)
 }
 
-func (i *Interpreter) ExecProgram(program *engine.Program) (int, error) {
+func (i *Interpreter) ExecProgram(program *engine.Program) (engine.ExitStatus, error) {
 	execLog("executing program")
 
 	for _, statement := range program.GetProgramStatements() {
 		err := i.ExecStatement(statement)
 		if err != nil {
-			return 1, err
+			return engine.ExitStatusFailure, err
 		}
 
 		hasFatalError := len(i.Env.GetBuiltInsReportedMessages()[SEVERITY_FATAL]) > 0
 		if hasFatalError {
 			execLog("execution stopped")
-			return 1, nil
+			return engine.ExitStatusFailure, nil
 		}
 	}
 
 	execLog("execution done")
 
-	return 0, nil
+	return engine.ExitStatusSuccess, nil
 }
 
 func (i *Interpreter) ExecStatement(statement *engine.Statement) error {
