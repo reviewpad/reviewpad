@@ -18,7 +18,9 @@ func ParseReviewpadFile(data []byte) (*engine.ReviewpadFile, error) {
 
 	// At the end of loading all imports from the file, its imports are reset to []engine.PadImport{}.
 	// However, the parsing of the wanted reviewpad file, sets the imports to []engine.PadImport(nil).
-	reviewpadFile.Imports = []engine.PadImport{}
+	if reviewpadFile.Imports == nil {
+		reviewpadFile.Imports = []engine.PadImport{}
+	}
 
 	return reviewpadFile, nil
 }
