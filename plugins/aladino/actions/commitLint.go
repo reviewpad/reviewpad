@@ -22,7 +22,6 @@ func CommitLint() *aladino.BuiltInAction {
 }
 
 func commitLintCode(e aladino.Env, _ []aladino.Value) error {
-	evalEnv := e.(*aladino.BaseEnv)
 	prNum := utils.GetPullRequestNumber(e.GetPullRequest())
 	owner := utils.GetPullRequestBaseOwnerName(e.GetPullRequest())
 	repo := utils.GetPullRequestBaseRepoName(e.GetPullRequest())
@@ -37,7 +36,7 @@ func commitLintCode(e aladino.Env, _ []aladino.Value) error {
 		res, err := parser.NewMachine(conventionalcommits.WithTypes(conventionalcommits.TypesConventional)).Parse([]byte(commitMsg))
 
 		if err != nil || !res.Ok() {
-			comments := evalEnv.GetComments()
+			comments := e.GetComments()
 			body := fmt.Sprintf("**Unconventional commit detected**: '%v' (%v)", commitMsg, ghCommit.GetSHA())
 			errors, ok := comments[consts.ERROR_LEVEL]
 			if !ok {
