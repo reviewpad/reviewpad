@@ -99,3 +99,24 @@ func MockGithubClient(clientOptions []mock.MockBackendOption) *github.Client {
 
 	return github.NewClient(mock.NewMockedHTTPClient(mocks...))
 }
+
+func MockDefaultEnvWith(client *github.Client, mockedAladinoInterpreter Interpreter) (*Env, error) {
+	dryRun := false
+	mockedEnv, err := NewEvalEnv(
+		DefaultMockCtx,
+		dryRun,
+		client,
+		// TODO: add mocked github GQL client
+		nil,
+		DefaultMockCollector,
+		GetDefaultMockPullRequestDetails(),
+		DefaultMockEventPayload,
+		mockedAladinoInterpreter,
+	)
+
+	if err != nil {
+		return nil, fmt.Errorf("NewEvalEnv returned unexpected error: %v", err)
+	}
+
+	return mockedEnv, nil
+}

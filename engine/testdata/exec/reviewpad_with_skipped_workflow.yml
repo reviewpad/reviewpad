@@ -1,0 +1,25 @@
+# Copyright 2022 Explore.dev Unipessoal Lda. All Rights Reserved.
+# Use of this source code is governed by a license that can be
+# found in the LICENSE file.
+
+# Reviewpad file with use case of a skipped workflow: since the workflow 'activated-workflow' is triggered and has `always-run: false`,
+# the next workflow 'non-activated-workflow' will be skipped because it doesn't have the flag `always-run: true`.
+
+api-version: reviewpad.com/v1alpha
+
+rules:
+  - name: tautology
+    kind: patch
+    spec: true
+
+workflows:
+  - name: activated-workflow
+    if:
+      - rule: tautology
+    then:
+      - $addLabel("activated-workflow")
+  - name: non-activated-workflow
+    if:
+      - rule: tautology
+    then:
+      - $addLabel("non-activated-workflow")

@@ -1,0 +1,25 @@
+# Copyright 2022 Explore.dev Unipessoal Lda. All Rights Reserved.
+# Use of this source code is governed by a license that can be
+# found in the LICENSE file.
+
+api-version: reviewpad.com/v1alpha
+
+rules:
+  - name: tautology
+    kind: patch
+    spec: true
+  - name: non-tautology
+    kind: patch
+    spec: false
+
+workflows:
+  - name: not-activated-workflow
+    if:
+      - rule: non-tautology
+    then:
+      - $addLabel("activated-wrong-workflow")
+  - name: activated-workflow
+    if:
+      - rule: tautology
+    then:
+      - $addLabel("activate-one-workflow")
