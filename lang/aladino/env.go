@@ -7,6 +7,7 @@ package aladino
 import (
 	"context"
 
+	protobuf "github.com/explore-dev/atlas-common/go/api/services"
 	"github.com/google/go-github/v45/github"
 	"github.com/reviewpad/reviewpad/v3/collector"
 	"github.com/reviewpad/reviewpad/v3/utils"
@@ -39,18 +40,18 @@ type Env interface {
 }
 
 type BaseEnv struct {
-	BuiltIns                 *BuiltIns
 	BuiltInsReportedMessages map[Severity][]string
+	Ctx                      context.Context
+	DryRun                   bool
 	Client                   *github.Client
 	ClientGQL                *githubv4.Client
 	Collector                collector.Collector
-	Ctx                      context.Context
-	DryRun                   bool
-	EventPayload             interface{}
-	Patch                    Patch
 	PullRequest              *github.PullRequest
+	Patch                    Patch
 	RegisterMap              RegisterMap
+	BuiltIns                 *BuiltIns
 	Report                   *Report
+	EventPayload             interface{}
 }
 
 func (e *BaseEnv) GetBuiltIns() *BuiltIns {
@@ -123,6 +124,7 @@ func NewEvalEnv(
 	pullRequest *github.PullRequest,
 	eventPayload interface{},
 	builtIns *BuiltIns,
+	semanticClient protobuf.SemanticClient,
 ) (Env, error) {
 	owner := utils.GetPullRequestBaseOwnerName(pullRequest)
 	repo := utils.GetPullRequestBaseRepoName(pullRequest)
@@ -152,18 +154,18 @@ func NewEvalEnv(
 	}
 
 	input := &BaseEnv{
-		BuiltIns:                 builtIns,
 		BuiltInsReportedMessages: builtInsReportedMessages,
+		Ctx:                      ctx,
+		DryRun:                   dryRun,
 		Client:                   gitHubClient,
 		ClientGQL:                gitHubClientGQL,
 		Collector:                collector,
-		Ctx:                      ctx,
-		DryRun:                   dryRun,
-		EventPayload:             eventPayload,
-		Patch:                    patch,
 		PullRequest:              pullRequest,
+		Patch:                    patch,
 		RegisterMap:              registerMap,
+		BuiltIns:                 builtIns,
 		Report:                   report,
+		EventPayload:             eventPayload,
 	}
 
 	return input, nil

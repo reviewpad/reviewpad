@@ -14,6 +14,7 @@ import (
 	"testing"
 	"time"
 
+	protobuf "github.com/explore-dev/atlas-common/go/api/services"
 	"github.com/google/go-github/v45/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v3/collector"
@@ -227,7 +228,16 @@ func mockHttpClientWith(clientOptions ...mock.MockBackendOption) *http.Client {
 	return mock.NewMockedHTTPClient(clientOptions...)
 }
 
-func mockEnvWith(prOwner string, prRepoName string, prNum int, client *github.Client, clientGQL *githubv4.Client, eventPayload interface{}, builtIns *BuiltIns) (Env, error) {
+func mockEnvWith(
+	prOwner string,
+	prRepoName string,
+	prNum int,
+	client *github.Client,
+	clientGQL *githubv4.Client,
+	eventPayload interface{},
+	builtIns *BuiltIns,
+	semanticClient protobuf.SemanticClient,
+) (Env, error) {
 	ctx := context.Background()
 	pr, _, err := client.PullRequests.Get(ctx, prOwner, prRepoName, prNum)
 	if err != nil {
@@ -243,6 +253,7 @@ func mockEnvWith(prOwner string, prRepoName string, prNum int, client *github.Cl
 		pr,
 		eventPayload,
 		builtIns,
+		nil,
 	)
 
 	if err != nil {
@@ -297,8 +308,7 @@ func MockDefaultEnv(
 	t *testing.T,
 	ghApiClientOptions []mock.MockBackendOption,
 	ghGraphQLHandler func(http.ResponseWriter, *http.Request),
-	builtIns *BuiltIns,
-	eventPayload interface{},
+    semanticClient protobuf.SemanticClient,
 ) Env {
 	prOwner := DefaultMockPrOwner
 	prRepoName := DefaultMockPrRepoName
@@ -313,7 +323,65 @@ func MockDefaultEnv(
 		clientGQL = githubv4.NewClient(&http.Client{Transport: localRoundTripper{handler: mux}})
 	}
 
-	mockedEnv, err := mockEnvWith(prOwner, prRepoName, prNum, client, clientGQL, eventPayload, builtIns)
+	mockedEnv, err := mockEnvWith(prOwner, prRepoName, prNum, client, clientGQL, nil, MockBuiltIns())
+	if err != nil {
+		t.Fatalf("[MockDefaultEnv] failed to create mock env: %v", err)
+	}
+
+	return mockedEnv
+}
+
+// MockDefaultEnv mocks an Aladino Env with default values and builtIns
+func MockDefaultEnvBuiltIns(
+	t *testing.T,
+	ghApiClientOptions []mock.MockBackendOption,
+	ghGraphQLHandler func(http.ResponseWriter, *http.Request),
+	builtIns *BuiltIns,
+    semanticClient protobuf.SemanticClient,
+) Env {
+	prOwner := DefaultMockPrOwner
+	prRepoName := DefaultMockPrRepoName
+	prNum := DefaultMockPrNum
+	client := github.NewClient(mockDefaultHttpClient(ghApiClientOptions))
+
+	// Handle GraphQL
+	var clientGQL *githubv4.Client
+	if ghGraphQLHandler != nil {
+		mux := http.NewServeMux()
+		mux.HandleFunc("/graphql", ghGraphQLHandler)
+		clientGQL = githubv4.NewClient(&http.Client{Transport: localRoundTripper{handler: mux}})
+	}
+
+	mock, err := mockEnvWith(prOwner, prRepoName, prNum, client, clientGQL, nil, builtIns, semanticClient)
+	if err != nil {
+		t.Fatalf("[MockDefaultEnvBuiltIns] failed to create mock env: %v", err)
+	}
+
+	return mock
+}
+
+// MockDefaultEnvEvent mocks an Aladino Env with default values and an event
+func MockDefaultEnvEvent(
+	t *testing.T,
+	ghApiClientOptions []mock.MockBackendOption,
+	ghGraphQLHandler func(http.ResponseWriter, *http.Request),
+	eventPayload interface{},
+    semanticClient protobuf.SemanticClient,
+) Env {
+	prOwner := DefaultMockPrOwner
+	prRepoName := DefaultMockPrRepoName
+	prNum := DefaultMockPrNum
+	client := github.NewClient(mockDefaultHttpClient(ghApiClientOptions))
+
+	// Handle GraphQL
+	var clientGQL *githubv4.Client
+	if ghGraphQLHandler != nil {
+		mux := http.NewServeMux()
+		mux.HandleFunc("/graphql", ghGraphQLHandler)
+		clientGQL = githubv4.NewClient(&http.Client{Transport: localRoundTripper{handler: mux}})
+	}
+
+	mockedEnv, err := mockEnvWith(prOwner, prRepoName, prNum, client, clientGQL, eventPayload, MockBuiltIns(), semanticClient)
 	if err != nil {
 		t.Fatalf("[MockDefaultEnv] failed to create mock env: %v", err)
 	}

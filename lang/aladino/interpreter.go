@@ -198,7 +198,7 @@ func NewInterpreter(
 	eventPayload interface{},
 	builtIns *BuiltIns,
 ) (engine.Interpreter, error) {
-	evalEnv, err := NewEvalEnv(ctx, dryRun, gitHubClient, gitHubClientGQL, collector, pullRequest, eventPayload, builtIns)
+	evalEnv, err := NewEvalEnv(ctx, dryRun, gitHubClient, gitHubClientGQL, collector, pullRequest, eventPayload, builtIns, nil)
 	if err != nil {
 		return nil, err
 	}
