@@ -9,22 +9,22 @@ import (
 	consts "github.com/reviewpad/reviewpad/v3/plugins/aladino/consts"
 )
 
-func ErrorMsg() *aladino.BuiltInAction {
+func Info() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
 		Type: aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, nil),
-		Code: errorCode,
+		Code: infoCode,
 	}
 }
 
-func errorCode(e aladino.Env, args []aladino.Value) error {
+func infoCode(e aladino.Env, args []aladino.Value) error {
 	body := args[0].(*aladino.StringValue).Val
 
 	comments := e.GetComments()
-	errors, ok := comments[consts.ERROR_LEVEL]
+	infos, ok := comments[consts.INFO_LEVEL]
 	if !ok {
-		comments[consts.ERROR_LEVEL] = []string{body}
+		comments[consts.INFO_LEVEL] = []string{body}
 	} else {
-		comments[consts.ERROR_LEVEL] = append(errors, body)
+		comments[consts.INFO_LEVEL] = append(infos, body)
 	}
 
 	return nil
