@@ -17,7 +17,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestEval_WhenGitHubRequestsFails(t *testing.T) {
+func TestEval_WhenGitHubRequestsFail(t *testing.T) {
 	tests := map[string]struct {
 		inputReviewpadFilePath string
 		clientOptions          []mock.MockBackendOption
@@ -32,8 +32,7 @@ func TestEval_WhenGitHubRequestsFails(t *testing.T) {
 						w.WriteHeader(http.StatusInternalServerError)
 						w.Write(mock.MustMarshal(github.ErrorResponse{
 							// An error response may also consist of a 404 status code.
-							// However, in this context, such response is not an error since it only means a label does not exist.
-							// So we force an error by setting it to a status code different than 404.
+							// However, in this context, such response means a label does not exist.
 							Response: &http.Response{
 								StatusCode: 500,
 							},
@@ -78,7 +77,7 @@ func TestEval_WhenGitHubRequestsFails(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			mockedClient := engine.MockGithubClient(test.clientOptions)
 
-			mockedAladinoInterpreter, err := mockDefaultAladinoInterpreterWith(mockedClient)
+			mockedAladinoInterpreter, err := mockAladinoInterpreter(mockedClient)
 			if err != nil {
 				assert.FailNow(t, "mockDefaultAladinoInterpreterWith: %v", err)
 			}
@@ -113,53 +112,50 @@ func TestEval(t *testing.T) {
 		wantProgram            *engine.Program
 		wantErr                string
 	}{
-		// Label use cases
 		"when label has no name": {
 			inputReviewpadFilePath: "testdata/exec/reviewpad_with_unnamed_label.yml",
-			clientOptions:          []mock.MockBackendOption{getLabelRequest("bug")},
+			clientOptions:          []mock.MockBackendOption{mockGetReposLabelsByOwnerByRepoByName("bug")},
 			wantProgram: engine.BuildProgram(
 				[]*engine.Statement{
-					engine.BuildStatement("$addLabel(\"test-unnamed-label\")"),
+					engine.BuildStatement(`$addLabel("test-unnamed-label")`),
 				},
 			),
 		},
 		"when label exists": {
 			inputReviewpadFilePath: "testdata/exec/reviewpad_with_valid_label.yml",
-			clientOptions:          []mock.MockBackendOption{getLabelRequest("bug")},
+			clientOptions:          []mock.MockBackendOption{mockGetReposLabelsByOwnerByRepoByName("bug")},
 			wantProgram: engine.BuildProgram(
 				[]*engine.Statement{
-					engine.BuildStatement("$addLabel(\"test-valid-label\")"),
+					engine.BuildStatement(`$addLabel("test-valid-label")`),
 				},
 			),
 		},
 		"when label does not exist": {
 			inputReviewpadFilePath: "testdata/exec/reviewpad_with_valid_label.yml",
 			clientOptions: []mock.MockBackendOption{
-				getLabelRequest(""),
-				createLabelRequest("bug", "f29513", ""),
+				mockGetReposLabelsByOwnerByRepoByName(""),
+				mockPostReposLabelsByOwnerByRepo("bug", "f29513", ""),
 			},
 			wantProgram: engine.BuildProgram(
 				[]*engine.Statement{
-					engine.BuildStatement("$addLabel(\"test-valid-label\")"),
+					engine.BuildStatement(`$addLabel("test-valid-label")`),
 				},
 			),
 		},
-		// Group use cases
 		"when group is valid": {
 			inputReviewpadFilePath: "testdata/exec/reviewpad_with_valid_group.yml",
-			clientOptions:          []mock.MockBackendOption{getLabelRequest("test-valid-group")},
+			clientOptions:          []mock.MockBackendOption{mockGetReposLabelsByOwnerByRepoByName("test-valid-group")},
 			wantProgram: engine.BuildProgram(
 				[]*engine.Statement{
-					engine.BuildStatement("$addLabel(\"test-valid-group\")"),
+					engine.BuildStatement(`$addLabel("test-valid-group")`),
 				},
 			),
 		},
 		"when group is invalid": {
 			inputReviewpadFilePath: "testdata/exec/reviewpad_with_invalid_group.yml",
-			clientOptions:          []mock.MockBackendOption{getLabelRequest("test-invalid-group")},
+			clientOptions:          []mock.MockBackendOption{mockGetReposLabelsByOwnerByRepoByName("test-invalid-group")},
 			wantErr:                "ProcessGroup:evalGroup expression is not a valid group",
 		},
-		// Workflow use cases
 		"when workflow is invalid": {
 			inputReviewpadFilePath: "testdata/exec/reviewpad_with_invalid_workflow.yml",
 			wantErr:                "expression 1 is not a condition",
@@ -174,7 +170,7 @@ func TestEval(t *testing.T) {
 			inputReviewpadFilePath: "testdata/exec/reviewpad_with_one_activated_workflow.yml",
 			wantProgram: engine.BuildProgram(
 				[]*engine.Statement{
-					engine.BuildStatement("$addLabel(\"activate-one-workflow\")"),
+					engine.BuildStatement(`$addLabel("activate-one-workflow")`),
 				},
 			),
 		},
@@ -182,8 +178,8 @@ func TestEval(t *testing.T) {
 			inputReviewpadFilePath: "testdata/exec/reviewpad_with_multiple_activated_workflows.yml",
 			wantProgram: engine.BuildProgram(
 				[]*engine.Statement{
-					engine.BuildStatement("$addLabel(\"activated-workflow-a\")"),
-					engine.BuildStatement("$addLabel(\"activated-workflow-b\")"),
+					engine.BuildStatement(`$addLabel("activated-workflow-a")`),
+					engine.BuildStatement(`$addLabel("activated-workflow-b")`),
 				},
 			),
 		},
@@ -191,8 +187,8 @@ func TestEval(t *testing.T) {
 			inputReviewpadFilePath: "testdata/exec/reviewpad_with_activated_workflow_with_extra_actions.yml",
 			wantProgram: engine.BuildProgram(
 				[]*engine.Statement{
-					engine.BuildStatement("$addLabel(\"activated-workflow\")"),
-					engine.BuildStatement("$addLabel(\"workflow-with-extra-actions\")"),
+					engine.BuildStatement(`$addLabel("activated-workflow")`),
+					engine.BuildStatement(`$addLabel("workflow-with-extra-actions")`),
 				},
 			),
 		},
@@ -200,7 +196,7 @@ func TestEval(t *testing.T) {
 			inputReviewpadFilePath: "testdata/exec/reviewpad_with_skipped_workflow.yml",
 			wantProgram: engine.BuildProgram(
 				[]*engine.Statement{
-					engine.BuildStatement("$addLabel(\"activated-workflow\")"),
+					engine.BuildStatement(`$addLabel("activated-workflow")`),
 				},
 			),
 		},
@@ -210,7 +206,7 @@ func TestEval(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			mockedClient := engine.MockGithubClient(test.clientOptions)
 
-			mockedAladinoInterpreter, err := mockDefaultAladinoInterpreterWith(mockedClient)
+			mockedAladinoInterpreter, err := mockAladinoInterpreter(mockedClient)
 			if err != nil {
 				assert.FailNow(t, "mockDefaultAladinoInterpreterWith: %v", err)
 			}
@@ -240,13 +236,13 @@ func TestEval(t *testing.T) {
 	}
 }
 
-func mockDefaultAladinoInterpreterWith(client *github.Client) (engine.Interpreter, error) {
+func mockAladinoInterpreter(client *github.Client) (engine.Interpreter, error) {
 	dryRun := false
 	mockedAladinoInterpreter, err := aladino.NewInterpreter(
 		engine.DefaultMockCtx,
 		dryRun,
 		client,
-		// TODO: add mocked github GQL client
+		// TODO: add mocked github GQL client (issue #239)
 		nil,
 		engine.DefaultMockCollector,
 		engine.GetDefaultMockPullRequestDetails(),
@@ -260,15 +256,13 @@ func mockDefaultAladinoInterpreterWith(client *github.Client) (engine.Interprete
 	return mockedAladinoInterpreter, nil
 }
 
-func getLabelRequest(label string) mock.MockBackendOption {
-	var labelsMockedResponse *github.Label
+func mockGetReposLabelsByOwnerByRepoByName(label string) mock.MockBackendOption {
+	labelsMockedResponse := &github.Label{}
 
 	if label != "" {
 		labelsMockedResponse = &github.Label{
 			Name: github.String(label),
 		}
-	} else {
-		labelsMockedResponse = &github.Label{}
 	}
 
 	return mock.WithRequestMatch(
@@ -277,7 +271,7 @@ func getLabelRequest(label string) mock.MockBackendOption {
 	)
 }
 
-func createLabelRequest(name, color, description string) mock.MockBackendOption {
+func mockPostReposLabelsByOwnerByRepo(name, color, description string) mock.MockBackendOption {
 	labelsMockedResponse := &github.Label{
 		Name:        github.String(name),
 		Color:       github.String(color),
