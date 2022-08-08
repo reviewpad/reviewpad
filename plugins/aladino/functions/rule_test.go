@@ -17,7 +17,7 @@ var rule = plugins_aladino.PluginBuiltIns().Functions["rule"].Code
 
 func TestRule_WhenRuleIsAbsent(t *testing.T) {
 	ruleName := "is-absent"
-	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
 
 	args := []aladino.Value{aladino.BuildStringValue(ruleName)}
 	gotVal, err := rule(mockedEnv, args)
@@ -29,7 +29,7 @@ func TestRule_WhenRuleIsAbsent(t *testing.T) {
 func TestRule_WhenRuleIsInvalid(t *testing.T) {
 	ruleName := "is-invalid"
 	internalRuleName := fmt.Sprintf("@rule:%v", ruleName)
-	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
 
 	mockedEnv.GetRegisterMap()[internalRuleName] = aladino.BuildStringValue("1 == \"a\"")
 
@@ -43,7 +43,7 @@ func TestRule_WhenRuleIsInvalid(t *testing.T) {
 func TestRule_WhenRuleIsTrue(t *testing.T) {
 	ruleName := "tautology"
 	internalRuleName := fmt.Sprintf("@rule:%v", ruleName)
-	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
 
 	mockedEnv.GetRegisterMap()[internalRuleName] = aladino.BuildStringValue("1 == 1")
 
@@ -59,7 +59,7 @@ func TestRule_WhenRuleIsTrue(t *testing.T) {
 func TestRule_WhenRuleIsFalse(t *testing.T) {
 	ruleName := "is-false-premise"
 	internalRuleName := fmt.Sprintf("@rule:%v", ruleName)
-	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
 
 	mockedEnv.GetRegisterMap()[internalRuleName] = aladino.BuildStringValue("1 == 2")
 

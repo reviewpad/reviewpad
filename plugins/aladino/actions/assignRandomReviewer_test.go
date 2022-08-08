@@ -40,6 +40,8 @@ func TestAssignRandomReviewer_WhenListReviewersRequestFails(t *testing.T) {
 			),
 		},
 		nil,
+		aladino.MockBuiltIns(),
+		nil,
 	)
 
 	args := []aladino.Value{}
@@ -71,6 +73,8 @@ func TestAssignRandomReviewer_WhenPullRequestAlreadyHasReviewers(t *testing.T) {
 			),
 		},
 		nil,
+		aladino.MockBuiltIns(),
+		nil,
 	)
 
 	args := []aladino.Value{}
@@ -100,6 +104,8 @@ func TestAssignRandomReviewer_WhenListAssigneesRequestFails(t *testing.T) {
 				}),
 			),
 		},
+		nil,
+		aladino.MockBuiltIns(),
 		nil,
 	)
 
@@ -149,6 +155,8 @@ func TestAssignRandomReviewer_ShouldFilterPullRequestAuthor(t *testing.T) {
 			),
 		},
 		nil,
+		aladino.MockBuiltIns(),
+		nil,
 	)
 
 	args := []aladino.Value{}
@@ -183,6 +191,8 @@ func TestAssignRandomReviewer_WhenThereIsNoUsers(t *testing.T) {
 				},
 			),
 		},
+		nil,
+		aladino.MockBuiltIns(),
 		nil,
 	)
 

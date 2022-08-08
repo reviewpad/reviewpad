@@ -15,7 +15,7 @@ import (
 var isElementOf = plugins_aladino.PluginBuiltIns().Functions["isElementOf"].Code
 
 func TestIsElementOf_WhenTrue(t *testing.T) {
-	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
 
 	args := []aladino.Value{
 		aladino.BuildStringValue("elemA"),
@@ -33,7 +33,7 @@ func TestIsElementOf_WhenTrue(t *testing.T) {
 }
 
 func TestIsElementOf_WhenFalse(t *testing.T) {
-	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
 
 	args := []aladino.Value{
 		aladino.BuildStringValue("elemA"),

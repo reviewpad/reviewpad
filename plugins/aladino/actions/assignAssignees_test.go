@@ -24,7 +24,7 @@ type AssigneesRequestPostBody struct {
 }
 
 func TestAssignAssignees_WhenListOfAssigneesIsEmpty(t *testing.T) {
-	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
 
 	args := []aladino.Value{aladino.BuildArrayValue([]aladino.Value{})}
 	err := assignAssignees(mockedEnv, args)
@@ -33,7 +33,7 @@ func TestAssignAssignees_WhenListOfAssigneesIsEmpty(t *testing.T) {
 }
 
 func TestAssignAssignees_WhenListOfAssigneesExceeds10Users(t *testing.T) {
-	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
 
 	args := []aladino.Value{aladino.BuildArrayValue([]aladino.Value{
 		aladino.BuildStringValue("john"),
@@ -83,6 +83,8 @@ func TestAssignAssignees(t *testing.T) {
 				}),
 			),
 		},
+		nil,
+		aladino.MockBuiltIns(),
 		nil,
 	)
 

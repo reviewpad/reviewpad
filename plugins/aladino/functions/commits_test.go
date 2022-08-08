@@ -34,6 +34,8 @@ func TestCommits_WhenListCommitsRequestFails(t *testing.T) {
 			),
 		},
 		nil,
+		aladino.MockBuiltIns(),
+		nil,
 	)
 
 	args := []aladino.Value{}
@@ -59,6 +61,8 @@ func TestCommits(t *testing.T) {
 				repoCommits,
 			),
 		},
+		nil,
+		aladino.MockBuiltIns(),
 		nil,
 	)
 

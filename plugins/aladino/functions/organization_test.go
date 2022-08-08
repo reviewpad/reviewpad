@@ -44,6 +44,8 @@ func TestOrganization_WhenListMembersRequestFails(t *testing.T) {
 			),
 		},
 		nil,
+		aladino.MockBuiltIns(),
+		nil,
 	)
 
 	args := []aladino.Value{}
@@ -66,6 +68,8 @@ func TestOrganization(t *testing.T) {
 				ghMembers,
 			),
 		},
+		nil,
+		aladino.MockBuiltIns(),
 		nil,
 	)
 

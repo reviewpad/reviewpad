@@ -15,7 +15,7 @@ import (
 var startsWith = plugins_aladino.PluginBuiltIns().Functions["startsWith"].Code
 
 func TestStarts_WhenTrue(t *testing.T) {
-	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
 
 	wantVal := aladino.BuildBoolValue(true)
 
@@ -31,7 +31,7 @@ func TestStarts_WhenTrue(t *testing.T) {
 }
 
 func TestStarts_WhenFalse(t *testing.T) {
-	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
 
 	wantVal := aladino.BuildBoolValue(false)
 

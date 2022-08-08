@@ -35,6 +35,8 @@ func TestAssignees(t *testing.T) {
 			),
 		},
 		nil,
+		aladino.MockBuiltIns(),
+		nil,
 	)
 
 	mockedAssignees := mockedEnv.GetPullRequest().Assignees

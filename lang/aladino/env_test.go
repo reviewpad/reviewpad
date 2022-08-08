@@ -6,7 +6,6 @@ package aladino_test
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"testing"
 
@@ -16,121 +15,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestGetCtx_WithDefaultEnv(t *testing.T) {
-	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
-
-	wantCtx := aladino.DefaultMockContext
-
-	gotCtx := mockedEnv.GetCtx()
-
-	assert.Equal(t, wantCtx, gotCtx)
-}
-
-func TestGetCollector_WithDefaultEnv(t *testing.T) {
-	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
-
-	wantCollector := aladino.DefaultMockCollector
-
-	gotCollector := mockedEnv.GetCollector()
-
-	assert.Equal(t, wantCollector, gotCollector)
-}
-
-func TestGetPullRequest_WithDefaultEnv(t *testing.T) {
-	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
-
-	wantPullRequest := aladino.GetDefaultMockPullRequestDetails()
-
-	gotPullRequest := mockedEnv.GetPullRequest()
-
-	assert.Equal(t, wantPullRequest, gotPullRequest)
-}
-
-func TestGetPatch_WithDefaultEnv(t *testing.T) {
-	fileName := fmt.Sprintf("%v/file1.ts", aladino.DefaultMockPrRepoName)
-	patch := "@@ -2,9 +2,11 @@ package main\n- func previous1() {\n+ func new1() {\n+\nreturn"
-	mockedPullRequestFileList := &[]*github.CommitFile{
-		{
-			Filename: github.String(fileName),
-			Patch:    github.String(patch),
-		},
-	}
-	mockedEnv := aladino.MockDefaultEnv(
-		t,
-		[]mock.MockBackendOption{
-			mock.WithRequestMatchHandler(
-				mock.GetReposPullsFilesByOwnerByRepoByPullNumber,
-				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					w.Write(mock.MustMarshal(mockedPullRequestFileList))
-				}),
-			),
-		},
-		nil,
-	)
-
-	mockedFile1 := &aladino.File{
-		Repr: &github.CommitFile{
-			Filename: github.String(fileName),
-			Patch:    github.String(patch),
-		},
-	}
-	mockedFile1.AppendToDiff(false, 2, 2, 2, 3, " func previous1() {", " func new1() {\n")
-
-	wantPatch := aladino.Patch{
-		fileName: mockedFile1,
-	}
-
-	gotPatch := mockedEnv.GetPatch()
-
-	assert.Equal(t, wantPatch, gotPatch)
-}
-
-func TestGetRegisterMap_WithDefaultEnv(t *testing.T) {
-	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
-
-	wantRegisterMap := make(aladino.RegisterMap)
-
-	gotRegisterMap := mockedEnv.GetRegisterMap()
-
-	assert.Equal(t, wantRegisterMap, gotRegisterMap)
-}
-
-func TestGetBuiltIns_WithDefaultEnv(t *testing.T) {
-	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
-
-	wantBuiltIns := aladino.MockBuiltIns()
-
-	gotBuiltIns := mockedEnv.GetBuiltIns()
-
-	assert.Equal(t, len(wantBuiltIns.Functions), len(gotBuiltIns.Functions))
-	assert.Equal(t, len(wantBuiltIns.Actions), len(gotBuiltIns.Actions))
-
-	// TODO: Search a way to compare functions
-	for functionName, functionCode := range wantBuiltIns.Functions {
-		assert.NotNil(t, gotBuiltIns.Functions[functionName])
-		assert.Equal(t, functionCode.Type, gotBuiltIns.Functions[functionName].Type)
-	}
-
-	for actionName, actionCode := range wantBuiltIns.Actions {
-		assert.NotNil(t, gotBuiltIns.Actions[actionName])
-		assert.Equal(t, actionCode.Type, gotBuiltIns.Actions[actionName].Type)
-	}
-}
-
-func TestGetReport_WithDefaultEnv(t *testing.T) {
-	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
-
-	wantReport := &aladino.Report{
-		Actions: make([]string, 0),
-	}
-
-	gotReport := mockedEnv.GetReport()
-
-	assert.Equal(t, wantReport, gotReport)
-}
-
 func TestNewTypeEnv_WithDefaultEnv(t *testing.T) {
-	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
 
 	wantTypeEnv := aladino.TypeEnv(map[string]aladino.Type{
 		"emptyFunction": aladino.BuildFunctionType([]aladino.Type{}, nil),

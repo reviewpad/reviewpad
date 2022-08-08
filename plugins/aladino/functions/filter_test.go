@@ -16,7 +16,7 @@ var filter = plugins_aladino.PluginBuiltIns().Functions["filter"].Code
 
 func TestFilter(t *testing.T) {
 	mockedIntValue := aladino.BuildIntValue(1)
-	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
 
 	args := []aladino.Value{
 		aladino.BuildArrayValue([]aladino.Value{aladino.BuildStringValue("1"), mockedIntValue}),

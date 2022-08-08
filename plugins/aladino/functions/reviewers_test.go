@@ -42,6 +42,8 @@ func TestReviewers(t *testing.T) {
 			),
 		},
 		nil,
+		aladino.MockBuiltIns(),
+		nil,
 	)
 
 	wantReviewers := aladino.BuildArrayValue([]aladino.Value{

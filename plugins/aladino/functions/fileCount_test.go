@@ -35,6 +35,8 @@ func TestFileCount(t *testing.T) {
 			),
 		},
 		nil,
+		aladino.MockBuiltIns(),
+		nil,
 	)
 
 	wantFileCount := aladino.BuildIntValue(len(*mockedPullRequestFileList))

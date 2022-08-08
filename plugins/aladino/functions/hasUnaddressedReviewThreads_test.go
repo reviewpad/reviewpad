@@ -25,6 +25,8 @@ func TestHasUnaddressedReviewThreads_WhenRequestFails(t *testing.T) {
 		func(w http.ResponseWriter, req *http.Request) {
 			http.Error(w, "404 Not Found", http.StatusNotFound)
 		},
+		aladino.MockBuiltIns(),
+		nil,
 	)
 
 	_, err := hasUnaddressedReviewThreads(mockedEnv, []aladino.Value{})
@@ -114,6 +116,8 @@ func TestHasUnaddressedReviewThreads(t *testing.T) {
 					)
 				}
 			},
+			aladino.MockBuiltIns(),
+			nil,
 		)
 
 		t.Run(name, func(t *testing.T) {

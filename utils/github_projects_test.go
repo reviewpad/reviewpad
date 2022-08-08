@@ -21,6 +21,8 @@ func TestGetProjectV2ByName_WhenRequestFails(t *testing.T) {
 		func(w http.ResponseWriter, req *http.Request) {
 			http.Error(w, "404 Not Found", http.StatusNotFound)
 		},
+		aladino.MockBuiltIns(),
+		nil,
 	)
 	mockOwner := utils.GetPullRequestBaseOwnerName(mockedEnv.GetPullRequest())
 	mockRepo := utils.GetPullRequestBaseRepoName(mockedEnv.GetPullRequest())
@@ -73,6 +75,8 @@ func TestGetProjectV2ByName_WhenProjectNotFound(t *testing.T) {
 				)
 			}
 		},
+		aladino.MockBuiltIns(),
+		nil,
 	)
 	mockOwner := utils.GetPullRequestBaseOwnerName(mockedEnv.GetPullRequest())
 	mockRepo := utils.GetPullRequestBaseRepoName(mockedEnv.GetPullRequest())
@@ -127,6 +131,8 @@ func TestGetProjectV2ByName_WhenProjectFound(t *testing.T) {
 				)
 			}
 		},
+		aladino.MockBuiltIns(),
+		nil,
 	)
 	mockOwner := utils.GetPullRequestBaseOwnerName(mockedEnv.GetPullRequest())
 	mockRepo := utils.GetPullRequestBaseRepoName(mockedEnv.GetPullRequest())
@@ -146,6 +152,8 @@ func TestGetProjectFieldsByProjectNumber_WhenRequestFails(t *testing.T) {
 		func(w http.ResponseWriter, req *http.Request) {
 			http.Error(w, "404 Not Found", http.StatusNotFound)
 		},
+		aladino.MockBuiltIns(),
+		nil,
 	)
 	mockOwner := utils.GetPullRequestBaseOwnerName(mockedEnv.GetPullRequest())
 	mockRepo := utils.GetPullRequestBaseRepoName(mockedEnv.GetPullRequest())
@@ -210,6 +218,8 @@ func TestGetProjectFieldsByProjectNumber_WhenProjectNotFound(t *testing.T) {
 				)
 			}
 		},
+		aladino.MockBuiltIns(),
+		nil,
 	)
 	mockOwner := utils.GetPullRequestBaseOwnerName(mockedEnv.GetPullRequest())
 	mockRepo := utils.GetPullRequestBaseRepoName(mockedEnv.GetPullRequest())
@@ -296,6 +306,8 @@ func TestGetProjectFieldsByProjectNumber_WhenRetrySuccessful(t *testing.T) {
 				aladino.MustWrite(res, "")
 			}
 		},
+		aladino.MockBuiltIns(),
+		nil,
 	)
 	mockOwner := utils.GetPullRequestBaseOwnerName(mockedEnv.GetPullRequest())
 	mockRepo := utils.GetPullRequestBaseRepoName(mockedEnv.GetPullRequest())

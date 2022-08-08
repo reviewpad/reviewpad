@@ -36,6 +36,8 @@ func TestHasFileName_WhenTrue(t *testing.T) {
 			),
 		},
 		nil,
+		aladino.MockBuiltIns(),
+		nil,
 	)
 
 	args := []aladino.Value{aladino.BuildStringValue(defaultMockPrFileName)}
@@ -65,6 +67,8 @@ func TestHasFileName_WhenFalse(t *testing.T) {
 				}),
 			),
 		},
+		nil,
+		aladino.MockBuiltIns(),
 		nil,
 	)
 
