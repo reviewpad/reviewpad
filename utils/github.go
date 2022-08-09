@@ -41,12 +41,13 @@ type LastPushQuery struct {
 		PullRequest struct {
 			TimelineItems struct {
 				Nodes []struct {
+					Typename                string `graphql:"__typename"`
 					HeadRefForcePushedEvent struct {
-						CreatedAt string
+						CreatedAt *time.Time
 					} `graphql:"... on HeadRefForcePushedEvent"`
 					PullRequestCommit struct {
 						Commit struct {
-							PushedDate string
+							PushedDate *time.Time
 						}
 					} `graphql:"... on PullRequestCommit"`
 				}
@@ -395,16 +396,17 @@ func GetPullRequestLastPushDate(ctx context.Context, client *githubv4.Client, ow
 	if !hasLastPush {
 		return time.Time{}, errors.New("last push not found")
 	}
-	var pushDate string
+	var pushDate *time.Time
+
 	node := lastPushQuery.Repository.PullRequest.TimelineItems.Nodes[0]
-	if node.PullRequestCommit.Commit.PushedDate != "" {
-		pushDate = node.PullRequestCommit.Commit.PushedDate
-	} else if node.HeadRefForcePushedEvent.CreatedAt != "" {
+	if node.Typename == "HeadRefForcePushedEvent" {
 		pushDate = node.HeadRefForcePushedEvent.CreatedAt
+	} else if node.Typename == "PullRequestCommit" {
+		pushDate = node.PullRequestCommit.Commit.PushedDate
 	}
 
-	if pushDate == "" {
+	if pushDate == nil {
 		return time.Time{}, errors.New("last push not found")
 	}
-	return time.Parse(time.RFC3339, pushDate)
+	return *pushDate, nil
 }
