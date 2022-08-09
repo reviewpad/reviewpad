@@ -30,6 +30,7 @@ type Env interface {
 	GetClient() *github.Client
 	GetClientGQL() *githubv4.Client
 	GetCollector() collector.Collector
+	GetComments() map[string][]string
 	GetCtx() context.Context
 	GetDryRun() bool
 	GetEventPayload() interface{}
@@ -37,6 +38,7 @@ type Env interface {
 	GetPullRequest() *github.PullRequest
 	GetRegisterMap() RegisterMap
 	GetReport() *Report
+	GetSemanticClient() protobuf.SemanticClient
 }
 
 type BaseEnv struct {
@@ -46,12 +48,14 @@ type BaseEnv struct {
 	Client                   *github.Client
 	ClientGQL                *githubv4.Client
 	Collector                collector.Collector
+	Comments                 map[string][]string
 	PullRequest              *github.PullRequest
 	Patch                    Patch
 	RegisterMap              RegisterMap
 	BuiltIns                 *BuiltIns
 	Report                   *Report
 	EventPayload             interface{}
+	SemanticClient           protobuf.SemanticClient
 }
 
 func (e *BaseEnv) GetBuiltIns() *BuiltIns {
@@ -72,6 +76,10 @@ func (e *BaseEnv) GetClientGQL() *githubv4.Client {
 
 func (e *BaseEnv) GetCollector() collector.Collector {
 	return e.Collector
+}
+
+func (e *BaseEnv) GetComments() map[string][]string {
+	return e.Comments
 }
 
 func (e *BaseEnv) GetCtx() context.Context {
@@ -100,6 +108,10 @@ func (e *BaseEnv) GetRegisterMap() RegisterMap {
 
 func (e *BaseEnv) GetReport() *Report {
 	return e.Report
+}
+
+func (e *BaseEnv) GetSemanticClient() protobuf.SemanticClient {
+	return e.SemanticClient
 }
 
 func NewTypeEnv(e Env) TypeEnv {
@@ -152,20 +164,23 @@ func NewEvalEnv(
 	builtInsReportedMessages := map[Severity][]string{
 		SEVERITY_FATAL: make([]string, 0),
 	}
+	comments := make(map[string][]string)
 
 	input := &BaseEnv{
+		BuiltIns:                 builtIns,
 		BuiltInsReportedMessages: builtInsReportedMessages,
-		Ctx:                      ctx,
-		DryRun:                   dryRun,
 		Client:                   gitHubClient,
 		ClientGQL:                gitHubClientGQL,
 		Collector:                collector,
-		PullRequest:              pullRequest,
-		Patch:                    patch,
-		RegisterMap:              registerMap,
-		BuiltIns:                 builtIns,
-		Report:                   report,
+		Comments:                 comments,
+		Ctx:                      ctx,
+		DryRun:                   dryRun,
 		EventPayload:             eventPayload,
+		Patch:                    patch,
+		PullRequest:              pullRequest,
+		RegisterMap:              registerMap,
+		Report:                   report,
+		SemanticClient:           semanticClient,
 	}
 
 	return input, nil
