@@ -98,6 +98,7 @@ func PluginBuiltInsWithConfig(config *PluginConfig) *aladino.BuiltIns {
 			"close":                actions.Close(),
 			"comment":              actions.Comment(),
 			"commentOnce":          actions.CommentOnce(),
+			"commitLint":           actions.CommitLint(),
 			"disableActions":       actions.DisableActions(),
 			"fail":                 actions.Fail(),
 			"merge":                actions.Merge(),

@@ -27,6 +27,7 @@ type Env interface {
 	GetBuiltInsReportedMessages() map[Severity][]string
 	GetGithubClient() *gh.GithubClient
 	GetCollector() collector.Collector
+	GetComments() map[string][]string
 	GetCtx() context.Context
 	GetDryRun() bool
 	GetEventPayload() interface{}
@@ -41,6 +42,7 @@ type BaseEnv struct {
 	BuiltInsReportedMessages map[Severity][]string
 	GithubClient             *gh.GithubClient
 	Collector                collector.Collector
+	Comments                 map[string][]string
 	Ctx                      context.Context
 	DryRun                   bool
 	EventPayload             interface{}
@@ -64,6 +66,10 @@ func (e *BaseEnv) GetGithubClient() *gh.GithubClient {
 
 func (e *BaseEnv) GetCollector() collector.Collector {
 	return e.Collector
+}
+
+func (e *BaseEnv) GetComments() map[string][]string {
+	return e.Comments
 }
 
 func (e *BaseEnv) GetCtx() context.Context {
@@ -142,12 +148,14 @@ func NewEvalEnv(
 	builtInsReportedMessages := map[Severity][]string{
 		SEVERITY_FATAL: make([]string, 0),
 	}
+	comments := make(map[string][]string)
 
 	input := &BaseEnv{
 		BuiltIns:                 builtIns,
 		BuiltInsReportedMessages: builtInsReportedMessages,
 		GithubClient:             githubClient,
 		Collector:                collector,
+		Comments:                 comments,
 		Ctx:                      ctx,
 		DryRun:                   dryRun,
 		EventPayload:             eventPayload,
