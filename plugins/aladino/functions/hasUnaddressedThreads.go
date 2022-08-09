@@ -9,14 +9,14 @@ import (
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 )
 
-func HasUnaddressedReviewThreads() *aladino.BuiltInFunction {
+func HasUnaddressedThreads() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
 		Type: aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildBoolType()),
-		Code: hasUnaddressedReviewThreadsCode,
+		Code: hasUnaddressedThreadsCode,
 	}
 }
 
-func hasUnaddressedReviewThreadsCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
+func hasUnaddressedThreadsCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
 	pullRequest := e.GetPullRequest()
 	prNum := gh.GetPullRequestNumber(pullRequest)
 	owner := gh.GetPullRequestBaseOwnerName(pullRequest)
@@ -30,7 +30,7 @@ func hasUnaddressedReviewThreadsCode(e aladino.Env, _ []aladino.Value) (aladino.
 	}
 
 	for _, reviewThread := range reviewThreads {
-		if !reviewThread.IsResolved || !reviewThread.IsOutdated {
+		if !reviewThread.IsResolved && !reviewThread.IsOutdated {
 			return aladino.BuildTrueValue(), nil
 		}
 	}
