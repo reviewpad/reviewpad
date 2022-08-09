@@ -51,6 +51,7 @@ func TestCommitLint_WhenRequestFails(t *testing.T) {
 			args := []aladino.Value{}
 			gotErr := commitLint(test.env, args)
 
+			assert.Equal(t, map[string][]string{}, test.env.GetComments())
 			assert.Equal(t, gotErr.(*github.ErrorResponse).Message, test.wantErr)
 		})
 	}
