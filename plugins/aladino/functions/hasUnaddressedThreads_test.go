@@ -16,9 +16,9 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var hasUnaddressedReviewThreads = plugins_aladino.PluginBuiltIns().Functions["hasUnaddressedReviewThreads"].Code
+var hasUnaddressedThreads = plugins_aladino.PluginBuiltIns().Functions["hasUnaddressedThreads"].Code
 
-func TestHasUnaddressedReviewThreads_WhenRequestFails(t *testing.T) {
+func TestHasUnaddressedThreads_WhenRequestFails(t *testing.T) {
 	mockedEnv := aladino.MockDefaultEnv(
 		t,
 		nil,
@@ -29,12 +29,12 @@ func TestHasUnaddressedReviewThreads_WhenRequestFails(t *testing.T) {
 		nil,
 	)
 
-	_, err := hasUnaddressedReviewThreads(mockedEnv, []aladino.Value{})
+	_, err := hasUnaddressedThreads(mockedEnv, []aladino.Value{})
 
 	assert.NotNil(t, err)
 }
 
-func TestHasUnaddressedReviewThreads(t *testing.T) {
+func TestHasUnaddressedThreads(t *testing.T) {
 	mockedGraphQLQuery := fmt.Sprintf(
 		"{\"query\":\"query($pullRequestNumber:Int!$repositoryName:String!$repositoryOwner:String!$reviewThreadsCursor:String){repository(owner: $repositoryOwner, name: $repositoryName){pullRequest(number: $pullRequestNumber){reviewThreads(first: 10, after: $reviewThreadsCursor){nodes{isResolved,isOutdated},pageInfo{endCursor,hasNextPage}}}}}\",\"variables\":{\"pullRequestNumber\":%d,\"repositoryName\":\"%s\",\"repositoryOwner\":\"%s\",\"reviewThreadsCursor\":null}}\n",
 		aladino.DefaultMockPrNum,
@@ -51,19 +51,19 @@ func TestHasUnaddressedReviewThreads(t *testing.T) {
 			wantVal:               aladino.BuildFalseValue(),
 		},
 		"when unresolved": {
-			reviewThreadsResponse: `[{"isResolved":false, "isOutdated":true}]`,
+			reviewThreadsResponse: `[{"isResolved":false, "isOutdated":false}]`,
 			wantVal:               aladino.BuildTrueValue(),
 		},
 		"when resolved": {
-			reviewThreadsResponse: `[{"isResolved":true, "isOutdated":true}]`,
+			reviewThreadsResponse: `[{"isResolved":true, "isOutdated":false}]`,
 			wantVal:               aladino.BuildFalseValue(),
 		},
 		"when outdated": {
-			reviewThreadsResponse: `[{"isResolved":true, "isOutdated":true}]`,
+			reviewThreadsResponse: `[{"isResolved":false, "isOutdated":true}]`,
 			wantVal:               aladino.BuildFalseValue(),
 		},
 		"when up to date": {
-			reviewThreadsResponse: `[{"isResolved":true, "isOutdated":false}]`,
+			reviewThreadsResponse: `[{"isResolved":false, "isOutdated":false}]`,
 			wantVal:               aladino.BuildTrueValue(),
 		},
 		"when more than one thread": {
@@ -121,7 +121,7 @@ func TestHasUnaddressedReviewThreads(t *testing.T) {
 		)
 
 		t.Run(name, func(t *testing.T) {
-			gotVal, err := hasUnaddressedReviewThreads(mockedEnv, []aladino.Value{})
+			gotVal, err := hasUnaddressedThreads(mockedEnv, []aladino.Value{})
 
 			assert.Nil(t, err)
 			assert.Equal(t, test.wantVal, gotVal)
