@@ -45,37 +45,37 @@ func Run(
 	reviewpadFile *engine.ReviewpadFile,
 	dryRun bool,
 	safeMode bool,
-) (*engine.Program, error) {
+) (engine.ExitStatus, error) {
 	if safeMode && !dryRun {
-		return nil, fmt.Errorf("when reviewpad is running in safe mode, it must also run in dry-run")
+		return engine.ExitStatusFailure, fmt.Errorf("when reviewpad is running in safe mode, it must also run in dry-run")
 	}
 
 	aladinoInterpreter, err := aladino.NewInterpreter(ctx, dryRun, client, clientGQL, collector, pullRequest, eventPayload, plugins_aladino.PluginBuiltIns())
 	if err != nil {
-		return nil, err
+		return engine.ExitStatusFailure, err
 	}
 
 	evalEnv, err := engine.NewEvalEnv(ctx, dryRun, client, clientGQL, collector, pullRequest, eventPayload, aladinoInterpreter)
 	if err != nil {
-		return nil, err
+		return engine.ExitStatusFailure, err
 	}
 
 	program, err := engine.Eval(reviewpadFile, evalEnv)
 	if err != nil {
-		return nil, err
+		return engine.ExitStatusFailure, err
 	}
 
-	err = aladinoInterpreter.ExecProgram(program)
+	exitStatus, err := aladinoInterpreter.ExecProgram(program)
 	if err != nil {
 		engine.CollectError(evalEnv, err)
-		return nil, err
+		return engine.ExitStatusFailure, err
 	}
 
 	if safeMode || !dryRun {
 		err = aladinoInterpreter.Report(reviewpadFile.Mode, safeMode)
 		if err != nil {
 			engine.CollectError(evalEnv, err)
-			return nil, err
+			return engine.ExitStatusFailure, err
 		}
 	}
 
@@ -87,5 +87,5 @@ func Run(
 		log.Printf("error on collector due to %v", err.Error())
 	}
 
-	return program, nil
+	return exitStatus, nil
 }

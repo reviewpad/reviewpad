@@ -15,16 +15,21 @@ import (
 type GroupKind string
 type GroupType string
 
+type ExitStatus int
+
 const GroupKindDeveloper GroupKind = "developer"
 const GroupTypeStatic GroupType = "static"
 const GroupTypeFilter GroupType = "filter"
+
+const ExitStatusSuccess ExitStatus = 0
+const ExitStatusFailure ExitStatus = 1
 
 type Interpreter interface {
 	ProcessGroup(name string, kind GroupKind, typeOf GroupType, expr, paramExpr, whereExpr string) error
 	ProcessLabel(id, name string) error
 	ProcessRule(name, spec string) error
 	EvalExpr(kind, expr string) (bool, error)
-	ExecProgram(program *Program) error
+	ExecProgram(program *Program) (ExitStatus, error)
 	ExecStatement(statement *Statement) error
 	Report(mode string, safeMode bool) error
 }
