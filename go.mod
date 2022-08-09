@@ -14,6 +14,7 @@ require (
 	github.com/migueleliasweb/go-github-mock v0.0.10
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/reviewpad/api/go v0.0.0-20220816114724-46d21cde564a
+	github.com/reviewpad/go-conventionalcommits v0.10.0
 	github.com/shurcooL/githubv4 v0.0.0-20220520033151-0b4e3294ff00
 	github.com/spf13/cobra v1.5.0
 	github.com/stretchr/testify v1.8.0
@@ -36,7 +37,6 @@ require (
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/reviewpad/go-conventionalcommits v0.10.0
 	github.com/shurcooL/graphql v0.0.0-20220606043923-3cf50f8a0a29 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d // indirect
