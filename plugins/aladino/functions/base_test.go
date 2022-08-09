@@ -41,6 +41,8 @@ func TestBase(t *testing.T) {
 			),
 		},
 		nil,
+		aladino.MockBuiltIns(),
+		nil,
 	)
 
 	wantBase := aladino.BuildStringValue(baseRef)

@@ -56,7 +56,7 @@ func TestGetPullRequestHeadRepoName(t *testing.T) {
 }
 
 func TestGetPullRequestBaseOwnerName(t *testing.T) {
-	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
 
 	mockedPullRequest := mockedEnv.GetPullRequest()
 	wantOwnerName := mockedPullRequest.Base.Repo.Owner.GetLogin()
@@ -66,7 +66,7 @@ func TestGetPullRequestBaseOwnerName(t *testing.T) {
 }
 
 func TestGetPullRequestBaseRepoName(t *testing.T) {
-	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
 
 	mockedPullRequest := mockedEnv.GetPullRequest()
 	wantRepoName := mockedPullRequest.Base.Repo.GetName()
@@ -76,7 +76,7 @@ func TestGetPullRequestBaseRepoName(t *testing.T) {
 }
 
 func TestGetPullRequestNumber(t *testing.T) {
-	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
 
 	mockedPullRequest := mockedEnv.GetPullRequest()
 	wantPullRequestNumber := mockedPullRequest.GetNumber()
@@ -261,6 +261,8 @@ func TestGetPullRequestComments_WhenListCommentsRequestFails(t *testing.T) {
 			),
 		},
 		nil,
+		aladino.MockBuiltIns(),
+		nil,
 	)
 
 	mockedPullRequest := mockedEnv.GetPullRequest()
@@ -289,6 +291,8 @@ func TestGetPullRequestComments(t *testing.T) {
 				wantComments,
 			),
 		},
+		nil,
+		aladino.MockBuiltIns(),
 		nil,
 	)
 
@@ -324,6 +328,8 @@ func TestGetPullRequestFiles(t *testing.T) {
 			),
 		},
 		nil,
+		aladino.MockBuiltIns(),
+		nil,
 	)
 
 	mockedPullRequest := mockedEnv.GetPullRequest()
@@ -355,6 +361,8 @@ func TestGetPullRequestReviewers_WhenListReviewersRequestFails(t *testing.T) {
 				}),
 			),
 		},
+		nil,
+		aladino.MockBuiltIns(),
 		nil,
 	)
 
@@ -390,6 +398,8 @@ func TestGetPullRequestReviewers(t *testing.T) {
 			),
 		},
 		nil,
+		aladino.MockBuiltIns(),
+		nil,
 	)
 
 	mockedPullRequest := mockedEnv.GetPullRequest()
@@ -423,6 +433,8 @@ func TestGetRepoCollaborators_WhenListCollaboratorsRequestFails(t *testing.T) {
 			),
 		},
 		nil,
+		aladino.MockBuiltIns(),
+		nil,
 	)
 
 	mockedPullRequest := mockedEnv.GetPullRequest()
@@ -449,6 +461,8 @@ func TestGetRepoCollaborators(t *testing.T) {
 				wantCollaborators,
 			),
 		},
+		nil,
+		aladino.MockBuiltIns(),
 		nil,
 	)
 
@@ -481,6 +495,8 @@ func TestGetIssuesAvailableAssignees_WhenListAssigneesRequestFails(t *testing.T)
 			),
 		},
 		nil,
+		aladino.MockBuiltIns(),
+		nil,
 	)
 
 	mockedPullRequest := mockedEnv.GetPullRequest()
@@ -507,6 +523,8 @@ func TestGetIssuesAvailableAssignees(t *testing.T) {
 				wantAssignees,
 			),
 		},
+		nil,
+		aladino.MockBuiltIns(),
 		nil,
 	)
 
@@ -539,6 +557,8 @@ func TestGetPullRequestCommits_WhenListCommistsRequestFails(t *testing.T) {
 			),
 		},
 		nil,
+		aladino.MockBuiltIns(),
+		nil,
 	)
 
 	mockedPullRequest := mockedEnv.GetPullRequest()
@@ -570,6 +590,8 @@ func TestGetPullRequestCommits(t *testing.T) {
 				wantCommits,
 			),
 		},
+		nil,
+		aladino.MockBuiltIns(),
 		nil,
 	)
 
@@ -604,6 +626,8 @@ func TestGetPullRequestReviews(t *testing.T) {
 			),
 		},
 		nil,
+		aladino.MockBuiltIns(),
+		nil,
 	)
 
 	mockedPullRequest := mockedEnv.GetPullRequest()
@@ -636,6 +660,8 @@ func TestGetPullRequestReviews_WhenRequestFails(t *testing.T) {
 			),
 		},
 		nil,
+		aladino.MockBuiltIns(),
+		nil,
 	)
 
 	mockedPullRequest := mockedEnv.GetPullRequest()
@@ -665,6 +691,8 @@ func TestGetPullRequests(t *testing.T) {
 				wantPullRequests,
 			),
 		},
+		nil,
+		aladino.MockBuiltIns(),
 		nil,
 	)
 
@@ -700,6 +728,8 @@ func TestGetPullRequests_WhenRequestFails(t *testing.T) {
 			),
 		},
 		nil,
+		aladino.MockBuiltIns(),
+		nil,
 	)
 
 	gotReviews, err := utils.GetPullRequests(
@@ -721,6 +751,8 @@ func TestGetReviewThreads_WhenRequestFails(t *testing.T) {
 		func(w http.ResponseWriter, req *http.Request) {
 			http.Error(w, failMessage, http.StatusNotFound)
 		},
+		aladino.MockBuiltIns(),
+		nil,
 	)
 
 	gotThreads, err := utils.GetReviewThreads(
@@ -768,6 +800,8 @@ func TestGetReviewThreads(t *testing.T) {
 				)
 			}
 		},
+		aladino.MockBuiltIns(),
+		nil,
 	)
 
 	wantReviewThreads := []utils.GQLReviewThread{{

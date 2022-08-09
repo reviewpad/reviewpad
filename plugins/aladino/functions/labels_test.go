@@ -36,6 +36,8 @@ func TestLabels(t *testing.T) {
 			),
 		},
 		nil,
+		aladino.MockBuiltIns(),
+		nil,
 	)
 
 	wantLabels := aladino.BuildArrayValue([]aladino.Value{

@@ -15,7 +15,7 @@ import (
 var appendString = plugins_aladino.PluginBuiltIns().Functions["append"].Code
 
 func TestAppendString(t *testing.T) {
-	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
 
 	slice := aladino.BuildArrayValue(
 		[]aladino.Value{

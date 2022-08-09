@@ -41,6 +41,8 @@ func TestHead(t *testing.T) {
 			),
 		},
 		nil,
+		aladino.MockBuiltIns(),
+		nil,
 	)
 
 	wantHead := aladino.BuildStringValue(headRef)

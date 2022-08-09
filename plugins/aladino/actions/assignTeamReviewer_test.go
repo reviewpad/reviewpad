@@ -23,7 +23,7 @@ type TeamReviewersRequestPostBody struct {
 }
 
 func TestAssignTeamReviewer_WhenNoTeamSlugsAreProvided(t *testing.T) {
-	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
 
 	args := []aladino.Value{aladino.BuildArrayValue([]aladino.Value{})}
 	err := assignTeamReviewer(mockedEnv, args)
@@ -51,6 +51,8 @@ func TestAssignTeamReviewer(t *testing.T) {
 				}),
 			),
 		},
+		nil,
+		aladino.MockBuiltIns(),
 		nil,
 	)
 

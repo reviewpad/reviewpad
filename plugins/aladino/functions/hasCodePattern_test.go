@@ -34,6 +34,8 @@ func TestHasCodePattern_WhenPullRequestPatchHasNilFile(t *testing.T) {
 			),
 		},
 		nil,
+		aladino.MockBuiltIns(),
+		nil,
 	)
 
 	mockedEnv.GetPatch()[fileName] = nil
@@ -48,7 +50,7 @@ func TestHasCodePattern_WhenPullRequestPatchHasNilFile(t *testing.T) {
 }
 
 func TestHasCodePattern_WhenPatternIsInvalid(t *testing.T) {
-	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
 
 	args := []aladino.Value{aladino.BuildStringValue("a(")}
 	gotVal, err := hasCodePattern(mockedEnv, args)
@@ -72,6 +74,8 @@ func TestHasCodePattern(t *testing.T) {
 				}),
 			),
 		},
+		nil,
+		aladino.MockBuiltIns(),
 		nil,
 	)
 

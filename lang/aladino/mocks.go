@@ -297,61 +297,7 @@ func MockDefaultEnv(
 	t *testing.T,
 	ghApiClientOptions []mock.MockBackendOption,
 	ghGraphQLHandler func(http.ResponseWriter, *http.Request),
-) Env {
-	prOwner := DefaultMockPrOwner
-	prRepoName := DefaultMockPrRepoName
-	prNum := DefaultMockPrNum
-	client := github.NewClient(mockDefaultHttpClient(ghApiClientOptions))
-
-	// Handle GraphQL
-	var clientGQL *githubv4.Client
-	if ghGraphQLHandler != nil {
-		mux := http.NewServeMux()
-		mux.HandleFunc("/graphql", ghGraphQLHandler)
-		clientGQL = githubv4.NewClient(&http.Client{Transport: localRoundTripper{handler: mux}})
-	}
-
-	mockedEnv, err := mockEnvWith(prOwner, prRepoName, prNum, client, clientGQL, nil, MockBuiltIns())
-	if err != nil {
-		t.Fatalf("[MockDefaultEnv] failed to create mock env: %v", err)
-	}
-
-	return mockedEnv
-}
-
-// MockDefaultEnv mocks an Aladino Env with default values and builtIns
-func MockDefaultEnvBuiltIns(
-	t *testing.T,
-	ghApiClientOptions []mock.MockBackendOption,
-	ghGraphQLHandler func(http.ResponseWriter, *http.Request),
 	builtIns *BuiltIns,
-) Env {
-	prOwner := DefaultMockPrOwner
-	prRepoName := DefaultMockPrRepoName
-	prNum := DefaultMockPrNum
-	client := github.NewClient(mockDefaultHttpClient(ghApiClientOptions))
-
-	// Handle GraphQL
-	var clientGQL *githubv4.Client
-	if ghGraphQLHandler != nil {
-		mux := http.NewServeMux()
-		mux.HandleFunc("/graphql", ghGraphQLHandler)
-		clientGQL = githubv4.NewClient(&http.Client{Transport: localRoundTripper{handler: mux}})
-	}
-
-	mock, err := mockEnvWith(prOwner, prRepoName, prNum, client, clientGQL, nil, builtIns)
-	if err != nil {
-		t.Fatalf("[MockDefaultEnvBuiltIns] failed to create mock env: %v", err)
-	}
-
-	return mock
-}
-
-// MockDefaultEnvEvent mocks an Aladino Env with default values and an event
-func MockDefaultEnvEvent(
-	t *testing.T,
-	ghApiClientOptions []mock.MockBackendOption,
-	ghGraphQLHandler func(http.ResponseWriter, *http.Request),
 	eventPayload interface{},
 ) Env {
 	prOwner := DefaultMockPrOwner
@@ -367,9 +313,9 @@ func MockDefaultEnvEvent(
 		clientGQL = githubv4.NewClient(&http.Client{Transport: localRoundTripper{handler: mux}})
 	}
 
-	mockedEnv, err := mockEnvWith(prOwner, prRepoName, prNum, client, clientGQL, eventPayload, MockBuiltIns())
+	mockedEnv, err := mockEnvWith(prOwner, prRepoName, prNum, client, clientGQL, eventPayload, builtIns)
 	if err != nil {
-		t.Fatalf("[MockDefaultEnvEvent] failed to create mock env: %v", err)
+		t.Fatalf("[MockDefaultEnv] failed to create mock env: %v", err)
 	}
 
 	return mockedEnv

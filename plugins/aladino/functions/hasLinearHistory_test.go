@@ -34,6 +34,8 @@ func TestHasLinearHistory_WhenListCommitsRequestFails(t *testing.T) {
 			),
 		},
 		nil,
+		aladino.MockBuiltIns(),
+		nil,
 	)
 
 	args := []aladino.Value{}
@@ -68,6 +70,8 @@ func TestHasLinearHistory_WhenFalse(t *testing.T) {
 			),
 		},
 		nil,
+		aladino.MockBuiltIns(),
+		nil,
 	)
 
 	args := []aladino.Value{}
@@ -101,6 +105,8 @@ func TestHasLinearHistory_WhenTrue(t *testing.T) {
 				repoCommits,
 			),
 		},
+		nil,
+		aladino.MockBuiltIns(),
 		nil,
 	)
 

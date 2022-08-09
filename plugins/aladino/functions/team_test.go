@@ -35,6 +35,8 @@ func TestTeam_WhenListTeamMembersBySlugRequestFails(t *testing.T) {
 			),
 		},
 		nil,
+		aladino.MockBuiltIns(),
+		nil,
 	)
 
 	args := []aladino.Value{aladino.BuildStringValue(teamSlug)}
@@ -58,6 +60,8 @@ func TestTeam(t *testing.T) {
 				ghMembers,
 			),
 		},
+		nil,
+		aladino.MockBuiltIns(),
 		nil,
 	)
 

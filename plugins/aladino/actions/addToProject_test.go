@@ -26,6 +26,8 @@ func TestAddToProject_WhenRequestFails(t *testing.T) {
 		func(w http.ResponseWriter, req *http.Request) {
 			http.Error(w, "404 Not Found", http.StatusNotFound)
 		},
+		aladino.MockBuiltIns(),
+		nil,
 	)
 
 	err := addToProject(mockedEnv, []aladino.Value{aladino.BuildStringValue("reviewpad"), aladino.BuildStringValue("to do")})
@@ -209,6 +211,8 @@ func TestAddToProject(t *testing.T) {
 						aladino.MustWrite(res, testCase.updateProjectV2ItemFieldValueBody)
 					}
 				},
+				aladino.MockBuiltIns(),
+				nil,
 			)
 
 			err := addToProject(mockedEnv, []aladino.Value{aladino.BuildStringValue("reviewpad"), aladino.BuildStringValue("to do")})

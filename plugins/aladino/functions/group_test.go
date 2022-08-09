@@ -17,7 +17,7 @@ var group = plugins_aladino.PluginBuiltIns().Functions["group"].Code
 
 func TestGroup(t *testing.T) {
 	groupName := "techLeads"
-	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
 
 	wantGroup := aladino.BuildArrayValue([]aladino.Value{aladino.BuildStringValue("john"), aladino.BuildStringValue("arthur")})
 
@@ -32,7 +32,7 @@ func TestGroup(t *testing.T) {
 
 func TestGroup_WhenGroupIsNonExisting(t *testing.T) {
 	groupName := "techLeads"
-	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
 
 	// Make sure that the group 'techLeads' doesn't exist
 	delete(mockedEnv.GetRegisterMap(), groupName)

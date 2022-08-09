@@ -129,6 +129,8 @@ func TestDeleteReportComment_WhenCommentCannotBeDeleted(t *testing.T) {
 			),
 		},
 		nil,
+		MockBuiltIns(),
+		nil,
 	)
 
 	testCommentId := int64(1234)
@@ -156,6 +158,8 @@ func TestDeleteReportComment_WhenCommentCanBeDeleted(t *testing.T) {
 			),
 		},
 		nil,
+		MockBuiltIns(),
+		nil,
 	)
 
 	commentToBeDeleted := int64(1234)
@@ -182,6 +186,8 @@ func TestUpdateReportComment_WhenCommentCannotBeEdited(t *testing.T) {
 				}),
 			),
 		},
+		nil,
+		MockBuiltIns(),
 		nil,
 	)
 
@@ -211,6 +217,8 @@ func TestUpdateReportComment_WhenCommentCanBeEdited(t *testing.T) {
 			),
 		},
 		nil,
+		MockBuiltIns(),
+		nil,
 	)
 
 	testCommentId := int64(1234)
@@ -238,6 +246,8 @@ func TestAddReportComment_WhenCommentCannotBeCreated(t *testing.T) {
 				}),
 			),
 		},
+		nil,
+		MockBuiltIns(),
 		nil,
 	)
 
@@ -268,6 +278,8 @@ func TestAddReportComment_WhenCommentCanBeCreated(t *testing.T) {
 			),
 		},
 		nil,
+		MockBuiltIns(),
+		nil,
 	)
 
 	err := AddReportComment(mockedEnv, commentToBeCreated)
@@ -293,6 +305,8 @@ func TestFindReportComment_WhenPullRequestCommentsListingFails(t *testing.T) {
 			),
 		},
 		nil,
+		MockBuiltIns(),
+		nil,
 	)
 
 	gotComment, err := FindReportComment(mockedEnv)
@@ -316,6 +330,8 @@ func TestFindReportComment_WhenThereIsReviewpadComment(t *testing.T) {
 			),
 		},
 		nil,
+		MockBuiltIns(),
+		nil,
 	)
 
 	gotComment, err := FindReportComment(mockedEnv)
@@ -338,6 +354,8 @@ func TestFindReportComment_WhenThereIsNoReviewpadComment(t *testing.T) {
 				},
 			),
 		},
+		nil,
+		MockBuiltIns(),
 		nil,
 	)
 

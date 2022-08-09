@@ -33,6 +33,8 @@ func TestTitle(t *testing.T) {
 			),
 		},
 		nil,
+		aladino.MockBuiltIns(),
+		nil,
 	)
 
 	wantTitle := aladino.BuildStringValue(prTitle)

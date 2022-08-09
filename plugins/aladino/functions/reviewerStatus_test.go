@@ -34,6 +34,8 @@ func TestReviewerStatus_WhenRequestFails(t *testing.T) {
 			),
 		},
 		nil,
+		aladino.MockBuiltIns(),
+		nil,
 	)
 
 	args := []aladino.Value{aladino.BuildStringValue("mary")}
@@ -57,6 +59,8 @@ func TestReviewerStatus_WhenUserIsNil(t *testing.T) {
 				reviews,
 			),
 		},
+		nil,
+		aladino.MockBuiltIns(),
 		nil,
 	)
 
@@ -86,6 +90,8 @@ func TestReviewerStatus_WhenStateIsNil(t *testing.T) {
 			),
 		},
 		nil,
+		aladino.MockBuiltIns(),
+		nil,
 	)
 
 	wantReviewState := aladino.BuildStringValue("")
@@ -114,6 +120,8 @@ func TestReviewerStatus_WhenStateUnknown(t *testing.T) {
 				reviews,
 			),
 		},
+		nil,
+		aladino.MockBuiltIns(),
 		nil,
 	)
 
@@ -149,6 +157,8 @@ func TestReviewerStatus_WhenStateCommented(t *testing.T) {
 				reviews,
 			),
 		},
+		nil,
+		aladino.MockBuiltIns(),
 		nil,
 	)
 
@@ -203,6 +213,8 @@ func TestReviewerStatus_WhenStateApproved(t *testing.T) {
 			),
 		},
 		nil,
+		aladino.MockBuiltIns(),
+		nil,
 	)
 
 	wantReviewState := aladino.BuildStringValue("APPROVED")
@@ -249,6 +261,8 @@ func TestReviewerStatus_WhenStateRequestedChanges(t *testing.T) {
 				reviews,
 			),
 		},
+		nil,
+		aladino.MockBuiltIns(),
 		nil,
 	)
 
