@@ -187,6 +187,19 @@ type ReviewpadFile struct {
 	Rules        []PadRule           `yaml:"rules"`
 	Labels       map[string]PadLabel `yaml:"labels"`
 	Workflows    []PadWorkflow       `yaml:"workflows"`
+	Pipelines    []PadPipeline       `yaml:"pipelines"`
+}
+
+type PadPipeline struct {
+	Name        string     `yaml:"name"`
+	Description string     `yaml:"description"`
+	Trigger     string     `yaml:"trigger"`
+	Stages      []PadStage `yaml:"stages"`
+}
+
+type PadStage struct {
+	Actions []string `yaml:"actions"`
+	Until   string   `yaml:"until"`
 }
 
 func (r *ReviewpadFile) equals(o *ReviewpadFile) bool {

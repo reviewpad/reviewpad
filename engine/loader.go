@@ -87,6 +87,31 @@ func transform(file *ReviewpadFile) *ReviewpadFile {
 		})
 	}
 
+	var transformedPipelines []PadPipeline
+
+	for _, pipeline := range file.Pipelines {
+		var transformedStages []PadStage
+
+		for _, stage := range pipeline.Stages {
+			var transformedActions []string
+			for _, action := range stage.Actions {
+				transformedActions = append(transformedActions, transformActionStr(action))
+			}
+
+			transformedStages = append(transformedStages, PadStage{
+				Actions: transformedActions,
+				Until:   stage.Until,
+			})
+		}
+
+		transformedPipelines = append(transformedPipelines, PadPipeline{
+			Name:        pipeline.Name,
+			Description: pipeline.Description,
+			Trigger:     pipeline.Trigger,
+			Stages:      transformedStages,
+		})
+	}
+
 	return &ReviewpadFile{
 		Version:      file.Version,
 		Edition:      file.Edition,
@@ -97,6 +122,7 @@ func transform(file *ReviewpadFile) *ReviewpadFile {
 		Rules:        file.Rules,
 		Labels:       file.Labels,
 		Workflows:    transformedWorkflows,
+		Pipelines:    transformedPipelines,
 	}
 }
 
