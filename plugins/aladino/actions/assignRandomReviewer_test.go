@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/golang/mock/gomock"
 	"github.com/google/go-github/v45/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
@@ -24,6 +25,9 @@ type ReviewersRequestPostBody struct {
 }
 
 func TestAssignRandomReviewer_WhenListReviewersRequestFails(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	failMessage := "ListReviewersRequestFail"
 	mockedEnv := aladino.MockDefaultEnv(
 		t,
@@ -41,7 +45,8 @@ func TestAssignRandomReviewer_WhenListReviewersRequestFails(t *testing.T) {
 		},
 		nil,
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+		controller,
 	)
 
 	args := []aladino.Value{}
@@ -51,6 +56,9 @@ func TestAssignRandomReviewer_WhenListReviewersRequestFails(t *testing.T) {
 }
 
 func TestAssignRandomReviewer_WhenPullRequestAlreadyHasReviewers(t *testing.T) {
+    controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	var isListAssigneesFetched bool
 	requestedReviewer := "jane"
 	mockedEnv := aladino.MockDefaultEnv(
@@ -74,7 +82,8 @@ func TestAssignRandomReviewer_WhenPullRequestAlreadyHasReviewers(t *testing.T) {
 		},
 		nil,
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+        controller,
 	)
 
 	args := []aladino.Value{}
@@ -85,6 +94,9 @@ func TestAssignRandomReviewer_WhenPullRequestAlreadyHasReviewers(t *testing.T) {
 }
 
 func TestAssignRandomReviewer_WhenListAssigneesRequestFails(t *testing.T) {
+    controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	failMessage := "ListAssigneesRequestFail"
 	mockedEnv := aladino.MockDefaultEnv(
 		t,
@@ -106,7 +118,8 @@ func TestAssignRandomReviewer_WhenListAssigneesRequestFails(t *testing.T) {
 		},
 		nil,
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+        controller,
 	)
 
 	args := []aladino.Value{}
@@ -116,6 +129,9 @@ func TestAssignRandomReviewer_WhenListAssigneesRequestFails(t *testing.T) {
 }
 
 func TestAssignRandomReviewer_ShouldFilterPullRequestAuthor(t *testing.T) {
+    controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	selectedReviewers := []string{}
 	authorLogin := "maria"
 	assigneeLogin := "peter"
@@ -156,7 +172,8 @@ func TestAssignRandomReviewer_ShouldFilterPullRequestAuthor(t *testing.T) {
 		},
 		nil,
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+        controller,
 	)
 
 	args := []aladino.Value{}
@@ -167,6 +184,9 @@ func TestAssignRandomReviewer_ShouldFilterPullRequestAuthor(t *testing.T) {
 }
 
 func TestAssignRandomReviewer_WhenThereIsNoUsers(t *testing.T) {
+    controller := gomock.NewController(t)
+	defer controller.Finish()
+    
 	authorLogin := "maria"
 	mockedPullRequest := aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
 		User: &github.User{Login: github.String(authorLogin)},
@@ -193,7 +213,8 @@ func TestAssignRandomReviewer_WhenThereIsNoUsers(t *testing.T) {
 		},
 		nil,
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+        controller,
 	)
 
 	args := []aladino.Value{}

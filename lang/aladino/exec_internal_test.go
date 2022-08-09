@@ -7,11 +7,15 @@ package aladino
 import (
 	"testing"
 
+	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestTypeCheckExec_WhenTypeInferenceFails(t *testing.T) {
-	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), nil)
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), DefaultMockEventPayload, controller)
 
 	expr, err := Parse("$emptyAction(1)")
 	if err != nil {
@@ -25,7 +29,10 @@ func TestTypeCheckExec_WhenTypeInferenceFails(t *testing.T) {
 }
 
 func TestTypeCheck(t *testing.T) {
-	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), nil)
+    controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), DefaultMockEventPayload, controller)
 
 	expr, err := Parse("$emptyAction()")
 	if err != nil {
@@ -41,7 +48,10 @@ func TestTypeCheck(t *testing.T) {
 }
 
 func TestTypeCheck_WhenExprIsNotFunctionCall(t *testing.T) {
-	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), nil)
+    controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), DefaultMockEventPayload, controller)
 
 	expr, err := Parse("\"not a function call\"")
 	if err != nil {
@@ -55,7 +65,10 @@ func TestTypeCheck_WhenExprIsNotFunctionCall(t *testing.T) {
 }
 
 func TestExec_WhenFunctionArgsEvalFails(t *testing.T) {
-	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), nil)
+    controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), DefaultMockEventPayload, controller)
 
 	fc := &FunctionCall{
 		name: BuildVariable("invalidCmpOp"),
@@ -70,7 +83,10 @@ func TestExec_WhenFunctionArgsEvalFails(t *testing.T) {
 }
 
 func TestExec_WhenActionBuiltInNonExisting(t *testing.T) {
-	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), nil)
+    controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), DefaultMockEventPayload, controller)
 
 	delete(mockedEnv.GetBuiltIns().Actions, "tautology")
 
@@ -87,6 +103,9 @@ func TestExec_WhenActionBuiltInNonExisting(t *testing.T) {
 }
 
 func TestExec_WhenActionIsEnabled(t *testing.T) {
+    controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	builtInName := "emptyAction"
 
 	isBuiltInCalled := false
@@ -102,7 +121,7 @@ func TestExec_WhenActionIsEnabled(t *testing.T) {
 			},
 		},
 	}
-	mockedEnv := MockDefaultEnv(t, nil, nil, builtIns, nil)
+	mockedEnv := MockDefaultEnv(t, nil, nil, builtIns, DefaultMockEventPayload, controller)
 
 	fc := &FunctionCall{
 		name:      BuildVariable(builtInName),
@@ -116,6 +135,9 @@ func TestExec_WhenActionIsEnabled(t *testing.T) {
 }
 
 func TestExec_WhenActionIsDisabled(t *testing.T) {
+    controller := gomock.NewController(t)
+	defer controller.Finish()
+    
 	builtInName := "emptyAction"
 
 	isBuiltInCalled := false
@@ -132,7 +154,7 @@ func TestExec_WhenActionIsDisabled(t *testing.T) {
 			},
 		},
 	}
-	mockedEnv := MockDefaultEnv(t, nil, nil, builtIns, nil)
+	mockedEnv := MockDefaultEnv(t, nil, nil, builtIns, DefaultMockEventPayload, controller)
 
 	fc := &FunctionCall{
 		name:      BuildVariable(builtInName),

@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/golang/mock/gomock"
 	"github.com/google/go-github/v45/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
@@ -16,7 +17,10 @@ import (
 )
 
 func TestNewTypeEnv_WithDefaultEnv(t *testing.T) {
-	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
+    controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), aladino.DefaultMockEventPayload, controller)
 
 	wantTypeEnv := aladino.TypeEnv(map[string]aladino.Type{
 		"emptyFunction": aladino.BuildFunctionType([]aladino.Type{}, nil),
@@ -60,6 +64,11 @@ func TestNewEvalEnv_WhenGetPullRequestFilesFails(t *testing.T) {
 		assert.FailNow(t, "couldn't get pull request", err)
 	}
 
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	semanticClient := aladino.MockDefaultSemanticClient(controller)
+
 	env, err := aladino.NewEvalEnv(
 		ctx,
 		false,
@@ -69,6 +78,7 @@ func TestNewEvalEnv_WhenGetPullRequestFilesFails(t *testing.T) {
 		mockedPullRequest,
 		nil,
 		aladino.MockBuiltIns(),
+		semanticClient,
 	)
 
 	assert.Nil(t, env)
@@ -100,6 +110,11 @@ func TestNewEvalEnv_WhenNewFileFails(t *testing.T) {
 		assert.FailNow(t, "couldn't get pull request", err)
 	}
 
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	semanticClient := aladino.MockDefaultSemanticClient(controller)
+
 	env, err := aladino.NewEvalEnv(
 		ctx,
 		false,
@@ -109,6 +124,7 @@ func TestNewEvalEnv_WhenNewFileFails(t *testing.T) {
 		mockedPullRequest,
 		nil,
 		aladino.MockBuiltIns(),
+		semanticClient,
 	)
 
 	assert.Nil(t, env)
@@ -141,10 +157,14 @@ func TestNewEvalEnv(t *testing.T) {
 		aladino.DefaultMockPrRepoName,
 		aladino.DefaultMockPrNum,
 	)
-
 	if err != nil {
 		assert.FailNow(t, "couldn't get pull request", err)
 	}
+
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	semanticClient := aladino.MockDefaultSemanticClient(controller)
 
 	gotEnv, err := aladino.NewEvalEnv(
 		ctx,
@@ -155,6 +175,7 @@ func TestNewEvalEnv(t *testing.T) {
 		mockedPullRequest,
 		nil,
 		aladino.MockBuiltIns(),
+		semanticClient,
 	)
 
 	mockedFile1 := &aladino.File{

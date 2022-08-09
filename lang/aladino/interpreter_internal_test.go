@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/golang/mock/gomock"
 	"github.com/google/go-github/v45/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v3/engine"
@@ -82,7 +83,10 @@ func TestBuildGroupAST_WhenGroupTypeFilterIsNotSet(t *testing.T) {
 }
 
 func TestEvalGroup_WhenTypeInferenceFails(t *testing.T) {
-	mockedEnv := MockDefaultEnv(t, nil, nil, &BuiltIns{}, nil)
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	mockedEnv := MockDefaultEnv(t, nil, nil, &BuiltIns{}, DefaultMockEventPayload, controller)
 
 	expr, err := Parse("1 == \"a\"")
 	if err != nil {
@@ -95,7 +99,10 @@ func TestEvalGroup_WhenTypeInferenceFails(t *testing.T) {
 }
 
 func TestEvalGroup_WhenExpressionIsNotValidGroup(t *testing.T) {
-	mockedEnv := MockDefaultEnv(t, nil, nil, &BuiltIns{}, nil)
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	mockedEnv := MockDefaultEnv(t, nil, nil, &BuiltIns{}, DefaultMockEventPayload, controller)
 
 	expr, err := Parse("true")
 	if err != nil {
@@ -108,6 +115,9 @@ func TestEvalGroup_WhenExpressionIsNotValidGroup(t *testing.T) {
 }
 
 func TestEvalGroup(t *testing.T) {
+    controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	devName := "jane"
 
 	builtIns := &BuiltIns{
@@ -121,7 +131,7 @@ func TestEvalGroup(t *testing.T) {
 		},
 	}
 
-	mockedEnv := MockDefaultEnv(t, nil, nil, builtIns, nil)
+	mockedEnv := MockDefaultEnv(t, nil, nil, builtIns, DefaultMockEventPayload, controller)
 
 	expr, err := Parse("$group(\"\")")
 	if err != nil {
@@ -137,7 +147,10 @@ func TestEvalGroup(t *testing.T) {
 }
 
 func TestProcessGroup_WhenBuildGroupASTFails(t *testing.T) {
-	mockedEnv := MockDefaultEnv(t, nil, nil, &BuiltIns{}, nil)
+    controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	mockedEnv := MockDefaultEnv(t, nil, nil, &BuiltIns{}, DefaultMockEventPayload, controller)
 
 	mockedInterpreter := &Interpreter{
 		Env: mockedEnv,
@@ -159,7 +172,10 @@ func TestProcessGroup_WhenBuildGroupASTFails(t *testing.T) {
 }
 
 func TestProcessGroup_WhenEvalGroupFails(t *testing.T) {
-	mockedEnv := MockDefaultEnv(t, nil, nil, &BuiltIns{}, nil)
+    controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	mockedEnv := MockDefaultEnv(t, nil, nil, &BuiltIns{}, DefaultMockEventPayload, controller)
 
 	mockedInterpreter := &Interpreter{
 		Env: mockedEnv,
@@ -181,7 +197,10 @@ func TestProcessGroup_WhenEvalGroupFails(t *testing.T) {
 }
 
 func TestProcessGroup_WhenGroupTypeFilterIsNotSet(t *testing.T) {
-	mockedEnv := MockDefaultEnv(t, nil, nil, &BuiltIns{}, nil)
+    controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	mockedEnv := MockDefaultEnv(t, nil, nil, &BuiltIns{}, DefaultMockEventPayload, controller)
 
 	mockedInterpreter := &Interpreter{
 		Env: mockedEnv,
@@ -220,7 +239,10 @@ func TestBuildInternalLabelID(t *testing.T) {
 }
 
 func TestProcessLabel(t *testing.T) {
-	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), nil)
+    controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), DefaultMockEventPayload, controller)
 
 	mockedInterpreter := &Interpreter{
 		Env: mockedEnv,
@@ -250,7 +272,10 @@ func TestBuildInternalRuleName(t *testing.T) {
 }
 
 func TestProcessRule(t *testing.T) {
-	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), nil)
+    controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), DefaultMockEventPayload, controller)
 
 	mockedInterpreter := &Interpreter{
 		Env: mockedEnv,
@@ -270,7 +295,10 @@ func TestProcessRule(t *testing.T) {
 }
 
 func TestEvalExpr_WhenParseFails(t *testing.T) {
-	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), nil)
+    controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), DefaultMockEventPayload, controller)
 
 	gotVal, err := EvalExpr(mockedEnv, "", "1 ==")
 
@@ -279,7 +307,10 @@ func TestEvalExpr_WhenParseFails(t *testing.T) {
 }
 
 func TestEvalExpr_WhenTypeInferenceFails(t *testing.T) {
-	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), nil)
+    controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), DefaultMockEventPayload, controller)
 
 	gotVal, err := EvalExpr(mockedEnv, "", "1 == \"a\"")
 
@@ -288,7 +319,10 @@ func TestEvalExpr_WhenTypeInferenceFails(t *testing.T) {
 }
 
 func TestEvalExpr_WhenExprIsNotBoolType(t *testing.T) {
-	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), nil)
+    controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), DefaultMockEventPayload, controller)
 
 	gotVal, err := EvalExpr(mockedEnv, "", "1")
 
@@ -297,7 +331,10 @@ func TestEvalExpr_WhenExprIsNotBoolType(t *testing.T) {
 }
 
 func TestEvalExpr(t *testing.T) {
-	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), nil)
+    controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), DefaultMockEventPayload, controller)
 
 	gotVal, err := EvalExpr(mockedEnv, "", "1 == 1")
 
@@ -306,7 +343,10 @@ func TestEvalExpr(t *testing.T) {
 }
 
 func TestEvalExpr_OnInterpreter(t *testing.T) {
-	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), nil)
+    controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), DefaultMockEventPayload, controller)
 
 	mockedInterpreter := &Interpreter{
 		Env: mockedEnv,
@@ -319,7 +359,10 @@ func TestEvalExpr_OnInterpreter(t *testing.T) {
 }
 
 func TestExecProgram_WhenExecStatementFails(t *testing.T) {
-	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), nil)
+    controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), DefaultMockEventPayload, controller)
 
 	mockedInterpreter := &Interpreter{
 		Env: mockedEnv,
@@ -336,6 +379,9 @@ func TestExecProgram_WhenExecStatementFails(t *testing.T) {
 }
 
 func TestExecProgram(t *testing.T) {
+    controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	builtIns := &BuiltIns{
 		Actions: map[string]*BuiltInAction{
 			"addLabel": {
@@ -363,7 +409,8 @@ func TestExecProgram(t *testing.T) {
 		},
 		nil,
 		builtIns,
-		nil,
+		DefaultMockEventPayload,
+		controller,
 	)
 
 	mockedInterpreter := &Interpreter{
@@ -389,7 +436,10 @@ func TestExecProgram(t *testing.T) {
 }
 
 func TestExecStatement_WhenParseFails(t *testing.T) {
-	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), nil)
+    controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), DefaultMockEventPayload, controller)
 
 	mockedInterpreter := &Interpreter{
 		Env: mockedEnv,
@@ -403,6 +453,9 @@ func TestExecStatement_WhenParseFails(t *testing.T) {
 }
 
 func TestExecStatement_WhenTypeCheckExecFails(t *testing.T) {
+    controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	builtIns := &BuiltIns{
 		Actions: map[string]*BuiltInAction{
 			"addLabel": {
@@ -414,7 +467,7 @@ func TestExecStatement_WhenTypeCheckExecFails(t *testing.T) {
 		},
 	}
 
-	mockedEnv := MockDefaultEnv(t, nil, nil, builtIns, nil)
+	mockedEnv := MockDefaultEnv(t, nil, nil, builtIns, DefaultMockEventPayload, controller)
 
 	mockedInterpreter := &Interpreter{
 		Env: mockedEnv,
@@ -428,6 +481,9 @@ func TestExecStatement_WhenTypeCheckExecFails(t *testing.T) {
 }
 
 func TestExecStatement_WhenActionExecFails(t *testing.T) {
+    controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	devName := "jane"
 	builtIns := &BuiltIns{
 		Functions: map[string]*BuiltInFunction{
@@ -440,7 +496,7 @@ func TestExecStatement_WhenActionExecFails(t *testing.T) {
 		},
 	}
 
-	mockedEnv := MockDefaultEnv(t, nil, nil, builtIns, nil)
+	mockedEnv := MockDefaultEnv(t, nil, nil, builtIns, DefaultMockEventPayload, controller)
 
 	mockedInterpreter := &Interpreter{
 		Env: mockedEnv,
@@ -454,6 +510,9 @@ func TestExecStatement_WhenActionExecFails(t *testing.T) {
 }
 
 func TestExecStatement(t *testing.T) {
+    controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	builtIns := &BuiltIns{
 		Actions: map[string]*BuiltInAction{
 			"addLabel": {
@@ -481,7 +540,8 @@ func TestExecStatement(t *testing.T) {
 		},
 		nil,
 		builtIns,
-		nil,
+		DefaultMockEventPayload,
+		controller,
 	)
 
 	mockedInterpreter := &Interpreter{
@@ -505,6 +565,9 @@ func TestExecStatement(t *testing.T) {
 }
 
 func TestReport_WhenFindReportCommentFails(t *testing.T) {
+    controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	mockedPullRequest := GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
 		User: &github.User{Login: github.String("john")},
 		Base: &github.PullRequestBranch{
@@ -529,7 +592,8 @@ func TestReport_WhenFindReportCommentFails(t *testing.T) {
 		},
 		nil,
 		MockBuiltIns(),
-		nil,
+		DefaultMockEventPayload,
+		controller,
 	)
 
 	mockedInterpreter := &Interpreter{
@@ -542,6 +606,9 @@ func TestReport_WhenFindReportCommentFails(t *testing.T) {
 }
 
 func TestReport_OnSilentMode_WhenThereIsAlreadyAReviewpadComment(t *testing.T) {
+    controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	var isDeletedCommentRequested bool
 	mockedEnv := MockDefaultEnv(
 		t,
@@ -565,7 +632,8 @@ func TestReport_OnSilentMode_WhenThereIsAlreadyAReviewpadComment(t *testing.T) {
 		},
 		nil,
 		MockBuiltIns(),
-		nil,
+		DefaultMockEventPayload,
+		controller,
 	)
 
 	mockedInterpreter := &Interpreter{
@@ -579,6 +647,9 @@ func TestReport_OnSilentMode_WhenThereIsAlreadyAReviewpadComment(t *testing.T) {
 }
 
 func TestReport_OnSilentMode_WhenNoReviewpadCommentIsFound(t *testing.T) {
+    controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	var isDeletedCommentRequested bool
 	mockedEnv := MockDefaultEnv(
 		t,
@@ -597,7 +668,8 @@ func TestReport_OnSilentMode_WhenNoReviewpadCommentIsFound(t *testing.T) {
 		},
 		nil,
 		MockBuiltIns(),
-		nil,
+		DefaultMockEventPayload,
+		controller,
 	)
 
 	mockedInterpreter := &Interpreter{
@@ -611,6 +683,9 @@ func TestReport_OnSilentMode_WhenNoReviewpadCommentIsFound(t *testing.T) {
 }
 
 func TestReport_OnVerboseMode_WhenNoReviewpadCommentIsFound(t *testing.T) {
+    controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	var addedComment string
 	commentToBeAdded := "<!--@annotation-reviewpad-report-->\n**Reviewpad Report**\n\n:scroll: **Executed actions**\n```yaml\n```\n"
 	mockedEnv := MockDefaultEnv(
@@ -634,7 +709,8 @@ func TestReport_OnVerboseMode_WhenNoReviewpadCommentIsFound(t *testing.T) {
 		},
 		nil,
 		MockBuiltIns(),
-		nil,
+		DefaultMockEventPayload,
+		controller,
 	)
 
 	mockedInterpreter := &Interpreter{
@@ -648,6 +724,9 @@ func TestReport_OnVerboseMode_WhenNoReviewpadCommentIsFound(t *testing.T) {
 }
 
 func TestReport_OnVerboseMode_WhenThereIsAlreadyAReviewpadComment(t *testing.T) {
+    controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	var updatedComment string
 	commentUpdated := "<!--@annotation-reviewpad-report-->\n**Reviewpad Report**\n\n:scroll: **Executed actions**\n```yaml\n```\n"
 	mockedEnv := MockDefaultEnv(
@@ -676,7 +755,8 @@ func TestReport_OnVerboseMode_WhenThereIsAlreadyAReviewpadComment(t *testing.T) 
 		},
 		nil,
 		MockBuiltIns(),
-		nil,
+		DefaultMockEventPayload,
+		controller,
 	)
 
 	mockedInterpreter := &Interpreter{
@@ -723,7 +803,10 @@ func TestNewInterpreter_WhenNewEvalEnvFails(t *testing.T) {
 }
 
 func TestNewInterpreter(t *testing.T) {
-	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), nil)
+    controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), DefaultMockEventPayload, controller)
 
 	wantInterpreter := &Interpreter{
 		Env: mockedEnv,

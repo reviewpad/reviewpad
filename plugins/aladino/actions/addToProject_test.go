@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/golang/mock/gomock"
 	"github.com/google/go-github/v45/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
@@ -20,6 +21,9 @@ import (
 var addToProject = plugins_aladino.PluginBuiltIns().Actions["addToProject"].Code
 
 func TestAddToProject_WhenRequestFails(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	mockedEnv := aladino.MockDefaultEnv(
 		t,
 		nil,
@@ -27,7 +31,8 @@ func TestAddToProject_WhenRequestFails(t *testing.T) {
 			http.Error(w, "404 Not Found", http.StatusNotFound)
 		},
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+		controller,
 	)
 
 	err := addToProject(mockedEnv, []aladino.Value{aladino.BuildStringValue("reviewpad"), aladino.BuildStringValue("to do")})
@@ -188,6 +193,9 @@ func TestAddToProject(t *testing.T) {
 
 	for _, testCase := range gqlTestCases {
 		t.Run(testCase.name, func(t *testing.T) {
+			controller := gomock.NewController(t)
+			defer controller.Finish()
+
 			mockedEnv := aladino.MockDefaultEnv(
 				t,
 				[]mock.MockBackendOption{
@@ -212,7 +220,8 @@ func TestAddToProject(t *testing.T) {
 					}
 				},
 				aladino.MockBuiltIns(),
-				nil,
+				aladino.DefaultMockEventPayload,
+				controller,
 			)
 
 			err := addToProject(mockedEnv, []aladino.Value{aladino.BuildStringValue("reviewpad"), aladino.BuildStringValue("to do")})

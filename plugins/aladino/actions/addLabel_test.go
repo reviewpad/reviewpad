@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/golang/mock/gomock"
 	"github.com/google/go-github/v45/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
@@ -20,6 +21,9 @@ import (
 var addLabel = plugins_aladino.PluginBuiltIns().Actions["addLabel"].Code
 
 func TestAddLabel_WhenAddLabelToIssueRequestFails(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	label := "bug"
 	failMessage := "AddLabelsToIssueRequestFail"
 	mockedEnv := aladino.MockDefaultEnv(
@@ -44,7 +48,8 @@ func TestAddLabel_WhenAddLabelToIssueRequestFails(t *testing.T) {
 		},
 		nil,
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+        controller,
 	)
 
 	args := []aladino.Value{aladino.BuildStringValue(label)}
@@ -54,6 +59,9 @@ func TestAddLabel_WhenAddLabelToIssueRequestFails(t *testing.T) {
 }
 
 func TestAddLabel_WhenLabelIsInEnvironment(t *testing.T) {
+    controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	label := "bug"
 	wantLabels := []string{
 		label,
@@ -80,7 +88,8 @@ func TestAddLabel_WhenLabelIsInEnvironment(t *testing.T) {
 		},
 		nil,
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+        controller,
 	)
 	internalLabelID := aladino.BuildInternalLabelID(label)
 	mockedEnv.GetRegisterMap()[internalLabelID] = aladino.BuildStringValue(label)
@@ -93,6 +102,9 @@ func TestAddLabel_WhenLabelIsInEnvironment(t *testing.T) {
 }
 
 func TestAddLabel_WhenLabelIsNotInEnvironment(t *testing.T) {
+    controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	label := "bug"
 	wantLabels := []string{
 		label,
@@ -119,7 +131,8 @@ func TestAddLabel_WhenLabelIsNotInEnvironment(t *testing.T) {
 		},
 		nil,
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+        controller,
 	)
 
 	args := []aladino.Value{aladino.BuildStringValue(label)}
