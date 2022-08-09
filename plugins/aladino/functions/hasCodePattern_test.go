@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/golang/mock/gomock"
 	"github.com/google/go-github/v45/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
@@ -18,6 +19,9 @@ import (
 var hasCodePattern = plugins_aladino.PluginBuiltIns().Functions["hasCodePattern"].Code
 
 func TestHasCodePattern_WhenPullRequestPatchHasNilFile(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	fileName := "default-mock-repo/file1.ts"
 	mockedPullRequestFileList := &[]*github.CommitFile{{
 		Patch:    nil,
@@ -35,7 +39,8 @@ func TestHasCodePattern_WhenPullRequestPatchHasNilFile(t *testing.T) {
 		},
 		nil,
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+		controller,
 	)
 
 	mockedEnv.GetPatch()[fileName] = nil
@@ -50,7 +55,10 @@ func TestHasCodePattern_WhenPullRequestPatchHasNilFile(t *testing.T) {
 }
 
 func TestHasCodePattern_WhenPatternIsInvalid(t *testing.T) {
-	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), aladino.DefaultMockEventPayload, controller)
 
 	args := []aladino.Value{aladino.BuildStringValue("a(")}
 	gotVal, err := hasCodePattern(mockedEnv, args)
@@ -60,6 +68,9 @@ func TestHasCodePattern_WhenPatternIsInvalid(t *testing.T) {
 }
 
 func TestHasCodePattern(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	mockedPullRequestFileList := &[]*github.CommitFile{{
 		Patch:    github.String("@@ -2,9 +2,11 @@ package main\n- func previous() {\n+ func new() {\n+\nreturn"),
 		Filename: github.String("default-mock-repo/file1.ts"),
@@ -76,7 +87,8 @@ func TestHasCodePattern(t *testing.T) {
 		},
 		nil,
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+		controller,
 	)
 
 	args := []aladino.Value{aladino.BuildStringValue("new\\(.*\\)")}

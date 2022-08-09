@@ -40,7 +40,7 @@ func TestAssignReviewer_WhenTotalRequiredReviewersIsZero(t *testing.T) {
 }
 
 func TestAssignReviewer_WhenListOfReviewersIsEmpty(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), aladino.DefaultMockEventPayload, controller)
@@ -52,7 +52,7 @@ func TestAssignReviewer_WhenListOfReviewersIsEmpty(t *testing.T) {
 }
 
 func TestAssignReviewer_WhenAuthorIsInListOfReviewers(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	var gotReviewers []string
@@ -93,7 +93,7 @@ func TestAssignReviewer_WhenAuthorIsInListOfReviewers(t *testing.T) {
 		nil,
 		aladino.MockBuiltIns(),
 		aladino.DefaultMockEventPayload,
-        controller,
+		controller,
 	)
 
 	args := []aladino.Value{
@@ -112,7 +112,7 @@ func TestAssignReviewer_WhenAuthorIsInListOfReviewers(t *testing.T) {
 }
 
 func TestAssignReviewer_WhenTotalRequiredReviewersIsMoreThanTotalAvailableReviewers(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	var gotReviewers []string
@@ -154,7 +154,7 @@ func TestAssignReviewer_WhenTotalRequiredReviewersIsMoreThanTotalAvailableReview
 		nil,
 		aladino.MockBuiltIns(),
 		aladino.DefaultMockEventPayload,
-        controller,
+		controller,
 	)
 
 	args := []aladino.Value{
@@ -172,7 +172,7 @@ func TestAssignReviewer_WhenTotalRequiredReviewersIsMoreThanTotalAvailableReview
 }
 
 func TestAssignReviewer_WhenListReviewsRequestFails(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	failMessage := "ListReviewsRequestFail"
@@ -193,7 +193,7 @@ func TestAssignReviewer_WhenListReviewsRequestFails(t *testing.T) {
 		nil,
 		aladino.MockBuiltIns(),
 		aladino.DefaultMockEventPayload,
-        controller,
+		controller,
 	)
 
 	args := []aladino.Value{
@@ -210,7 +210,7 @@ func TestAssignReviewer_WhenListReviewsRequestFails(t *testing.T) {
 }
 
 func TestAssignReviewer_WhenPullRequestAlreadyHasReviews(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	var gotReviewers []string
@@ -258,7 +258,7 @@ func TestAssignReviewer_WhenPullRequestAlreadyHasReviews(t *testing.T) {
 		nil,
 		aladino.MockBuiltIns(),
 		aladino.DefaultMockEventPayload,
-        controller,
+		controller,
 	)
 
 	args := []aladino.Value{
@@ -276,7 +276,7 @@ func TestAssignReviewer_WhenPullRequestAlreadyHasReviews(t *testing.T) {
 }
 
 func TestAssignReviewer_WhenPullRequestAlreadyHasApproval(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	var gotReviewers []string
@@ -323,7 +323,7 @@ func TestAssignReviewer_WhenPullRequestAlreadyHasApproval(t *testing.T) {
 		nil,
 		aladino.MockBuiltIns(),
 		aladino.DefaultMockEventPayload,
-        controller,
+		controller,
 	)
 
 	args := []aladino.Value{
@@ -341,7 +341,7 @@ func TestAssignReviewer_WhenPullRequestAlreadyHasApproval(t *testing.T) {
 }
 
 func TestAssignReviewer_WhenPullRequestAlreadyHasRequestedReviewers(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	var gotReviewers []string
@@ -385,7 +385,7 @@ func TestAssignReviewer_WhenPullRequestAlreadyHasRequestedReviewers(t *testing.T
 		nil,
 		aladino.MockBuiltIns(),
 		aladino.DefaultMockEventPayload,
-        controller,
+		controller,
 	)
 
 	args := []aladino.Value{
@@ -408,7 +408,7 @@ func TestAssignReviewer_WhenPullRequestAlreadyHasRequestedReviewers(t *testing.T
 // The provided reviewers list contains an already assigned reviewer ("mary")
 // Since a review has already been requested to the already assigned reviewer, so there's no available reviewers left
 func TestAssignReviewer_HasNoAvailableReviewers(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	var isRequestReviewersRequestPerformed bool
@@ -445,7 +445,7 @@ func TestAssignReviewer_HasNoAvailableReviewers(t *testing.T) {
 		nil,
 		aladino.MockBuiltIns(),
 		aladino.DefaultMockEventPayload,
-        controller,
+		controller,
 	)
 
 	args := []aladino.Value{
@@ -463,7 +463,7 @@ func TestAssignReviewer_HasNoAvailableReviewers(t *testing.T) {
 }
 
 func TestAssignReviewer_WhenPullRequestAlreadyApproved(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	var isRequestReviewersRequestPerformed bool
@@ -508,7 +508,7 @@ func TestAssignReviewer_WhenPullRequestAlreadyApproved(t *testing.T) {
 		nil,
 		aladino.MockBuiltIns(),
 		aladino.DefaultMockEventPayload,
-        controller,
+		controller,
 	)
 
 	args := []aladino.Value{

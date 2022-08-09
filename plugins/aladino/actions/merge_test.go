@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/golang/mock/gomock"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
@@ -23,7 +24,10 @@ type MergeRequestPostBody struct {
 }
 
 func TestMerge_WhenMergeMethodIsUnsupported(t *testing.T) {
-	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), aladino.DefaultMockEventPayload, controller)
 
 	args := []aladino.Value{aladino.BuildStringValue("INVALID")}
 	err := merge(mockedEnv, args)
@@ -32,6 +36,9 @@ func TestMerge_WhenMergeMethodIsUnsupported(t *testing.T) {
 }
 
 func TestMerge_WhenNoMergeMethodIsProvided(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	wantMergeMethod := "merge"
 	var gotMergeMethod string
 	mockedEnv := aladino.MockDefaultEnv(
@@ -51,7 +58,8 @@ func TestMerge_WhenNoMergeMethodIsProvided(t *testing.T) {
 		},
 		nil,
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+		controller,
 	)
 
 	args := []aladino.Value{}
@@ -62,6 +70,9 @@ func TestMerge_WhenNoMergeMethodIsProvided(t *testing.T) {
 }
 
 func TestMerge_WhenMergeMethodIsProvided(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	wantMergeMethod := "rebase"
 	var gotMergeMethod string
 	mockedEnv := aladino.MockDefaultEnv(
@@ -81,7 +92,8 @@ func TestMerge_WhenMergeMethodIsProvided(t *testing.T) {
 		},
 		nil,
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+		controller,
 	)
 
 	args := []aladino.Value{aladino.BuildStringValue(wantMergeMethod)}

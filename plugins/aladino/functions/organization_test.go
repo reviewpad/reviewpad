@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/golang/mock/gomock"
 	"github.com/google/go-github/v45/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
@@ -18,6 +19,9 @@ import (
 var organization = plugins_aladino.PluginBuiltIns().Functions["organization"].Code
 
 func TestOrganization_WhenListMembersRequestFails(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	failMessage := "ListMembersRequestFail"
 	mockedEnv := aladino.MockDefaultEnv(
 		t,
@@ -45,7 +49,8 @@ func TestOrganization_WhenListMembersRequestFails(t *testing.T) {
 		},
 		nil,
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+		controller,
 	)
 
 	args := []aladino.Value{}
@@ -56,6 +61,9 @@ func TestOrganization_WhenListMembersRequestFails(t *testing.T) {
 }
 
 func TestOrganization(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	ghMembers := []*github.User{
 		{Login: github.String("john")},
 		{Login: github.String("jane")},
@@ -70,7 +78,8 @@ func TestOrganization(t *testing.T) {
 		},
 		nil,
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+		controller,
 	)
 
 	wantMembers := aladino.BuildArrayValue([]aladino.Value{

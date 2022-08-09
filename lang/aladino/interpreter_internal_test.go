@@ -115,7 +115,7 @@ func TestEvalGroup_WhenExpressionIsNotValidGroup(t *testing.T) {
 }
 
 func TestEvalGroup(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	devName := "jane"
@@ -147,7 +147,7 @@ func TestEvalGroup(t *testing.T) {
 }
 
 func TestProcessGroup_WhenBuildGroupASTFails(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	mockedEnv := MockDefaultEnv(t, nil, nil, &BuiltIns{}, DefaultMockEventPayload, controller)
@@ -172,7 +172,7 @@ func TestProcessGroup_WhenBuildGroupASTFails(t *testing.T) {
 }
 
 func TestProcessGroup_WhenEvalGroupFails(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	mockedEnv := MockDefaultEnv(t, nil, nil, &BuiltIns{}, DefaultMockEventPayload, controller)
@@ -197,7 +197,7 @@ func TestProcessGroup_WhenEvalGroupFails(t *testing.T) {
 }
 
 func TestProcessGroup_WhenGroupTypeFilterIsNotSet(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	mockedEnv := MockDefaultEnv(t, nil, nil, &BuiltIns{}, DefaultMockEventPayload, controller)
@@ -239,7 +239,7 @@ func TestBuildInternalLabelID(t *testing.T) {
 }
 
 func TestProcessLabel(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), DefaultMockEventPayload, controller)
@@ -272,7 +272,7 @@ func TestBuildInternalRuleName(t *testing.T) {
 }
 
 func TestProcessRule(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), DefaultMockEventPayload, controller)
@@ -295,7 +295,7 @@ func TestProcessRule(t *testing.T) {
 }
 
 func TestEvalExpr_WhenParseFails(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), DefaultMockEventPayload, controller)
@@ -307,7 +307,7 @@ func TestEvalExpr_WhenParseFails(t *testing.T) {
 }
 
 func TestEvalExpr_WhenTypeInferenceFails(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), DefaultMockEventPayload, controller)
@@ -319,7 +319,7 @@ func TestEvalExpr_WhenTypeInferenceFails(t *testing.T) {
 }
 
 func TestEvalExpr_WhenExprIsNotBoolType(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), DefaultMockEventPayload, controller)
@@ -331,7 +331,7 @@ func TestEvalExpr_WhenExprIsNotBoolType(t *testing.T) {
 }
 
 func TestEvalExpr(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), DefaultMockEventPayload, controller)
@@ -343,7 +343,7 @@ func TestEvalExpr(t *testing.T) {
 }
 
 func TestEvalExpr_OnInterpreter(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), DefaultMockEventPayload, controller)
@@ -359,7 +359,7 @@ func TestEvalExpr_OnInterpreter(t *testing.T) {
 }
 
 func TestExecProgram_WhenExecStatementFails(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), DefaultMockEventPayload, controller)
@@ -379,7 +379,7 @@ func TestExecProgram_WhenExecStatementFails(t *testing.T) {
 }
 
 func TestExecProgram(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	builtIns := &BuiltIns{
@@ -436,7 +436,7 @@ func TestExecProgram(t *testing.T) {
 }
 
 func TestExecStatement_WhenParseFails(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), DefaultMockEventPayload, controller)
@@ -453,7 +453,7 @@ func TestExecStatement_WhenParseFails(t *testing.T) {
 }
 
 func TestExecStatement_WhenTypeCheckExecFails(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	builtIns := &BuiltIns{
@@ -481,7 +481,7 @@ func TestExecStatement_WhenTypeCheckExecFails(t *testing.T) {
 }
 
 func TestExecStatement_WhenActionExecFails(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	devName := "jane"
@@ -510,7 +510,7 @@ func TestExecStatement_WhenActionExecFails(t *testing.T) {
 }
 
 func TestExecStatement(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	builtIns := &BuiltIns{
@@ -565,7 +565,7 @@ func TestExecStatement(t *testing.T) {
 }
 
 func TestReport_WhenFindReportCommentFails(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	mockedPullRequest := GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
@@ -606,7 +606,7 @@ func TestReport_WhenFindReportCommentFails(t *testing.T) {
 }
 
 func TestReport_OnSilentMode_WhenThereIsAlreadyAReviewpadComment(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	var isDeletedCommentRequested bool
@@ -647,7 +647,7 @@ func TestReport_OnSilentMode_WhenThereIsAlreadyAReviewpadComment(t *testing.T) {
 }
 
 func TestReport_OnSilentMode_WhenNoReviewpadCommentIsFound(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	var isDeletedCommentRequested bool
@@ -683,7 +683,7 @@ func TestReport_OnSilentMode_WhenNoReviewpadCommentIsFound(t *testing.T) {
 }
 
 func TestReport_OnVerboseMode_WhenNoReviewpadCommentIsFound(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	var addedComment string
@@ -724,7 +724,7 @@ func TestReport_OnVerboseMode_WhenNoReviewpadCommentIsFound(t *testing.T) {
 }
 
 func TestReport_OnVerboseMode_WhenThereIsAlreadyAReviewpadComment(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	var updatedComment string
@@ -803,7 +803,7 @@ func TestNewInterpreter_WhenNewEvalEnvFails(t *testing.T) {
 }
 
 func TestNewInterpreter(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), DefaultMockEventPayload, controller)

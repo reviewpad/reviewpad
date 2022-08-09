@@ -135,7 +135,7 @@ func TestDeleteReportComment_WhenCommentCannotBeDeleted(t *testing.T) {
 		nil,
 		MockBuiltIns(),
 		DefaultMockEventPayload,
-        controller,
+		controller,
 	)
 
 	testCommentId := int64(1234)
@@ -146,7 +146,7 @@ func TestDeleteReportComment_WhenCommentCannotBeDeleted(t *testing.T) {
 }
 
 func TestDeleteReportComment_WhenCommentCanBeDeleted(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	var deletedComment int64
@@ -168,7 +168,7 @@ func TestDeleteReportComment_WhenCommentCanBeDeleted(t *testing.T) {
 		nil,
 		MockBuiltIns(),
 		DefaultMockEventPayload,
-        controller,
+		controller,
 	)
 
 	commentToBeDeleted := int64(1234)
@@ -180,7 +180,7 @@ func TestDeleteReportComment_WhenCommentCanBeDeleted(t *testing.T) {
 }
 
 func TestUpdateReportComment_WhenCommentCannotBeEdited(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	failMessage := "EditCommentRequestFailed"
@@ -201,7 +201,7 @@ func TestUpdateReportComment_WhenCommentCannotBeEdited(t *testing.T) {
 		nil,
 		MockBuiltIns(),
 		DefaultMockEventPayload,
-        controller,
+		controller,
 	)
 
 	testCommentId := int64(1234)
@@ -213,7 +213,7 @@ func TestUpdateReportComment_WhenCommentCannotBeEdited(t *testing.T) {
 }
 
 func TestUpdateReportComment_WhenCommentCanBeEdited(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	var gotUpdatedComment string
@@ -235,7 +235,7 @@ func TestUpdateReportComment_WhenCommentCanBeEdited(t *testing.T) {
 		nil,
 		MockBuiltIns(),
 		DefaultMockEventPayload,
-        controller,
+		controller,
 	)
 
 	testCommentId := int64(1234)
@@ -248,7 +248,7 @@ func TestUpdateReportComment_WhenCommentCanBeEdited(t *testing.T) {
 }
 
 func TestAddReportComment_WhenCommentCannotBeCreated(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	failMessage := "CreateCommentRequestFailed"
@@ -269,7 +269,7 @@ func TestAddReportComment_WhenCommentCannotBeCreated(t *testing.T) {
 		nil,
 		MockBuiltIns(),
 		DefaultMockEventPayload,
-        controller,
+		controller,
 	)
 
 	comment := "Test add report comment"
@@ -280,7 +280,7 @@ func TestAddReportComment_WhenCommentCannotBeCreated(t *testing.T) {
 }
 
 func TestAddReportComment_WhenCommentCanBeCreated(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	var createdComment string
@@ -304,7 +304,7 @@ func TestAddReportComment_WhenCommentCanBeCreated(t *testing.T) {
 		nil,
 		MockBuiltIns(),
 		DefaultMockEventPayload,
-        controller,
+		controller,
 	)
 
 	err := AddReportComment(mockedEnv, commentToBeCreated)
@@ -314,7 +314,7 @@ func TestAddReportComment_WhenCommentCanBeCreated(t *testing.T) {
 }
 
 func TestFindReportComment_WhenPullRequestCommentsListingFails(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	failMessage := "ListCommentsRequestFailed"
@@ -335,7 +335,7 @@ func TestFindReportComment_WhenPullRequestCommentsListingFails(t *testing.T) {
 		nil,
 		MockBuiltIns(),
 		DefaultMockEventPayload,
-        controller,
+		controller,
 	)
 
 	gotComment, err := FindReportComment(mockedEnv)
@@ -345,7 +345,7 @@ func TestFindReportComment_WhenPullRequestCommentsListingFails(t *testing.T) {
 }
 
 func TestFindReportComment_WhenThereIsReviewpadComment(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	wantComment := &github.IssueComment{
@@ -364,7 +364,7 @@ func TestFindReportComment_WhenThereIsReviewpadComment(t *testing.T) {
 		nil,
 		MockBuiltIns(),
 		DefaultMockEventPayload,
-        controller,
+		controller,
 	)
 
 	gotComment, err := FindReportComment(mockedEnv)
@@ -374,7 +374,7 @@ func TestFindReportComment_WhenThereIsReviewpadComment(t *testing.T) {
 }
 
 func TestFindReportComment_WhenThereIsNoReviewpadComment(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	comment := &github.IssueComment{
@@ -393,7 +393,7 @@ func TestFindReportComment_WhenThereIsNoReviewpadComment(t *testing.T) {
 		nil,
 		MockBuiltIns(),
 		DefaultMockEventPayload,
-        controller,
+		controller,
 	)
 
 	gotComment, err := FindReportComment(mockedEnv)

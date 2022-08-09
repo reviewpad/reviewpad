@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/golang/mock/gomock"
 	"github.com/google/go-github/v45/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
@@ -18,6 +19,9 @@ import (
 var workflowStatus = plugins_aladino.PluginBuiltIns().Functions["workflowStatus"].Code
 
 func TestWorkflowStatus_WhenEventPayloadIsNotWorkflowRunEvent(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	checkName := "test-workflow"
 	wantValue := aladino.BuildStringValue("")
 
@@ -28,6 +32,7 @@ func TestWorkflowStatus_WhenEventPayloadIsNotWorkflowRunEvent(t *testing.T) {
 		nil,
 		aladino.MockBuiltIns(),
 		eventPayload,
+		controller,
 	)
 
 	args := []aladino.Value{aladino.BuildStringValue(checkName)}
@@ -38,6 +43,9 @@ func TestWorkflowStatus_WhenEventPayloadIsNotWorkflowRunEvent(t *testing.T) {
 }
 
 func TestWorkflowStatus_WhenWorkflowRunIsNil(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	checkName := "test-workflow"
 	wantValue := aladino.BuildStringValue("")
 
@@ -50,6 +58,7 @@ func TestWorkflowStatus_WhenWorkflowRunIsNil(t *testing.T) {
 		nil,
 		aladino.MockBuiltIns(),
 		eventPayload,
+		controller,
 	)
 
 	args := []aladino.Value{aladino.BuildStringValue(checkName)}
@@ -60,6 +69,9 @@ func TestWorkflowStatus_WhenWorkflowRunIsNil(t *testing.T) {
 }
 
 func TestWorkflowStatus_WhenListCheckRunsForRefRequestFails(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	checkName := "test-workflow"
 	failMessage := "ListCheckRunsForRefRequestFail"
 	headSHA := "1234abc"
@@ -86,6 +98,7 @@ func TestWorkflowStatus_WhenListCheckRunsForRefRequestFails(t *testing.T) {
 		nil,
 		aladino.MockBuiltIns(),
 		eventPayload,
+		controller,
 	)
 
 	args := []aladino.Value{aladino.BuildStringValue(checkName)}
@@ -96,6 +109,9 @@ func TestWorkflowStatus_WhenListCheckRunsForRefRequestFails(t *testing.T) {
 }
 
 func TestWorkflowStatus_WhenCheckRunNotFoundDueToEmptyCheckRuns(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	checkName := "test-workflow"
 	headSHA := "1234abc"
 
@@ -122,6 +138,7 @@ func TestWorkflowStatus_WhenCheckRunNotFoundDueToEmptyCheckRuns(t *testing.T) {
 		nil,
 		aladino.MockBuiltIns(),
 		eventPayload,
+		controller,
 	)
 
 	args := []aladino.Value{aladino.BuildStringValue(checkName)}
@@ -132,6 +149,9 @@ func TestWorkflowStatus_WhenCheckRunNotFoundDueToEmptyCheckRuns(t *testing.T) {
 }
 
 func TestWorkflowStatus_WhenCheckRunIsMissingInNonEmptyCheckRuns(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	checkName := "test-workflow"
 	headSHA := "1234abc"
 
@@ -163,6 +183,7 @@ func TestWorkflowStatus_WhenCheckRunIsMissingInNonEmptyCheckRuns(t *testing.T) {
 		nil,
 		aladino.MockBuiltIns(),
 		eventPayload,
+		controller,
 	)
 
 	args := []aladino.Value{aladino.BuildStringValue(checkName)}
@@ -173,6 +194,9 @@ func TestWorkflowStatus_WhenCheckRunIsMissingInNonEmptyCheckRuns(t *testing.T) {
 }
 
 func TestWorkflowStatus_WhenEventIsCompleted(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	checkName := "test-workflow"
 	checkStatus := "completed"
 	checkConclusion := "success"
@@ -211,6 +235,7 @@ func TestWorkflowStatus_WhenEventIsCompleted(t *testing.T) {
 		nil,
 		aladino.MockBuiltIns(),
 		eventPayload,
+		controller,
 	)
 
 	args := []aladino.Value{aladino.BuildStringValue(checkName)}
@@ -221,6 +246,9 @@ func TestWorkflowStatus_WhenEventIsCompleted(t *testing.T) {
 }
 
 func TestWorkflowStatus_WhenEventIsNotCompleted(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	checkName := "test-workflow"
 	checkStatus := "in_progress"
 	headSHA := "1234abc"
@@ -257,6 +285,7 @@ func TestWorkflowStatus_WhenEventIsNotCompleted(t *testing.T) {
 		nil,
 		aladino.MockBuiltIns(),
 		eventPayload,
+		controller,
 	)
 
 	args := []aladino.Value{aladino.BuildStringValue(checkName)}

@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/golang/mock/gomock"
 	"github.com/google/go-github/v45/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
@@ -23,6 +24,9 @@ const ReviewpadCommentAnnotation = "<!--@annotation-reviewpad-single-comment-->"
 var commentOnce = plugins_aladino.PluginBuiltIns().Actions["commentOnce"].Code
 
 func TestCommentOnce_WhenGetCommentsRequestFails(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	failMessage := "GetCommentRequestFail"
 	comment := "Lorem Ipsum"
 	mockedEnv := aladino.MockDefaultEnv(
@@ -41,7 +45,8 @@ func TestCommentOnce_WhenGetCommentsRequestFails(t *testing.T) {
 		},
 		nil,
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+		controller,
 	)
 
 	args := []aladino.Value{aladino.BuildStringValue(fmt.Sprintf("%v%v", ReviewpadCommentAnnotation, comment))}
@@ -51,6 +56,9 @@ func TestCommentOnce_WhenGetCommentsRequestFails(t *testing.T) {
 }
 
 func TestCommentOnce_WhenCommentAlreadyExists(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	existingComment := "Lorem Ipsum"
 	commentCreated := false
 
@@ -75,7 +83,8 @@ func TestCommentOnce_WhenCommentAlreadyExists(t *testing.T) {
 		},
 		nil,
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+		controller,
 	)
 
 	args := []aladino.Value{aladino.BuildStringValue(existingComment)}
@@ -86,6 +95,9 @@ func TestCommentOnce_WhenCommentAlreadyExists(t *testing.T) {
 }
 
 func TestCommentOnce_WhenFirstTime(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	commentToAdd := "Lorem Ipsum"
 	addedComment := ""
 
@@ -110,7 +122,8 @@ func TestCommentOnce_WhenFirstTime(t *testing.T) {
 		},
 		nil,
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+		controller,
 	)
 
 	args := []aladino.Value{aladino.BuildStringValue(commentToAdd)}

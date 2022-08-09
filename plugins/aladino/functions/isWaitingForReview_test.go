@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/golang/mock/gomock"
 	"github.com/google/go-github/v45/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
@@ -19,6 +20,9 @@ import (
 var isWaitingForReview = plugins_aladino.PluginBuiltIns().Functions["isWaitingForReview"].Code
 
 func TestIsWaitingForReview_WhenRequestFails(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	mockedLastCommitDate := time.Now()
 	mockedPullRequest := aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
 		RequestedReviewers: []*github.User{},
@@ -52,7 +56,8 @@ func TestIsWaitingForReview_WhenRequestFails(t *testing.T) {
 				},
 				nil,
 				aladino.MockBuiltIns(),
-				nil,
+				aladino.DefaultMockEventPayload,
+				controller,
 			),
 			wantError: "GetPullRequestCommitsRequestFailed",
 		},
@@ -93,7 +98,8 @@ func TestIsWaitingForReview_WhenRequestFails(t *testing.T) {
 				},
 				nil,
 				aladino.MockBuiltIns(),
-				nil,
+				aladino.DefaultMockEventPayload,
+				controller,
 			),
 			wantError: "GetPullRequestReviewsRequestFailed",
 		},
@@ -147,6 +153,9 @@ func TestIsWaitingForReview_WhenInvalidCommits(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
+			controller := gomock.NewController(t)
+			defer controller.Finish()
+
 			mockedEnv := aladino.MockDefaultEnv(
 				t,
 				[]mock.MockBackendOption{
@@ -176,7 +185,8 @@ func TestIsWaitingForReview_WhenInvalidCommits(t *testing.T) {
 				},
 				nil,
 				aladino.MockBuiltIns(),
-				nil,
+				aladino.DefaultMockEventPayload,
+				controller,
 			)
 			args := []aladino.Value{}
 			gotValue, err := isWaitingForReview(mockedEnv, args)
@@ -222,6 +232,9 @@ func TestIsWaitingForReview_WhenHasNoReviews(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
+			controller := gomock.NewController(t)
+			defer controller.Finish()
+
 			mockedEnv := aladino.MockDefaultEnv(
 				t,
 				[]mock.MockBackendOption{
@@ -259,7 +272,8 @@ func TestIsWaitingForReview_WhenHasNoReviews(t *testing.T) {
 				},
 				nil,
 				aladino.MockBuiltIns(),
-				nil,
+				aladino.DefaultMockEventPayload,
+				controller,
 			)
 			args := []aladino.Value{}
 			gotValue, err := isWaitingForReview(mockedEnv, args)
@@ -391,6 +405,9 @@ func TestIsWaitingForReview_WhenHasReviews(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
+			controller := gomock.NewController(t)
+			defer controller.Finish()
+
 			mockedEnv := aladino.MockDefaultEnv(
 				t,
 				[]mock.MockBackendOption{
@@ -415,7 +432,8 @@ func TestIsWaitingForReview_WhenHasReviews(t *testing.T) {
 				},
 				nil,
 				aladino.MockBuiltIns(),
-				nil,
+				aladino.DefaultMockEventPayload,
+				controller,
 			)
 			args := []aladino.Value{}
 			gotValue, err := isWaitingForReview(mockedEnv, args)

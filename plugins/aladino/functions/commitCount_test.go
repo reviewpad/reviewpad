@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/golang/mock/gomock"
 	"github.com/google/go-github/v45/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
@@ -18,6 +19,9 @@ import (
 var commitCount = plugins_aladino.PluginBuiltIns().Functions["commitCount"].Code
 
 func TestCommitCount(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	totalCommits := 1
 	mockedPullRequest := aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
 		Commits: &totalCommits,
@@ -34,7 +38,8 @@ func TestCommitCount(t *testing.T) {
 		},
 		nil,
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+		controller,
 	)
 
 	wantCommitCount := aladino.BuildIntValue(totalCommits)

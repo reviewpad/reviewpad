@@ -29,7 +29,7 @@ func TestTypeCheckExec_WhenTypeInferenceFails(t *testing.T) {
 }
 
 func TestTypeCheck(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), DefaultMockEventPayload, controller)
@@ -48,7 +48,7 @@ func TestTypeCheck(t *testing.T) {
 }
 
 func TestTypeCheck_WhenExprIsNotFunctionCall(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), DefaultMockEventPayload, controller)
@@ -65,7 +65,7 @@ func TestTypeCheck_WhenExprIsNotFunctionCall(t *testing.T) {
 }
 
 func TestExec_WhenFunctionArgsEvalFails(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), DefaultMockEventPayload, controller)
@@ -83,7 +83,7 @@ func TestExec_WhenFunctionArgsEvalFails(t *testing.T) {
 }
 
 func TestExec_WhenActionBuiltInNonExisting(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), DefaultMockEventPayload, controller)
@@ -103,7 +103,7 @@ func TestExec_WhenActionBuiltInNonExisting(t *testing.T) {
 }
 
 func TestExec_WhenActionIsEnabled(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	builtInName := "emptyAction"
@@ -135,9 +135,9 @@ func TestExec_WhenActionIsEnabled(t *testing.T) {
 }
 
 func TestExec_WhenActionIsDisabled(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
-    
+
 	builtInName := "emptyAction"
 
 	isBuiltInCalled := false

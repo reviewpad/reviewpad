@@ -7,6 +7,7 @@ package plugins_aladino_functions_test
 import (
 	"testing"
 
+	"github.com/golang/mock/gomock"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -15,8 +16,11 @@ import (
 var filter = plugins_aladino.PluginBuiltIns().Functions["filter"].Code
 
 func TestFilter(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	mockedIntValue := aladino.BuildIntValue(1)
-	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), aladino.DefaultMockEventPayload, controller)
 
 	args := []aladino.Value{
 		aladino.BuildArrayValue([]aladino.Value{aladino.BuildStringValue("1"), mockedIntValue}),

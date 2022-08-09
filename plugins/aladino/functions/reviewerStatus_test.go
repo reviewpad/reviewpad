@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/golang/mock/gomock"
 	"github.com/google/go-github/v45/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
@@ -18,6 +19,9 @@ import (
 var reviewerStatus = plugins_aladino.PluginBuiltIns().Functions["reviewerStatus"].Code
 
 func TestReviewerStatus_WhenRequestFails(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	failMessage := "ReviewerStatusRequestFail"
 	mockedEnv := aladino.MockDefaultEnv(
 		t,
@@ -35,7 +39,8 @@ func TestReviewerStatus_WhenRequestFails(t *testing.T) {
 		},
 		nil,
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+		controller,
 	)
 
 	args := []aladino.Value{aladino.BuildStringValue("mary")}
@@ -46,6 +51,9 @@ func TestReviewerStatus_WhenRequestFails(t *testing.T) {
 }
 
 func TestReviewerStatus_WhenUserIsNil(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	reviews := []*github.PullRequestReview{
 		{
 			State: github.String("COMMENTED"),
@@ -61,7 +69,8 @@ func TestReviewerStatus_WhenUserIsNil(t *testing.T) {
 		},
 		nil,
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+		controller,
 	)
 
 	wantReviewState := aladino.BuildStringValue("")
@@ -74,6 +83,9 @@ func TestReviewerStatus_WhenUserIsNil(t *testing.T) {
 }
 
 func TestReviewerStatus_WhenStateIsNil(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	reviews := []*github.PullRequestReview{
 		{
 			User: &github.User{
@@ -91,7 +103,8 @@ func TestReviewerStatus_WhenStateIsNil(t *testing.T) {
 		},
 		nil,
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+		controller,
 	)
 
 	wantReviewState := aladino.BuildStringValue("")
@@ -104,6 +117,9 @@ func TestReviewerStatus_WhenStateIsNil(t *testing.T) {
 }
 
 func TestReviewerStatus_WhenStateUnknown(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	reviews := []*github.PullRequestReview{
 		{
 			State: github.String("COMMENTED"),
@@ -122,7 +138,8 @@ func TestReviewerStatus_WhenStateUnknown(t *testing.T) {
 		},
 		nil,
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+		controller,
 	)
 
 	wantReviewState := aladino.BuildStringValue("")
@@ -135,6 +152,9 @@ func TestReviewerStatus_WhenStateUnknown(t *testing.T) {
 }
 
 func TestReviewerStatus_WhenStateCommented(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	reviews := []*github.PullRequestReview{
 		{
 			State: github.String("COMMENTED"),
@@ -159,7 +179,8 @@ func TestReviewerStatus_WhenStateCommented(t *testing.T) {
 		},
 		nil,
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+		controller,
 	)
 
 	wantReviewState := aladino.BuildStringValue("COMMENTED")
@@ -172,6 +193,9 @@ func TestReviewerStatus_WhenStateCommented(t *testing.T) {
 }
 
 func TestReviewerStatus_WhenStateApproved(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	reviews := []*github.PullRequestReview{
 		{
 			State: github.String("COMMENTED"),
@@ -214,7 +238,8 @@ func TestReviewerStatus_WhenStateApproved(t *testing.T) {
 		},
 		nil,
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+		controller,
 	)
 
 	wantReviewState := aladino.BuildStringValue("APPROVED")
@@ -227,6 +252,9 @@ func TestReviewerStatus_WhenStateApproved(t *testing.T) {
 }
 
 func TestReviewerStatus_WhenStateRequestedChanges(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	reviews := []*github.PullRequestReview{
 		{
 			State: github.String("COMMENTED"),
@@ -263,7 +291,8 @@ func TestReviewerStatus_WhenStateRequestedChanges(t *testing.T) {
 		},
 		nil,
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+		controller,
 	)
 
 	wantReviewState := aladino.BuildStringValue("CHANGES_REQUESTED")

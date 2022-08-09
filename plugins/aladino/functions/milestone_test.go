@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/golang/mock/gomock"
 	"github.com/google/go-github/v45/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
@@ -18,6 +19,9 @@ import (
 var milestone = plugins_aladino.PluginBuiltIns().Functions["milestone"].Code
 
 func TestMilestone(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	milestoneTitle := "v1.0"
 	mockedPullRequest := aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
 		Milestone: &github.Milestone{
@@ -36,7 +40,8 @@ func TestMilestone(t *testing.T) {
 		},
 		nil,
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+		controller,
 	)
 
 	args := []aladino.Value{}

@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/golang/mock/gomock"
 	"github.com/google/go-github/v45/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
@@ -56,7 +57,10 @@ func TestGetPullRequestHeadRepoName(t *testing.T) {
 }
 
 func TestGetPullRequestBaseOwnerName(t *testing.T) {
-	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), aladino.DefaultMockEventPayload, controller)
 
 	mockedPullRequest := mockedEnv.GetPullRequest()
 	wantOwnerName := mockedPullRequest.Base.Repo.Owner.GetLogin()
@@ -66,7 +70,10 @@ func TestGetPullRequestBaseOwnerName(t *testing.T) {
 }
 
 func TestGetPullRequestBaseRepoName(t *testing.T) {
-	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), aladino.DefaultMockEventPayload, controller)
 
 	mockedPullRequest := mockedEnv.GetPullRequest()
 	wantRepoName := mockedPullRequest.Base.Repo.GetName()
@@ -76,7 +83,10 @@ func TestGetPullRequestBaseRepoName(t *testing.T) {
 }
 
 func TestGetPullRequestNumber(t *testing.T) {
-	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), aladino.DefaultMockEventPayload, controller)
 
 	mockedPullRequest := mockedEnv.GetPullRequest()
 	wantPullRequestNumber := mockedPullRequest.GetNumber()
@@ -245,6 +255,9 @@ func TestParseNumPages(t *testing.T) {
 }
 
 func TestGetPullRequestComments_WhenListCommentsRequestFails(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	failMessage := "ListCommentsRequestFail"
 	mockedEnv := aladino.MockDefaultEnv(
 		t,
@@ -262,7 +275,8 @@ func TestGetPullRequestComments_WhenListCommentsRequestFails(t *testing.T) {
 		},
 		nil,
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+		controller,
 	)
 
 	mockedPullRequest := mockedEnv.GetPullRequest()
@@ -280,6 +294,9 @@ func TestGetPullRequestComments_WhenListCommentsRequestFails(t *testing.T) {
 }
 
 func TestGetPullRequestComments(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	wantComments := []*github.IssueComment{
 		{Body: github.String("Lorem Ipsum")},
 	}
@@ -293,7 +310,8 @@ func TestGetPullRequestComments(t *testing.T) {
 		},
 		nil,
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+		controller,
 	)
 
 	mockedPullRequest := mockedEnv.GetPullRequest()
@@ -311,6 +329,9 @@ func TestGetPullRequestComments(t *testing.T) {
 }
 
 func TestGetPullRequestFiles(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	wantFiles := []*github.CommitFile{
 		{
 			Filename: github.String("default-mock-repo/file1.ts"),
@@ -329,7 +350,8 @@ func TestGetPullRequestFiles(t *testing.T) {
 		},
 		nil,
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+		controller,
 	)
 
 	mockedPullRequest := mockedEnv.GetPullRequest()
@@ -346,6 +368,9 @@ func TestGetPullRequestFiles(t *testing.T) {
 }
 
 func TestGetPullRequestReviewers_WhenListReviewersRequestFails(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	failMessage := "ListReviewersRequestFail"
 	mockedEnv := aladino.MockDefaultEnv(
 		t,
@@ -363,7 +388,8 @@ func TestGetPullRequestReviewers_WhenListReviewersRequestFails(t *testing.T) {
 		},
 		nil,
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+		controller,
 	)
 
 	mockedPullRequest := mockedEnv.GetPullRequest()
@@ -381,6 +407,9 @@ func TestGetPullRequestReviewers_WhenListReviewersRequestFails(t *testing.T) {
 }
 
 func TestGetPullRequestReviewers(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	wantReviewers := &github.Reviewers{
 		Users: []*github.User{
 			{Login: github.String("mary")},
@@ -399,7 +428,8 @@ func TestGetPullRequestReviewers(t *testing.T) {
 		},
 		nil,
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+		controller,
 	)
 
 	mockedPullRequest := mockedEnv.GetPullRequest()
@@ -417,6 +447,9 @@ func TestGetPullRequestReviewers(t *testing.T) {
 }
 
 func TestGetRepoCollaborators_WhenListCollaboratorsRequestFails(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	failMessage := "ListCollaboratorsRequestFail"
 	mockedEnv := aladino.MockDefaultEnv(
 		t,
@@ -434,7 +467,8 @@ func TestGetRepoCollaborators_WhenListCollaboratorsRequestFails(t *testing.T) {
 		},
 		nil,
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+		controller,
 	)
 
 	mockedPullRequest := mockedEnv.GetPullRequest()
@@ -450,6 +484,9 @@ func TestGetRepoCollaborators_WhenListCollaboratorsRequestFails(t *testing.T) {
 }
 
 func TestGetRepoCollaborators(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	wantCollaborators := []*github.User{
 		{Login: github.String("mary")},
 	}
@@ -463,7 +500,8 @@ func TestGetRepoCollaborators(t *testing.T) {
 		},
 		nil,
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+		controller,
 	)
 
 	mockedPullRequest := mockedEnv.GetPullRequest()
@@ -479,6 +517,9 @@ func TestGetRepoCollaborators(t *testing.T) {
 }
 
 func TestGetIssuesAvailableAssignees_WhenListAssigneesRequestFails(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	failMessage := "ListAssigneesRequestFail"
 	mockedEnv := aladino.MockDefaultEnv(
 		t,
@@ -496,7 +537,8 @@ func TestGetIssuesAvailableAssignees_WhenListAssigneesRequestFails(t *testing.T)
 		},
 		nil,
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+		controller,
 	)
 
 	mockedPullRequest := mockedEnv.GetPullRequest()
@@ -512,6 +554,9 @@ func TestGetIssuesAvailableAssignees_WhenListAssigneesRequestFails(t *testing.T)
 }
 
 func TestGetIssuesAvailableAssignees(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	wantAssignees := []*github.User{
 		{Login: github.String("jane")},
 	}
@@ -525,7 +570,8 @@ func TestGetIssuesAvailableAssignees(t *testing.T) {
 		},
 		nil,
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+		controller,
 	)
 
 	mockedPullRequest := mockedEnv.GetPullRequest()
@@ -541,6 +587,9 @@ func TestGetIssuesAvailableAssignees(t *testing.T) {
 }
 
 func TestGetPullRequestCommits_WhenListCommistsRequestFails(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	failMessage := "ListCommitsRequestFail"
 	mockedEnv := aladino.MockDefaultEnv(
 		t,
@@ -558,7 +607,8 @@ func TestGetPullRequestCommits_WhenListCommistsRequestFails(t *testing.T) {
 		},
 		nil,
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+		controller,
 	)
 
 	mockedPullRequest := mockedEnv.GetPullRequest()
@@ -575,6 +625,9 @@ func TestGetPullRequestCommits_WhenListCommistsRequestFails(t *testing.T) {
 }
 
 func TestGetPullRequestCommits(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	wantCommits := []*github.RepositoryCommit{
 		{
 			Commit: &github.Commit{
@@ -592,7 +645,8 @@ func TestGetPullRequestCommits(t *testing.T) {
 		},
 		nil,
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+		controller,
 	)
 
 	mockedPullRequest := mockedEnv.GetPullRequest()
@@ -609,6 +663,9 @@ func TestGetPullRequestCommits(t *testing.T) {
 }
 
 func TestGetPullRequestReviews(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	wantReviews := []*github.PullRequestReview{
 		{
 			State: github.String("COMMENTED"),
@@ -627,7 +684,8 @@ func TestGetPullRequestReviews(t *testing.T) {
 		},
 		nil,
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+		controller,
 	)
 
 	mockedPullRequest := mockedEnv.GetPullRequest()
@@ -644,6 +702,9 @@ func TestGetPullRequestReviews(t *testing.T) {
 }
 
 func TestGetPullRequestReviews_WhenRequestFails(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	failMessage := "ListPullRequestReviewsFail"
 	mockedEnv := aladino.MockDefaultEnv(
 		t,
@@ -661,7 +722,8 @@ func TestGetPullRequestReviews_WhenRequestFails(t *testing.T) {
 		},
 		nil,
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+		controller,
 	)
 
 	mockedPullRequest := mockedEnv.GetPullRequest()
@@ -678,6 +740,9 @@ func TestGetPullRequestReviews_WhenRequestFails(t *testing.T) {
 }
 
 func TestGetPullRequests(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	ownerName := "testOrg"
 	repoName := "testRepo"
 
@@ -693,7 +758,8 @@ func TestGetPullRequests(t *testing.T) {
 		},
 		nil,
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+		controller,
 	)
 
 	gotReviews, err := utils.GetPullRequests(
@@ -708,6 +774,9 @@ func TestGetPullRequests(t *testing.T) {
 }
 
 func TestGetPullRequests_WhenRequestFails(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	failMessage := "ListPullRequests"
 
 	ownerName := "testOrg"
@@ -729,7 +798,8 @@ func TestGetPullRequests_WhenRequestFails(t *testing.T) {
 		},
 		nil,
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+		controller,
 	)
 
 	gotReviews, err := utils.GetPullRequests(
@@ -744,6 +814,9 @@ func TestGetPullRequests_WhenRequestFails(t *testing.T) {
 }
 
 func TestGetReviewThreads_WhenRequestFails(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	failMessage := "GetReviewThreads"
 	mockedEnv := aladino.MockDefaultEnv(
 		t,
@@ -752,7 +825,8 @@ func TestGetReviewThreads_WhenRequestFails(t *testing.T) {
 			http.Error(w, failMessage, http.StatusNotFound)
 		},
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+		controller,
 	)
 
 	gotThreads, err := utils.GetReviewThreads(
@@ -769,6 +843,9 @@ func TestGetReviewThreads_WhenRequestFails(t *testing.T) {
 }
 
 func TestGetReviewThreads(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	mockedGraphQLQuery := fmt.Sprintf(
 		"{\"query\":\"query($pullRequestNumber:Int!$repositoryName:String!$repositoryOwner:String!$reviewThreadsCursor:String){repository(owner: $repositoryOwner, name: $repositoryName){pullRequest(number: $pullRequestNumber){reviewThreads(first: 10, after: $reviewThreadsCursor){nodes{isResolved,isOutdated},pageInfo{endCursor,hasNextPage}}}}}\",\"variables\":{\"pullRequestNumber\":%d,\"repositoryName\":\"%s\",\"repositoryOwner\":\"%s\",\"reviewThreadsCursor\":null}}\n",
 		aladino.DefaultMockPrNum,
@@ -801,7 +878,8 @@ func TestGetReviewThreads(t *testing.T) {
 			}
 		},
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+		controller,
 	)
 
 	wantReviewThreads := []utils.GQLReviewThread{{

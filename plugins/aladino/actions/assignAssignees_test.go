@@ -37,7 +37,7 @@ func TestAssignAssignees_WhenListOfAssigneesIsEmpty(t *testing.T) {
 }
 
 func TestAssignAssignees_WhenListOfAssigneesExceeds10Users(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), aladino.DefaultMockEventPayload, controller)
@@ -61,7 +61,7 @@ func TestAssignAssignees_WhenListOfAssigneesExceeds10Users(t *testing.T) {
 }
 
 func TestAssignAssignees(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	gotAssignees := []string{}
@@ -96,7 +96,7 @@ func TestAssignAssignees(t *testing.T) {
 		nil,
 		aladino.MockBuiltIns(),
 		aladino.DefaultMockEventPayload,
-        controller,
+		controller,
 	)
 
 	assignees := make([]aladino.Value, len(wantAssignees))

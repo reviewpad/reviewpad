@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/golang/mock/gomock"
 	"github.com/google/go-github/v45/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
@@ -18,6 +19,9 @@ import (
 var title = plugins_aladino.PluginBuiltIns().Functions["title"].Code
 
 func TestTitle(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	prTitle := "Amazing new feature"
 	mockedPullRequest := aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
 		Title: github.String(prTitle),
@@ -34,7 +38,8 @@ func TestTitle(t *testing.T) {
 		},
 		nil,
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+		controller,
 	)
 
 	wantTitle := aladino.BuildStringValue(prTitle)

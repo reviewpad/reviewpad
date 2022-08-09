@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/golang/mock/gomock"
 	"github.com/google/go-github/v45/github"
 	"github.com/gorilla/mux"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
@@ -19,6 +20,9 @@ import (
 var removeLabel = plugins_aladino.PluginBuiltIns().Actions["removeLabel"].Code
 
 func TestRemoveLabel_WhenLabelIsNotAppliedToPullRequest(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	wantLabel := "bug"
 	var isLabelRemoved bool
 	mockedEnv := aladino.MockDefaultEnv(
@@ -40,7 +44,8 @@ func TestRemoveLabel_WhenLabelIsNotAppliedToPullRequest(t *testing.T) {
 		},
 		nil,
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+		controller,
 	)
 
 	args := []aladino.Value{aladino.BuildStringValue(wantLabel)}
@@ -51,6 +56,9 @@ func TestRemoveLabel_WhenLabelIsNotAppliedToPullRequest(t *testing.T) {
 }
 
 func TestRemoveLabel_WhenLabelIsAppliedToPullRequestAndLabelIsInEnvironment(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	wantLabel := "enhancement"
 	var gotLabel string
 	mockedEnv := aladino.MockDefaultEnv(
@@ -72,7 +80,8 @@ func TestRemoveLabel_WhenLabelIsAppliedToPullRequestAndLabelIsInEnvironment(t *t
 		},
 		nil,
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+		controller,
 	)
 
 	internalLabelID := aladino.BuildInternalLabelID(wantLabel)
@@ -86,6 +95,9 @@ func TestRemoveLabel_WhenLabelIsAppliedToPullRequestAndLabelIsInEnvironment(t *t
 }
 
 func TestRemoveLabel_WhenLabelIsAppliedToPullRequestAndLabelIsNotInEnvironment(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	wantLabel := "enhancement"
 	var gotLabel string
 	mockedEnv := aladino.MockDefaultEnv(
@@ -107,7 +119,8 @@ func TestRemoveLabel_WhenLabelIsAppliedToPullRequestAndLabelIsNotInEnvironment(t
 		},
 		nil,
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+		controller,
 	)
 
 	args := []aladino.Value{aladino.BuildStringValue(wantLabel)}

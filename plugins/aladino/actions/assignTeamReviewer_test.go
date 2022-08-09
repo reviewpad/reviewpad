@@ -36,7 +36,7 @@ func TestAssignTeamReviewer_WhenNoTeamSlugsAreProvided(t *testing.T) {
 }
 
 func TestAssignTeamReviewer(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	teamA := "core"
@@ -61,7 +61,7 @@ func TestAssignTeamReviewer(t *testing.T) {
 		nil,
 		aladino.MockBuiltIns(),
 		aladino.DefaultMockEventPayload,
-        controller,
+		controller,
 	)
 
 	args := []aladino.Value{aladino.BuildArrayValue([]aladino.Value{aladino.BuildStringValue(teamA), aladino.BuildStringValue(teamB)})}

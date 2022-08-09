@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/golang/mock/gomock"
 	"github.com/google/go-github/v45/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
@@ -18,6 +19,9 @@ import (
 var assignees = plugins_aladino.PluginBuiltIns().Functions["assignees"].Code
 
 func TestAssignees(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	assigneeLogin := "jane"
 	mockedPullRequest := aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
 		Assignees: []*github.User{
@@ -36,7 +40,8 @@ func TestAssignees(t *testing.T) {
 		},
 		nil,
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+		controller,
 	)
 
 	mockedAssignees := mockedEnv.GetPullRequest().Assignees

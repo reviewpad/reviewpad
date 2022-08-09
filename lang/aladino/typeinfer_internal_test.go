@@ -49,9 +49,9 @@ func TestTypeInference_WhenGivenNonExistingBuiltIn(t *testing.T) {
 }
 
 func TestTypeInference_WhenGivenBoolConst(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
-    
+
 	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), DefaultMockEventPayload, controller)
 
 	expr := BuildBoolConst(true)

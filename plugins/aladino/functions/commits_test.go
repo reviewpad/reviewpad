@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/golang/mock/gomock"
 	"github.com/google/go-github/v45/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
@@ -18,6 +19,9 @@ import (
 var commits = plugins_aladino.PluginBuiltIns().Functions["commits"].Code
 
 func TestCommits_WhenListCommitsRequestFails(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	failMessage := "ListCommitsRequestFail"
 	mockedEnv := aladino.MockDefaultEnv(
 		t,
@@ -35,7 +39,8 @@ func TestCommits_WhenListCommitsRequestFails(t *testing.T) {
 		},
 		nil,
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+		controller,
 	)
 
 	args := []aladino.Value{}
@@ -46,6 +51,9 @@ func TestCommits_WhenListCommitsRequestFails(t *testing.T) {
 }
 
 func TestCommits(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	repoCommits := []*github.RepositoryCommit{
 		{
 			Commit: &github.Commit{
@@ -63,7 +71,8 @@ func TestCommits(t *testing.T) {
 		},
 		nil,
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+		controller,
 	)
 
 	wantCommitsMessages := make([]aladino.Value, len(repoCommits))

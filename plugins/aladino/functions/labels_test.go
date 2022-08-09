@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/golang/mock/gomock"
 	"github.com/google/go-github/v45/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
@@ -18,6 +19,9 @@ import (
 var labels = plugins_aladino.PluginBuiltIns().Functions["labels"].Code
 
 func TestLabels(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	ghLabels := []*github.Label{
 		{Name: github.String("bug")},
 		{Name: github.String("enhancement")},
@@ -37,7 +41,8 @@ func TestLabels(t *testing.T) {
 		},
 		nil,
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+		controller,
 	)
 
 	wantLabels := aladino.BuildArrayValue([]aladino.Value{

@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/golang/mock/gomock"
 	"github.com/google/go-github/v45/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
@@ -19,6 +20,9 @@ import (
 var hasUnaddressedReviewThreads = plugins_aladino.PluginBuiltIns().Functions["hasUnaddressedReviewThreads"].Code
 
 func TestHasUnaddressedReviewThreads_WhenRequestFails(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	mockedEnv := aladino.MockDefaultEnv(
 		t,
 		nil,
@@ -26,7 +30,8 @@ func TestHasUnaddressedReviewThreads_WhenRequestFails(t *testing.T) {
 			http.Error(w, "404 Not Found", http.StatusNotFound)
 		},
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+		controller,
 	)
 
 	_, err := hasUnaddressedReviewThreads(mockedEnv, []aladino.Value{})
@@ -73,6 +78,9 @@ func TestHasUnaddressedReviewThreads(t *testing.T) {
 	}
 
 	for name, test := range tests {
+		controller := gomock.NewController(t)
+		defer controller.Finish()
+
 		mockedEnv := aladino.MockDefaultEnv(
 			t,
 			[]mock.MockBackendOption{
@@ -117,7 +125,8 @@ func TestHasUnaddressedReviewThreads(t *testing.T) {
 				}
 			},
 			aladino.MockBuiltIns(),
-			nil,
+			aladino.DefaultMockEventPayload,
+			controller,
 		)
 
 		t.Run(name, func(t *testing.T) {

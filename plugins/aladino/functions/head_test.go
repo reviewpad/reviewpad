@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/golang/mock/gomock"
 	"github.com/google/go-github/v45/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
@@ -18,6 +19,9 @@ import (
 var head = plugins_aladino.PluginBuiltIns().Functions["head"].Code
 
 func TestHead(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	headRef := "new-topic"
 	mockedPullRequest := aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
 		Head: &github.PullRequestBranch{
@@ -42,7 +46,8 @@ func TestHead(t *testing.T) {
 		},
 		nil,
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+		controller,
 	)
 
 	wantHead := aladino.BuildStringValue(headRef)

@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/golang/mock/gomock"
 	"github.com/google/go-github/v45/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
@@ -19,6 +20,9 @@ import (
 var createdAt = plugins_aladino.PluginBuiltIns().Functions["createdAt"].Code
 
 func TestCreatedAt(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	date := time.Date(2009, 11, 17, 20, 34, 58, 651387237, time.UTC)
 	mockedPullRequest := aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
 		CreatedAt: &date,
@@ -35,7 +39,8 @@ func TestCreatedAt(t *testing.T) {
 		},
 		nil,
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+		controller,
 	)
 
 	wantCreatedAtTime, err := time.Parse("2006-01-02 15:04:05.999999999 -0700 MST", date.String())

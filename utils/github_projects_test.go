@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/golang/mock/gomock"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	plugins_aladino_actions "github.com/reviewpad/reviewpad/v3/plugins/aladino/actions"
@@ -15,6 +16,9 @@ import (
 )
 
 func TestGetProjectV2ByName_WhenRequestFails(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	mockedEnv := aladino.MockDefaultEnv(
 		t,
 		nil,
@@ -22,7 +26,8 @@ func TestGetProjectV2ByName_WhenRequestFails(t *testing.T) {
 			http.Error(w, "404 Not Found", http.StatusNotFound)
 		},
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+		controller,
 	)
 	mockOwner := utils.GetPullRequestBaseOwnerName(mockedEnv.GetPullRequest())
 	mockRepo := utils.GetPullRequestBaseRepoName(mockedEnv.GetPullRequest())
@@ -36,6 +41,9 @@ func TestGetProjectV2ByName_WhenRequestFails(t *testing.T) {
 }
 
 func TestGetProjectV2ByName_WhenProjectNotFound(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	mockedGetProjectByNameQuery := `{
         "query": "query($name:String! $repositoryName:String! $repositoryOwner:String!) {
             repository(owner: $repositoryOwner, name: $repositoryName) {
@@ -76,7 +84,8 @@ func TestGetProjectV2ByName_WhenProjectNotFound(t *testing.T) {
 			}
 		},
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+		controller,
 	)
 	mockOwner := utils.GetPullRequestBaseOwnerName(mockedEnv.GetPullRequest())
 	mockRepo := utils.GetPullRequestBaseRepoName(mockedEnv.GetPullRequest())
@@ -90,6 +99,9 @@ func TestGetProjectV2ByName_WhenProjectNotFound(t *testing.T) {
 }
 
 func TestGetProjectV2ByName_WhenProjectFound(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	mockedGetProjectByNameQuery := `{
         "query": "query($name:String! $repositoryName:String! $repositoryOwner:String!) {
             repository(owner: $repositoryOwner, name: $repositoryName) {
@@ -132,7 +144,8 @@ func TestGetProjectV2ByName_WhenProjectFound(t *testing.T) {
 			}
 		},
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+		controller,
 	)
 	mockOwner := utils.GetPullRequestBaseOwnerName(mockedEnv.GetPullRequest())
 	mockRepo := utils.GetPullRequestBaseRepoName(mockedEnv.GetPullRequest())
@@ -146,6 +159,9 @@ func TestGetProjectV2ByName_WhenProjectFound(t *testing.T) {
 }
 
 func TestGetProjectFieldsByProjectNumber_WhenRequestFails(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	mockedEnv := aladino.MockDefaultEnv(
 		t,
 		nil,
@@ -153,7 +169,8 @@ func TestGetProjectFieldsByProjectNumber_WhenRequestFails(t *testing.T) {
 			http.Error(w, "404 Not Found", http.StatusNotFound)
 		},
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+		controller,
 	)
 	mockOwner := utils.GetPullRequestBaseOwnerName(mockedEnv.GetPullRequest())
 	mockRepo := utils.GetPullRequestBaseRepoName(mockedEnv.GetPullRequest())
@@ -168,6 +185,9 @@ func TestGetProjectFieldsByProjectNumber_WhenRequestFails(t *testing.T) {
 }
 
 func TestGetProjectFieldsByProjectNumber_WhenProjectNotFound(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	mockedGetProjectByNameQuery := `{
         "query": "query($afterCursor:String! $projectNumber:Int! $repositoryName:String! $repositoryOwner:String!) {
             repository(owner: $repositoryOwner, name: $repositoryName) {
@@ -219,7 +239,8 @@ func TestGetProjectFieldsByProjectNumber_WhenProjectNotFound(t *testing.T) {
 			}
 		},
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+		controller,
 	)
 	mockOwner := utils.GetPullRequestBaseOwnerName(mockedEnv.GetPullRequest())
 	mockRepo := utils.GetPullRequestBaseRepoName(mockedEnv.GetPullRequest())
@@ -235,6 +256,9 @@ func TestGetProjectFieldsByProjectNumber_WhenProjectNotFound(t *testing.T) {
 }
 
 func TestGetProjectFieldsByProjectNumber_WhenRetrySuccessful(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	mockedGetProjectByNameQuery := `{
         "query":"query($afterCursor:String! $projectNumber:Int! $repositoryName:String! $repositoryOwner:String!) {
             repository(owner: $repositoryOwner, name: $repositoryName) {
@@ -307,7 +331,8 @@ func TestGetProjectFieldsByProjectNumber_WhenRetrySuccessful(t *testing.T) {
 			}
 		},
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+		controller,
 	)
 	mockOwner := utils.GetPullRequestBaseOwnerName(mockedEnv.GetPullRequest())
 	mockRepo := utils.GetPullRequestBaseRepoName(mockedEnv.GetPullRequest())

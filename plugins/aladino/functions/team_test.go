@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/golang/mock/gomock"
 	"github.com/google/go-github/v45/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
@@ -18,6 +19,9 @@ import (
 var team = plugins_aladino.PluginBuiltIns().Functions["team"].Code
 
 func TestTeam_WhenListTeamMembersBySlugRequestFails(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	teamSlug := "reviewpad-team"
 	failMessage := "ListTeamMembersBySlugRequestFail"
 	mockedEnv := aladino.MockDefaultEnv(
@@ -36,7 +40,8 @@ func TestTeam_WhenListTeamMembersBySlugRequestFails(t *testing.T) {
 		},
 		nil,
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+		controller,
 	)
 
 	args := []aladino.Value{aladino.BuildStringValue(teamSlug)}
@@ -47,6 +52,9 @@ func TestTeam_WhenListTeamMembersBySlugRequestFails(t *testing.T) {
 }
 
 func TestTeam(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	teamSlug := "reviewpad-team"
 	ghMembers := []*github.User{
 		{Login: github.String("john")},
@@ -62,7 +70,8 @@ func TestTeam(t *testing.T) {
 		},
 		nil,
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+		controller,
 	)
 
 	wantMembers := aladino.BuildArrayValue([]aladino.Value{

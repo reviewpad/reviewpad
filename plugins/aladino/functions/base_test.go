@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/golang/mock/gomock"
 	"github.com/google/go-github/v45/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
@@ -18,6 +19,9 @@ import (
 var base = plugins_aladino.PluginBuiltIns().Functions["base"].Code
 
 func TestBase(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	baseRef := "master"
 	mockedPullRequest := aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
 		Base: &github.PullRequestBranch{
@@ -42,7 +46,8 @@ func TestBase(t *testing.T) {
 		},
 		nil,
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+		controller,
 	)
 
 	wantBase := aladino.BuildStringValue(baseRef)

@@ -30,7 +30,7 @@ func TestEval_OnUnaryOp_WhenExprEvalFails(t *testing.T) {
 }
 
 func TestEval_OnUnaryOp(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), aladino.DefaultMockEventPayload, controller)
@@ -49,7 +49,7 @@ func TestEval_OnUnaryOp(t *testing.T) {
 }
 
 func TestEval_OnBinaryOp_WhenLeftOperandEvalFails(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), aladino.DefaultMockEventPayload, controller)
@@ -66,7 +66,7 @@ func TestEval_OnBinaryOp_WhenLeftOperandEvalFails(t *testing.T) {
 }
 
 func TestEval_OnBinaryOp_WhenRightOperandEvalFails(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), aladino.DefaultMockEventPayload, controller)
@@ -83,7 +83,7 @@ func TestEval_OnBinaryOp_WhenRightOperandEvalFails(t *testing.T) {
 }
 
 func TestEval_OnBinaryOp_WhenDiffKinds(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), aladino.DefaultMockEventPayload, controller)
@@ -100,7 +100,7 @@ func TestEval_OnBinaryOp_WhenDiffKinds(t *testing.T) {
 }
 
 func TestEval_OnBinaryOp_WhenTrue(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), aladino.DefaultMockEventPayload, controller)
@@ -119,7 +119,7 @@ func TestEval_OnBinaryOp_WhenTrue(t *testing.T) {
 }
 
 func TestEval_OnBinaryOp_WhenFalse(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), aladino.DefaultMockEventPayload, controller)
@@ -138,7 +138,7 @@ func TestEval_OnBinaryOp_WhenFalse(t *testing.T) {
 }
 
 func TestEval_OnVariable_WhenVariableIsRegistered(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), aladino.DefaultMockEventPayload, controller)
@@ -163,7 +163,7 @@ func TestEval_OnVariable_WhenVariableIsRegistered(t *testing.T) {
 }
 
 func TestEval_OnVariable_WhenVariableIsNotABuiltIn(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), aladino.DefaultMockEventPayload, controller)
@@ -180,7 +180,7 @@ func TestEval_OnVariable_WhenVariableIsNotABuiltIn(t *testing.T) {
 }
 
 func TestEval_OnVariable_WhenVariableIsABuiltIn(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), aladino.DefaultMockEventPayload, controller)
@@ -199,7 +199,7 @@ func TestEval_OnVariable_WhenVariableIsABuiltIn(t *testing.T) {
 }
 
 func TestEval_OnBoolConst(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), aladino.DefaultMockEventPayload, controller)
@@ -218,7 +218,7 @@ func TestEval_OnBoolConst(t *testing.T) {
 }
 
 func TestEval_OnStringConst(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), aladino.DefaultMockEventPayload, controller)
@@ -238,7 +238,7 @@ func TestEval_OnStringConst(t *testing.T) {
 }
 
 func TestEval_OnIntConst(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), aladino.DefaultMockEventPayload, controller)
@@ -257,7 +257,7 @@ func TestEval_OnIntConst(t *testing.T) {
 }
 
 func TestEval_OnFunctionCall_WhenArgEvalFails(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), aladino.DefaultMockEventPayload, controller)
@@ -274,7 +274,7 @@ func TestEval_OnFunctionCall_WhenArgEvalFails(t *testing.T) {
 }
 
 func TestEval_OnFunctionCall_WhenFunctionIsNotABuiltIn(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), aladino.DefaultMockEventPayload, controller)
@@ -291,7 +291,7 @@ func TestEval_OnFunctionCall_WhenFunctionIsNotABuiltIn(t *testing.T) {
 }
 
 func TestEval_OnFunctionCall_WhenFunctionIsABuiltIn(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), aladino.DefaultMockEventPayload, controller)
@@ -310,7 +310,7 @@ func TestEval_OnFunctionCall_WhenFunctionIsABuiltIn(t *testing.T) {
 }
 
 func TestEval_OnLambda_WhenLambdaBodyEvalFails(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), aladino.DefaultMockEventPayload, controller)
@@ -331,7 +331,7 @@ func TestEval_OnLambda_WhenLambdaBodyEvalFails(t *testing.T) {
 }
 
 func TestEval_OnLambda(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), aladino.DefaultMockEventPayload, controller)
@@ -358,7 +358,7 @@ func TestEval_OnLambda(t *testing.T) {
 }
 
 func TestEval_OnTypedExpr(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), aladino.DefaultMockEventPayload, controller)
@@ -379,7 +379,7 @@ func TestEval_OnTypedExpr(t *testing.T) {
 }
 
 func TestEval_OnArray_WhenElemEvalFails(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), aladino.DefaultMockEventPayload, controller)
@@ -396,7 +396,7 @@ func TestEval_OnArray_WhenElemEvalFails(t *testing.T) {
 }
 
 func TestEval_OnArray(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), aladino.DefaultMockEventPayload, controller)
@@ -415,7 +415,7 @@ func TestEval_OnArray(t *testing.T) {
 }
 
 func TestEval_WhenExprEvalFails(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), aladino.DefaultMockEventPayload, controller)
@@ -432,7 +432,7 @@ func TestEval_WhenExprEvalFails(t *testing.T) {
 }
 
 func TestEval(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), aladino.DefaultMockEventPayload, controller)
@@ -451,7 +451,7 @@ func TestEval(t *testing.T) {
 }
 
 func TestEvalCondition_WhenExprEvalFails(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), aladino.DefaultMockEventPayload, controller)
@@ -468,7 +468,7 @@ func TestEvalCondition_WhenExprEvalFails(t *testing.T) {
 }
 
 func TestEvalCondition_WhenConditionIsTrue(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), aladino.DefaultMockEventPayload, controller)
@@ -485,9 +485,9 @@ func TestEvalCondition_WhenConditionIsTrue(t *testing.T) {
 }
 
 func TestEvalCondition_WhenConditionIsFalse(t *testing.T) {
-    controller := gomock.NewController(t)
+	controller := gomock.NewController(t)
 	defer controller.Finish()
-    
+
 	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), aladino.DefaultMockEventPayload, controller)
 
 	expr, err := aladino.Parse("1 == 2")

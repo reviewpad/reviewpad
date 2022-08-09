@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/golang/mock/gomock"
 	"github.com/google/go-github/v45/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
@@ -18,6 +19,9 @@ import (
 var totalCreatedPullRequests = plugins_aladino.PluginBuiltIns().Functions["totalCreatedPullRequests"].Code
 
 func TestTotalCreatedPullRequests_WhenListIssuesByRepoRequestFails(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	devName := "steve"
 	failMessage := "ListListIssuesByRepoRequestFail"
 	mockedEnv := aladino.MockDefaultEnv(
@@ -36,7 +40,8 @@ func TestTotalCreatedPullRequests_WhenListIssuesByRepoRequestFails(t *testing.T)
 		},
 		nil,
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+		controller,
 	)
 
 	args := []aladino.Value{aladino.BuildStringValue(devName)}
@@ -47,6 +52,9 @@ func TestTotalCreatedPullRequests_WhenListIssuesByRepoRequestFails(t *testing.T)
 }
 
 func TestTotalCreatedPullRequests_WhenThereIsPullRequestIssues(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	devName := "steve"
 	ghIssues := []*github.Issue{
 		{
@@ -70,7 +78,8 @@ func TestTotalCreatedPullRequests_WhenThereIsPullRequestIssues(t *testing.T) {
 		},
 		nil,
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+		controller,
 	)
 
 	wantTotal := aladino.BuildIntValue(1)

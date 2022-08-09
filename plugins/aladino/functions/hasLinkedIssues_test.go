@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/golang/mock/gomock"
 	"github.com/google/go-github/v45/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
@@ -19,6 +20,9 @@ import (
 var hasLinkedIssues = plugins_aladino.PluginBuiltIns().Functions["hasLinkedIssues"].Code
 
 func TestHasLinkedIssues_WhenRequestFails(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	mockedEnv := aladino.MockDefaultEnv(
 		t,
 		nil,
@@ -26,7 +30,8 @@ func TestHasLinkedIssues_WhenRequestFails(t *testing.T) {
 			http.Error(w, "404 Not Found", http.StatusNotFound)
 		},
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+		controller,
 	)
 
 	_, err := hasLinkedIssues(mockedEnv, []aladino.Value{})
@@ -35,6 +40,9 @@ func TestHasLinkedIssues_WhenRequestFails(t *testing.T) {
 }
 
 func TestHasLinkedIssues_WhenHasLinkedIssues(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	mockedPrNum := 6
 	mockedPrOwner := "foobar"
 	mockedPrRepoName := "default-mock-repo"
@@ -86,7 +94,8 @@ func TestHasLinkedIssues_WhenHasLinkedIssues(t *testing.T) {
 			}
 		},
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+		controller,
 	)
 
 	wantVal := aladino.BuildBoolValue(true)
@@ -97,6 +106,9 @@ func TestHasLinkedIssues_WhenHasLinkedIssues(t *testing.T) {
 }
 
 func TestHasLinkedIssues_WhenNoLinkedIssues(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	mockedPrNum := 6
 	mockedPrOwner := "foobar"
 	mockedPrRepoName := "default-mock-repo"
@@ -148,7 +160,8 @@ func TestHasLinkedIssues_WhenNoLinkedIssues(t *testing.T) {
 			}
 		},
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+		controller,
 	)
 
 	wantVal := aladino.BuildBoolValue(false)

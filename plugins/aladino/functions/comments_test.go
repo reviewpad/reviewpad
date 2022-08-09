@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/golang/mock/gomock"
 	"github.com/google/go-github/v45/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
@@ -18,6 +19,9 @@ import (
 var comments = plugins_aladino.PluginBuiltIns().Functions["comments"].Code
 
 func TestComments(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	wantedComments := aladino.BuildArrayValue(
 		[]aladino.Value{
 			aladino.BuildStringValue("hello world"),
@@ -38,7 +42,8 @@ func TestComments(t *testing.T) {
 		},
 		nil,
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+		controller,
 	)
 
 	args := []aladino.Value{}
@@ -49,6 +54,9 @@ func TestComments(t *testing.T) {
 }
 
 func TestComments_WhenGetCommentsRequestFailed(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	failMessage := "GetCommentsRequestFailed"
 	mockedEnv := aladino.MockDefaultEnv(
 		t,
@@ -66,7 +74,8 @@ func TestComments_WhenGetCommentsRequestFailed(t *testing.T) {
 		},
 		nil,
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+		controller,
 	)
 
 	args := []aladino.Value{}

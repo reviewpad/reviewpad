@@ -9,14 +9,11 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 	"time"
 
-	"github.com/explore-dev/atlas-common/go/api/entities"
 	"github.com/explore-dev/atlas-common/go/api/services"
 	protobuf "github.com/explore-dev/atlas-common/go/api/services"
 	"github.com/golang/mock/gomock"
@@ -300,53 +297,6 @@ func mockDefaultHttpClient(clientOptions []mock.MockBackendOption) *http.Client 
 func MockDefaultSemanticClient(controller *gomock.Controller) services.SemanticClient {
 	semanticClient := NewMockSemanticClient(controller)
 
-	filepath := "testdata/crawler.go"
-	blob, err := os.ReadFile(filepath)
-	if err != nil {
-		log.Fatalf("Error reading %v file: %v", filepath, err)
-	}
-
-	blobStr := string(blob)
-
-	semanticClient.EXPECT().GetSymbols(
-		gomock.Any(),
-		&services.GetSymbolsRequest{
-			Uri:      "https://api.github.com/repos/foobar/mocked-proj-1/pulls/1234",
-			CommitId: "1234",
-			Filepath: "mocked-proj-1/crawler.go",
-			Blob:     []byte(fmt.Sprintf("%#v", blobStr)),
-			BlobId:   "1234",
-			Diff: &entities.ResolveFileDiff{Blocks: []*entities.ResolveBlockDiff{
-				{Start: 2, End: 4},
-				{Start: 5, End: 6},
-				{Start: 7, End: 7},
-				{Start: 8, End: 9},
-				{Start: 10, End: 12},
-				{Start: 20, End: 22},
-				{Start: 23, End: 23},
-				{Start: 24, End: 26},
-			},
-			},
-		}).Return(
-		&services.GetSymbolsReply{
-			Symbols: &entities.Symbols{
-				Files: map[string]*entities.File{},
-				Symbols: map[string]*entities.Symbol{
-					"Crawl": {
-						Id:   "1",
-						Name: "Crawl",
-						Type: "Function",
-						CodeComments: []*entities.SymbolDocumentation{
-							{
-								Code: "reviewpad-an: critical",
-							},
-						},
-					},
-				},
-			},
-		}, nil,
-	)
-
 	return semanticClient
 }
 
@@ -369,7 +319,7 @@ func MockDefaultEnv(
 	ghGraphQLHandler func(http.ResponseWriter, *http.Request),
 	builtIns *BuiltIns,
 	eventPayload interface{},
-    controller *gomock.Controller,
+	controller *gomock.Controller,
 ) Env {
 	prOwner := DefaultMockPrOwner
 	prRepoName := DefaultMockPrRepoName
@@ -386,7 +336,7 @@ func MockDefaultEnv(
 		clientGQL = githubv4.NewClient(&http.Client{Transport: localRoundTripper{handler: mux}})
 	}
 
-	mockedEnv, err := mockEnvWith(prOwner, prRepoName, prNum, client, clientGQL, nil, builtIns, semanticClient)
+	mockedEnv, err := mockEnvWith(prOwner, prRepoName, prNum, client, clientGQL, eventPayload, builtIns, semanticClient)
 	if err != nil {
 		t.Fatalf("[MockDefaultEnv] failed to create mock env: %v", err)
 	}

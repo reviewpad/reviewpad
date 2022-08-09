@@ -7,6 +7,7 @@ package plugins_aladino_actions_test
 import (
 	"testing"
 
+	"github.com/golang/mock/gomock"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -15,6 +16,9 @@ import (
 var disableActions = plugins_aladino.PluginBuiltIns().Actions["disableActions"].Code
 
 func TestDisableActions(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	builtInName := "emptyAction"
 
 	builtIns := &aladino.BuiltIns{
@@ -28,7 +32,7 @@ func TestDisableActions(t *testing.T) {
 			},
 		},
 	}
-	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, builtIns, nil)
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, builtIns, aladino.DefaultMockEventPayload, controller)
 
 	args := []aladino.Value{aladino.BuildArrayValue([]aladino.Value{aladino.BuildStringValue(builtInName)})}
 	err := disableActions(mockedEnv, args)

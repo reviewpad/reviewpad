@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/golang/mock/gomock"
 	"github.com/google/go-github/v45/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
@@ -18,6 +19,9 @@ import (
 var hasLinearHistory = plugins_aladino.PluginBuiltIns().Functions["hasLinearHistory"].Code
 
 func TestHasLinearHistory_WhenListCommitsRequestFails(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	failMessage := "ListCommitsRequestFail"
 	mockedEnv := aladino.MockDefaultEnv(
 		t,
@@ -35,7 +39,8 @@ func TestHasLinearHistory_WhenListCommitsRequestFails(t *testing.T) {
 		},
 		nil,
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+		controller,
 	)
 
 	args := []aladino.Value{}
@@ -46,6 +51,9 @@ func TestHasLinearHistory_WhenListCommitsRequestFails(t *testing.T) {
 }
 
 func TestHasLinearHistory_WhenFalse(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	repoCommits := []*github.RepositoryCommit{
 		{
 			Commit: &github.Commit{
@@ -71,7 +79,8 @@ func TestHasLinearHistory_WhenFalse(t *testing.T) {
 		},
 		nil,
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+		controller,
 	)
 
 	args := []aladino.Value{}
@@ -84,6 +93,9 @@ func TestHasLinearHistory_WhenFalse(t *testing.T) {
 }
 
 func TestHasLinearHistory_WhenTrue(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	repoCommits := []*github.RepositoryCommit{
 		{
 			Commit: &github.Commit{
@@ -107,7 +119,8 @@ func TestHasLinearHistory_WhenTrue(t *testing.T) {
 		},
 		nil,
 		aladino.MockBuiltIns(),
-		nil,
+		aladino.DefaultMockEventPayload,
+		controller,
 	)
 
 	args := []aladino.Value{}
