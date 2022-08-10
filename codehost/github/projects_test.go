@@ -1,13 +1,15 @@
 // Copyright 2022 Explore.dev Unipessoal Lda. All Rights Reserved.
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file
-package utils_test
+
+package github_test
 
 import (
 	"net/http"
 	"testing"
 
 	"github.com/migueleliasweb/go-github-mock/src/mock"
+	host "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	plugins_aladino_actions "github.com/reviewpad/reviewpad/v3/plugins/aladino/actions"
 	"github.com/reviewpad/reviewpad/v3/utils"
@@ -24,11 +26,11 @@ func TestGetProjectV2ByName_WhenRequestFails(t *testing.T) {
 		aladino.MockBuiltIns(),
 		nil,
 	)
-	mockOwner := utils.GetPullRequestBaseOwnerName(mockedEnv.GetPullRequest())
-	mockRepo := utils.GetPullRequestBaseRepoName(mockedEnv.GetPullRequest())
+	mockOwner := host.GetPullRequestBaseOwnerName(mockedEnv.GetPullRequest())
+	mockRepo := host.GetPullRequestBaseRepoName(mockedEnv.GetPullRequest())
 	mockProjectName := "reviewpad"
 
-	project, err := utils.GetProjectV2ByName(mockedEnv.GetCtx(), mockedEnv.GetClientGQL(), mockOwner, mockRepo, mockProjectName)
+	project, err := mockedEnv.GetGithubClient().GetProjectV2ByName(mockedEnv.GetCtx(), mockOwner, mockRepo, mockProjectName)
 
 	assert.NotNil(t, err)
 
@@ -78,11 +80,11 @@ func TestGetProjectV2ByName_WhenProjectNotFound(t *testing.T) {
 		aladino.MockBuiltIns(),
 		nil,
 	)
-	mockOwner := utils.GetPullRequestBaseOwnerName(mockedEnv.GetPullRequest())
-	mockRepo := utils.GetPullRequestBaseRepoName(mockedEnv.GetPullRequest())
+	mockOwner := host.GetPullRequestBaseOwnerName(mockedEnv.GetPullRequest())
+	mockRepo := host.GetPullRequestBaseRepoName(mockedEnv.GetPullRequest())
 	mockProjectName := "reviewpad"
 
-	project, err := utils.GetProjectV2ByName(mockedEnv.GetCtx(), mockedEnv.GetClientGQL(), mockOwner, mockRepo, mockProjectName)
+	project, err := mockedEnv.GetGithubClient().GetProjectV2ByName(mockedEnv.GetCtx(), mockOwner, mockRepo, mockProjectName)
 
 	assert.Equal(t, plugins_aladino_actions.ErrProjectNotFound, err)
 
@@ -134,11 +136,11 @@ func TestGetProjectV2ByName_WhenProjectFound(t *testing.T) {
 		aladino.MockBuiltIns(),
 		nil,
 	)
-	mockOwner := utils.GetPullRequestBaseOwnerName(mockedEnv.GetPullRequest())
-	mockRepo := utils.GetPullRequestBaseRepoName(mockedEnv.GetPullRequest())
+	mockOwner := host.GetPullRequestBaseOwnerName(mockedEnv.GetPullRequest())
+	mockRepo := host.GetPullRequestBaseRepoName(mockedEnv.GetPullRequest())
 	mockProjectName := "reviewpad"
 
-	project, err := utils.GetProjectV2ByName(mockedEnv.GetCtx(), mockedEnv.GetClientGQL(), mockOwner, mockRepo, mockProjectName)
+	project, err := mockedEnv.GetGithubClient().GetProjectV2ByName(mockedEnv.GetCtx(), mockOwner, mockRepo, mockProjectName)
 
 	assert.Equal(t, nil, err)
 
@@ -155,12 +157,12 @@ func TestGetProjectFieldsByProjectNumber_WhenRequestFails(t *testing.T) {
 		aladino.MockBuiltIns(),
 		nil,
 	)
-	mockOwner := utils.GetPullRequestBaseOwnerName(mockedEnv.GetPullRequest())
-	mockRepo := utils.GetPullRequestBaseRepoName(mockedEnv.GetPullRequest())
+	mockOwner := host.GetPullRequestBaseOwnerName(mockedEnv.GetPullRequest())
+	mockRepo := host.GetPullRequestBaseRepoName(mockedEnv.GetPullRequest())
 	mockProjectNumber := 1
 	mockRetryCount := 1
 
-	project, err := utils.GetProjectFieldsByProjectNumber(mockedEnv.GetCtx(), mockedEnv.GetClientGQL(), mockOwner, mockRepo, uint64(mockProjectNumber), mockRetryCount)
+	project, err := mockedEnv.GetGithubClient().GetProjectFieldsByProjectNumber(mockedEnv.GetCtx(), mockOwner, mockRepo, uint64(mockProjectNumber), mockRetryCount)
 
 	assert.NotNil(t, err)
 
@@ -221,12 +223,12 @@ func TestGetProjectFieldsByProjectNumber_WhenProjectNotFound(t *testing.T) {
 		aladino.MockBuiltIns(),
 		nil,
 	)
-	mockOwner := utils.GetPullRequestBaseOwnerName(mockedEnv.GetPullRequest())
-	mockRepo := utils.GetPullRequestBaseRepoName(mockedEnv.GetPullRequest())
+	mockOwner := host.GetPullRequestBaseOwnerName(mockedEnv.GetPullRequest())
+	mockRepo := host.GetPullRequestBaseRepoName(mockedEnv.GetPullRequest())
 	mockProjectNumber := 1
 	mockRetryCount := 1
 
-	project, err := utils.GetProjectFieldsByProjectNumber(mockedEnv.GetCtx(), mockedEnv.GetClientGQL(), mockOwner, mockRepo, uint64(mockProjectNumber), mockRetryCount)
+	project, err := mockedEnv.GetGithubClient().GetProjectFieldsByProjectNumber(mockedEnv.GetCtx(), mockOwner, mockRepo, uint64(mockProjectNumber), mockRetryCount)
 
 	assert.Equal(t, plugins_aladino_actions.ErrProjectNotFound, err)
 
@@ -309,12 +311,12 @@ func TestGetProjectFieldsByProjectNumber_WhenRetrySuccessful(t *testing.T) {
 		aladino.MockBuiltIns(),
 		nil,
 	)
-	mockOwner := utils.GetPullRequestBaseOwnerName(mockedEnv.GetPullRequest())
-	mockRepo := utils.GetPullRequestBaseRepoName(mockedEnv.GetPullRequest())
+	mockOwner := host.GetPullRequestBaseOwnerName(mockedEnv.GetPullRequest())
+	mockRepo := host.GetPullRequestBaseRepoName(mockedEnv.GetPullRequest())
 	mockProjectNumber := 1
 	mockRetryCount := 2
 
-	fields, err := utils.GetProjectFieldsByProjectNumber(mockedEnv.GetCtx(), mockedEnv.GetClientGQL(), mockOwner, mockRepo, uint64(mockProjectNumber), mockRetryCount)
+	fields, err := mockedEnv.GetGithubClient().GetProjectFieldsByProjectNumber(mockedEnv.GetCtx(), mockOwner, mockRepo, uint64(mockProjectNumber), mockRetryCount)
 
 	assert.Equal(t, nil, err)
 

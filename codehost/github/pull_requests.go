@@ -2,18 +2,16 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file
 
-package utils
+package github
 
 import (
 	"context"
-	"net/url"
-	"strconv"
-	"strings"
 
 	"github.com/google/go-github/v45/github"
 	"github.com/shurcooL/githubv4"
-	"github.com/tomnomnom/linkheader"
 )
+
+const maxPerPage int = 100
 
 type GQLReviewThread struct {
 	IsResolved githubv4.Boolean
@@ -33,8 +31,6 @@ type ReviewThreadsQuery struct {
 		} `graphql:"pullRequest(number: $pullRequestNumber)"`
 	} `graphql:"repository(owner: $repositoryOwner, name: $repositoryName)"`
 }
-
-const maxPerPage int = 100
 
 func GetPullRequestHeadOwnerName(pullRequest *github.PullRequest) string {
 	return pullRequest.Head.Repo.Owner.GetLogin()
@@ -56,70 +52,14 @@ func GetPullRequestNumber(pullRequest *github.PullRequest) int {
 	return pullRequest.GetNumber()
 }
 
-func PaginatedRequest(
-	initFn func() interface{},
-	reqFn func(interface{}, int) (interface{}, *github.Response, error),
-) (interface{}, error) {
-	page := 1
-	results, resp, err := reqFn(initFn(), page)
-	if err != nil {
-		return nil, err
-	}
-
-	numPages := ParseNumPages(resp)
-	page++
-	for page <= numPages && resp.NextPage > page {
-		results, _, err = reqFn(results, page)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	return results, nil
-}
-
-func ParseNumPagesFromLink(link string) int {
-	urlInfo := linkheader.Parse(link).FilterByRel("last")
-	if len(urlInfo) < 1 {
-		return 0
-	}
-
-	urlData, err := url.Parse(urlInfo[0].URL)
-	if err != nil {
-		return 0
-	}
-
-	numPagesStr := urlData.Query().Get("page")
-	if numPagesStr == "" {
-		return 0
-	}
-
-	numPages, err := strconv.ParseInt(numPagesStr, 10, 32)
-	if err != nil {
-		return 0
-	}
-
-	return int(numPages)
-}
-
-//ParseNumPages Given a link header string representing pagination info, returns total number of pages.
-func ParseNumPages(resp *github.Response) int {
-	link := resp.Header.Get("Link")
-	if strings.Trim(link, " ") == "" {
-		return 0
-	}
-
-	return ParseNumPagesFromLink(link)
-}
-
-func GetPullRequestComments(ctx context.Context, client *github.Client, owner string, repo string, number int, opts *github.IssueListCommentsOptions) ([]*github.IssueComment, error) {
+func (c *GithubClient) GetPullRequestComments(ctx context.Context, owner string, repo string, number int, opts *github.IssueListCommentsOptions) ([]*github.IssueComment, error) {
 	fs, err := PaginatedRequest(
 		func() interface{} {
 			return []*github.IssueComment{}
 		},
 		func(i interface{}, page int) (interface{}, *github.Response, error) {
 			fls := i.([]*github.IssueComment)
-			fs, resp, err := client.Issues.ListComments(ctx, owner, repo, number, &github.IssueListCommentsOptions{
+			fs, resp, err := c.clientREST.Issues.ListComments(ctx, owner, repo, number, &github.IssueListCommentsOptions{
 				Sort:      opts.Sort,
 				Direction: opts.Direction,
 				Since:     opts.Since,
@@ -142,14 +82,14 @@ func GetPullRequestComments(ctx context.Context, client *github.Client, owner st
 	return fs.([]*github.IssueComment), nil
 }
 
-func GetPullRequestFiles(ctx context.Context, client *github.Client, owner string, repo string, number int) ([]*github.CommitFile, error) {
+func (c *GithubClient) GetPullRequestFiles(ctx context.Context, owner string, repo string, number int) ([]*github.CommitFile, error) {
 	fs, err := PaginatedRequest(
 		func() interface{} {
 			return []*github.CommitFile{}
 		},
 		func(i interface{}, page int) (interface{}, *github.Response, error) {
 			fls := i.([]*github.CommitFile)
-			fs, resp, err := client.PullRequests.ListFiles(ctx, owner, repo, number, &github.ListOptions{
+			fs, resp, err := c.clientREST.PullRequests.ListFiles(ctx, owner, repo, number, &github.ListOptions{
 				Page:    page,
 				PerPage: maxPerPage,
 			})
@@ -167,14 +107,14 @@ func GetPullRequestFiles(ctx context.Context, client *github.Client, owner strin
 	return fs.([]*github.CommitFile), nil
 }
 
-func GetPullRequestReviewers(ctx context.Context, client *github.Client, owner string, repo string, number int, opts *github.ListOptions) (*github.Reviewers, error) {
+func (c *GithubClient) GetPullRequestReviewers(ctx context.Context, owner string, repo string, number int, opts *github.ListOptions) (*github.Reviewers, error) {
 	reviewers, err := PaginatedRequest(
 		func() interface{} {
 			return &github.Reviewers{}
 		},
 		func(i interface{}, page int) (interface{}, *github.Response, error) {
 			currentReviewers := i.(*github.Reviewers)
-			reviewers, resp, err := client.PullRequests.ListReviewers(ctx, owner, repo, number, &github.ListOptions{
+			reviewers, resp, err := c.clientREST.PullRequests.ListReviewers(ctx, owner, repo, number, &github.ListOptions{
 				Page:    page,
 				PerPage: maxPerPage,
 			})
@@ -193,14 +133,14 @@ func GetPullRequestReviewers(ctx context.Context, client *github.Client, owner s
 	return reviewers.(*github.Reviewers), nil
 }
 
-func GetRepoCollaborators(ctx context.Context, client *github.Client, owner string, repo string) ([]*github.User, error) {
+func (c *GithubClient) GetRepoCollaborators(ctx context.Context, owner string, repo string) ([]*github.User, error) {
 	collaborators, err := PaginatedRequest(
 		func() interface{} {
 			return []*github.User{}
 		},
 		func(i interface{}, page int) (interface{}, *github.Response, error) {
 			currentCollaborators := i.([]*github.User)
-			collaborators, resp, err := client.Repositories.ListCollaborators(ctx, owner, repo, &github.ListCollaboratorsOptions{
+			collaborators, resp, err := c.clientREST.Repositories.ListCollaborators(ctx, owner, repo, &github.ListCollaboratorsOptions{
 				ListOptions: github.ListOptions{
 					Page:    page,
 					PerPage: maxPerPage,
@@ -220,14 +160,14 @@ func GetRepoCollaborators(ctx context.Context, client *github.Client, owner stri
 	return collaborators.([]*github.User), nil
 }
 
-func GetIssuesAvailableAssignees(ctx context.Context, client *github.Client, owner string, repo string) ([]*github.User, error) {
+func (c *GithubClient) GetIssuesAvailableAssignees(ctx context.Context, owner string, repo string) ([]*github.User, error) {
 	assignees, err := PaginatedRequest(
 		func() interface{} {
 			return []*github.User{}
 		},
 		func(i interface{}, page int) (interface{}, *github.Response, error) {
 			currentAssignees := i.([]*github.User)
-			assignees, resp, err := client.Issues.ListAssignees(ctx, owner, repo, &github.ListOptions{
+			assignees, resp, err := c.clientREST.Issues.ListAssignees(ctx, owner, repo, &github.ListOptions{
 				Page:    page,
 				PerPage: maxPerPage,
 			})
@@ -245,14 +185,14 @@ func GetIssuesAvailableAssignees(ctx context.Context, client *github.Client, own
 	return assignees.([]*github.User), nil
 }
 
-func GetPullRequestCommits(ctx context.Context, client *github.Client, owner string, repo string, number int) ([]*github.RepositoryCommit, error) {
+func (c *GithubClient) GetPullRequestCommits(ctx context.Context, owner string, repo string, number int) ([]*github.RepositoryCommit, error) {
 	commits, err := PaginatedRequest(
 		func() interface{} {
 			return []*github.RepositoryCommit{}
 		},
 		func(i interface{}, page int) (interface{}, *github.Response, error) {
 			currentCommits := i.([]*github.RepositoryCommit)
-			commits, resp, err := client.PullRequests.ListCommits(ctx, owner, repo, number, &github.ListOptions{
+			commits, resp, err := c.clientREST.PullRequests.ListCommits(ctx, owner, repo, number, &github.ListOptions{
 				Page:    page,
 				PerPage: maxPerPage,
 			})
@@ -270,14 +210,14 @@ func GetPullRequestCommits(ctx context.Context, client *github.Client, owner str
 	return commits.([]*github.RepositoryCommit), nil
 }
 
-func GetPullRequestReviews(ctx context.Context, client *github.Client, owner string, repo string, number int) ([]*github.PullRequestReview, error) {
+func (c *GithubClient) GetPullRequestReviews(ctx context.Context, owner string, repo string, number int) ([]*github.PullRequestReview, error) {
 	reviews, err := PaginatedRequest(
 		func() interface{} {
 			return []*github.PullRequestReview{}
 		},
 		func(i interface{}, page int) (interface{}, *github.Response, error) {
 			currentReviews := i.([]*github.PullRequestReview)
-			reviews, resp, err := client.PullRequests.ListReviews(ctx, owner, repo, number, &github.ListOptions{
+			reviews, resp, err := c.clientREST.PullRequests.ListReviews(ctx, owner, repo, number, &github.ListOptions{
 				Page:    page,
 				PerPage: maxPerPage,
 			})
@@ -295,14 +235,14 @@ func GetPullRequestReviews(ctx context.Context, client *github.Client, owner str
 	return reviews.([]*github.PullRequestReview), nil
 }
 
-func GetPullRequests(ctx context.Context, client *github.Client, owner string, repo string) ([]*github.PullRequest, error) {
+func (c *GithubClient) GetPullRequests(ctx context.Context, owner string, repo string) ([]*github.PullRequest, error) {
 	prs, err := PaginatedRequest(
 		func() interface{} {
 			return []*github.PullRequest{}
 		},
 		func(i interface{}, page int) (interface{}, *github.Response, error) {
 			allPrs := i.([]*github.PullRequest)
-			prs, resp, err := client.PullRequests.List(ctx, owner, repo, &github.PullRequestListOptions{
+			prs, resp, err := c.clientREST.PullRequests.List(ctx, owner, repo, &github.PullRequestListOptions{
 				ListOptions: github.ListOptions{
 					Page:    page,
 					PerPage: maxPerPage,
@@ -322,7 +262,11 @@ func GetPullRequests(ctx context.Context, client *github.Client, owner string, r
 	return prs.([]*github.PullRequest), nil
 }
 
-func GetReviewThreads(ctx context.Context, client *githubv4.Client, owner string, repo string, number int, retryCount int) ([]GQLReviewThread, error) {
+func (c *GithubClient) GetPullRequest(ctx context.Context, owner string, repo string, number int) (*github.PullRequest, *github.Response, error) {
+	return c.clientREST.PullRequests.Get(ctx, owner, repo, number)
+}
+
+func (c *GithubClient) GetReviewThreads(ctx context.Context, owner string, repo string, number int, retryCount int) ([]GQLReviewThread, error) {
 	var reviewThreadsQuery ReviewThreadsQuery
 	reviewThreads := make([]GQLReviewThread, 0)
 	hasNextPage := true
@@ -337,7 +281,7 @@ func GetReviewThreads(ctx context.Context, client *githubv4.Client, owner string
 	currentRequestRetry := 1
 
 	for hasNextPage {
-		err := client.Query(context.Background(), &reviewThreadsQuery, varGQLReviewThreads)
+		err := c.clientGQL.Query(context.Background(), &reviewThreadsQuery, varGQLReviewThreads)
 		if err != nil {
 			currentRequestRetry++
 			if currentRequestRetry <= retryCount {
@@ -355,4 +299,16 @@ func GetReviewThreads(ctx context.Context, client *githubv4.Client, owner string
 	}
 
 	return reviewThreads, nil
+}
+
+func (c *GithubClient) RequestReviewers(ctx context.Context, owner string, repo string, number int, reviewers github.ReviewersRequest) (*github.PullRequest, *github.Response, error) {
+	return c.clientREST.PullRequests.RequestReviewers(ctx, owner, repo, number, reviewers)
+}
+
+func (c *GithubClient) EditPullRequest(ctx context.Context, owner string, repo string, number int, pull *github.PullRequest) (*github.PullRequest, *github.Response, error) {
+	return c.clientREST.PullRequests.Edit(ctx, owner, repo, number, pull)
+}
+
+func (c *GithubClient) Merge(ctx context.Context, owner string, repo string, number int, commitMessage string, options *github.PullRequestOptions) (*github.PullRequestMergeResult, *github.Response, error) {
+	return c.clientREST.PullRequests.Merge(ctx, owner, repo, number, commitMessage, options)
 }
