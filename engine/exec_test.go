@@ -11,6 +11,7 @@ import (
 
 	"github.com/google/go-github/v45/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
+	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/engine"
 	"github.com/reviewpad/reviewpad/v3/engine/testutils"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
@@ -237,14 +238,12 @@ func TestEval(t *testing.T) {
 	}
 }
 
-func mockAladinoInterpreter(client *github.Client) (engine.Interpreter, error) {
+func mockAladinoInterpreter(githubClient *gh.GithubClient) (engine.Interpreter, error) {
 	dryRun := false
 	mockedAladinoInterpreter, err := aladino.NewInterpreter(
 		engine.DefaultMockCtx,
 		dryRun,
-		client,
-		// TODO: add mocked github GQL client (issue #239)
-		nil,
+		githubClient,
 		engine.DefaultMockCollector,
 		engine.GetDefaultMockPullRequestDetails(),
 		engine.DefaultMockEventPayload,

@@ -15,7 +15,7 @@ import (
 
 func TestNewEvalEnv(t *testing.T) {
 	ctx := engine.DefaultMockCtx
-	client := engine.MockGithubClient(nil)
+	githubClient := engine.MockGithubClient(nil)
 	collector := engine.DefaultMockCollector
 	mockedPullRequest := engine.GetDefaultMockPullRequestDetails()
 	fileName := "default-mock-repo/file1.ts"
@@ -39,8 +39,7 @@ return`
 	mockedAladinoInterpreter := &aladino.Interpreter{
 		Env: &aladino.BaseEnv{
 			Ctx:          ctx,
-			Client:       client,
-			ClientGQL:    nil,
+			GithubClient: githubClient,
 			Collector:    collector,
 			PullRequest:  mockedPullRequest,
 			Patch:        mockedPatch,
@@ -54,8 +53,7 @@ return`
 	wantEnv := &engine.Env{
 		Ctx:          ctx,
 		DryRun:       false,
-		Client:       client,
-		ClientGQL:    nil,
+		GithubClient: githubClient,
 		Collector:    collector,
 		PullRequest:  mockedPullRequest,
 		EventPayload: engine.DefaultMockEventPayload,
@@ -65,8 +63,7 @@ return`
 	gotEnv, err := engine.NewEvalEnv(
 		ctx,
 		false,
-		client,
-		nil,
+		githubClient,
 		collector,
 		mockedPullRequest,
 		engine.DefaultMockEventPayload,
