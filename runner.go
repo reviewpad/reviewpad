@@ -11,12 +11,12 @@ import (
 	"log"
 
 	"github.com/google/go-github/v45/github"
+	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/collector"
 	"github.com/reviewpad/reviewpad/v3/engine"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
 	"github.com/reviewpad/reviewpad/v3/utils/fmtio"
-	"github.com/shurcooL/githubv4"
 )
 
 func Load(buf *bytes.Buffer) (*engine.ReviewpadFile, error) {
@@ -37,8 +37,7 @@ func Load(buf *bytes.Buffer) (*engine.ReviewpadFile, error) {
 
 func Run(
 	ctx context.Context,
-	client *github.Client,
-	clientGQL *githubv4.Client,
+	githubClient *gh.GithubClient,
 	collector collector.Collector,
 	pullRequest *github.PullRequest,
 	eventPayload interface{},
@@ -50,12 +49,12 @@ func Run(
 		return engine.ExitStatusFailure, fmt.Errorf("when reviewpad is running in safe mode, it must also run in dry-run")
 	}
 
-	aladinoInterpreter, err := aladino.NewInterpreter(ctx, dryRun, client, clientGQL, collector, pullRequest, eventPayload, plugins_aladino.PluginBuiltIns())
+	aladinoInterpreter, err := aladino.NewInterpreter(ctx, dryRun, githubClient, collector, pullRequest, eventPayload, plugins_aladino.PluginBuiltIns())
 	if err != nil {
 		return engine.ExitStatusFailure, err
 	}
 
-	evalEnv, err := engine.NewEvalEnv(ctx, dryRun, client, clientGQL, collector, pullRequest, eventPayload, aladinoInterpreter)
+	evalEnv, err := engine.NewEvalEnv(ctx, dryRun, githubClient, collector, pullRequest, eventPayload, aladinoInterpreter)
 	if err != nil {
 		return engine.ExitStatusFailure, err
 	}
