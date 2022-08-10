@@ -10,8 +10,8 @@ import (
 	"strings"
 
 	"github.com/google/go-github/v45/github"
+	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/engine"
-	"github.com/reviewpad/reviewpad/v3/utils"
 	"github.com/reviewpad/reviewpad/v3/utils/fmtio"
 )
 
@@ -75,11 +75,10 @@ func BuildVerboseReport(report *Report) string {
 
 func DeleteReportComment(env Env, commentId int64) error {
 	pullRequest := env.GetPullRequest()
-	owner := utils.GetPullRequestBaseOwnerName(pullRequest)
-	repo := utils.GetPullRequestBaseRepoName(pullRequest)
+	owner := gh.GetPullRequestBaseOwnerName(pullRequest)
+	repo := gh.GetPullRequestBaseRepoName(pullRequest)
 
-	_, err := env.GetClient().Issues.DeleteComment(env.GetCtx(), owner, repo, commentId)
-
+	_, err := env.GetGithubClient().DeleteComment(env.GetCtx(), owner, repo, commentId)
 	if err != nil {
 		return reportError("error on deleting report comment %v", err.(*github.ErrorResponse).Message)
 	}
@@ -93,10 +92,10 @@ func UpdateReportComment(env Env, commentId int64, report string) error {
 	}
 
 	pullRequest := env.GetPullRequest()
-	owner := utils.GetPullRequestBaseOwnerName(pullRequest)
-	repo := utils.GetPullRequestBaseRepoName(pullRequest)
+	owner := gh.GetPullRequestBaseOwnerName(pullRequest)
+	repo := gh.GetPullRequestBaseRepoName(pullRequest)
 
-	_, _, err := env.GetClient().Issues.EditComment(env.GetCtx(), owner, repo, commentId, &gitHubComment)
+	_, _, err := env.GetGithubClient().EditComment(env.GetCtx(), owner, repo, commentId, &gitHubComment)
 
 	if err != nil {
 		return reportError("error on updating report comment %v", err.(*github.ErrorResponse).Message)
@@ -111,11 +110,11 @@ func AddReportComment(env Env, report string) error {
 	}
 
 	pullRequest := env.GetPullRequest()
-	owner := utils.GetPullRequestBaseOwnerName(pullRequest)
-	repo := utils.GetPullRequestBaseRepoName(pullRequest)
-	prNum := utils.GetPullRequestNumber(pullRequest)
+	owner := gh.GetPullRequestBaseOwnerName(pullRequest)
+	repo := gh.GetPullRequestBaseRepoName(pullRequest)
+	prNum := gh.GetPullRequestNumber(pullRequest)
 
-	_, _, err := env.GetClient().Issues.CreateComment(env.GetCtx(), owner, repo, prNum, &gitHubComment)
+	_, _, err := env.GetGithubClient().CreateComment(env.GetCtx(), owner, repo, prNum, &gitHubComment)
 
 	if err != nil {
 		return reportError("error on creating report comment %v", err.(*github.ErrorResponse).Message)
@@ -126,11 +125,11 @@ func AddReportComment(env Env, report string) error {
 
 func FindReportComment(env Env) (*github.IssueComment, error) {
 	pullRequest := env.GetPullRequest()
-	owner := utils.GetPullRequestBaseOwnerName(pullRequest)
-	repo := utils.GetPullRequestBaseRepoName(pullRequest)
-	prNum := utils.GetPullRequestNumber(pullRequest)
+	owner := gh.GetPullRequestBaseOwnerName(pullRequest)
+	repo := gh.GetPullRequestBaseRepoName(pullRequest)
+	prNum := gh.GetPullRequestNumber(pullRequest)
 
-	comments, err := utils.GetPullRequestComments(env.GetCtx(), env.GetClient(), owner, repo, prNum, &github.IssueListCommentsOptions{
+	comments, err := env.GetGithubClient().GetPullRequestComments(env.GetCtx(), owner, repo, prNum, &github.IssueListCommentsOptions{
 		Sort:      github.String("created"),
 		Direction: github.String("asc"),
 	})

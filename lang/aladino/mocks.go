@@ -16,6 +16,7 @@ import (
 
 	"github.com/google/go-github/v45/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
+	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/collector"
 	"github.com/shurcooL/githubv4"
 )
@@ -234,11 +235,11 @@ func mockEnvWith(prOwner string, prRepoName string, prNum int, client *github.Cl
 		return nil, err
 	}
 
+	githubClient := gh.NewGithubClient(client, clientGQL)
 	env, err := NewEvalEnv(
 		ctx,
 		false,
-		client,
-		clientGQL,
+		githubClient,
 		DefaultMockCollector,
 		pr,
 		eventPayload,
