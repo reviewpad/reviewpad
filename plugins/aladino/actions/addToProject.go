@@ -8,8 +8,8 @@ import (
 	"errors"
 	"strings"
 
+	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
-	"github.com/reviewpad/reviewpad/v3/utils"
 )
 
 var (
@@ -45,23 +45,23 @@ func AddToProject() *aladino.BuiltInAction {
 
 func addToProjectCode(e aladino.Env, args []aladino.Value) error {
 	pr := e.GetPullRequest()
-	owner := utils.GetPullRequestBaseOwnerName(pr)
-	repo := utils.GetPullRequestBaseRepoName(pr)
+	owner := gh.GetPullRequestBaseOwnerName(pr)
+	repo := gh.GetPullRequestBaseRepoName(pr)
 	projectName := args[0].(*aladino.StringValue).Val
 	projectStatus := strings.ToLower(args[1].(*aladino.StringValue).Val)
 	totalRequestTries := 2
 
-	project, err := utils.GetProjectV2ByName(e.GetCtx(), e.GetClientGQL(), owner, repo, projectName)
+	project, err := e.GetGithubClient().GetProjectV2ByName(e.GetCtx(), owner, repo, projectName)
 	if err != nil {
 		return err
 	}
 
-	fields, err := utils.GetProjectFieldsByProjectNumber(e.GetCtx(), e.GetClientGQL(), owner, repo, project.Number, totalRequestTries)
+	fields, err := e.GetGithubClient().GetProjectFieldsByProjectNumber(e.GetCtx(), owner, repo, project.Number, totalRequestTries)
 	if err != nil {
 		return err
 	}
 
-	statusField := utils.FieldDetails{}
+	statusField := gh.FieldDetails{}
 
 	for _, field := range fields {
 		if strings.EqualFold(field.Details.Name, "status") {
@@ -100,7 +100,8 @@ func addToProjectCode(e aladino.Env, args []aladino.Value) error {
 		ContentID: *pr.NodeID,
 	}
 
-	err = e.GetClientGQL().Mutate(e.GetCtx(), &addProjectV2ItemByIdMutation, input, nil)
+	// FIXME: move mutate to a separate function in the codehost.github package
+	err = e.GetGithubClient().GetClientGraphQL().Mutate(e.GetCtx(), &addProjectV2ItemByIdMutation, input, nil)
 	if err != nil {
 		return err
 	}
@@ -120,5 +121,5 @@ func addToProjectCode(e aladino.Env, args []aladino.Value) error {
 		FieldID: statusField.ID,
 	}
 
-	return e.GetClientGQL().Mutate(e.GetCtx(), &updateProjectV2ItemFieldValueMutation, updateInput, nil)
+	return e.GetGithubClient().GetClientGraphQL().Mutate(e.GetCtx(), &updateProjectV2ItemFieldValueMutation, updateInput, nil)
 }

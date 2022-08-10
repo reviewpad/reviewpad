@@ -14,8 +14,8 @@ func Organization() *aladino.BuiltInFunction {
 }
 
 func organizationCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
-	orgName := e.GetPullRequest().Head.Repo.Owner.Login
-	users, _, err := e.GetClient().Organizations.ListMembers(e.GetCtx(), *orgName, nil)
+	orgName := *e.GetPullRequest().Head.Repo.Owner.Login
+	users, _, err := e.GetGithubClient().ListOrganizationMembers(e.GetCtx(), orgName, nil)
 	if err != nil {
 		return nil, err
 	}

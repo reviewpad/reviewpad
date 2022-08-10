@@ -5,9 +5,8 @@
 package plugins_aladino_functions
 
 import (
-	"github.com/google/go-github/v45/github"
+	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
-	"github.com/reviewpad/reviewpad/v3/utils"
 )
 
 func HasLinearHistory() *aladino.BuiltInFunction {
@@ -18,11 +17,12 @@ func HasLinearHistory() *aladino.BuiltInFunction {
 }
 
 func hasLinearHistoryCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
-	prNum := utils.GetPullRequestNumber(e.GetPullRequest())
-	owner := utils.GetPullRequestBaseOwnerName(e.GetPullRequest())
-	repo := utils.GetPullRequestBaseRepoName(e.GetPullRequest())
+	pullRequest := e.GetPullRequest()
+	prNum := gh.GetPullRequestNumber(pullRequest)
+	owner := gh.GetPullRequestBaseOwnerName(pullRequest)
+	repo := gh.GetPullRequestBaseRepoName(pullRequest)
 
-	ghCommits, _, err := e.GetClient().PullRequests.ListCommits(e.GetCtx(), owner, repo, prNum, &github.ListOptions{})
+	ghCommits, err := e.GetGithubClient().GetPullRequestCommits(e.GetCtx(), owner, repo, prNum)
 	if err != nil {
 		return nil, err
 	}

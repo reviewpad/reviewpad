@@ -6,8 +6,8 @@ package plugins_aladino_functions
 
 import (
 	"github.com/google/go-github/v45/github"
+	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
-	"github.com/reviewpad/reviewpad/v3/utils"
 )
 
 func TotalCreatedPullRequests() *aladino.BuiltInFunction {
@@ -20,10 +20,11 @@ func TotalCreatedPullRequests() *aladino.BuiltInFunction {
 func totalCreatedPullRequestsCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
 	devName := args[0].(*aladino.StringValue).Val
 
-	owner := utils.GetPullRequestBaseOwnerName(e.GetPullRequest())
-	repo := utils.GetPullRequestBaseRepoName(e.GetPullRequest())
+	pullRequest := e.GetPullRequest()
+	owner := gh.GetPullRequestBaseOwnerName(pullRequest)
+	repo := gh.GetPullRequestBaseRepoName(pullRequest)
 
-	issues, _, err := e.GetClient().Issues.ListByRepo(e.GetCtx(), owner, repo, &github.IssueListByRepoOptions{
+	issues, _, err := e.GetGithubClient().ListIssuesByRepo(e.GetCtx(), owner, repo, &github.IssueListByRepoOptions{
 		Creator: devName,
 		State:   "all",
 	})

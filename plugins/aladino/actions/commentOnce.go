@@ -9,8 +9,8 @@ import (
 	"fmt"
 
 	"github.com/google/go-github/v45/github"
+	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
-	"github.com/reviewpad/reviewpad/v3/utils"
 )
 
 const ReviewpadCommentAnnotation = "<!--@annotation-reviewpad-single-comment-->"
@@ -25,15 +25,15 @@ func CommentOnce() *aladino.BuiltInAction {
 func commentOnceCode(e aladino.Env, args []aladino.Value) error {
 	pullRequest := e.GetPullRequest()
 
-	prNum := utils.GetPullRequestNumber(pullRequest)
-	owner := utils.GetPullRequestBaseOwnerName(pullRequest)
-	repo := utils.GetPullRequestBaseRepoName(pullRequest)
+	prNum := gh.GetPullRequestNumber(pullRequest)
+	owner := gh.GetPullRequestBaseOwnerName(pullRequest)
+	repo := gh.GetPullRequestBaseRepoName(pullRequest)
 
 	commentBody := args[0].(*aladino.StringValue).Val
 	commentBodyWithReviewpadAnnotation := fmt.Sprintf("%v%v", ReviewpadCommentAnnotation, commentBody)
 	commentBodyWithReviewpadAnnotationHash := sha256.Sum256([]byte(commentBodyWithReviewpadAnnotation))
 
-	comments, err := utils.GetPullRequestComments(e.GetCtx(), e.GetClient(), owner, repo, prNum, &github.IssueListCommentsOptions{})
+	comments, err := e.GetGithubClient().GetPullRequestComments(e.GetCtx(), owner, repo, prNum, &github.IssueListCommentsOptions{})
 	if err != nil {
 		return err
 	}
@@ -46,7 +46,7 @@ func commentOnceCode(e aladino.Env, args []aladino.Value) error {
 		}
 	}
 
-	_, _, err = e.GetClient().Issues.CreateComment(e.GetCtx(), owner, repo, prNum, &github.IssueComment{
+	_, _, err = e.GetGithubClient().CreateComment(e.GetCtx(), owner, repo, prNum, &github.IssueComment{
 		Body: &commentBodyWithReviewpadAnnotation,
 	})
 

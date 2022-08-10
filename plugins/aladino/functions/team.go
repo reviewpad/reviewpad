@@ -20,7 +20,7 @@ func teamCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
 	teamSlug := args[0].(*aladino.StringValue).Val
 	orgName := e.GetPullRequest().Head.Repo.Owner.Login
 
-	members, _, err := e.GetClient().Teams.ListTeamMembersBySlug(e.GetCtx(), *orgName, teamSlug, &github.TeamListTeamMembersOptions{})
+	members, _, err := e.GetGithubClient().ListTeamMembersBySlug(e.GetCtx(), *orgName, teamSlug, &github.TeamListTeamMembersOptions{})
 	if err != nil {
 		return nil, err
 	}

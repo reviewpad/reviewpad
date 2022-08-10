@@ -9,8 +9,8 @@ import (
 	"strings"
 
 	"github.com/google/go-github/v45/github"
+	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
-	"github.com/reviewpad/reviewpad/v3/utils"
 )
 
 func WorkflowStatus() *aladino.BuiltInFunction {
@@ -34,10 +34,11 @@ func workflowStatusCode(e aladino.Env, args []aladino.Value) (aladino.Value, err
 	}
 
 	headSHA := workflowRunPayload.GetHeadSHA()
-	owner := utils.GetPullRequestBaseOwnerName(e.GetPullRequest())
-	repo := utils.GetPullRequestBaseRepoName(e.GetPullRequest())
+	pullRequest := e.GetPullRequest()
+	owner := gh.GetPullRequestBaseOwnerName(pullRequest)
+	repo := gh.GetPullRequestBaseRepoName(pullRequest)
 
-	checkRuns, _, err := e.GetClient().Checks.ListCheckRunsForRef(e.GetCtx(), owner, repo, headSHA, &github.ListCheckRunsOptions{})
+	checkRuns, _, err := e.GetGithubClient().ListCheckRunsForRef(e.GetCtx(), owner, repo, headSHA, &github.ListCheckRunsOptions{})
 	if err != nil {
 		return nil, err
 	}
