@@ -17,10 +17,9 @@ import (
 
 	"github.com/google/go-github/v45/github"
 	"github.com/reviewpad/reviewpad/v3"
+	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/collector"
-	"github.com/shurcooL/githubv4"
 	"github.com/spf13/cobra"
-	"golang.org/x/oauth2"
 )
 
 func init() {
@@ -81,16 +80,10 @@ func run() error {
 	}
 
 	ctx := context.Background()
-	ts := oauth2.StaticTokenSource(
-		&oauth2.Token{AccessToken: gitHubToken},
-	)
-	tc := oauth2.NewClient(ctx, ts)
-
-	gitHubClient := github.NewClient(tc)
-	gitHubClientGQL := githubv4.NewClient(tc)
+	githubClient := gh.NewGithubClientFromToken(ctx, gitHubToken)
 	collectorClient := collector.NewCollector(mixpanelToken, repositoryOwner)
 
-	ghPullRequest, _, err := gitHubClient.PullRequests.Get(ctx, repositoryOwner, repositoryName, pullRequestNumber)
+	ghPullRequest, _, err := githubClient.GetPullRequest(ctx, repositoryOwner, repositoryName, pullRequestNumber)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -112,7 +105,7 @@ func run() error {
 			return fmt.Errorf("team-edition: pull request is merged and head branched was automatically deleted")
 		}
 
-		_, _, err := gitHubClient.Repositories.GetBranch(ctx, headRepoOwner, headRepoName, headRef, true)
+		_, _, err := githubClient.GetRepositoryBranch(ctx, headRepoOwner, headRepoName, headRef, true)
 		if err != nil {
 			return fmt.Errorf("team-edition: pull request is merged and head branched cannot be retrieved")
 		}
@@ -129,7 +122,7 @@ func run() error {
 		return fmt.Errorf("error running reviewpad team edition. Details %v", err.Error())
 	}
 
-	_, err = reviewpad.Run(ctx, gitHubClient, gitHubClientGQL, collectorClient, ghPullRequest, ev, file, dryRun, safeModeRun)
+	_, err = reviewpad.Run(ctx, githubClient, collectorClient, ghPullRequest, ev, file, dryRun, safeModeRun)
 	if err != nil {
 		return fmt.Errorf("error running reviewpad team edition. Details %v", err.Error())
 	}
