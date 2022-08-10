@@ -9,6 +9,7 @@ import (
 	"log"
 
 	"github.com/google/go-github/v45/github"
+	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	"github.com/reviewpad/reviewpad/v3/utils"
 )
@@ -31,9 +32,11 @@ func assignReviewerCode(e aladino.Env, args []aladino.Value) error {
 		return fmt.Errorf("assignReviewer: list of reviewers can't be empty")
 	}
 
+	pullRequest := e.GetPullRequest()
+
 	// Remove pull request author from provided reviewers list
 	for index, reviewer := range availableReviewers {
-		if reviewer.(*aladino.StringValue).Val == *e.GetPullRequest().User.Login {
+		if reviewer.(*aladino.StringValue).Val == *pullRequest.User.Login {
 			availableReviewers = append(availableReviewers[:index], availableReviewers[index+1:]...)
 			break
 		}
@@ -45,13 +48,13 @@ func assignReviewerCode(e aladino.Env, args []aladino.Value) error {
 		totalRequiredReviewers = totalAvailableReviewers
 	}
 
-	prNum := utils.GetPullRequestNumber(e.GetPullRequest())
-	owner := utils.GetPullRequestBaseOwnerName(e.GetPullRequest())
-	repo := utils.GetPullRequestBaseRepoName(e.GetPullRequest())
+	prNum := gh.GetPullRequestNumber(pullRequest)
+	owner := gh.GetPullRequestBaseOwnerName(pullRequest)
+	repo := gh.GetPullRequestBaseRepoName(pullRequest)
 
 	reviewers := []string{}
 
-	reviews, _, err := e.GetClient().PullRequests.ListReviews(e.GetCtx(), owner, repo, prNum, nil)
+	reviews, err := e.GetGithubClient().GetPullRequestReviews(e.GetCtx(), owner, repo, prNum)
 	if err != nil {
 		return err
 	}
@@ -71,7 +74,7 @@ func assignReviewerCode(e aladino.Env, args []aladino.Value) error {
 	}
 
 	// Skip current requested reviewers if mention on the provided reviewers list
-	currentRequestedReviewers := e.GetPullRequest().RequestedReviewers
+	currentRequestedReviewers := pullRequest.RequestedReviewers
 	for _, requestedReviewer := range currentRequestedReviewers {
 		for index, availableReviewer := range availableReviewers {
 			if availableReviewer.(*aladino.StringValue).Val == *requestedReviewer.Login {
@@ -98,7 +101,7 @@ func assignReviewerCode(e aladino.Env, args []aladino.Value) error {
 		return nil
 	}
 
-	_, _, err = e.GetClient().PullRequests.RequestReviewers(e.GetCtx(), owner, repo, prNum, github.ReviewersRequest{
+	_, _, err = e.GetGithubClient().RequestReviewers(e.GetCtx(), owner, repo, prNum, github.ReviewersRequest{
 		Reviewers: reviewers,
 	})
 

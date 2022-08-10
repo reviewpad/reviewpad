@@ -8,6 +8,7 @@ import (
 	"fmt"
 
 	"github.com/google/go-github/v45/github"
+	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	"github.com/reviewpad/reviewpad/v3/utils"
 )
@@ -20,11 +21,11 @@ func AssignRandomReviewer() *aladino.BuiltInAction {
 }
 
 func assignRandomReviewerCode(e aladino.Env, _ []aladino.Value) error {
-	prNum := utils.GetPullRequestNumber(e.GetPullRequest())
-	owner := utils.GetPullRequestBaseOwnerName(e.GetPullRequest())
-	repo := utils.GetPullRequestBaseRepoName(e.GetPullRequest())
+	prNum := gh.GetPullRequestNumber(e.GetPullRequest())
+	owner := gh.GetPullRequestBaseOwnerName(e.GetPullRequest())
+	repo := gh.GetPullRequestBaseRepoName(e.GetPullRequest())
 
-	ghPrRequestedReviewers, err := utils.GetPullRequestReviewers(e.GetCtx(), e.GetClient(), owner, repo, prNum, &github.ListOptions{})
+	ghPrRequestedReviewers, err := e.GetGithubClient().GetPullRequestReviewers(e.GetCtx(), owner, repo, prNum, &github.ListOptions{})
 	if err != nil {
 		return err
 	}
@@ -35,7 +36,7 @@ func assignRandomReviewerCode(e aladino.Env, _ []aladino.Value) error {
 		return nil
 	}
 
-	ghUsers, err := utils.GetIssuesAvailableAssignees(e.GetCtx(), e.GetClient(), owner, repo)
+	ghUsers, err := e.GetGithubClient().GetIssuesAvailableAssignees(e.GetCtx(), owner, repo)
 	if err != nil {
 		return err
 	}
@@ -55,7 +56,7 @@ func assignRandomReviewerCode(e aladino.Env, _ []aladino.Value) error {
 	lucky := utils.GenerateRandom(len(filteredGhUsers))
 	ghUser := filteredGhUsers[lucky]
 
-	_, _, err = e.GetClient().PullRequests.RequestReviewers(e.GetCtx(), owner, repo, prNum, github.ReviewersRequest{
+	_, _, err = e.GetGithubClient().RequestReviewers(e.GetCtx(), owner, repo, prNum, github.ReviewersRequest{
 		Reviewers: []string{ghUser.GetLogin()},
 	})
 

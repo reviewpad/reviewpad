@@ -5,8 +5,8 @@
 package plugins_aladino_functions
 
 import (
+	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
-	"github.com/reviewpad/reviewpad/v3/utils"
 	"github.com/shurcooL/githubv4"
 )
 
@@ -28,9 +28,10 @@ func hasLinkedIssuesCode(e aladino.Env, args []aladino.Value) (aladino.Value, er
 		} `graphql:"repository(owner: $repositoryOwner, name: $repositoryName)"`
 	}
 
-	prNum := utils.GetPullRequestNumber(e.GetPullRequest())
-	owner := utils.GetPullRequestBaseOwnerName(e.GetPullRequest())
-	repo := utils.GetPullRequestBaseRepoName(e.GetPullRequest())
+	pullRequest := e.GetPullRequest()
+	prNum := gh.GetPullRequestNumber(pullRequest)
+	owner := gh.GetPullRequestBaseOwnerName(pullRequest)
+	repo := gh.GetPullRequestBaseRepoName(pullRequest)
 
 	varGQLPullRequestQuery := map[string]interface{}{
 		"repositoryOwner":   githubv4.String(owner),
@@ -38,7 +39,8 @@ func hasLinkedIssuesCode(e aladino.Env, args []aladino.Value) (aladino.Value, er
 		"pullRequestNumber": githubv4.Int(prNum),
 	}
 
-	err := e.GetClientGQL().Query(e.GetCtx(), &pullRequestQuery, varGQLPullRequestQuery)
+	// FIXME: Move to codehost/github package
+	err := e.GetGithubClient().GetClientGraphQL().Query(e.GetCtx(), &pullRequestQuery, varGQLPullRequestQuery)
 
 	if err != nil {
 		return nil, err

@@ -10,10 +10,10 @@ import (
 	"log"
 
 	"github.com/google/go-github/v45/github"
+	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/collector"
 	"github.com/reviewpad/reviewpad/v3/engine"
 	"github.com/reviewpad/reviewpad/v3/utils/fmtio"
-	"github.com/shurcooL/githubv4"
 )
 
 type Interpreter struct {
@@ -191,14 +191,13 @@ func (i *Interpreter) Report(mode string, safeMode bool) error {
 func NewInterpreter(
 	ctx context.Context,
 	dryRun bool,
-	gitHubClient *github.Client,
-	gitHubClientGQL *githubv4.Client,
+	githubClient *gh.GithubClient,
 	collector collector.Collector,
 	pullRequest *github.PullRequest,
 	eventPayload interface{},
 	builtIns *BuiltIns,
 ) (engine.Interpreter, error) {
-	evalEnv, err := NewEvalEnv(ctx, dryRun, gitHubClient, gitHubClientGQL, collector, pullRequest, eventPayload, builtIns)
+	evalEnv, err := NewEvalEnv(ctx, dryRun, githubClient, collector, pullRequest, eventPayload, builtIns)
 	if err != nil {
 		return nil, err
 	}

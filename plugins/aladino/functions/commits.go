@@ -5,8 +5,8 @@
 package plugins_aladino_functions
 
 import (
+	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
-	"github.com/reviewpad/reviewpad/v3/utils"
 )
 
 func Commits() *aladino.BuiltInFunction {
@@ -17,11 +17,12 @@ func Commits() *aladino.BuiltInFunction {
 }
 
 func commitsCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
-	prNum := utils.GetPullRequestNumber(e.GetPullRequest())
-	owner := utils.GetPullRequestBaseOwnerName(e.GetPullRequest())
-	repo := utils.GetPullRequestBaseRepoName(e.GetPullRequest())
+	pullRequest := e.GetPullRequest()
+	prNum := gh.GetPullRequestNumber(pullRequest)
+	owner := gh.GetPullRequestBaseOwnerName(pullRequest)
+	repo := gh.GetPullRequestBaseRepoName(pullRequest)
 
-	ghCommits, err := utils.GetPullRequestCommits(e.GetCtx(), e.GetClient(), owner, repo, prNum)
+	ghCommits, err := e.GetGithubClient().GetPullRequestCommits(e.GetCtx(), owner, repo, prNum)
 	if err != nil {
 		return nil, err
 	}

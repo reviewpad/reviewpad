@@ -8,8 +8,8 @@ import (
 	"context"
 
 	"github.com/google/go-github/v45/github"
+	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/collector"
-	"github.com/shurcooL/githubv4"
 )
 
 type GroupKind string
@@ -37,8 +37,7 @@ type Interpreter interface {
 type Env struct {
 	Ctx          context.Context
 	DryRun       bool
-	Client       *github.Client
-	ClientGQL    *githubv4.Client
+	GithubClient *gh.GithubClient
 	Collector    collector.Collector
 	PullRequest  *github.PullRequest
 	EventPayload interface{}
@@ -48,8 +47,7 @@ type Env struct {
 func NewEvalEnv(
 	ctx context.Context,
 	dryRun bool,
-	client *github.Client,
-	clientGQL *githubv4.Client,
+	githubClient *gh.GithubClient,
 	collector collector.Collector,
 	pullRequest *github.PullRequest,
 	eventPayload interface{},
@@ -58,8 +56,7 @@ func NewEvalEnv(
 	input := &Env{
 		Ctx:          ctx,
 		DryRun:       dryRun,
-		Client:       client,
-		ClientGQL:    clientGQL,
+		GithubClient: githubClient,
 		Collector:    collector,
 		PullRequest:  pullRequest,
 		EventPayload: eventPayload,

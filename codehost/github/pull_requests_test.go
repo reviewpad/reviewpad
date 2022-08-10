@@ -2,7 +2,7 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-package utils_test
+package github_test
 
 import (
 	"errors"
@@ -12,8 +12,8 @@ import (
 
 	"github.com/google/go-github/v45/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
+	host "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
-	"github.com/reviewpad/reviewpad/v3/utils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -33,7 +33,7 @@ func TestGetPullRequestHeadOwnerName(t *testing.T) {
 		},
 	})
 	wantOwnerName := mockedPullRequest.Head.Repo.Owner.GetLogin()
-	gotOwnerName := utils.GetPullRequestHeadOwnerName(mockedPullRequest)
+	gotOwnerName := host.GetPullRequestHeadOwnerName(mockedPullRequest)
 
 	assert.Equal(t, wantOwnerName, gotOwnerName)
 	assert.Equal(t, mockedHeadOwnerName, gotOwnerName)
@@ -49,7 +49,7 @@ func TestGetPullRequestHeadRepoName(t *testing.T) {
 		},
 	})
 	wantRepoName := mockedPullRequest.Head.Repo.GetName()
-	gotRepoName := utils.GetPullRequestHeadRepoName(mockedPullRequest)
+	gotRepoName := host.GetPullRequestHeadRepoName(mockedPullRequest)
 
 	assert.Equal(t, wantRepoName, gotRepoName)
 	assert.Equal(t, mockedHeadRepoName, gotRepoName)
@@ -60,7 +60,7 @@ func TestGetPullRequestBaseOwnerName(t *testing.T) {
 
 	mockedPullRequest := mockedEnv.GetPullRequest()
 	wantOwnerName := mockedPullRequest.Base.Repo.Owner.GetLogin()
-	gotOwnerName := utils.GetPullRequestBaseOwnerName(mockedPullRequest)
+	gotOwnerName := host.GetPullRequestBaseOwnerName(mockedPullRequest)
 
 	assert.Equal(t, wantOwnerName, gotOwnerName)
 }
@@ -70,7 +70,7 @@ func TestGetPullRequestBaseRepoName(t *testing.T) {
 
 	mockedPullRequest := mockedEnv.GetPullRequest()
 	wantRepoName := mockedPullRequest.Base.Repo.GetName()
-	gotRepoName := utils.GetPullRequestBaseRepoName(mockedPullRequest)
+	gotRepoName := host.GetPullRequestBaseRepoName(mockedPullRequest)
 
 	assert.Equal(t, wantRepoName, gotRepoName)
 }
@@ -80,7 +80,7 @@ func TestGetPullRequestNumber(t *testing.T) {
 
 	mockedPullRequest := mockedEnv.GetPullRequest()
 	wantPullRequestNumber := mockedPullRequest.GetNumber()
-	gotPullRequestNumber := utils.GetPullRequestNumber(mockedPullRequest)
+	gotPullRequestNumber := host.GetPullRequestNumber(mockedPullRequest)
 
 	assert.Equal(t, wantPullRequestNumber, gotPullRequestNumber)
 }
@@ -94,7 +94,7 @@ func TestPaginatedRequest_WhenFirstRequestFails(t *testing.T) {
 		return nil, nil, errors.New(failMessage)
 	}
 
-	res, err := utils.PaginatedRequest(initFn, reqFn)
+	res, err := host.PaginatedRequest(initFn, reqFn)
 
 	assert.Nil(t, res)
 	assert.EqualError(t, err, failMessage)
@@ -124,7 +124,7 @@ func TestPaginatedRequest_WhenFurtherRequestsFail(t *testing.T) {
 		return nil, nil, errors.New(failMessage)
 	}
 
-	res, err := utils.PaginatedRequest(initFn, reqFn)
+	res, err := host.PaginatedRequest(initFn, reqFn)
 
 	assert.Nil(t, res)
 	assert.EqualError(t, err, failMessage)
@@ -154,7 +154,7 @@ func TestPaginatedRequest(t *testing.T) {
 	}
 
 	wantRes := []*paginatedRequestResult{{pageNum: 1}}
-	gotRes, err := utils.PaginatedRequest(initFn, reqFn)
+	gotRes, err := host.PaginatedRequest(initFn, reqFn)
 
 	assert.Nil(t, err)
 	assert.Equal(t, gotRes, wantRes)
@@ -165,7 +165,7 @@ func TestParseNumPagesFromLink_WhenHTTPLinkHeaderHasNoRel(t *testing.T) {
 
 	wantNumPages := 0
 
-	gotNumPages := utils.ParseNumPagesFromLink(link)
+	gotNumPages := host.ParseNumPagesFromLink(link)
 
 	assert.Equal(t, wantNumPages, gotNumPages)
 }
@@ -175,7 +175,7 @@ func TestParseNumPagesFromLink_WhenHTTPLinkHeaderIsInvalid(t *testing.T) {
 
 	wantNumPages := 0
 
-	gotNumPages := utils.ParseNumPagesFromLink(link)
+	gotNumPages := host.ParseNumPagesFromLink(link)
 
 	assert.Equal(t, wantNumPages, gotNumPages)
 }
@@ -185,7 +185,7 @@ func TestParseNumPagesFromLink_WhenHTTPLinkHeaderHasNoQueryParamPage(t *testing.
 
 	wantNumPages := 0
 
-	gotNumPages := utils.ParseNumPagesFromLink(link)
+	gotNumPages := host.ParseNumPagesFromLink(link)
 
 	assert.Equal(t, wantNumPages, gotNumPages)
 }
@@ -195,7 +195,7 @@ func TestParseNumPagesFromLink_WhenHTTPLinkHeaderHasInvalidQueryParamPage(t *tes
 
 	wantNumPages := 0
 
-	gotNumPages := utils.ParseNumPagesFromLink(link)
+	gotNumPages := host.ParseNumPagesFromLink(link)
 
 	assert.Equal(t, wantNumPages, gotNumPages)
 }
@@ -206,7 +206,7 @@ func TestParseNumPagesFromLink(t *testing.T) {
 	// The number of pages is provided in the url query parameter "page"
 	wantNumPages := 3
 
-	gotNumPages := utils.ParseNumPagesFromLink(link)
+	gotNumPages := host.ParseNumPagesFromLink(link)
 
 	assert.Equal(t, wantNumPages, gotNumPages)
 }
@@ -222,7 +222,7 @@ func TestParseNumPages_WhenHTTPLinkHeaderIsNotProvided(t *testing.T) {
 
 	wantNumPages := 0
 
-	gotNumPages := utils.ParseNumPages(resp)
+	gotNumPages := host.ParseNumPages(resp)
 
 	assert.Equal(t, wantNumPages, gotNumPages)
 }
@@ -239,7 +239,7 @@ func TestParseNumPages(t *testing.T) {
 	// The number of pages is provided in the url query parameter "page"
 	wantNumPages := 3
 
-	gotNumPages := utils.ParseNumPages(resp)
+	gotNumPages := host.ParseNumPages(resp)
 
 	assert.Equal(t, wantNumPages, gotNumPages)
 }
@@ -266,9 +266,8 @@ func TestGetPullRequestComments_WhenListCommentsRequestFails(t *testing.T) {
 	)
 
 	mockedPullRequest := mockedEnv.GetPullRequest()
-	comments, err := utils.GetPullRequestComments(
+	comments, err := mockedEnv.GetGithubClient().GetPullRequestComments(
 		mockedEnv.GetCtx(),
-		mockedEnv.GetClient(),
 		mockedPullRequest.Base.Repo.Owner.GetLogin(),
 		mockedPullRequest.Base.Repo.GetName(),
 		mockedPullRequest.GetNumber(),
@@ -297,9 +296,8 @@ func TestGetPullRequestComments(t *testing.T) {
 	)
 
 	mockedPullRequest := mockedEnv.GetPullRequest()
-	gotComments, err := utils.GetPullRequestComments(
+	gotComments, err := mockedEnv.GetGithubClient().GetPullRequestComments(
 		mockedEnv.GetCtx(),
-		mockedEnv.GetClient(),
 		mockedPullRequest.Base.Repo.Owner.GetLogin(),
 		mockedPullRequest.Base.Repo.GetName(),
 		mockedPullRequest.GetNumber(),
@@ -333,9 +331,8 @@ func TestGetPullRequestFiles(t *testing.T) {
 	)
 
 	mockedPullRequest := mockedEnv.GetPullRequest()
-	gotFiles, err := utils.GetPullRequestFiles(
+	gotFiles, err := mockedEnv.GetGithubClient().GetPullRequestFiles(
 		mockedEnv.GetCtx(),
-		mockedEnv.GetClient(),
 		mockedPullRequest.Base.Repo.Owner.GetLogin(),
 		mockedPullRequest.Base.Repo.GetName(),
 		mockedPullRequest.GetNumber(),
@@ -367,9 +364,8 @@ func TestGetPullRequestReviewers_WhenListReviewersRequestFails(t *testing.T) {
 	)
 
 	mockedPullRequest := mockedEnv.GetPullRequest()
-	reviewers, err := utils.GetPullRequestReviewers(
+	reviewers, err := mockedEnv.GetGithubClient().GetPullRequestReviewers(
 		mockedEnv.GetCtx(),
-		mockedEnv.GetClient(),
 		mockedPullRequest.Base.Repo.Owner.GetLogin(),
 		mockedPullRequest.Base.Repo.GetName(),
 		mockedPullRequest.GetNumber(),
@@ -403,9 +399,8 @@ func TestGetPullRequestReviewers(t *testing.T) {
 	)
 
 	mockedPullRequest := mockedEnv.GetPullRequest()
-	gotReviewers, err := utils.GetPullRequestReviewers(
+	gotReviewers, err := mockedEnv.GetGithubClient().GetPullRequestReviewers(
 		mockedEnv.GetCtx(),
-		mockedEnv.GetClient(),
 		mockedPullRequest.Base.Repo.Owner.GetLogin(),
 		mockedPullRequest.Base.Repo.GetName(),
 		mockedPullRequest.GetNumber(),
@@ -438,9 +433,8 @@ func TestGetRepoCollaborators_WhenListCollaboratorsRequestFails(t *testing.T) {
 	)
 
 	mockedPullRequest := mockedEnv.GetPullRequest()
-	collaborators, err := utils.GetRepoCollaborators(
+	collaborators, err := mockedEnv.GetGithubClient().GetRepoCollaborators(
 		mockedEnv.GetCtx(),
-		mockedEnv.GetClient(),
 		mockedPullRequest.Base.Repo.Owner.GetLogin(),
 		mockedPullRequest.Base.Repo.GetName(),
 	)
@@ -467,9 +461,8 @@ func TestGetRepoCollaborators(t *testing.T) {
 	)
 
 	mockedPullRequest := mockedEnv.GetPullRequest()
-	gotCollaborators, err := utils.GetRepoCollaborators(
+	gotCollaborators, err := mockedEnv.GetGithubClient().GetRepoCollaborators(
 		mockedEnv.GetCtx(),
-		mockedEnv.GetClient(),
 		mockedPullRequest.Base.Repo.Owner.GetLogin(),
 		mockedPullRequest.Base.Repo.GetName(),
 	)
@@ -500,9 +493,8 @@ func TestGetIssuesAvailableAssignees_WhenListAssigneesRequestFails(t *testing.T)
 	)
 
 	mockedPullRequest := mockedEnv.GetPullRequest()
-	gotAssignees, err := utils.GetIssuesAvailableAssignees(
+	gotAssignees, err := mockedEnv.GetGithubClient().GetIssuesAvailableAssignees(
 		mockedEnv.GetCtx(),
-		mockedEnv.GetClient(),
 		mockedPullRequest.GetUser().GetLogin(),
 		mockedPullRequest.GetBase().GetRepo().GetName(),
 	)
@@ -529,9 +521,8 @@ func TestGetIssuesAvailableAssignees(t *testing.T) {
 	)
 
 	mockedPullRequest := mockedEnv.GetPullRequest()
-	gotAssignees, err := utils.GetIssuesAvailableAssignees(
+	gotAssignees, err := mockedEnv.GetGithubClient().GetIssuesAvailableAssignees(
 		mockedEnv.GetCtx(),
-		mockedEnv.GetClient(),
 		mockedPullRequest.GetUser().GetLogin(),
 		mockedPullRequest.GetBase().GetRepo().GetName(),
 	)
@@ -562,9 +553,8 @@ func TestGetPullRequestCommits_WhenListCommistsRequestFails(t *testing.T) {
 	)
 
 	mockedPullRequest := mockedEnv.GetPullRequest()
-	gotCommits, err := utils.GetPullRequestCommits(
+	gotCommits, err := mockedEnv.GetGithubClient().GetPullRequestCommits(
 		mockedEnv.GetCtx(),
-		mockedEnv.GetClient(),
 		mockedPullRequest.GetUser().GetLogin(),
 		mockedPullRequest.GetBase().GetRepo().GetName(),
 		mockedPullRequest.GetNumber(),
@@ -596,9 +586,8 @@ func TestGetPullRequestCommits(t *testing.T) {
 	)
 
 	mockedPullRequest := mockedEnv.GetPullRequest()
-	gotCommits, err := utils.GetPullRequestCommits(
+	gotCommits, err := mockedEnv.GetGithubClient().GetPullRequestCommits(
 		mockedEnv.GetCtx(),
-		mockedEnv.GetClient(),
 		mockedPullRequest.GetUser().GetLogin(),
 		mockedPullRequest.GetBase().GetRepo().GetName(),
 		mockedPullRequest.GetNumber(),
@@ -631,9 +620,8 @@ func TestGetPullRequestReviews(t *testing.T) {
 	)
 
 	mockedPullRequest := mockedEnv.GetPullRequest()
-	gotReviews, err := utils.GetPullRequestReviews(
+	gotReviews, err := mockedEnv.GetGithubClient().GetPullRequestReviews(
 		mockedEnv.GetCtx(),
-		mockedEnv.GetClient(),
 		mockedPullRequest.GetUser().GetLogin(),
 		mockedPullRequest.GetBase().GetRepo().GetName(),
 		mockedPullRequest.GetNumber(),
@@ -665,9 +653,8 @@ func TestGetPullRequestReviews_WhenRequestFails(t *testing.T) {
 	)
 
 	mockedPullRequest := mockedEnv.GetPullRequest()
-	gotReviews, err := utils.GetPullRequestReviews(
+	gotReviews, err := mockedEnv.GetGithubClient().GetPullRequestReviews(
 		mockedEnv.GetCtx(),
-		mockedEnv.GetClient(),
 		mockedPullRequest.GetUser().GetLogin(),
 		mockedPullRequest.GetBase().GetRepo().GetName(),
 		mockedPullRequest.GetNumber(),
@@ -696,9 +683,8 @@ func TestGetPullRequests(t *testing.T) {
 		nil,
 	)
 
-	gotReviews, err := utils.GetPullRequests(
+	gotReviews, err := mockedEnv.GetGithubClient().GetPullRequests(
 		mockedEnv.GetCtx(),
-		mockedEnv.GetClient(),
 		ownerName,
 		repoName,
 	)
@@ -732,9 +718,8 @@ func TestGetPullRequests_WhenRequestFails(t *testing.T) {
 		nil,
 	)
 
-	gotReviews, err := utils.GetPullRequests(
+	gotReviews, err := mockedEnv.GetGithubClient().GetPullRequests(
 		mockedEnv.GetCtx(),
-		mockedEnv.GetClient(),
 		ownerName,
 		repoName,
 	)
@@ -755,9 +740,8 @@ func TestGetReviewThreads_WhenRequestFails(t *testing.T) {
 		nil,
 	)
 
-	gotThreads, err := utils.GetReviewThreads(
+	gotThreads, err := mockedEnv.GetGithubClient().GetReviewThreads(
 		mockedEnv.GetCtx(),
-		mockedEnv.GetClientGQL(),
 		aladino.DefaultMockPrOwner,
 		aladino.DefaultMockPrRepoName,
 		aladino.DefaultMockPrNum,
@@ -804,13 +788,12 @@ func TestGetReviewThreads(t *testing.T) {
 		nil,
 	)
 
-	wantReviewThreads := []utils.GQLReviewThread{{
+	wantReviewThreads := []host.GQLReviewThread{{
 		IsResolved: true,
 		IsOutdated: false,
 	}}
-	gotReviewThreads, err := utils.GetReviewThreads(
+	gotReviewThreads, err := mockedEnv.GetGithubClient().GetReviewThreads(
 		mockedEnv.GetCtx(),
-		mockedEnv.GetClientGQL(),
 		aladino.DefaultMockPrOwner,
 		aladino.DefaultMockPrRepoName,
 		aladino.DefaultMockPrNum,

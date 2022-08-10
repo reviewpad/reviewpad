@@ -12,6 +12,7 @@ import (
 
 	"github.com/google/go-github/v45/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
+	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/collector"
 )
 
@@ -80,7 +81,7 @@ return`,
 	}
 }
 
-func MockGithubClient(clientOptions []mock.MockBackendOption) *github.Client {
+func MockGithubClient(clientOptions []mock.MockBackendOption) *gh.GithubClient {
 	defaultMocks := []mock.MockBackendOption{
 		mock.WithRequestMatchHandler(
 			mock.GetReposPullsByOwnerByRepoByPullNumber,
@@ -98,17 +99,18 @@ func MockGithubClient(clientOptions []mock.MockBackendOption) *github.Client {
 
 	mocks := append(clientOptions, defaultMocks...)
 
-	return github.NewClient(mock.NewMockedHTTPClient(mocks...))
+	githubClientREST := github.NewClient(mock.NewMockedHTTPClient(mocks...))
+
+	// TODO: mock the graphQL client
+	return gh.NewGithubClient(githubClientREST, nil)
 }
 
-func MockEnvWith(client *github.Client, interpreter Interpreter) (*Env, error) {
+func MockEnvWith(githubClient *gh.GithubClient, interpreter Interpreter) (*Env, error) {
 	dryRun := false
 	mockedEnv, err := NewEvalEnv(
 		DefaultMockCtx,
 		dryRun,
-		client,
-		// TODO: add mocked github GQL client
-		nil,
+		githubClient,
 		DefaultMockCollector,
 		GetDefaultMockPullRequestDetails(),
 		DefaultMockEventPayload,

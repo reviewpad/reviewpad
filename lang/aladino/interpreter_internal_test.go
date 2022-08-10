@@ -14,6 +14,7 @@ import (
 
 	"github.com/google/go-github/v45/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
+	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/engine"
 	"github.com/stretchr/testify/assert"
 )
@@ -692,7 +693,7 @@ func TestReport_OnVerboseMode_WhenThereIsAlreadyAReviewpadComment(t *testing.T) 
 func TestNewInterpreter_WhenNewEvalEnvFails(t *testing.T) {
 	ctx := context.Background()
 	failMessage := "GetPullRequestFilesRequestFail"
-	client := github.NewClient(
+	clientREST := github.NewClient(
 		mock.NewMockedHTTPClient(
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsFilesByOwnerByRepoByPullNumber,
@@ -710,11 +711,10 @@ func TestNewInterpreter_WhenNewEvalEnvFails(t *testing.T) {
 	gotInterpreter, err := NewInterpreter(
 		ctx,
 		false,
-		client,
-		nil,
+		gh.NewGithubClient(clientREST, nil),
 		nil,
 		GetDefaultMockPullRequestDetails(),
-		nil,
+		GetDefaultMockPullRequestDetails(),
 		nil,
 	)
 
@@ -732,8 +732,7 @@ func TestNewInterpreter(t *testing.T) {
 	gotInterpreter, err := NewInterpreter(
 		mockedEnv.GetCtx(),
 		mockedEnv.GetDryRun(),
-		mockedEnv.GetClient(),
-		mockedEnv.GetClientGQL(),
+		mockedEnv.GetGithubClient(),
 		mockedEnv.GetCollector(),
 		mockedEnv.GetPullRequest(),
 		mockedEnv.GetEventPayload(),

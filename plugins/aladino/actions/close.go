@@ -5,8 +5,8 @@
 package plugins_aladino_actions
 
 import (
+	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
-	"github.com/reviewpad/reviewpad/v3/utils"
 )
 
 func Close() *aladino.BuiltInAction {
@@ -19,13 +19,13 @@ func Close() *aladino.BuiltInAction {
 func closeCode(e aladino.Env, args []aladino.Value) error {
 	pullRequest := e.GetPullRequest()
 
-	prNum := utils.GetPullRequestNumber(pullRequest)
-	owner := utils.GetPullRequestBaseOwnerName(pullRequest)
-	repo := utils.GetPullRequestBaseRepoName(pullRequest)
+	prNum := gh.GetPullRequestNumber(pullRequest)
+	owner := gh.GetPullRequestBaseOwnerName(pullRequest)
+	repo := gh.GetPullRequestBaseRepoName(pullRequest)
 
 	closedState := "closed"
 	pullRequest.State = &closedState
-	_, _, err := e.GetClient().PullRequests.Edit(e.GetCtx(), owner, repo, prNum, pullRequest)
+	_, _, err := e.GetGithubClient().EditPullRequest(e.GetCtx(), owner, repo, prNum, pullRequest)
 
 	return err
 }

@@ -8,8 +8,8 @@ import (
 	"fmt"
 
 	"github.com/google/go-github/v45/github"
+	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
-	"github.com/reviewpad/reviewpad/v3/utils"
 )
 
 func Merge() *aladino.BuiltInAction {
@@ -20,16 +20,17 @@ func Merge() *aladino.BuiltInAction {
 }
 
 func mergeCode(e aladino.Env, args []aladino.Value) error {
-	prNum := utils.GetPullRequestNumber(e.GetPullRequest())
-	owner := utils.GetPullRequestBaseOwnerName(e.GetPullRequest())
-	repo := utils.GetPullRequestBaseRepoName(e.GetPullRequest())
+	pullRequest := e.GetPullRequest()
+	prNum := gh.GetPullRequestNumber(pullRequest)
+	owner := gh.GetPullRequestBaseOwnerName(pullRequest)
+	repo := gh.GetPullRequestBaseRepoName(pullRequest)
 
 	mergeMethod, err := parseMergeMethod(args)
 	if err != nil {
 		return err
 	}
 
-	_, _, err = e.GetClient().PullRequests.Merge(e.GetCtx(), owner, repo, prNum, "Merged by Reviewpad", &github.PullRequestOptions{
+	_, _, err = e.GetGithubClient().Merge(e.GetCtx(), owner, repo, prNum, "Merged by Reviewpad", &github.PullRequestOptions{
 		MergeMethod: mergeMethod,
 	})
 	return err

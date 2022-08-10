@@ -7,8 +7,8 @@ package plugins_aladino_actions
 import (
 	"log"
 
+	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
-	"github.com/reviewpad/reviewpad/v3/utils"
 )
 
 func RemoveLabel() *aladino.BuiltInAction {
@@ -21,9 +21,9 @@ func RemoveLabel() *aladino.BuiltInAction {
 func removeLabelCode(e aladino.Env, args []aladino.Value) error {
 	labelID := args[0].(*aladino.StringValue).Val
 
-	prNum := utils.GetPullRequestNumber(e.GetPullRequest())
-	owner := utils.GetPullRequestBaseOwnerName(e.GetPullRequest())
-	repo := utils.GetPullRequestBaseRepoName(e.GetPullRequest())
+	prNum := gh.GetPullRequestNumber(e.GetPullRequest())
+	owner := gh.GetPullRequestBaseOwnerName(e.GetPullRequest())
+	repo := gh.GetPullRequestBaseRepoName(e.GetPullRequest())
 
 	internalLabelID := aladino.BuildInternalLabelID(labelID)
 
@@ -48,7 +48,7 @@ func removeLabelCode(e aladino.Env, args []aladino.Value) error {
 		return nil
 	}
 
-	_, err := e.GetClient().Issues.RemoveLabelForIssue(e.GetCtx(), owner, repo, prNum, labelName)
+	_, err := e.GetGithubClient().RemoveLabelForIssue(e.GetCtx(), owner, repo, prNum, labelName)
 
 	return err
 }

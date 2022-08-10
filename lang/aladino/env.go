@@ -8,9 +8,8 @@ import (
 	"context"
 
 	"github.com/google/go-github/v45/github"
+	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/collector"
-	"github.com/reviewpad/reviewpad/v3/utils"
-	"github.com/shurcooL/githubv4"
 )
 
 type Severity int
@@ -26,8 +25,7 @@ type RegisterMap map[string]Value
 type Env interface {
 	GetBuiltIns() *BuiltIns
 	GetBuiltInsReportedMessages() map[Severity][]string
-	GetClient() *github.Client
-	GetClientGQL() *githubv4.Client
+	GetGithubClient() *gh.GithubClient
 	GetCollector() collector.Collector
 	GetCtx() context.Context
 	GetDryRun() bool
@@ -41,8 +39,7 @@ type Env interface {
 type BaseEnv struct {
 	BuiltIns                 *BuiltIns
 	BuiltInsReportedMessages map[Severity][]string
-	Client                   *github.Client
-	ClientGQL                *githubv4.Client
+	GithubClient             *gh.GithubClient
 	Collector                collector.Collector
 	Ctx                      context.Context
 	DryRun                   bool
@@ -61,12 +58,8 @@ func (e *BaseEnv) GetBuiltInsReportedMessages() map[Severity][]string {
 	return e.BuiltInsReportedMessages
 }
 
-func (e *BaseEnv) GetClient() *github.Client {
-	return e.Client
-}
-
-func (e *BaseEnv) GetClientGQL() *githubv4.Client {
-	return e.ClientGQL
+func (e *BaseEnv) GetGithubClient() *gh.GithubClient {
+	return e.GithubClient
 }
 
 func (e *BaseEnv) GetCollector() collector.Collector {
@@ -117,18 +110,17 @@ func NewTypeEnv(e Env) TypeEnv {
 func NewEvalEnv(
 	ctx context.Context,
 	dryRun bool,
-	gitHubClient *github.Client,
-	gitHubClientGQL *githubv4.Client,
+	githubClient *gh.GithubClient,
 	collector collector.Collector,
 	pullRequest *github.PullRequest,
 	eventPayload interface{},
 	builtIns *BuiltIns,
 ) (Env, error) {
-	owner := utils.GetPullRequestBaseOwnerName(pullRequest)
-	repo := utils.GetPullRequestBaseRepoName(pullRequest)
-	number := utils.GetPullRequestNumber(pullRequest)
+	owner := gh.GetPullRequestBaseOwnerName(pullRequest)
+	repo := gh.GetPullRequestBaseRepoName(pullRequest)
+	number := gh.GetPullRequestNumber(pullRequest)
 
-	files, err := utils.GetPullRequestFiles(ctx, gitHubClient, owner, repo, number)
+	files, err := githubClient.GetPullRequestFiles(ctx, owner, repo, number)
 	if err != nil {
 		return nil, err
 	}
@@ -154,8 +146,7 @@ func NewEvalEnv(
 	input := &BaseEnv{
 		BuiltIns:                 builtIns,
 		BuiltInsReportedMessages: builtInsReportedMessages,
-		Client:                   gitHubClient,
-		ClientGQL:                gitHubClientGQL,
+		GithubClient:             githubClient,
 		Collector:                collector,
 		Ctx:                      ctx,
 		DryRun:                   dryRun,

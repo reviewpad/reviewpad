@@ -8,8 +8,8 @@ import (
 	"log"
 
 	"github.com/google/go-github/v45/github"
+	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
-	"github.com/reviewpad/reviewpad/v3/utils"
 )
 
 func IsWaitingForReview() *aladino.BuiltInFunction {
@@ -28,12 +28,12 @@ func isWaitingForReviewCode(e aladino.Env, _ []aladino.Value) (aladino.Value, er
 		return aladino.BuildBoolValue(true), nil
 	}
 
-	prNum := utils.GetPullRequestNumber(pullRequest)
-	owner := utils.GetPullRequestBaseOwnerName(pullRequest)
-	repo := utils.GetPullRequestBaseRepoName(pullRequest)
+	prNum := gh.GetPullRequestNumber(pullRequest)
+	owner := gh.GetPullRequestBaseOwnerName(pullRequest)
+	repo := gh.GetPullRequestBaseRepoName(pullRequest)
 	author := pullRequest.GetUser().GetLogin()
 
-	commits, err := utils.GetPullRequestCommits(e.GetCtx(), e.GetClient(), owner, repo, prNum)
+	commits, err := e.GetGithubClient().GetPullRequestCommits(e.GetCtx(), owner, repo, prNum)
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +51,7 @@ func isWaitingForReviewCode(e aladino.Env, _ []aladino.Value) (aladino.Value, er
 	}
 	lastUpdateDate := *lastCommit.Commit.Committer.Date
 
-	reviews, err := utils.GetPullRequestReviews(e.GetCtx(), e.GetClient(), owner, repo, prNum)
+	reviews, err := e.GetGithubClient().GetPullRequestReviews(e.GetCtx(), owner, repo, prNum)
 	if err != nil {
 		return nil, err
 	}

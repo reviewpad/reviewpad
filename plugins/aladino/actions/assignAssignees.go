@@ -7,8 +7,8 @@ package plugins_aladino_actions
 import (
 	"fmt"
 
+	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
-	"github.com/reviewpad/reviewpad/v3/utils"
 )
 
 func AssignAssignees() *aladino.BuiltInAction {
@@ -33,11 +33,11 @@ func assignAssigneesCode(e aladino.Env, args []aladino.Value) error {
 		assigneesLogin[i] = assignee.(*aladino.StringValue).Val
 	}
 
-	prNum := utils.GetPullRequestNumber(e.GetPullRequest())
-	owner := utils.GetPullRequestBaseOwnerName(e.GetPullRequest())
-	repo := utils.GetPullRequestBaseRepoName(e.GetPullRequest())
+	prNum := gh.GetPullRequestNumber(e.GetPullRequest())
+	owner := gh.GetPullRequestBaseOwnerName(e.GetPullRequest())
+	repo := gh.GetPullRequestBaseRepoName(e.GetPullRequest())
 
-	_, _, err := e.GetClient().Issues.AddAssignees(e.GetCtx(), owner, repo, prNum, assigneesLogin)
+	_, _, err := e.GetGithubClient().AddAssignees(e.GetCtx(), owner, repo, prNum, assigneesLogin)
 
 	return err
 }

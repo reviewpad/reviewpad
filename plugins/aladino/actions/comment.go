@@ -6,8 +6,8 @@ package plugins_aladino_actions
 
 import (
 	"github.com/google/go-github/v45/github"
+	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
-	"github.com/reviewpad/reviewpad/v3/utils"
 )
 
 func Comment() *aladino.BuiltInAction {
@@ -20,13 +20,13 @@ func Comment() *aladino.BuiltInAction {
 func commentCode(e aladino.Env, args []aladino.Value) error {
 	pullRequest := e.GetPullRequest()
 
-	prNum := utils.GetPullRequestNumber(pullRequest)
-	owner := utils.GetPullRequestBaseOwnerName(pullRequest)
-	repo := utils.GetPullRequestBaseRepoName(pullRequest)
+	prNum := gh.GetPullRequestNumber(pullRequest)
+	owner := gh.GetPullRequestBaseOwnerName(pullRequest)
+	repo := gh.GetPullRequestBaseRepoName(pullRequest)
 
 	commentBody := args[0].(*aladino.StringValue).Val
 
-	_, _, err := e.GetClient().Issues.CreateComment(e.GetCtx(), owner, repo, prNum, &github.IssueComment{
+	_, _, err := e.GetGithubClient().CreateComment(e.GetCtx(), owner, repo, prNum, &github.IssueComment{
 		Body: &commentBody,
 	})
 

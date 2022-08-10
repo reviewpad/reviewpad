@@ -10,6 +10,7 @@ import (
 
 	"github.com/google/go-github/v45/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
+	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
 	plugins_aladino_actions "github.com/reviewpad/reviewpad/v3/plugins/aladino/actions"
@@ -137,7 +138,7 @@ func TestAddToProject(t *testing.T) {
 			name:                "when project not found",
 			getProjectQuery:     mockedGetProjectQuery,
 			getProjectQueryBody: `{"data": {"repository":{"projectsV2":{"nodes":[]}}}}`,
-			expectedError:       utils.ErrProjectNotFound,
+			expectedError:       gh.ErrProjectNotFound,
 		},
 		{
 			name:                  "error getting project fields",

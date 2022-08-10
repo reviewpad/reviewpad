@@ -8,8 +8,8 @@ import (
 	"fmt"
 
 	"github.com/google/go-github/v45/github"
+	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
-	"github.com/reviewpad/reviewpad/v3/utils"
 )
 
 func AssignTeamReviewer() *aladino.BuiltInAction {
@@ -33,11 +33,11 @@ func assignTeamReviewerCode(e aladino.Env, args []aladino.Value) error {
 	}
 
 	pullRequest := e.GetPullRequest()
-	prNum := utils.GetPullRequestNumber(pullRequest)
-	owner := utils.GetPullRequestBaseOwnerName(pullRequest)
-	repo := utils.GetPullRequestBaseRepoName(pullRequest)
+	prNum := gh.GetPullRequestNumber(pullRequest)
+	owner := gh.GetPullRequestBaseOwnerName(pullRequest)
+	repo := gh.GetPullRequestBaseRepoName(pullRequest)
 
-	_, _, err := e.GetClient().PullRequests.RequestReviewers(e.GetCtx(), owner, repo, prNum, github.ReviewersRequest{
+	_, _, err := e.GetGithubClient().RequestReviewers(e.GetCtx(), owner, repo, prNum, github.ReviewersRequest{
 		TeamReviewers: teamReviewersSlugs,
 	})
 
