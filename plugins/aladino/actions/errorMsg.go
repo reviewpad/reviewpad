@@ -17,7 +17,7 @@ func errorCode(e aladino.Env, args []aladino.Value) error {
 	body := args[0].(*aladino.StringValue).Val
 
 	reportedMessages := e.GetBuiltInsReportedMessages()
-	reportedMessages[aladino.SEVERITY_FATAL] = append(reportedMessages[aladino.SEVERITY_FATAL], body)
+	reportedMessages[aladino.SEVERITY_ERROR] = append(reportedMessages[aladino.SEVERITY_ERROR], body)
 
 	return nil
 }
