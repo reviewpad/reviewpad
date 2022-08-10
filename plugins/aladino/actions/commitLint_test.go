@@ -12,7 +12,6 @@ import (
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
-	consts "github.com/reviewpad/reviewpad/v3/plugins/aladino/consts"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -20,8 +19,9 @@ var commitLint = plugins_aladino.PluginBuiltIns().Actions["commitLint"].Code
 
 func TestCommitLint_WhenRequestFails(t *testing.T) {
 	tests := map[string]struct {
-		env     aladino.Env
-		wantErr string
+		env          aladino.Env
+		wantComments map[aladino.Severity][]string
+		wantErr      string
 	}{
 		"GetPullRequestCommits": {
 			env: aladino.MockDefaultEnv(
@@ -42,6 +42,10 @@ func TestCommitLint_WhenRequestFails(t *testing.T) {
 				aladino.MockBuiltIns(),
 				nil,
 			),
+			wantComments: map[aladino.Severity][]string{
+				aladino.SEVERITY_FATAL: {},
+				aladino.SEVERITY_ERROR: {},
+			},
 			wantErr: "GetPullRequestCommitsRequestFailed",
 		},
 	}
@@ -51,7 +55,9 @@ func TestCommitLint_WhenRequestFails(t *testing.T) {
 			args := []aladino.Value{}
 			gotErr := commitLint(test.env, args)
 
-			assert.Equal(t, map[string][]string{}, test.env.GetComments())
+			gotComments := test.env.GetBuiltInsReportedMessages()
+
+			assert.Equal(t, test.wantComments, gotComments)
 			assert.Equal(t, gotErr.(*github.ErrorResponse).Message, test.wantErr)
 		})
 	}
@@ -60,7 +66,7 @@ func TestCommitLint_WhenRequestFails(t *testing.T) {
 func TestCommitLint(t *testing.T) {
 	tests := map[string]struct {
 		env          aladino.Env
-		wantComments map[string][]string
+		wantComments map[aladino.Severity][]string
 		wantErr      string
 	}{
 		"when commit parser fails": {
@@ -82,8 +88,9 @@ func TestCommitLint(t *testing.T) {
 				aladino.MockBuiltIns(),
 				nil,
 			),
-			wantComments: map[string][]string{
-				consts.ERROR_LEVEL: {
+			wantComments: map[aladino.Severity][]string{
+				aladino.SEVERITY_FATAL: {},
+				aladino.SEVERITY_ERROR: {
 					"**Unconventional commit detected**: '&' (6dcb09b5b57875f334f61aebed695e2e4193db5e)",
 				},
 			},
@@ -110,8 +117,9 @@ func TestCommitLint(t *testing.T) {
 				aladino.MockBuiltIns(),
 				nil,
 			),
-			wantComments: map[string][]string{
-				consts.ERROR_LEVEL: {
+			wantComments: map[aladino.Severity][]string{
+				aladino.SEVERITY_FATAL: {},
+				aladino.SEVERITY_ERROR: {
 					"**Unconventional commit detected**: 'Fix all bugs' (6dcb09b5b57875f334f61aebed695e2e4193db5e)",
 				},
 			},
@@ -142,8 +150,9 @@ func TestCommitLint(t *testing.T) {
 				aladino.MockBuiltIns(),
 				nil,
 			),
-			wantComments: map[string][]string{
-				consts.ERROR_LEVEL: {
+			wantComments: map[aladino.Severity][]string{
+				aladino.SEVERITY_FATAL: {},
+				aladino.SEVERITY_ERROR: {
 					"**Unconventional commit detected**: 'Fix all bugs' (6dcb09b5b57875f334f61aebed695e2e4193db5e)",
 					"**Unconventional commit detected**: 'Add code comments' (6dcb09b5b57875f334f61aebed695e2e4193db5c)",
 				},
@@ -171,7 +180,10 @@ func TestCommitLint(t *testing.T) {
 				aladino.MockBuiltIns(),
 				nil,
 			),
-			wantComments: map[string][]string{},
+			wantComments: map[aladino.Severity][]string{
+				aladino.SEVERITY_FATAL: {},
+				aladino.SEVERITY_ERROR: {},
+			},
 		},
 	}
 
@@ -181,7 +193,7 @@ func TestCommitLint(t *testing.T) {
 			gotErr := commitLint(test.env, args)
 
 			assert.Nil(t, gotErr)
-			assert.Equal(t, test.wantComments, test.env.GetComments())
+			assert.Equal(t, test.wantComments, test.env.GetBuiltInsReportedMessages())
 		})
 	}
 }

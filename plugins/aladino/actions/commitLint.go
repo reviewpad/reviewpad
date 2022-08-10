@@ -10,7 +10,6 @@ import (
 	"github.com/reviewpad/go-conventionalcommits"
 	"github.com/reviewpad/go-conventionalcommits/parser"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
-	consts "github.com/reviewpad/reviewpad/v3/plugins/aladino/consts"
 	"github.com/reviewpad/reviewpad/v3/utils"
 )
 
@@ -36,13 +35,13 @@ func commitLintCode(e aladino.Env, _ []aladino.Value) error {
 		res, err := parser.NewMachine(conventionalcommits.WithTypes(conventionalcommits.TypesConventional)).Parse([]byte(commitMsg))
 
 		if err != nil || !res.Ok() {
-			comments := e.GetComments()
+			reportedMessages := e.GetBuiltInsReportedMessages()
 			body := fmt.Sprintf("**Unconventional commit detected**: '%v' (%v)", commitMsg, ghCommit.GetSHA())
-			errors, ok := comments[consts.ERROR_LEVEL]
+			errors, ok := reportedMessages[aladino.SEVERITY_ERROR]
 			if !ok {
-				comments[consts.ERROR_LEVEL] = []string{body}
+				reportedMessages[aladino.SEVERITY_ERROR] = []string{body}
 			} else {
-				comments[consts.ERROR_LEVEL] = append(errors, body)
+				reportedMessages[aladino.SEVERITY_ERROR] = append(errors, body)
 			}
 		}
 	}
