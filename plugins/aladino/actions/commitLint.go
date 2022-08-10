@@ -35,14 +35,9 @@ func commitLintCode(e aladino.Env, _ []aladino.Value) error {
 		res, err := parser.NewMachine(conventionalcommits.WithTypes(conventionalcommits.TypesConventional)).Parse([]byte(commitMsg))
 
 		if err != nil || !res.Ok() {
-			reportedMessages := e.GetBuiltInsReportedMessages()
 			body := fmt.Sprintf("**Unconventional commit detected**: '%v' (%v)", commitMsg, ghCommit.GetSHA())
-			errors, ok := reportedMessages[aladino.SEVERITY_ERROR]
-			if !ok {
-				reportedMessages[aladino.SEVERITY_ERROR] = []string{body}
-			} else {
-				reportedMessages[aladino.SEVERITY_ERROR] = append(errors, body)
-			}
+			reportedMessages := e.GetBuiltInsReportedMessages()
+			reportedMessages[aladino.SEVERITY_ERROR] = append(reportedMessages[aladino.SEVERITY_ERROR], body)
 		}
 	}
 
