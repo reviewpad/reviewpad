@@ -22,10 +22,10 @@ func TestWarn(t *testing.T) {
 	args := []aladino.Value{aladino.BuildStringValue(message)}
 	gotError := warn(mockedEnv, args)
 
-	wantWarnings := []string{message}
+	wantReportedWarnings := []string{message}
 
-	gotWarnings := mockedEnv.GetBuiltInsReportedMessages()[aladino.SEVERITY_WARNING]
+	gotReportedWarnings := mockedEnv.GetBuiltInsReportedMessages()[aladino.SEVERITY_WARNING]
 
 	assert.Nil(t, gotError)
-	assert.Equal(t, wantWarnings, gotWarnings)
+	assert.Equal(t, wantReportedWarnings, gotReportedWarnings)
 }
