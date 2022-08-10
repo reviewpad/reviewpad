@@ -19,9 +19,9 @@ var commitLint = plugins_aladino.PluginBuiltIns().Actions["commitLint"].Code
 
 func TestCommitLint_WhenRequestFails(t *testing.T) {
 	tests := map[string]struct {
-		env          aladino.Env
-		wantComments map[aladino.Severity][]string
-		wantErr      string
+		env                  aladino.Env
+		wantReportedMessages map[aladino.Severity][]string
+		wantErr              string
 	}{
 		"GetPullRequestCommits": {
 			env: aladino.MockDefaultEnv(
@@ -42,7 +42,7 @@ func TestCommitLint_WhenRequestFails(t *testing.T) {
 				aladino.MockBuiltIns(),
 				nil,
 			),
-			wantComments: map[aladino.Severity][]string{
+			wantReportedMessages: map[aladino.Severity][]string{
 				aladino.SEVERITY_FATAL: {},
 				aladino.SEVERITY_ERROR: {},
 			},
@@ -55,9 +55,9 @@ func TestCommitLint_WhenRequestFails(t *testing.T) {
 			args := []aladino.Value{}
 			gotErr := commitLint(test.env, args)
 
-			gotComments := test.env.GetBuiltInsReportedMessages()
+			gotReportedMessages := test.env.GetBuiltInsReportedMessages()
 
-			assert.Equal(t, test.wantComments, gotComments)
+			assert.Equal(t, test.wantReportedMessages, gotReportedMessages)
 			assert.Equal(t, gotErr.(*github.ErrorResponse).Message, test.wantErr)
 		})
 	}
@@ -65,9 +65,9 @@ func TestCommitLint_WhenRequestFails(t *testing.T) {
 
 func TestCommitLint(t *testing.T) {
 	tests := map[string]struct {
-		env          aladino.Env
-		wantComments map[aladino.Severity][]string
-		wantErr      string
+		env                  aladino.Env
+		wantReportedMessages map[aladino.Severity][]string
+		wantErr              string
 	}{
 		"when commit parser fails": {
 			env: aladino.MockDefaultEnv(
@@ -88,7 +88,7 @@ func TestCommitLint(t *testing.T) {
 				aladino.MockBuiltIns(),
 				nil,
 			),
-			wantComments: map[aladino.Severity][]string{
+			wantReportedMessages: map[aladino.Severity][]string{
 				aladino.SEVERITY_FATAL: {},
 				aladino.SEVERITY_ERROR: {
 					"**Unconventional commit detected**: '&' (6dcb09b5b57875f334f61aebed695e2e4193db5e)",
@@ -117,7 +117,7 @@ func TestCommitLint(t *testing.T) {
 				aladino.MockBuiltIns(),
 				nil,
 			),
-			wantComments: map[aladino.Severity][]string{
+			wantReportedMessages: map[aladino.Severity][]string{
 				aladino.SEVERITY_FATAL: {},
 				aladino.SEVERITY_ERROR: {
 					"**Unconventional commit detected**: 'Fix all bugs' (6dcb09b5b57875f334f61aebed695e2e4193db5e)",
@@ -150,7 +150,7 @@ func TestCommitLint(t *testing.T) {
 				aladino.MockBuiltIns(),
 				nil,
 			),
-			wantComments: map[aladino.Severity][]string{
+			wantReportedMessages: map[aladino.Severity][]string{
 				aladino.SEVERITY_FATAL: {},
 				aladino.SEVERITY_ERROR: {
 					"**Unconventional commit detected**: 'Fix all bugs' (6dcb09b5b57875f334f61aebed695e2e4193db5e)",
@@ -180,7 +180,7 @@ func TestCommitLint(t *testing.T) {
 				aladino.MockBuiltIns(),
 				nil,
 			),
-			wantComments: map[aladino.Severity][]string{
+			wantReportedMessages: map[aladino.Severity][]string{
 				aladino.SEVERITY_FATAL: {},
 				aladino.SEVERITY_ERROR: {},
 			},
@@ -193,7 +193,7 @@ func TestCommitLint(t *testing.T) {
 			gotErr := commitLint(test.env, args)
 
 			assert.Nil(t, gotErr)
-			assert.Equal(t, test.wantComments, test.env.GetBuiltInsReportedMessages())
+			assert.Equal(t, test.wantReportedMessages, test.env.GetBuiltInsReportedMessages())
 		})
 	}
 }
