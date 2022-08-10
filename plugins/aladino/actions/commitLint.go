@@ -9,8 +9,8 @@ import (
 
 	"github.com/reviewpad/go-conventionalcommits"
 	"github.com/reviewpad/go-conventionalcommits/parser"
+	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
-	"github.com/reviewpad/reviewpad/v3/utils"
 )
 
 func CommitLint() *aladino.BuiltInAction {
@@ -21,11 +21,11 @@ func CommitLint() *aladino.BuiltInAction {
 }
 
 func commitLintCode(e aladino.Env, _ []aladino.Value) error {
-	prNum := utils.GetPullRequestNumber(e.GetPullRequest())
-	owner := utils.GetPullRequestBaseOwnerName(e.GetPullRequest())
-	repo := utils.GetPullRequestBaseRepoName(e.GetPullRequest())
+	prNum := gh.GetPullRequestNumber(e.GetPullRequest())
+	owner := gh.GetPullRequestBaseOwnerName(e.GetPullRequest())
+	repo := gh.GetPullRequestBaseRepoName(e.GetPullRequest())
 
-	ghCommits, err := utils.GetPullRequestCommits(e.GetCtx(), e.GetClient(), owner, repo, prNum)
+	ghCommits, err := e.GetGithubClient().GetPullRequestCommits(e.GetCtx(), owner, repo, prNum)
 	if err != nil {
 		return err
 	}
