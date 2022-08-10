@@ -22,10 +22,10 @@ func TestErrorMsg(t *testing.T) {
 	args := []aladino.Value{aladino.BuildStringValue(message)}
 	gotError := errorMsg(mockedEnv, args)
 
-	wantErrorComments := []string{message}
+	wantReportedErrors := []string{message}
 
-	gotErrorComments := mockedEnv.GetBuiltInsReportedMessages()[aladino.SEVERITY_ERROR]
+	gotReportedErrors := mockedEnv.GetBuiltInsReportedMessages()[aladino.SEVERITY_ERROR]
 
 	assert.Nil(t, gotError)
-	assert.Equal(t, wantErrorComments, gotErrorComments)
+	assert.Equal(t, wantReportedErrors, gotReportedErrors)
 }
