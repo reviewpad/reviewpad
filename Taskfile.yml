@@ -69,8 +69,38 @@ tasks:
     cmds:
       - go tool cover -html=coverage.out
 
+  coverage-diff:
+    summary: Show coverage difference between current branch and master
+    cmds:
+      - |
+        gotestsum -- -coverprofile=coverage.out ./...
+        . scripts/exclude-from-code-coverage.sh
+        current_branch=$(git rev-parse --abbrev-ref HEAD)
+
+        current_line_total=$(go tool cover -func coverage.out | grep -e 'total:')
+        current_total_int=$(echo "$current_line_total" | grep -o '[0-9.]*')
+        git checkout main
+        gotestsum -- -coverprofile=coverage.out ./...
+        . scripts/exclude-from-code-coverage.sh
+
+        main_line_total=$(go tool cover -func coverage.out | grep -e 'total:')
+        main_total_int=$(echo "$main_line_total" | grep -o '[0-9.]*')
+        git checkout $current_branch
+        echo "branch $current_branch coverage: $current_total_int%"
+        echo "branch main coverage: $main_total_int%"
+        if ((current_total_int > main_total_int))
+        then
+          diff=$(echo "$current_total_int $main_total_int" | awk '{print $1 - $2}')
+          echo "difference: + $diff%"
+        else
+          diff=$(echo "$main_total_int $current_total_int" | awk '{print $1 - $2}')
+          echo "difference: - $diff%"
+        fi
+    silent: true
+
   check:
     deps:
       - format
       - build
       - test
+
