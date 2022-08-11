@@ -28,6 +28,9 @@ func TestMergeAladinoBuiltIns(t *testing.T) {
 			Actions: map[string]*aladino.BuiltInAction{
 				"emptyAction2": nil,
 			},
+			Services: map[string]interface{}{
+				"emptyService2": nil,
+			},
 		},
 	}
 
@@ -39,6 +42,9 @@ func TestMergeAladinoBuiltIns(t *testing.T) {
 		Actions: map[string]*aladino.BuiltInAction{
 			"emptyAction1": nil,
 			"emptyAction2": nil,
+		},
+		Services: map[string]interface{}{
+			"emptyService2": nil,
 		},
 	}
 
