@@ -10,7 +10,7 @@ import (
 )
 
 func NewSemanticService(endpoint string) services.SemanticClient {
-	client, _ := clients.NewSemanticClient("http://localhost:8080")
+	client, _ := clients.NewSemanticClient(endpoint)
 
 	return client
 }
