@@ -312,3 +312,28 @@ func (c *GithubClient) EditPullRequest(ctx context.Context, owner string, repo s
 func (c *GithubClient) Merge(ctx context.Context, owner string, repo string, number int, commitMessage string, options *github.PullRequestOptions) (*github.PullRequestMergeResult, *github.Response, error) {
 	return c.clientREST.PullRequests.Merge(ctx, owner, repo, number, commitMessage, options)
 }
+
+func (c *GithubClient) GetIssueTimeline(ctx context.Context, owner string, repo string, number int) ([]*github.Timeline, error) {
+	events, err := PaginatedRequest(
+		func() interface{} {
+			return []*github.Timeline{}
+		},
+		func(i interface{}, page int) (interface{}, *github.Response, error) {
+			currentEvents := i.([]*github.Timeline)
+			events, resp, err := c.clientREST.Issues.ListIssueTimeline(ctx, owner, repo, number, &github.ListOptions{
+				Page:    page,
+				PerPage: maxPerPage,
+			})
+			if err != nil {
+				return nil, nil, err
+			}
+			currentEvents = append(currentEvents, events...)
+			return currentEvents, resp, nil
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return events.([]*github.Timeline), nil
+}
