@@ -830,8 +830,8 @@ func TestGetIssueTimeline_WhenListIssueTimelineRequestFails(t *testing.T) {
 	mockedPullRequest := mockedEnv.GetPullRequest()
 	gotTimeline, err := mockedEnv.GetGithubClient().GetIssueTimeline(
 		mockedEnv.GetCtx(),
-		mockedPullRequest.Base.Repo.Owner.GetLogin(),
-		mockedPullRequest.Base.Repo.GetName(),
+		mockedPullRequest.GetBase().GetRepo().GetOwner().GetLogin(),
+		mockedPullRequest.GetBase().GetRepo().GetName(),
 		mockedPullRequest.GetNumber(),
 	)
 
@@ -870,8 +870,8 @@ func TestGetIssueTimeLine(t *testing.T) {
 	mockedPullRequest := mockedEnv.GetPullRequest()
 	gotTimeline, err := mockedEnv.GetGithubClient().GetIssueTimeline(
 		mockedEnv.GetCtx(),
-		mockedPullRequest.Base.Repo.Owner.GetLogin(),
-		mockedPullRequest.Base.Repo.GetName(),
+		mockedPullRequest.GetBase().GetRepo().GetOwner().GetLogin(),
+		mockedPullRequest.GetBase().GetRepo().GetName(),
 		mockedPullRequest.GetNumber(),
 	)
 
