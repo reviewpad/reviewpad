@@ -8,13 +8,17 @@ import (
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	actions "github.com/reviewpad/reviewpad/v3/plugins/aladino/actions"
 	functions "github.com/reviewpad/reviewpad/v3/plugins/aladino/functions"
+	services "github.com/reviewpad/reviewpad/v3/plugins/aladino/services"
 )
+
+type PluginConfig struct {
+	SemanticEndpoint string
+}
 
 // The documentation for the builtins is in:
 // https://github.com/reviewpad/docs/blob/main/aladino/builtins.md
 // This means that changes to the builtins need to be propagated to that document.
-
-func PluginBuiltIns() *aladino.BuiltIns {
+func PluginBuiltIns(config *PluginConfig) *aladino.BuiltIns {
 	return &aladino.BuiltIns{
 		Functions: map[string]*aladino.BuiltInFunction{
 			// Pull Request
@@ -77,6 +81,9 @@ func PluginBuiltIns() *aladino.BuiltIns {
 			"fail":                 actions.Fail(),
 			"merge":                actions.Merge(),
 			"removeLabel":          actions.RemoveLabel(),
+		},
+		Services: map[string]interface{}{
+			"semantic": services.NewSemanticService(config.SemanticEndpoint),
 		},
 	}
 }
