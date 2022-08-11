@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var title = plugins_aladino.PluginBuiltIns(nil).Functions["title"].Code
+var title = plugins_aladino.PluginBuiltIns(plugins_aladino.DefaultPluginConfig()).Functions["title"].Code
 
 func TestTitle(t *testing.T) {
 	prTitle := "Amazing new feature"

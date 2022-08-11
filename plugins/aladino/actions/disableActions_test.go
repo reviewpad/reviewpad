@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var disableActions = plugins_aladino.PluginBuiltIns(nil).Actions["disableActions"].Code
+var disableActions = plugins_aladino.PluginBuiltIns(plugins_aladino.DefaultPluginConfig()).Actions["disableActions"].Code
 
 func TestDisableActions(t *testing.T) {
 	builtInName := "emptyAction"

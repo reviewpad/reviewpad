@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var head = plugins_aladino.PluginBuiltIns(nil).Functions["head"].Code
+var head = plugins_aladino.PluginBuiltIns(plugins_aladino.DefaultPluginConfig()).Functions["head"].Code
 
 func TestHead(t *testing.T) {
 	headRef := "new-topic"

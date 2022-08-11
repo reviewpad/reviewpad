@@ -17,7 +17,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var assignAssignees = plugins_aladino.PluginBuiltIns(nil).Actions["assignAssignees"].Code
+var assignAssignees = plugins_aladino.PluginBuiltIns(plugins_aladino.DefaultPluginConfig()).Actions["assignAssignees"].Code
 
 type AssigneesRequestPostBody struct {
 	Assignees []string `json:"assignees"`

@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var commitCount = plugins_aladino.PluginBuiltIns(nil).Functions["commitCount"].Code
+var commitCount = plugins_aladino.PluginBuiltIns(plugins_aladino.DefaultPluginConfig()).Functions["commitCount"].Code
 
 func TestCommitCount(t *testing.T) {
 	totalCommits := 1

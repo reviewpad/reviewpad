@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var filter = plugins_aladino.PluginBuiltIns(nil).Functions["filter"].Code
+var filter = plugins_aladino.PluginBuiltIns(plugins_aladino.DefaultPluginConfig()).Functions["filter"].Code
 
 func TestFilter(t *testing.T) {
 	mockedIntValue := aladino.BuildIntValue(1)

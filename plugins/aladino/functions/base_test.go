@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var base = plugins_aladino.PluginBuiltIns(nil).Functions["base"].Code
+var base = plugins_aladino.PluginBuiltIns(plugins_aladino.DefaultPluginConfig()).Functions["base"].Code
 
 func TestBase(t *testing.T) {
 	baseRef := "master"

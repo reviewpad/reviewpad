@@ -16,7 +16,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var hasUnaddressedThreads = plugins_aladino.PluginBuiltIns(nil).Functions["hasUnaddressedThreads"].Code
+var hasUnaddressedThreads = plugins_aladino.PluginBuiltIns(plugins_aladino.DefaultPluginConfig()).Functions["hasUnaddressedThreads"].Code
 
 func TestHasUnaddressedThreads_WhenRequestFails(t *testing.T) {
 	mockedEnv := aladino.MockDefaultEnv(

@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var reviewers = plugins_aladino.PluginBuiltIns(nil).Functions["reviewers"].Code
+var reviewers = plugins_aladino.PluginBuiltIns(plugins_aladino.DefaultPluginConfig()).Functions["reviewers"].Code
 
 func TestReviewers(t *testing.T) {
 	ghUsersReviewers := []*github.User{

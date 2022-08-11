@@ -17,7 +17,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var assignReviewer = plugins_aladino.PluginBuiltIns(nil).Actions["assignReviewer"].Code
+var assignReviewer = plugins_aladino.PluginBuiltIns(plugins_aladino.DefaultPluginConfig()).Actions["assignReviewer"].Code
 
 func TestAssignReviewer_WhenTotalRequiredReviewersIsZero(t *testing.T) {
 	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)

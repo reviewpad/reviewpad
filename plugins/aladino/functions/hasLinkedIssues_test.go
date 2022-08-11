@@ -16,7 +16,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var hasLinkedIssues = plugins_aladino.PluginBuiltIns(nil).Functions["hasLinkedIssues"].Code
+var hasLinkedIssues = plugins_aladino.PluginBuiltIns(plugins_aladino.DefaultPluginConfig()).Functions["hasLinkedIssues"].Code
 
 func TestHasLinkedIssues_WhenRequestFails(t *testing.T) {
 	mockedEnv := aladino.MockDefaultEnv(

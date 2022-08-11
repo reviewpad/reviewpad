@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var commits = plugins_aladino.PluginBuiltIns(nil).Functions["commits"].Code
+var commits = plugins_aladino.PluginBuiltIns(plugins_aladino.DefaultPluginConfig()).Functions["commits"].Code
 
 func TestCommits_WhenListCommitsRequestFails(t *testing.T) {
 	failMessage := "ListCommitsRequestFail"

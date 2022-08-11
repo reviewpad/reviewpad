@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var hasFileExtensions = plugins_aladino.PluginBuiltIns(nil).Functions["hasFileExtensions"].Code
+var hasFileExtensions = plugins_aladino.PluginBuiltIns(plugins_aladino.DefaultPluginConfig()).Functions["hasFileExtensions"].Code
 
 func TestHasFileExtensions_WhenFalse(t *testing.T) {
 	defaultMockPrFileName := "default-mock-repo/file1.ts"

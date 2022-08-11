@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var hasCodePattern = plugins_aladino.PluginBuiltIns(nil).Functions["hasCodePattern"].Code
+var hasCodePattern = plugins_aladino.PluginBuiltIns(plugins_aladino.DefaultPluginConfig()).Functions["hasCodePattern"].Code
 
 func TestHasCodePattern_WhenPullRequestPatchHasNilFile(t *testing.T) {
 	fileName := "default-mock-repo/file1.ts"

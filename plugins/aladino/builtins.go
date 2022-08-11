@@ -5,6 +5,8 @@
 package plugins_aladino
 
 import (
+	"os"
+
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	actions "github.com/reviewpad/reviewpad/v3/plugins/aladino/actions"
 	functions "github.com/reviewpad/reviewpad/v3/plugins/aladino/functions"
@@ -13,6 +15,12 @@ import (
 
 type PluginConfig struct {
 	SemanticEndpoint string
+}
+
+func DefaultPluginConfig() *PluginConfig {
+	return &PluginConfig{
+		SemanticEndpoint: os.Getenv("INPUT_SEMANTIC_SERVICE"),
+	}
 }
 
 // The documentation for the builtins is in:

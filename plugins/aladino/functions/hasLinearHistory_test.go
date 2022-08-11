@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var hasLinearHistory = plugins_aladino.PluginBuiltIns(nil).Functions["hasLinearHistory"].Code
+var hasLinearHistory = plugins_aladino.PluginBuiltIns(plugins_aladino.DefaultPluginConfig()).Functions["hasLinearHistory"].Code
 
 func TestHasLinearHistory_WhenListCommitsRequestFails(t *testing.T) {
 	failMessage := "ListCommitsRequestFail"

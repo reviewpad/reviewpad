@@ -17,7 +17,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var close = plugins_aladino.PluginBuiltIns(nil).Actions["close"].Code
+var close = plugins_aladino.PluginBuiltIns(plugins_aladino.DefaultPluginConfig()).Actions["close"].Code
 
 func TestClose_WhenEditRequestFails(t *testing.T) {
 	failMessage := "EditRequestFail"

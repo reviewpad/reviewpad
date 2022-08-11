@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var isElementOf = plugins_aladino.PluginBuiltIns(nil).Functions["isElementOf"].Code
+var isElementOf = plugins_aladino.PluginBuiltIns(plugins_aladino.DefaultPluginConfig()).Functions["isElementOf"].Code
 
 func TestIsElementOf_WhenTrue(t *testing.T) {
 	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)

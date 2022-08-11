@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var size = plugins_aladino.PluginBuiltIns(nil).Functions["size"].Code
+var size = plugins_aladino.PluginBuiltIns(plugins_aladino.DefaultPluginConfig()).Functions["size"].Code
 
 func TestSize(t *testing.T) {
 	additions := 1

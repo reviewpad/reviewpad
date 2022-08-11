@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var startsWith = plugins_aladino.PluginBuiltIns(nil).Functions["startsWith"].Code
+var startsWith = plugins_aladino.PluginBuiltIns(plugins_aladino.DefaultPluginConfig()).Functions["startsWith"].Code
 
 func TestStarts_WhenTrue(t *testing.T) {
 	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
