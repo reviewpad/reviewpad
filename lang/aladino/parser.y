@@ -50,7 +50,6 @@ expr :
     | expr TK_OR expr    { $$ = BuildOrOp($1, $3) }
     | expr TK_EQ expr    { $$ = BuildEqOp($1, $3) }
     | expr TK_NEQ expr   { $$ = BuildNeqOp($1, $3) }
-    | expr TK_CMPOP expr { $$ = BuildCmpOp($1, $2, $3) }
     | '(' expr ')'       { $$ = $2 }
     | TIMESTAMP          { $$ = BuildTimeConst($1) }
     | RELATIVETIMESTAMP  { $$ = BuildRelativeTimeConst($1) }

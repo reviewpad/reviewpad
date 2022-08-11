@@ -77,53 +77,49 @@ var AladinoExca = [...]int{
 
 const AladinoPrivate = 57344
 
-const AladinoLast = 69
+const AladinoLast = 50
 
 var AladinoAct = [...]int{
-	20, 5, 6, 29, 8, 34, 7, 11, 12, 31,
-	22, 1, 0, 3, 4, 17, 9, 0, 10, 14,
-	13, 15, 16, 21, 2, 0, 0, 18, 19, 30,
-	0, 32, 33, 0, 0, 0, 0, 23, 24, 25,
-	26, 27, 17, 0, 0, 0, 14, 13, 15, 16,
-	17, 0, 28, 17, 14, 13, 15, 16, 13, 15,
-	16, 17, 0, 0, 0, 0, 0, 15, 16,
+	19, 5, 6, 27, 8, 32, 7, 11, 12, 13,
+	15, 16, 29, 3, 4, 1, 9, 21, 10, 15,
+	16, 14, 13, 15, 16, 14, 13, 15, 16, 30,
+	31, 28, 20, 2, 0, 0, 17, 18, 14, 13,
+	15, 16, 0, 0, 26, 0, 22, 23, 24, 25,
 }
 
 var AladinoPact = [...]int{
-	-3, -1000, 42, -3, -3, -1000, -1000, -1000, -1000, -3,
-	4, -1000, -1000, -3, -3, -3, -3, -3, -1000, 34,
-	-17, 7, -8, 53, 45, -1000, -1000, -1000, -1000, -1000,
-	-3, -3, -1000, -13, -1000,
+	-3, -1000, 13, -3, -3, -1000, -1000, -1000, -1000, -3,
+	11, -1000, -1000, -3, -3, -3, -3, -1000, 26, -17,
+	9, -5, 5, -4, -1000, -1000, -1000, -1000, -3, -3,
+	-1000, -13, -1000,
 }
 
 var AladinoPgo = [...]int{
-	0, 23, 0, 11,
+	0, 32, 0, 15,
 }
 
 var AladinoR1 = [...]int{
 	0, 3, 1, 1, 1, 1, 1, 1, 1, 1,
-	1, 1, 1, 1, 1, 1, 1, 1, 2, 2,
-	2,
+	1, 1, 1, 1, 1, 1, 1, 2, 2, 2,
 }
 
 var AladinoR2 = [...]int{
-	0, 1, 2, 3, 3, 3, 3, 3, 3, 1,
-	1, 1, 1, 3, 2, 1, 1, 5, 3, 1,
-	0,
+	0, 1, 2, 3, 3, 3, 3, 3, 1, 1,
+	1, 1, 3, 2, 1, 1, 5, 3, 1, 0,
 }
 
 var AladinoChk = [...]int{
 	-1000, -3, -1, 16, 17, 4, 5, 9, 7, 19,
-	21, 10, 11, 13, 12, 14, 15, 8, -1, -1,
-	-2, -1, 6, -1, -1, -1, -1, -1, 18, 20,
-	22, 17, -2, -2, 18,
+	21, 10, 11, 13, 12, 14, 15, -1, -1, -2,
+	-1, 6, -1, -1, -1, -1, 18, 20, 22, 17,
+	-2, -2, 18,
 }
 
 var AladinoDef = [...]int{
-	0, -2, 1, 0, 0, 9, 10, 11, 12, 20,
-	0, 15, 16, 0, 0, 0, 0, 0, 2, 0,
-	0, 19, 14, 3, 4, 5, 6, 7, 8, 13,
-	20, 20, 18, 0, 17,
+	0, -2, 1, 0, 0, 8, 9, 10, 11, 19,
+	0, 14, 15, 0, 0, 0, 0, 2, 0, 0,
+	18, 13, 3, 4, 5, 6, 7, 12, 19, 19,
+	17, 0, 16,
 }
 
 var AladinoTok1 = [...]int{
@@ -516,69 +512,64 @@ Aladinodefault:
 	case 7:
 		AladinoDollar = AladinoS[Aladinopt-3 : Aladinopt+1]
 		{
-			AladinoVAL.ast = BuildCmpOp(AladinoDollar[1].ast, AladinoDollar[2].str, AladinoDollar[3].ast)
-		}
-	case 8:
-		AladinoDollar = AladinoS[Aladinopt-3 : Aladinopt+1]
-		{
 			AladinoVAL.ast = AladinoDollar[2].ast
 		}
-	case 9:
+	case 8:
 		AladinoDollar = AladinoS[Aladinopt-1 : Aladinopt+1]
 		{
 			AladinoVAL.ast = BuildTimeConst(AladinoDollar[1].str)
 		}
-	case 10:
+	case 9:
 		AladinoDollar = AladinoS[Aladinopt-1 : Aladinopt+1]
 		{
 			AladinoVAL.ast = BuildRelativeTimeConst(AladinoDollar[1].str)
 		}
-	case 11:
+	case 10:
 		AladinoDollar = AladinoS[Aladinopt-1 : Aladinopt+1]
 		{
 			AladinoVAL.ast = BuildIntConst(AladinoDollar[1].int)
 		}
-	case 12:
+	case 11:
 		AladinoDollar = AladinoS[Aladinopt-1 : Aladinopt+1]
 		{
 			AladinoVAL.ast = BuildStringConst(AladinoDollar[1].str)
 		}
-	case 13:
+	case 12:
 		AladinoDollar = AladinoS[Aladinopt-3 : Aladinopt+1]
 		{
 			AladinoVAL.ast = BuildArray(AladinoDollar[2].astList)
 		}
-	case 14:
+	case 13:
 		AladinoDollar = AladinoS[Aladinopt-2 : Aladinopt+1]
 		{
 			AladinoVAL.ast = BuildVariable(AladinoDollar[2].str)
 		}
-	case 15:
+	case 14:
 		AladinoDollar = AladinoS[Aladinopt-1 : Aladinopt+1]
 		{
 			AladinoVAL.ast = BuildBoolConst(true)
 		}
-	case 16:
+	case 15:
 		AladinoDollar = AladinoS[Aladinopt-1 : Aladinopt+1]
 		{
 			AladinoVAL.ast = BuildBoolConst(false)
 		}
-	case 17:
+	case 16:
 		AladinoDollar = AladinoS[Aladinopt-5 : Aladinopt+1]
 		{
 			AladinoVAL.ast = BuildFunctionCall(BuildVariable(AladinoDollar[2].str), AladinoDollar[4].astList)
 		}
-	case 18:
+	case 17:
 		AladinoDollar = AladinoS[Aladinopt-3 : Aladinopt+1]
 		{
 			AladinoVAL.astList = append([]Expr{AladinoDollar[1].ast}, AladinoDollar[3].astList...)
 		}
-	case 19:
+	case 18:
 		AladinoDollar = AladinoS[Aladinopt-1 : Aladinopt+1]
 		{
 			AladinoVAL.astList = []Expr{AladinoDollar[1].ast}
 		}
-	case 20:
+	case 19:
 		AladinoDollar = AladinoS[Aladinopt-0 : Aladinopt+1]
 		{
 			AladinoVAL.astList = []Expr{}
