@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var contains = plugins_aladino.PluginBuiltIns().Functions["contains"].Code
+var contains = plugins_aladino.PluginBuiltIns(nil).Functions["contains"].Code
 
 func TestContainsTrue(t *testing.T) {
 	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)

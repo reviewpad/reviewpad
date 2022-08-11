@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var workflowStatus = plugins_aladino.PluginBuiltIns().Functions["workflowStatus"].Code
+var workflowStatus = plugins_aladino.PluginBuiltIns(nil).Functions["workflowStatus"].Code
 
 func TestWorkflowStatus_WhenEventPayloadIsNotWorkflowRunEvent(t *testing.T) {
 	checkName := "test-workflow"

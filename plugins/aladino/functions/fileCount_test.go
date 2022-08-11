@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var fileCount = plugins_aladino.PluginBuiltIns().Functions["fileCount"].Code
+var fileCount = plugins_aladino.PluginBuiltIns(nil).Functions["fileCount"].Code
 
 func TestFileCount(t *testing.T) {
 	mockedPullRequestFileList := &[]*github.CommitFile{

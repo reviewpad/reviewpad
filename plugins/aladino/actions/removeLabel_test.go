@@ -16,7 +16,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var removeLabel = plugins_aladino.PluginBuiltIns().Actions["removeLabel"].Code
+var removeLabel = plugins_aladino.PluginBuiltIns(nil).Actions["removeLabel"].Code
 
 func TestRemoveLabel_WhenLabelIsNotAppliedToPullRequest(t *testing.T) {
 	wantLabel := "bug"

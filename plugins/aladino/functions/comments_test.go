@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var comments = plugins_aladino.PluginBuiltIns().Functions["comments"].Code
+var comments = plugins_aladino.PluginBuiltIns(nil).Functions["comments"].Code
 
 func TestComments(t *testing.T) {
 	wantedComments := aladino.BuildArrayValue(

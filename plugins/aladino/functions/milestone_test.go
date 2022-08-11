@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var milestone = plugins_aladino.PluginBuiltIns().Functions["milestone"].Code
+var milestone = plugins_aladino.PluginBuiltIns(nil).Functions["milestone"].Code
 
 func TestMilestone(t *testing.T) {
 	milestoneTitle := "v1.0"

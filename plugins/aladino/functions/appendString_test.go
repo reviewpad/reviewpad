@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var appendString = plugins_aladino.PluginBuiltIns().Functions["append"].Code
+var appendString = plugins_aladino.PluginBuiltIns(nil).Functions["append"].Code
 
 func TestAppendString(t *testing.T) {
 	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)

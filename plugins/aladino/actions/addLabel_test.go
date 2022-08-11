@@ -17,7 +17,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var addLabel = plugins_aladino.PluginBuiltIns().Actions["addLabel"].Code
+var addLabel = plugins_aladino.PluginBuiltIns(nil).Actions["addLabel"].Code
 
 func TestAddLabel_WhenAddLabelToIssueRequestFails(t *testing.T) {
 	label := "bug"

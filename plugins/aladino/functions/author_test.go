@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var author = plugins_aladino.PluginBuiltIns().Functions["author"].Code
+var author = plugins_aladino.PluginBuiltIns(nil).Functions["author"].Code
 
 func TestAuthor(t *testing.T) {
 	authorLogin := "john"

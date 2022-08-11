@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var length = plugins_aladino.PluginBuiltIns().Functions["length"].Code
+var length = plugins_aladino.PluginBuiltIns(nil).Functions["length"].Code
 
 func TestLength(t *testing.T) {
 	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)

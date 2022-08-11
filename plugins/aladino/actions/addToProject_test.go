@@ -18,7 +18,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var addToProject = plugins_aladino.PluginBuiltIns().Actions["addToProject"].Code
+var addToProject = plugins_aladino.PluginBuiltIns(nil).Actions["addToProject"].Code
 
 func TestAddToProject_WhenRequestFails(t *testing.T) {
 	mockedEnv := aladino.MockDefaultEnv(

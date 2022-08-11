@@ -20,7 +20,7 @@ import (
 
 const ReviewpadCommentAnnotation = "<!--@annotation-reviewpad-single-comment-->"
 
-var commentOnce = plugins_aladino.PluginBuiltIns().Actions["commentOnce"].Code
+var commentOnce = plugins_aladino.PluginBuiltIns(nil).Actions["commentOnce"].Code
 
 func TestCommentOnce_WhenGetCommentsRequestFails(t *testing.T) {
 	failMessage := "GetCommentRequestFail"

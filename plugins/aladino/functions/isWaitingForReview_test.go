@@ -16,7 +16,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var isWaitingForReview = plugins_aladino.PluginBuiltIns().Functions["isWaitingForReview"].Code
+var isWaitingForReview = plugins_aladino.PluginBuiltIns(nil).Functions["isWaitingForReview"].Code
 
 func TestIsWaitingForReview_WhenRequestFails(t *testing.T) {
 	mockedLastCommitDate := time.Now()

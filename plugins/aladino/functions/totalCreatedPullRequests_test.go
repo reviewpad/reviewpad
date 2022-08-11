@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var totalCreatedPullRequests = plugins_aladino.PluginBuiltIns().Functions["totalCreatedPullRequests"].Code
+var totalCreatedPullRequests = plugins_aladino.PluginBuiltIns(nil).Functions["totalCreatedPullRequests"].Code
 
 func TestTotalCreatedPullRequests_WhenListIssuesByRepoRequestFails(t *testing.T) {
 	devName := "steve"

@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var labels = plugins_aladino.PluginBuiltIns().Functions["labels"].Code
+var labels = plugins_aladino.PluginBuiltIns(nil).Functions["labels"].Code
 
 func TestLabels(t *testing.T) {
 	ghLabels := []*github.Label{
