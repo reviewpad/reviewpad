@@ -301,18 +301,6 @@ func (c *GithubClient) GetReviewThreads(ctx context.Context, owner string, repo 
 	return reviewThreads, nil
 }
 
-func (c *GithubClient) RequestReviewers(ctx context.Context, owner string, repo string, number int, reviewers github.ReviewersRequest) (*github.PullRequest, *github.Response, error) {
-	return c.clientREST.PullRequests.RequestReviewers(ctx, owner, repo, number, reviewers)
-}
-
-func (c *GithubClient) EditPullRequest(ctx context.Context, owner string, repo string, number int, pull *github.PullRequest) (*github.PullRequest, *github.Response, error) {
-	return c.clientREST.PullRequests.Edit(ctx, owner, repo, number, pull)
-}
-
-func (c *GithubClient) Merge(ctx context.Context, owner string, repo string, number int, commitMessage string, options *github.PullRequestOptions) (*github.PullRequestMergeResult, *github.Response, error) {
-	return c.clientREST.PullRequests.Merge(ctx, owner, repo, number, commitMessage, options)
-}
-
 func (c *GithubClient) GetIssueTimeline(ctx context.Context, owner string, repo string, number int) ([]*github.Timeline, error) {
 	events, err := PaginatedRequest(
 		func() interface{} {
@@ -336,4 +324,16 @@ func (c *GithubClient) GetIssueTimeline(ctx context.Context, owner string, repo 
 	}
 
 	return events.([]*github.Timeline), nil
+}
+
+func (c *GithubClient) RequestReviewers(ctx context.Context, owner string, repo string, number int, reviewers github.ReviewersRequest) (*github.PullRequest, *github.Response, error) {
+	return c.clientREST.PullRequests.RequestReviewers(ctx, owner, repo, number, reviewers)
+}
+
+func (c *GithubClient) EditPullRequest(ctx context.Context, owner string, repo string, number int, pull *github.PullRequest) (*github.PullRequest, *github.Response, error) {
+	return c.clientREST.PullRequests.Edit(ctx, owner, repo, number, pull)
+}
+
+func (c *GithubClient) Merge(ctx context.Context, owner string, repo string, number int, commitMessage string, options *github.PullRequestOptions) (*github.PullRequestMergeResult, *github.Response, error) {
+	return c.clientREST.PullRequests.Merge(ctx, owner, repo, number, commitMessage, options)
 }
