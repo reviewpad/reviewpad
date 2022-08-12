@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	"github.com/mitchellh/mapstructure"
 	"gopkg.in/yaml.v3"
 )
 
@@ -30,8 +31,6 @@ func Load(data []byte) (*ReviewpadFile, error) {
 		return nil, err
 	}
 
-	transformedFile := transform(file)
-
 	dHash := hash(data)
 
 	visited := make(map[string]bool)
@@ -44,7 +43,17 @@ func Load(data []byte) (*ReviewpadFile, error) {
 		Stack:   stack,
 	}
 
-	return inlineImports(transformedFile, env)
+	importsProcessedFiles, err := inlineImports(file, env)
+	if err != nil {
+		return nil, err
+	}
+
+	workflowsNormalizedFile, err := normalizeInlineRules(importsProcessedFiles)
+	if err != nil {
+		return nil, err
+	}
+
+	return transform(workflowsNormalizedFile), nil
 }
 
 func parse(data []byte) (*ReviewpadFile, error) {
@@ -144,9 +153,7 @@ func loadImport(reviewpadImport PadImport) (*ReviewpadFile, string, error) {
 		return nil, "", err
 	}
 
-	transformedFile := transform(file)
-
-	return transformedFile, hash(content), nil
+	return file, hash(content), nil
 }
 
 // InlineImports inlines the imports files into the current reviewpad file
@@ -192,4 +199,83 @@ func inlineImports(file *ReviewpadFile, env *LoadEnv) (*ReviewpadFile, error) {
 	file.Imports = []PadImport{}
 
 	return file, nil
+}
+
+// normalizeInlineRules normalizes the inline rules in the file
+// by converting the inline rules into a PadWorkflowRule
+func normalizeInlineRules(file *ReviewpadFile) (*ReviewpadFile, error) {
+	reviewpadFile := &ReviewpadFile{
+		Version:      file.Version,
+		Edition:      file.Edition,
+		Mode:         file.Mode,
+		IgnoreErrors: file.IgnoreErrors,
+		Imports:      file.Imports,
+		Groups:       file.Groups,
+		Rules:        file.Rules,
+		Labels:       file.Labels,
+		Workflows:    file.Workflows,
+	}
+
+	for i, workflow := range reviewpadFile.Workflows {
+		wf, inlineRules, err := normalizeWorkflow(workflow)
+		if err != nil {
+			return nil, err
+		}
+
+		reviewpadFile.Rules = append(reviewpadFile.Rules, inlineRules...)
+		reviewpadFile.Workflows[i] = *wf
+	}
+
+	return reviewpadFile, nil
+}
+
+func normalizeWorkflow(workflow PadWorkflow) (*PadWorkflow, []PadRule, error) {
+	wf := &PadWorkflow{
+		Name:        workflow.Name,
+		Description: workflow.Description,
+		AlwaysRun:   workflow.AlwaysRun,
+		Rules:       workflow.Rules,
+		Actions:     workflow.Actions,
+	}
+	foundInlineRules := make([]PadRule, 0)
+
+	for _, rule := range workflow.NonNormalizedRules {
+		switch r := rule.(type) {
+		case string:
+			name := fmt.Sprintf("inline rule %s", r)
+
+			foundInlineRules = append(foundInlineRules, PadRule{
+				Name:        name,
+				Spec:        r,
+				Kind:        "patch",
+				Description: name,
+			})
+
+			wf.Rules = append(wf.Rules, PadWorkflowRule{
+				Rule: name,
+			})
+		case map[string]interface{}:
+			rule, err := mapToPadworkflowRule(r)
+			if err != nil {
+				return nil, nil, err
+			}
+
+			wf.Rules = append(wf.Rules, *rule)
+		default:
+			return nil, nil, fmt.Errorf("unknown rule type %T", r)
+		}
+	}
+
+	// we are removing the non-normalized rules from the workflow
+	// to make things a bit easier to test
+	workflow.NonNormalizedRules = nil
+
+	return wf, foundInlineRules, nil
+}
+
+// mapToPadworkflowRule converts a map[string]interface{} to a PadWorkflowRule
+func mapToPadworkflowRule(rule map[string]interface{}) (*PadWorkflowRule, error) {
+	r := &PadWorkflowRule{}
+	err := mapstructure.Decode(rule, r)
+	return r, err
 }
