@@ -337,3 +337,7 @@ func (c *GithubClient) EditPullRequest(ctx context.Context, owner string, repo s
 func (c *GithubClient) Merge(ctx context.Context, owner string, repo string, number int, commitMessage string, options *github.PullRequestOptions) (*github.PullRequestMergeResult, *github.Response, error) {
 	return c.clientREST.PullRequests.Merge(ctx, owner, repo, number, commitMessage, options)
 }
+
+func (c *GithubClient) GetIssue(ctx context.Context, owner, repo string, number int) (*github.Issue, *github.Response, error) {
+	return c.clientREST.Issues.Get(ctx, owner, repo, number)
+}
