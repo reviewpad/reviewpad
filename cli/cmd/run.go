@@ -16,6 +16,7 @@ import (
 	"strconv"
 
 	"github.com/google/go-github/v45/github"
+	"github.com/reviewpad/host-event-handler/handler"
 	"github.com/reviewpad/reviewpad/v3"
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/collector"
@@ -122,7 +123,14 @@ func run() error {
 		return fmt.Errorf("error running reviewpad team edition. Details %v", err.Error())
 	}
 
-	_, err = reviewpad.Run(ctx, githubClient, collectorClient, ghPullRequest, ev, file, dryRun, safeModeRun)
+	targetEntity := &handler.TargetEntity{
+		Owner:  repositoryOwner,
+		Repo:   repositoryName,
+		Number: pullRequestNumber,
+		Kind:   handler.PullRequest,
+	}
+
+	_, err = reviewpad.Run(ctx, githubClient, collectorClient, targetEntity, ev, file, dryRun, safeModeRun)
 	if err != nil {
 		return fmt.Errorf("error running reviewpad team edition. Details %v", err.Error())
 	}
