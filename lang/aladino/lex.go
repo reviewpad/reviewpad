@@ -9,6 +9,7 @@ import (
 	"log"
 	"regexp"
 	"strconv"
+	"strings"
 )
 
 type AladinoLex struct {
@@ -60,6 +61,11 @@ var tokens = []tokenDef{
 		regex: regexp.MustCompile(`^false`),
 		kind:  "bool",
 		token: FALSE,
+	},
+	{
+		regex: regexp.MustCompile(`^:\s?[a-zA-Z]*`),
+		kind:  "type",
+		token: TK_TYPE,
 	},
 	{
 		regex: regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9]*`),
@@ -138,6 +144,8 @@ func (l *AladinoLex) Lex(lval *AladinoSymType) int {
 		case "stringLiteral":
 			// Pass string content to the parser.
 			lval.str = str[1 : len(str)-1]
+		case "type":
+			lval.str = strings.ReplaceAll(str, " ", "")[1:]
 		default:
 			lval.str = str
 		}

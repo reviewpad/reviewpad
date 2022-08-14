@@ -20,6 +20,7 @@ type AladinoSymType struct {
 	ast     Expr
 	astList []Expr
 	bool    bool
+	varType Type
 }
 
 const TIMESTAMP = 57346
@@ -28,14 +29,15 @@ const IDENTIFIER = 57348
 const STRINGLITERAL = 57349
 const TK_CMPOP = 57350
 const TK_LAMBDA = 57351
-const NUMBER = 57352
-const TRUE = 57353
-const FALSE = 57354
-const TK_OR = 57355
-const TK_AND = 57356
-const TK_EQ = 57357
-const TK_NEQ = 57358
-const TK_NOT = 57359
+const TK_TYPE = 57352
+const NUMBER = 57353
+const TRUE = 57354
+const FALSE = 57355
+const TK_OR = 57356
+const TK_AND = 57357
+const TK_EQ = 57358
+const TK_NEQ = 57359
+const TK_NOT = 57360
 
 var AladinoToknames = [...]string{
 	"$end",
@@ -47,6 +49,7 @@ var AladinoToknames = [...]string{
 	"STRINGLITERAL",
 	"TK_CMPOP",
 	"TK_LAMBDA",
+	"TK_TYPE",
 	"NUMBER",
 	"TRUE",
 	"FALSE",
@@ -79,73 +82,73 @@ var AladinoExca = [...]int{
 
 const AladinoPrivate = 57344
 
-const AladinoLast = 82
+const AladinoLast = 85
 
 var AladinoAct = [...]int{
-	22, 2, 20, 32, 18, 19, 38, 33, 31, 23,
-	1, 0, 21, 0, 24, 25, 26, 27, 28, 0,
-	0, 5, 6, 17, 8, 0, 0, 7, 11, 12,
-	15, 16, 35, 34, 3, 4, 36, 9, 17, 10,
-	0, 0, 0, 14, 13, 15, 16, 0, 0, 29,
-	17, 0, 0, 30, 0, 14, 13, 15, 16, 0,
-	0, 17, 0, 0, 0, 30, 14, 13, 15, 16,
-	17, 0, 37, 17, 0, 14, 13, 15, 16, 13,
-	15, 16,
+	23, 2, 21, 33, 19, 20, 39, 34, 18, 32,
+	24, 17, 22, 18, 25, 26, 27, 28, 29, 15,
+	16, 5, 6, 1, 8, 0, 0, 0, 7, 11,
+	12, 0, 0, 36, 35, 3, 4, 37, 9, 17,
+	10, 18, 0, 0, 0, 14, 13, 15, 16, 0,
+	17, 30, 18, 0, 0, 31, 14, 13, 15, 16,
+	0, 17, 0, 18, 0, 0, 31, 14, 13, 15,
+	16, 0, 17, 38, 18, 17, 0, 18, 14, 13,
+	15, 16, 13, 15, 16,
 }
 
 var AladinoPact = [...]int{
-	17, -1000, 62, 17, 17, -1000, -1000, -1000, -1000, 17,
-	3, -1000, -1000, 17, 17, 17, 17, 17, -1000, 30,
-	-1, -18, 42, -11, 15, 65, -1000, -1000, -1000, -1000,
-	17, 17, -1000, 17, -1000, 53, -13, -1000, -1000,
+	17, -1000, 64, 17, 17, -1000, -1000, -1000, -1000, 17,
+	4, -1000, -1000, 17, 17, 17, 17, 17, -1000, -2,
+	31, 0, -19, 42, -12, 3, 67, -2, -2, -2,
+	-1000, 17, 17, -1000, 17, -1000, 53, -14, -1000, -1000,
 }
 
 var AladinoPgo = [...]int{
-	0, 0, 2, 10,
+	0, 0, 2, 23,
 }
 
 var AladinoR1 = [...]int{
 	0, 3, 1, 1, 1, 1, 1, 1, 1, 1,
-	1, 1, 1, 1, 1, 1, 1, 1, 1, 2,
-	2, 2,
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+	2, 2, 2,
 }
 
 var AladinoR2 = [...]int{
 	0, 1, 2, 3, 3, 3, 3, 3, 3, 1,
-	1, 1, 1, 3, 2, 1, 1, 5, 5, 3,
-	1, 0,
+	1, 1, 1, 3, 2, 1, 1, 5, 5, 2,
+	3, 1, 0,
 }
 
 var AladinoChk = [...]int{
-	-1000, -3, -1, 17, 18, 4, 5, 10, 7, 20,
-	22, 11, 12, 14, 13, 15, 16, 8, -1, -1,
-	-2, -2, -1, 6, -1, -1, -1, -1, -1, 19,
-	23, 9, 21, 18, -2, -1, -2, 19, 19,
+	-1000, -3, -1, 18, 19, 4, 5, 11, 7, 21,
+	23, 12, 13, 15, 14, 16, 17, 8, 10, -1,
+	-1, -2, -2, -1, 6, -1, -1, -1, -1, -1,
+	20, 24, 9, 22, 19, -2, -1, -2, 20, 20,
 }
 
 var AladinoDef = [...]int{
-	0, -2, 1, 0, 21, 9, 10, 11, 12, 21,
-	0, 15, 16, 0, 0, 0, 0, 0, 2, 20,
-	0, 0, 20, 14, 3, 4, 5, 6, 7, 8,
-	21, 0, 13, 21, 19, 0, 0, 18, 17,
+	0, -2, 1, 0, 22, 9, 10, 11, 12, 22,
+	0, 15, 16, 0, 0, 0, 0, 0, 19, 2,
+	21, 0, 0, 21, 14, 3, 4, 5, 6, 7,
+	8, 22, 0, 13, 22, 20, 0, 0, 18, 17,
 }
 
 var AladinoTok1 = [...]int{
 	1, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-	3, 3, 3, 3, 3, 3, 22, 3, 3, 3,
-	18, 19, 3, 3, 23, 3, 3, 3, 3, 3,
+	3, 3, 3, 3, 3, 3, 23, 3, 3, 3,
+	19, 20, 3, 3, 24, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-	3, 20, 3, 21,
+	3, 21, 3, 22,
 }
 
 var AladinoTok2 = [...]int{
 	2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
-	12, 13, 14, 15, 16, 17,
+	12, 13, 14, 15, 16, 17, 18,
 }
 
 var AladinoTok3 = [...]int{
@@ -578,16 +581,21 @@ Aladinodefault:
 			AladinoVAL.ast = BuildLambda(AladinoDollar[2].astList, AladinoDollar[4].ast)
 		}
 	case 19:
+		AladinoDollar = AladinoS[Aladinopt-2 : Aladinopt+1]
+		{
+			AladinoVAL.ast = BuildTypedExpr(AladinoDollar[1].ast, BuildType(AladinoDollar[2].str))
+		}
+	case 20:
 		AladinoDollar = AladinoS[Aladinopt-3 : Aladinopt+1]
 		{
 			AladinoVAL.astList = append([]Expr{AladinoDollar[1].ast}, AladinoDollar[3].astList...)
 		}
-	case 20:
+	case 21:
 		AladinoDollar = AladinoS[Aladinopt-1 : Aladinopt+1]
 		{
 			AladinoVAL.astList = []Expr{AladinoDollar[1].ast}
 		}
-	case 21:
+	case 22:
 		AladinoDollar = AladinoS[Aladinopt-0 : Aladinopt+1]
 		{
 			AladinoVAL.astList = []Expr{}

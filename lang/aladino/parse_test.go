@@ -79,6 +79,14 @@ func TestParse_Lambda(t *testing.T) {
 				),
 			),
 		},
+		"typed expression lambda": {
+			input: `($a: Int, $b: Int => $a > $b)`,
+			wantExpr: BuildLambda(
+				[]Expr{BuildTypedExpr(BuildVariable("a"), BuildIntType()),
+					BuildTypedExpr(BuildVariable("b"), BuildIntType())},
+				BuildBinaryOp(BuildVariable("a"), greaterThanOperator(), BuildVariable("b")),
+			),
+		},
 	}
 
 	for name, test := range tests {
@@ -88,4 +96,16 @@ func TestParse_Lambda(t *testing.T) {
 			assert.Equal(t, test.wantExpr, gotExpr)
 		})
 	}
+}
+
+func TestParse_TypedExpression(t *testing.T) {
+	input := `$developer: String`
+	wantExpr := BuildTypedExpr(
+		BuildVariable("developer"),
+		BuildStringType(),
+	)
+
+	gotExpr, err := Parse(input)
+	assert.Nil(t, err)
+	assert.Equal(t, wantExpr, gotExpr)
 }
