@@ -315,10 +315,6 @@ func BuildGreaterEqThanOp(lhs Expr, rhs Expr) *BinaryOp {
 	return BuildBinaryOp(lhs, greaterEqThanOperator(), rhs)
 }
 
-func BuildLambdaOp(lhs Expr, rhs Expr) Expr {
-	return BuildFunctionCall(&Variable{}, []Expr{lhs, rhs})
-}
-
 func BuildCmpOp(lhs Expr, op string, rhs Expr) Expr {
 	switch op {
 	case LESS_THAN_OP:

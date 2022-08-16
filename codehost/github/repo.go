@@ -1,0 +1,223 @@
+// Copyright (C) 2022 Explore.dev, Unipessoal Lda - All Rights Reserved
+// Use of this source code is governed by a license that can be
+// found in the LICENSE file.
+
+package github
+
+import (
+	"errors"
+	"fmt"
+	"io/ioutil"
+	"log"
+	"strings"
+
+	git "github.com/libgit2/git2go/v31"
+)
+
+// CloneRepository clones a repository from a given URL to the provided path.
+// url needs to be an HTTPS uri (e.g. https://github.com/libgit2/TestGitRepository)
+// path can be empty. In this case, the repository will be cloned to a temporary location and the location is returned.
+func CloneRepository(url string, token string, path string, options *git.CloneOptions) (*git.Repository, string, error) {
+	dir := path
+	if dir == "" {
+		// TODO: Rename "clone-example"
+		tempDir, err := ioutil.TempDir("", "clone-example")
+		if err != nil {
+			log.Print("[error] failed to create temporary folder")
+			return nil, "", err
+		}
+		dir = tempDir
+	}
+
+	// TODO: Validate url has the correct format
+	splitted := strings.Split(url, "https://")
+	tokenizedUrl := fmt.Sprintf("https://%v@%v", token, splitted[1])
+
+	log.Printf("[info] cloning %s to %s", url, dir)
+
+	repo, err := git.Clone(tokenizedUrl, dir, options)
+
+	return repo, dir, err
+}
+
+// CheckoutBranch checks out a given branch in the given repository.
+func CheckoutBranch(repo *git.Repository, branchName string) error {
+	checkoutOpts := &git.CheckoutOptions{
+		Strategy: git.CheckoutSafe | git.CheckoutRecreateMissing | git.CheckoutAllowConflicts | git.CheckoutUseTheirs,
+	}
+
+	// Lookup for remote branch
+	remoteBranch, err := repo.LookupBranch("origin/"+branchName, git.BranchRemote)
+	if err != nil {
+		log.Print("[error] failed to find remote branch: " + branchName)
+		return err
+	}
+	defer remoteBranch.Free()
+
+	// Lookup for remote branch commit
+	remoteCommit, err := repo.LookupCommit(remoteBranch.Target())
+	if err != nil {
+		log.Print("[error] failed to find remote branch commit: " + branchName)
+		return err
+	}
+	defer remoteCommit.Free()
+
+	// Lookup for local branch
+	localBranch, err := repo.LookupBranch(branchName, git.BranchLocal)
+	if localBranch == nil || err != nil {
+		// Create local branch
+		localBranch, err = repo.CreateBranch(branchName, remoteCommit, false)
+		if err != nil {
+			log.Print("[error] failed to create local branch: " + branchName)
+			return err
+		}
+
+		// Setting upstream to origin branch
+		err = localBranch.SetUpstream("origin/" + branchName)
+		if err != nil {
+			log.Print("[error] failed to create upstream to origin/" + branchName)
+			return err
+		}
+	}
+	if localBranch == nil {
+		return errors.New("failed to locate/create local branch: " + branchName)
+	}
+	defer localBranch.Free()
+
+	// Lookup for local branch commit
+	localCommit, err := repo.LookupCommit(localBranch.Target())
+	if err != nil {
+		log.Print("[error] failed to lookup for commit in local branch: " + branchName)
+		return err
+	}
+	defer localCommit.Free()
+
+	// Lookup for local branch tree
+	tree, err := repo.LookupTree(localCommit.TreeId())
+	if err != nil {
+		log.Print("[error] failed to lookup for local tree: " + branchName)
+		return err
+	}
+	defer tree.Free()
+
+	// Checkout the tree
+	err = repo.CheckoutTree(tree, checkoutOpts)
+	if err != nil {
+		log.Print("[error] failed to checkout tree: " + branchName)
+		return err
+	}
+
+	// Set current Head to the checkout branch
+	repo.SetHead("refs/heads/" + branchName)
+
+	return nil
+}
+
+// RebaseOnto performs a rebase of the current repository Head onto the given branch.
+func RebaseOnto(repo *git.Repository, branchName string, rebaseOptions *git.RebaseOptions) error {
+	ontoBranch, err := repo.LookupBranch(branchName, git.BranchLocal)
+	if err != nil {
+		log.Print("[error] failed to lookup for onto branch: " + branchName)
+		return err
+	}
+	defer ontoBranch.Free()
+
+	onto, err := repo.AnnotatedCommitFromRef(ontoBranch.Reference)
+	if err != nil {
+		log.Print("[error] failed to extract annotated commit from ref of branch: " + branchName)
+		return err
+	}
+	defer onto.Free()
+
+	// Start rebase operation
+	rebase, err := repo.InitRebase(nil, nil, onto, rebaseOptions)
+	if err != nil {
+		log.Print("[error] failed to init rebase")
+		return err
+	}
+
+	// Verify that no operations are already in progress
+	rebaseOperationIndex, err := rebase.CurrentOperationIndex()
+	if rebaseOperationIndex != git.RebaseNoOperation && err != git.ErrRebaseNoOperation {
+		return errors.New("[error] rebase operation already in progress")
+	}
+
+	// Iterate over rebase operations based on operation count
+	opCount := int(rebase.OperationCount())
+	for op := 0; op < opCount; op++ {
+		operation, err := rebase.Next()
+		if err != nil {
+			return err
+		}
+
+		// Verify that operation index is correct
+		rebaseOperationIndex, err = rebase.CurrentOperationIndex()
+		if err != nil {
+			return err
+		}
+
+		if int(rebaseOperationIndex) != op {
+			return errors.New("[error] bad operation index on rebase")
+		}
+
+		if !operationsAreEqual(rebase.OperationAt(uint(op)), operation) {
+			return errors.New("[error] rebase operations should be equal")
+		}
+
+		// Get current rebase operation created commit
+		commit, err := repo.LookupCommit(operation.Id)
+		if err != nil {
+			return err
+		}
+		defer commit.Free()
+
+		// Apply commit
+		err = rebase.Commit(operation.Id, nil, signatureFromCommit(commit), commit.Message())
+		if err != nil {
+			return err
+		}
+	}
+
+	defer rebase.Free()
+
+	err = rebase.Finish()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Push performs a push of the provided remote/branch.
+func Push(repo *git.Repository, remoteName string, branchName string, force bool) error {
+	remote, err := repo.Remotes.Lookup(remoteName)
+	if err != nil {
+		log.Print("[error] failed to find remote: " + remoteName)
+		return err
+	}
+
+	refspec := fmt.Sprintf("refs/heads/%s", branchName)
+	if force {
+		refspec = fmt.Sprintf("+%s", refspec)
+	}
+
+	err = remote.Push([]string{refspec}, nil)
+	if err != nil {
+		log.Print("[error] failed to push to: " + branchName)
+		return err
+	}
+
+	return nil
+}
+
+func signatureFromCommit(commit *git.Commit) *git.Signature {
+	return &git.Signature{
+		Name:  commit.Committer().Name,
+		Email: commit.Committer().Email,
+		When:  commit.Committer().When,
+	}
+}
+
+func operationsAreEqual(l, r *git.RebaseOperation) bool {
+	return l.Exec == r.Exec && l.Type == r.Type && l.Id.String() == r.Id.String()
+}
