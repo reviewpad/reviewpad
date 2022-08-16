@@ -5,6 +5,7 @@
 package github_test
 
 import (
+	"fmt"
 	"net/http"
 	"testing"
 
@@ -41,10 +42,11 @@ func TestGetProjectV2ByName_WhenProjectNotFound(t *testing.T) {
 	mockedGetProjectByNameQuery := `{
         "query": "query($name:String! $repositoryName:String! $repositoryOwner:String!) {
             repository(owner: $repositoryOwner, name: $repositoryName) {
-                projectsV2(query: $name, first: 1, orderBy: {field: TITLE, direction: ASC}) {
+                projectsV2(query: $name, first: 50, orderBy: {field: TITLE, direction: ASC}) {
                     nodes{
                         id,
-                        number
+                        number,
+                        title
                     }
                 }
             }
@@ -95,8 +97,8 @@ func TestGetProjectV2ByName_WhenProjectFound(t *testing.T) {
 	mockedGetProjectByNameQuery := `{
         "query": "query($name:String! $repositoryName:String! $repositoryOwner:String!) {
             repository(owner: $repositoryOwner, name: $repositoryName) {
-                projectsV2(query: $name, first: 1, orderBy: {field: TITLE, direction: ASC}) {
-                    nodes{id,number}
+                projectsV2(query: $name, first: 50, orderBy: {field: TITLE, direction: ASC}) {
+                    nodes{id,number,title}
                 }
             }
         }",
@@ -142,7 +144,7 @@ func TestGetProjectV2ByName_WhenProjectFound(t *testing.T) {
 
 	project, err := mockedEnv.GetGithubClient().GetProjectV2ByName(mockedEnv.GetCtx(), mockOwner, mockRepo, mockProjectName)
 
-	assert.Equal(t, nil, err)
+	assert.Nil(t, err)
 
 	assert.NotNil(t, project)
 }
@@ -323,4 +325,66 @@ func TestGetProjectFieldsByProjectNumber_WhenRetrySuccessful(t *testing.T) {
 	assert.NotNil(t, fields)
 
 	assert.Equal(t, 1, len(fields))
+}
+
+func TestGetProjectV2ByName_WhenSeveralProjectsFound(t *testing.T) {
+	mockProjectName := "reviewpad"
+	mockedGetProjectByNameQuery := fmt.Sprintf(`{
+        "query": "query($name:String! $repositoryName:String! $repositoryOwner:String!) {
+            repository(owner: $repositoryOwner, name: $repositoryName) {
+                projectsV2(query: $name, first: 50, orderBy: {field: TITLE, direction: ASC}) {
+                    nodes{id,number,title}
+                }
+            }
+        }",
+        "variables": {
+            "name":"%s",
+            "repositoryName":"default-mock-repo",
+            "repositoryOwner":"john"
+        }
+    }`, mockProjectName)
+	mockedGetProjectByNameQueryBody := `{
+        "data": {
+            "repository":{
+                "projectsV2":{
+                    "nodes":[
+                        {
+                            "id": "2",
+                            "number": 2,
+                            "title": "1eviewpad"
+                        },
+                        {
+                            "id": "1",
+                            "number": 1,
+                            "title": "reviewpad"
+                        }
+                    ]
+                }
+            }
+        }
+    }`
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
+		[]mock.MockBackendOption{},
+		func(res http.ResponseWriter, req *http.Request) {
+			query := utils.MinifyQuery(aladino.MustRead(req.Body))
+			switch query {
+			case utils.MinifyQuery(mockedGetProjectByNameQuery):
+				aladino.MustWrite(
+					res,
+					mockedGetProjectByNameQueryBody,
+				)
+			}
+		},
+		aladino.MockBuiltIns(),
+		nil,
+	)
+	mockOwner := host.GetPullRequestBaseOwnerName(mockedEnv.GetPullRequest())
+	mockRepo := host.GetPullRequestBaseRepoName(mockedEnv.GetPullRequest())
+
+	project, err := mockedEnv.GetGithubClient().GetProjectV2ByName(mockedEnv.GetCtx(), mockOwner, mockRepo, mockProjectName)
+
+	assert.Nil(t, err)
+	assert.NotNil(t, project)
+	assert.Equal(t, mockProjectName, project.Title)
 }

@@ -44,10 +44,11 @@ func TestAddToProject(t *testing.T) {
 	mockedGetProjectQuery := `{
         "query":"query($name: String! $repositoryName: String! $repositoryOwner: String!) {
             repository(owner: $repositoryOwner, name: $repositoryName) {
-                projectsV2(query: $name, first: 1, orderBy: {field: TITLE, direction: ASC}) {
+                projectsV2(query: $name, first: 50, orderBy: {field: TITLE, direction: ASC}) {
                     nodes{
                         id,
-                        number
+                        number,
+                        title
                     }
                 }
             }
@@ -143,7 +144,7 @@ func TestAddToProject(t *testing.T) {
 		{
 			name:                  "error getting project fields",
 			getProjectQuery:       mockedGetProjectQuery,
-			getProjectQueryBody:   `{"data": {"repository":{"projectsV2":{"nodes":[{"id": "1", "number": 1}]}}}}`,
+			getProjectQueryBody:   `{"data": {"repository":{"projectsV2":{"nodes":[{"id": "1", "number": 1, "title": "reviewpad"}]}}}}`,
 			getProjectFieldsQuery: mockedGetProjectFieldsQuery,
 			getProjectFieldsBody:  ``,
 			expectedError:         io.EOF,
@@ -151,7 +152,7 @@ func TestAddToProject(t *testing.T) {
 		{
 			name:                  "when project has no status field",
 			getProjectQuery:       mockedGetProjectQuery,
-			getProjectQueryBody:   `{"data": {"repository":{"projectsV2":{"nodes":[{"id": "1", "number": 1}]}}}}`,
+			getProjectQueryBody:   `{"data": {"repository":{"projectsV2":{"nodes":[{"id": "1", "number": 1, "title": "reviewpad"}]}}}}`,
 			getProjectFieldsQuery: mockedGetProjectFieldsQuery,
 			getProjectFieldsBody:  `{"data": {"repository":{"projectV2": {"fields": {"pageInfo": {"hasNextPage": false, "endCursor": null}, "nodes": []}}}}}`,
 			expectedError:         plugins_aladino_actions.ErrProjectHasNoStatusField,
@@ -159,7 +160,7 @@ func TestAddToProject(t *testing.T) {
 		{
 			name:                  "when project status option is not found",
 			getProjectQuery:       mockedGetProjectQuery,
-			getProjectQueryBody:   `{"data": {"repository":{"projectsV2":{"nodes":[{"id": "1", "number": 1}]}}}}`,
+			getProjectQueryBody:   `{"data": {"repository":{"projectsV2":{"nodes":[{"id": "1", "number": 1, "title": "reviewpad"}]}}}}`,
 			getProjectFieldsQuery: mockedGetProjectFieldsQuery,
 			getProjectFieldsBody:  `{"data": {"repository":{"projectV2": {"fields": {"pageInfo": {"hasNextPage": false, "endCursor": null}, "nodes": [{"id": "1", "name": "status", "options": []}]}}}}}`,
 			expectedError:         plugins_aladino_actions.ErrProjectStatusNotFound,
@@ -167,7 +168,7 @@ func TestAddToProject(t *testing.T) {
 		{
 			name:                         "add project item error",
 			getProjectQuery:              mockedGetProjectQuery,
-			getProjectQueryBody:          `{"data": {"repository":{"projectsV2":{"nodes":[{"id": "1", "number": 1}]}}}}`,
+			getProjectQueryBody:          `{"data": {"repository":{"projectsV2":{"nodes":[{"id": "1", "number": 1, "title": "reviewpad"}]}}}}`,
 			getProjectFieldsQuery:        mockedGetProjectFieldsQuery,
 			getProjectFieldsBody:         `{"data": {"repository":{"projectV2": {"fields": {"pageInfo": {"hasNextPage": false, "endCursor": null}, "nodes": [{"id": "1", "name": "status", "options": [{"id": "1", "name": "to do"}]}]}}}}}`,
 			addProjectV2ItemByIdMutation: mockedAddProjectV2ItemByIdMutation,
@@ -176,7 +177,7 @@ func TestAddToProject(t *testing.T) {
 		{
 			name:                                  "no error",
 			getProjectQuery:                       mockedGetProjectQuery,
-			getProjectQueryBody:                   `{"data": {"repository":{"projectsV2":{"nodes":[{"id": "1", "number": 1}]}}}}`,
+			getProjectQueryBody:                   `{"data": {"repository":{"projectsV2":{"nodes":[{"id": "1", "number": 1, "title": "reviewpad"}]}}}}`,
 			getProjectFieldsQuery:                 mockedGetProjectFieldsQuery,
 			getProjectFieldsBody:                  `{"data": {"repository":{"projectV2": {"fields": {"pageInfo": {"hasNextPage": false, "endCursor": null}, "nodes": [{"id": "1", "name": "status", "options": [{"id": "1", "name": "to do"}]}]}}}}}`,
 			addProjectV2ItemByIdMutation:          mockedAddProjectV2ItemByIdMutation,

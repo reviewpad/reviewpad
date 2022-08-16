@@ -7,8 +7,8 @@ package github
 import (
 	"context"
 	"errors"
-
 	"github.com/shurcooL/githubv4"
+	"strings"
 )
 
 var (
@@ -18,6 +18,7 @@ var (
 type ProjectV2 struct {
 	ID     string
 	Number uint64
+	Title  string
 }
 
 type PageInfo struct {
@@ -45,11 +46,14 @@ type FieldDetails struct {
 
 func (c *GithubClient) GetProjectV2ByName(ctx context.Context, owner, repo, name string) (*ProjectV2, error) {
 	// Warning: we've faced trouble before with the Github GraphQL API, we'll update this later when we find a better alternative.
+	// We request the first 50 projects since GitHub can return several projects  with a partially matching name.
+	// For instance, a GitHub organization with two projects "private project" and "public project",
+	// a query for "private project" will return both projects. This is because both projects have the word "project".
 	var getProjectV2ByNameQuery struct {
 		Repository struct {
 			ProjectsV2 struct {
 				Nodes []ProjectV2
-			} `graphql:"projectsV2(query: $name, first: 1, orderBy: {field: TITLE, direction: ASC})"`
+			} `graphql:"projectsV2(query: $name, first: 50, orderBy: {field: TITLE, direction: ASC})"`
 		} `graphql:"repository(owner: $repositoryOwner, name: $repositoryName)"`
 	}
 
@@ -67,7 +71,14 @@ func (c *GithubClient) GetProjectV2ByName(ctx context.Context, owner, repo, name
 		return nil, ErrProjectNotFound
 	}
 
-	return &getProjectV2ByNameQuery.Repository.ProjectsV2.Nodes[0], nil
+	var project ProjectV2
+	for _, node := range getProjectV2ByNameQuery.Repository.ProjectsV2.Nodes {
+		if strings.EqualFold(node.Title, name) {
+			project = node
+		}
+	}
+
+	return &project, nil
 }
 
 func (c *GithubClient) GetProjectFieldsByProjectNumber(ctx context.Context, owner, repo string, projectNumber uint64, retryCount int) ([]FieldNode, error) {
