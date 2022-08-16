@@ -50,7 +50,7 @@ var kinds = []string{"patch", "author"}
 
 type PadWorkflowRule struct {
 	Rule         string   `yaml:"rule"`
-	ExtraActions []string `yaml:"extra-actions"`
+	ExtraActions []string `yaml:"extra-actions" mapstructure:"extra-actions"`
 }
 
 func (p PadWorkflowRule) equals(o PadWorkflowRule) bool {
@@ -94,11 +94,12 @@ func (p PadLabel) equals(o PadLabel) bool {
 }
 
 type PadWorkflow struct {
-	Name        string            `yaml:"name"`
-	Description string            `yaml:"description"`
-	AlwaysRun   bool              `yaml:"always-run"`
-	Rules       []PadWorkflowRule `yaml:"if"`
-	Actions     []string          `yaml:"then"`
+	Name               string            `yaml:"name"`
+	Description        string            `yaml:"description"`
+	AlwaysRun          bool              `yaml:"always-run"`
+	Rules              []PadWorkflowRule `yaml:"-"`
+	Actions            []string          `yaml:"then"`
+	NonNormalizedRules []interface{}     `yaml:"if"`
 }
 
 func (p PadWorkflow) equals(o PadWorkflow) bool {

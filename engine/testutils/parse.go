@@ -6,12 +6,10 @@ package testutils
 
 import (
 	"github.com/reviewpad/reviewpad/v3/engine"
-	"gopkg.in/yaml.v3"
 )
 
 func ParseReviewpadFile(data []byte) (*engine.ReviewpadFile, error) {
-	reviewpadFile := &engine.ReviewpadFile{}
-	err := yaml.Unmarshal(data, &reviewpadFile)
+	reviewpadFile, err := engine.Load(data)
 	if err != nil {
 		return nil, err
 	}

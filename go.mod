@@ -11,6 +11,7 @@ require (
 	github.com/jarcoal/httpmock v1.2.0
 	github.com/jinzhu/copier v0.3.5
 	github.com/migueleliasweb/go-github-mock v0.0.10
+	github.com/mitchellh/mapstructure v1.5.0
 	github.com/shurcooL/githubv4 v0.0.0-20220520033151-0b4e3294ff00
 	github.com/spf13/cobra v1.5.0
 	github.com/stretchr/testify v1.8.0
