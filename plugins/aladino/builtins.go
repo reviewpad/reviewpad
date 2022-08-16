@@ -40,6 +40,7 @@ func PluginBuiltIns(config *PluginConfig) *aladino.BuiltIns {
 			"createdAt":             functions.CreatedAt(),
 			"description":           functions.Description(),
 			"fileCount":             functions.FileCount(),
+			"hasAnnotation":         functions.HasAnnotation(),
 			"hasCodePattern":        functions.HasCodePattern(),
 			"hasFileExtensions":     functions.HasFileExtensions(),
 			"hasFileName":           functions.HasFileName(),
