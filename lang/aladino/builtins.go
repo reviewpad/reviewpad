@@ -7,6 +7,7 @@ package aladino
 type BuiltIns struct {
 	Functions map[string]*BuiltInFunction
 	Actions   map[string]*BuiltInAction
+	Services  map[string]interface{}
 }
 
 type BuiltInFunction struct {
@@ -24,6 +25,7 @@ func MergeAladinoBuiltIns(builtInsList ...*BuiltIns) *BuiltIns {
 	mergedBuiltIns := &BuiltIns{
 		Functions: map[string]*BuiltInFunction{},
 		Actions:   map[string]*BuiltInAction{},
+		Services:  map[string]interface{}{},
 	}
 
 	for _, builtIns := range builtInsList {
@@ -33,6 +35,10 @@ func MergeAladinoBuiltIns(builtInsList ...*BuiltIns) *BuiltIns {
 
 		for key, action := range builtIns.Actions {
 			mergedBuiltIns.Actions[key] = action
+		}
+
+		for key, service := range builtIns.Services {
+			mergedBuiltIns.Services[key] = service
 		}
 	}
 

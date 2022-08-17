@@ -5,16 +5,39 @@
 package plugins_aladino
 
 import (
+	"log"
+
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	actions "github.com/reviewpad/reviewpad/v3/plugins/aladino/actions"
 	functions "github.com/reviewpad/reviewpad/v3/plugins/aladino/functions"
+	services "github.com/reviewpad/reviewpad/v3/plugins/aladino/services"
 )
+
+type PluginConfig struct {
+	Services map[string]interface{}
+}
+
+func DefaultPluginConfig() (*PluginConfig, error) {
+	semanticClient, err := services.NewSemanticService()
+	if err != nil {
+		return nil, err
+	}
+
+	services := map[string]interface{}{
+		services.SEMANTIC_SERVICE_KEY: semanticClient,
+	}
+
+	config := &PluginConfig{
+		Services: services,
+	}
+
+	return config, nil
+}
 
 // The documentation for the builtins is in:
 // https://github.com/reviewpad/docs/blob/main/aladino/builtins.md
 // This means that changes to the builtins need to be propagated to that document.
-
-func PluginBuiltIns() *aladino.BuiltIns {
+func PluginBuiltInsWithConfig(config *PluginConfig) *aladino.BuiltIns {
 	return &aladino.BuiltIns{
 		Functions: map[string]*aladino.BuiltInFunction{
 			// Pull Request
@@ -28,6 +51,7 @@ func PluginBuiltIns() *aladino.BuiltIns {
 			"createdAt":             functions.CreatedAt(),
 			"description":           functions.Description(),
 			"fileCount":             functions.FileCount(),
+			"hasAnnotation":         functions.HasAnnotation(),
 			"hasCodePattern":        functions.HasCodePattern(),
 			"hasFileExtensions":     functions.HasFileExtensions(),
 			"hasFileName":           functions.HasFileName(),
@@ -78,5 +102,14 @@ func PluginBuiltIns() *aladino.BuiltIns {
 			"merge":                actions.Merge(),
 			"removeLabel":          actions.RemoveLabel(),
 		},
+		Services: config.Services,
 	}
+}
+
+func PluginBuiltIns() *aladino.BuiltIns {
+	config, err := DefaultPluginConfig()
+	if err != nil {
+		log.Fatal("Error loading default plugin config: ", err)
+	}
+	return PluginBuiltInsWithConfig(config)
 }
