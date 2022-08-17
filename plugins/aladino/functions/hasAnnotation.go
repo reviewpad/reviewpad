@@ -12,6 +12,7 @@ import (
 	"github.com/reviewpad/api/go/entities"
 	api "github.com/reviewpad/api/go/services"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
+	plugins_aladino_services "github.com/reviewpad/reviewpad/v3/plugins/aladino/services"
 )
 
 func HasAnnotation() *aladino.BuiltInFunction {
@@ -86,25 +87,23 @@ func getSymbolsFromPatch(e aladino.Env) (map[string]*entities.Symbols, error) {
 		str, _ := strconv.Unquote(strings.Replace(strconv.Quote(string(blob)), `\\u`, `\u`, -1))
 		blob = []byte(str)
 
-		blocks, err := getBlocks(commitFile)
-		if err != nil {
-			return nil, err
-		}
+		blocks := getBlocks(commitFile)
 
-		service, ok := e.GetBuiltIns().Services["semantic"]
+		service, ok := e.GetBuiltIns().Services[plugins_aladino_services.SEMANTIC_SERVICE]
 		if !ok {
 			return nil, fmt.Errorf("semantic service not found")
 		}
 
 		semanticClient := service.(api.SemanticClient)
-		reply, err := semanticClient.GetSymbols(e.GetCtx(), &api.GetSymbolsRequest{
+		req := &api.GetSymbolsRequest{
 			Uri:      url,
 			CommitId: *lastCommit,
 			Filepath: fp,
 			Blob:     blob,
 			BlobId:   *commitFile.Repr.SHA,
 			Diff:     &entities.ResolveFileDiff{Blocks: blocks},
-		})
+		}
+		reply, err := semanticClient.GetSymbols(e.GetCtx(), req)
 		if err != nil {
 			return nil, err
 		}
@@ -115,7 +114,7 @@ func getSymbolsFromPatch(e aladino.Env) (map[string]*entities.Symbols, error) {
 	return res, nil
 }
 
-func getBlocks(commitFile *aladino.File) ([]*entities.ResolveBlockDiff, error) {
+func getBlocks(commitFile *aladino.File) []*entities.ResolveBlockDiff {
 	res := make([]*entities.ResolveBlockDiff, len(commitFile.Diff))
 	for i, block := range commitFile.Diff {
 		if block.New != nil {
@@ -132,5 +131,5 @@ func getBlocks(commitFile *aladino.File) ([]*entities.ResolveBlockDiff, error) {
 		}
 	}
 
-	return res, nil
+	return res
 }

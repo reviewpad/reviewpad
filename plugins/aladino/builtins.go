@@ -92,7 +92,7 @@ func PluginBuiltIns(config *PluginConfig) *aladino.BuiltIns {
 			"removeLabel":          actions.RemoveLabel(),
 		},
 		Services: map[string]interface{}{
-			"semantic": services.NewSemanticService(config.SemanticEndpoint),
+			services.SEMANTIC_SERVICE: services.NewSemanticService(config.SemanticEndpoint),
 		},
 	}
 }

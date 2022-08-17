@@ -9,6 +9,8 @@ import (
 	"github.com/reviewpad/api/go/services"
 )
 
+const SEMANTIC_SERVICE = "semantic"
+
 func NewSemanticService(endpoint string) services.SemanticClient {
 	client, _ := clients.NewSemanticClient(endpoint)
 
