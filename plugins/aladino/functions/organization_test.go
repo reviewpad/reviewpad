@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var organization = plugins_aladino.PluginBuiltIns(plugins_aladino.DefaultPluginConfig()).Functions["organization"].Code
+var organization = plugins_aladino.PluginBuiltIns().Functions["organization"].Code
 
 func TestOrganization_WhenListMembersRequestFails(t *testing.T) {
 	failMessage := "ListMembersRequestFail"

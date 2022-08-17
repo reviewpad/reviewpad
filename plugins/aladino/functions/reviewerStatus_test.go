@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var reviewerStatus = plugins_aladino.PluginBuiltIns(plugins_aladino.DefaultPluginConfig()).Functions["reviewerStatus"].Code
+var reviewerStatus = plugins_aladino.PluginBuiltIns().Functions["reviewerStatus"].Code
 
 func TestReviewerStatus_WhenRequestFails(t *testing.T) {
 	failMessage := "ReviewerStatusRequestFail"

@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var sprintf = plugins_aladino.PluginBuiltIns(plugins_aladino.DefaultPluginConfig()).Functions["sprintf"].Code
+var sprintf = plugins_aladino.PluginBuiltIns().Functions["sprintf"].Code
 
 func TestSprintf(t *testing.T) {
 	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)

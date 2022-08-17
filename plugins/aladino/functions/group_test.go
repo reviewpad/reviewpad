@@ -13,7 +13,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var group = plugins_aladino.PluginBuiltIns(plugins_aladino.DefaultPluginConfig()).Functions["group"].Code
+var group = plugins_aladino.PluginBuiltIns().Functions["group"].Code
 
 func TestGroup(t *testing.T) {
 	groupName := "techLeads"

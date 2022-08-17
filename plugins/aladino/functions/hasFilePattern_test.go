@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var hasFilePattern = plugins_aladino.PluginBuiltIns(plugins_aladino.DefaultPluginConfig()).Functions["hasFilePattern"].Code
+var hasFilePattern = plugins_aladino.PluginBuiltIns().Functions["hasFilePattern"].Code
 
 func TestHasFilePattern_WhenFileBadPattern(t *testing.T) {
 	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)

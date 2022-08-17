@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var assignees = plugins_aladino.PluginBuiltIns(plugins_aladino.DefaultPluginConfig()).Functions["assignees"].Code
+var assignees = plugins_aladino.PluginBuiltIns().Functions["assignees"].Code
 
 func TestAssignees(t *testing.T) {
 	assigneeLogin := "jane"

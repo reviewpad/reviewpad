@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var commentCount = plugins_aladino.PluginBuiltIns(plugins_aladino.DefaultPluginConfig()).Functions["commentCount"].Code
+var commentCount = plugins_aladino.PluginBuiltIns().Functions["commentCount"].Code
 
 func TestCommentCount(t *testing.T) {
 	wantCommentCount := aladino.BuildIntValue(6)

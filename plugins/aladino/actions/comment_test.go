@@ -17,7 +17,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var comment = plugins_aladino.PluginBuiltIns(plugins_aladino.DefaultPluginConfig()).Actions["comment"].Code
+var comment = plugins_aladino.PluginBuiltIns().Actions["comment"].Code
 
 func TestComment(t *testing.T) {
 	wantComment := "Lorem Ipsum"

@@ -16,7 +16,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var merge = plugins_aladino.PluginBuiltIns(plugins_aladino.DefaultPluginConfig()).Actions["merge"].Code
+var merge = plugins_aladino.PluginBuiltIns().Actions["merge"].Code
 
 type MergeRequestPostBody struct {
 	MergeMethod string `json:"merge_method"`

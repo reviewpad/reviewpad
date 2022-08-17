@@ -26,7 +26,7 @@ func DefaultPluginConfig() *PluginConfig {
 // The documentation for the builtins is in:
 // https://github.com/reviewpad/docs/blob/main/aladino/builtins.md
 // This means that changes to the builtins need to be propagated to that document.
-func PluginBuiltIns(config *PluginConfig) *aladino.BuiltIns {
+func PluginBuiltInsWithConfig(config *PluginConfig) *aladino.BuiltIns {
 	return &aladino.BuiltIns{
 		Functions: map[string]*aladino.BuiltInFunction{
 			// Pull Request
@@ -95,4 +95,8 @@ func PluginBuiltIns(config *PluginConfig) *aladino.BuiltIns {
 			services.SEMANTIC_SERVICE: services.NewSemanticService(config.SemanticEndpoint),
 		},
 	}
+}
+
+func PluginBuiltIns() *aladino.BuiltIns {
+	return PluginBuiltInsWithConfig(DefaultPluginConfig())
 }

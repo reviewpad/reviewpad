@@ -16,7 +16,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var createdAt = plugins_aladino.PluginBuiltIns(plugins_aladino.DefaultPluginConfig()).Functions["createdAt"].Code
+var createdAt = plugins_aladino.PluginBuiltIns().Functions["createdAt"].Code
 
 func TestCreatedAt(t *testing.T) {
 	date := time.Date(2009, 11, 17, 20, 34, 58, 651387237, time.UTC)

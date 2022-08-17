@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var hasFileName = plugins_aladino.PluginBuiltIns(plugins_aladino.DefaultPluginConfig()).Functions["hasFileName"].Code
+var hasFileName = plugins_aladino.PluginBuiltIns().Functions["hasFileName"].Code
 
 func TestHasFileName_WhenTrue(t *testing.T) {
 	defaultMockPrFileName := "default-mock-repo/file1.ts"

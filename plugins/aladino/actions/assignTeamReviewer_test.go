@@ -16,7 +16,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var assignTeamReviewer = plugins_aladino.PluginBuiltIns(plugins_aladino.DefaultPluginConfig()).Actions["assignTeamReviewer"].Code
+var assignTeamReviewer = plugins_aladino.PluginBuiltIns().Actions["assignTeamReviewer"].Code
 
 type TeamReviewersRequestPostBody struct {
 	TeamReviewers []string `json:"team_reviewers"`

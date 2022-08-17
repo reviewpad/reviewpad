@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var isDraft = plugins_aladino.PluginBuiltIns(plugins_aladino.DefaultPluginConfig()).Functions["isDraft"].Code
+var isDraft = plugins_aladino.PluginBuiltIns().Functions["isDraft"].Code
 
 func TestIsDraft_WhenTrue(t *testing.T) {
 	mockedPullRequest := aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{

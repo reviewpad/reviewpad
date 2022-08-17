@@ -17,7 +17,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var assignRandomReviewer = plugins_aladino.PluginBuiltIns(plugins_aladino.DefaultPluginConfig()).Actions["assignRandomReviewer"].Code
+var assignRandomReviewer = plugins_aladino.PluginBuiltIns().Actions["assignRandomReviewer"].Code
 
 type ReviewersRequestPostBody struct {
 	Reviewers []string `json:"reviewers"`

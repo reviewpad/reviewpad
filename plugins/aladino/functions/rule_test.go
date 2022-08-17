@@ -13,7 +13,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var rule = plugins_aladino.PluginBuiltIns(plugins_aladino.DefaultPluginConfig()).Functions["rule"].Code
+var rule = plugins_aladino.PluginBuiltIns().Functions["rule"].Code
 
 func TestRule_WhenRuleIsAbsent(t *testing.T) {
 	ruleName := "is-absent"

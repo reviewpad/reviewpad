@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var description = plugins_aladino.PluginBuiltIns(plugins_aladino.DefaultPluginConfig()).Functions["description"].Code
+var description = plugins_aladino.PluginBuiltIns().Functions["description"].Code
 
 func TestDescription(t *testing.T) {
 	prDescription := "Please pull these awesome changes in!"

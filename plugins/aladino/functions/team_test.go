@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var team = plugins_aladino.PluginBuiltIns(plugins_aladino.DefaultPluginConfig()).Functions["team"].Code
+var team = plugins_aladino.PluginBuiltIns().Functions["team"].Code
 
 func TestTeam_WhenListTeamMembersBySlugRequestFails(t *testing.T) {
 	teamSlug := "reviewpad-team"
