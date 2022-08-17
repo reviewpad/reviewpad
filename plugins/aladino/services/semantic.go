@@ -5,14 +5,23 @@
 package plugins_aladino_services
 
 import (
+	"os"
+
 	"github.com/reviewpad/api/go/clients"
 	"github.com/reviewpad/api/go/services"
 )
 
-const SEMANTIC_SERVICE = "semantic"
+const (
+	SEMANTIC_SERVICE_KEY      = "semantic"
+	SEMANTIC_SERVICE_ENDPOINT = "INPUT_SEMANTIC_SERVICE"
+)
 
-func NewSemanticService(endpoint string) services.SemanticClient {
-	client, _ := clients.NewSemanticClient(endpoint)
+func NewSemanticServiceWithConfig(endpoint string) (services.SemanticClient, error) {
+	return clients.NewSemanticClient(endpoint)
+}
 
-	return client
+func NewSemanticService() (services.SemanticClient, error) {
+	semanticEndpoint := os.Getenv(SEMANTIC_SERVICE_ENDPOINT)
+
+	return NewSemanticServiceWithConfig(semanticEndpoint)
 }

@@ -89,7 +89,7 @@ func getSymbolsFromPatch(e aladino.Env) (map[string]*entities.Symbols, error) {
 
 		blocks := getBlocks(commitFile)
 
-		service, ok := e.GetBuiltIns().Services[plugins_aladino_services.SEMANTIC_SERVICE]
+		service, ok := e.GetBuiltIns().Services[plugins_aladino_services.SEMANTIC_SERVICE_KEY]
 		if !ok {
 			return nil, fmt.Errorf("semantic service not found")
 		}

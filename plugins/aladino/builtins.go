@@ -5,7 +5,7 @@
 package plugins_aladino
 
 import (
-	"os"
+	"log"
 
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	actions "github.com/reviewpad/reviewpad/v3/plugins/aladino/actions"
@@ -14,13 +14,24 @@ import (
 )
 
 type PluginConfig struct {
-	SemanticEndpoint string
+	Services map[string]interface{}
 }
 
-func DefaultPluginConfig() *PluginConfig {
-	return &PluginConfig{
-		SemanticEndpoint: os.Getenv("INPUT_SEMANTIC_SERVICE"),
+func DefaultPluginConfig() (*PluginConfig, error) {
+	semanticClient, err := services.NewSemanticService()
+	if err != nil {
+		return nil, err
 	}
+
+	services := map[string]interface{}{
+		services.SEMANTIC_SERVICE_KEY: semanticClient,
+	}
+
+	config := &PluginConfig{
+		Services: services,
+	}
+
+	return config, nil
 }
 
 // The documentation for the builtins is in:
@@ -91,12 +102,14 @@ func PluginBuiltInsWithConfig(config *PluginConfig) *aladino.BuiltIns {
 			"merge":                actions.Merge(),
 			"removeLabel":          actions.RemoveLabel(),
 		},
-		Services: map[string]interface{}{
-			services.SEMANTIC_SERVICE: services.NewSemanticService(config.SemanticEndpoint),
-		},
+		Services: config.Services,
 	}
 }
 
 func PluginBuiltIns() *aladino.BuiltIns {
-	return PluginBuiltInsWithConfig(DefaultPluginConfig())
+	config, err := DefaultPluginConfig()
+	if err != nil {
+		log.Fatal("Error loading default plugin config: ", err)
+	}
+	return PluginBuiltInsWithConfig(config)
 }

@@ -391,7 +391,7 @@ func TestGetSymbolsFromPatch_WhenGetSymbolsRequestFails(t *testing.T) {
 
 	mockBuiltIns := &aladino.BuiltIns{
 		Services: map[string]interface{}{
-			plugins_aladino_services.SEMANTIC_SERVICE: mockedSemanticClient,
+			plugins_aladino_services.SEMANTIC_SERVICE_KEY: mockedSemanticClient,
 		},
 	}
 
@@ -525,7 +525,7 @@ func TestGetSymbolsFromPatch(t *testing.T) {
 
 	mockBuiltIns := &aladino.BuiltIns{
 		Services: map[string]interface{}{
-			plugins_aladino_services.SEMANTIC_SERVICE: mockedSemanticClient,
+			plugins_aladino_services.SEMANTIC_SERVICE_KEY: mockedSemanticClient,
 		},
 	}
 
@@ -764,7 +764,7 @@ func TestHasAnnotationCode(t *testing.T) {
 
 			mockBuiltIns := &aladino.BuiltIns{
 				Services: map[string]interface{}{
-					plugins_aladino_services.SEMANTIC_SERVICE: mockedSemanticClient,
+					plugins_aladino_services.SEMANTIC_SERVICE_KEY: mockedSemanticClient,
 				},
 			}
 
