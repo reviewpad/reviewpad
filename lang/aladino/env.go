@@ -15,8 +15,9 @@ import (
 type Severity int
 
 const (
-	SEVERITY_FATAL Severity = 1
-	SEVERITY_ERROR Severity = 2
+	SEVERITY_FATAL   Severity = 1
+	SEVERITY_ERROR   Severity = 2
+	SEVERITY_WARNING Severity = 3
 )
 
 type TypeEnv map[string]Type
@@ -143,8 +144,9 @@ func NewEvalEnv(
 	registerMap := RegisterMap(make(map[string]Value))
 	report := &Report{Actions: make([]string, 0)}
 	builtInsReportedMessages := map[Severity][]string{
-		SEVERITY_FATAL: make([]string, 0),
-		SEVERITY_ERROR: make([]string, 0),
+		SEVERITY_FATAL:   make([]string, 0),
+		SEVERITY_ERROR:   make([]string, 0),
+		SEVERITY_WARNING: make([]string, 0),
 	}
 
 	input := &BaseEnv{
