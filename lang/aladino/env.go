@@ -18,6 +18,7 @@ const (
 	SEVERITY_FATAL   Severity = 1
 	SEVERITY_ERROR   Severity = 2
 	SEVERITY_WARNING Severity = 3
+	SEVERITY_INFO    Severity = 4
 )
 
 type TypeEnv map[string]Type
@@ -147,6 +148,7 @@ func NewEvalEnv(
 		SEVERITY_FATAL:   make([]string, 0),
 		SEVERITY_ERROR:   make([]string, 0),
 		SEVERITY_WARNING: make([]string, 0),
+		SEVERITY_INFO:    make([]string, 0),
 	}
 
 	input := &BaseEnv{
