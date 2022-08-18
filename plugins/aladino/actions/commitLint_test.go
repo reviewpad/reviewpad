@@ -23,7 +23,7 @@ func TestCommitLint_WhenRequestFails(t *testing.T) {
 		wantReportedMessages map[aladino.Severity][]string
 		wantErr              string
 	}{
-		"GetPullRequestCommits": {
+		"when get pull request commits fails": {
 			env: aladino.MockDefaultEnv(
 				t,
 				[]mock.MockBackendOption{
