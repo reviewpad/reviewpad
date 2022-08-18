@@ -144,16 +144,10 @@ func NewEvalEnv(
 	patch := Patch(patchMap)
 	registerMap := RegisterMap(make(map[string]Value))
 	report := &Report{Actions: make([]string, 0)}
-	builtInsReportedMessages := map[Severity][]string{
-		SEVERITY_FATAL:   make([]string, 0),
-		SEVERITY_ERROR:   make([]string, 0),
-		SEVERITY_WARNING: make([]string, 0),
-		SEVERITY_INFO:    make([]string, 0),
-	}
 
 	input := &BaseEnv{
 		BuiltIns:                 builtIns,
-		BuiltInsReportedMessages: builtInsReportedMessages,
+		BuiltInsReportedMessages: make(map[Severity][]string),
 		GithubClient:             githubClient,
 		Collector:                collector,
 		Ctx:                      ctx,
