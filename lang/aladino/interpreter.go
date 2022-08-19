@@ -162,6 +162,11 @@ func (i *Interpreter) ExecStatement(statement *engine.Statement) error {
 func (i *Interpreter) Report(mode string, safeMode bool) error {
 	execLog("generating report")
 
+	if mode == "" {
+		// By default mode is silent
+		mode = engine.SILENT_MODE
+	}
+
 	env := i.Env
 
 	var err error
@@ -171,14 +176,16 @@ func (i *Interpreter) Report(mode string, safeMode bool) error {
 		return err
 	}
 
-	if mode == engine.SILENT_MODE {
+	reportComments := env.GetBuiltInsReportedMessages()
+
+	if mode == engine.SILENT_MODE && len(reportComments) == 0 && !safeMode {
 		if comment != nil {
 			return DeleteReportComment(env, *comment.ID)
 		}
 		return nil
 	}
 
-	report := buildReport(safeMode, env.GetReport())
+	report := buildReport(mode, safeMode, reportComments, env.GetReport())
 
 	if comment == nil {
 		return AddReportComment(env, report)

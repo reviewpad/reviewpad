@@ -42,13 +42,8 @@ func TestCommitLint_WhenRequestFails(t *testing.T) {
 				aladino.MockBuiltIns(),
 				nil,
 			),
-			wantReportedMessages: map[aladino.Severity][]string{
-				aladino.SEVERITY_FATAL:   {},
-				aladino.SEVERITY_ERROR:   {},
-				aladino.SEVERITY_WARNING: {},
-				aladino.SEVERITY_INFO:    {},
-			},
-			wantErr: "GetPullRequestCommitsRequestFailed",
+			wantReportedMessages: map[aladino.Severity][]string{},
+			wantErr:              "GetPullRequestCommitsRequestFailed",
 		},
 	}
 
@@ -91,12 +86,9 @@ func TestCommitLint(t *testing.T) {
 				nil,
 			),
 			wantReportedMessages: map[aladino.Severity][]string{
-				aladino.SEVERITY_FATAL: {},
 				aladino.SEVERITY_ERROR: {
 					"**Unconventional commit detected**: '&' (6dcb09b5b57875f334f61aebed695e2e4193db5e)",
 				},
-				aladino.SEVERITY_WARNING: {},
-				aladino.SEVERITY_INFO:    {},
 			},
 		},
 		"when there is one non conventional commit": {
@@ -122,12 +114,9 @@ func TestCommitLint(t *testing.T) {
 				nil,
 			),
 			wantReportedMessages: map[aladino.Severity][]string{
-				aladino.SEVERITY_FATAL: {},
 				aladino.SEVERITY_ERROR: {
 					"**Unconventional commit detected**: 'Fix all bugs' (6dcb09b5b57875f334f61aebed695e2e4193db5e)",
 				},
-				aladino.SEVERITY_WARNING: {},
-				aladino.SEVERITY_INFO:    {},
 			},
 		},
 		"when there is multiple non conventional commits": {
@@ -157,13 +146,10 @@ func TestCommitLint(t *testing.T) {
 				nil,
 			),
 			wantReportedMessages: map[aladino.Severity][]string{
-				aladino.SEVERITY_FATAL: {},
 				aladino.SEVERITY_ERROR: {
 					"**Unconventional commit detected**: 'Fix all bugs' (6dcb09b5b57875f334f61aebed695e2e4193db5e)",
 					"**Unconventional commit detected**: 'Add code comments' (6dcb09b5b57875f334f61aebed695e2e4193db5c)",
 				},
-				aladino.SEVERITY_WARNING: {},
-				aladino.SEVERITY_INFO:    {},
 			},
 		},
 		"when there is no non conventional commits": {
@@ -188,12 +174,7 @@ func TestCommitLint(t *testing.T) {
 				aladino.MockBuiltIns(),
 				nil,
 			),
-			wantReportedMessages: map[aladino.Severity][]string{
-				aladino.SEVERITY_FATAL:   {},
-				aladino.SEVERITY_ERROR:   {},
-				aladino.SEVERITY_WARNING: {},
-				aladino.SEVERITY_INFO:    {},
-			},
+			wantReportedMessages: map[aladino.Severity][]string{},
 		},
 	}
 

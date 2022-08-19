@@ -75,7 +75,7 @@ func TestBuildReport(t *testing.T) {
 :scroll: **Executed actions**
 ` + "```yaml\n$addLabel(\"test\")\n```\n"
 
-	gotReport := buildReport(false, &report)
+	gotReport := buildReport(engine.VERBOSE_MODE, false, make(map[Severity][]string), &report)
 
 	assert.Equal(t, wantReport, gotReport)
 }

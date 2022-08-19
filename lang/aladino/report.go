@@ -44,11 +44,41 @@ func ReportHeader(safeMode bool) string {
 	return sb.String()
 }
 
-func buildReport(safeMode bool, report *Report) string {
+func severityToString(sev Severity) string {
+	switch sev {
+	case SEVERITY_ERROR:
+		return ":bangbang: Errors"
+	case SEVERITY_WARNING:
+		return ":warning: Warnings"
+	case SEVERITY_INFO:
+		return ":information_source: Messages"
+	default:
+		return "Fatal"
+	}
+
+}
+func buildCommentSection(comments map[Severity][]string) string {
+	var sb strings.Builder
+
+	for sev, list := range comments {
+		sb.WriteString(fmt.Sprintf("**%v**\n", severityToString(sev)))
+		for _, elem := range list {
+			sb.WriteString(fmt.Sprintf("* %v\n", elem))
+		}
+		sb.WriteString("\n")
+	}
+
+	return sb.String()
+}
+
+func buildReport(mode string, safeMode bool, reportComments map[Severity][]string, report *Report) string {
 	var sb strings.Builder
 
 	sb.WriteString(ReportHeader(safeMode))
-	sb.WriteString(BuildVerboseReport(report))
+	sb.WriteString(buildCommentSection(reportComments))
+	if mode == engine.VERBOSE_MODE || safeMode {
+		sb.WriteString(BuildVerboseReport(report))
+	}
 
 	return sb.String()
 }
