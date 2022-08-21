@@ -6,6 +6,8 @@ package aladino
 
 import (
 	"fmt"
+
+	"github.com/reviewpad/host-event-handler/handler"
 )
 
 type ExecExpr interface {
@@ -48,10 +50,17 @@ func (fc *FunctionCall) exec(env Env) error {
 		return nil
 	}
 
-	env.GetCollector().Collect("Ran Builtin", map[string]interface{}{
-		"pullRequestUrl": env.GetPullRequest().URL,
-		"builtin":        fc.name.ident,
-	})
+	collectedData := map[string]interface{}{
+		"builtin": fc.name.ident,
+	}
+
+	if env.GetTargetEntity().Kind == handler.PullRequest {
+		collectedData["pullRequestUrl"] = env.GetPullRequest().URL
+	} else {
+		collectedData["issueUrl"] = env.GetIssue().URL
+	}
+
+	env.GetCollector().Collect("Ran Builtin", collectedData)
 
 	return action.Code(env, args)
 }

@@ -5,10 +5,11 @@
 package engine
 
 import (
+	"fmt"
 	"log"
-	"regexp"
 
 	"github.com/google/go-github/v45/github"
+	"github.com/reviewpad/host-event-handler/handler"
 	"github.com/reviewpad/reviewpad/v3/utils/fmtio"
 )
 
@@ -34,10 +35,17 @@ func CollectError(env *Env, err error) {
 		errMsg = err.Error()
 	}
 
-	env.Collector.Collect("Error", map[string]interface{}{
-		"pullRequestUrl": env.PullRequest.URL,
-		"details":        errMsg,
-	})
+	collectedData := map[string]interface{}{
+		"details": errMsg,
+	}
+
+	if env.TargetEntity.Kind == handler.PullRequest {
+		collectedData["pullRequestUrl"] = env.PullRequest.URL
+	} else {
+		collectedData["issueUrl"] = env.Issue.URL
+	}
+
+	env.Collector.Collect("Error", collectedData)
 }
 
 // Eval: main function that generates the program to be executed
@@ -47,12 +55,8 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 
 	interpreter := env.Interpreter
 
-	reg := regexp.MustCompile(`github\.com\/repos\/(.*)\/pulls\/\d+$$`)
-	matches := reg.FindStringSubmatch(*env.PullRequest.URL)
-
-	env.Collector.Collect("Trigger Analysis", map[string]interface{}{
-		"pullRequestUrl": env.PullRequest.URL,
-		"project":        matches[1],
+	collectedData := map[string]interface{}{
+		"project":        fmt.Sprintf(env.TargetEntity.Owner + "/" + env.TargetEntity.Repo),
 		"version":        file.Version,
 		"edition":        file.Edition,
 		"mode":           file.Mode,
@@ -60,7 +64,15 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 		"totalLabels":    len(file.Labels),
 		"totalRules":     len(file.Rules),
 		"totalWorkflows": len(file.Workflows),
-	})
+	}
+
+	if env.TargetEntity.Kind == handler.PullRequest {
+		collectedData["pullRequestUrl"] = env.PullRequest.URL
+	} else {
+		collectedData["issueUrl"] = env.Issue.URL
+	}
+
+	env.Collector.Collect("Trigger Analysis", collectedData)
 
 	rules := make(map[string]PadRule)
 
