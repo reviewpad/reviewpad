@@ -245,7 +245,7 @@ func mockAladinoInterpreter(githubClient *gh.GithubClient) (engine.Interpreter, 
 		dryRun,
 		githubClient,
 		engine.DefaultMockCollector,
-		engine.GetDefaultMockPullRequestDetails(),
+		engine.DefaultMockTargetEntity,
 		engine.DefaultMockEventPayload,
 		aladino.MockBuiltIns(),
 	)

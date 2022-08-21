@@ -507,11 +507,11 @@ func TestExecStatement(t *testing.T) {
 
 func TestReport_WhenFindReportCommentFails(t *testing.T) {
 	mockedPullRequest := GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
-		User: &github.User{Login: github.String("john")},
+		User: &github.User{Login: github.String("foobar")},
 		Base: &github.PullRequestBranch{
 			Repo: &github.Repository{
 				Owner: &github.User{
-					Login: github.String("john"),
+					Login: github.String("foobar"),
 				},
 				Name: github.String("default-mock-repo"),
 			},
@@ -539,7 +539,7 @@ func TestReport_WhenFindReportCommentFails(t *testing.T) {
 
 	err := mockedInterpreter.Report(engine.SILENT_MODE, false)
 
-	assert.EqualError(t, err, "[report] error getting issues mock response not found for /repos/john/default-mock-repo/issues/6/comments")
+	assert.EqualError(t, err, "[report] error getting issues mock response not found for /repos/foobar/default-mock-repo/issues/6/comments")
 }
 
 func TestReport_OnSilentMode_WhenThereIsAlreadyAReviewpadComment(t *testing.T) {
@@ -713,7 +713,7 @@ func TestNewInterpreter_WhenNewEvalEnvFails(t *testing.T) {
 		false,
 		gh.NewGithubClient(clientREST, nil),
 		nil,
-		GetDefaultMockPullRequestDetails(),
+		DefaultMockTargetEntity,
 		GetDefaultMockPullRequestDetails(),
 		nil,
 	)
@@ -734,7 +734,7 @@ func TestNewInterpreter(t *testing.T) {
 		mockedEnv.GetDryRun(),
 		mockedEnv.GetGithubClient(),
 		mockedEnv.GetCollector(),
-		mockedEnv.GetPullRequest(),
+		DefaultMockTargetEntity,
 		mockedEnv.GetEventPayload(),
 		mockedEnv.GetBuiltIns(),
 	)

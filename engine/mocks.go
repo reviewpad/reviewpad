@@ -12,6 +12,7 @@ import (
 
 	"github.com/google/go-github/v45/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
+	"github.com/reviewpad/host-event-handler/handler"
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/collector"
 )
@@ -26,6 +27,12 @@ const defaultMockPrRepoName = "default-mock-repo"
 var DefaultMockCtx = context.Background()
 var DefaultMockCollector = collector.NewCollector("", "")
 var DefaultMockEventPayload = &github.CheckRunEvent{}
+var DefaultMockTargetEntity = &handler.TargetEntity{
+	Owner:  defaultMockPrOwner,
+	Repo:   defaultMockPrRepoName,
+	Number: defaultMockPrNum,
+	Kind:   handler.PullRequest,
+}
 
 func GetDefaultMockPullRequestDetails() *github.PullRequest {
 	prNum := defaultMockPrNum
@@ -112,7 +119,7 @@ func MockEnvWith(githubClient *gh.GithubClient, interpreter Interpreter) (*Env, 
 		dryRun,
 		githubClient,
 		DefaultMockCollector,
-		GetDefaultMockPullRequestDetails(),
+		DefaultMockTargetEntity,
 		DefaultMockEventPayload,
 		interpreter,
 	)

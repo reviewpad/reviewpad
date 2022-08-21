@@ -16,6 +16,7 @@ import (
 
 	"github.com/google/go-github/v45/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
+	"github.com/reviewpad/host-event-handler/handler"
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/collector"
 	"github.com/shurcooL/githubv4"
@@ -28,6 +29,12 @@ const DefaultMockPrRepoName = "default-mock-repo"
 
 var DefaultMockContext = context.Background()
 var DefaultMockCollector = collector.NewCollector("", "")
+var DefaultMockTargetEntity = &handler.TargetEntity{
+	Owner:  DefaultMockPrOwner,
+	Repo:   DefaultMockPrRepoName,
+	Number: DefaultMockPrNum,
+	Kind:   handler.PullRequest,
+}
 
 func GetDefaultMockPullRequestDetails() *github.PullRequest {
 	prNum := DefaultMockPrNum
@@ -230,22 +237,17 @@ func mockHttpClientWith(clientOptions ...mock.MockBackendOption) *http.Client {
 
 func mockEnvWith(prOwner string, prRepoName string, prNum int, client *github.Client, clientGQL *githubv4.Client, eventPayload interface{}, builtIns *BuiltIns) (Env, error) {
 	ctx := context.Background()
-	pr, _, err := client.PullRequests.Get(ctx, prOwner, prRepoName, prNum)
-	if err != nil {
-		return nil, err
-	}
-
 	githubClient := gh.NewGithubClient(client, clientGQL)
+
 	env, err := NewEvalEnv(
 		ctx,
 		false,
 		githubClient,
 		DefaultMockCollector,
-		pr,
+		DefaultMockTargetEntity,
 		eventPayload,
 		builtIns,
 	)
-
 	if err != nil {
 		return nil, err
 	}

@@ -11,6 +11,7 @@ import (
 
 	"github.com/google/go-github/v45/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
+	"github.com/reviewpad/host-event-handler/handler"
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	"github.com/stretchr/testify/assert"
@@ -51,16 +52,13 @@ func TestNewEvalEnv_WhenGetPullRequestFilesFails(t *testing.T) {
 	))
 
 	mockedGithubClient := gh.NewGithubClient(mockedGithubClientREST, nil)
-
 	ctx := context.Background()
-	mockedPullRequest, _, err := mockedGithubClientREST.PullRequests.Get(
-		ctx,
-		aladino.DefaultMockPrOwner,
-		aladino.DefaultMockPrRepoName,
-		aladino.DefaultMockPrNum,
-	)
-	if err != nil {
-		assert.FailNow(t, "couldn't get pull request", err)
+
+	targetEntity := &handler.TargetEntity{
+		Owner:  aladino.DefaultMockPrOwner,
+		Repo:   aladino.DefaultMockPrRepoName,
+		Number: aladino.DefaultMockPrNum,
+		Kind:   handler.PullRequest,
 	}
 
 	env, err := aladino.NewEvalEnv(
@@ -68,7 +66,7 @@ func TestNewEvalEnv_WhenGetPullRequestFilesFails(t *testing.T) {
 		false,
 		mockedGithubClient,
 		aladino.DefaultMockCollector,
-		mockedPullRequest,
+		targetEntity,
 		nil,
 		aladino.MockBuiltIns(),
 	)
@@ -92,16 +90,12 @@ func TestNewEvalEnv_WhenNewFileFails(t *testing.T) {
 	))
 
 	mockedGithubClient := gh.NewGithubClient(mockedGithubClientREST, nil)
-
 	ctx := context.Background()
-	mockedPullRequest, _, err := mockedGithubClientREST.PullRequests.Get(
-		ctx,
-		aladino.DefaultMockPrOwner,
-		aladino.DefaultMockPrRepoName,
-		aladino.DefaultMockPrNum,
-	)
-	if err != nil {
-		assert.FailNow(t, "couldn't get pull request", err)
+	targetEntity := &handler.TargetEntity{
+		Owner:  aladino.DefaultMockPrOwner,
+		Repo:   aladino.DefaultMockPrRepoName,
+		Number: aladino.DefaultMockPrNum,
+		Kind:   handler.PullRequest,
 	}
 
 	env, err := aladino.NewEvalEnv(
@@ -109,7 +103,7 @@ func TestNewEvalEnv_WhenNewFileFails(t *testing.T) {
 		false,
 		mockedGithubClient,
 		aladino.DefaultMockCollector,
-		mockedPullRequest,
+		targetEntity,
 		nil,
 		aladino.MockBuiltIns(),
 	)
@@ -124,6 +118,7 @@ func TestNewEvalEnv(t *testing.T) {
 	mockedGithubClientREST := github.NewClient(mock.NewMockedHTTPClient(
 		mock.WithRequestMatch(
 			mock.GetReposPullsByOwnerByRepoByPullNumber,
+			aladino.GetDefaultMockPullRequestDetails(),
 			aladino.GetDefaultMockPullRequestDetails(),
 		),
 		mock.WithRequestMatch(
@@ -156,7 +151,7 @@ func TestNewEvalEnv(t *testing.T) {
 		false,
 		mockedGithubClient,
 		aladino.DefaultMockCollector,
-		mockedPullRequest,
+		aladino.DefaultMockTargetEntity,
 		nil,
 		aladino.MockBuiltIns(),
 	)
@@ -184,6 +179,7 @@ func TestNewEvalEnv(t *testing.T) {
 		Report:       &aladino.Report{Actions: make([]string, 0)},
 		// TODO: Mock an event
 		EventPayload: nil,
+		TargetEntity: aladino.DefaultMockTargetEntity,
 	}
 
 	assert.Nil(t, err)
@@ -194,6 +190,8 @@ func TestNewEvalEnv(t *testing.T) {
 	assert.Equal(t, wantEnv.Patch, gotEnv.GetPatch())
 	assert.Equal(t, wantEnv.RegisterMap, gotEnv.GetRegisterMap())
 	assert.Equal(t, wantEnv.EventPayload, gotEnv.GetEventPayload())
+	assert.Equal(t, wantEnv.TargetEntity, gotEnv.GetTargetEntity())
+	assert.Equal(t, wantEnv.Issue, gotEnv.GetIssue())
 
 	assert.Equal(t, len(wantEnv.BuiltIns.Functions), len(gotEnv.GetBuiltIns().Functions))
 	assert.Equal(t, len(wantEnv.BuiltIns.Actions), len(gotEnv.GetBuiltIns().Actions))
@@ -207,4 +205,43 @@ func TestNewEvalEnv(t *testing.T) {
 	}
 
 	assert.Equal(t, wantEnv.Report, gotEnv.GetReport())
+}
+
+func TestNewEvalEnv_WhenGetPullRequestFails(t *testing.T) {
+	failMessage := "GetPullRequestFail"
+	mockedGithubClientREST := github.NewClient(mock.NewMockedHTTPClient(
+		mock.WithRequestMatchHandler(
+			mock.GetReposPullsByOwnerByRepoByPullNumber,
+			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				mock.WriteError(
+					w,
+					http.StatusInternalServerError,
+					failMessage,
+				)
+			}),
+		),
+	))
+
+	mockedGithubClient := gh.NewGithubClient(mockedGithubClientREST, nil)
+	ctx := context.Background()
+
+	targetEntity := &handler.TargetEntity{
+		Owner:  aladino.DefaultMockPrOwner,
+		Repo:   aladino.DefaultMockPrRepoName,
+		Number: aladino.DefaultMockPrNum,
+		Kind:   handler.PullRequest,
+	}
+
+	env, err := aladino.NewEvalEnv(
+		ctx,
+		false,
+		mockedGithubClient,
+		aladino.DefaultMockCollector,
+		targetEntity,
+		nil,
+		aladino.MockBuiltIns(),
+	)
+
+	assert.Nil(t, env)
+	assert.Equal(t, err.(*github.ErrorResponse).Message, failMessage)
 }
