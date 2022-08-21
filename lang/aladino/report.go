@@ -10,7 +10,6 @@ import (
 	"strings"
 
 	"github.com/google/go-github/v45/github"
-	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/engine"
 	"github.com/reviewpad/reviewpad/v3/utils/fmtio"
 )
@@ -104,9 +103,9 @@ func BuildVerboseReport(report *Report) string {
 }
 
 func DeleteReportComment(env Env, commentId int64) error {
-	pullRequest := env.GetPullRequest()
-	owner := gh.GetPullRequestBaseOwnerName(pullRequest)
-	repo := gh.GetPullRequestBaseRepoName(pullRequest)
+	t := env.GetTargetEntity()
+	owner := t.Owner
+	repo := t.Repo
 
 	_, err := env.GetGithubClient().DeleteComment(env.GetCtx(), owner, repo, commentId)
 	if err != nil {
@@ -121,9 +120,9 @@ func UpdateReportComment(env Env, commentId int64, report string) error {
 		Body: &report,
 	}
 
-	pullRequest := env.GetPullRequest()
-	owner := gh.GetPullRequestBaseOwnerName(pullRequest)
-	repo := gh.GetPullRequestBaseRepoName(pullRequest)
+	t := env.GetTargetEntity()
+	owner := t.Owner
+	repo := t.Repo
 
 	_, _, err := env.GetGithubClient().EditComment(env.GetCtx(), owner, repo, commentId, &gitHubComment)
 
@@ -139,10 +138,10 @@ func AddReportComment(env Env, report string) error {
 		Body: &report,
 	}
 
-	pullRequest := env.GetPullRequest()
-	owner := gh.GetPullRequestBaseOwnerName(pullRequest)
-	repo := gh.GetPullRequestBaseRepoName(pullRequest)
-	prNum := gh.GetPullRequestNumber(pullRequest)
+	t := env.GetTargetEntity()
+	owner := t.Owner
+	repo := t.Repo
+	prNum := t.Number
 
 	_, _, err := env.GetGithubClient().CreateComment(env.GetCtx(), owner, repo, prNum, &gitHubComment)
 
@@ -154,10 +153,10 @@ func AddReportComment(env Env, report string) error {
 }
 
 func FindReportComment(env Env) (*github.IssueComment, error) {
-	pullRequest := env.GetPullRequest()
-	owner := gh.GetPullRequestBaseOwnerName(pullRequest)
-	repo := gh.GetPullRequestBaseRepoName(pullRequest)
-	prNum := gh.GetPullRequestNumber(pullRequest)
+	t := env.GetTargetEntity()
+	owner := t.Owner
+	repo := t.Repo
+	prNum := t.Number
 
 	comments, err := env.GetGithubClient().GetPullRequestComments(env.GetCtx(), owner, repo, prNum, &github.IssueListCommentsOptions{
 		Sort:      github.String("created"),
