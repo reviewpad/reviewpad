@@ -8,6 +8,7 @@ import (
 	"context"
 
 	"github.com/google/go-github/v45/github"
+	"github.com/reviewpad/host-event-handler/handler"
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/collector"
 )
@@ -39,6 +40,8 @@ type Env interface {
 	GetPullRequest() *github.PullRequest
 	GetRegisterMap() RegisterMap
 	GetReport() *Report
+	GetIssue() *github.Issue
+	GetTargetEntity() *handler.TargetEntity
 }
 
 type BaseEnv struct {
@@ -53,6 +56,8 @@ type BaseEnv struct {
 	PullRequest              *github.PullRequest
 	RegisterMap              RegisterMap
 	Report                   *Report
+	TargetEntity             *handler.TargetEntity
+	Issue                    *github.Issue
 }
 
 func (e *BaseEnv) GetBuiltIns() *BuiltIns {
@@ -99,6 +104,14 @@ func (e *BaseEnv) GetReport() *Report {
 	return e.Report
 }
 
+func (e *BaseEnv) GetTargetEntity() *handler.TargetEntity {
+	return e.TargetEntity
+}
+
+func (e *BaseEnv) GetIssue() *github.Issue {
+	return e.Issue
+}
+
 func NewTypeEnv(e Env) TypeEnv {
 	builtInsType := make(map[string]Type)
 	for builtInName, builtInFunction := range e.GetBuiltIns().Functions {
@@ -112,15 +125,7 @@ func NewTypeEnv(e Env) TypeEnv {
 	return TypeEnv(builtInsType)
 }
 
-func NewEvalEnv(
-	ctx context.Context,
-	dryRun bool,
-	githubClient *gh.GithubClient,
-	collector collector.Collector,
-	pullRequest *github.PullRequest,
-	eventPayload interface{},
-	builtIns *BuiltIns,
-) (Env, error) {
+func getPullRequestPatch(ctx context.Context, pullRequest *github.PullRequest, githubClient *gh.GithubClient) (map[string]*File, error) {
 	owner := gh.GetPullRequestBaseOwnerName(pullRequest)
 	repo := gh.GetPullRequestBaseRepoName(pullRequest)
 	number := gh.GetPullRequestNumber(pullRequest)
@@ -141,7 +146,18 @@ func NewEvalEnv(
 		patchMap[file.GetFilename()] = patchFile
 	}
 
-	patch := Patch(patchMap)
+	return Patch(patchMap), nil
+}
+
+func NewEvalEnv(
+	ctx context.Context,
+	dryRun bool,
+	githubClient *gh.GithubClient,
+	collector collector.Collector,
+	targetEntity *handler.TargetEntity,
+	eventPayload interface{},
+	builtIns *BuiltIns,
+) (Env, error) {
 	registerMap := RegisterMap(make(map[string]Value))
 	report := &Report{Actions: make([]string, 0)}
 
@@ -153,11 +169,33 @@ func NewEvalEnv(
 		Ctx:                      ctx,
 		DryRun:                   dryRun,
 		EventPayload:             eventPayload,
-		Patch:                    patch,
-		PullRequest:              pullRequest,
 		RegisterMap:              registerMap,
 		Report:                   report,
+		TargetEntity:             targetEntity,
 	}
+
+	if targetEntity.Kind == handler.Issue {
+		issue, _, err := githubClient.GetIssue(ctx, targetEntity.Owner, targetEntity.Repo, targetEntity.Number)
+		if err != nil {
+			return nil, err
+		}
+
+		input.Issue = issue
+		return input, nil
+	}
+
+	pullRequest, _, err := githubClient.GetPullRequest(ctx, targetEntity.Owner, targetEntity.Repo, targetEntity.Number)
+	if err != nil {
+		return nil, err
+	}
+
+	patch, err := getPullRequestPatch(ctx, pullRequest, githubClient)
+	if err != nil {
+		return nil, err
+	}
+
+	input.Patch = patch
+	input.PullRequest = pullRequest
 
 	return input, nil
 }

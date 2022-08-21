@@ -10,7 +10,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/google/go-github/v45/github"
+	"github.com/reviewpad/host-event-handler/handler"
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/collector"
 	"github.com/reviewpad/reviewpad/v3/engine"
@@ -39,7 +39,7 @@ func Run(
 	ctx context.Context,
 	githubClient *gh.GithubClient,
 	collector collector.Collector,
-	pullRequest *github.PullRequest,
+	targetEntity *handler.TargetEntity,
 	eventPayload interface{},
 	reviewpadFile *engine.ReviewpadFile,
 	dryRun bool,
@@ -56,12 +56,12 @@ func Run(
 
 	defer config.CleanupPluginConfig()
 
-	aladinoInterpreter, err := aladino.NewInterpreter(ctx, dryRun, githubClient, collector, pullRequest, eventPayload, plugins_aladino.PluginBuiltInsWithConfig(config))
+	aladinoInterpreter, err := aladino.NewInterpreter(ctx, dryRun, githubClient, collector, targetEntity, eventPayload, plugins_aladino.PluginBuiltInsWithConfig(config))
 	if err != nil {
 		return engine.ExitStatusFailure, err
 	}
 
-	evalEnv, err := engine.NewEvalEnv(ctx, dryRun, githubClient, collector, pullRequest, eventPayload, aladinoInterpreter)
+	evalEnv, err := engine.NewEvalEnv(ctx, dryRun, githubClient, collector, targetEntity, eventPayload, aladinoInterpreter)
 	if err != nil {
 		return engine.ExitStatusFailure, err
 	}
@@ -85,9 +85,15 @@ func Run(
 		}
 	}
 
-	err = evalEnv.Collector.Collect("Completed Analysis", map[string]interface{}{
-		"pullRequestUrl": evalEnv.PullRequest.URL,
-	})
+	collectedData := map[string]interface{}{}
+
+	if evalEnv.TargetEntity.Kind == handler.PullRequest {
+		collectedData["pullRequestUrl"] = evalEnv.PullRequest.URL
+	} else {
+		collectedData["issueUrl"] = evalEnv.Issue.URL
+	}
+
+	err = evalEnv.Collector.Collect("Completed Analysis", collectedData)
 
 	if err != nil {
 		log.Printf("error on collector due to %v", err.Error())
