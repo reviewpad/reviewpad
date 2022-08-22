@@ -11,6 +11,7 @@ import (
 	"github.com/reviewpad/host-event-handler/handler"
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/collector"
+	"github.com/reviewpad/reviewpad/v3/lang/aladino/target"
 )
 
 type GroupKind string
@@ -45,6 +46,7 @@ type Env struct {
 	Interpreter  Interpreter
 	TargetEntity *handler.TargetEntity
 	Issue        *github.Issue
+	Target       target.Target
 }
 
 func NewEvalEnv(
@@ -73,6 +75,7 @@ func NewEvalEnv(
 		}
 
 		input.PullRequest = pullRequest
+		input.Target = target.NewPullRequestTarget(ctx, targetEntity, githubClient, pullRequest)
 
 		return input, nil
 	}
@@ -83,6 +86,7 @@ func NewEvalEnv(
 	}
 
 	input.Issue = issue
+	input.Target = target.NewIssueTarget(ctx, targetEntity, githubClient, issue)
 
 	return input, nil
 }

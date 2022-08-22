@@ -7,7 +7,6 @@ package plugins_aladino_actions
 import (
 	"log"
 
-	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 )
 
@@ -19,14 +18,9 @@ func AddLabel() *aladino.BuiltInAction {
 }
 
 func addLabelCode(e aladino.Env, args []aladino.Value) error {
+	t := e.GetTarget()
 	labelID := args[0].(*aladino.StringValue).Val
-
-	prNum := gh.GetPullRequestNumber(e.GetPullRequest())
-	owner := gh.GetPullRequestBaseOwnerName(e.GetPullRequest())
-	repo := gh.GetPullRequestBaseRepoName(e.GetPullRequest())
-
 	internalLabelID := aladino.BuildInternalLabelID(labelID)
-
 	var labelName string
 
 	if val, ok := e.GetRegisterMap()[internalLabelID]; ok {
@@ -36,7 +30,5 @@ func addLabelCode(e aladino.Env, args []aladino.Value) error {
 		log.Printf("[warn]: the %v label was not found in the environment", labelID)
 	}
 
-	_, _, err := e.GetGithubClient().AddLabels(e.GetCtx(), owner, repo, prNum, []string{labelName})
-
-	return err
+	return t.AddLabels([]string{labelName})
 }

@@ -7,7 +7,6 @@ package plugins_aladino_actions
 import (
 	"fmt"
 
-	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 )
 
@@ -19,6 +18,7 @@ func AssignAssignees() *aladino.BuiltInAction {
 }
 
 func assignAssigneesCode(e aladino.Env, args []aladino.Value) error {
+	t := e.GetTarget()
 	assignees := args[0].(*aladino.ArrayValue).Vals
 	if len(assignees) == 0 {
 		return fmt.Errorf("assignAssignees: list of assignees can't be empty")
@@ -33,11 +33,5 @@ func assignAssigneesCode(e aladino.Env, args []aladino.Value) error {
 		assigneesLogin[i] = assignee.(*aladino.StringValue).Val
 	}
 
-	prNum := gh.GetPullRequestNumber(e.GetPullRequest())
-	owner := gh.GetPullRequestBaseOwnerName(e.GetPullRequest())
-	repo := gh.GetPullRequestBaseRepoName(e.GetPullRequest())
-
-	_, _, err := e.GetGithubClient().AddAssignees(e.GetCtx(), owner, repo, prNum, assigneesLogin)
-
-	return err
+	return t.AddAssignees(assigneesLogin)
 }

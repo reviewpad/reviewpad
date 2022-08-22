@@ -5,8 +5,6 @@
 package plugins_aladino_functions
 
 import (
-	"github.com/google/go-github/v45/github"
-	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 )
 
@@ -18,19 +16,14 @@ func Comments() *aladino.BuiltInFunction {
 }
 
 func commentsCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
-	pullRequest := e.GetPullRequest()
-	prNum := gh.GetPullRequestNumber(pullRequest)
-	owner := gh.GetPullRequestBaseOwnerName(pullRequest)
-	repo := gh.GetPullRequestBaseRepoName(pullRequest)
-
-	ghComments, err := e.GetGithubClient().GetPullRequestComments(e.GetCtx(), owner, repo, prNum, &github.IssueListCommentsOptions{})
+	ghComments, err := e.GetTarget().GetComments()
 	if err != nil {
 		return nil, err
 	}
 
 	commentsBody := make([]aladino.Value, len(ghComments))
 	for i, ghComment := range ghComments {
-		commentsBody[i] = aladino.BuildStringValue(ghComment.GetBody())
+		commentsBody[i] = aladino.BuildStringValue(ghComment.Body)
 	}
 
 	return aladino.BuildArrayValue(commentsBody), nil

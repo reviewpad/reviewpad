@@ -11,6 +11,7 @@ import (
 	"github.com/reviewpad/host-event-handler/handler"
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/collector"
+	"github.com/reviewpad/reviewpad/v3/lang/aladino/target"
 )
 
 type Severity int
@@ -42,6 +43,7 @@ type Env interface {
 	GetReport() *Report
 	GetIssue() *github.Issue
 	GetTargetEntity() *handler.TargetEntity
+	GetTarget() target.Target
 }
 
 type BaseEnv struct {
@@ -58,6 +60,7 @@ type BaseEnv struct {
 	Report                   *Report
 	TargetEntity             *handler.TargetEntity
 	Issue                    *github.Issue
+	Target                   target.Target
 }
 
 func (e *BaseEnv) GetBuiltIns() *BuiltIns {
@@ -110,6 +113,10 @@ func (e *BaseEnv) GetTargetEntity() *handler.TargetEntity {
 
 func (e *BaseEnv) GetIssue() *github.Issue {
 	return e.Issue
+}
+
+func (e *BaseEnv) GetTarget() target.Target {
+	return e.Target
 }
 
 func NewTypeEnv(e Env) TypeEnv {
@@ -181,6 +188,8 @@ func NewEvalEnv(
 		}
 
 		input.Issue = issue
+		input.Target = target.NewIssueTarget(ctx, targetEntity, githubClient, issue)
+
 		return input, nil
 	}
 
@@ -196,6 +205,7 @@ func NewEvalEnv(
 
 	input.Patch = patch
 	input.PullRequest = pullRequest
+	input.Target = target.NewPullRequestTarget(ctx, targetEntity, githubClient, pullRequest)
 
 	return input, nil
 }

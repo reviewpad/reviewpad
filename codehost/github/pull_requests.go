@@ -341,3 +341,32 @@ func (c *GithubClient) Merge(ctx context.Context, owner string, repo string, num
 func (c *GithubClient) GetIssue(ctx context.Context, owner, repo string, number int) (*github.Issue, *github.Response, error) {
 	return c.clientREST.Issues.Get(ctx, owner, repo, number)
 }
+
+func (c *GithubClient) EditIssue(ctx context.Context, owner string, repo string, number int, issue *github.IssueRequest) (*github.Issue, *github.Response, error) {
+	return c.clientREST.Issues.Edit(ctx, owner, repo, number, issue)
+}
+
+func (c *GithubClient) GetPullRequestClosingIssuesCount(ctx context.Context, owner string, repo string, number int) (int, error) {
+	var pullRequestQuery struct {
+		Repository struct {
+			PullRequest struct {
+				ClosingIssuesReferences struct {
+					TotalCount githubv4.Int
+				}
+			} `graphql:"pullRequest(number: $pullRequestNumber)"`
+		} `graphql:"repository(owner: $repositoryOwner, name: $repositoryName)"`
+	}
+
+	varGQLPullRequestQuery := map[string]interface{}{
+		"repositoryOwner":   githubv4.String(owner),
+		"repositoryName":    githubv4.String(repo),
+		"pullRequestNumber": githubv4.Int(number),
+	}
+
+	err := c.GetClientGraphQL().Query(ctx, &pullRequestQuery, varGQLPullRequestQuery)
+	if err != nil {
+		return 0, err
+	}
+
+	return int(pullRequestQuery.Repository.PullRequest.ClosingIssuesReferences.TotalCount), nil
+}

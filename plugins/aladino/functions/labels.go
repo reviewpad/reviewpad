@@ -14,11 +14,15 @@ func Labels() *aladino.BuiltInFunction {
 }
 
 func labelsCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
-	ghLabels := e.GetPullRequest().Labels
+	ghLabels, err := e.GetTarget().GetLabels()
+	if err != nil {
+		return nil, err
+	}
+
 	labels := make([]aladino.Value, len(ghLabels))
 
 	for i, ghLabel := range ghLabels {
-		labels[i] = aladino.BuildStringValue(ghLabel.GetName())
+		labels[i] = aladino.BuildStringValue(ghLabel.Name)
 	}
 
 	return aladino.BuildArrayValue(labels), nil

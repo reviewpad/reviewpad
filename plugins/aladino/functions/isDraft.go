@@ -16,5 +16,9 @@ func IsDraft() *aladino.BuiltInFunction {
 }
 
 func isDraftCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
-	return aladino.BuildBoolValue(e.GetPullRequest().GetDraft()), nil
+	isDraft, err := e.GetTarget().IsDraft()
+	if err != nil {
+		return nil, err
+	}
+	return aladino.BuildBoolValue(isDraft), nil
 }

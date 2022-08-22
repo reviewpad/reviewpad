@@ -14,5 +14,10 @@ func Head() *aladino.BuiltInFunction {
 }
 
 func headCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
-	return aladino.BuildStringValue(e.GetPullRequest().GetHead().GetRef()), nil
+	head, err := e.GetTarget().GetHead()
+	if err != nil {
+		return nil, err
+	}
+
+	return aladino.BuildStringValue(head), nil
 }

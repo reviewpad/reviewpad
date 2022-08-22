@@ -7,8 +7,6 @@ package plugins_aladino_actions
 import (
 	"fmt"
 
-	"github.com/google/go-github/v45/github"
-	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 )
 
@@ -20,6 +18,7 @@ func AssignTeamReviewer() *aladino.BuiltInAction {
 }
 
 func assignTeamReviewerCode(e aladino.Env, args []aladino.Value) error {
+	t := e.GetTarget()
 	teamReviewers := args[0].(*aladino.ArrayValue).Vals
 
 	if len(teamReviewers) < 1 {
@@ -32,14 +31,5 @@ func assignTeamReviewerCode(e aladino.Env, args []aladino.Value) error {
 		teamReviewersSlugs[i] = team.(*aladino.StringValue).Val
 	}
 
-	pullRequest := e.GetPullRequest()
-	prNum := gh.GetPullRequestNumber(pullRequest)
-	owner := gh.GetPullRequestBaseOwnerName(pullRequest)
-	repo := gh.GetPullRequestBaseRepoName(pullRequest)
-
-	_, _, err := e.GetGithubClient().RequestReviewers(e.GetCtx(), owner, repo, prNum, github.ReviewersRequest{
-		TeamReviewers: teamReviewersSlugs,
-	})
-
-	return err
+	return t.RequestTeamReviewers(teamReviewersSlugs)
 }

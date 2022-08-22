@@ -14,11 +14,17 @@ func Assignees() *aladino.BuiltInFunction {
 }
 
 func assigneesCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
-	ghAssignees := e.GetPullRequest().Assignees
+	t := e.GetTarget()
+
+	ghAssignees, err := t.GetAssignees()
+	if err != nil {
+		return nil, err
+	}
+
 	assignees := make([]aladino.Value, len(ghAssignees))
 
 	for i, ghAssignee := range ghAssignees {
-		assignees[i] = aladino.BuildStringValue(ghAssignee.GetLogin())
+		assignees[i] = aladino.BuildStringValue(ghAssignee.Login)
 	}
 
 	return aladino.BuildArrayValue(assignees), nil

@@ -5,7 +5,6 @@
 package plugins_aladino_functions
 
 import (
-	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 )
 
@@ -17,19 +16,14 @@ func Commits() *aladino.BuiltInFunction {
 }
 
 func commitsCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
-	pullRequest := e.GetPullRequest()
-	prNum := gh.GetPullRequestNumber(pullRequest)
-	owner := gh.GetPullRequestBaseOwnerName(pullRequest)
-	repo := gh.GetPullRequestBaseRepoName(pullRequest)
-
-	ghCommits, err := e.GetGithubClient().GetPullRequestCommits(e.GetCtx(), owner, repo, prNum)
+	ghCommits, err := e.GetTarget().GetCommits()
 	if err != nil {
 		return nil, err
 	}
 
 	commitMessages := make([]aladino.Value, len(ghCommits))
 	for i, ghCommit := range ghCommits {
-		commitMessages[i] = aladino.BuildStringValue(ghCommit.Commit.GetMessage())
+		commitMessages[i] = aladino.BuildStringValue(ghCommit.Message)
 	}
 
 	return aladino.BuildArrayValue(commitMessages), nil

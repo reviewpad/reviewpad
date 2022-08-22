@@ -14,6 +14,12 @@ func Author() *aladino.BuiltInFunction {
 }
 
 func authorCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
-	authorLogin := e.GetPullRequest().User.GetLogin()
-	return aladino.BuildStringValue(authorLogin), nil
+	t := e.GetTarget()
+
+	user, err := t.GetUser()
+	if err != nil {
+		return nil, err
+	}
+
+	return aladino.BuildStringValue(user.Login), nil
 }
