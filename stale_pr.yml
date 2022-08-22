@@ -1,0 +1,58 @@
+# Copyright 2022 Explore.dev Unipessoal Lda. All Rights Reserved.
+# Use of this source code is governed by a license that can be
+# found in the LICENSE file.
+
+api-version: reviewpad.com/v3.x
+
+mode: silent
+edition: professional
+
+labels:
+  stale-pr-label:
+    name: stale
+    description: Stale pull request
+    color: "294b69"
+
+rules:
+  - name: has-stale-pr-label
+    kind: patch
+    description: Pull request has stale label
+    spec: '$isElementOf("stale", $labels())'
+
+  - name: stale-pr-updated
+    kind: patch
+    description: Stale pull request was updated
+    spec: '$rule("has-stale-pr-label") && $lastEventAt() >= 7 days ago'
+
+  - name: days-before-pr-stale-reached
+    kind: patch
+    description: Pull request is stale
+    spec: "$lastEventAt() < 60 days ago"
+
+  - name: days-before-pr-close-reached
+    kind: patch
+    description: Stale pull request can be closed
+    spec: '$rule("has-stale-pr-label") && $lastEventAt() < 7 days ago'
+
+workflows:
+  - name: check-stale-pr
+    always-run: true
+    if:
+      - rule: days-before-stale-reached
+    then:
+      - '$info("This pull request is stale.")'
+      - '$addLabel("stale-pr-label")'
+
+  - name: close-stale-pr
+    always-run: true
+    if:
+      - rule: days-before-close-reached
+    then:
+      - '$close("Closing for inactivity.")'
+
+  - name: remove-pr-stale-when-updated
+    always-run: true
+    if:
+      - rule: stale-pr-updated
+    then:
+      - '$removeLabel("stale-pr-label")'
