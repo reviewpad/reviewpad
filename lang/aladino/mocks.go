@@ -154,9 +154,9 @@ func GetDefaultMockPullRequestDetailsWith(pr *github.PullRequest) *github.PullRe
 	return defaultPullRequest
 }
 
-func getDefaultMockPullRequestFileList() *[]*github.CommitFile {
+func getDefaultMockPullRequestFileList() []*github.CommitFile {
 	prRepoName := DefaultMockPrRepoName
-	return &[]*github.CommitFile{
+	return []*github.CommitFile{
 		{
 			Filename: github.String(fmt.Sprintf("%v/file1.ts", prRepoName)),
 			Patch:    github.String("@@ -2,9 +2,11 @@ package main\n- func previous1() {\n+ func new1() {\n+\nreturn"),
