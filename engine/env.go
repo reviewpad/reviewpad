@@ -7,11 +7,9 @@ package engine
 import (
 	"context"
 
-	"github.com/google/go-github/v45/github"
 	"github.com/reviewpad/host-event-handler/handler"
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/collector"
-	"github.com/reviewpad/reviewpad/v3/lang/aladino/target"
 )
 
 type GroupKind string
@@ -41,12 +39,8 @@ type Env struct {
 	DryRun       bool
 	GithubClient *gh.GithubClient
 	Collector    collector.Collector
-	PullRequest  *github.PullRequest
-	EventPayload interface{}
 	Interpreter  Interpreter
 	TargetEntity *handler.TargetEntity
-	Issue        *github.Issue
-	Target       target.Target
 }
 
 func NewEvalEnv(
@@ -55,7 +49,6 @@ func NewEvalEnv(
 	githubClient *gh.GithubClient,
 	collector collector.Collector,
 	targetEntity *handler.TargetEntity,
-	eventPayload interface{},
 	interpreter Interpreter,
 ) (*Env, error) {
 	input := &Env{
@@ -63,30 +56,9 @@ func NewEvalEnv(
 		DryRun:       dryRun,
 		GithubClient: githubClient,
 		Collector:    collector,
-		EventPayload: eventPayload,
 		Interpreter:  interpreter,
 		TargetEntity: targetEntity,
 	}
-
-	if targetEntity.Kind == handler.PullRequest {
-		pullRequest, _, err := githubClient.GetPullRequest(ctx, targetEntity.Owner, targetEntity.Repo, targetEntity.Number)
-		if err != nil {
-			return nil, err
-		}
-
-		input.PullRequest = pullRequest
-		input.Target = target.NewPullRequestTarget(ctx, targetEntity, githubClient, pullRequest)
-
-		return input, nil
-	}
-
-	issue, _, err := githubClient.GetIssue(ctx, targetEntity.Owner, targetEntity.Repo, targetEntity.Number)
-	if err != nil {
-		return nil, err
-	}
-
-	input.Issue = issue
-	input.Target = target.NewIssueTarget(ctx, targetEntity, githubClient, issue)
 
 	return input, nil
 }

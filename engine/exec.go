@@ -9,7 +9,6 @@ import (
 	"log"
 
 	"github.com/google/go-github/v45/github"
-	"github.com/reviewpad/host-event-handler/handler"
 	"github.com/reviewpad/reviewpad/v3/utils/fmtio"
 )
 
@@ -39,12 +38,6 @@ func CollectError(env *Env, err error) {
 		"details": errMsg,
 	}
 
-	if env.TargetEntity.Kind == handler.PullRequest {
-		collectedData["pullRequestUrl"] = env.PullRequest.URL
-	} else {
-		collectedData["issueUrl"] = env.Issue.URL
-	}
-
 	env.Collector.Collect("Error", collectedData)
 }
 
@@ -64,12 +57,6 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 		"totalLabels":    len(file.Labels),
 		"totalRules":     len(file.Rules),
 		"totalWorkflows": len(file.Workflows),
-	}
-
-	if env.TargetEntity.Kind == handler.PullRequest {
-		collectedData["pullRequestUrl"] = env.PullRequest.URL
-	} else {
-		collectedData["issueUrl"] = env.Issue.URL
 	}
 
 	env.Collector.Collect("Trigger Analysis", collectedData)
