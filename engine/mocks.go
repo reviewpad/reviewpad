@@ -66,8 +66,8 @@ func GetDefaultMockPullRequestDetails() *github.PullRequest {
 	}
 }
 
-func getDefaultMockPullRequestFileList() *[]*github.CommitFile {
-	return &[]*github.CommitFile{
+func getDefaultMockPullRequestFileList() []*github.CommitFile {
+	return []*github.CommitFile{
 		{
 			Filename: github.String(fmt.Sprintf("%v/file1.ts", defaultMockPrRepoName)),
 			Patch: github.String(
