@@ -47,7 +47,7 @@ type LastPushQuery struct {
 					} `graphql:"... on HeadRefForcePushedEvent"`
 					PullRequestCommit struct {
 						Commit struct {
-							PushedDate *time.Time
+							CommittedDate *time.Time
 						}
 					} `graphql:"... on PullRequestCommit"`
 				}
@@ -402,7 +402,7 @@ func GetPullRequestLastPushDate(ctx context.Context, client *githubv4.Client, ow
 	if node.Typename == "HeadRefForcePushedEvent" {
 		pushDate = node.HeadRefForcePushedEvent.CreatedAt
 	} else if node.Typename == "PullRequestCommit" {
-		pushDate = node.PullRequestCommit.Commit.PushedDate
+		pushDate = node.PullRequestCommit.Commit.CommittedDate
 	}
 
 	if pushDate == nil {
