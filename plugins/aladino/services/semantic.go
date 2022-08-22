@@ -9,6 +9,7 @@ import (
 
 	"github.com/reviewpad/api/go/clients"
 	"github.com/reviewpad/api/go/services"
+	"google.golang.org/grpc"
 )
 
 const (
@@ -16,11 +17,11 @@ const (
 	SEMANTIC_SERVICE_ENDPOINT = "INPUT_SEMANTIC_SERVICE"
 )
 
-func NewSemanticServiceWithConfig(endpoint string) (services.SemanticClient, error) {
+func NewSemanticServiceWithConfig(endpoint string) (services.SemanticClient, *grpc.ClientConn, error) {
 	return clients.NewSemanticClient(endpoint)
 }
 
-func NewSemanticService() (services.SemanticClient, error) {
+func NewSemanticService() (services.SemanticClient, *grpc.ClientConn, error) {
 	semanticEndpoint := os.Getenv(SEMANTIC_SERVICE_ENDPOINT)
 
 	return NewSemanticServiceWithConfig(semanticEndpoint)

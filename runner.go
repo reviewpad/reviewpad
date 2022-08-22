@@ -49,7 +49,14 @@ func Run(
 		return engine.ExitStatusFailure, fmt.Errorf("when reviewpad is running in safe mode, it must also run in dry-run")
 	}
 
-	aladinoInterpreter, err := aladino.NewInterpreter(ctx, dryRun, githubClient, collector, pullRequest, eventPayload, plugins_aladino.PluginBuiltIns())
+	config, err := plugins_aladino.DefaultPluginConfig()
+	if err != nil {
+		return engine.ExitStatusFailure, err
+	}
+
+	defer config.CleanupPluginConfig()
+
+	aladinoInterpreter, err := aladino.NewInterpreter(ctx, dryRun, githubClient, collector, pullRequest, eventPayload, plugins_aladino.PluginBuiltInsWithConfig(config))
 	if err != nil {
 		return engine.ExitStatusFailure, err
 	}
