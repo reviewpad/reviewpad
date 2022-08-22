@@ -38,7 +38,7 @@ workflows:
   - name: check-stale-pr
     always-run: true
     if:
-      - rule: days-before-stale-reached
+      - rule: days-before-pr-stale-reached
     then:
       - '$info("This pull request is stale.")'
       - '$addLabel("stale-pr-label")'
@@ -46,9 +46,10 @@ workflows:
   - name: close-stale-pr
     always-run: true
     if:
-      - rule: days-before-close-reached
+      - rule: days-before-pr-close-reached
     then:
-      - '$close("Closing for inactivity.")'
+      - '$commentOnce("Closing for inactivity.")'
+      - "$close()"
 
   - name: remove-pr-stale-when-updated
     always-run: true
