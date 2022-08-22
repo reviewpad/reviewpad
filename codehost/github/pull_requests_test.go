@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/google/go-github/v45/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
@@ -803,4 +804,77 @@ func TestGetReviewThreads(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, gotReviewThreads, wantReviewThreads)
 
+}
+
+func TestGetIssueTimeline_WhenListIssueTimelineRequestFails(t *testing.T) {
+	failMessage := "ListIssueTimelineRequestFail"
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
+		[]mock.MockBackendOption{
+			mock.WithRequestMatchHandler(
+				mock.GetReposIssuesTimelineByOwnerByRepoByIssueNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					mock.WriteError(
+						w,
+						http.StatusInternalServerError,
+						failMessage,
+					)
+				}),
+			),
+		},
+		nil,
+		aladino.MockBuiltIns(),
+		nil,
+	)
+
+	mockedPullRequest := mockedEnv.GetPullRequest()
+	gotTimeline, err := mockedEnv.GetGithubClient().GetIssueTimeline(
+		mockedEnv.GetCtx(),
+		mockedPullRequest.GetBase().GetRepo().GetOwner().GetLogin(),
+		mockedPullRequest.GetBase().GetRepo().GetName(),
+		mockedPullRequest.GetNumber(),
+	)
+
+	assert.Nil(t, gotTimeline)
+	assert.Equal(t, err.(*github.ErrorResponse).Message, failMessage)
+}
+
+func TestGetIssueTimeLine(t *testing.T) {
+	nonLastEventDate := time.Date(2022, 04, 13, 20, 49, 13, 651387237, time.UTC)
+	lastEventDate := time.Date(2022, 04, 16, 20, 49, 34, 0, time.UTC)
+	wantTimeline := []*github.Timeline{
+		{
+			ID:        github.Int64(6430295168),
+			Event:     github.String("locked"),
+			CreatedAt: &nonLastEventDate,
+		},
+		{
+			ID:        github.Int64(6430296748),
+			Event:     github.String("labeled"),
+			CreatedAt: &lastEventDate,
+		},
+	}
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
+		[]mock.MockBackendOption{
+			mock.WithRequestMatch(
+				mock.GetReposIssuesTimelineByOwnerByRepoByIssueNumber,
+				wantTimeline,
+			),
+		},
+		nil,
+		aladino.MockBuiltIns(),
+		nil,
+	)
+
+	mockedPullRequest := mockedEnv.GetPullRequest()
+	gotTimeline, err := mockedEnv.GetGithubClient().GetIssueTimeline(
+		mockedEnv.GetCtx(),
+		mockedPullRequest.GetBase().GetRepo().GetOwner().GetLogin(),
+		mockedPullRequest.GetBase().GetRepo().GetName(),
+		mockedPullRequest.GetNumber(),
+	)
+
+	assert.Nil(t, err)
+	assert.Equal(t, wantTimeline, gotTimeline)
 }

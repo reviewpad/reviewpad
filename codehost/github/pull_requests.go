@@ -301,6 +301,31 @@ func (c *GithubClient) GetReviewThreads(ctx context.Context, owner string, repo 
 	return reviewThreads, nil
 }
 
+func (c *GithubClient) GetIssueTimeline(ctx context.Context, owner string, repo string, number int) ([]*github.Timeline, error) {
+	events, err := PaginatedRequest(
+		func() interface{} {
+			return []*github.Timeline{}
+		},
+		func(i interface{}, page int) (interface{}, *github.Response, error) {
+			currentEvents := i.([]*github.Timeline)
+			events, resp, err := c.clientREST.Issues.ListIssueTimeline(ctx, owner, repo, number, &github.ListOptions{
+				Page:    page,
+				PerPage: maxPerPage,
+			})
+			if err != nil {
+				return nil, nil, err
+			}
+			currentEvents = append(currentEvents, events...)
+			return currentEvents, resp, nil
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return events.([]*github.Timeline), nil
+}
+
 func (c *GithubClient) RequestReviewers(ctx context.Context, owner string, repo string, number int, reviewers github.ReviewersRequest) (*github.PullRequest, *github.Response, error) {
 	return c.clientREST.PullRequests.RequestReviewers(ctx, owner, repo, number, reviewers)
 }
