@@ -49,39 +49,73 @@ func TestLastEvent_WhenIssueTimelineRequestFails(t *testing.T) {
 func TestLastEvent(t *testing.T) {
 	nonLastEventDate := time.Date(2022, 04, 13, 20, 49, 13, 651387237, time.UTC)
 	lastEventDate := time.Date(2022, 04, 16, 20, 49, 34, 0, time.UTC)
-	mockedEnv := aladino.MockDefaultEnv(
-		t,
-		[]mock.MockBackendOption{
-			mock.WithRequestMatch(
-				mock.GetReposIssuesTimelineByOwnerByRepoByIssueNumber,
-				[]*github.Timeline{
-					{
-						ID:        github.Int64(6430295168),
-						Event:     github.String("locked"),
-						CreatedAt: &nonLastEventDate,
-					},
-					{
-						ID:        github.Int64(6430296748),
-						Event:     github.String("labeled"),
-						CreatedAt: &lastEventDate,
-					},
+
+	tests := map[string]struct {
+		mockedEnv aladino.Env
+		wantVal   *aladino.IntValue
+	}{
+		"when last event is not a review": {
+			mockedEnv: aladino.MockDefaultEnv(
+				t,
+				[]mock.MockBackendOption{
+					mock.WithRequestMatch(
+						mock.GetReposIssuesTimelineByOwnerByRepoByIssueNumber,
+						[]*github.Timeline{
+							{
+								ID:        github.Int64(6430295168),
+								Event:     github.String("locked"),
+								CreatedAt: &nonLastEventDate,
+							},
+							{
+								ID:        github.Int64(6430296748),
+								Event:     github.String("labeled"),
+								CreatedAt: &lastEventDate,
+							},
+						},
+					),
 				},
+				nil,
+				aladino.MockBuiltIns(),
+				nil,
 			),
+			wantVal: aladino.BuildIntValue(int(lastEventDate.Unix())),
 		},
-		nil,
-		aladino.MockBuiltIns(),
-		nil,
-	)
-
-	wantLastEventAtTime, err := time.Parse("2006-01-02 15:04:05.999999999 -0700 MST", lastEventDate.String())
-	if err != nil {
-		assert.FailNow(t, "time.Parse failed", err)
+		"when last event is a review": {
+			mockedEnv: aladino.MockDefaultEnv(
+				t,
+				[]mock.MockBackendOption{
+					mock.WithRequestMatch(
+						mock.GetReposIssuesTimelineByOwnerByRepoByIssueNumber,
+						[]*github.Timeline{
+							{
+								ID:        github.Int64(6430295168),
+								Event:     github.String("locked"),
+								CreatedAt: &nonLastEventDate,
+							},
+							{
+								ID:          github.Int64(6430296748),
+								Event:       github.String("reviewed"),
+								SubmittedAt: &lastEventDate,
+							},
+						},
+					),
+				},
+				nil,
+				aladino.MockBuiltIns(),
+				nil,
+			),
+			wantVal: aladino.BuildIntValue(int(lastEventDate.Unix())),
+		},
 	}
-	wantLastEventAt := aladino.BuildIntValue(int(wantLastEventAtTime.Unix()))
 
-	args := []aladino.Value{}
-	gotLastEventAt, err := lastEventAt(mockedEnv, args)
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			args := []aladino.Value{}
+			gotVal, err := lastEventAt(test.mockedEnv, args)
 
-	assert.Nil(t, err)
-	assert.Equal(t, wantLastEventAt, gotLastEventAt)
+			assert.Nil(t, err)
+			assert.Equal(t, test.wantVal, gotVal)
+		})
+	}
+
 }

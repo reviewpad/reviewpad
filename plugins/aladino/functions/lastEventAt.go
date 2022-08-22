@@ -5,8 +5,6 @@
 package plugins_aladino_functions
 
 import (
-	"time"
-
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 )
@@ -19,21 +17,23 @@ func LastEventAt() *aladino.BuiltInFunction {
 }
 
 func lastEventAtCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
-	owner := gh.GetPullRequestBaseOwnerName(e.GetPullRequest())
-	repo := gh.GetPullRequestBaseRepoName(e.GetPullRequest())
-	prNum := gh.GetPullRequestNumber(e.GetPullRequest())
+	pullRequest := e.GetPullRequest()
+	owner := gh.GetPullRequestBaseOwnerName(pullRequest)
+	repo := gh.GetPullRequestBaseRepoName(pullRequest)
+	prNum := gh.GetPullRequestNumber(pullRequest)
 
 	timeline, err := e.GetGithubClient().GetIssueTimeline(e.GetCtx(), owner, repo, prNum)
 	if err != nil {
 		return nil, err
 	}
 
-	lastEventAt := timeline[len(timeline)-1].GetCreatedAt()
-
-	lastEventAtTime, err := time.Parse("2006-01-02 15:04:05.999999999 -0700 MST", lastEventAt.String())
-	if err != nil {
-		return nil, err
+	lastEvent := timeline[len(timeline)-1]
+	var lastEventTime int
+	if *lastEvent.Event == "reviewed" {
+		lastEventTime = int(lastEvent.GetSubmittedAt().Unix())
+	} else {
+		lastEventTime = int(lastEvent.GetCreatedAt().Unix())
 	}
 
-	return aladino.BuildIntValue(int(lastEventAtTime.Unix())), nil
+	return aladino.BuildIntValue(lastEventTime), nil
 }
