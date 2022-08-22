@@ -13,7 +13,7 @@ require (
 	github.com/jinzhu/copier v0.3.5
 	github.com/migueleliasweb/go-github-mock v0.0.10
 	github.com/mitchellh/mapstructure v1.5.0
-	github.com/reviewpad/api/go v0.0.0-20220816114724-46d21cde564a
+	github.com/reviewpad/api/go v0.0.0-20220822084656-a70503c7406c
 	github.com/reviewpad/go-conventionalcommits v0.10.0
 	github.com/shurcooL/githubv4 v0.0.0-20220520033151-0b4e3294ff00
 	github.com/spf13/cobra v1.5.0

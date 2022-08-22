@@ -11,27 +11,39 @@ import (
 	actions "github.com/reviewpad/reviewpad/v3/plugins/aladino/actions"
 	functions "github.com/reviewpad/reviewpad/v3/plugins/aladino/functions"
 	services "github.com/reviewpad/reviewpad/v3/plugins/aladino/services"
+	"google.golang.org/grpc"
 )
 
 type PluginConfig struct {
-	Services map[string]interface{}
+	Services        map[string]interface{}
+	grpcConnections []*grpc.ClientConn
 }
 
 func DefaultPluginConfig() (*PluginConfig, error) {
-	semanticClient, err := services.NewSemanticService()
+	connections := make([]*grpc.ClientConn, 0)
+	semanticClient, semanticConnection, err := services.NewSemanticService()
 	if err != nil {
 		return nil, err
 	}
+
+	connections = append(connections, semanticConnection)
 
 	services := map[string]interface{}{
 		services.SEMANTIC_SERVICE_KEY: semanticClient,
 	}
 
 	config := &PluginConfig{
-		Services: services,
+		Services:        services,
+		grpcConnections: connections,
 	}
 
 	return config, nil
+}
+
+func (config *PluginConfig) CleanupPluginConfig() {
+	for _, connection := range config.grpcConnections {
+		connection.Close()
+	}
 }
 
 // The documentation for the builtins is in:
