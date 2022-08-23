@@ -68,6 +68,20 @@ func parse(data []byte) (*ReviewpadFile, error) {
 }
 
 func transform(file *ReviewpadFile) *ReviewpadFile {
+	var transformedRules []PadRule
+	for _, rule := range file.Rules {
+		kind := rule.Kind
+		if rule.Kind == "" {
+			kind = "patch"
+		}
+		transformedRules = append(transformedRules, PadRule{
+			Name:        rule.Name,
+			Kind:        kind,
+			Description: rule.Description,
+			Spec:        rule.Spec,
+		})
+	}
+
 	var transformedWorkflows []PadWorkflow
 	for _, workflow := range file.Workflows {
 		var transformedRules []PadWorkflowRule
@@ -135,7 +149,7 @@ func transform(file *ReviewpadFile) *ReviewpadFile {
 		IgnoreErrors: file.IgnoreErrors,
 		Imports:      file.Imports,
 		Groups:       file.Groups,
-		Rules:        file.Rules,
+		Rules:        transformedRules,
 		Labels:       file.Labels,
 		Workflows:    transformedWorkflows,
 		Pipelines:    transformedPipelines,
