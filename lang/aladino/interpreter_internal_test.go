@@ -14,6 +14,7 @@ import (
 
 	"github.com/google/go-github/v45/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
+	"github.com/reviewpad/host-event-handler/handler"
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/engine"
 	"github.com/stretchr/testify/assert"
@@ -118,6 +119,7 @@ func TestEvalGroup(t *testing.T) {
 				Code: func(e Env, args []Value) (Value, error) {
 					return BuildArrayValue([]Value{BuildStringValue(devName)}), nil
 				},
+				SupportedKinds: []handler.TargetEntityKind{handler.PullRequest},
 			},
 		},
 	}
@@ -344,6 +346,7 @@ func TestExecProgram(t *testing.T) {
 				Code: func(e Env, args []Value) error {
 					return nil
 				},
+				SupportedKinds: []handler.TargetEntityKind{handler.PullRequest},
 			},
 		},
 	}
@@ -411,6 +414,7 @@ func TestExecStatement_WhenTypeCheckExecFails(t *testing.T) {
 				Code: func(e Env, args []Value) error {
 					return nil
 				},
+				SupportedKinds: []handler.TargetEntityKind{handler.PullRequest},
 			},
 		},
 	}
@@ -437,6 +441,7 @@ func TestExecStatement_WhenActionExecFails(t *testing.T) {
 				Code: func(e Env, args []Value) (Value, error) {
 					return BuildArrayValue([]Value{BuildStringValue(devName)}), nil
 				},
+				SupportedKinds: []handler.TargetEntityKind{handler.PullRequest},
 			},
 		},
 	}
@@ -462,6 +467,7 @@ func TestExecStatement(t *testing.T) {
 				Code: func(e Env, args []Value) error {
 					return nil
 				},
+				SupportedKinds: []handler.TargetEntityKind{handler.PullRequest},
 			},
 		},
 	}

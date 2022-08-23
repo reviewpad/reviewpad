@@ -51,7 +51,15 @@ func (v *Variable) Eval(e Env) (Value, error) {
 		return nil, fmt.Errorf("eval: failure on %v", variableName)
 	}
 
-	return fn.Code(e, []Value{})
+	entityKind := e.GetTarget().GetTargetEntity().Kind
+
+	for _, supportedKind := range fn.SupportedKinds {
+		if entityKind == supportedKind {
+			return fn.Code(e, []Value{})
+		}
+	}
+
+	return nil, fmt.Errorf("eval: unsupported kind %v", entityKind)
 }
 
 func (b *BoolConst) Eval(e Env) (Value, error) {
@@ -83,7 +91,15 @@ func (fc *FunctionCall) Eval(e Env) (Value, error) {
 		return nil, fmt.Errorf("eval: failure on %v", fc.name.ident)
 	}
 
-	return fn.Code(e, args)
+	entityKind := e.GetTarget().GetTargetEntity().Kind
+
+	for _, supportedKind := range fn.SupportedKinds {
+		if entityKind == supportedKind {
+			return fn.Code(e, args)
+		}
+	}
+
+	return nil, fmt.Errorf("eval: unsupported kind %v", entityKind)
 }
 
 func (lambda *Lambda) Eval(e Env) (Value, error) {

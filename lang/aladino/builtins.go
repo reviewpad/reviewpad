@@ -4,6 +4,8 @@
 
 package aladino
 
+import "github.com/reviewpad/host-event-handler/handler"
+
 type BuiltIns struct {
 	Functions map[string]*BuiltInFunction
 	Actions   map[string]*BuiltInAction
@@ -11,14 +13,16 @@ type BuiltIns struct {
 }
 
 type BuiltInFunction struct {
-	Type Type
-	Code func(e Env, args []Value) (Value, error)
+	Type           Type
+	Code           func(e Env, args []Value) (Value, error)
+	SupportedKinds []handler.TargetEntityKind
 }
 
 type BuiltInAction struct {
-	Type     Type
-	Code     func(e Env, args []Value) error
-	Disabled bool
+	Type           Type
+	Code           func(e Env, args []Value) error
+	Disabled       bool
+	SupportedKinds []handler.TargetEntityKind
 }
 
 func MergeAladinoBuiltIns(builtInsList ...*BuiltIns) *BuiltIns {

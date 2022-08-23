@@ -6,8 +6,6 @@ package aladino
 
 import (
 	"fmt"
-
-	"github.com/reviewpad/host-event-handler/handler"
 )
 
 type ExecExpr interface {
@@ -54,13 +52,15 @@ func (fc *FunctionCall) exec(env Env) error {
 		"builtin": fc.name.ident,
 	}
 
-	if env.GetTargetEntity().Kind == handler.PullRequest {
-		collectedData["pullRequestUrl"] = env.GetPullRequest().URL
-	} else {
-		collectedData["issueUrl"] = env.GetIssue().URL
-	}
-
 	env.GetCollector().Collect("Ran Builtin", collectedData)
 
-	return action.Code(env, args)
+	entityKind := env.GetTarget().GetTargetEntity().Kind
+
+	for _, supportedKind := range action.SupportedKinds {
+		if entityKind == supportedKind {
+			return action.Code(env, args)
+		}
+	}
+
+	return fmt.Errorf("eval: unsupported kind %v", entityKind)
 }

@@ -103,7 +103,7 @@ func BuildVerboseReport(report *Report) string {
 }
 
 func DeleteReportComment(env Env, commentId int64) error {
-	t := env.GetTargetEntity()
+	t := env.GetTarget().GetTargetEntity()
 	owner := t.Owner
 	repo := t.Repo
 
@@ -120,7 +120,7 @@ func UpdateReportComment(env Env, commentId int64, report string) error {
 		Body: &report,
 	}
 
-	t := env.GetTargetEntity()
+	t := env.GetTarget().GetTargetEntity()
 	owner := t.Owner
 	repo := t.Repo
 
@@ -138,12 +138,12 @@ func AddReportComment(env Env, report string) error {
 		Body: &report,
 	}
 
-	t := env.GetTargetEntity()
+	t := env.GetTarget().GetTargetEntity()
 	owner := t.Owner
 	repo := t.Repo
-	prNum := t.Number
+	number := t.Number
 
-	_, _, err := env.GetGithubClient().CreateComment(env.GetCtx(), owner, repo, prNum, &gitHubComment)
+	_, _, err := env.GetGithubClient().CreateComment(env.GetCtx(), owner, repo, number, &gitHubComment)
 
 	if err != nil {
 		return reportError("error on creating report comment %v", err.(*github.ErrorResponse).Message)
@@ -153,12 +153,12 @@ func AddReportComment(env Env, report string) error {
 }
 
 func FindReportComment(env Env) (*github.IssueComment, error) {
-	t := env.GetTargetEntity()
+	t := env.GetTarget().GetTargetEntity()
 	owner := t.Owner
 	repo := t.Repo
-	prNum := t.Number
+	number := t.Number
 
-	comments, err := env.GetGithubClient().GetPullRequestComments(env.GetCtx(), owner, repo, prNum, &github.IssueListCommentsOptions{
+	comments, err := env.GetGithubClient().GetComments(env.GetCtx(), owner, repo, number, &github.IssueListCommentsOptions{
 		Sort:      github.String("created"),
 		Direction: github.String("asc"),
 	})

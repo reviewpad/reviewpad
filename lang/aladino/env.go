@@ -6,12 +6,13 @@ package aladino
 
 import (
 	"context"
+	"fmt"
 
-	"github.com/google/go-github/v45/github"
 	"github.com/reviewpad/host-event-handler/handler"
+	"github.com/reviewpad/reviewpad/v3/codehost"
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
+	"github.com/reviewpad/reviewpad/v3/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v3/collector"
-	"github.com/reviewpad/reviewpad/v3/lang/aladino/target"
 )
 
 type Severity int
@@ -25,8 +26,6 @@ const (
 
 type TypeEnv map[string]Type
 
-type Patch map[string]*File
-
 type RegisterMap map[string]Value
 
 type Env interface {
@@ -37,13 +36,9 @@ type Env interface {
 	GetCtx() context.Context
 	GetDryRun() bool
 	GetEventPayload() interface{}
-	GetPatch() Patch
-	GetPullRequest() *github.PullRequest
 	GetRegisterMap() RegisterMap
 	GetReport() *Report
-	GetIssue() *github.Issue
-	GetTargetEntity() *handler.TargetEntity
-	GetTarget() target.Target
+	GetTarget() codehost.Target
 }
 
 type BaseEnv struct {
@@ -54,13 +49,9 @@ type BaseEnv struct {
 	Ctx                      context.Context
 	DryRun                   bool
 	EventPayload             interface{}
-	Patch                    Patch
-	PullRequest              *github.PullRequest
 	RegisterMap              RegisterMap
 	Report                   *Report
-	TargetEntity             *handler.TargetEntity
-	Issue                    *github.Issue
-	Target                   target.Target
+	Target                   codehost.Target
 }
 
 func (e *BaseEnv) GetBuiltIns() *BuiltIns {
@@ -91,14 +82,6 @@ func (e *BaseEnv) GetEventPayload() interface{} {
 	return e.EventPayload
 }
 
-func (e *BaseEnv) GetPatch() Patch {
-	return e.Patch
-}
-
-func (e *BaseEnv) GetPullRequest() *github.PullRequest {
-	return e.PullRequest
-}
-
 func (e *BaseEnv) GetRegisterMap() RegisterMap {
 	return e.RegisterMap
 }
@@ -107,15 +90,7 @@ func (e *BaseEnv) GetReport() *Report {
 	return e.Report
 }
 
-func (e *BaseEnv) GetTargetEntity() *handler.TargetEntity {
-	return e.TargetEntity
-}
-
-func (e *BaseEnv) GetIssue() *github.Issue {
-	return e.Issue
-}
-
-func (e *BaseEnv) GetTarget() target.Target {
+func (e *BaseEnv) GetTarget() codehost.Target {
 	return e.Target
 }
 
@@ -130,30 +105,6 @@ func NewTypeEnv(e Env) TypeEnv {
 	}
 
 	return TypeEnv(builtInsType)
-}
-
-func getPullRequestPatch(ctx context.Context, pullRequest *github.PullRequest, githubClient *gh.GithubClient) (map[string]*File, error) {
-	owner := gh.GetPullRequestBaseOwnerName(pullRequest)
-	repo := gh.GetPullRequestBaseRepoName(pullRequest)
-	number := gh.GetPullRequestNumber(pullRequest)
-
-	files, err := githubClient.GetPullRequestFiles(ctx, owner, repo, number)
-	if err != nil {
-		return nil, err
-	}
-
-	patchMap := make(map[string]*File)
-
-	for _, file := range files {
-		patchFile, err := NewFile(file)
-		if err != nil {
-			return nil, err
-		}
-
-		patchMap[file.GetFilename()] = patchFile
-	}
-
-	return Patch(patchMap), nil
 }
 
 func NewEvalEnv(
@@ -178,34 +129,31 @@ func NewEvalEnv(
 		EventPayload:             eventPayload,
 		RegisterMap:              registerMap,
 		Report:                   report,
-		TargetEntity:             targetEntity,
 	}
 
-	if targetEntity.Kind == handler.Issue {
+	fmt.Printf("NewEvalEnv %+q\n", targetEntity)
+
+	switch targetEntity.Kind {
+	case handler.Issue:
+
 		issue, _, err := githubClient.GetIssue(ctx, targetEntity.Owner, targetEntity.Repo, targetEntity.Number)
 		if err != nil {
 			return nil, err
 		}
 
-		input.Issue = issue
 		input.Target = target.NewIssueTarget(ctx, targetEntity, githubClient, issue)
+	case handler.PullRequest:
+		pullRequest, _, err := githubClient.GetPullRequest(ctx, targetEntity.Owner, targetEntity.Repo, targetEntity.Number)
+		if err != nil {
+			return nil, err
+		}
 
-		return input, nil
+		pullRequestTarget, err := target.NewPullRequestTarget(ctx, targetEntity, githubClient, pullRequest)
+		if err != nil {
+			return nil, err
+		}
+		input.Target = pullRequestTarget
 	}
-
-	pullRequest, _, err := githubClient.GetPullRequest(ctx, targetEntity.Owner, targetEntity.Repo, targetEntity.Number)
-	if err != nil {
-		return nil, err
-	}
-
-	patch, err := getPullRequestPatch(ctx, pullRequest, githubClient)
-	if err != nil {
-		return nil, err
-	}
-
-	input.Patch = patch
-	input.PullRequest = pullRequest
-	input.Target = target.NewPullRequestTarget(ctx, targetEntity, githubClient, pullRequest)
 
 	return input, nil
 }

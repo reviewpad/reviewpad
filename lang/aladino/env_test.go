@@ -13,6 +13,7 @@ import (
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/host-event-handler/handler"
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
+	"github.com/reviewpad/reviewpad/v3/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	"github.com/stretchr/testify/assert"
 )
@@ -156,42 +157,28 @@ func TestNewEvalEnv(t *testing.T) {
 		aladino.MockBuiltIns(),
 	)
 
-	mockedFile1 := &aladino.File{
-		Repr: &github.CommitFile{
-			Filename: github.String(fileName),
-			Patch:    github.String(patch),
-		},
-	}
-	mockedFile1.AppendToDiff(false, 2, 2, 2, 3, " func previous1() {", " func new1() {\n")
-
-	mockedPatch := aladino.Patch{
-		fileName: mockedFile1,
-	}
+	mockedTarget, _ := target.NewPullRequestTarget(ctx, aladino.DefaultMockTargetEntity, mockedGithubClient, mockedPullRequest)
 
 	wantEnv := &aladino.BaseEnv{
 		Ctx:          ctx,
 		GithubClient: mockedGithubClient,
 		Collector:    aladino.DefaultMockCollector,
-		PullRequest:  mockedPullRequest,
-		Patch:        mockedPatch,
 		RegisterMap:  aladino.RegisterMap(make(map[string]aladino.Value)),
 		BuiltIns:     aladino.MockBuiltIns(),
 		Report:       &aladino.Report{Actions: make([]string, 0)},
 		// TODO: Mock an event
 		EventPayload: nil,
-		TargetEntity: aladino.DefaultMockTargetEntity,
+		Target:       mockedTarget,
 	}
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantEnv.Ctx, gotEnv.GetCtx())
 	assert.Equal(t, wantEnv.GithubClient, gotEnv.GetGithubClient())
 	assert.Equal(t, wantEnv.Collector, gotEnv.GetCollector())
-	assert.Equal(t, wantEnv.PullRequest, gotEnv.GetPullRequest())
-	assert.Equal(t, wantEnv.Patch, gotEnv.GetPatch())
 	assert.Equal(t, wantEnv.RegisterMap, gotEnv.GetRegisterMap())
 	assert.Equal(t, wantEnv.EventPayload, gotEnv.GetEventPayload())
-	assert.Equal(t, wantEnv.TargetEntity, gotEnv.GetTargetEntity())
-	assert.Equal(t, wantEnv.Issue, gotEnv.GetIssue())
+	// TODO: Compare the targets
+	// assert.Equal(t, wantEnv.Target, gotEnv.GetTarget())
 
 	assert.Equal(t, len(wantEnv.BuiltIns.Functions), len(gotEnv.GetBuiltIns().Functions))
 	assert.Equal(t, len(wantEnv.BuiltIns.Actions), len(gotEnv.GetBuiltIns().Actions))
