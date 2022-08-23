@@ -8,20 +8,22 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/google/go-github/v45/github"
-	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
+	"github.com/reviewpad/host-event-handler/handler"
+	"github.com/reviewpad/reviewpad/v3/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	"github.com/reviewpad/reviewpad/v3/utils"
 )
 
 func AssignReviewer() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
-		Type: aladino.BuildFunctionType([]aladino.Type{aladino.BuildArrayOfType(aladino.BuildStringType()), aladino.BuildIntType()}, nil),
-		Code: assignReviewerCode,
+		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildArrayOfType(aladino.BuildStringType()), aladino.BuildIntType()}, nil),
+		Code:           assignReviewerCode,
+		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest},
 	}
 }
 
 func assignReviewerCode(e aladino.Env, args []aladino.Value) error {
+	t := e.GetTarget().(*target.PullRequestTarget)
 	totalRequiredReviewers := args[1].(*aladino.IntValue).Val
 	if totalRequiredReviewers == 0 {
 		return fmt.Errorf("assignReviewer: total required reviewers can't be 0")
@@ -32,11 +34,14 @@ func assignReviewerCode(e aladino.Env, args []aladino.Value) error {
 		return fmt.Errorf("assignReviewer: list of reviewers can't be empty")
 	}
 
-	pullRequest := e.GetPullRequest()
+	author, err := t.GetAuthor()
+	if err != nil {
+		return err
+	}
 
 	// Remove pull request author from provided reviewers list
 	for index, reviewer := range availableReviewers {
-		if reviewer.(*aladino.StringValue).Val == *pullRequest.User.Login {
+		if reviewer.(*aladino.StringValue).Val == author.Login {
 			availableReviewers = append(availableReviewers[:index], availableReviewers[index+1:]...)
 			break
 		}
@@ -48,13 +53,9 @@ func assignReviewerCode(e aladino.Env, args []aladino.Value) error {
 		totalRequiredReviewers = totalAvailableReviewers
 	}
 
-	prNum := gh.GetPullRequestNumber(pullRequest)
-	owner := gh.GetPullRequestBaseOwnerName(pullRequest)
-	repo := gh.GetPullRequestBaseRepoName(pullRequest)
-
 	reviewers := []string{}
 
-	reviews, err := e.GetGithubClient().GetPullRequestReviews(e.GetCtx(), owner, repo, prNum)
+	reviews, err := t.GetReviews()
 	if err != nil {
 		return err
 	}
@@ -62,10 +63,10 @@ func assignReviewerCode(e aladino.Env, args []aladino.Value) error {
 	// Re-request current reviewers if mention on the provided reviewers list
 	for _, review := range reviews {
 		for index, availableReviewer := range availableReviewers {
-			if availableReviewer.(*aladino.StringValue).Val == *review.User.Login {
+			if availableReviewer.(*aladino.StringValue).Val == review.User.Login {
 				totalRequiredReviewers--
-				if *review.State != "APPROVED" {
-					reviewers = append(reviewers, *review.User.Login)
+				if review.State != "APPROVED" {
+					reviewers = append(reviewers, review.User.Login)
 				}
 				availableReviewers = append(availableReviewers[:index], availableReviewers[index+1:]...)
 				break
@@ -74,10 +75,14 @@ func assignReviewerCode(e aladino.Env, args []aladino.Value) error {
 	}
 
 	// Skip current requested reviewers if mention on the provided reviewers list
-	currentRequestedReviewers := pullRequest.RequestedReviewers
+	currentRequestedReviewers, err := t.GetRequestedReviewers()
+	if err != nil {
+		return err
+	}
+
 	for _, requestedReviewer := range currentRequestedReviewers {
 		for index, availableReviewer := range availableReviewers {
-			if availableReviewer.(*aladino.StringValue).Val == *requestedReviewer.Login {
+			if availableReviewer.(*aladino.StringValue).Val == requestedReviewer.Login {
 				totalRequiredReviewers--
 				availableReviewers = append(availableReviewers[:index], availableReviewers[index+1:]...)
 				break
@@ -101,9 +106,5 @@ func assignReviewerCode(e aladino.Env, args []aladino.Value) error {
 		return nil
 	}
 
-	_, _, err = e.GetGithubClient().RequestReviewers(e.GetCtx(), owner, repo, prNum, github.ReviewersRequest{
-		Reviewers: reviewers,
-	})
-
-	return err
+	return t.RequestReviewers(reviewers)
 }

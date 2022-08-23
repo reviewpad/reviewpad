@@ -5,26 +5,23 @@
 package plugins_aladino_functions
 
 import (
-	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
+	"github.com/reviewpad/host-event-handler/handler"
+	"github.com/reviewpad/reviewpad/v3/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 )
 
 func HasUnaddressedThreads() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type: aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildBoolType()),
-		Code: hasUnaddressedThreadsCode,
+		Type:           aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildBoolType()),
+		Code:           hasUnaddressedThreadsCode,
+		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest},
 	}
 }
 
 func hasUnaddressedThreadsCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
-	pullRequest := e.GetPullRequest()
-	prNum := gh.GetPullRequestNumber(pullRequest)
-	owner := gh.GetPullRequestBaseOwnerName(pullRequest)
-	repo := gh.GetPullRequestBaseRepoName(pullRequest)
+	pullRequest := e.GetTarget().(*target.PullRequestTarget)
 
-	totalRequestTries := 2
-
-	reviewThreads, err := e.GetGithubClient().GetReviewThreads(e.GetCtx(), owner, repo, prNum, totalRequestTries)
+	reviewThreads, err := pullRequest.GetReviewThreads()
 	if err != nil {
 		return nil, err
 	}

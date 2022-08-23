@@ -8,22 +8,27 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/reviewpad/host-event-handler/handler"
+	"github.com/reviewpad/reviewpad/v3/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 )
 
 func Changed() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type: aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType(), aladino.BuildStringType()}, aladino.BuildBoolType()),
-		Code: changedCode,
+		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType(), aladino.BuildStringType()}, aladino.BuildBoolType()),
+		Code:           changedCode,
+		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest},
 	}
 }
 
 func changedCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
+	pullRequest := e.GetTarget().(*target.PullRequestTarget)
+
 	antecedentRegex := args[0].(*aladino.StringValue).Val
 	consequentRegex := args[1].(*aladino.StringValue).Val
 
-	antecedentMatches := getMatches(e, antecedentRegex)
-	consequentMatches := getMatches(e, consequentRegex)
+	antecedentMatches := getMatches(pullRequest, antecedentRegex)
+	consequentMatches := getMatches(pullRequest, consequentRegex)
 
 	retValue := aladino.BuildTrueValue()
 
@@ -50,13 +55,13 @@ func changedCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
 	return retValue, nil
 }
 
-func getMatches(env aladino.Env, pattern string) map[string][]string {
+func getMatches(pullRequest *target.PullRequestTarget, pattern string) map[string][]string {
 	resolvedPattern, vars := interpolateRegex(pattern)
 	re := regexp.MustCompile(resolvedPattern)
 
 	valsMatrix := make(map[string][]string, 0)
 
-	for fp := range env.GetPatch() {
+	for fp := range pullRequest.Patch {
 		for idx, ranges := range re.FindAllStringSubmatchIndex(fp, -1) {
 			lower := ranges[2]
 			upper := ranges[3]

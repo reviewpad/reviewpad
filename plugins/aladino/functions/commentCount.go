@@ -4,15 +4,24 @@
 
 package plugins_aladino_functions
 
-import "github.com/reviewpad/reviewpad/v3/lang/aladino"
+import (
+	"github.com/reviewpad/host-event-handler/handler"
+	"github.com/reviewpad/reviewpad/v3/lang/aladino"
+)
 
 func CommentCount() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type: aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildIntType()),
-		Code: commentCountCode,
+		Type:           aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildIntType()),
+		Code:           commentCountCode,
+		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest, handler.Issue},
 	}
 }
 
 func commentCountCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
-	return aladino.BuildIntValue(*e.GetPullRequest().Comments), nil
+	commentCount, err := e.GetTarget().GetCommentCount()
+	if err != nil {
+		return nil, err
+	}
+
+	return aladino.BuildIntValue(commentCount), nil
 }

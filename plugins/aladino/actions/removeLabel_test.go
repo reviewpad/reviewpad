@@ -28,6 +28,7 @@ func TestRemoveLabel_WhenLabelIsNotAppliedToPullRequest(t *testing.T) {
 				mock.GetReposLabelsByOwnerByRepoByName,
 				github.Label{
 					Name: github.String(wantLabel),
+					ID:   github.Int64(1),
 				},
 			),
 			mock.WithRequestMatchHandler(
@@ -60,6 +61,7 @@ func TestRemoveLabel_WhenLabelIsAppliedToPullRequestAndLabelIsInEnvironment(t *t
 				mock.GetReposLabelsByOwnerByRepoByName,
 				github.Label{
 					Name: github.String(wantLabel),
+					ID:   github.Int64(1),
 				},
 			),
 			mock.WithRequestMatchHandler(
@@ -95,6 +97,7 @@ func TestRemoveLabel_WhenLabelIsAppliedToPullRequestAndLabelIsNotInEnvironment(t
 				mock.GetReposLabelsByOwnerByRepoByName,
 				github.Label{
 					Name: github.String(wantLabel),
+					ID:   github.Int64(1),
 				},
 			),
 			mock.WithRequestMatchHandler(

@@ -4,16 +4,26 @@
 
 package plugins_aladino_functions
 
-import "github.com/reviewpad/reviewpad/v3/lang/aladino"
+import (
+	"github.com/reviewpad/host-event-handler/handler"
+	"github.com/reviewpad/reviewpad/v3/lang/aladino"
+)
 
 func Author() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type: aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildStringType()),
-		Code: authorCode,
+		Type:           aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildStringType()),
+		Code:           authorCode,
+		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest, handler.Issue},
 	}
 }
 
 func authorCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
-	authorLogin := e.GetPullRequest().User.GetLogin()
-	return aladino.BuildStringValue(authorLogin), nil
+	t := e.GetTarget()
+
+	user, err := t.GetAuthor()
+	if err != nil {
+		return nil, err
+	}
+
+	return aladino.BuildStringValue(user.Login), nil
 }

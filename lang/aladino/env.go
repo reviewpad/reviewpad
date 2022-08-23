@@ -6,9 +6,12 @@ package aladino
 
 import (
 	"context"
+	"fmt"
 
-	"github.com/google/go-github/v45/github"
+	"github.com/reviewpad/host-event-handler/handler"
+	"github.com/reviewpad/reviewpad/v3/codehost"
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
+	"github.com/reviewpad/reviewpad/v3/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v3/collector"
 )
 
@@ -23,8 +26,6 @@ const (
 
 type TypeEnv map[string]Type
 
-type Patch map[string]*File
-
 type RegisterMap map[string]Value
 
 type Env interface {
@@ -35,10 +36,9 @@ type Env interface {
 	GetCtx() context.Context
 	GetDryRun() bool
 	GetEventPayload() interface{}
-	GetPatch() Patch
-	GetPullRequest() *github.PullRequest
 	GetRegisterMap() RegisterMap
 	GetReport() *Report
+	GetTarget() codehost.Target
 }
 
 type BaseEnv struct {
@@ -49,10 +49,9 @@ type BaseEnv struct {
 	Ctx                      context.Context
 	DryRun                   bool
 	EventPayload             interface{}
-	Patch                    Patch
-	PullRequest              *github.PullRequest
 	RegisterMap              RegisterMap
 	Report                   *Report
+	Target                   codehost.Target
 }
 
 func (e *BaseEnv) GetBuiltIns() *BuiltIns {
@@ -83,20 +82,16 @@ func (e *BaseEnv) GetEventPayload() interface{} {
 	return e.EventPayload
 }
 
-func (e *BaseEnv) GetPatch() Patch {
-	return e.Patch
-}
-
-func (e *BaseEnv) GetPullRequest() *github.PullRequest {
-	return e.PullRequest
-}
-
 func (e *BaseEnv) GetRegisterMap() RegisterMap {
 	return e.RegisterMap
 }
 
 func (e *BaseEnv) GetReport() *Report {
 	return e.Report
+}
+
+func (e *BaseEnv) GetTarget() codehost.Target {
+	return e.Target
 }
 
 func NewTypeEnv(e Env) TypeEnv {
@@ -117,31 +112,10 @@ func NewEvalEnv(
 	dryRun bool,
 	githubClient *gh.GithubClient,
 	collector collector.Collector,
-	pullRequest *github.PullRequest,
+	targetEntity *handler.TargetEntity,
 	eventPayload interface{},
 	builtIns *BuiltIns,
 ) (Env, error) {
-	owner := gh.GetPullRequestBaseOwnerName(pullRequest)
-	repo := gh.GetPullRequestBaseRepoName(pullRequest)
-	number := gh.GetPullRequestNumber(pullRequest)
-
-	files, err := githubClient.GetPullRequestFiles(ctx, owner, repo, number)
-	if err != nil {
-		return nil, err
-	}
-
-	patchMap := make(map[string]*File)
-
-	for _, file := range files {
-		patchFile, err := NewFile(file)
-		if err != nil {
-			return nil, err
-		}
-
-		patchMap[file.GetFilename()] = patchFile
-	}
-
-	patch := Patch(patchMap)
 	registerMap := RegisterMap(make(map[string]Value))
 	report := &Report{Actions: make([]string, 0)}
 
@@ -153,10 +127,32 @@ func NewEvalEnv(
 		Ctx:                      ctx,
 		DryRun:                   dryRun,
 		EventPayload:             eventPayload,
-		Patch:                    patch,
-		PullRequest:              pullRequest,
 		RegisterMap:              registerMap,
 		Report:                   report,
+	}
+
+	fmt.Printf("NewEvalEnv %+q\n", targetEntity)
+
+	switch targetEntity.Kind {
+	case handler.Issue:
+
+		issue, _, err := githubClient.GetIssue(ctx, targetEntity.Owner, targetEntity.Repo, targetEntity.Number)
+		if err != nil {
+			return nil, err
+		}
+
+		input.Target = target.NewIssueTarget(ctx, targetEntity, githubClient, issue)
+	case handler.PullRequest:
+		pullRequest, _, err := githubClient.GetPullRequest(ctx, targetEntity.Owner, targetEntity.Repo, targetEntity.Number)
+		if err != nil {
+			return nil, err
+		}
+
+		pullRequestTarget, err := target.NewPullRequestTarget(ctx, targetEntity, githubClient, pullRequest)
+		if err != nil {
+			return nil, err
+		}
+		input.Target = pullRequestTarget
 	}
 
 	return input, nil

@@ -21,15 +21,21 @@ type collector struct {
 	RunnerId string
 	// Allows to identify the correct order of events
 	Order int
+	// Allows to identify the type of the event
+	EventType string
+	// Allows to identify the url
+	Url string
 }
 
-func NewCollector(token string, id string) Collector {
+func NewCollector(token, id, eventType, url string) Collector {
 	c := collector{
-		Client:   mixpanel.New(token, ""),
-		Id:       id,
-		Token:    token,
-		RunnerId: uuid.NewString(),
-		Order:    0,
+		Client:    mixpanel.New(token, ""),
+		Id:        id,
+		Token:     token,
+		RunnerId:  uuid.NewString(),
+		Order:     0,
+		EventType: eventType,
+		Url:       url,
 	}
 
 	if token != "" {
@@ -50,6 +56,8 @@ func (c *collector) Collect(eventName string, properties map[string]interface{})
 	}
 	properties["runnerId"] = c.RunnerId
 	properties["order"] = c.Order
+	properties["eventType"] = c.EventType
+	properties["url"] = c.Url
 	c.Order = c.Order + 1
 	return c.Client.Track(c.Id, eventName, &mixpanel.Event{
 		Properties: properties,

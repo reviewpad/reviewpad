@@ -5,27 +5,18 @@
 package plugins_aladino_actions
 
 import (
-	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
+	"github.com/reviewpad/host-event-handler/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 )
 
 func Close() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
-		Type: aladino.BuildFunctionType([]aladino.Type{}, nil),
-		Code: closeCode,
+		Type:           aladino.BuildFunctionType([]aladino.Type{}, nil),
+		Code:           closeCode,
+		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest, handler.Issue},
 	}
 }
 
 func closeCode(e aladino.Env, args []aladino.Value) error {
-	pullRequest := e.GetPullRequest()
-
-	prNum := gh.GetPullRequestNumber(pullRequest)
-	owner := gh.GetPullRequestBaseOwnerName(pullRequest)
-	repo := gh.GetPullRequestBaseRepoName(pullRequest)
-
-	closedState := "closed"
-	pullRequest.State = &closedState
-	_, _, err := e.GetGithubClient().EditPullRequest(e.GetCtx(), owner, repo, prNum, pullRequest)
-
-	return err
+	return e.GetTarget().Close()
 }

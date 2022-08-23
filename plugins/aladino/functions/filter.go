@@ -4,7 +4,10 @@
 
 package plugins_aladino_functions
 
-import "github.com/reviewpad/reviewpad/v3/lang/aladino"
+import (
+	"github.com/reviewpad/host-event-handler/handler"
+	"github.com/reviewpad/reviewpad/v3/lang/aladino"
+)
 
 func Filter() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
@@ -18,7 +21,8 @@ func Filter() *aladino.BuiltInFunction {
 			},
 			aladino.BuildArrayOfType(aladino.BuildStringType()),
 		),
-		Code: filterCode,
+		Code:           filterCode,
+		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest, handler.Issue},
 	}
 }
 

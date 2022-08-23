@@ -5,24 +5,22 @@
 package plugins_aladino_functions
 
 import (
-	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
+	"github.com/reviewpad/host-event-handler/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 )
 
 func LastEventAt() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type: aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildIntType()),
-		Code: lastEventAtCode,
+		Type:           aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildIntType()),
+		Code:           lastEventAtCode,
+		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest, handler.Issue},
 	}
 }
 
 func lastEventAtCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
-	pullRequest := e.GetPullRequest()
-	owner := gh.GetPullRequestBaseOwnerName(pullRequest)
-	repo := gh.GetPullRequestBaseRepoName(pullRequest)
-	prNum := gh.GetPullRequestNumber(pullRequest)
+	entity := e.GetTarget().GetTargetEntity()
 
-	timeline, err := e.GetGithubClient().GetIssueTimeline(e.GetCtx(), owner, repo, prNum)
+	timeline, err := e.GetGithubClient().GetIssueTimeline(e.GetCtx(), entity.Owner, entity.Repo, entity.Number)
 	if err != nil {
 		return nil, err
 	}

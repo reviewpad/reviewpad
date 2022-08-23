@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/google/go-github/v45/github"
-	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 )
 
 func validateLabelColor(label *PadLabel) error {
@@ -44,8 +43,8 @@ func createLabel(e *Env, labelName *string, label *PadLabel) error {
 		Description: &label.Description,
 	}
 
-	owner := gh.GetPullRequestBaseOwnerName(e.PullRequest)
-	repo := gh.GetPullRequestBaseRepoName(e.PullRequest)
+	owner := e.TargetEntity.Owner
+	repo := e.TargetEntity.Repo
 
 	_, _, err = e.GithubClient.CreateLabel(e.Ctx, owner, repo, ghLabel)
 
@@ -53,8 +52,8 @@ func createLabel(e *Env, labelName *string, label *PadLabel) error {
 }
 
 func checkLabelExists(e *Env, labelName string) (bool, error) {
-	owner := gh.GetPullRequestBaseOwnerName(e.PullRequest)
-	repo := gh.GetPullRequestBaseRepoName(e.PullRequest)
+	owner := e.TargetEntity.Owner
+	repo := e.TargetEntity.Repo
 
 	_, _, err := e.GithubClient.GetLabel(e.Ctx, owner, repo, labelName)
 	if err != nil {

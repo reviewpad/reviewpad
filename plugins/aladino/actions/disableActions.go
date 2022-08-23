@@ -5,13 +5,15 @@
 package plugins_aladino_actions
 
 import (
+	"github.com/reviewpad/host-event-handler/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 )
 
 func DisableActions() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
-		Type: aladino.BuildFunctionType([]aladino.Type{aladino.BuildArrayOfType(aladino.BuildStringType())}, nil),
-		Code: disableActionsCode,
+		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildArrayOfType(aladino.BuildStringType())}, nil),
+		Code:           disableActionsCode,
+		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest, handler.Issue},
 	}
 }
 

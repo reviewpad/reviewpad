@@ -10,6 +10,7 @@ import (
 
 	"github.com/google/go-github/v45/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
+	"github.com/reviewpad/reviewpad/v3/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -38,7 +39,7 @@ func TestHasCodePattern_WhenPullRequestPatchHasNilFile(t *testing.T) {
 		nil,
 	)
 
-	mockedEnv.GetPatch()[fileName] = nil
+	mockedEnv.GetTarget().(*target.PullRequestTarget).Patch[fileName] = nil
 
 	args := []aladino.Value{aladino.BuildStringValue("placeBet\\(.*\\)")}
 	gotVal, err := hasCodePattern(mockedEnv, args)

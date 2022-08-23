@@ -5,11 +5,11 @@
 package cmd
 
 var (
-	dryRun         bool
-	eventFilePath  string
-	gitHubToken    string
-	mixpanelToken  string
-	pullRequestUrl string
-	reviewpadFile  string
-	safeModeRun    bool
+	dryRun        bool
+	eventFilePath string
+	gitHubToken   string
+	mixpanelToken string
+	githubUrl     string
+	reviewpadFile string
+	safeModeRun   bool
 )

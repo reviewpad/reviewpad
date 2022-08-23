@@ -4,12 +4,16 @@
 
 package plugins_aladino_functions
 
-import "github.com/reviewpad/reviewpad/v3/lang/aladino"
+import (
+	"github.com/reviewpad/host-event-handler/handler"
+	"github.com/reviewpad/reviewpad/v3/lang/aladino"
+)
 
 func IsElementOf() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type: aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType(), aladino.BuildArrayOfType(aladino.BuildStringType())}, aladino.BuildBoolType()),
-		Code: isElementOfCode,
+		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType(), aladino.BuildArrayOfType(aladino.BuildStringType())}, aladino.BuildBoolType()),
+		Code:           isElementOfCode,
+		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest, handler.Issue},
 	}
 }
 

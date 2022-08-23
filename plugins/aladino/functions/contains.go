@@ -7,13 +7,15 @@ package plugins_aladino_functions
 import (
 	"strings"
 
+	"github.com/reviewpad/host-event-handler/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 )
 
 func Contains() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type: aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType(), aladino.BuildStringType()}, aladino.BuildBoolType()),
-		Code: containsCode,
+		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType(), aladino.BuildStringType()}, aladino.BuildBoolType()),
+		Code:           containsCode,
+		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest, handler.Issue},
 	}
 }
 

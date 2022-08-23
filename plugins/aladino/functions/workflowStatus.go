@@ -9,14 +9,15 @@ import (
 	"strings"
 
 	"github.com/google/go-github/v45/github"
-	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
+	"github.com/reviewpad/host-event-handler/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 )
 
 func WorkflowStatus() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type: aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, aladino.BuildStringType()),
-		Code: workflowStatusCode,
+		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, aladino.BuildStringType()),
+		Code:           workflowStatusCode,
+		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest, handler.Issue},
 	}
 }
 
@@ -34,9 +35,9 @@ func workflowStatusCode(e aladino.Env, args []aladino.Value) (aladino.Value, err
 	}
 
 	headSHA := workflowRunPayload.GetHeadSHA()
-	pullRequest := e.GetPullRequest()
-	owner := gh.GetPullRequestBaseOwnerName(pullRequest)
-	repo := gh.GetPullRequestBaseRepoName(pullRequest)
+	entity := e.GetTarget().GetTargetEntity()
+	owner := entity.Owner
+	repo := entity.Repo
 
 	checkRuns, _, err := e.GetGithubClient().ListCheckRunsForRef(e.GetCtx(), owner, repo, headSHA, &github.ListCheckRunsOptions{})
 	if err != nil {

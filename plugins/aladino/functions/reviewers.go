@@ -4,18 +4,24 @@
 
 package plugins_aladino_functions
 
-import "github.com/reviewpad/reviewpad/v3/lang/aladino"
+import (
+	"github.com/reviewpad/host-event-handler/handler"
+	"github.com/reviewpad/reviewpad/v3/codehost/github/target"
+	"github.com/reviewpad/reviewpad/v3/lang/aladino"
+)
 
 func Reviewers() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type: aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildArrayOfType(aladino.BuildStringType())),
-		Code: reviewersCode,
+		Type:           aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildArrayOfType(aladino.BuildStringType())),
+		Code:           reviewersCode,
+		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest},
 	}
 }
 
 func reviewersCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
-	usersReviewers := e.GetPullRequest().RequestedReviewers
-	teamReviewers := e.GetPullRequest().RequestedTeams
+	pullRequest := e.GetTarget().(*target.PullRequestTarget).PullRequest
+	usersReviewers := pullRequest.RequestedReviewers
+	teamReviewers := pullRequest.RequestedTeams
 	totalReviewers := len(usersReviewers) + len(teamReviewers)
 	reviewersLogin := make([]aladino.Value, totalReviewers)
 

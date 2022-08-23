@@ -6,20 +6,23 @@ package plugins_aladino_functions
 
 import (
 	doublestar "github.com/bmatcuk/doublestar/v4"
+	"github.com/reviewpad/host-event-handler/handler"
+	"github.com/reviewpad/reviewpad/v3/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 )
 
 func HasFilePattern() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type: aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, aladino.BuildBoolType()),
-		Code: hasFilePatternCode,
+		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, aladino.BuildBoolType()),
+		Code:           hasFilePatternCode,
+		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest},
 	}
 }
 
 func hasFilePatternCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
 	filePatternRegex := args[0].(*aladino.StringValue)
 
-	patch := e.GetPatch()
+	patch := e.GetTarget().(*target.PullRequestTarget).Patch
 	for fp := range patch {
 		re, err := doublestar.Match(filePatternRegex.Val, fp)
 		if err != nil {

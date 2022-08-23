@@ -48,10 +48,19 @@ func (fc *FunctionCall) exec(env Env) error {
 		return nil
 	}
 
-	env.GetCollector().Collect("Ran Builtin", map[string]interface{}{
-		"pullRequestUrl": env.GetPullRequest().URL,
-		"builtin":        fc.name.ident,
-	})
+	collectedData := map[string]interface{}{
+		"builtin": fc.name.ident,
+	}
 
-	return action.Code(env, args)
+	env.GetCollector().Collect("Ran Builtin", collectedData)
+
+	entityKind := env.GetTarget().GetTargetEntity().Kind
+
+	for _, supportedKind := range action.SupportedKinds {
+		if entityKind == supportedKind {
+			return action.Code(env, args)
+		}
+	}
+
+	return fmt.Errorf("eval: unsupported kind %v", entityKind)
 }

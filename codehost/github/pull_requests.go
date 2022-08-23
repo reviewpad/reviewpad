@@ -52,36 +52,6 @@ func GetPullRequestNumber(pullRequest *github.PullRequest) int {
 	return pullRequest.GetNumber()
 }
 
-func (c *GithubClient) GetPullRequestComments(ctx context.Context, owner string, repo string, number int, opts *github.IssueListCommentsOptions) ([]*github.IssueComment, error) {
-	fs, err := PaginatedRequest(
-		func() interface{} {
-			return []*github.IssueComment{}
-		},
-		func(i interface{}, page int) (interface{}, *github.Response, error) {
-			fls := i.([]*github.IssueComment)
-			fs, resp, err := c.clientREST.Issues.ListComments(ctx, owner, repo, number, &github.IssueListCommentsOptions{
-				Sort:      opts.Sort,
-				Direction: opts.Direction,
-				Since:     opts.Since,
-				ListOptions: github.ListOptions{
-					Page:    page,
-					PerPage: maxPerPage,
-				},
-			})
-			if err != nil {
-				return nil, nil, err
-			}
-			fls = append(fls, fs...)
-			return fls, resp, nil
-		},
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	return fs.([]*github.IssueComment), nil
-}
-
 func (c *GithubClient) GetPullRequestFiles(ctx context.Context, owner string, repo string, number int) ([]*github.CommitFile, error) {
 	fs, err := PaginatedRequest(
 		func() interface{} {
@@ -336,4 +306,29 @@ func (c *GithubClient) EditPullRequest(ctx context.Context, owner string, repo s
 
 func (c *GithubClient) Merge(ctx context.Context, owner string, repo string, number int, commitMessage string, options *github.PullRequestOptions) (*github.PullRequestMergeResult, *github.Response, error) {
 	return c.clientREST.PullRequests.Merge(ctx, owner, repo, number, commitMessage, options)
+}
+
+func (c *GithubClient) GetPullRequestClosingIssuesCount(ctx context.Context, owner string, repo string, number int) (int, error) {
+	var pullRequestQuery struct {
+		Repository struct {
+			PullRequest struct {
+				ClosingIssuesReferences struct {
+					TotalCount githubv4.Int
+				}
+			} `graphql:"pullRequest(number: $pullRequestNumber)"`
+		} `graphql:"repository(owner: $repositoryOwner, name: $repositoryName)"`
+	}
+
+	varGQLPullRequestQuery := map[string]interface{}{
+		"repositoryOwner":   githubv4.String(owner),
+		"repositoryName":    githubv4.String(repo),
+		"pullRequestNumber": githubv4.Int(number),
+	}
+
+	err := c.GetClientGraphQL().Query(ctx, &pullRequestQuery, varGQLPullRequestQuery)
+	if err != nil {
+		return 0, err
+	}
+
+	return int(pullRequestQuery.Repository.PullRequest.ClosingIssuesReferences.TotalCount), nil
 }

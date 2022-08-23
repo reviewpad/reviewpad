@@ -7,6 +7,7 @@ package aladino
 import (
 	"testing"
 
+	"github.com/reviewpad/host-event-handler/handler"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -99,6 +100,7 @@ func TestExec_WhenActionIsEnabled(t *testing.T) {
 					isBuiltInCalled = true
 					return nil
 				},
+				SupportedKinds: []handler.TargetEntityKind{handler.PullRequest},
 			},
 		},
 	}
@@ -128,7 +130,8 @@ func TestExec_WhenActionIsDisabled(t *testing.T) {
 					isBuiltInCalled = true
 					return nil
 				},
-				Disabled: true,
+				Disabled:       true,
+				SupportedKinds: []handler.TargetEntityKind{handler.PullRequest},
 			},
 		},
 	}

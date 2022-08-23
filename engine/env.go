@@ -7,7 +7,7 @@ package engine
 import (
 	"context"
 
-	"github.com/google/go-github/v45/github"
+	"github.com/reviewpad/host-event-handler/handler"
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/collector"
 )
@@ -39,9 +39,8 @@ type Env struct {
 	DryRun       bool
 	GithubClient *gh.GithubClient
 	Collector    collector.Collector
-	PullRequest  *github.PullRequest
-	EventPayload interface{}
 	Interpreter  Interpreter
+	TargetEntity *handler.TargetEntity
 }
 
 func NewEvalEnv(
@@ -49,8 +48,7 @@ func NewEvalEnv(
 	dryRun bool,
 	githubClient *gh.GithubClient,
 	collector collector.Collector,
-	pullRequest *github.PullRequest,
-	eventPayload interface{},
+	targetEntity *handler.TargetEntity,
 	interpreter Interpreter,
 ) (*Env, error) {
 	input := &Env{
@@ -58,9 +56,8 @@ func NewEvalEnv(
 		DryRun:       dryRun,
 		GithubClient: githubClient,
 		Collector:    collector,
-		PullRequest:  pullRequest,
-		EventPayload: eventPayload,
 		Interpreter:  interpreter,
+		TargetEntity: targetEntity,
 	}
 
 	return input, nil

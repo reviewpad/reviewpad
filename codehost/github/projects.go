@@ -7,8 +7,9 @@ package github
 import (
 	"context"
 	"errors"
-	"github.com/shurcooL/githubv4"
 	"strings"
+
+	"github.com/shurcooL/githubv4"
 )
 
 var (

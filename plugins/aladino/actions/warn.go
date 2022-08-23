@@ -4,12 +4,16 @@
 
 package plugins_aladino_actions
 
-import "github.com/reviewpad/reviewpad/v3/lang/aladino"
+import (
+	"github.com/reviewpad/host-event-handler/handler"
+	"github.com/reviewpad/reviewpad/v3/lang/aladino"
+)
 
 func Warn() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
-		Type: aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, nil),
-		Code: warnCode,
+		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, nil),
+		Code:           warnCode,
+		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest, handler.Issue},
 	}
 }
 

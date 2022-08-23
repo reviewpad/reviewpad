@@ -5,16 +5,29 @@
 package plugins_aladino_functions
 
 import (
+	"time"
+
+	"github.com/reviewpad/host-event-handler/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 )
 
 func CreatedAt() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type: aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildIntType()),
-		Code: createdAtCode,
+		Type:           aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildIntType()),
+		Code:           createdAtCode,
+		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest, handler.Issue},
 	}
 }
 
 func createdAtCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
-	return aladino.BuildIntValue(int(e.GetPullRequest().GetCreatedAt().Unix())), nil
+	createdAt, err := e.GetTarget().GetCreatedAt()
+	if err != nil {
+		return nil, err
+	}
+
+	createdAtTime, err := time.Parse("2006-01-02 15:04:05.999999999 -0700 MST", createdAt)
+	if err != nil {
+		return nil, err
+	}
+	return aladino.BuildIntValue(int(createdAtTime.Unix())), nil
 }

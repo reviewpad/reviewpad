@@ -214,6 +214,8 @@ func TestAssignReviewer_WhenPullRequestAlreadyHasReviews(t *testing.T) {
 				mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
 				[]*github.PullRequestReview{
 					{
+						ID:   github.Int64(1),
+						Body: github.String(""),
 						User: &github.User{
 							Login: github.String(reviewerLogin),
 						},
@@ -275,6 +277,8 @@ func TestAssignReviewer_WhenPullRequestAlreadyHasApproval(t *testing.T) {
 				mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
 				[]*github.PullRequestReview{
 					{
+						ID:   github.Int64(1),
+						Body: github.String(""),
 						User: &github.User{
 							Login: github.String(reviewerLogin),
 						},
@@ -443,6 +447,7 @@ func TestAssignReviewer_WhenPullRequestAlreadyApproved(t *testing.T) {
 		{
 			ID:    &reviewID,
 			State: &reviewState,
+			Body:  github.String(""),
 			User:  &github.User{Login: github.String(reviewerA)},
 		},
 	}
