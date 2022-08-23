@@ -28,7 +28,7 @@ func setAST(l AladinoLexer, root Expr) {
 %type <astList> expr_list
 
 // same for terminals
-%token <str> TIMESTAMP RELATIVETIMESTAMP IDENTIFIER STRINGLITERAL TK_CMPOP 
+%token <str> TIMESTAMP RELATIVETIMESTAMP IDENTIFIER STRINGLITERAL TK_CMPOP TK_LAMBDA
 %token <int> NUMBER
 %token <bool> TRUE
 %token <bool> FALSE
@@ -62,6 +62,7 @@ expr :
     | FALSE              { $$ = BuildBoolConst(false) }
     | '$' IDENTIFIER '(' expr_list ')' 
         { $$ = BuildFunctionCall(BuildVariable($2), $4) }
+    | '(' expr_list TK_LAMBDA expr  ')'      { $$ = BuildLambda($2, $4) }
 ;
 
 expr_list :

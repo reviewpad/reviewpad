@@ -5,8 +5,9 @@
 package aladino
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestParse_WhenSingleLine(t *testing.T) {
@@ -33,4 +34,58 @@ func TestParse_WhenMultilineLine(t *testing.T) {
 	gotExpr, err := Parse(input)
 	assert.Nil(t, err)
 	assert.Equal(t, wantExpr, gotExpr)
+}
+
+func TestParse_Lambda(t *testing.T) {
+	tests := map[string]struct {
+		input    string
+		wantExpr *Lambda
+	}{
+		"no arguments": {
+			input: `( => 10)`,
+			wantExpr: BuildLambda(
+				[]Expr{},
+				BuildIntConst(10),
+			),
+		},
+		"single argument with wrong type": {
+			input: `(1 => 10)`,
+			wantExpr: BuildLambda(
+				[]Expr{BuildIntConst(1)},
+				BuildIntConst(10),
+			),
+		},
+		"single argument": {
+			input: `($dev => $totalCreatedPullRequests($dev) == 10)`,
+			wantExpr: BuildLambda(
+				[]Expr{BuildVariable("dev")},
+				BuildBinaryOp(BuildFunctionCall(BuildVariable("totalCreatedPullRequests"), []Expr{BuildVariable("dev")}), eqOperator(), BuildIntConst(10)),
+			),
+		},
+		"multiple arguments": {
+			input: `($a, $b => $a > $b)`,
+			wantExpr: BuildLambda(
+				[]Expr{BuildVariable("a"), BuildVariable("b")},
+				BuildBinaryOp(BuildVariable("a"), greaterThanOperator(), BuildVariable("b")),
+			),
+		},
+		"nested lambda": {
+			input: `($a => ($b => $a > $b))`,
+			wantExpr: BuildLambda(
+				[]Expr{BuildVariable("a")},
+				BuildLambda(
+					[]Expr{BuildVariable("b")},
+					BuildBinaryOp(BuildVariable("a"), greaterThanOperator(), BuildVariable("b")),
+				),
+			),
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			gotExpr, err := Parse(test.input)
+			assert.Nil(t, err)
+			assert.Equal(t, test.wantExpr, gotExpr)
+		})
+	}
 }
