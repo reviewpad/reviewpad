@@ -24,8 +24,8 @@ func PaginatedRequest(
 	}
 
 	numPages := ParseNumPages(resp)
-	page++
 	for page <= numPages && resp.NextPage > page {
+		page++
 		results, _, err = reqFn(results, page)
 		if err != nil {
 			return nil, err
