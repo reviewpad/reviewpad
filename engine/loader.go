@@ -222,9 +222,10 @@ func processInlineRules(file *ReviewpadFile) (*ReviewpadFile, error) {
 		Labels:       file.Labels,
 		Workflows:    file.Workflows,
 	}
+	alreadyGeneratedRules := map[string]bool{}
 
 	for i, workflow := range reviewpadFile.Workflows {
-		processedWorkflow, rules, err := processInlineRulesOnWorkflow(workflow, file.Rules)
+		processedWorkflow, rules, err := processInlineRulesOnWorkflow(workflow, file.Rules, alreadyGeneratedRules)
 		if err != nil {
 			return nil, err
 		}
@@ -236,7 +237,7 @@ func processInlineRules(file *ReviewpadFile) (*ReviewpadFile, error) {
 	return reviewpadFile, nil
 }
 
-func processInlineRulesOnWorkflow(workflow PadWorkflow, currentRules []PadRule) (*PadWorkflow, []PadRule, error) {
+func processInlineRulesOnWorkflow(workflow PadWorkflow, currentRules []PadRule, alreadyGeneratedRules map[string]bool) (*PadWorkflow, []PadRule, error) {
 	wf := &PadWorkflow{
 		Name:        workflow.Name,
 		Description: workflow.Description,
@@ -252,7 +253,10 @@ func processInlineRulesOnWorkflow(workflow PadWorkflow, currentRules []PadRule) 
 		case string:
 			padRule := inlineRuleToPadRule(r)
 
-			currentNormalizedRules = append(currentNormalizedRules, padRule)
+			if !alreadyGeneratedRules[padRule.Name] {
+				alreadyGeneratedRules[padRule.Name] = true
+				currentNormalizedRules = append(currentNormalizedRules, padRule)
+			}
 
 			wf.Rules = append(wf.Rules, PadWorkflowRule{
 				Rule: padRule.Name,
@@ -268,7 +272,10 @@ func processInlineRulesOnWorkflow(workflow PadWorkflow, currentRules []PadRule) 
 			if _, exists := findRule(currentRules, rule.Rule); !exists {
 				padRule := inlineRuleToPadRule(rule.Rule)
 
-				currentNormalizedRules = append(currentNormalizedRules, padRule)
+				if !alreadyGeneratedRules[padRule.Name] {
+					alreadyGeneratedRules[padRule.Name] = true
+					currentNormalizedRules = append(currentNormalizedRules, padRule)
+				}
 
 				wf.Rules = append(wf.Rules, PadWorkflowRule{
 					Rule:         padRule.Name,
