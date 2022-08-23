@@ -20,6 +20,7 @@ require (
 	github.com/stretchr/testify v1.8.0
 	github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80
 	golang.org/x/oauth2 v0.0.0-20220718184931-c8730f7fcb92
+	google.golang.org/grpc v1.48.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
@@ -41,6 +42,5 @@ require (
 	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20220815135757-37a418bb8959 // indirect
-	google.golang.org/grpc v1.48.0 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
 )
