@@ -95,6 +95,10 @@ func TestLoad(t *testing.T) {
 			inputReviewpadFilePath: "testdata/loader/transform/reviewpad_before_on_transform.yml",
 			wantReviewpadFilePath:  "testdata/loader/transform/reviewpad_after_on_transform.yml",
 		},
+		"when the file has a rule with no kind": {
+			inputReviewpadFilePath: "testdata/loader/transform/reviewpad_before_kind_transform.yml",
+			wantReviewpadFilePath:  "testdata/loader/transform/reviewpad_after_kind_transform.yml",
+		},
 		"when the file has inline rules": {
 			inputReviewpadFilePath: "testdata/loader/process/reviewpad_with_inline_rules.yml",
 			wantReviewpadFilePath:  "testdata/loader/process/reviewpad_with_inline_rules_after_processing.yml",
