@@ -6,7 +6,6 @@ package aladino
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/reviewpad/host-event-handler/handler"
 	"github.com/reviewpad/reviewpad/v3/codehost"
@@ -130,8 +129,6 @@ func NewEvalEnv(
 		RegisterMap:              registerMap,
 		Report:                   report,
 	}
-
-	fmt.Printf("NewEvalEnv %+q\n", targetEntity)
 
 	switch targetEntity.Kind {
 	case handler.Issue:
