@@ -52,36 +52,6 @@ func GetPullRequestNumber(pullRequest *github.PullRequest) int {
 	return pullRequest.GetNumber()
 }
 
-func (c *GithubClient) GetPullRequestComments(ctx context.Context, owner string, repo string, number int, opts *github.IssueListCommentsOptions) ([]*github.IssueComment, error) {
-	fs, err := PaginatedRequest(
-		func() interface{} {
-			return []*github.IssueComment{}
-		},
-		func(i interface{}, page int) (interface{}, *github.Response, error) {
-			fls := i.([]*github.IssueComment)
-			fs, resp, err := c.clientREST.Issues.ListComments(ctx, owner, repo, number, &github.IssueListCommentsOptions{
-				Sort:      opts.Sort,
-				Direction: opts.Direction,
-				Since:     opts.Since,
-				ListOptions: github.ListOptions{
-					Page:    page,
-					PerPage: maxPerPage,
-				},
-			})
-			if err != nil {
-				return nil, nil, err
-			}
-			fls = append(fls, fs...)
-			return fls, resp, nil
-		},
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	return fs.([]*github.IssueComment), nil
-}
-
 func (c *GithubClient) GetPullRequestFiles(ctx context.Context, owner string, repo string, number int) ([]*github.CommitFile, error) {
 	fs, err := PaginatedRequest(
 		func() interface{} {
@@ -336,14 +306,6 @@ func (c *GithubClient) EditPullRequest(ctx context.Context, owner string, repo s
 
 func (c *GithubClient) Merge(ctx context.Context, owner string, repo string, number int, commitMessage string, options *github.PullRequestOptions) (*github.PullRequestMergeResult, *github.Response, error) {
 	return c.clientREST.PullRequests.Merge(ctx, owner, repo, number, commitMessage, options)
-}
-
-func (c *GithubClient) GetIssue(ctx context.Context, owner, repo string, number int) (*github.Issue, *github.Response, error) {
-	return c.clientREST.Issues.Get(ctx, owner, repo, number)
-}
-
-func (c *GithubClient) EditIssue(ctx context.Context, owner string, repo string, number int, issue *github.IssueRequest) (*github.Issue, *github.Response, error) {
-	return c.clientREST.Issues.Edit(ctx, owner, repo, number, issue)
 }
 
 func (c *GithubClient) GetPullRequestClosingIssuesCount(ctx context.Context, owner string, repo string, number int) (int, error) {

@@ -1,38 +1,38 @@
 // Copyright 2022 Explore.dev Unipessoal Lda. All Rights Reserved.
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
-package target
+
+package codehost
+
+import (
+	"errors"
+
+	"github.com/reviewpad/host-event-handler/handler"
+)
+
+var (
+	ErrNotSupported = errors.New("not supported on this entity kind")
+)
 
 type Target interface {
 	AddAssignees(assignees []string) error
 	AddLabels(labels []string) error
-	AddToProject(projectID, fieldID, optionID string) error
 	Close() error
 	Comment(comment string) error
-	GetAvailableAssignees() ([]User, error)
-	GetComments() ([]Comment, error)
-	GetLabels() ([]Label, error)
-	GetRequestedReviewers() ([]User, error)
-	GetReviewers() (*Reviewers, error)
-	GetReviews() ([]Review, error)
-	GetUser() (*User, error)
-	Merge(mergeMethod string) error
-	RemoveLabel(labelName string) error
-	RequestReviewers(reviewers []string) error
-	RequestTeamReviewers(reviewers []string) error
-	GetProjectByName(name string) (*Project, error)
-	GetProjectFieldsByProjectNumber(projectNumber uint64) ([]ProjectField, error)
-	GetAssignees() ([]User, error)
-	GetBase() (string, error)
+	GetAssignees() ([]*User, error)
+	GetAvailableAssignees() ([]*User, error)
+	GetAuthor() (*User, error)
 	GetCommentCount() (int, error)
-	GetCommitCount() (int, error)
-	GetCommits() ([]Commit, error)
+	GetComments() ([]*Comment, error)
 	GetCreatedAt() (string, error)
 	GetDescription() (string, error)
-	GetLinkedIssuesCount() (int, error)
-	GetReviewThreads() ([]ReviewThread, error)
-	GetHead() (string, error)
-	IsDraft() (bool, error)
+	GetLabels() ([]*Label, error)
+	GetNodeID() string
+	GetProjectByName(name string) (*Project, error)
+	GetProjectFieldsByProjectNumber(projectNumber uint64) ([]*ProjectField, error)
+	GetTargetEntity() *handler.TargetEntity
+	GetTitle() string
+	RemoveLabel(labelName string) error
 }
 
 type User struct {

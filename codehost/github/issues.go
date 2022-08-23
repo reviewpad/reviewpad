@@ -10,6 +10,14 @@ import (
 	"github.com/google/go-github/v45/github"
 )
 
+func (c *GithubClient) GetIssue(ctx context.Context, owner, repo string, number int) (*github.Issue, *github.Response, error) {
+	return c.clientREST.Issues.Get(ctx, owner, repo, number)
+}
+
+func (c *GithubClient) EditIssue(ctx context.Context, owner string, repo string, number int, issue *github.IssueRequest) (*github.Issue, *github.Response, error) {
+	return c.clientREST.Issues.Edit(ctx, owner, repo, number, issue)
+}
+
 func (c *GithubClient) CreateComment(ctx context.Context, owner string, repo string, number int, comment *github.IssueComment) (*github.IssueComment, *github.Response, error) {
 	return c.clientREST.Issues.CreateComment(ctx, owner, repo, number, comment)
 }
@@ -44,4 +52,34 @@ func (c *GithubClient) AddAssignees(ctx context.Context, owner string, repo stri
 
 func (c *GithubClient) ListIssuesByRepo(ctx context.Context, owner string, repo string, opts *github.IssueListByRepoOptions) ([]*github.Issue, *github.Response, error) {
 	return c.clientREST.Issues.ListByRepo(ctx, owner, repo, opts)
+}
+
+func (c *GithubClient) GetComments(ctx context.Context, owner string, repo string, number int, opts *github.IssueListCommentsOptions) ([]*github.IssueComment, error) {
+	fs, err := PaginatedRequest(
+		func() interface{} {
+			return []*github.IssueComment{}
+		},
+		func(i interface{}, page int) (interface{}, *github.Response, error) {
+			fls := i.([]*github.IssueComment)
+			fs, resp, err := c.clientREST.Issues.ListComments(ctx, owner, repo, number, &github.IssueListCommentsOptions{
+				Sort:      opts.Sort,
+				Direction: opts.Direction,
+				Since:     opts.Since,
+				ListOptions: github.ListOptions{
+					Page:    page,
+					PerPage: maxPerPage,
+				},
+			})
+			if err != nil {
+				return nil, nil, err
+			}
+			fls = append(fls, fs...)
+			return fls, resp, nil
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return fs.([]*github.IssueComment), nil
 }

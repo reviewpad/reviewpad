@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/go-github/v45/github"
 	"github.com/reviewpad/host-event-handler/handler"
+	"github.com/reviewpad/reviewpad/v3/codehost"
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 )
 
@@ -25,7 +26,7 @@ func NewCommonTarget(ctx context.Context, targetEntity *handler.TargetEntity, gi
 	}
 }
 
-func (t CommonTarget) AddAssignees(assignees []string) error {
+func (t *CommonTarget) AddAssignees(assignees []string) error {
 	ctx := t.ctx
 	targetEntity := t.targetEntity
 	owner := targetEntity.Owner
@@ -37,7 +38,7 @@ func (t CommonTarget) AddAssignees(assignees []string) error {
 	return err
 }
 
-func (t CommonTarget) AddLabels(labels []string) error {
+func (t *CommonTarget) AddLabels(labels []string) error {
 	ctx := t.ctx
 	targetEntity := t.targetEntity
 	owner := targetEntity.Owner
@@ -49,12 +50,12 @@ func (t CommonTarget) AddLabels(labels []string) error {
 	return err
 }
 
-func (t CommonTarget) GetAvailableAssignees() ([]User, error) {
+func (t *CommonTarget) GetAvailableAssignees() ([]*codehost.User, error) {
 	ctx := t.ctx
 	targetEntity := t.targetEntity
 	owner := targetEntity.Owner
 	repo := targetEntity.Repo
-	assignees := make([]User, 0)
+	assignees := make([]*codehost.User, 0)
 
 	users, err := t.githubClient.GetIssuesAvailableAssignees(ctx, owner, repo)
 	if err != nil {
@@ -62,7 +63,7 @@ func (t CommonTarget) GetAvailableAssignees() ([]User, error) {
 	}
 
 	for _, user := range users {
-		assignees = append(assignees, User{
+		assignees = append(assignees, &codehost.User{
 			Login: *user.Login,
 		})
 	}
@@ -70,7 +71,7 @@ func (t CommonTarget) GetAvailableAssignees() ([]User, error) {
 	return assignees, nil
 }
 
-func (t CommonTarget) Comment(comment string) error {
+func (t *CommonTarget) Comment(comment string) error {
 	ctx := t.ctx
 	targetEntity := t.targetEntity
 	owner := targetEntity.Owner
@@ -82,30 +83,58 @@ func (t CommonTarget) Comment(comment string) error {
 	return err
 }
 
-func (t CommonTarget) GetComments() ([]Comment, error) {
+func (t *CommonTarget) GetComments() ([]*codehost.Comment, error) {
 	ctx := t.ctx
 	targetEntity := t.targetEntity
 	owner := targetEntity.Owner
 	repo := targetEntity.Repo
 	number := targetEntity.Number
 
-	cs, err := t.githubClient.GetPullRequestComments(ctx, owner, repo, number, &github.IssueListCommentsOptions{})
+	cs, err := t.githubClient.GetComments(ctx, owner, repo, number, &github.IssueListCommentsOptions{})
 	if err != nil {
 		return nil, err
 	}
 
-	comments := make([]Comment, len(cs))
+	comments := make([]*codehost.Comment, len(cs))
 
-	for _, comment := range cs {
-		comments = append(comments, Comment{
+	for i, comment := range cs {
+		comments[i] = &codehost.Comment{
 			Body: *comment.Body,
-		})
+		}
 	}
 
 	return comments, nil
 }
 
-func (t CommonTarget) RemoveLabel(labelName string) error {
+func (t *CommonTarget) GetProjectFieldsByProjectNumber(projectNumber uint64) ([]*codehost.ProjectField, error) {
+	ctx := t.ctx
+	targetEntity := t.targetEntity
+	owner := targetEntity.Owner
+	repo := targetEntity.Repo
+	totalRetries := 2
+
+	ghFields, err := t.githubClient.GetProjectFieldsByProjectNumber(ctx, owner, repo, projectNumber, totalRetries)
+	if err != nil {
+		return nil, err
+	}
+
+	fields := make([]*codehost.ProjectField, len(ghFields))
+	for i, field := range ghFields {
+		fields[i] = &codehost.ProjectField{
+			ID:      field.Details.ID,
+			Name:    field.Details.Name,
+			Options: field.Details.Options,
+		}
+	}
+
+	return fields, nil
+}
+
+func (t *CommonTarget) GetTargetEntity() *handler.TargetEntity {
+	return t.targetEntity
+}
+
+func (t *CommonTarget) RemoveLabel(labelName string) error {
 	ctx := t.ctx
 	targetEntity := t.targetEntity
 	owner := targetEntity.Owner
