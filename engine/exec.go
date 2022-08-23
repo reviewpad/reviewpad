@@ -133,6 +133,19 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 		ruleActivatedQueue := make([]PadWorkflowRule, 0)
 		ruleDefinitionQueue := make(map[string]PadRule)
 
+		shouldRun := false
+		for _, eventKind := range workflow.On {
+			if eventKind == env.TargetEntity.Kind {
+				shouldRun = true
+				break
+			}
+		}
+
+		if !shouldRun {
+			execLogf("\tskipping workflow because event kind is %v and workflow is on %v", env.TargetEntity.Kind, workflow.On)
+			continue
+		}
+
 		for _, rule := range workflow.Rules {
 			ruleName := rule.Rule
 			ruleDefinition := rules[ruleName]

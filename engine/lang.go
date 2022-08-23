@@ -4,6 +4,8 @@
 
 package engine
 
+import "github.com/reviewpad/host-event-handler/handler"
+
 const (
 	PROFESSIONAL_EDITION string = "professional"
 	TEAM_EDITION         string = "team"
@@ -94,17 +96,29 @@ func (p PadLabel) equals(o PadLabel) bool {
 }
 
 type PadWorkflow struct {
-	Name               string            `yaml:"name"`
-	Description        string            `yaml:"description"`
-	AlwaysRun          bool              `yaml:"always-run"`
-	Rules              []PadWorkflowRule `yaml:"-"`
-	Actions            []string          `yaml:"then"`
-	NonNormalizedRules []interface{}     `yaml:"if"`
+	Name               string                     `yaml:"name"`
+	On                 []handler.TargetEntityKind `yaml:"on"`
+	Description        string                     `yaml:"description"`
+	AlwaysRun          bool                       `yaml:"always-run"`
+	Rules              []PadWorkflowRule          `yaml:"-"`
+	Actions            []string                   `yaml:"then"`
+	NonNormalizedRules []interface{}              `yaml:"if"`
 }
 
 func (p PadWorkflow) equals(o PadWorkflow) bool {
 	if p.Name != o.Name {
 		return false
+	}
+
+	if len(p.On) != len(o.On) {
+		return false
+	}
+
+	for i, pO := range p.On {
+		oO := o.On[i]
+		if pO != oO {
+			return false
+		}
 	}
 
 	if p.Description != o.Description {
