@@ -61,7 +61,7 @@ func Run(
 		return engine.ExitStatusFailure, err
 	}
 
-	evalEnv, err := engine.NewEvalEnv(ctx, dryRun, githubClient, collector, targetEntity, eventPayload, aladinoInterpreter)
+	evalEnv, err := engine.NewEvalEnv(ctx, dryRun, githubClient, collector, targetEntity, aladinoInterpreter)
 	if err != nil {
 		return engine.ExitStatusFailure, err
 	}
@@ -86,12 +86,6 @@ func Run(
 	}
 
 	collectedData := map[string]interface{}{}
-
-	if evalEnv.TargetEntity.Kind == handler.PullRequest {
-		collectedData["pullRequestUrl"] = evalEnv.PullRequest.URL
-	} else {
-		collectedData["issueUrl"] = evalEnv.Issue.URL
-	}
 
 	err = evalEnv.Collector.Collect("Completed Analysis", collectedData)
 
