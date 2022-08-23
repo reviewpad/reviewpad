@@ -224,7 +224,7 @@ func processInlineRules(file *ReviewpadFile) (*ReviewpadFile, error) {
 	}
 
 	for i, workflow := range reviewpadFile.Workflows {
-		processedWorkflow, rules, err := processInlineRulesOnWorkflow(workflow)
+		processedWorkflow, rules, err := processInlineRulesOnWorkflow(workflow, file.Rules)
 		if err != nil {
 			return nil, err
 		}
@@ -236,7 +236,7 @@ func processInlineRules(file *ReviewpadFile) (*ReviewpadFile, error) {
 	return reviewpadFile, nil
 }
 
-func processInlineRulesOnWorkflow(workflow PadWorkflow) (*PadWorkflow, []PadRule, error) {
+func processInlineRulesOnWorkflow(workflow PadWorkflow, rules []PadRule) (*PadWorkflow, []PadRule, error) {
 	wf := &PadWorkflow{
 		Name:        workflow.Name,
 		Description: workflow.Description,
@@ -250,22 +250,32 @@ func processInlineRulesOnWorkflow(workflow PadWorkflow) (*PadWorkflow, []PadRule
 	for _, rule := range workflow.NonNormalizedRules {
 		switch r := rule.(type) {
 		case string:
-			name := fmt.Sprintf("inline rule %s", r)
+			padRule := inlineRuleToPadRule(r)
 
-			foundInlineRules = append(foundInlineRules, PadRule{
-				Name:        name,
-				Spec:        r,
-				Kind:        "patch",
-				Description: name,
-			})
+			foundInlineRules = append(foundInlineRules, padRule)
 
 			wf.Rules = append(wf.Rules, PadWorkflowRule{
-				Rule: name,
+				Rule: padRule.Name,
 			})
 		case map[string]interface{}:
 			rule, err := mapToPadWorkflowRule(r)
 			if err != nil {
 				return nil, nil, err
+			}
+
+			// if the rule doesn't exist in the list of rules
+			// treat it as an inline rule with extra actions
+			if _, exists := findRule(rules, rule.Rule); !exists {
+				padRule := inlineRuleToPadRule(rule.Rule)
+
+				foundInlineRules = append(foundInlineRules, padRule)
+
+				wf.Rules = append(wf.Rules, PadWorkflowRule{
+					Rule:         padRule.Name,
+					ExtraActions: rule.ExtraActions,
+				})
+
+				continue
 			}
 
 			wf.Rules = append(wf.Rules, *rule)
@@ -285,4 +295,15 @@ func mapToPadWorkflowRule(rule map[string]interface{}) (*PadWorkflowRule, error)
 	r := &PadWorkflowRule{}
 	err := mapstructure.Decode(rule, r)
 	return r, err
+}
+
+func inlineRuleToPadRule(rule string) PadRule {
+	name := fmt.Sprintf("inline rule %s", rule)
+
+	return PadRule{
+		Name:        name,
+		Spec:        rule,
+		Kind:        "patch",
+		Description: name,
+	}
 }
