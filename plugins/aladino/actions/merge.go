@@ -7,18 +7,21 @@ package plugins_aladino_actions
 import (
 	"fmt"
 
+	"github.com/reviewpad/host-event-handler/handler"
+	"github.com/reviewpad/reviewpad/v3/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 )
 
 func Merge() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
-		Type: aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, nil),
-		Code: mergeCode,
+		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, nil),
+		Code:           mergeCode,
+		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest},
 	}
 }
 
 func mergeCode(e aladino.Env, args []aladino.Value) error {
-	t := e.GetTarget()
+	t := e.GetTarget().(*target.PullRequestTarget)
 
 	mergeMethod, err := parseMergeMethod(args)
 	if err != nil {

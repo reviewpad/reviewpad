@@ -8,19 +8,22 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/reviewpad/host-event-handler/handler"
+	"github.com/reviewpad/reviewpad/v3/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	"github.com/reviewpad/reviewpad/v3/utils"
 )
 
 func AssignReviewer() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
-		Type: aladino.BuildFunctionType([]aladino.Type{aladino.BuildArrayOfType(aladino.BuildStringType()), aladino.BuildIntType()}, nil),
-		Code: assignReviewerCode,
+		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildArrayOfType(aladino.BuildStringType()), aladino.BuildIntType()}, nil),
+		Code:           assignReviewerCode,
+		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest},
 	}
 }
 
 func assignReviewerCode(e aladino.Env, args []aladino.Value) error {
-	t := e.GetTarget()
+	t := e.GetTarget().(*target.PullRequestTarget)
 	totalRequiredReviewers := args[1].(*aladino.IntValue).Val
 	if totalRequiredReviewers == 0 {
 		return fmt.Errorf("assignReviewer: total required reviewers can't be 0")
@@ -31,14 +34,14 @@ func assignReviewerCode(e aladino.Env, args []aladino.Value) error {
 		return fmt.Errorf("assignReviewer: list of reviewers can't be empty")
 	}
 
-	user, err := t.GetUser()
+	author, err := t.GetAuthor()
 	if err != nil {
 		return err
 	}
 
 	// Remove pull request author from provided reviewers list
 	for index, reviewer := range availableReviewers {
-		if reviewer.(*aladino.StringValue).Val == user.Login {
+		if reviewer.(*aladino.StringValue).Val == author.Login {
 			availableReviewers = append(availableReviewers[:index], availableReviewers[index+1:]...)
 			break
 		}

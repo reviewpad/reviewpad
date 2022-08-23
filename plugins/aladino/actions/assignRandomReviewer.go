@@ -7,19 +7,22 @@ package plugins_aladino_actions
 import (
 	"fmt"
 
+	"github.com/reviewpad/host-event-handler/handler"
+	"github.com/reviewpad/reviewpad/v3/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	"github.com/reviewpad/reviewpad/v3/utils"
 )
 
 func AssignRandomReviewer() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
-		Type: aladino.BuildFunctionType([]aladino.Type{}, nil),
-		Code: assignRandomReviewerCode,
+		Type:           aladino.BuildFunctionType([]aladino.Type{}, nil),
+		Code:           assignRandomReviewerCode,
+		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest},
 	}
 }
 
 func assignRandomReviewerCode(e aladino.Env, _ []aladino.Value) error {
-	t := e.GetTarget()
+	t := e.GetTarget().(*target.PullRequestTarget)
 
 	reviewers, err := t.GetReviewers()
 	if err != nil {
@@ -38,7 +41,7 @@ func assignRandomReviewerCode(e aladino.Env, _ []aladino.Value) error {
 
 	filteredGhUsers := []string{}
 
-	user, err := t.GetUser()
+	user, err := t.GetAuthor()
 	if err != nil {
 		return err
 	}

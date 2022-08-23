@@ -8,6 +8,7 @@ import (
 	"crypto/sha256"
 	"fmt"
 
+	"github.com/reviewpad/host-event-handler/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 )
 
@@ -15,8 +16,9 @@ const ReviewpadCommentAnnotation = "<!--@annotation-reviewpad-single-comment-->"
 
 func CommentOnce() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
-		Type: aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, nil),
-		Code: commentOnceCode,
+		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, nil),
+		Code:           commentOnceCode,
+		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest, handler.Issue},
 	}
 }
 
@@ -40,5 +42,5 @@ func commentOnceCode(e aladino.Env, args []aladino.Value) error {
 		}
 	}
 
-	return t.Comment(commentBody)
+	return t.Comment(commentBodyWithReviewpadAnnotation)
 }

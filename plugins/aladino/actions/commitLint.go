@@ -9,21 +9,24 @@ import (
 
 	"github.com/reviewpad/go-conventionalcommits"
 	"github.com/reviewpad/go-conventionalcommits/parser"
-	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
+	"github.com/reviewpad/host-event-handler/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 )
 
 func CommitLint() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
-		Type: aladino.BuildFunctionType([]aladino.Type{}, nil),
-		Code: commitLintCode,
+		Type:           aladino.BuildFunctionType([]aladino.Type{}, nil),
+		Code:           commitLintCode,
+		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest},
 	}
 }
 
 func commitLintCode(e aladino.Env, _ []aladino.Value) error {
-	prNum := gh.GetPullRequestNumber(e.GetPullRequest())
-	owner := gh.GetPullRequestBaseOwnerName(e.GetPullRequest())
-	repo := gh.GetPullRequestBaseRepoName(e.GetPullRequest())
+	entity := e.GetTarget().GetTargetEntity()
+
+	prNum := entity.Number
+	owner := entity.Owner
+	repo := entity.Repo
 
 	ghCommits, err := e.GetGithubClient().GetPullRequestCommits(e.GetCtx(), owner, repo, prNum)
 	if err != nil {

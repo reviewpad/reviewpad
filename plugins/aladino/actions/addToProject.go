@@ -8,7 +8,9 @@ import (
 	"errors"
 	"strings"
 
+	"github.com/reviewpad/host-event-handler/handler"
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
+	"github.com/reviewpad/reviewpad/v3/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 )
 
@@ -38,13 +40,14 @@ type UpdateProjectV2ItemFieldValueInput struct {
 
 func AddToProject() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
-		Type: aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType(), aladino.BuildStringType()}, aladino.BuildStringType()),
-		Code: addToProjectCode,
+		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType(), aladino.BuildStringType()}, aladino.BuildStringType()),
+		Code:           addToProjectCode,
+		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest},
 	}
 }
 
 func addToProjectCode(e aladino.Env, args []aladino.Value) error {
-	pr := e.GetPullRequest()
+	pr := e.GetTarget().(*target.PullRequestTarget).PullRequest
 	owner := gh.GetPullRequestBaseOwnerName(pr)
 	repo := gh.GetPullRequestBaseRepoName(pr)
 	projectName := args[0].(*aladino.StringValue).Val

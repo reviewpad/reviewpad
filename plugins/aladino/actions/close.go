@@ -5,13 +5,15 @@
 package plugins_aladino_actions
 
 import (
+	"github.com/reviewpad/host-event-handler/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 )
 
 func Close() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
-		Type: aladino.BuildFunctionType([]aladino.Type{}, nil),
-		Code: closeCode,
+		Type:           aladino.BuildFunctionType([]aladino.Type{}, nil),
+		Code:           closeCode,
+		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest, handler.Issue},
 	}
 }
 

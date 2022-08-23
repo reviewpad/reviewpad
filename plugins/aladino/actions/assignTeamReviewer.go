@@ -7,18 +7,22 @@ package plugins_aladino_actions
 import (
 	"fmt"
 
+	"github.com/reviewpad/host-event-handler/handler"
+	"github.com/reviewpad/reviewpad/v3/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 )
 
 func AssignTeamReviewer() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
-		Type: aladino.BuildFunctionType([]aladino.Type{aladino.BuildArrayOfType(aladino.BuildStringType())}, nil),
-		Code: assignTeamReviewerCode,
+		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildArrayOfType(aladino.BuildStringType())}, nil),
+		Code:           assignTeamReviewerCode,
+		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest},
 	}
 }
 
 func assignTeamReviewerCode(e aladino.Env, args []aladino.Value) error {
-	t := e.GetTarget()
+	t := e.GetTarget().(*target.PullRequestTarget)
+
 	teamReviewers := args[0].(*aladino.ArrayValue).Vals
 
 	if len(teamReviewers) < 1 {
