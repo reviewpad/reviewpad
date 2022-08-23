@@ -15,6 +15,15 @@ func (c *GithubClient) GetRepositoryBranch(ctx context.Context, owner string, re
 	return c.clientREST.Repositories.GetBranch(ctx, owner, repo, branch, followRedirects)
 }
 
+func (c *GithubClient) GetDefaultRepositoryBranch(ctx context.Context, owner string, repo string) (string, error) {
+	repository, _, err := c.clientREST.Repositories.Get(ctx, owner, repo)
+	if err != nil {
+		return "", err
+	}
+
+	return repository.GetDefaultBranch(), nil
+}
+
 func (c *GithubClient) DownloadContents(ctx context.Context, filePath string, branch *github.PullRequestBranch) ([]byte, error) {
 	branchRepoOwner := *branch.Repo.Owner.Login
 	branchRepoName := *branch.Repo.Name
