@@ -15,7 +15,7 @@ require (
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/reviewpad/api/go v0.0.0-20220822084656-a70503c7406c
 	github.com/reviewpad/go-conventionalcommits v0.10.0
-	github.com/reviewpad/host-event-handler v0.0.4-0.20220816100330-34adb3cff3b1
+	github.com/reviewpad/host-event-handler v0.0.4-0.20220823123635-106fbae55083
 	github.com/shurcooL/githubv4 v0.0.0-20220520033151-0b4e3294ff00
 	github.com/spf13/cobra v1.5.0
 	github.com/stretchr/testify v1.8.0
