@@ -19,8 +19,14 @@ var labels = plugins_aladino.PluginBuiltIns().Functions["labels"].Code
 
 func TestLabels(t *testing.T) {
 	ghLabels := []*github.Label{
-		{Name: github.String("bug")},
-		{Name: github.String("enhancement")},
+		{
+			Name: github.String("bug"),
+			ID:   github.Int64(1),
+		},
+		{
+			Name: github.String("enhancement"),
+			ID:   github.Int64(2),
+		},
 	}
 	mockedPullRequest := aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
 		Labels: ghLabels,

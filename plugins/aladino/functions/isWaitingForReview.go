@@ -8,19 +8,22 @@ import (
 	"log"
 
 	"github.com/google/go-github/v45/github"
+	"github.com/reviewpad/host-event-handler/handler"
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
+	"github.com/reviewpad/reviewpad/v3/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 )
 
 func IsWaitingForReview() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type: aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildBoolType()),
-		Code: isWaitingForReviewCode,
+		Type:           aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildBoolType()),
+		Code:           isWaitingForReviewCode,
+		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest},
 	}
 }
 
 func isWaitingForReviewCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
-	pullRequest := e.GetPullRequest()
+	pullRequest := e.GetTarget().(*target.PullRequestTarget).PullRequest
 	requestedUsers := pullRequest.RequestedReviewers
 	requestedTeams := pullRequest.RequestedTeams
 

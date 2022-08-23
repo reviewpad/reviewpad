@@ -11,14 +11,18 @@ import (
 
 	"github.com/reviewpad/api/go/entities"
 	api "github.com/reviewpad/api/go/services"
+	"github.com/reviewpad/host-event-handler/handler"
+	"github.com/reviewpad/reviewpad/v3/codehost"
+	"github.com/reviewpad/reviewpad/v3/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	plugins_aladino_services "github.com/reviewpad/reviewpad/v3/plugins/aladino/services"
 )
 
 func HasAnnotation() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type: aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, aladino.BuildBoolType()),
-		Code: hasAnnotationCode,
+		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, aladino.BuildBoolType()),
+		Code:           hasAnnotationCode,
+		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest},
 	}
 }
 
@@ -64,19 +68,23 @@ func commentHasAnnotation(comment, annotation string) bool {
 }
 
 func getSymbolsFromPatch(e aladino.Env) (map[string]*entities.Symbols, error) {
+	pullRequest := e.GetTarget().(*target.PullRequestTarget)
+
 	res := make(map[string]*entities.Symbols)
 
-	url := e.GetPullRequest().GetHead().GetRepo().GetURL()
-	patch := e.GetPatch()
+	head := pullRequest.PullRequest.GetHead()
+	base := pullRequest.PullRequest.GetBase()
+	url := head.GetRepo().GetURL()
+	patch := pullRequest.Patch
 
-	lastCommit := e.GetPullRequest().Head.SHA
+	lastCommit := head.SHA
 
 	for fp, commitFile := range patch {
-		blob, err := e.GetGithubClient().DownloadContents(e.GetCtx(), fp, e.GetPullRequest().GetHead())
+		blob, err := e.GetGithubClient().DownloadContents(e.GetCtx(), fp, head)
 		if err != nil {
 			// If fails to download the file from head, then tries to download it from base.
 			// This happens when a file has been removed.
-			blob, err = e.GetGithubClient().DownloadContents(e.GetCtx(), fp, e.GetPullRequest().GetBase())
+			blob, err = e.GetGithubClient().DownloadContents(e.GetCtx(), fp, base)
 
 			if err != nil {
 				return nil, err
@@ -114,7 +122,7 @@ func getSymbolsFromPatch(e aladino.Env) (map[string]*entities.Symbols, error) {
 	return res, nil
 }
 
-func getBlocks(commitFile *aladino.File) []*entities.ResolveBlockDiff {
+func getBlocks(commitFile *codehost.File) []*entities.ResolveBlockDiff {
 	res := make([]*entities.ResolveBlockDiff, len(commitFile.Diff))
 	for i, block := range commitFile.Diff {
 		if block.New != nil {

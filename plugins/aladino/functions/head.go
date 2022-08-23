@@ -4,17 +4,24 @@
 
 package plugins_aladino_functions
 
-import "github.com/reviewpad/reviewpad/v3/lang/aladino"
+import (
+	"github.com/reviewpad/host-event-handler/handler"
+	"github.com/reviewpad/reviewpad/v3/codehost/github/target"
+	"github.com/reviewpad/reviewpad/v3/lang/aladino"
+)
 
 func Head() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type: aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildStringType()),
-		Code: headCode,
+		Type:           aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildStringType()),
+		Code:           headCode,
+		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest},
 	}
 }
 
 func headCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
-	head, err := e.GetTarget().GetHead()
+	pullRequest := e.GetTarget().(*target.PullRequestTarget)
+
+	head, err := pullRequest.GetHead()
 	if err != nil {
 		return nil, err
 	}

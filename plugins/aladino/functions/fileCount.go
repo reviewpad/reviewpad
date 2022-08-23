@@ -4,16 +4,21 @@
 
 package plugins_aladino_functions
 
-import "github.com/reviewpad/reviewpad/v3/lang/aladino"
+import (
+	"github.com/reviewpad/host-event-handler/handler"
+	"github.com/reviewpad/reviewpad/v3/codehost/github/target"
+	"github.com/reviewpad/reviewpad/v3/lang/aladino"
+)
 
 func FileCount() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type: aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildIntType()),
-		Code: fileCountCode,
+		Type:           aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildIntType()),
+		Code:           fileCountCode,
+		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest},
 	}
 }
 
 func fileCountCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
-	patch := e.GetPatch()
+	patch := e.GetTarget().(*target.PullRequestTarget).Patch
 	return aladino.BuildIntValue(len(patch)), nil
 }

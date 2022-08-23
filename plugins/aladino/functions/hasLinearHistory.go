@@ -5,18 +5,23 @@
 package plugins_aladino_functions
 
 import (
+	"github.com/reviewpad/host-event-handler/handler"
+	"github.com/reviewpad/reviewpad/v3/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 )
 
 func HasLinearHistory() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type: aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildBoolType()),
-		Code: hasLinearHistoryCode,
+		Type:           aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildBoolType()),
+		Code:           hasLinearHistoryCode,
+		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest},
 	}
 }
 
 func hasLinearHistoryCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
-	ghCommits, err := e.GetTarget().GetCommits()
+	pullRequest := e.GetTarget().(*target.PullRequestTarget)
+
+	ghCommits, err := pullRequest.GetCommits()
 	if err != nil {
 		return nil, err
 	}

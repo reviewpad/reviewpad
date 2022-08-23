@@ -4,17 +4,23 @@
 
 package plugins_aladino_functions
 
-import "github.com/reviewpad/reviewpad/v3/lang/aladino"
+import (
+	"github.com/reviewpad/host-event-handler/handler"
+	"github.com/reviewpad/reviewpad/v3/codehost/github/target"
+	"github.com/reviewpad/reviewpad/v3/lang/aladino"
+)
 
 func CommitCount() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type: aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildIntType()),
-		Code: commitCountCode,
+		Type:           aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildIntType()),
+		Code:           commitCountCode,
+		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest},
 	}
 }
 
 func commitCountCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
-	commitCount, err := e.GetTarget().GetCommitCount()
+	t := e.GetTarget().(*target.PullRequestTarget)
+	commitCount, err := t.GetCommitCount()
 	if err != nil {
 		return nil, err
 	}

@@ -4,16 +4,22 @@
 
 package plugins_aladino_functions
 
-import "github.com/reviewpad/reviewpad/v3/lang/aladino"
+import (
+	"github.com/reviewpad/host-event-handler/handler"
+	"github.com/reviewpad/reviewpad/v3/codehost/github/target"
+	"github.com/reviewpad/reviewpad/v3/lang/aladino"
+)
 
 func Milestone() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type: aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildStringType()),
-		Code: milestoneCode,
+		Type:           aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildStringType()),
+		Code:           milestoneCode,
+		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest},
 	}
 }
 
 func milestoneCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
-	milestoneTitle := e.GetPullRequest().GetMilestone().GetTitle()
+	pullRequest := e.GetTarget().(*target.PullRequestTarget).PullRequest
+	milestoneTitle := pullRequest.GetMilestone().GetTitle()
 	return aladino.BuildStringValue(milestoneTitle), nil
 }

@@ -5,18 +5,22 @@
 package plugins_aladino_functions
 
 import (
+	"github.com/reviewpad/host-event-handler/handler"
+	"github.com/reviewpad/reviewpad/v3/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 )
 
 func HasLinkedIssues() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type: aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildBoolType()),
-		Code: hasLinkedIssuesCode,
+		Type:           aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildBoolType()),
+		Code:           hasLinkedIssuesCode,
+		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest},
 	}
 }
 
 func hasLinkedIssuesCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
-	closingIssuesCount, err := e.GetTarget().GetLinkedIssuesCount()
+	pullRequest := e.GetTarget().(*target.PullRequestTarget)
+	closingIssuesCount, err := pullRequest.GetLinkedIssuesCount()
 	if err != nil {
 		return nil, err
 	}

@@ -4,17 +4,21 @@
 
 package plugins_aladino_functions
 
-import "github.com/reviewpad/reviewpad/v3/lang/aladino"
+import (
+	"github.com/reviewpad/host-event-handler/handler"
+	"github.com/reviewpad/reviewpad/v3/lang/aladino"
+)
 
 func Organization() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type: aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildArrayOfType(aladino.BuildStringType())),
-		Code: organizationCode,
+		Type:           aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildArrayOfType(aladino.BuildStringType())),
+		Code:           organizationCode,
+		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest, handler.Issue},
 	}
 }
 
 func organizationCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
-	orgName := *e.GetPullRequest().Head.Repo.Owner.Login
+	orgName := e.GetTarget().GetTargetEntity().Owner
 	users, _, err := e.GetGithubClient().ListOrganizationMembers(e.GetCtx(), orgName, nil)
 	if err != nil {
 		return nil, err
