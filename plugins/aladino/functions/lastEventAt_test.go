@@ -113,7 +113,7 @@ func TestLastEvent(t *testing.T) {
 					mock.WithRequestMatch(
 						mock.GetReposIssuesTimelineByOwnerByRepoByIssueNumber,
 						[]*github.Timeline{
-							{ID:        github.Int64(6430295168)},
+							{ID: github.Int64(6430295168)},
 						},
 					),
 				},

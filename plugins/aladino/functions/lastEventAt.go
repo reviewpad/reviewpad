@@ -43,7 +43,7 @@ func lastEventAtCode(e aladino.Env, args []aladino.Value) (aladino.Value, error)
 		return aladino.BuildIntValue(int(createdAtTime.Unix())), nil
 	}
 
-    lastEvent := timeline[len(timeline)-1]
+	lastEvent := timeline[len(timeline)-1]
 	var lastEventTime int
 	if *lastEvent.Event == "reviewed" {
 		lastEventTime = int(lastEvent.GetSubmittedAt().Unix())
