@@ -222,10 +222,9 @@ func processInlineRules(file *ReviewpadFile) (*ReviewpadFile, error) {
 		Labels:       file.Labels,
 		Workflows:    file.Workflows,
 	}
-	alreadyGeneratedRules := map[string]bool{}
 
 	for i, workflow := range reviewpadFile.Workflows {
-		processedWorkflow, rules, err := processInlineRulesOnWorkflow(workflow, file.Rules, alreadyGeneratedRules)
+		processedWorkflow, rules, err := processInlineRulesOnWorkflow(workflow, reviewpadFile.Rules)
 		if err != nil {
 			return nil, err
 		}
@@ -237,7 +236,7 @@ func processInlineRules(file *ReviewpadFile) (*ReviewpadFile, error) {
 	return reviewpadFile, nil
 }
 
-func processInlineRulesOnWorkflow(workflow PadWorkflow, currentRules []PadRule, alreadyGeneratedRules map[string]bool) (*PadWorkflow, []PadRule, error) {
+func processInlineRulesOnWorkflow(workflow PadWorkflow, currentRules []PadRule) (*PadWorkflow, []PadRule, error) {
 	wf := &PadWorkflow{
 		Name:        workflow.Name,
 		Description: workflow.Description,
@@ -246,66 +245,54 @@ func processInlineRulesOnWorkflow(workflow PadWorkflow, currentRules []PadRule, 
 		Actions:     workflow.Actions,
 		On:          workflow.On,
 	}
-	currentNormalizedRules := make([]PadRule, 0)
+	rules := make([]PadRule, 0)
 
-	for _, rule := range workflow.NonNormalizedRules {
-		switch r := rule.(type) {
+	for _, rawRule := range workflow.NonNormalizedRules {
+		var rule *PadRule
+		var workflowRule *PadWorkflowRule
+
+		switch r := rawRule.(type) {
 		case string:
-			padRule := inlineRuleToPadRule(r)
-
-			if !alreadyGeneratedRules[padRule.Name] {
-				alreadyGeneratedRules[padRule.Name] = true
-				currentNormalizedRules = append(currentNormalizedRules, padRule)
+			rule = decodeRule(r)
+			workflowRule = &PadWorkflowRule{
+				Rule:         rule.Name,
+				ExtraActions: []string{},
 			}
-
-			wf.Rules = append(wf.Rules, PadWorkflowRule{
-				Rule: padRule.Name,
-			})
 		case map[string]interface{}:
-			rule, err := mapToPadWorkflowRule(r)
+			decodedWorkflowRule, err := decodeWorkflowRule(r)
 			if err != nil {
 				return nil, nil, err
 			}
-
-			// if the rule doesn't exist in the list of available rules
-			// treat it as an inline rule with extra actions
-			if _, exists := findRule(currentRules, rule.Rule); !exists {
-				padRule := inlineRuleToPadRule(rule.Rule)
-
-				if !alreadyGeneratedRules[padRule.Name] {
-					alreadyGeneratedRules[padRule.Name] = true
-					currentNormalizedRules = append(currentNormalizedRules, padRule)
-				}
-
-				wf.Rules = append(wf.Rules, PadWorkflowRule{
-					Rule:         padRule.Name,
-					ExtraActions: rule.ExtraActions,
-				})
-			} else {
-				wf.Rules = append(wf.Rules, *rule)
-			}
+			workflowRule = decodedWorkflowRule
+			rule = decodeRule(decodedWorkflowRule.Rule)
 		default:
 			return nil, nil, fmt.Errorf("unknown rule type %T", r)
 		}
+
+		if _, exists := findRule(currentRules, rule.Name); !exists {
+			rules = append(rules, *rule)
+		}
+
+		if workflowRule != nil {
+			wf.Rules = append(wf.Rules, *workflowRule)
+		}
 	}
 
-	// we are removing the non-normalized rules from the workflow
-	// to make things a bit easier to test
 	workflow.NonNormalizedRules = nil
 
-	return wf, currentNormalizedRules, nil
+	return wf, rules, nil
 }
 
-func mapToPadWorkflowRule(rule map[string]interface{}) (*PadWorkflowRule, error) {
-	r := &PadWorkflowRule{}
-	err := mapstructure.Decode(rule, r)
-	return r, err
-}
-
-func inlineRuleToPadRule(rule string) PadRule {
-	return PadRule{
-		Name: fmt.Sprintf("inline rule %s", rule),
+func decodeRule(rule string) *PadRule {
+	return &PadRule{
+		Name: rule,
 		Spec: rule,
 		Kind: "patch",
 	}
+}
+
+func decodeWorkflowRule(rule map[string]interface{}) (*PadWorkflowRule, error) {
+	workflowRule := &PadWorkflowRule{}
+	err := mapstructure.Decode(rule, workflowRule)
+	return workflowRule, err
 }

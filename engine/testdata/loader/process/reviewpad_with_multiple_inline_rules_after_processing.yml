@@ -5,23 +5,23 @@ rules:
     kind: patch
     description: Always true
     spec: 'true'
-  - name: inline rule $size() < 10
+  - name: $size() < 10
     kind: patch
     spec: $size() < 10
-  - name: inline rule $size() < 5
+  - name: $size() < 5
     kind: patch
     spec: $size() < 5
-  - name: inline rule $size() > 10
+  - name: $size() > 10
     kind: patch
     spec: $size() > 10
 
 workflows:
   - name: size
     if:
-      - rule: "inline rule $size() < 10"
+      - rule: "$size() < 10"
         extra-actions:
           - $commentOnce("lower-then-10")
-      - rule: "inline rule $size() < 5"
+      - rule: "$size() < 5"
         extra-actions:
           - $commentOnce("lower-than-5")
     then:
@@ -38,18 +38,18 @@ workflows:
           - $commentOnce("world-done")
   - name: inline-false
     if:
-      - rule: "inline rule $size() > 10"
+      - rule: "$size() > 10"
     then:
       - $commentOnce("inline-false-done")
   - name: inline-true
     if:
-      - rule: "inline rule $size() < 10"
+      - rule: "$size() < 10"
     then:
       - $commentOnce("inline-true-done")
   - name: all
     if:
-      - rule: "inline rule $size() < 5"
-      - rule: "inline rule $size() < 10"
+      - rule: "$size() < 5"
+      - rule: "$size() < 10"
         extra-actions:
           - $commentOnce("all-done-size-less-10")
     then:

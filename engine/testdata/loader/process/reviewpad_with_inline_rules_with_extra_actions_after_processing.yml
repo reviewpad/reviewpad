@@ -8,14 +8,14 @@ rules:
   - name: tautology
     kind: patch
     spec: true
-  - name: 'inline rule $size() <= 30'
+  - name: '$size() <= 30'
     kind: patch
     spec: '$size() <= 30'
 
 workflows:
   - name: test-process
     if:
-      - rule: 'inline rule $size() <= 30'
+      - rule: '$size() <= 30'
         extra-actions:
           - $addLabel("small")
       - rule: tautology
