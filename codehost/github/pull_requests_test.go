@@ -111,10 +111,10 @@ func TestPaginatedRequest_WhenFurtherRequestsFail(t *testing.T) {
 				Response: &http.Response{
 					Header: respHeader,
 				},
-				NextPage: 3,
+				NextPage: page + 1,
 			}
 
-			return paginatedRequestResult{pageNum: 1}, resp, nil
+			return paginatedRequestResult{pageNum: page + 1}, resp, nil
 		}
 
 		return nil, nil, errors.New(failMessage)
@@ -134,19 +134,16 @@ func TestPaginatedRequest(t *testing.T) {
 	}
 	reqFn := func(i interface{}, page int) (interface{}, *github.Response, error) {
 		results := i.([]*paginatedRequestResult)
-		if page == 1 {
-			respHeader := make(http.Header)
-			respHeader.Add("Link", "<https://api.github.com/user/58276/repos?page=3>; rel=\"last\"")
-			resp := &github.Response{
-				Response: &http.Response{
-					Header: respHeader,
-				},
-			}
-
-			return results, resp, nil
+		respHeader := make(http.Header)
+		respHeader.Add("Link", "<https://api.github.com/user/58276/repos?page=3>; rel=\"last\"")
+		resp := &github.Response{
+			Response: &http.Response{
+				Header: respHeader,
+			},
+			NextPage: page + 1,
 		}
 
-		return results, nil, nil
+		return results, resp, nil
 	}
 
 	wantRes := []*paginatedRequestResult{{pageNum: 1}}
@@ -156,55 +153,40 @@ func TestPaginatedRequest(t *testing.T) {
 	assert.Equal(t, gotRes, wantRes)
 }
 
-func TestParseNumPagesFromLink_WhenHTTPLinkHeaderHasNoRel(t *testing.T) {
-	link := "<https://api.github.com/user/58276/repos?page=1>"
-
-	wantNumPages := 0
-
-	gotNumPages := host.ParseNumPagesFromLink(link)
-
-	assert.Equal(t, wantNumPages, gotNumPages)
-}
-
-func TestParseNumPagesFromLink_WhenHTTPLinkHeaderIsInvalid(t *testing.T) {
-	link := "<invalid%+url>; rel=\"last\""
-
-	wantNumPages := 0
-
-	gotNumPages := host.ParseNumPagesFromLink(link)
-
-	assert.Equal(t, wantNumPages, gotNumPages)
-}
-
-func TestParseNumPagesFromLink_WhenHTTPLinkHeaderHasNoQueryParamPage(t *testing.T) {
-	link := "<https://api.github.com/user/58276/repos>; rel=\"last\""
-
-	wantNumPages := 0
-
-	gotNumPages := host.ParseNumPagesFromLink(link)
-
-	assert.Equal(t, wantNumPages, gotNumPages)
-}
-
-func TestParseNumPagesFromLink_WhenHTTPLinkHeaderHasInvalidQueryParamPage(t *testing.T) {
-	link := "<https://api.github.com/user/58276/repos?page=7B316>; rel=\"last\""
-
-	wantNumPages := 0
-
-	gotNumPages := host.ParseNumPagesFromLink(link)
-
-	assert.Equal(t, wantNumPages, gotNumPages)
-}
-
 func TestParseNumPagesFromLink(t *testing.T) {
-	link := "<https://api.github.com/user/58276/repos?page=3>; rel=\"last\""
+	tests := map[string]struct {
+		link         string
+		wantNumPages int
+	}{
+		"when http link header has no rel": {
+			link:         "<https://api.github.com/user/58276/repos?page=1>",
+			wantNumPages: 0,
+		},
+		"when http link header is invalid": {
+			link:         "<invalid%+url>; rel=\"last\"",
+			wantNumPages: 0,
+		},
+		"when http link header has no page query parameter": {
+			link:         "<https://api.github.com/user/58276/repos>; rel=\"last\"",
+			wantNumPages: 0,
+		},
+		"when http link header has invalid page query parameter": {
+			link:         "<https://api.github.com/user/58276/repos?page=7B316>; rel=\"last\"",
+			wantNumPages: 0,
+		},
+		"when parse is successful": {
+			link:         "<https://api.github.com/user/58276/repos?page=3>; rel=\"last\"",
+			wantNumPages: 3,
+		},
+	}
 
-	// The number of pages is provided in the url query parameter "page"
-	wantNumPages := 3
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			gotNumPages := host.ParseNumPagesFromLink(test.link)
 
-	gotNumPages := host.ParseNumPagesFromLink(link)
-
-	assert.Equal(t, wantNumPages, gotNumPages)
+			assert.Equal(t, test.wantNumPages, gotNumPages)
+		})
+	}
 }
 
 func TestParseNumPages_WhenHTTPLinkHeaderIsNotProvided(t *testing.T) {
