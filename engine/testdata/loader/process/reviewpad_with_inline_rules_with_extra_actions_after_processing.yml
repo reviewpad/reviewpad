@@ -16,6 +16,8 @@ workflows:
   - name: test-process
     if:
       - rule: '$size() <= 30'
+        extra-actions:
+          - $addLabel("small")
       - rule: tautology
         extra-actions:
           - '$assignReviewer(["jane", "john"])'

@@ -103,6 +103,14 @@ func TestLoad(t *testing.T) {
 			inputReviewpadFilePath: "testdata/loader/process/reviewpad_with_invalid_inline_rule.yml",
 			wantErr:                "unknown rule type int",
 		},
+		"when the file has an inline rule with extra actions": {
+			inputReviewpadFilePath: "testdata/loader/process/reviewpad_with_inline_rules_with_extra_actions.yml",
+			wantReviewpadFilePath:  "testdata/loader/process/reviewpad_with_inline_rules_with_extra_actions_after_processing.yml",
+		},
+		"when the file has multiple inline rules": {
+			inputReviewpadFilePath: "testdata/loader/process/reviewpad_with_multiple_inline_rules.yml",
+			wantReviewpadFilePath:  "testdata/loader/process/reviewpad_with_multiple_inline_rules_after_processing.yml",
+		},
 	}
 
 	for name, test := range tests {
