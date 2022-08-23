@@ -5,7 +5,9 @@
 package plugins_aladino_functions
 
 import (
-	"github.com/reviewpad/reviewpad/v3/handler"
+	"time"
+
+	"github.com/reviewpad/host-event-handler/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 )
 
@@ -25,7 +27,23 @@ func lastEventAtCode(e aladino.Env, args []aladino.Value) (aladino.Value, error)
 		return nil, err
 	}
 
-	lastEvent := timeline[len(timeline)-1]
+	// The request for the issue timeline doesn't include the creation time of the first event.
+	// Since the first event is the opening of the issue, we know the last event time will be its creation time.
+	if len(timeline) == 1 {
+		createdAt, err := e.GetTarget().GetCreatedAt()
+		if err != nil {
+			return nil, err
+		}
+
+		createdAtTime, err := time.Parse("2006-01-02 15:04:05.999999999 -0700 MST", createdAt)
+		if err != nil {
+			return nil, err
+		}
+
+		return aladino.BuildIntValue(int(createdAtTime.Unix())), nil
+	}
+
+    lastEvent := timeline[len(timeline)-1]
 	var lastEventTime int
 	if *lastEvent.Event == "reviewed" {
 		lastEventTime = int(lastEvent.GetSubmittedAt().Unix())

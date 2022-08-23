@@ -106,6 +106,23 @@ func TestLastEvent(t *testing.T) {
 			),
 			wantVal: aladino.BuildIntValue(int(lastEventDate.Unix())),
 		},
+		"when timeline has only one event": {
+			mockedEnv: aladino.MockDefaultEnv(
+				t,
+				[]mock.MockBackendOption{
+					mock.WithRequestMatch(
+						mock.GetReposIssuesTimelineByOwnerByRepoByIssueNumber,
+						[]*github.Timeline{
+							{ID:        github.Int64(6430295168)},
+						},
+					),
+				},
+				nil,
+				aladino.MockBuiltIns(),
+				nil,
+			),
+			wantVal: aladino.BuildIntValue(int(aladino.DefaultMockPrDate.Unix())),
+		},
 	}
 
 	for name, test := range tests {
