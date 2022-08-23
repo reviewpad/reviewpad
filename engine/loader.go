@@ -236,7 +236,7 @@ func processInlineRules(file *ReviewpadFile) (*ReviewpadFile, error) {
 	return reviewpadFile, nil
 }
 
-func processInlineRulesOnWorkflow(workflow PadWorkflow, rules []PadRule) (*PadWorkflow, []PadRule, error) {
+func processInlineRulesOnWorkflow(workflow PadWorkflow, currentRules []PadRule) (*PadWorkflow, []PadRule, error) {
 	wf := &PadWorkflow{
 		Name:        workflow.Name,
 		Description: workflow.Description,
@@ -245,14 +245,14 @@ func processInlineRulesOnWorkflow(workflow PadWorkflow, rules []PadRule) (*PadWo
 		Actions:     workflow.Actions,
 		On:          workflow.On,
 	}
-	foundInlineRules := make([]PadRule, 0)
+	currentNormalizedRules := make([]PadRule, 0)
 
 	for _, rule := range workflow.NonNormalizedRules {
 		switch r := rule.(type) {
 		case string:
 			padRule := inlineRuleToPadRule(r)
 
-			foundInlineRules = append(foundInlineRules, padRule)
+			currentNormalizedRules = append(currentNormalizedRules, padRule)
 
 			wf.Rules = append(wf.Rules, PadWorkflowRule{
 				Rule: padRule.Name,
@@ -263,22 +263,20 @@ func processInlineRulesOnWorkflow(workflow PadWorkflow, rules []PadRule) (*PadWo
 				return nil, nil, err
 			}
 
-			// if the rule doesn't exist in the list of rules
+			// if the rule doesn't exist in the list of available rules
 			// treat it as an inline rule with extra actions
-			if _, exists := findRule(rules, rule.Rule); !exists {
+			if _, exists := findRule(currentRules, rule.Rule); !exists {
 				padRule := inlineRuleToPadRule(rule.Rule)
 
-				foundInlineRules = append(foundInlineRules, padRule)
+				currentNormalizedRules = append(currentNormalizedRules, padRule)
 
 				wf.Rules = append(wf.Rules, PadWorkflowRule{
 					Rule:         padRule.Name,
 					ExtraActions: rule.ExtraActions,
 				})
-
-				continue
+			} else {
+				wf.Rules = append(wf.Rules, *rule)
 			}
-
-			wf.Rules = append(wf.Rules, *rule)
 		default:
 			return nil, nil, fmt.Errorf("unknown rule type %T", r)
 		}
@@ -288,7 +286,7 @@ func processInlineRulesOnWorkflow(workflow PadWorkflow, rules []PadRule) (*PadWo
 	// to make things a bit easier to test
 	workflow.NonNormalizedRules = nil
 
-	return wf, foundInlineRules, nil
+	return wf, currentNormalizedRules, nil
 }
 
 func mapToPadWorkflowRule(rule map[string]interface{}) (*PadWorkflowRule, error) {
@@ -298,12 +296,9 @@ func mapToPadWorkflowRule(rule map[string]interface{}) (*PadWorkflowRule, error)
 }
 
 func inlineRuleToPadRule(rule string) PadRule {
-	name := fmt.Sprintf("inline rule %s", rule)
-
 	return PadRule{
-		Name:        name,
-		Spec:        rule,
-		Kind:        "patch",
-		Description: name,
+		Name: fmt.Sprintf("inline rule %s", rule),
+		Spec: rule,
+		Kind: "patch",
 	}
 }

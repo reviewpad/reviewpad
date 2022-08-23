@@ -11,7 +11,6 @@ rules:
   - name: 'inline rule $size() <= 30'
     kind: patch
     spec: '$size() <= 30'
-    description: 'inline rule $size() <= 30'
 
 workflows:
   - name: test-process
