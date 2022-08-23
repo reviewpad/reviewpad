@@ -11,9 +11,9 @@ import (
 
 	"github.com/reviewpad/api/go/entities"
 	api "github.com/reviewpad/api/go/services"
-	"github.com/reviewpad/host-event-handler/handler"
 	"github.com/reviewpad/reviewpad/v3/codehost"
 	"github.com/reviewpad/reviewpad/v3/codehost/github/target"
+	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	plugins_aladino_services "github.com/reviewpad/reviewpad/v3/plugins/aladino/services"
 )

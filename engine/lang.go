@@ -4,7 +4,7 @@
 
 package engine
 
-import "github.com/reviewpad/host-event-handler/handler"
+import "github.com/reviewpad/reviewpad/v3/handler"
 
 const (
 	PROFESSIONAL_EDITION string = "professional"

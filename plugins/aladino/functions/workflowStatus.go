@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/google/go-github/v45/github"
-	"github.com/reviewpad/host-event-handler/handler"
+	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 )
 

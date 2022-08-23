@@ -8,9 +8,9 @@ import (
 	"context"
 
 	"github.com/google/go-github/v45/github"
-	"github.com/reviewpad/host-event-handler/handler"
 	"github.com/reviewpad/reviewpad/v3/codehost"
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
+	"github.com/reviewpad/reviewpad/v3/handler"
 )
 
 type Patch map[string]*codehost.File
