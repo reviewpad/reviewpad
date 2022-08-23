@@ -7,7 +7,7 @@ package codehost
 import (
 	"errors"
 
-	"github.com/reviewpad/host-event-handler/handler"
+	"github.com/reviewpad/reviewpad/v3/handler"
 )
 
 var (

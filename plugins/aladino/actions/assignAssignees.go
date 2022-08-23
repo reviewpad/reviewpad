@@ -7,7 +7,7 @@ package plugins_aladino_actions
 import (
 	"fmt"
 
-	"github.com/reviewpad/host-event-handler/handler"
+	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 )
 

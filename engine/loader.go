@@ -11,7 +11,7 @@ import (
 	"net/http"
 
 	"github.com/mitchellh/mapstructure"
-	"github.com/reviewpad/host-event-handler/handler"
+	"github.com/reviewpad/reviewpad/v3/handler"
 	"gopkg.in/yaml.v3"
 )
 

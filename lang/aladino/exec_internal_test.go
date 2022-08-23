@@ -7,7 +7,7 @@ package aladino
 import (
 	"testing"
 
-	"github.com/reviewpad/host-event-handler/handler"
+	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/stretchr/testify/assert"
 )
 
