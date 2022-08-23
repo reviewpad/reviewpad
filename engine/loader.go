@@ -11,6 +11,7 @@ import (
 	"net/http"
 
 	"github.com/mitchellh/mapstructure"
+	"github.com/reviewpad/host-event-handler/handler"
 	"gopkg.in/yaml.v3"
 )
 
@@ -87,8 +88,14 @@ func transform(file *ReviewpadFile) *ReviewpadFile {
 			transformedActions = append(transformedActions, transformActionStr(action))
 		}
 
+		transformedOn := []handler.TargetEntityKind{handler.PullRequest}
+		if len(workflow.On) > 0 {
+			transformedOn = workflow.On
+		}
+
 		transformedWorkflows = append(transformedWorkflows, PadWorkflow{
 			Name:        workflow.Name,
+			On:          transformedOn,
 			Description: workflow.Description,
 			Rules:       transformedRules,
 			Actions:     transformedActions,
@@ -236,6 +243,7 @@ func processInlineRulesOnWorkflow(workflow PadWorkflow) (*PadWorkflow, []PadRule
 		AlwaysRun:   workflow.AlwaysRun,
 		Rules:       workflow.Rules,
 		Actions:     workflow.Actions,
+		On:          workflow.On,
 	}
 	foundInlineRules := make([]PadRule, 0)
 
