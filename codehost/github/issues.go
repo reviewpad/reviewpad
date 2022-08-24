@@ -51,7 +51,25 @@ func (c *GithubClient) AddAssignees(ctx context.Context, owner string, repo stri
 }
 
 func (c *GithubClient) ListIssuesByRepo(ctx context.Context, owner string, repo string, opts *github.IssueListByRepoOptions) ([]*github.Issue, *github.Response, error) {
-	return c.clientREST.Issues.ListByRepo(ctx, owner, repo, opts)
+	is, err := PaginatedRequest(
+		func() interface{} {
+			return []*github.Issue{}
+		},
+		func(i interface{}, page int) (interface{}, *github.Response, error) {
+			issues := i.([]*github.Issue)
+			is, resp, err := c.clientREST.Issues.ListByRepo(ctx, owner, repo, opts)
+			if err != nil {
+				return nil, nil, err
+			}
+			issues = append(issues, is...)
+			return issues, resp, nil
+		},
+	)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return is.([]*github.Issue), nil, nil
 }
 
 func (c *GithubClient) GetComments(ctx context.Context, owner string, repo string, number int, opts *github.IssueListCommentsOptions) ([]*github.IssueComment, error) {
