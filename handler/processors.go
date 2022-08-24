@@ -59,20 +59,28 @@ func processCronEvent(token string, e *ActionEvent) ([]*TargetEntity, error) {
 	ghClient := reviewpad_gh.NewGithubClientFromToken(ctx, token)
 
 	repoParts := strings.SplitN(*e.Repository, "/", 2)
-	prs, err := ghClient.GetPullRequests(ctx, repoParts[0], repoParts[1])
+
+	owner := repoParts[0]
+	repo := repoParts[1]
+
+	issues, _, err := ghClient.ListIssuesByRepo(ctx, owner, repo, nil)
 	if err != nil {
 		return nil, fmt.Errorf("get pull requests: %w", err)
 	}
 
-	Log("fetched %d prs", len(prs))
+	Log("fetched %d issues", len(issues))
 
 	events := make([]*TargetEntity, 0)
-	for _, pr := range prs {
+	for _, issue := range issues {
+		kind := Issue
+		if issue.IsPullRequest() {
+			kind = PullRequest
+		}
 		events = append(events, &TargetEntity{
-			Kind:   PullRequest,
-			Number: *pr.Number,
-			Owner:  *pr.Base.Repo.Owner.Login,
-			Repo:   *pr.Base.Repo.Name,
+			Kind:   kind,
+			Number: *issue.Number,
+			Owner:  owner,
+			Repo:   repo,
 		})
 	}
 

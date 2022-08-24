@@ -179,6 +179,32 @@ func TestProcessEvent(t *testing.T) {
 		},
 	)
 
+	httpmock.RegisterResponder("GET", fmt.Sprintf("https://api.github.com/repos/%v/%v/issues", owner, repo),
+		func(req *http.Request) (*http.Response, error) {
+			b, err := json.Marshal([]*github.Issue{
+				{
+					Number: github.Int(aladino.DefaultMockPrNum),
+					PullRequestLinks: &github.PullRequestLinks{
+						HTMLURL: github.String(fmt.Sprintf("https://api.github.com/repos/%v/%v/pull/%v", owner, repo, aladino.DefaultMockPrNum)),
+					},
+				},
+				{
+					Number: github.Int(130),
+					PullRequestLinks: &github.PullRequestLinks{
+						HTMLURL: github.String(fmt.Sprintf("https://api.github.com/repos/%v/%v/pull/%v", owner, repo, 130)),
+					},
+				},
+			})
+			if err != nil {
+				return nil, err
+			}
+
+			resp := httpmock.NewBytesResponse(200, b)
+
+			return resp, nil
+		},
+	)
+
 	tests := map[string]struct {
 		event   *handler.ActionEvent
 		wantVal []*handler.TargetEntity
