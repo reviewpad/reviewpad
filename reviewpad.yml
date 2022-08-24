@@ -249,15 +249,30 @@ workflows:
     then:
       - '$addToProject("Reviewpad", "In Review")'
   
-  - name: add-issue-to-project
-    on:
-      - issue
-    description: Automatically add issues to project in the backlog state
-    always-run: true
+  - name: attention-set
     if:
-      - 'true'
-    then:
-      - '$addToProject("Reviewpad", "Backlog")'
+      - rule: '$isWaitingForReview()'
+        extra-actions:
+          - '$addLabel("waiting-review")'
+      - rule: '!$isWaitingForReview()'
+        extra-actions:
+          - '$removeLabel("waiting-review")'
+      - rule: '$hasUnaddressedThreads()'
+        extra-actions:
+          - '$addLabel("requires-author-attention")'
+      - rule: '!$hasUnaddressedThreads()'
+        extra-actions:
+          - '$removeLabel("requires-author-attention")'
+
+  # - name: add-issue-to-project
+  #   on:
+  #     - issue
+  #   description: Automatically add issues to project in the backlog state
+  #   always-run: true
+  #   if:
+  #     - 'true'
+  #   then:
+  #     - '$addToProject("Reviewpad", "Backlog")'
 
   - name: report-empty-description
     on:
