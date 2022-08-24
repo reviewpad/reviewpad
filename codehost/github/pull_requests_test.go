@@ -6,7 +6,6 @@ package github_test
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net/http"
 	"testing"
@@ -18,10 +17,6 @@ import (
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	"github.com/stretchr/testify/assert"
 )
-
-type paginatedRequestResult struct {
-	pageNum int
-}
 
 func TestGetPullRequestHeadOwnerName(t *testing.T) {
 	mockedHeadOwnerName := "reviewpad"
@@ -81,76 +76,125 @@ func TestGetPullRequestNumber(t *testing.T) {
 	assert.Equal(t, wantPullRequestNumber, gotPullRequestNumber)
 }
 
-func TestPaginatedRequest_WhenFirstRequestFails(t *testing.T) {
+func TestPaginatedRequest(t *testing.T) {
 	failMessage := "PaginatedRequestFail"
-	initFn := func() interface{} {
-		return paginatedRequestResult{}
-	}
-	reqFn := func(i interface{}, page int) (interface{}, *github.Response, error) {
-		return nil, nil, errors.New(failMessage)
+
+	firstPageContent := []*github.Repository{
+		{
+			Name: github.String("repo-A-on-first-page"),
+		},
+		{
+			Name: github.String("repo-B-on-first-page"),
+		},
 	}
 
-	res, err := host.PaginatedRequest(initFn, reqFn)
-
-	assert.Nil(t, res)
-	assert.EqualError(t, err, failMessage)
-}
-
-func TestPaginatedRequest_WhenFurtherRequestsFail(t *testing.T) {
-	failMessage := "PaginatedRequestFail"
-	initFn := func() interface{} {
-		return paginatedRequestResult{
-			pageNum: 1,
-		}
+	secondPageContent := []*github.Repository{
+		{
+			Name: github.String("repo-C-on-second-page"),
+		},
+		{
+			Name: github.String("repo-D-on-second-page"),
+		},
 	}
-	reqFn := func(i interface{}, page int) (interface{}, *github.Response, error) {
-		if page == 1 {
-			respHeader := make(http.Header)
-			respHeader.Add("Link", "<https://api.github.com/user/58276/repos?page=3>; rel=\"last\"")
-			resp := &github.Response{
-				Response: &http.Response{
-					Header: respHeader,
+
+	allPagesContent := append(firstPageContent, secondPageContent...)
+
+	tests := map[string]struct {
+		mockedEnv aladino.Env
+		wantVal   interface{}
+		wantErr   string
+	}{
+		"when first request fails": {
+			mockedEnv: aladino.MockDefaultEnv(
+				t,
+				[]mock.MockBackendOption{
+					mock.WithRequestMatchHandler(
+						mock.GetOrgsReposByOrg,
+						http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+							mock.WriteError(
+								w,
+								http.StatusInternalServerError,
+								failMessage,
+							)
+						}),
+					),
 				},
-				NextPage: page + 1,
+				nil,
+				aladino.MockBuiltIns(),
+				nil,
+			),
+			wantErr: failMessage,
+		},
+		"when there is only one page": {
+			mockedEnv: aladino.MockDefaultEnv(
+				t,
+				[]mock.MockBackendOption{
+					mock.WithRequestMatchPages(
+						mock.GetOrgsReposByOrg,
+						firstPageContent,
+					),
+				},
+				nil,
+				aladino.MockBuiltIns(),
+				nil,
+			),
+			wantVal: firstPageContent,
+		},
+		"when there is more than one page": {
+			mockedEnv: aladino.MockDefaultEnv(
+				t,
+				[]mock.MockBackendOption{
+					mock.WithRequestMatchPages(
+						mock.GetOrgsReposByOrg,
+						firstPageContent,
+						secondPageContent,
+					),
+				},
+				nil,
+				aladino.MockBuiltIns(),
+				nil,
+			),
+			wantVal: allPagesContent,
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			initFn := func() interface{} {
+				return []*github.Repository{}
 			}
 
-			return paginatedRequestResult{pageNum: page + 1}, resp, nil
-		}
+			org, err := test.mockedEnv.GetTarget().GetAuthor()
+			if err != nil {
+				assert.FailNow(t, "error getting target author: %v", err)
+			}
 
-		return nil, nil, errors.New(failMessage)
+			reqFn := func(i interface{}, page int) (interface{}, *github.Response, error) {
+				currentRepos := i.([]*github.Repository)
+				repos, resp, err := test.mockedEnv.GetGithubClient().GetClientREST().Repositories.ListByOrg(test.mockedEnv.GetCtx(), org.Login, &github.RepositoryListByOrgOptions{
+					ListOptions: github.ListOptions{
+						Page:    page,
+						PerPage: 1,
+					},
+				})
+				if err != nil {
+					return nil, nil, err
+				}
+
+				currentRepos = append(currentRepos, repos...)
+
+				return currentRepos, resp, nil
+			}
+
+			gotVal, gotErr := host.PaginatedRequest(initFn, reqFn)
+
+			if gotErr != nil && gotErr.(*github.ErrorResponse).Message != test.wantErr {
+				assert.FailNow(t, "PaginatedRequest() error = %v, wantErr %v", gotErr, test.wantErr)
+			}
+
+			assert.Equal(t, test.wantVal, gotVal)
+		})
 	}
-
-	res, err := host.PaginatedRequest(initFn, reqFn)
-
-	assert.Nil(t, res)
-	assert.EqualError(t, err, failMessage)
-}
-
-func TestPaginatedRequest(t *testing.T) {
-	initFn := func() interface{} {
-		return []*paginatedRequestResult{
-			{pageNum: 1},
-		}
-	}
-	reqFn := func(i interface{}, page int) (interface{}, *github.Response, error) {
-		results := i.([]*paginatedRequestResult)
-		respHeader := make(http.Header)
-		respHeader.Add("Link", "<https://api.github.com/user/58276/repos?page=3>; rel=\"last\"")
-		resp := &github.Response{
-			Response: &http.Response{
-				Header: respHeader,
-			},
-			NextPage: page + 1,
-		}
-
-		return results, resp, nil
-	}
-
-	wantRes := []*paginatedRequestResult{{pageNum: 1}}
-	gotRes, err := host.PaginatedRequest(initFn, reqFn)
-
-	assert.Nil(t, err)
-	assert.Equal(t, gotRes, wantRes)
 }
 
 func TestParseNumPagesFromLink(t *testing.T) {
