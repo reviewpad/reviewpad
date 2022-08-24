@@ -248,6 +248,26 @@ workflows:
       - rule: does-not-have-linked-issues
     then:
       - '$addToProject("Reviewpad", "In Review")'
+  
+  - name: add-issue-to-project
+    on:
+      - issue
+    description: Automatically add issues to project in the backlog state
+    always-run: true
+    if:
+      - 'true'
+    then:
+      - '$addToProject("Reviewpad", "Backlog")'
+
+  - name: report-empty-description
+    on:
+      - issue
+      - pull_request
+    always-run: true
+    if:
+      - '$description() == ""'
+    then:
+      - '$error("The description is empty. Please add more information!")'
 
   - name: lint-commits
     description: Lint commits
