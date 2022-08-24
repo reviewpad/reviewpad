@@ -27,4 +27,4 @@ workflows:
       - rule: '$rule("labeled-as-stale") && $lastEventAt() < 7 days ago'
         extra-actions:
           - '$commentOnce("Closing because this issue has been inactive for more than one month.")'
-          - "$close()"
+          - '$close()'
