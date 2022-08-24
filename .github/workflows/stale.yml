@@ -2,7 +2,7 @@
 # Use of this source code is governed by a license that can be
 # found in the LICENSE file.
 
-name: Close Stale Pull Requests
+name: Close Stale Pull Requests and Issues
 
 on:
   schedule:
@@ -11,11 +11,10 @@ on:
 
 jobs:
   reviewpad:
-    if: ${{ github.event.actor != 'reviewpad-bot' }}
     runs-on: ubuntu-latest
     steps:
       - name: Reviewpad
         uses: reviewpad/action@v3.x
         with:
-          file: stale_pr.yml
+          file: stale.yml
           token: ${{ secrets.REVIEWPAD_TOKEN }}
