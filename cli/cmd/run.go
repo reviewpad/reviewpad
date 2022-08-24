@@ -54,7 +54,7 @@ func parseEvent(rawEvent string) (interface{}, error) {
 
 func toTargetEntityKind(entityType string) (handler.TargetEntityKind, error) {
 	switch entityType {
-	case "issue":
+	case "issues":
 		return handler.Issue, nil
 	case "pull":
 		return handler.PullRequest, nil

@@ -25,7 +25,7 @@ type TargetEntityKind string
 func (entityType TargetEntityKind) String() string {
 	switch entityType {
 	case Issue:
-		return "issue"
+		return "issues"
 	}
 	return "pull"
 }
