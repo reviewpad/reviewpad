@@ -18,64 +18,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestGetPullRequestHeadOwnerName(t *testing.T) {
-	mockedHeadOwnerName := "reviewpad"
-	mockedPullRequest := aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
-		Head: &github.PullRequestBranch{
-			Repo: &github.Repository{
-				Owner: &github.User{
-					Login: github.String(mockedHeadOwnerName),
-				},
-			},
-		},
-	})
-	wantOwnerName := mockedPullRequest.Head.Repo.Owner.GetLogin()
-	gotOwnerName := host.GetPullRequestHeadOwnerName(mockedPullRequest)
-
-	assert.Equal(t, wantOwnerName, gotOwnerName)
-	assert.Equal(t, mockedHeadOwnerName, gotOwnerName)
-}
-
-func TestGetPullRequestHeadRepoName(t *testing.T) {
-	mockedHeadRepoName := "mocks-test"
-	mockedPullRequest := aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
-		Head: &github.PullRequestBranch{
-			Repo: &github.Repository{
-				Name: &mockedHeadRepoName,
-			},
-		},
-	})
-	wantRepoName := mockedPullRequest.Head.Repo.GetName()
-	gotRepoName := host.GetPullRequestHeadRepoName(mockedPullRequest)
-
-	assert.Equal(t, wantRepoName, gotRepoName)
-	assert.Equal(t, mockedHeadRepoName, gotRepoName)
-}
-
-func TestGetPullRequestBaseOwnerName(t *testing.T) {
-	mockedPullRequest := aladino.GetDefaultMockPullRequestDetails()
-	wantOwnerName := mockedPullRequest.Base.Repo.Owner.GetLogin()
-	gotOwnerName := host.GetPullRequestBaseOwnerName(mockedPullRequest)
-
-	assert.Equal(t, wantOwnerName, gotOwnerName)
-}
-
-func TestGetPullRequestBaseRepoName(t *testing.T) {
-	mockedPullRequest := aladino.GetDefaultMockPullRequestDetails()
-	wantRepoName := mockedPullRequest.Base.Repo.GetName()
-	gotRepoName := host.GetPullRequestBaseRepoName(mockedPullRequest)
-
-	assert.Equal(t, wantRepoName, gotRepoName)
-}
-
-func TestGetPullRequestNumber(t *testing.T) {
-	mockedPullRequest := aladino.GetDefaultMockPullRequestDetails()
-	wantPullRequestNumber := mockedPullRequest.GetNumber()
-	gotPullRequestNumber := host.GetPullRequestNumber(mockedPullRequest)
-
-	assert.Equal(t, wantPullRequestNumber, gotPullRequestNumber)
-}
-
 func TestPaginatedRequest(t *testing.T) {
 	failMessage := "PaginatedRequestFail"
 
