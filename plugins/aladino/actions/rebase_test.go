@@ -6,12 +6,6 @@ package plugins_aladino_actions_test
 
 import "testing"
 
-func TestRebase_Fail(t testing.T) {
-	// when base branch does not exists
-	// When head branch does not exists
-	// when base branch is not rebaseable
-}
-
-func TestRebase_Success(t testing.T) {
-	t.Skip("TODO: implement")
+func TestRebase(t *testing.T) {
+	//  TODO: #309
 }

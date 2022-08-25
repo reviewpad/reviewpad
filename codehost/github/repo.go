@@ -20,8 +20,7 @@ import (
 func CloneRepository(url string, token string, path string, options *git.CloneOptions) (*git.Repository, string, error) {
 	dir := path
 	if dir == "" {
-		// TODO: Rename "clone-example"
-		tempDir, err := ioutil.TempDir("", "clone-example")
+		tempDir, err := ioutil.TempDir("", "repository")
 		if err != nil {
 			log.Print("[error] failed to create temporary folder")
 			return nil, "", err
@@ -31,11 +30,13 @@ func CloneRepository(url string, token string, path string, options *git.CloneOp
 
 	// TODO: Validate url has the correct format
 	splitted := strings.Split(url, "https://")
-	tokenizedUrl := fmt.Sprintf("https://%v@%v", token, splitted[1])
+	if token != "" {
+		url = fmt.Sprintf("https://%v@%v", token, splitted[1])
+	}
 
 	log.Printf("[info] cloning %s to %s", url, dir)
 
-	repo, err := git.Clone(tokenizedUrl, dir, options)
+	repo, err := git.Clone(url, dir, options)
 
 	return repo, dir, err
 }
@@ -114,6 +115,7 @@ func CheckoutBranch(repo *git.Repository, branchName string) error {
 }
 
 // RebaseOnto performs a rebase of the current repository Head onto the given branch.
+// Inspired by https://github.com/libgit2/git2go/blob/main/rebase_test.go#L359
 func RebaseOnto(repo *git.Repository, branchName string, rebaseOptions *git.RebaseOptions) error {
 	ontoBranch, err := repo.LookupBranch(branchName, git.BranchLocal)
 	if err != nil {

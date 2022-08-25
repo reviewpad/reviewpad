@@ -10,26 +10,23 @@ import (
 
 	git "github.com/libgit2/git2go/v31"
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
+	"github.com/reviewpad/reviewpad/v3/codehost/github/target"
+	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 )
 
 func Rebase() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
-		Type: aladino.BuildFunctionType([]aladino.Type{}, nil),
-		Code: rebaseCode,
+		Type:           aladino.BuildFunctionType([]aladino.Type{}, nil),
+		Code:           rebaseCode,
+		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest},
 	}
 }
 
 func rebaseCode(e aladino.Env, args []aladino.Value) error {
 	githubToken := os.Getenv("INPUT_TOKEN")
-	baseOwner := gh.GetPullRequestBaseOwnerName(e.GetPullRequest())
-	baseRepo := gh.GetPullRequestBaseRepoName(e.GetPullRequest())
-	number := gh.GetPullRequestNumber(e.GetPullRequest())
-
-	pr, _, err := e.GetGithubClient().GetPullRequest(e.GetCtx(), baseOwner, baseRepo, number)
-	if err != nil {
-		return err
-	}
+	t := e.GetTarget().(*target.PullRequestTarget)
+	pr := t.PullRequest
 
 	if !*pr.Rebaseable {
 		return errors.New("the pull request is not rebaseable")
