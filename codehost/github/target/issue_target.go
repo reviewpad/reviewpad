@@ -39,13 +39,20 @@ func (t *IssueTarget) GetNodeID() string {
 	return t.issue.GetNodeID()
 }
 
-func (t *IssueTarget) Close() error {
+func (t *IssueTarget) Close(comment string) error {
 	ctx := t.ctx
 	targetEntity := t.targetEntity
 	owner := targetEntity.Owner
 	repo := targetEntity.Repo
 	number := targetEntity.Number
 	issue := t.issue
+
+	if comment != "" {
+		if err := t.Comment(comment); err != nil {
+			return err
+		}
+	}
+
 	issue.State = github.String("closed")
 	issueRequest := &github.IssueRequest{
 		State: issue.State,

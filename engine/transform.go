@@ -62,6 +62,10 @@ func addDefaultPullRequestCountBy(str string) string {
 	return transformedStr
 }
 
+func addEmptyCloseComment(str string) string {
+	return strings.ReplaceAll(str, "$close()", "$close(\"\")")
+}
+
 func transformAladinoExpression(str string) string {
 	transformedActionStr := str
 
@@ -71,6 +75,7 @@ func transformAladinoExpression(str string) string {
 		addDefaultSizeMethod,
 		addDefaultIssueCountBy,
 		addDefaultPullRequestCountBy,
+		addEmptyCloseComment,
 	}
 
 	for i := range transformations {
