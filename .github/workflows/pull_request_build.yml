@@ -22,13 +22,6 @@ jobs:
           go install gotest.tools/gotestsum@latest
           go install github.com/jandelgado/gcov2lcov@latest
           go install github.com/go-task/task/v3/cmd/task@latest
-          url -OL https://github.com/libgit2/libgit2/archive/refs/tags/${LIBGIT2_ZIP} && \
-            unzip -o $LIBGIT2_ZIP -d /tmp && \
-            cd /tmp/${LIBGIT2} && \
-            mkdir build && \
-            cd build && \
-            cmake .. && \
-            cmake --build . --target install
 
       - name: Build
         run: task build
