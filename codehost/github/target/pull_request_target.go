@@ -71,18 +71,18 @@ func (t *PullRequestTarget) GetNodeID() string {
 }
 
 func (t *PullRequestTarget) Close(comment string) error {
+	if comment != "" {
+		if err := t.Comment(comment); err != nil {
+			return err
+		}
+	}
+
 	ctx := t.ctx
 	targetEntity := t.targetEntity
 	owner := targetEntity.Owner
 	repo := targetEntity.Repo
 	number := targetEntity.Number
 	pr := t.PullRequest
-
-	if comment != "" {
-		if err := t.Comment(comment); err != nil {
-			return err
-		}
-	}
 
 	pr.State = github.String("closed")
 

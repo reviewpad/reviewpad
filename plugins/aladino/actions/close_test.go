@@ -22,11 +22,13 @@ var close = plugins_aladino.PluginBuiltIns().Actions["close"].Code
 func TestClose(t *testing.T) {
 	failMessage := "EditRequestFail"
 	var gotState, closeComment string
+	var commentCreated bool
 
 	tests := map[string]struct {
 		mockedEnv    aladino.Env
 		inputComment string
 		wantState    string
+		wantComment  bool
 		wantErr      string
 	}{
 		"when edit request fails": {
@@ -73,6 +75,7 @@ func TestClose(t *testing.T) {
 
 							json.Unmarshal(rawBody, &body)
 
+							commentCreated = true
 							closeComment = *body.Body
 						}),
 					),
@@ -82,6 +85,7 @@ func TestClose(t *testing.T) {
 				nil,
 			),
 			inputComment: "Lorem Ipsum",
+			wantComment:  true,
 			wantState:    "closed",
 		},
 		"when entity is close without comment": {
@@ -102,12 +106,8 @@ func TestClose(t *testing.T) {
 					mock.WithRequestMatchHandler(
 						mock.PostReposIssuesCommentsByOwnerByRepoByIssueNumber,
 						http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-							rawBody, _ := ioutil.ReadAll(r.Body)
-							body := github.IssueComment{}
-
-							json.Unmarshal(rawBody, &body)
-
-							closeComment = *body.Body
+							// If the create comment request was performed then the comment was created
+							commentCreated = true
 						}),
 					),
 				},
@@ -130,10 +130,12 @@ func TestClose(t *testing.T) {
 
 			assert.Equal(t, test.wantState, gotState)
 			assert.Equal(t, test.inputComment, closeComment)
+			assert.Equal(t, test.wantComment, commentCreated)
 
 			// Since these are variables common to all tests we need to reset their values at the end of each test
 			gotState = ""
 			closeComment = ""
+			commentCreated = false
 		})
 	}
 }
