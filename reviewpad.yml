@@ -250,6 +250,7 @@ workflows:
       - '$addToProject("Reviewpad", "In Review")'
   
   - name: attention-set
+    always-run: true
     if:
       - rule: '$isWaitingForReview()'
         extra-actions:
