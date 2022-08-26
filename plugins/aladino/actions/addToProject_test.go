@@ -56,7 +56,7 @@ func TestAddToProject(t *testing.T) {
         "variables":{
             "name":"reviewpad",
             "repositoryName":"default-mock-repo",
-            "repositoryOwner":"john"
+            "repositoryOwner":"foobar"
             }
         }`
 	mockedGetProjectFieldsQuery := `{
@@ -86,7 +86,7 @@ func TestAddToProject(t *testing.T) {
             "afterCursor":"",
             "projectNumber":1,
             "repositoryName":"default-mock-repo",
-            "repositoryOwner":"john"
+            "repositoryOwner":"foobar"
         }
     }`
 	mockedAddProjectV2ItemByIdMutation := `{
