@@ -18,8 +18,7 @@ func Close() *aladino.BuiltInAction {
 }
 
 func closeCode(e aladino.Env, args []aladino.Value) error {
-	t := e.GetTarget()
 	comment := args[0].(*aladino.StringValue).Val
 
-	return t.Close(comment)
+	return e.GetTarget().Close(comment)
 }
