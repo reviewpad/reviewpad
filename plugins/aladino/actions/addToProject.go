@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
-	"github.com/reviewpad/reviewpad/v3/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 )
@@ -42,14 +41,16 @@ func AddToProject() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
 		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType(), aladino.BuildStringType()}, aladino.BuildStringType()),
 		Code:           addToProjectCode,
-		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest},
+		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest, handler.Issue},
 	}
 }
 
 func addToProjectCode(e aladino.Env, args []aladino.Value) error {
-	pr := e.GetTarget().(*target.PullRequestTarget).PullRequest
-	owner := gh.GetPullRequestBaseOwnerName(pr)
-	repo := gh.GetPullRequestBaseRepoName(pr)
+	target := e.GetTarget()
+	entity := target.GetTargetEntity()
+	owner := entity.Owner
+	repo := entity.Repo
+
 	projectName := args[0].(*aladino.StringValue).Val
 	projectStatus := strings.ToLower(args[1].(*aladino.StringValue).Val)
 	totalRequestTries := 2
@@ -100,7 +101,7 @@ func addToProjectCode(e aladino.Env, args []aladino.Value) error {
 
 	input := AddProjectV2ItemByIdInput{
 		ProjectID: project.ID,
-		ContentID: *pr.NodeID,
+		ContentID: target.GetNodeID(),
 	}
 
 	// FIXME: move mutate to a separate function in the codehost.github package

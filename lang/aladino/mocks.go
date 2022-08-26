@@ -69,7 +69,7 @@ func GetDefaultMockPullRequestDetails() *github.PullRequest {
 		Head: &github.PullRequestBranch{
 			Repo: &github.Repository{
 				Owner: &github.User{
-					Login: github.String("john"),
+					Login: github.String(prOwner),
 				},
 				URL:  github.String(prUrl),
 				Name: github.String(prRepoName),
@@ -79,7 +79,7 @@ func GetDefaultMockPullRequestDetails() *github.PullRequest {
 		Base: &github.PullRequestBranch{
 			Repo: &github.Repository{
 				Owner: &github.User{
-					Login: github.String("john"),
+					Login: github.String(prOwner),
 				},
 				URL:  github.String(prUrl),
 				Name: github.String(prRepoName),

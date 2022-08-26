@@ -54,7 +54,7 @@ func TestGetProjectV2ByName_WhenProjectNotFound(t *testing.T) {
         "variables": {
             "name": "reviewpad",
             "repositoryName": "default-mock-repo",
-            "repositoryOwner": "john"
+            "repositoryOwner": "foobar"
         }
     }`
 	mockedGetProjectByNameQueryBody := `{
@@ -104,7 +104,7 @@ func TestGetProjectV2ByName_WhenProjectFound(t *testing.T) {
         "variables": {
             "name":"reviewpad",
             "repositoryName":"default-mock-repo",
-            "repositoryOwner":"john"
+            "repositoryOwner":"foobar"
         }
     }`
 	mockedGetProjectByNameQueryBody := `{
@@ -196,7 +196,7 @@ func TestGetProjectFieldsByProjectNumber_WhenProjectNotFound(t *testing.T) {
             "afterCursor": "",
             "projectNumber": 1,
             "repositoryName": "default-mock-repo",
-            "repositoryOwner":"john"
+            "repositoryOwner":"foobar"
         }
     }`
 	mockedGetProjectByNameQueryBody := `{
@@ -263,7 +263,7 @@ func TestGetProjectFieldsByProjectNumber_WhenRetrySuccessful(t *testing.T) {
             "projectNumber":1,
             "repositoryName":
             "default-mock-repo",
-            "repositoryOwner":"john"
+            "repositoryOwner":"foobar"
         }
     }`
 	mockedGetProjectFieldsQueryBody := `{
@@ -335,7 +335,7 @@ func TestGetProjectV2ByName_WhenSeveralProjectsFound(t *testing.T) {
         "variables": {
             "name":"%s",
             "repositoryName":"default-mock-repo",
-            "repositoryOwner":"john"
+            "repositoryOwner":"foobar"
         }
     }`, mockProjectName)
 	mockedGetProjectByNameQueryBody := `{
