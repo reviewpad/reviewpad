@@ -4,17 +4,17 @@ on:
   pull_request:
     types: [ labeled, synchronize ]
 
+env:
+  LD_LIBRARY_PATH: /usr/local/lib
+
 jobs:
   pr-build:
     if: ${{ (github.event.action == 'synchronize' && contains(github.event.pull_request.labels.*.name, 'run-build')) || (github.event.action == 'labeled' && github.event.label.name == 'run-build') }}
     runs-on: ubuntu-latest
+    container:
+      image: reviewpad/ci:latest
     steps:
       - uses: actions/checkout@v3
-
-      - name: Set up Go
-        uses: actions/setup-go@v3
-        with:
-          go-version: 1.18
 
       - name: Download dependencies
         run: |

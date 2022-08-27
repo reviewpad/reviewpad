@@ -2,19 +2,19 @@ name: Build
 
 on:
   push:
-    tags:        
+    tags:
       - '**'
+
+env:
+  LD_LIBRARY_PATH: /usr/local/lib
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    container:
+      image: reviewpad/ci:latest
     steps:
       - uses: actions/checkout@v3
-
-      - name: Set up Go
-        uses: actions/setup-go@v3
-        with:
-          go-version: 1.18
 
       - name: Download dependencies
         run: |
