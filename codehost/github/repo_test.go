@@ -204,5 +204,5 @@ func checkFatal(t *testing.T, err error) {
 	if !ok {
 		assert.FailNow(t, "Unable to get caller")
 	}
-	assert.FailNow(t, "Fail at %v:%v; %v", file, line, err)
+	assert.FailNow(t, fmt.Sprintf("Fail at %v:%v; %v", file, line, err))
 }
