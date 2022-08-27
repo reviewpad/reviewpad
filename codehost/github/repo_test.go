@@ -28,7 +28,7 @@ func TestCloneRepository_WhenNoPathProvided(t *testing.T) {
 
 	seedTestRepo(t, repo)
 
-	ref, err := repo.References.Lookup("refs/heads/main")
+	ref, err := repo.References.Lookup("refs/heads/master")
 	checkFatal(t, err)
 
 	repo2, _, err := gh.CloneRepository(repo.Path(), "", "", &git.CloneOptions{Bare: true})
@@ -36,7 +36,7 @@ func TestCloneRepository_WhenNoPathProvided(t *testing.T) {
 
 	checkFatal(t, err)
 
-	ref2, err := repo2.References.Lookup("refs/heads/main")
+	ref2, err := repo2.References.Lookup("refs/heads/master")
 	checkFatal(t, err)
 
 	if ref.Cmp(ref2) != 0 {
