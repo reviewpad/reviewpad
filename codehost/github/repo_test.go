@@ -26,17 +26,20 @@ func TestCloneRepository_WhenNoPathProvided(t *testing.T) {
 	repo := createTestRepo(t)
 	defer cleanupTestRepo(t, repo)
 
-	seedTestRepo(t, repo)
+	seedTestRepo(t, repo, "main")
 
-	ref, err := repo.References.Lookup("refs/heads/master")
+	ref, err := repo.References.Lookup("refs/heads/main")
 	checkFatal(t, err)
 
-	repo2, _, err := gh.CloneRepository(repo.Path(), "", "", &git.CloneOptions{Bare: true})
+	repo2, _, err := gh.CloneRepository(repo.Path(), "", "", &git.CloneOptions{
+		Bare:           true,
+		CheckoutBranch: "main",
+	})
 	defer cleanupTestRepo(t, repo2)
 
 	checkFatal(t, err)
 
-	ref2, err := repo2.References.Lookup("refs/heads/master")
+	ref2, err := repo2.References.Lookup("refs/heads/main")
 	checkFatal(t, err)
 
 	if ref.Cmp(ref2) != 0 {
@@ -49,7 +52,7 @@ func TestCloneRepository_WhenPathProvided(t *testing.T) {
 	repo := createTestRepo(t)
 	defer cleanupTestRepo(t, repo)
 
-	seedTestRepo(t, repo)
+	seedTestRepo(t, repo, "main")
 
 	ref, err := repo.References.Lookup("refs/heads/main")
 	checkFatal(t, err)
@@ -57,7 +60,10 @@ func TestCloneRepository_WhenPathProvided(t *testing.T) {
 	path, err := ioutil.TempDir("", TestRepo)
 	checkFatal(t, err)
 
-	repo2, _, err := gh.CloneRepository(repo.Path(), "", path, &git.CloneOptions{Bare: true})
+	repo2, _, err := gh.CloneRepository(repo.Path(), "", path, &git.CloneOptions{
+		Bare:           true,
+		CheckoutBranch: "main",
+	})
 	defer cleanupTestRepo(t, repo2)
 
 	checkFatal(t, err)
@@ -87,7 +93,7 @@ func TestCheckoutBranch_BranchDoesNotExists(t *testing.T) {
 	repo := createTestRepo(t)
 	defer cleanupTestRepo(t, repo)
 
-	seedTestRepo(t, repo)
+	seedTestRepo(t, repo, "main")
 
 	err := gh.CheckoutBranch(repo, "test")
 
@@ -99,7 +105,7 @@ func TestCheckoutBranch_BranchExists(t *testing.T) {
 	remoteRepo := createTestRepo(t)
 	defer cleanupTestRepo(t, remoteRepo)
 
-	head, _ := seedTestRepo(t, remoteRepo)
+	head, _ := seedTestRepo(t, remoteRepo, "main")
 	commit, err := remoteRepo.LookupCommit(head)
 	checkFatal(t, err)
 	defer commit.Free()
@@ -167,7 +173,7 @@ func cleanupTestRepo(t *testing.T, r *git.Repository) {
 	r.Free()
 }
 
-func seedTestRepo(t *testing.T, repo *git.Repository) (*git.Oid, *git.Oid) {
+func seedTestRepo(t *testing.T, repo *git.Repository, defaultBranch string) (*git.Oid, *git.Oid) {
 	loc, err := time.LoadLocation("Europe/Berlin")
 	checkFatal(t, err)
 	sig := &git.Signature{
@@ -190,6 +196,14 @@ func seedTestRepo(t *testing.T, repo *git.Repository) (*git.Oid, *git.Oid) {
 	checkFatal(t, err)
 	commitId, err := repo.CreateCommit("HEAD", sig, sig, message, tree)
 	checkFatal(t, err)
+
+	mainBranch, _ := repo.LookupBranch(defaultBranch, git.BranchLocal)
+	if mainBranch == nil {
+		commit, err := repo.LookupCommit(commitId)
+		checkFatal(t, err)
+		_, err = repo.CreateBranch(defaultBranch, commit, false)
+		checkFatal(t, err)
+	}
 
 	return commitId, treeId
 }
