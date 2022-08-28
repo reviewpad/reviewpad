@@ -168,7 +168,7 @@ func isSpace(c byte) bool {
 	return c == ' '
 }
 
-// FIXME: this function needs to be incorporated into the lexer
+// FIXME #320
 func ParseType(typeOf string) Type {
 	switch typeOf {
 	case "String":
