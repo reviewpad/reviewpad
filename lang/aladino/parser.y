@@ -20,6 +20,7 @@ func setAST(l AladinoLexer, root Expr) {
     ast Expr
     astList []Expr
     bool bool
+    varType Type
 }
 
 // any non-terminal which returns a value needs a type, which is
@@ -28,7 +29,7 @@ func setAST(l AladinoLexer, root Expr) {
 %type <astList> expr_list
 
 // same for terminals
-%token <str> TIMESTAMP RELATIVETIMESTAMP IDENTIFIER STRINGLITERAL TK_CMPOP TK_LAMBDA
+%token <str> TIMESTAMP RELATIVETIMESTAMP IDENTIFIER STRINGLITERAL TK_CMPOP TK_LAMBDA TK_TYPE
 %token <int> NUMBER
 %token <bool> TRUE
 %token <bool> FALSE
@@ -63,6 +64,7 @@ expr :
     | '$' IDENTIFIER '(' expr_list ')' 
         { $$ = BuildFunctionCall(BuildVariable($2), $4) }
     | '(' expr_list TK_LAMBDA expr  ')'      { $$ = BuildLambda($2, $4) }
+    | expr TK_TYPE  { $$ = BuildTypedExpr($1, ParseType($2)) }
 ;
 
 expr_list :
