@@ -64,7 +64,7 @@ expr :
     | '$' IDENTIFIER '(' expr_list ')' 
         { $$ = BuildFunctionCall(BuildVariable($2), $4) }
     | '(' expr_list TK_LAMBDA expr  ')'      { $$ = BuildLambda($2, $4) }
-    | expr TK_TYPE  { $$ = BuildTypedExpr($1, BuildType($2)) }
+    | expr TK_TYPE  { $$ = BuildTypedExpr($1, ParseType($2)) }
 ;
 
 expr_list :

@@ -42,23 +42,6 @@ func BuildStringType() *StringType { return &StringType{} }
 func BuildIntType() *IntType       { return &IntType{} }
 func BuildBoolType() *BoolType     { return &BoolType{} }
 
-func BuildType(typeOf string) Type {
-	switch typeOf {
-	case "String":
-		return &StringType{}
-	case "Int":
-		return &IntType{}
-	case "Bool":
-		return &BoolType{}
-	case "Array":
-		return &ArrayType{}
-	case "Function":
-		return &FunctionType{}
-	}
-
-	return nil
-}
-
 func BuildFunctionType(paramsTypes []Type, returnType Type) *FunctionType {
 	return &FunctionType{paramsTypes, returnType}
 }

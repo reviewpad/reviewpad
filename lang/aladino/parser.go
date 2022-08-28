@@ -583,7 +583,7 @@ Aladinodefault:
 	case 19:
 		AladinoDollar = AladinoS[Aladinopt-2 : Aladinopt+1]
 		{
-			AladinoVAL.ast = BuildTypedExpr(AladinoDollar[1].ast, BuildType(AladinoDollar[2].str))
+			AladinoVAL.ast = BuildTypedExpr(AladinoDollar[1].ast, ParseType(AladinoDollar[2].str))
 		}
 	case 20:
 		AladinoDollar = AladinoS[Aladinopt-3 : Aladinopt+1]

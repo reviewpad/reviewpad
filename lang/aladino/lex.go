@@ -167,3 +167,18 @@ func (l *AladinoLex) Error(s string) {
 func isSpace(c byte) bool {
 	return c == ' '
 }
+
+// FIXME: this function needs to be incorporated into the lexer
+func ParseType(typeOf string) Type {
+	switch typeOf {
+	case "String":
+		return BuildStringType()
+	case "Int":
+		return BuildIntType()
+	case "Bool":
+		return BuildBoolType()
+	default:
+		// FIXME: throw error
+		return nil
+	}
+}
