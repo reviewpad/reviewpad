@@ -101,6 +101,11 @@ var tokens = []tokenDef{
 		kind:  "binop",
 		token: TK_OR,
 	},
+	{
+		regex: regexp.MustCompile(`^=>`),
+		kind:  "lambda",
+		token: TK_LAMBDA,
+	},
 }
 
 func (l *AladinoLex) Lex(lval *AladinoSymType) int {

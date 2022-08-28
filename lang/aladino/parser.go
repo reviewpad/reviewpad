@@ -27,14 +27,15 @@ const RELATIVETIMESTAMP = 57347
 const IDENTIFIER = 57348
 const STRINGLITERAL = 57349
 const TK_CMPOP = 57350
-const NUMBER = 57351
-const TRUE = 57352
-const FALSE = 57353
-const TK_OR = 57354
-const TK_AND = 57355
-const TK_EQ = 57356
-const TK_NEQ = 57357
-const TK_NOT = 57358
+const TK_LAMBDA = 57351
+const NUMBER = 57352
+const TRUE = 57353
+const FALSE = 57354
+const TK_OR = 57355
+const TK_AND = 57356
+const TK_EQ = 57357
+const TK_NEQ = 57358
+const TK_NOT = 57359
 
 var AladinoToknames = [...]string{
 	"$end",
@@ -45,6 +46,7 @@ var AladinoToknames = [...]string{
 	"IDENTIFIER",
 	"STRINGLITERAL",
 	"TK_CMPOP",
+	"TK_LAMBDA",
 	"NUMBER",
 	"TRUE",
 	"FALSE",
@@ -77,71 +79,73 @@ var AladinoExca = [...]int{
 
 const AladinoPrivate = 57344
 
-const AladinoLast = 69
+const AladinoLast = 82
 
 var AladinoAct = [...]int{
-	20, 5, 6, 29, 8, 34, 7, 11, 12, 31,
-	22, 1, 0, 3, 4, 17, 9, 0, 10, 14,
-	13, 15, 16, 21, 2, 0, 0, 18, 19, 30,
-	0, 32, 33, 0, 0, 0, 0, 23, 24, 25,
-	26, 27, 17, 0, 0, 0, 14, 13, 15, 16,
-	17, 0, 28, 17, 14, 13, 15, 16, 13, 15,
-	16, 17, 0, 0, 0, 0, 0, 15, 16,
+	22, 2, 20, 32, 18, 19, 38, 33, 31, 23,
+	1, 0, 21, 0, 24, 25, 26, 27, 28, 0,
+	0, 5, 6, 17, 8, 0, 0, 7, 11, 12,
+	15, 16, 35, 34, 3, 4, 36, 9, 17, 10,
+	0, 0, 0, 14, 13, 15, 16, 0, 0, 29,
+	17, 0, 0, 30, 0, 14, 13, 15, 16, 0,
+	0, 17, 0, 0, 0, 30, 14, 13, 15, 16,
+	17, 0, 37, 17, 0, 14, 13, 15, 16, 13,
+	15, 16,
 }
 
 var AladinoPact = [...]int{
-	-3, -1000, 42, -3, -3, -1000, -1000, -1000, -1000, -3,
-	4, -1000, -1000, -3, -3, -3, -3, -3, -1000, 34,
-	-17, 7, -8, 53, 45, -1000, -1000, -1000, -1000, -1000,
-	-3, -3, -1000, -13, -1000,
+	17, -1000, 62, 17, 17, -1000, -1000, -1000, -1000, 17,
+	3, -1000, -1000, 17, 17, 17, 17, 17, -1000, 30,
+	-1, -18, 42, -11, 15, 65, -1000, -1000, -1000, -1000,
+	17, 17, -1000, 17, -1000, 53, -13, -1000, -1000,
 }
 
 var AladinoPgo = [...]int{
-	0, 23, 0, 11,
+	0, 0, 2, 10,
 }
 
 var AladinoR1 = [...]int{
 	0, 3, 1, 1, 1, 1, 1, 1, 1, 1,
-	1, 1, 1, 1, 1, 1, 1, 1, 2, 2,
-	2,
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 2,
+	2, 2,
 }
 
 var AladinoR2 = [...]int{
 	0, 1, 2, 3, 3, 3, 3, 3, 3, 1,
-	1, 1, 1, 3, 2, 1, 1, 5, 3, 1,
-	0,
+	1, 1, 1, 3, 2, 1, 1, 5, 5, 3,
+	1, 0,
 }
 
 var AladinoChk = [...]int{
-	-1000, -3, -1, 16, 17, 4, 5, 9, 7, 19,
-	21, 10, 11, 13, 12, 14, 15, 8, -1, -1,
-	-2, -1, 6, -1, -1, -1, -1, -1, 18, 20,
-	22, 17, -2, -2, 18,
+	-1000, -3, -1, 17, 18, 4, 5, 10, 7, 20,
+	22, 11, 12, 14, 13, 15, 16, 8, -1, -1,
+	-2, -2, -1, 6, -1, -1, -1, -1, -1, 19,
+	23, 9, 21, 18, -2, -1, -2, 19, 19,
 }
 
 var AladinoDef = [...]int{
-	0, -2, 1, 0, 0, 9, 10, 11, 12, 20,
-	0, 15, 16, 0, 0, 0, 0, 0, 2, 0,
-	0, 19, 14, 3, 4, 5, 6, 7, 8, 13,
-	20, 20, 18, 0, 17,
+	0, -2, 1, 0, 21, 9, 10, 11, 12, 21,
+	0, 15, 16, 0, 0, 0, 0, 0, 2, 20,
+	0, 0, 20, 14, 3, 4, 5, 6, 7, 8,
+	21, 0, 13, 21, 19, 0, 0, 18, 17,
 }
 
 var AladinoTok1 = [...]int{
 	1, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-	3, 3, 3, 3, 3, 3, 21, 3, 3, 3,
-	17, 18, 3, 3, 22, 3, 3, 3, 3, 3,
+	3, 3, 3, 3, 3, 3, 22, 3, 3, 3,
+	18, 19, 3, 3, 23, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-	3, 19, 3, 20,
+	3, 20, 3, 21,
 }
 
 var AladinoTok2 = [...]int{
 	2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
-	12, 13, 14, 15, 16,
+	12, 13, 14, 15, 16, 17,
 }
 
 var AladinoTok3 = [...]int{
@@ -569,16 +573,21 @@ Aladinodefault:
 			AladinoVAL.ast = BuildFunctionCall(BuildVariable(AladinoDollar[2].str), AladinoDollar[4].astList)
 		}
 	case 18:
+		AladinoDollar = AladinoS[Aladinopt-5 : Aladinopt+1]
+		{
+			AladinoVAL.ast = BuildLambda(AladinoDollar[2].astList, AladinoDollar[4].ast)
+		}
+	case 19:
 		AladinoDollar = AladinoS[Aladinopt-3 : Aladinopt+1]
 		{
 			AladinoVAL.astList = append([]Expr{AladinoDollar[1].ast}, AladinoDollar[3].astList...)
 		}
-	case 19:
+	case 20:
 		AladinoDollar = AladinoS[Aladinopt-1 : Aladinopt+1]
 		{
 			AladinoVAL.astList = []Expr{AladinoDollar[1].ast}
 		}
-	case 20:
+	case 21:
 		AladinoDollar = AladinoS[Aladinopt-0 : Aladinopt+1]
 		{
 			AladinoVAL.astList = []Expr{}
