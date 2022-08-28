@@ -78,7 +78,7 @@ func transform(file *ReviewpadFile) *ReviewpadFile {
 			Name:        rule.Name,
 			Kind:        kind,
 			Description: rule.Description,
-			Spec:        rule.Spec,
+			Spec:        transformAladinoExpression(rule.Spec),
 		})
 	}
 
@@ -88,7 +88,7 @@ func transform(file *ReviewpadFile) *ReviewpadFile {
 		for _, rule := range workflow.Rules {
 			var transformedExtraActions []string
 			for _, extraAction := range rule.ExtraActions {
-				transformedExtraActions = append(transformedExtraActions, transformActionStr(extraAction))
+				transformedExtraActions = append(transformedExtraActions, transformAladinoExpression(extraAction))
 			}
 
 			transformedRules = append(transformedRules, PadWorkflowRule{
@@ -99,7 +99,7 @@ func transform(file *ReviewpadFile) *ReviewpadFile {
 
 		var transformedActions []string
 		for _, action := range workflow.Actions {
-			transformedActions = append(transformedActions, transformActionStr(action))
+			transformedActions = append(transformedActions, transformAladinoExpression(action))
 		}
 
 		transformedOn := []handler.TargetEntityKind{handler.PullRequest}
@@ -125,7 +125,7 @@ func transform(file *ReviewpadFile) *ReviewpadFile {
 		for _, stage := range pipeline.Stages {
 			var transformedActions []string
 			for _, action := range stage.Actions {
-				transformedActions = append(transformedActions, transformActionStr(action))
+				transformedActions = append(transformedActions, transformAladinoExpression(action))
 			}
 
 			transformedStages = append(transformedStages, PadStage{
