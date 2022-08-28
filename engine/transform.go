@@ -31,12 +31,41 @@ func addDefaultMergeMethod(str string) string {
 	return strings.ReplaceAll(str, "$merge()", "$merge(\"merge\")")
 }
 
-func transformActionStr(str string) string {
+// reviewpad-an: generated-by-co-pilot
+func addDefaultIssueCountBy(str string) string {
+	m := regexp.MustCompile("\\$issueCountBy\\(\"[^\"]*\"\\)")
+	match := m.FindString(str)
+
+	if match == "" {
+		return str
+	}
+
+	matchWithDefaultState := match[0:len(match)-1] + ", \"all\")"
+	transformedStr := strings.ReplaceAll(str, match, matchWithDefaultState)
+	return transformedStr
+}
+
+func addDefaultPullRequestCountBy(str string) string {
+	m := regexp.MustCompile("\\$pullRequestCountBy\\(\"[^\"]*\"\\)")
+	match := m.FindString(str)
+
+	if match == "" {
+		return str
+	}
+
+	matchWithDefaultState := match[0:len(match)-1] + ", \"all\")"
+	transformedStr := strings.ReplaceAll(str, match, matchWithDefaultState)
+	return transformedStr
+}
+
+func transformAladinoExpression(str string) string {
 	transformedActionStr := str
 
 	var transformations = [](func(str string) string){
 		addDefaultTotalRequestedReviewers,
 		addDefaultMergeMethod,
+		addDefaultIssueCountBy,
+		addDefaultPullRequestCountBy,
 	}
 
 	for i := range transformations {
