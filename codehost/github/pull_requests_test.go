@@ -36,18 +36,19 @@ func TestPaginatedRequest(t *testing.T) {
 
 	failMessage := "PaginatedRequestFail"
 
-	firstPageContentData := "[{\"name\": \"repo-A-on-first-page\"}, {\"name\": \"repo-B-on-first-page\"}]"
+	repoAOnFirstPage := "repo-A-on-first-page"
+	repoBOnSecondPage := "repo-B-on-second-page"
 
+	firstPageRequestUrl := buildGitHubListReposRequestUrl(1)
+	firstPageContentData := fmt.Sprintf("[{\"name\": \"%v\"}]", repoAOnFirstPage)
 	firstPageContent := []*github.Repository{
-		{Name: github.String("repo-A-on-first-page")},
-		{Name: github.String("repo-B-on-first-page")},
+		{Name: github.String(repoAOnFirstPage)},
 	}
 
-	secondPageContentData := "[{\"name\": \"repo-C-on-second-page\"}, {\"name\": \"repo-D-on-second-page\"}]"
-
+	secondPageRequestUrl := buildGitHubListReposRequestUrl(2)
+	secondPageContentData := fmt.Sprintf("[{\"name\": \"%v\"}]", repoBOnSecondPage)
 	secondPageContent := []*github.Repository{
-		{Name: github.String("repo-C-on-second-page")},
-		{Name: github.String("repo-D-on-second-page")},
+		{Name: github.String(repoBOnSecondPage)},
 	}
 
 	allPagesContent := append(firstPageContent, secondPageContent...)
@@ -61,31 +62,31 @@ func TestPaginatedRequest(t *testing.T) {
 		"when the request for the first page fails": {
 			httpMockResponders: []httpMockResponder{
 				{
-					url:       fmt.Sprintf("https://api.github.com/orgs/%v/repos?page=1", aladino.DefaultMockPrOwner),
+					url:       firstPageRequestUrl,
 					responder: httpmock.NewErrorResponder(fmt.Errorf(failMessage)),
 				},
 			},
 			numPages: 1,
-			wantErr:  fmt.Sprintf("Get \"https://api.github.com/orgs/foobar/repos?page=1\": %v", failMessage),
+			wantErr:  fmt.Sprintf("Get \"%v\": %v", firstPageRequestUrl, failMessage),
 		},
 		"when the request for the second page fails": {
 			httpMockResponders: []httpMockResponder{
 				{
-					url:       fmt.Sprintf("https://api.github.com/orgs/%v/repos?page=1", aladino.DefaultMockPrOwner),
+					url:       firstPageRequestUrl,
 					responder: httpmock.NewBytesResponder(200, []byte(fmt.Sprintf("%v", firstPageContentData))),
 				},
 				{
-					url:       fmt.Sprintf("https://api.github.com/orgs/%v/repos?page=2", aladino.DefaultMockPrOwner),
+					url:       secondPageRequestUrl,
 					responder: httpmock.NewErrorResponder(fmt.Errorf(failMessage)),
 				},
 			},
 			numPages: 2,
-			wantErr:  fmt.Sprintf("Get \"https://api.github.com/orgs/foobar/repos?page=2\": %v", failMessage),
+			wantErr:  fmt.Sprintf("Get \"%v\": %v", secondPageRequestUrl, failMessage),
 		},
 		"when there is only one page": {
 			httpMockResponders: []httpMockResponder{
 				{
-					url:       fmt.Sprintf("https://api.github.com/orgs/%v/repos?page=1", aladino.DefaultMockPrOwner),
+					url:       firstPageRequestUrl,
 					responder: httpmock.NewBytesResponder(200, []byte(fmt.Sprintf("%v", firstPageContentData))),
 				},
 			},
@@ -95,11 +96,11 @@ func TestPaginatedRequest(t *testing.T) {
 		"when there is more than one page": {
 			httpMockResponders: []httpMockResponder{
 				{
-					url:       fmt.Sprintf("https://api.github.com/orgs/%v/repos?page=1", aladino.DefaultMockPrOwner),
+					url:       firstPageRequestUrl,
 					responder: httpmock.NewBytesResponder(200, []byte(fmt.Sprintf("%v", firstPageContentData))),
 				},
 				{
-					url:       fmt.Sprintf("https://api.github.com/orgs/%v/repos?page=2", aladino.DefaultMockPrOwner),
+					url:       secondPageRequestUrl,
 					responder: httpmock.NewBytesResponder(200, []byte(fmt.Sprintf("%v", secondPageContentData))),
 				},
 			},
@@ -830,6 +831,10 @@ func registerHttpResponders(httpMockResponders []httpMockResponder) {
 	for _, httpMockResponder := range httpMockResponders {
 		httpmock.RegisterResponder("GET", httpMockResponder.url, httpMockResponder.responder)
 	}
+}
+
+func buildGitHubListReposRequestUrl(page int) string {
+	return fmt.Sprintf("https://api.github.com/orgs/%v/repos?page=%v", aladino.DefaultMockPrOwner, page)
 }
 
 func buildGitHubResponse(resp *http.Response, link string, nextPage int) *github.Response {
