@@ -4,21 +4,29 @@
 
 package plugins_aladino_functions
 
-import "github.com/reviewpad/reviewpad/v3/lang/aladino"
+import (
+	"github.com/reviewpad/reviewpad/v3/handler"
+	"github.com/reviewpad/reviewpad/v3/lang/aladino"
+)
 
 func Labels() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type: aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildArrayOfType(aladino.BuildStringType())),
-		Code: labelsCode,
+		Type:           aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildArrayOfType(aladino.BuildStringType())),
+		Code:           labelsCode,
+		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest, handler.Issue},
 	}
 }
 
 func labelsCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
-	ghLabels := e.GetPullRequest().Labels
+	ghLabels, err := e.GetTarget().GetLabels()
+	if err != nil {
+		return nil, err
+	}
+
 	labels := make([]aladino.Value, len(ghLabels))
 
 	for i, ghLabel := range ghLabels {
-		labels[i] = aladino.BuildStringValue(ghLabel.GetName())
+		labels[i] = aladino.BuildStringValue(ghLabel.Name)
 	}
 
 	return aladino.BuildArrayValue(labels), nil

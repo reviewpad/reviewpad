@@ -4,30 +4,38 @@
 
 package engine
 
-type Metadata struct {
-	Workflow    PadWorkflow
-	TriggeredBy []PadWorkflowRule
-}
-
 type Statement struct {
-	Code     string
-	Metadata *Metadata
+	code string
 }
 
 type Program struct {
-	Statements []*Statement
+	statements []*Statement
 }
 
-func (program *Program) append(workflowActions []string, workflow PadWorkflow, workflowRules []PadWorkflowRule) {
-	for _, workflowAction := range workflowActions {
-		statement := &Statement{
-			Code: workflowAction,
-			Metadata: &Metadata{
-				Workflow:    workflow,
-				TriggeredBy: workflowRules,
-			},
-		}
+func BuildStatement(code string) *Statement {
+	return &Statement{
+		code,
+	}
+}
 
-		program.Statements = append(program.Statements, statement)
+func BuildProgram(statements []*Statement) *Program {
+	return &Program{
+		statements,
+	}
+}
+
+func (s *Statement) GetStatementCode() string {
+	return s.code
+}
+
+func (p *Program) GetProgramStatements() []*Statement {
+	return p.statements
+}
+
+func (program *Program) append(workflowActions []string) {
+	for _, workflowAction := range workflowActions {
+		statement := BuildStatement(workflowAction)
+
+		program.statements = append(program.statements, statement)
 	}
 }

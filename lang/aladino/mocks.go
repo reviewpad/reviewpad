@@ -16,7 +16,9 @@ import (
 
 	"github.com/google/go-github/v45/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
+	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/collector"
+	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/shurcooL/githubv4"
 )
 
@@ -26,7 +28,13 @@ const DefaultMockPrOwner = "foobar"
 const DefaultMockPrRepoName = "default-mock-repo"
 
 var DefaultMockContext = context.Background()
-var DefaultMockCollector = collector.NewCollector("", "")
+var DefaultMockCollector = collector.NewCollector("", "", "pull_request", "")
+var DefaultMockTargetEntity = &handler.TargetEntity{
+	Owner:  DefaultMockPrOwner,
+	Repo:   DefaultMockPrRepoName,
+	Number: DefaultMockPrNum,
+	Kind:   handler.PullRequest,
+}
 
 func GetDefaultMockPullRequestDetails() *github.PullRequest {
 	prNum := DefaultMockPrNum
@@ -54,13 +62,14 @@ func GetDefaultMockPullRequestDetails() *github.PullRequest {
 		},
 		Labels: []*github.Label{
 			{
+				ID:   github.Int64(1),
 				Name: github.String("enhancement"),
 			},
 		},
 		Head: &github.PullRequestBranch{
 			Repo: &github.Repository{
 				Owner: &github.User{
-					Login: github.String("john"),
+					Login: github.String(prOwner),
 				},
 				URL:  github.String(prUrl),
 				Name: github.String(prRepoName),
@@ -70,7 +79,7 @@ func GetDefaultMockPullRequestDetails() *github.PullRequest {
 		Base: &github.PullRequestBranch{
 			Repo: &github.Repository{
 				Owner: &github.User{
-					Login: github.String("john"),
+					Login: github.String(prOwner),
 				},
 				URL:  github.String(prUrl),
 				Name: github.String(prRepoName),
@@ -153,9 +162,9 @@ func GetDefaultMockPullRequestDetailsWith(pr *github.PullRequest) *github.PullRe
 	return defaultPullRequest
 }
 
-func getDefaultMockPullRequestFileList() *[]*github.CommitFile {
+func getDefaultMockPullRequestFileList() []*github.CommitFile {
 	prRepoName := DefaultMockPrRepoName
-	return &[]*github.CommitFile{
+	return []*github.CommitFile{
 		{
 			Filename: github.String(fmt.Sprintf("%v/file1.ts", prRepoName)),
 			Patch:    github.String("@@ -2,9 +2,11 @@ package main\n- func previous1() {\n+ func new1() {\n+\nreturn"),
@@ -179,18 +188,21 @@ func MockBuiltIns() *BuiltIns {
 				Code: func(e Env, args []Value) (Value, error) {
 					return nil, nil
 				},
+				SupportedKinds: []handler.TargetEntityKind{handler.PullRequest, handler.Issue},
 			},
 			"zeroConst": {
 				Type: BuildFunctionType([]Type{}, BuildIntType()),
 				Code: func(e Env, args []Value) (Value, error) {
 					return BuildIntValue(0), nil
 				},
+				SupportedKinds: []handler.TargetEntityKind{handler.PullRequest, handler.Issue},
 			},
 			"returnStr": {
 				Type: BuildFunctionType([]Type{BuildStringType()}, BuildStringType()),
 				Code: func(e Env, args []Value) (Value, error) {
 					return args[0].(*StringValue), nil
 				},
+				SupportedKinds: []handler.TargetEntityKind{handler.PullRequest, handler.Issue},
 			},
 		},
 		Actions: map[string]*BuiltInAction{
@@ -199,6 +211,7 @@ func MockBuiltIns() *BuiltIns {
 				Code: func(e Env, args []Value) error {
 					return nil
 				},
+				SupportedKinds: []handler.TargetEntityKind{handler.PullRequest, handler.Issue},
 			},
 		},
 	}
@@ -227,24 +240,18 @@ func mockHttpClientWith(clientOptions ...mock.MockBackendOption) *http.Client {
 	return mock.NewMockedHTTPClient(clientOptions...)
 }
 
-func mockEnvWith(prOwner string, prRepoName string, prNum int, client *github.Client, clientGQL *githubv4.Client, eventPayload interface{}, builtIns *BuiltIns) (Env, error) {
+func mockEnvWith(prOwner string, prRepoName string, prNum int, githubClient *gh.GithubClient, eventPayload interface{}, builtIns *BuiltIns) (Env, error) {
 	ctx := context.Background()
-	pr, _, err := client.PullRequests.Get(ctx, prOwner, prRepoName, prNum)
-	if err != nil {
-		return nil, err
-	}
 
 	env, err := NewEvalEnv(
 		ctx,
 		false,
-		client,
-		clientGQL,
+		githubClient,
 		DefaultMockCollector,
-		pr,
+		DefaultMockTargetEntity,
 		eventPayload,
 		builtIns,
 	)
-
 	if err != nil {
 		return nil, err
 	}
@@ -292,84 +299,36 @@ func (l localRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) 
 	return w.Result(), nil
 }
 
+func MockDefaultGithubClient(ghApiClientOptions []mock.MockBackendOption, ghGraphQLHandler func(http.ResponseWriter, *http.Request)) *gh.GithubClient {
+	client := github.NewClient(mockDefaultHttpClient(ghApiClientOptions))
+
+	// Handle GraphQL
+	var clientGQL *githubv4.Client
+	if ghGraphQLHandler != nil {
+		mux := http.NewServeMux()
+		mux.HandleFunc("/graphql", ghGraphQLHandler)
+		clientGQL = githubv4.NewClient(&http.Client{Transport: localRoundTripper{handler: mux}})
+	}
+
+	return gh.NewGithubClient(client, clientGQL)
+}
+
 // MockDefaultEnv mocks an Aladino Env with default values.
 func MockDefaultEnv(
 	t *testing.T,
 	ghApiClientOptions []mock.MockBackendOption,
 	ghGraphQLHandler func(http.ResponseWriter, *http.Request),
-) Env {
-	prOwner := DefaultMockPrOwner
-	prRepoName := DefaultMockPrRepoName
-	prNum := DefaultMockPrNum
-	client := github.NewClient(mockDefaultHttpClient(ghApiClientOptions))
-
-	// Handle GraphQL
-	var clientGQL *githubv4.Client
-	if ghGraphQLHandler != nil {
-		mux := http.NewServeMux()
-		mux.HandleFunc("/graphql", ghGraphQLHandler)
-		clientGQL = githubv4.NewClient(&http.Client{Transport: localRoundTripper{handler: mux}})
-	}
-
-	mockedEnv, err := mockEnvWith(prOwner, prRepoName, prNum, client, clientGQL, nil, MockBuiltIns())
-	if err != nil {
-		t.Fatalf("[MockDefaultEnv] failed to create mock env: %v", err)
-	}
-
-	return mockedEnv
-}
-
-// MockDefaultEnv mocks an Aladino Env with default values and builtIns
-func MockDefaultEnvBuiltIns(
-	t *testing.T,
-	ghApiClientOptions []mock.MockBackendOption,
-	ghGraphQLHandler func(http.ResponseWriter, *http.Request),
 	builtIns *BuiltIns,
-) Env {
-	prOwner := DefaultMockPrOwner
-	prRepoName := DefaultMockPrRepoName
-	prNum := DefaultMockPrNum
-	client := github.NewClient(mockDefaultHttpClient(ghApiClientOptions))
-
-	// Handle GraphQL
-	var clientGQL *githubv4.Client
-	if ghGraphQLHandler != nil {
-		mux := http.NewServeMux()
-		mux.HandleFunc("/graphql", ghGraphQLHandler)
-		clientGQL = githubv4.NewClient(&http.Client{Transport: localRoundTripper{handler: mux}})
-	}
-
-	mock, err := mockEnvWith(prOwner, prRepoName, prNum, client, clientGQL, nil, builtIns)
-	if err != nil {
-		t.Fatalf("[MockDefaultEnvBuiltIns] failed to create mock env: %v", err)
-	}
-
-	return mock
-}
-
-// MockDefaultEnvEvent mocks an Aladino Env with default values and an event
-func MockDefaultEnvEvent(
-	t *testing.T,
-	ghApiClientOptions []mock.MockBackendOption,
-	ghGraphQLHandler func(http.ResponseWriter, *http.Request),
 	eventPayload interface{},
 ) Env {
 	prOwner := DefaultMockPrOwner
 	prRepoName := DefaultMockPrRepoName
 	prNum := DefaultMockPrNum
-	client := github.NewClient(mockDefaultHttpClient(ghApiClientOptions))
+	githubClient := MockDefaultGithubClient(ghApiClientOptions, ghGraphQLHandler)
 
-	// Handle GraphQL
-	var clientGQL *githubv4.Client
-	if ghGraphQLHandler != nil {
-		mux := http.NewServeMux()
-		mux.HandleFunc("/graphql", ghGraphQLHandler)
-		clientGQL = githubv4.NewClient(&http.Client{Transport: localRoundTripper{handler: mux}})
-	}
-
-	mockedEnv, err := mockEnvWith(prOwner, prRepoName, prNum, client, clientGQL, eventPayload, MockBuiltIns())
+	mockedEnv, err := mockEnvWith(prOwner, prRepoName, prNum, githubClient, eventPayload, builtIns)
 	if err != nil {
-		t.Fatalf("[MockDefaultEnvEvent] failed to create mock env: %v", err)
+		t.Fatalf("[MockDefaultEnv] failed to create mock env: %v", err)
 	}
 
 	return mockedEnv

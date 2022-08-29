@@ -33,6 +33,8 @@ func TestDescription(t *testing.T) {
 			),
 		},
 		nil,
+		aladino.MockBuiltIns(),
+		nil,
 	)
 
 	wantDescription := aladino.BuildStringValue(prDescription)

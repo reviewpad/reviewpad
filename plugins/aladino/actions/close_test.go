@@ -36,6 +36,8 @@ func TestClose_WhenEditRequestFails(t *testing.T) {
 			),
 		},
 		nil,
+		aladino.MockBuiltIns(),
+		nil,
 	)
 
 	args := []aladino.Value{}
@@ -62,6 +64,8 @@ func TestClose(t *testing.T) {
 				}),
 			),
 		},
+		nil,
+		aladino.MockBuiltIns(),
 		nil,
 	)
 

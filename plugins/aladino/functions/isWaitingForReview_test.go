@@ -51,6 +51,8 @@ func TestIsWaitingForReview_WhenRequestFails(t *testing.T) {
 					),
 				},
 				nil,
+				aladino.MockBuiltIns(),
+				nil,
 			),
 			wantError: "GetPullRequestCommitsRequestFailed",
 		},
@@ -89,6 +91,8 @@ func TestIsWaitingForReview_WhenRequestFails(t *testing.T) {
 						}),
 					),
 				},
+				nil,
+				aladino.MockBuiltIns(),
 				nil,
 			),
 			wantError: "GetPullRequestReviewsRequestFailed",
@@ -171,6 +175,8 @@ func TestIsWaitingForReview_WhenInvalidCommits(t *testing.T) {
 					),
 				},
 				nil,
+				aladino.MockBuiltIns(),
+				nil,
 			)
 			args := []aladino.Value{}
 			gotValue, err := isWaitingForReview(mockedEnv, args)
@@ -251,6 +257,8 @@ func TestIsWaitingForReview_WhenHasNoReviews(t *testing.T) {
 						}),
 					),
 				},
+				nil,
+				aladino.MockBuiltIns(),
 				nil,
 			)
 			args := []aladino.Value{}
@@ -405,6 +413,8 @@ func TestIsWaitingForReview_WhenHasReviews(t *testing.T) {
 						}),
 					),
 				},
+				nil,
+				aladino.MockBuiltIns(),
 				nil,
 			)
 			args := []aladino.Value{}

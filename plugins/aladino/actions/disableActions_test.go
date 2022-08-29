@@ -28,7 +28,7 @@ func TestDisableActions(t *testing.T) {
 			},
 		},
 	}
-	mockedEnv := aladino.MockDefaultEnvBuiltIns(t, nil, nil, builtIns)
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, builtIns, nil)
 
 	args := []aladino.Value{aladino.BuildArrayValue([]aladino.Value{aladino.BuildStringValue(builtInName)})}
 	err := disableActions(mockedEnv, args)

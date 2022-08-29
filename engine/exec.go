@@ -5,9 +5,10 @@
 package engine
 
 import (
+	"fmt"
 	"log"
-	"regexp"
 
+	"github.com/google/go-github/v45/github"
 	"github.com/reviewpad/reviewpad/v3/utils/fmtio"
 )
 
@@ -24,10 +25,20 @@ func execLog(val string) {
 }
 
 func CollectError(env *Env, err error) {
-	env.Collector.Collect("Error", map[string]interface{}{
-		"pullRequestUrl": env.PullRequest.URL,
-		"details":        err.Error(),
-	})
+	var errMsg string
+	ghError, isGitHubError := err.(*github.ErrorResponse)
+
+	if isGitHubError {
+		errMsg = ghError.Message
+	} else {
+		errMsg = err.Error()
+	}
+
+	collectedData := map[string]interface{}{
+		"details": errMsg,
+	}
+
+	env.Collector.Collect("Error", collectedData)
 }
 
 // Eval: main function that generates the program to be executed
@@ -37,12 +48,8 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 
 	interpreter := env.Interpreter
 
-	reg := regexp.MustCompile(`github\.com\/repos\/(.*)\/pulls\/\d+$$`)
-	matches := reg.FindStringSubmatch(*env.PullRequest.URL)
-
-	env.Collector.Collect("Trigger Analysis", map[string]interface{}{
-		"pullRequestUrl": env.PullRequest.URL,
-		"project":        matches[1],
+	collectedData := map[string]interface{}{
+		"project":        fmt.Sprintf(env.TargetEntity.Owner + "/" + env.TargetEntity.Repo),
 		"version":        file.Version,
 		"edition":        file.Edition,
 		"mode":           file.Mode,
@@ -50,7 +57,9 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 		"totalLabels":    len(file.Labels),
 		"totalRules":     len(file.Rules),
 		"totalWorkflows": len(file.Workflows),
-	})
+	}
+
+	env.Collector.Collect("Trigger Analysis", collectedData)
 
 	rules := make(map[string]PadRule)
 
@@ -108,9 +117,7 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 	}
 
 	// a program is a list of statements to be executed based on the workflow rules and actions.
-	program := &Program{
-		Statements: make([]*Statement, 0),
-	}
+	program := BuildProgram(make([]*Statement, 0))
 
 	// triggeredExclusiveWorkflow is a control variable to denote if a workflow `always-run: false` has been triggered.
 	triggeredExclusiveWorkflow := false
@@ -125,6 +132,19 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 
 		ruleActivatedQueue := make([]PadWorkflowRule, 0)
 		ruleDefinitionQueue := make(map[string]PadRule)
+
+		shouldRun := false
+		for _, eventKind := range workflow.On {
+			if eventKind == env.TargetEntity.Kind {
+				shouldRun = true
+				break
+			}
+		}
+
+		if !shouldRun {
+			execLogf("\tskipping workflow because event kind is %v and workflow is on %v", env.TargetEntity.Kind, workflow.On)
+			continue
+		}
 
 		for _, rule := range workflow.Rules {
 			ruleName := rule.Rule
@@ -145,10 +165,10 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 		}
 
 		if len(ruleActivatedQueue) > 0 {
-			program.append(workflow.Actions, workflow, ruleActivatedQueue)
+			program.append(workflow.Actions)
 
 			for _, activatedRule := range ruleActivatedQueue {
-				program.append(activatedRule.ExtraActions, workflow, []PadWorkflowRule{activatedRule})
+				program.append(activatedRule.ExtraActions)
 			}
 
 			if !workflow.AlwaysRun {
@@ -156,6 +176,41 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 			}
 		} else {
 			execLog("\tno rules activated")
+		}
+	}
+
+	for _, pipeline := range file.Pipelines {
+		execLogf("evaluating pipeline %v:", pipeline.Name)
+
+		var err error
+		activated := pipeline.Trigger == ""
+		if !activated {
+			activated, err = interpreter.EvalExpr("patch", pipeline.Trigger)
+			if err != nil {
+				CollectError(env, err)
+				return nil, err
+			}
+		}
+
+		if activated {
+			for num, stage := range pipeline.Stages {
+				execLogf("evaluating pipeline stage %v", num)
+				if stage.Until == "" {
+					program.append(stage.Actions)
+					break
+				}
+
+				isDone, err := interpreter.EvalExpr("patch", stage.Until)
+				if err != nil {
+					CollectError(env, err)
+					return nil, err
+				}
+
+				if !isDone {
+					program.append(stage.Actions)
+					break
+				}
+			}
 		}
 	}
 

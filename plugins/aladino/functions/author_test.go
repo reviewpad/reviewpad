@@ -33,6 +33,8 @@ func TestAuthor(t *testing.T) {
 			),
 		},
 		nil,
+		aladino.MockBuiltIns(),
+		nil,
 	)
 
 	wantAuthor := aladino.BuildStringValue(authorLogin)

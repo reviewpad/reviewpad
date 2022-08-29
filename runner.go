@@ -10,13 +10,13 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/google/go-github/v45/github"
+	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/collector"
 	"github.com/reviewpad/reviewpad/v3/engine"
+	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
 	"github.com/reviewpad/reviewpad/v3/utils/fmtio"
-	"github.com/shurcooL/githubv4"
 )
 
 func Load(buf *bytes.Buffer) (*engine.ReviewpadFile, error) {
@@ -37,55 +37,61 @@ func Load(buf *bytes.Buffer) (*engine.ReviewpadFile, error) {
 
 func Run(
 	ctx context.Context,
-	client *github.Client,
-	clientGQL *githubv4.Client,
+	githubClient *gh.GithubClient,
 	collector collector.Collector,
-	pullRequest *github.PullRequest,
+	targetEntity *handler.TargetEntity,
 	eventPayload interface{},
 	reviewpadFile *engine.ReviewpadFile,
 	dryRun bool,
 	safeMode bool,
-) (*engine.Program, error) {
+) (engine.ExitStatus, error) {
 	if safeMode && !dryRun {
-		return nil, fmt.Errorf("when reviewpad is running in safe mode, it must also run in dry-run")
+		return engine.ExitStatusFailure, fmt.Errorf("when reviewpad is running in safe mode, it must also run in dry-run")
 	}
 
-	aladinoInterpreter, err := aladino.NewInterpreter(ctx, dryRun, client, clientGQL, collector, pullRequest, eventPayload, plugins_aladino.PluginBuiltIns())
+	config, err := plugins_aladino.DefaultPluginConfig()
 	if err != nil {
-		return nil, err
+		return engine.ExitStatusFailure, err
 	}
 
-	evalEnv, err := engine.NewEvalEnv(ctx, dryRun, client, clientGQL, collector, pullRequest, eventPayload, aladinoInterpreter)
+	defer config.CleanupPluginConfig()
+
+	aladinoInterpreter, err := aladino.NewInterpreter(ctx, dryRun, githubClient, collector, targetEntity, eventPayload, plugins_aladino.PluginBuiltInsWithConfig(config))
 	if err != nil {
-		return nil, err
+		return engine.ExitStatusFailure, err
+	}
+
+	evalEnv, err := engine.NewEvalEnv(ctx, dryRun, githubClient, collector, targetEntity, aladinoInterpreter)
+	if err != nil {
+		return engine.ExitStatusFailure, err
 	}
 
 	program, err := engine.Eval(reviewpadFile, evalEnv)
 	if err != nil {
-		return nil, err
+		return engine.ExitStatusFailure, err
 	}
 
-	err = aladinoInterpreter.ExecProgram(program)
+	exitStatus, err := aladinoInterpreter.ExecProgram(program)
 	if err != nil {
 		engine.CollectError(evalEnv, err)
-		return nil, err
+		return engine.ExitStatusFailure, err
 	}
 
 	if safeMode || !dryRun {
 		err = aladinoInterpreter.Report(reviewpadFile.Mode, safeMode)
 		if err != nil {
 			engine.CollectError(evalEnv, err)
-			return nil, err
+			return engine.ExitStatusFailure, err
 		}
 	}
 
-	err = evalEnv.Collector.Collect("Completed Analysis", map[string]interface{}{
-		"pullRequestUrl": evalEnv.PullRequest.URL,
-	})
+	collectedData := map[string]interface{}{}
+
+	err = evalEnv.Collector.Collect("Completed Analysis", collectedData)
 
 	if err != nil {
 		log.Printf("error on collector due to %v", err.Error())
 	}
 
-	return program, nil
+	return exitStatus, nil
 }

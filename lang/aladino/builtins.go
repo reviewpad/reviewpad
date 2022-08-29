@@ -4,26 +4,32 @@
 
 package aladino
 
+import "github.com/reviewpad/reviewpad/v3/handler"
+
 type BuiltIns struct {
 	Functions map[string]*BuiltInFunction
 	Actions   map[string]*BuiltInAction
+	Services  map[string]interface{}
 }
 
 type BuiltInFunction struct {
-	Type Type
-	Code func(e Env, args []Value) (Value, error)
+	Type           Type
+	Code           func(e Env, args []Value) (Value, error)
+	SupportedKinds []handler.TargetEntityKind
 }
 
 type BuiltInAction struct {
-	Type     Type
-	Code     func(e Env, args []Value) error
-	Disabled bool
+	Type           Type
+	Code           func(e Env, args []Value) error
+	Disabled       bool
+	SupportedKinds []handler.TargetEntityKind
 }
 
 func MergeAladinoBuiltIns(builtInsList ...*BuiltIns) *BuiltIns {
 	mergedBuiltIns := &BuiltIns{
 		Functions: map[string]*BuiltInFunction{},
 		Actions:   map[string]*BuiltInAction{},
+		Services:  map[string]interface{}{},
 	}
 
 	for _, builtIns := range builtInsList {
@@ -33,6 +39,10 @@ func MergeAladinoBuiltIns(builtInsList ...*BuiltIns) *BuiltIns {
 
 		for key, action := range builtIns.Actions {
 			mergedBuiltIns.Actions[key] = action
+		}
+
+		for key, service := range builtIns.Services {
+			mergedBuiltIns.Services[key] = service
 		}
 	}
 

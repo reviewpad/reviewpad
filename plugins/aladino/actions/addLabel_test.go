@@ -43,6 +43,8 @@ func TestAddLabel_WhenAddLabelToIssueRequestFails(t *testing.T) {
 			),
 		},
 		nil,
+		aladino.MockBuiltIns(),
+		nil,
 	)
 
 	args := []aladino.Value{aladino.BuildStringValue(label)}
@@ -76,6 +78,8 @@ func TestAddLabel_WhenLabelIsInEnvironment(t *testing.T) {
 				}),
 			),
 		},
+		nil,
+		aladino.MockBuiltIns(),
 		nil,
 	)
 	internalLabelID := aladino.BuildInternalLabelID(label)
@@ -113,6 +117,8 @@ func TestAddLabel_WhenLabelIsNotInEnvironment(t *testing.T) {
 				}),
 			),
 		},
+		nil,
+		aladino.MockBuiltIns(),
 		nil,
 	)
 

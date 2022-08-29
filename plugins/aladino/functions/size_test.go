@@ -35,6 +35,8 @@ func TestSize(t *testing.T) {
 			),
 		},
 		nil,
+		aladino.MockBuiltIns(),
+		nil,
 	)
 
 	wantSize := aladino.BuildIntValue(additions + deletions)

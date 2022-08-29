@@ -4,15 +4,19 @@
 
 package plugins_aladino_functions
 
-import "github.com/reviewpad/reviewpad/v3/lang/aladino"
+import (
+	"github.com/reviewpad/reviewpad/v3/handler"
+	"github.com/reviewpad/reviewpad/v3/lang/aladino"
+)
 
 func Title() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type: aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildStringType()),
-		Code: titleCode,
+		Type:           aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildStringType()),
+		Code:           titleCode,
+		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest, handler.Issue},
 	}
 }
 
 func titleCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
-	return aladino.BuildStringValue(e.GetPullRequest().GetTitle()), nil
+	return aladino.BuildStringValue(e.GetTarget().GetTitle()), nil
 }

@@ -1,13 +1,16 @@
 // Copyright 2022 Explore.dev Unipessoal Lda. All Rights Reserved.
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file
-package utils_test
+
+package github_test
 
 import (
+	"context"
+	"fmt"
 	"net/http"
 	"testing"
 
-	"github.com/migueleliasweb/go-github-mock/src/mock"
+	host "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	plugins_aladino_actions "github.com/reviewpad/reviewpad/v3/plugins/aladino/actions"
 	"github.com/reviewpad/reviewpad/v3/utils"
@@ -15,18 +18,20 @@ import (
 )
 
 func TestGetProjectV2ByName_WhenRequestFails(t *testing.T) {
-	mockedEnv := aladino.MockDefaultEnv(
-		t,
+	mockedGithubClient := aladino.MockDefaultGithubClient(
 		nil,
 		func(w http.ResponseWriter, req *http.Request) {
 			http.Error(w, "404 Not Found", http.StatusNotFound)
 		},
 	)
-	mockOwner := utils.GetPullRequestBaseOwnerName(mockedEnv.GetPullRequest())
-	mockRepo := utils.GetPullRequestBaseRepoName(mockedEnv.GetPullRequest())
+
+	mockedPullRequest := aladino.GetDefaultMockPullRequestDetails()
+
+	mockOwner := host.GetPullRequestBaseOwnerName(mockedPullRequest)
+	mockRepo := host.GetPullRequestBaseRepoName(mockedPullRequest)
 	mockProjectName := "reviewpad"
 
-	project, err := utils.GetProjectV2ByName(mockedEnv.GetCtx(), mockedEnv.GetClientGQL(), mockOwner, mockRepo, mockProjectName)
+	project, err := mockedGithubClient.GetProjectV2ByName(context.Background(), mockOwner, mockRepo, mockProjectName)
 
 	assert.NotNil(t, err)
 
@@ -37,10 +42,11 @@ func TestGetProjectV2ByName_WhenProjectNotFound(t *testing.T) {
 	mockedGetProjectByNameQuery := `{
         "query": "query($name:String! $repositoryName:String! $repositoryOwner:String!) {
             repository(owner: $repositoryOwner, name: $repositoryName) {
-                projectsV2(query: $name, first: 1, orderBy: {field: TITLE, direction: ASC}) {
+                projectsV2(query: $name, first: 50, orderBy: {field: TITLE, direction: ASC}) {
                     nodes{
                         id,
-                        number
+                        number,
+                        title
                     }
                 }
             }
@@ -48,7 +54,7 @@ func TestGetProjectV2ByName_WhenProjectNotFound(t *testing.T) {
         "variables": {
             "name": "reviewpad",
             "repositoryName": "default-mock-repo",
-            "repositoryOwner": "john"
+            "repositoryOwner": "foobar"
         }
     }`
 	mockedGetProjectByNameQueryBody := `{
@@ -60,9 +66,8 @@ func TestGetProjectV2ByName_WhenProjectNotFound(t *testing.T) {
             }
         }
     }`
-	mockedEnv := aladino.MockDefaultEnv(
-		t,
-		[]mock.MockBackendOption{},
+	mockedGithubClient := aladino.MockDefaultGithubClient(
+		nil,
 		func(res http.ResponseWriter, req *http.Request) {
 			query := utils.MinifyQuery(aladino.MustRead(req.Body))
 			switch query {
@@ -74,11 +79,13 @@ func TestGetProjectV2ByName_WhenProjectNotFound(t *testing.T) {
 			}
 		},
 	)
-	mockOwner := utils.GetPullRequestBaseOwnerName(mockedEnv.GetPullRequest())
-	mockRepo := utils.GetPullRequestBaseRepoName(mockedEnv.GetPullRequest())
+	mockedPullRequest := aladino.GetDefaultMockPullRequestDetails()
+
+	mockOwner := host.GetPullRequestBaseOwnerName(mockedPullRequest)
+	mockRepo := host.GetPullRequestBaseRepoName(mockedPullRequest)
 	mockProjectName := "reviewpad"
 
-	project, err := utils.GetProjectV2ByName(mockedEnv.GetCtx(), mockedEnv.GetClientGQL(), mockOwner, mockRepo, mockProjectName)
+	project, err := mockedGithubClient.GetProjectV2ByName(context.Background(), mockOwner, mockRepo, mockProjectName)
 
 	assert.Equal(t, plugins_aladino_actions.ErrProjectNotFound, err)
 
@@ -89,15 +96,15 @@ func TestGetProjectV2ByName_WhenProjectFound(t *testing.T) {
 	mockedGetProjectByNameQuery := `{
         "query": "query($name:String! $repositoryName:String! $repositoryOwner:String!) {
             repository(owner: $repositoryOwner, name: $repositoryName) {
-                projectsV2(query: $name, first: 1, orderBy: {field: TITLE, direction: ASC}) {
-                    nodes{id,number}
+                projectsV2(query: $name, first: 50, orderBy: {field: TITLE, direction: ASC}) {
+                    nodes{id,number,title}
                 }
             }
         }",
         "variables": {
             "name":"reviewpad",
             "repositoryName":"default-mock-repo",
-            "repositoryOwner":"john"
+            "repositoryOwner":"foobar"
         }
     }`
 	mockedGetProjectByNameQueryBody := `{
@@ -114,9 +121,8 @@ func TestGetProjectV2ByName_WhenProjectFound(t *testing.T) {
             }
         }
     }`
-	mockedEnv := aladino.MockDefaultEnv(
-		t,
-		[]mock.MockBackendOption{},
+	mockedGithubClient := aladino.MockDefaultGithubClient(
+		nil,
 		func(res http.ResponseWriter, req *http.Request) {
 			query := utils.MinifyQuery(aladino.MustRead(req.Body))
 			switch query {
@@ -128,31 +134,34 @@ func TestGetProjectV2ByName_WhenProjectFound(t *testing.T) {
 			}
 		},
 	)
-	mockOwner := utils.GetPullRequestBaseOwnerName(mockedEnv.GetPullRequest())
-	mockRepo := utils.GetPullRequestBaseRepoName(mockedEnv.GetPullRequest())
+	mockedPullRequest := aladino.GetDefaultMockPullRequestDetails()
+
+	mockOwner := host.GetPullRequestBaseOwnerName(mockedPullRequest)
+	mockRepo := host.GetPullRequestBaseRepoName(mockedPullRequest)
 	mockProjectName := "reviewpad"
 
-	project, err := utils.GetProjectV2ByName(mockedEnv.GetCtx(), mockedEnv.GetClientGQL(), mockOwner, mockRepo, mockProjectName)
+	project, err := mockedGithubClient.GetProjectV2ByName(context.Background(), mockOwner, mockRepo, mockProjectName)
 
-	assert.Equal(t, nil, err)
+	assert.Nil(t, err)
 
 	assert.NotNil(t, project)
 }
 
 func TestGetProjectFieldsByProjectNumber_WhenRequestFails(t *testing.T) {
-	mockedEnv := aladino.MockDefaultEnv(
-		t,
+	mockedGithubClient := aladino.MockDefaultGithubClient(
 		nil,
 		func(w http.ResponseWriter, req *http.Request) {
 			http.Error(w, "404 Not Found", http.StatusNotFound)
 		},
 	)
-	mockOwner := utils.GetPullRequestBaseOwnerName(mockedEnv.GetPullRequest())
-	mockRepo := utils.GetPullRequestBaseRepoName(mockedEnv.GetPullRequest())
+	mockedPullRequest := aladino.GetDefaultMockPullRequestDetails()
+
+	mockOwner := host.GetPullRequestBaseOwnerName(mockedPullRequest)
+	mockRepo := host.GetPullRequestBaseRepoName(mockedPullRequest)
 	mockProjectNumber := 1
 	mockRetryCount := 1
 
-	project, err := utils.GetProjectFieldsByProjectNumber(mockedEnv.GetCtx(), mockedEnv.GetClientGQL(), mockOwner, mockRepo, uint64(mockProjectNumber), mockRetryCount)
+	project, err := mockedGithubClient.GetProjectFieldsByProjectNumber(context.Background(), mockOwner, mockRepo, uint64(mockProjectNumber), mockRetryCount)
 
 	assert.NotNil(t, err)
 
@@ -187,7 +196,7 @@ func TestGetProjectFieldsByProjectNumber_WhenProjectNotFound(t *testing.T) {
             "afterCursor": "",
             "projectNumber": 1,
             "repositoryName": "default-mock-repo",
-            "repositoryOwner":"john"
+            "repositoryOwner":"foobar"
         }
     }`
 	mockedGetProjectByNameQueryBody := `{
@@ -197,9 +206,8 @@ func TestGetProjectFieldsByProjectNumber_WhenProjectNotFound(t *testing.T) {
             }
         }
     }`
-	mockedEnv := aladino.MockDefaultEnv(
-		t,
-		[]mock.MockBackendOption{},
+	mockedGithubClient := aladino.MockDefaultGithubClient(
+		nil,
 		func(res http.ResponseWriter, req *http.Request) {
 			query := utils.MinifyQuery(aladino.MustRead(req.Body))
 			switch query {
@@ -211,12 +219,14 @@ func TestGetProjectFieldsByProjectNumber_WhenProjectNotFound(t *testing.T) {
 			}
 		},
 	)
-	mockOwner := utils.GetPullRequestBaseOwnerName(mockedEnv.GetPullRequest())
-	mockRepo := utils.GetPullRequestBaseRepoName(mockedEnv.GetPullRequest())
+	mockedPullRequest := aladino.GetDefaultMockPullRequestDetails()
+
+	mockOwner := host.GetPullRequestBaseOwnerName(mockedPullRequest)
+	mockRepo := host.GetPullRequestBaseRepoName(mockedPullRequest)
 	mockProjectNumber := 1
 	mockRetryCount := 1
 
-	project, err := utils.GetProjectFieldsByProjectNumber(mockedEnv.GetCtx(), mockedEnv.GetClientGQL(), mockOwner, mockRepo, uint64(mockProjectNumber), mockRetryCount)
+	project, err := mockedGithubClient.GetProjectFieldsByProjectNumber(context.Background(), mockOwner, mockRepo, uint64(mockProjectNumber), mockRetryCount)
 
 	assert.Equal(t, plugins_aladino_actions.ErrProjectNotFound, err)
 
@@ -253,7 +263,7 @@ func TestGetProjectFieldsByProjectNumber_WhenRetrySuccessful(t *testing.T) {
             "projectNumber":1,
             "repositoryName":
             "default-mock-repo",
-            "repositoryOwner":"john"
+            "repositoryOwner":"foobar"
         }
     }`
 	mockedGetProjectFieldsQueryBody := `{
@@ -278,9 +288,8 @@ func TestGetProjectFieldsByProjectNumber_WhenRetrySuccessful(t *testing.T) {
         }
     }`
 	currentTry := 1
-	mockedEnv := aladino.MockDefaultEnv(
-		t,
-		[]mock.MockBackendOption{},
+	mockedGithubClient := aladino.MockDefaultGithubClient(
+		nil,
 		func(res http.ResponseWriter, req *http.Request) {
 			query := utils.MinifyQuery(aladino.MustRead(req.Body))
 			switch query {
@@ -297,16 +306,79 @@ func TestGetProjectFieldsByProjectNumber_WhenRetrySuccessful(t *testing.T) {
 			}
 		},
 	)
-	mockOwner := utils.GetPullRequestBaseOwnerName(mockedEnv.GetPullRequest())
-	mockRepo := utils.GetPullRequestBaseRepoName(mockedEnv.GetPullRequest())
+	mockedPullRequest := aladino.GetDefaultMockPullRequestDetails()
+
+	mockOwner := host.GetPullRequestBaseOwnerName(mockedPullRequest)
+	mockRepo := host.GetPullRequestBaseRepoName(mockedPullRequest)
 	mockProjectNumber := 1
 	mockRetryCount := 2
 
-	fields, err := utils.GetProjectFieldsByProjectNumber(mockedEnv.GetCtx(), mockedEnv.GetClientGQL(), mockOwner, mockRepo, uint64(mockProjectNumber), mockRetryCount)
+	fields, err := mockedGithubClient.GetProjectFieldsByProjectNumber(context.Background(), mockOwner, mockRepo, uint64(mockProjectNumber), mockRetryCount)
 
 	assert.Equal(t, nil, err)
 
 	assert.NotNil(t, fields)
 
 	assert.Equal(t, 1, len(fields))
+}
+
+func TestGetProjectV2ByName_WhenSeveralProjectsFound(t *testing.T) {
+	mockProjectName := "reviewpad"
+	mockedGetProjectByNameQuery := fmt.Sprintf(`{
+        "query": "query($name:String! $repositoryName:String! $repositoryOwner:String!) {
+            repository(owner: $repositoryOwner, name: $repositoryName) {
+                projectsV2(query: $name, first: 50, orderBy: {field: TITLE, direction: ASC}) {
+                    nodes{id,number,title}
+                }
+            }
+        }",
+        "variables": {
+            "name":"%s",
+            "repositoryName":"default-mock-repo",
+            "repositoryOwner":"foobar"
+        }
+    }`, mockProjectName)
+	mockedGetProjectByNameQueryBody := `{
+        "data": {
+            "repository":{
+                "projectsV2":{
+                    "nodes":[
+                        {
+                            "id": "2",
+                            "number": 2,
+                            "title": "1eviewpad"
+                        },
+                        {
+                            "id": "1",
+                            "number": 1,
+                            "title": "reviewpad"
+                        }
+                    ]
+                }
+            }
+        }
+    }`
+	mockedGithubClient := aladino.MockDefaultGithubClient(
+		nil,
+		func(res http.ResponseWriter, req *http.Request) {
+			query := utils.MinifyQuery(aladino.MustRead(req.Body))
+			switch query {
+			case utils.MinifyQuery(mockedGetProjectByNameQuery):
+				aladino.MustWrite(
+					res,
+					mockedGetProjectByNameQueryBody,
+				)
+			}
+		},
+	)
+	mockedPullRequest := aladino.GetDefaultMockPullRequestDetails()
+
+	mockOwner := host.GetPullRequestBaseOwnerName(mockedPullRequest)
+	mockRepo := host.GetPullRequestBaseRepoName(mockedPullRequest)
+
+	project, err := mockedGithubClient.GetProjectV2ByName(context.Background(), mockOwner, mockRepo, mockProjectName)
+
+	assert.Nil(t, err)
+	assert.NotNil(t, project)
+	assert.Equal(t, mockProjectName, project.Title)
 }

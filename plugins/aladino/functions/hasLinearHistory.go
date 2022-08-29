@@ -5,30 +5,29 @@
 package plugins_aladino_functions
 
 import (
-	"github.com/google/go-github/v45/github"
+	"github.com/reviewpad/reviewpad/v3/codehost/github/target"
+	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
-	"github.com/reviewpad/reviewpad/v3/utils"
 )
 
 func HasLinearHistory() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type: aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildBoolType()),
-		Code: hasLinearHistoryCode,
+		Type:           aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildBoolType()),
+		Code:           hasLinearHistoryCode,
+		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest},
 	}
 }
 
 func hasLinearHistoryCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
-	prNum := utils.GetPullRequestNumber(e.GetPullRequest())
-	owner := utils.GetPullRequestBaseOwnerName(e.GetPullRequest())
-	repo := utils.GetPullRequestBaseRepoName(e.GetPullRequest())
+	pullRequest := e.GetTarget().(*target.PullRequestTarget)
 
-	ghCommits, _, err := e.GetClient().PullRequests.ListCommits(e.GetCtx(), owner, repo, prNum, &github.ListOptions{})
+	ghCommits, err := pullRequest.GetCommits()
 	if err != nil {
 		return nil, err
 	}
 
 	for _, ghCommit := range ghCommits {
-		if len(ghCommit.Parents) > 1 {
+		if ghCommit.ParentsCount > 1 {
 			return aladino.BuildBoolValue(false), nil
 		}
 	}

@@ -7,32 +7,28 @@ package plugins_aladino_actions
 import (
 	"fmt"
 
-	"github.com/google/go-github/v45/github"
+	"github.com/reviewpad/reviewpad/v3/codehost/github/target"
+	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
-	"github.com/reviewpad/reviewpad/v3/utils"
 )
 
 func Merge() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
-		Type: aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, nil),
-		Code: mergeCode,
+		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, nil),
+		Code:           mergeCode,
+		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest},
 	}
 }
 
 func mergeCode(e aladino.Env, args []aladino.Value) error {
-	prNum := utils.GetPullRequestNumber(e.GetPullRequest())
-	owner := utils.GetPullRequestBaseOwnerName(e.GetPullRequest())
-	repo := utils.GetPullRequestBaseRepoName(e.GetPullRequest())
+	t := e.GetTarget().(*target.PullRequestTarget)
 
 	mergeMethod, err := parseMergeMethod(args)
 	if err != nil {
 		return err
 	}
 
-	_, _, err = e.GetClient().PullRequests.Merge(e.GetCtx(), owner, repo, prNum, "Merged by Reviewpad", &github.PullRequestOptions{
-		MergeMethod: mergeMethod,
-	})
-	return err
+	return t.Merge(mergeMethod)
 }
 
 func parseMergeMethod(args []aladino.Value) (string, error) {

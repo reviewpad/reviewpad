@@ -7,24 +7,29 @@ package engine
 import (
 	"context"
 
-	"github.com/google/go-github/v45/github"
+	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/collector"
-	"github.com/shurcooL/githubv4"
+	"github.com/reviewpad/reviewpad/v3/handler"
 )
 
 type GroupKind string
 type GroupType string
 
+type ExitStatus int
+
 const GroupKindDeveloper GroupKind = "developer"
 const GroupTypeStatic GroupType = "static"
 const GroupTypeFilter GroupType = "filter"
+
+const ExitStatusSuccess ExitStatus = 0
+const ExitStatusFailure ExitStatus = 1
 
 type Interpreter interface {
 	ProcessGroup(name string, kind GroupKind, typeOf GroupType, expr, paramExpr, whereExpr string) error
 	ProcessLabel(id, name string) error
 	ProcessRule(name, spec string) error
 	EvalExpr(kind, expr string) (bool, error)
-	ExecProgram(program *Program) error
+	ExecProgram(program *Program) (ExitStatus, error)
 	ExecStatement(statement *Statement) error
 	Report(mode string, safeMode bool) error
 }
@@ -32,33 +37,27 @@ type Interpreter interface {
 type Env struct {
 	Ctx          context.Context
 	DryRun       bool
-	Client       *github.Client
-	ClientGQL    *githubv4.Client
+	GithubClient *gh.GithubClient
 	Collector    collector.Collector
-	PullRequest  *github.PullRequest
-	EventPayload interface{}
 	Interpreter  Interpreter
+	TargetEntity *handler.TargetEntity
 }
 
 func NewEvalEnv(
 	ctx context.Context,
 	dryRun bool,
-	client *github.Client,
-	clientGQL *githubv4.Client,
+	githubClient *gh.GithubClient,
 	collector collector.Collector,
-	pullRequest *github.PullRequest,
-	eventPayload interface{},
+	targetEntity *handler.TargetEntity,
 	interpreter Interpreter,
 ) (*Env, error) {
 	input := &Env{
 		Ctx:          ctx,
 		DryRun:       dryRun,
-		Client:       client,
-		ClientGQL:    clientGQL,
+		GithubClient: githubClient,
 		Collector:    collector,
-		PullRequest:  pullRequest,
-		EventPayload: eventPayload,
 		Interpreter:  interpreter,
+		TargetEntity: targetEntity,
 	}
 
 	return input, nil

@@ -9,11 +9,11 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/google/go-github/v45/github"
+	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/collector"
 	"github.com/reviewpad/reviewpad/v3/engine"
+	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/utils/fmtio"
-	"github.com/shurcooL/githubv4"
 )
 
 type Interpreter struct {
@@ -113,23 +113,29 @@ func (i *Interpreter) EvalExpr(kind, expr string) (bool, error) {
 	return EvalExpr(i.Env, kind, expr)
 }
 
-func (i *Interpreter) ExecProgram(program *engine.Program) error {
+func (i *Interpreter) ExecProgram(program *engine.Program) (engine.ExitStatus, error) {
 	execLog("executing program")
 
-	for _, statement := range program.Statements {
+	for _, statement := range program.GetProgramStatements() {
 		err := i.ExecStatement(statement)
 		if err != nil {
-			return err
+			return engine.ExitStatusFailure, err
+		}
+
+		hasFatalError := len(i.Env.GetBuiltInsReportedMessages()[SEVERITY_FATAL]) > 0
+		if hasFatalError {
+			execLog("execution stopped")
+			return engine.ExitStatusFailure, nil
 		}
 	}
 
 	execLog("execution done")
 
-	return nil
+	return engine.ExitStatusSuccess, nil
 }
 
 func (i *Interpreter) ExecStatement(statement *engine.Statement) error {
-	statRaw := statement.Code
+	statRaw := statement.GetStatementCode()
 	statAST, err := Parse(statRaw)
 	if err != nil {
 		return err
@@ -156,6 +162,11 @@ func (i *Interpreter) ExecStatement(statement *engine.Statement) error {
 func (i *Interpreter) Report(mode string, safeMode bool) error {
 	execLog("generating report")
 
+	if mode == "" {
+		// By default mode is silent
+		mode = engine.SILENT_MODE
+	}
+
 	env := i.Env
 
 	var err error
@@ -165,14 +176,16 @@ func (i *Interpreter) Report(mode string, safeMode bool) error {
 		return err
 	}
 
-	if mode == engine.SILENT_MODE {
+	reportComments := env.GetBuiltInsReportedMessages()
+
+	if mode == engine.SILENT_MODE && len(reportComments) == 0 && !safeMode {
 		if comment != nil {
 			return DeleteReportComment(env, *comment.ID)
 		}
 		return nil
 	}
 
-	report := buildReport(safeMode, env.GetReport())
+	report := buildReport(mode, safeMode, reportComments, env.GetReport())
 
 	if comment == nil {
 		return AddReportComment(env, report)
@@ -185,15 +198,13 @@ func (i *Interpreter) Report(mode string, safeMode bool) error {
 func NewInterpreter(
 	ctx context.Context,
 	dryRun bool,
-	gitHubClient *github.Client,
-	gitHubClientGQL *githubv4.Client,
+	githubClient *gh.GithubClient,
 	collector collector.Collector,
-	pullRequest *github.PullRequest,
+	targetEntity *handler.TargetEntity,
 	eventPayload interface{},
 	builtIns *BuiltIns,
-
 ) (engine.Interpreter, error) {
-	evalEnv, err := NewEvalEnv(ctx, dryRun, gitHubClient, gitHubClientGQL, collector, pullRequest, eventPayload, builtIns)
+	evalEnv, err := NewEvalEnv(ctx, dryRun, githubClient, collector, targetEntity, eventPayload, builtIns)
 	if err != nil {
 		return nil, err
 	}

@@ -33,6 +33,8 @@ func TestCommitCount(t *testing.T) {
 			),
 		},
 		nil,
+		aladino.MockBuiltIns(),
+		nil,
 	)
 
 	wantCommitCount := aladino.BuildIntValue(totalCommits)

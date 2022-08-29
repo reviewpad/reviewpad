@@ -7,11 +7,12 @@ package aladino
 import (
 	"testing"
 
+	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestTypeCheckExec_WhenTypeInferenceFails(t *testing.T) {
-	mockedEnv := MockDefaultEnv(t, nil, nil)
+	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), nil)
 
 	expr, err := Parse("$emptyAction(1)")
 	if err != nil {
@@ -25,7 +26,7 @@ func TestTypeCheckExec_WhenTypeInferenceFails(t *testing.T) {
 }
 
 func TestTypeCheck(t *testing.T) {
-	mockedEnv := MockDefaultEnv(t, nil, nil)
+	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), nil)
 
 	expr, err := Parse("$emptyAction()")
 	if err != nil {
@@ -41,7 +42,7 @@ func TestTypeCheck(t *testing.T) {
 }
 
 func TestTypeCheck_WhenExprIsNotFunctionCall(t *testing.T) {
-	mockedEnv := MockDefaultEnv(t, nil, nil)
+	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), nil)
 
 	expr, err := Parse("\"not a function call\"")
 	if err != nil {
@@ -55,7 +56,7 @@ func TestTypeCheck_WhenExprIsNotFunctionCall(t *testing.T) {
 }
 
 func TestExec_WhenFunctionArgsEvalFails(t *testing.T) {
-	mockedEnv := MockDefaultEnv(t, nil, nil)
+	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), nil)
 
 	fc := &FunctionCall{
 		name: BuildVariable("invalidCmpOp"),
@@ -70,7 +71,7 @@ func TestExec_WhenFunctionArgsEvalFails(t *testing.T) {
 }
 
 func TestExec_WhenActionBuiltInNonExisting(t *testing.T) {
-	mockedEnv := MockDefaultEnv(t, nil, nil)
+	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), nil)
 
 	delete(mockedEnv.GetBuiltIns().Actions, "tautology")
 
@@ -99,10 +100,11 @@ func TestExec_WhenActionIsEnabled(t *testing.T) {
 					isBuiltInCalled = true
 					return nil
 				},
+				SupportedKinds: []handler.TargetEntityKind{handler.PullRequest},
 			},
 		},
 	}
-	mockedEnv := MockDefaultEnvBuiltIns(t, nil, nil, builtIns)
+	mockedEnv := MockDefaultEnv(t, nil, nil, builtIns, nil)
 
 	fc := &FunctionCall{
 		name:      BuildVariable(builtInName),
@@ -128,11 +130,12 @@ func TestExec_WhenActionIsDisabled(t *testing.T) {
 					isBuiltInCalled = true
 					return nil
 				},
-				Disabled: true,
+				Disabled:       true,
+				SupportedKinds: []handler.TargetEntityKind{handler.PullRequest},
 			},
 		},
 	}
-	mockedEnv := MockDefaultEnvBuiltIns(t, nil, nil, builtIns)
+	mockedEnv := MockDefaultEnv(t, nil, nil, builtIns, nil)
 
 	fc := &FunctionCall{
 		name:      BuildVariable(builtInName),

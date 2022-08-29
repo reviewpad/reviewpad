@@ -18,7 +18,7 @@ import (
 var hasFilePattern = plugins_aladino.PluginBuiltIns().Functions["hasFilePattern"].Code
 
 func TestHasFilePattern_WhenFileBadPattern(t *testing.T) {
-	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
 
 	args := []aladino.Value{aladino.BuildStringValue("[0-9")}
 	gotVal, err := hasFilePattern(mockedEnv, args)
@@ -47,6 +47,8 @@ func TestHasFilePattern_WhenTrue(t *testing.T) {
 				}),
 			),
 		},
+		nil,
+		aladino.MockBuiltIns(),
 		nil,
 	)
 
@@ -77,6 +79,8 @@ func TestHasFilePattern_WhenFalse(t *testing.T) {
 				}),
 			),
 		},
+		nil,
+		aladino.MockBuiltIns(),
 		nil,
 	)
 

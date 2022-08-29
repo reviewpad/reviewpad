@@ -62,7 +62,7 @@ Because of the limitation in described in the [official GitHub documentation](ht
 
 > When you use the repository's GITHUB_TOKEN to perform tasks, events triggered by the GITHUB_TOKEN will not create a new workflow run.
 
-We run the Reviewpad action with an access token from the [reviewpad-team](https://github.com/reviewpad-team).
+We run the Reviewpad action with an access token from the [reviewpad-bot](https://github.com/reviewpad-bot).
 As soon as GitHub resolves this [issue](https://github.community/t/triggering-a-new-workflow-from-another-workflow/16250),
 the automation actions should be done through the `github-actions (bot)`.
 

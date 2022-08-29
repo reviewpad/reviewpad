@@ -36,6 +36,8 @@ func TestHasFileExtensions_WhenFalse(t *testing.T) {
 			),
 		},
 		nil,
+		aladino.MockBuiltIns(),
+		nil,
 	)
 
 	args := []aladino.Value{aladino.BuildArrayValue([]aladino.Value{aladino.BuildStringValue(".md")})}
@@ -65,6 +67,8 @@ func TestHasFileExtensions_WhenTrue(t *testing.T) {
 				}),
 			),
 		},
+		nil,
+		aladino.MockBuiltIns(),
 		nil,
 	)
 

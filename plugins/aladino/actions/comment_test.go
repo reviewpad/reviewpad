@@ -43,6 +43,8 @@ func TestComment(t *testing.T) {
 			),
 		},
 		nil,
+		aladino.MockBuiltIns(),
+		nil,
 	)
 
 	args := []aladino.Value{aladino.BuildStringValue(wantComment)}

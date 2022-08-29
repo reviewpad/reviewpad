@@ -35,6 +35,8 @@ func TestTotalCreatedPullRequests_WhenListIssuesByRepoRequestFails(t *testing.T)
 			),
 		},
 		nil,
+		aladino.MockBuiltIns(),
+		nil,
 	)
 
 	args := []aladino.Value{aladino.BuildStringValue(devName)}
@@ -66,6 +68,8 @@ func TestTotalCreatedPullRequests_WhenThereIsPullRequestIssues(t *testing.T) {
 				ghIssues,
 			),
 		},
+		nil,
+		aladino.MockBuiltIns(),
 		nil,
 	)
 

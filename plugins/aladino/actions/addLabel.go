@@ -7,26 +7,22 @@ package plugins_aladino_actions
 import (
 	"log"
 
+	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
-	"github.com/reviewpad/reviewpad/v3/utils"
 )
 
 func AddLabel() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
-		Type: aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, nil),
-		Code: addLabelCode,
+		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, nil),
+		Code:           addLabelCode,
+		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest, handler.Issue},
 	}
 }
 
 func addLabelCode(e aladino.Env, args []aladino.Value) error {
+	t := e.GetTarget()
 	labelID := args[0].(*aladino.StringValue).Val
-
-	prNum := utils.GetPullRequestNumber(e.GetPullRequest())
-	owner := utils.GetPullRequestBaseOwnerName(e.GetPullRequest())
-	repo := utils.GetPullRequestBaseRepoName(e.GetPullRequest())
-
 	internalLabelID := aladino.BuildInternalLabelID(labelID)
-
 	var labelName string
 
 	if val, ok := e.GetRegisterMap()[internalLabelID]; ok {
@@ -36,7 +32,5 @@ func addLabelCode(e aladino.Env, args []aladino.Value) error {
 		log.Printf("[warn]: the %v label was not found in the environment", labelID)
 	}
 
-	_, _, err := e.GetClient().Issues.AddLabelsToIssue(e.GetCtx(), owner, repo, prNum, []string{labelName})
-
-	return err
+	return t.AddLabels([]string{labelName})
 }

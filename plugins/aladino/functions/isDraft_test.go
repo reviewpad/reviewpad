@@ -32,6 +32,8 @@ func TestIsDraft_WhenTrue(t *testing.T) {
 			),
 		},
 		nil,
+		aladino.MockBuiltIns(),
+		nil,
 	)
 
 	args := []aladino.Value{}
@@ -57,6 +59,8 @@ func TestIsDraft_WhenFalse(t *testing.T) {
 				}),
 			),
 		},
+		nil,
+		aladino.MockBuiltIns(),
 		nil,
 	)
 

@@ -10,6 +10,8 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	"github.com/mitchellh/mapstructure"
+	"github.com/reviewpad/reviewpad/v3/handler"
 	"gopkg.in/yaml.v3"
 )
 
@@ -30,8 +32,6 @@ func Load(data []byte) (*ReviewpadFile, error) {
 		return nil, err
 	}
 
-	transformedFile := transform(file)
-
 	dHash := hash(data)
 
 	visited := make(map[string]bool)
@@ -44,7 +44,17 @@ func Load(data []byte) (*ReviewpadFile, error) {
 		Stack:   stack,
 	}
 
-	return inlineImports(transformedFile, env)
+	file, err = processImports(file, env)
+	if err != nil {
+		return nil, err
+	}
+
+	file, err = processInlineRules(file)
+	if err != nil {
+		return nil, err
+	}
+
+	return transform(file), nil
 }
 
 func parse(data []byte) (*ReviewpadFile, error) {
@@ -58,13 +68,27 @@ func parse(data []byte) (*ReviewpadFile, error) {
 }
 
 func transform(file *ReviewpadFile) *ReviewpadFile {
+	var transformedRules []PadRule
+	for _, rule := range file.Rules {
+		kind := rule.Kind
+		if rule.Kind == "" {
+			kind = "patch"
+		}
+		transformedRules = append(transformedRules, PadRule{
+			Name:        rule.Name,
+			Kind:        kind,
+			Description: rule.Description,
+			Spec:        transformAladinoExpression(rule.Spec),
+		})
+	}
+
 	var transformedWorkflows []PadWorkflow
 	for _, workflow := range file.Workflows {
 		var transformedRules []PadWorkflowRule
 		for _, rule := range workflow.Rules {
 			var transformedExtraActions []string
 			for _, extraAction := range rule.ExtraActions {
-				transformedExtraActions = append(transformedExtraActions, transformActionStr(extraAction))
+				transformedExtraActions = append(transformedExtraActions, transformAladinoExpression(extraAction))
 			}
 
 			transformedRules = append(transformedRules, PadWorkflowRule{
@@ -75,15 +99,46 @@ func transform(file *ReviewpadFile) *ReviewpadFile {
 
 		var transformedActions []string
 		for _, action := range workflow.Actions {
-			transformedActions = append(transformedActions, transformActionStr(action))
+			transformedActions = append(transformedActions, transformAladinoExpression(action))
+		}
+
+		transformedOn := []handler.TargetEntityKind{handler.PullRequest}
+		if len(workflow.On) > 0 {
+			transformedOn = workflow.On
 		}
 
 		transformedWorkflows = append(transformedWorkflows, PadWorkflow{
 			Name:        workflow.Name,
+			On:          transformedOn,
 			Description: workflow.Description,
 			Rules:       transformedRules,
 			Actions:     transformedActions,
 			AlwaysRun:   workflow.AlwaysRun,
+		})
+	}
+
+	var transformedPipelines []PadPipeline
+
+	for _, pipeline := range file.Pipelines {
+		var transformedStages []PadStage
+
+		for _, stage := range pipeline.Stages {
+			var transformedActions []string
+			for _, action := range stage.Actions {
+				transformedActions = append(transformedActions, transformAladinoExpression(action))
+			}
+
+			transformedStages = append(transformedStages, PadStage{
+				Actions: transformedActions,
+				Until:   stage.Until,
+			})
+		}
+
+		transformedPipelines = append(transformedPipelines, PadPipeline{
+			Name:        pipeline.Name,
+			Description: pipeline.Description,
+			Trigger:     pipeline.Trigger,
+			Stages:      transformedStages,
 		})
 	}
 
@@ -94,9 +149,10 @@ func transform(file *ReviewpadFile) *ReviewpadFile {
 		IgnoreErrors: file.IgnoreErrors,
 		Imports:      file.Imports,
 		Groups:       file.Groups,
-		Rules:        file.Rules,
+		Rules:        transformedRules,
 		Labels:       file.Labels,
 		Workflows:    transformedWorkflows,
+		Pipelines:    transformedPipelines,
 	}
 }
 
@@ -118,14 +174,12 @@ func loadImport(reviewpadImport PadImport) (*ReviewpadFile, string, error) {
 		return nil, "", err
 	}
 
-	transformedFile := transform(file)
-
-	return transformedFile, hash(content), nil
+	return file, hash(content), nil
 }
 
-// InlineImports inlines the imports files into the current reviewpad file
+// processImports inlines the imports files into the current reviewpad file
 // Post-condition: ReviewpadFile without import statements
-func inlineImports(file *ReviewpadFile, env *LoadEnv) (*ReviewpadFile, error) {
+func processImports(file *ReviewpadFile, env *LoadEnv) (*ReviewpadFile, error) {
 	for _, reviewpadImport := range file.Imports {
 		iFile, idHash, err := loadImport(reviewpadImport)
 		if err != nil {
@@ -147,7 +201,7 @@ func inlineImports(file *ReviewpadFile, env *LoadEnv) (*ReviewpadFile, error) {
 		env.Stack[idHash] = true
 		env.Visited[idHash] = true
 
-		subTreeFile, err := inlineImports(iFile, env)
+		subTreeFile, err := processImports(iFile, env)
 		if err != nil {
 			return nil, err
 		}
@@ -166,4 +220,93 @@ func inlineImports(file *ReviewpadFile, env *LoadEnv) (*ReviewpadFile, error) {
 	file.Imports = []PadImport{}
 
 	return file, nil
+}
+
+// processInlineRules normalizes the inline rules in the file
+// by converting the inline rules into a PadWorkflowRule
+func processInlineRules(file *ReviewpadFile) (*ReviewpadFile, error) {
+	reviewpadFile := &ReviewpadFile{
+		Version:      file.Version,
+		Edition:      file.Edition,
+		Mode:         file.Mode,
+		IgnoreErrors: file.IgnoreErrors,
+		Imports:      file.Imports,
+		Groups:       file.Groups,
+		Rules:        file.Rules,
+		Labels:       file.Labels,
+		Workflows:    file.Workflows,
+	}
+
+	for i, workflow := range reviewpadFile.Workflows {
+		processedWorkflow, rules, err := processInlineRulesOnWorkflow(workflow, reviewpadFile.Rules)
+		if err != nil {
+			return nil, err
+		}
+
+		reviewpadFile.Rules = append(reviewpadFile.Rules, rules...)
+		reviewpadFile.Workflows[i] = *processedWorkflow
+	}
+
+	return reviewpadFile, nil
+}
+
+func processInlineRulesOnWorkflow(workflow PadWorkflow, currentRules []PadRule) (*PadWorkflow, []PadRule, error) {
+	wf := &PadWorkflow{
+		Name:        workflow.Name,
+		Description: workflow.Description,
+		AlwaysRun:   workflow.AlwaysRun,
+		Rules:       workflow.Rules,
+		Actions:     workflow.Actions,
+		On:          workflow.On,
+	}
+	rules := make([]PadRule, 0)
+
+	for _, rawRule := range workflow.NonNormalizedRules {
+		var rule *PadRule
+		var workflowRule *PadWorkflowRule
+
+		switch r := rawRule.(type) {
+		case string:
+			rule = decodeRule(r)
+			workflowRule = &PadWorkflowRule{
+				Rule:         rule.Name,
+				ExtraActions: []string{},
+			}
+		case map[string]interface{}:
+			decodedWorkflowRule, err := decodeWorkflowRule(r)
+			if err != nil {
+				return nil, nil, err
+			}
+			workflowRule = decodedWorkflowRule
+			rule = decodeRule(decodedWorkflowRule.Rule)
+		default:
+			return nil, nil, fmt.Errorf("unknown rule type %T", r)
+		}
+
+		if _, exists := findRule(currentRules, rule.Name); !exists {
+			rules = append(rules, *rule)
+		}
+
+		if workflowRule != nil {
+			wf.Rules = append(wf.Rules, *workflowRule)
+		}
+	}
+
+	workflow.NonNormalizedRules = nil
+
+	return wf, rules, nil
+}
+
+func decodeRule(rule string) *PadRule {
+	return &PadRule{
+		Name: rule,
+		Spec: rule,
+		Kind: "patch",
+	}
+}
+
+func decodeWorkflowRule(rule map[string]interface{}) (*PadWorkflowRule, error) {
+	workflowRule := &PadWorkflowRule{}
+	err := mapstructure.Decode(rule, workflowRule)
+	return workflowRule, err
 }

@@ -1,0 +1,22 @@
+# Copyright 2022 Explore.dev Unipessoal Lda. All Rights Reserved.
+# Use of this source code is governed by a license that can be
+# found in the LICENSE file.
+
+api-version: reviewpad.com/v1alpha
+
+labels:
+  medium:
+    color: "a8c3f7"
+
+rules:
+  - name: is-medium
+    kind: patch
+    spec: $size() > 30 && $size() <= 100
+
+workflows:
+  - name: add-label-with-medium-size
+    alwaysRun: false
+    if:
+      - rule: is-medium
+    then:
+      - '$addLabel("medium")'

@@ -5,31 +5,27 @@
 package plugins_aladino_functions
 
 import (
-	"github.com/google/go-github/v45/github"
+	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
-	"github.com/reviewpad/reviewpad/v3/utils"
 )
 
 func Comments() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type: aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildArrayOfType(aladino.BuildStringType())),
-		Code: commentsCode,
+		Type:           aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildArrayOfType(aladino.BuildStringType())),
+		Code:           commentsCode,
+		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest, handler.Issue},
 	}
 }
 
 func commentsCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
-	prNum := utils.GetPullRequestNumber(e.GetPullRequest())
-	owner := utils.GetPullRequestBaseOwnerName(e.GetPullRequest())
-	repo := utils.GetPullRequestBaseRepoName(e.GetPullRequest())
-
-	ghComments, err := utils.GetPullRequestComments(e.GetCtx(), e.GetClient(), owner, repo, prNum, &github.IssueListCommentsOptions{})
+	ghComments, err := e.GetTarget().GetComments()
 	if err != nil {
 		return nil, err
 	}
 
 	commentsBody := make([]aladino.Value, len(ghComments))
 	for i, ghComment := range ghComments {
-		commentsBody[i] = aladino.BuildStringValue(ghComment.GetBody())
+		commentsBody[i] = aladino.BuildStringValue(ghComment.Body)
 	}
 
 	return aladino.BuildArrayValue(commentsBody), nil

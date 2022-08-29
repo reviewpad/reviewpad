@@ -4,18 +4,23 @@
 
 package plugins_aladino_functions
 
-import "github.com/reviewpad/reviewpad/v3/lang/aladino"
+import (
+	"github.com/reviewpad/reviewpad/v3/codehost/github/target"
+	"github.com/reviewpad/reviewpad/v3/handler"
+	"github.com/reviewpad/reviewpad/v3/lang/aladino"
+)
 
 func HasCodePattern() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type: aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, aladino.BuildBoolType()),
-		Code: hasCodePatternCode,
+		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, aladino.BuildBoolType()),
+		Code:           hasCodePatternCode,
+		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest},
 	}
 }
 
 func hasCodePatternCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
 	arg := args[0].(*aladino.StringValue)
-	patch := e.GetPatch()
+	patch := e.GetTarget().(*target.PullRequestTarget).Patch
 
 	for _, file := range patch {
 		if file == nil {

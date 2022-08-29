@@ -22,10 +22,11 @@ func TestWorkflowStatus_WhenEventPayloadIsNotWorkflowRunEvent(t *testing.T) {
 	wantValue := aladino.BuildStringValue("")
 
 	eventPayload := &github.CheckRunEvent{}
-	mockedEnv := aladino.MockDefaultEnvEvent(
+	mockedEnv := aladino.MockDefaultEnv(
 		t,
 		nil,
 		nil,
+		aladino.MockBuiltIns(),
 		eventPayload,
 	)
 
@@ -43,10 +44,11 @@ func TestWorkflowStatus_WhenWorkflowRunIsNil(t *testing.T) {
 	eventPayload := &github.WorkflowRunEvent{
 		WorkflowRun: nil,
 	}
-	mockedEnv := aladino.MockDefaultEnvEvent(
+	mockedEnv := aladino.MockDefaultEnv(
 		t,
 		nil,
 		nil,
+		aladino.MockBuiltIns(),
 		eventPayload,
 	)
 
@@ -67,7 +69,7 @@ func TestWorkflowStatus_WhenListCheckRunsForRefRequestFails(t *testing.T) {
 			HeadSHA: &headSHA,
 		},
 	}
-	mockedEnv := aladino.MockDefaultEnvEvent(
+	mockedEnv := aladino.MockDefaultEnv(
 		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
@@ -82,6 +84,7 @@ func TestWorkflowStatus_WhenListCheckRunsForRefRequestFails(t *testing.T) {
 			),
 		},
 		nil,
+		aladino.MockBuiltIns(),
 		eventPayload,
 	)
 
@@ -106,7 +109,7 @@ func TestWorkflowStatus_WhenCheckRunNotFoundDueToEmptyCheckRuns(t *testing.T) {
 	emptyCheckRuns := &github.ListCheckRunsResults{
 		CheckRuns: []*github.CheckRun{},
 	}
-	mockedEnv := aladino.MockDefaultEnvEvent(
+	mockedEnv := aladino.MockDefaultEnv(
 		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
@@ -117,6 +120,7 @@ func TestWorkflowStatus_WhenCheckRunNotFoundDueToEmptyCheckRuns(t *testing.T) {
 			),
 		},
 		nil,
+		aladino.MockBuiltIns(),
 		eventPayload,
 	)
 
@@ -146,7 +150,7 @@ func TestWorkflowStatus_WhenCheckRunIsMissingInNonEmptyCheckRuns(t *testing.T) {
 			},
 		},
 	}
-	mockedEnv := aladino.MockDefaultEnvEvent(
+	mockedEnv := aladino.MockDefaultEnv(
 		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
@@ -157,6 +161,7 @@ func TestWorkflowStatus_WhenCheckRunIsMissingInNonEmptyCheckRuns(t *testing.T) {
 			),
 		},
 		nil,
+		aladino.MockBuiltIns(),
 		eventPayload,
 	)
 
@@ -193,7 +198,7 @@ func TestWorkflowStatus_WhenEventIsCompleted(t *testing.T) {
 			},
 		},
 	}
-	mockedEnv := aladino.MockDefaultEnvEvent(
+	mockedEnv := aladino.MockDefaultEnv(
 		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
@@ -204,6 +209,7 @@ func TestWorkflowStatus_WhenEventIsCompleted(t *testing.T) {
 			),
 		},
 		nil,
+		aladino.MockBuiltIns(),
 		eventPayload,
 	)
 
@@ -238,7 +244,7 @@ func TestWorkflowStatus_WhenEventIsNotCompleted(t *testing.T) {
 			},
 		},
 	}
-	mockedEnv := aladino.MockDefaultEnvEvent(
+	mockedEnv := aladino.MockDefaultEnv(
 		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
@@ -249,6 +255,7 @@ func TestWorkflowStatus_WhenEventIsNotCompleted(t *testing.T) {
 			),
 		},
 		nil,
+		aladino.MockBuiltIns(),
 		eventPayload,
 	)
 

@@ -7,44 +7,48 @@ package plugins_aladino_actions
 import (
 	"fmt"
 
-	"github.com/google/go-github/v45/github"
+	"github.com/reviewpad/reviewpad/v3/codehost/github/target"
+	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	"github.com/reviewpad/reviewpad/v3/utils"
 )
 
 func AssignRandomReviewer() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
-		Type: aladino.BuildFunctionType([]aladino.Type{}, nil),
-		Code: assignRandomReviewerCode,
+		Type:           aladino.BuildFunctionType([]aladino.Type{}, nil),
+		Code:           assignRandomReviewerCode,
+		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest},
 	}
 }
 
 func assignRandomReviewerCode(e aladino.Env, _ []aladino.Value) error {
-	prNum := utils.GetPullRequestNumber(e.GetPullRequest())
-	owner := utils.GetPullRequestBaseOwnerName(e.GetPullRequest())
-	repo := utils.GetPullRequestBaseRepoName(e.GetPullRequest())
+	t := e.GetTarget().(*target.PullRequestTarget)
 
-	ghPrRequestedReviewers, err := utils.GetPullRequestReviewers(e.GetCtx(), e.GetClient(), owner, repo, prNum, &github.ListOptions{})
+	reviewers, err := t.GetReviewers()
 	if err != nil {
 		return err
 	}
 
 	// When there's already assigned reviewers, do nothing
-	totalRequestReviewers := len(ghPrRequestedReviewers.Users)
-	if totalRequestReviewers > 0 {
+	if len(reviewers.Users) > 0 {
 		return nil
 	}
 
-	ghUsers, err := utils.GetIssuesAvailableAssignees(e.GetCtx(), e.GetClient(), owner, repo)
+	ghUsers, err := t.GetAvailableAssignees()
 	if err != nil {
 		return err
 	}
 
-	filteredGhUsers := []*github.User{}
+	filteredGhUsers := []string{}
 
-	for i := range ghUsers {
-		if ghUsers[i].GetLogin() != e.GetPullRequest().GetUser().GetLogin() {
-			filteredGhUsers = append(filteredGhUsers, ghUsers[i])
+	user, err := t.GetAuthor()
+	if err != nil {
+		return err
+	}
+
+	for _, ghUser := range ghUsers {
+		if ghUser.Login != user.Login {
+			filteredGhUsers = append(filteredGhUsers, ghUser.Login)
 		}
 	}
 
@@ -55,9 +59,5 @@ func assignRandomReviewerCode(e aladino.Env, _ []aladino.Value) error {
 	lucky := utils.GenerateRandom(len(filteredGhUsers))
 	ghUser := filteredGhUsers[lucky]
 
-	_, _, err = e.GetClient().PullRequests.RequestReviewers(e.GetCtx(), owner, repo, prNum, github.ReviewersRequest{
-		Reviewers: []string{ghUser.GetLogin()},
-	})
-
-	return err
+	return t.RequestReviewers([]string{ghUser})
 }

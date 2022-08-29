@@ -7,24 +7,21 @@ package plugins_aladino_actions
 import (
 	"log"
 
+	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
-	"github.com/reviewpad/reviewpad/v3/utils"
 )
 
 func RemoveLabel() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
-		Type: aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, nil),
-		Code: removeLabelCode,
+		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, nil),
+		Code:           removeLabelCode,
+		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest, handler.Issue},
 	}
 }
 
 func removeLabelCode(e aladino.Env, args []aladino.Value) error {
+	t := e.GetTarget()
 	labelID := args[0].(*aladino.StringValue).Val
-
-	prNum := utils.GetPullRequestNumber(e.GetPullRequest())
-	owner := utils.GetPullRequestBaseOwnerName(e.GetPullRequest())
-	repo := utils.GetPullRequestBaseRepoName(e.GetPullRequest())
-
 	internalLabelID := aladino.BuildInternalLabelID(labelID)
 
 	var labelName string
@@ -36,9 +33,14 @@ func removeLabelCode(e aladino.Env, args []aladino.Value) error {
 		log.Printf("[warn]: the %v label was not found in the environment", labelID)
 	}
 
+	labels, err := t.GetLabels()
+	if err != nil {
+		return err
+	}
+
 	labelIsAppliedToPullRequest := false
-	for _, ghLabel := range e.GetPullRequest().Labels {
-		if ghLabel.GetName() == labelName {
+	for _, label := range labels {
+		if label.Name == labelName {
 			labelIsAppliedToPullRequest = true
 			break
 		}
@@ -48,7 +50,5 @@ func removeLabelCode(e aladino.Env, args []aladino.Value) error {
 		return nil
 	}
 
-	_, err := e.GetClient().Issues.RemoveLabelForIssue(e.GetCtx(), owner, repo, prNum, labelName)
-
-	return err
+	return t.RemoveLabel(labelName)
 }

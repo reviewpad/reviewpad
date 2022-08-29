@@ -10,6 +10,7 @@ import (
 
 	"github.com/google/go-github/v45/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
+	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
 	plugins_aladino_actions "github.com/reviewpad/reviewpad/v3/plugins/aladino/actions"
@@ -26,6 +27,8 @@ func TestAddToProject_WhenRequestFails(t *testing.T) {
 		func(w http.ResponseWriter, req *http.Request) {
 			http.Error(w, "404 Not Found", http.StatusNotFound)
 		},
+		aladino.MockBuiltIns(),
+		nil,
 	)
 
 	err := addToProject(mockedEnv, []aladino.Value{aladino.BuildStringValue("reviewpad"), aladino.BuildStringValue("to do")})
@@ -41,10 +44,11 @@ func TestAddToProject(t *testing.T) {
 	mockedGetProjectQuery := `{
         "query":"query($name: String! $repositoryName: String! $repositoryOwner: String!) {
             repository(owner: $repositoryOwner, name: $repositoryName) {
-                projectsV2(query: $name, first: 1, orderBy: {field: TITLE, direction: ASC}) {
+                projectsV2(query: $name, first: 50, orderBy: {field: TITLE, direction: ASC}) {
                     nodes{
                         id,
-                        number
+                        number,
+                        title
                     }
                 }
             }
@@ -52,7 +56,7 @@ func TestAddToProject(t *testing.T) {
         "variables":{
             "name":"reviewpad",
             "repositoryName":"default-mock-repo",
-            "repositoryOwner":"john"
+            "repositoryOwner":"foobar"
             }
         }`
 	mockedGetProjectFieldsQuery := `{
@@ -82,7 +86,7 @@ func TestAddToProject(t *testing.T) {
             "afterCursor":"",
             "projectNumber":1,
             "repositoryName":"default-mock-repo",
-            "repositoryOwner":"john"
+            "repositoryOwner":"foobar"
         }
     }`
 	mockedAddProjectV2ItemByIdMutation := `{
@@ -135,12 +139,12 @@ func TestAddToProject(t *testing.T) {
 			name:                "when project not found",
 			getProjectQuery:     mockedGetProjectQuery,
 			getProjectQueryBody: `{"data": {"repository":{"projectsV2":{"nodes":[]}}}}`,
-			expectedError:       utils.ErrProjectNotFound,
+			expectedError:       gh.ErrProjectNotFound,
 		},
 		{
 			name:                  "error getting project fields",
 			getProjectQuery:       mockedGetProjectQuery,
-			getProjectQueryBody:   `{"data": {"repository":{"projectsV2":{"nodes":[{"id": "1", "number": 1}]}}}}`,
+			getProjectQueryBody:   `{"data": {"repository":{"projectsV2":{"nodes":[{"id": "1", "number": 1, "title": "reviewpad"}]}}}}`,
 			getProjectFieldsQuery: mockedGetProjectFieldsQuery,
 			getProjectFieldsBody:  ``,
 			expectedError:         io.EOF,
@@ -148,7 +152,7 @@ func TestAddToProject(t *testing.T) {
 		{
 			name:                  "when project has no status field",
 			getProjectQuery:       mockedGetProjectQuery,
-			getProjectQueryBody:   `{"data": {"repository":{"projectsV2":{"nodes":[{"id": "1", "number": 1}]}}}}`,
+			getProjectQueryBody:   `{"data": {"repository":{"projectsV2":{"nodes":[{"id": "1", "number": 1, "title": "reviewpad"}]}}}}`,
 			getProjectFieldsQuery: mockedGetProjectFieldsQuery,
 			getProjectFieldsBody:  `{"data": {"repository":{"projectV2": {"fields": {"pageInfo": {"hasNextPage": false, "endCursor": null}, "nodes": []}}}}}`,
 			expectedError:         plugins_aladino_actions.ErrProjectHasNoStatusField,
@@ -156,7 +160,7 @@ func TestAddToProject(t *testing.T) {
 		{
 			name:                  "when project status option is not found",
 			getProjectQuery:       mockedGetProjectQuery,
-			getProjectQueryBody:   `{"data": {"repository":{"projectsV2":{"nodes":[{"id": "1", "number": 1}]}}}}`,
+			getProjectQueryBody:   `{"data": {"repository":{"projectsV2":{"nodes":[{"id": "1", "number": 1, "title": "reviewpad"}]}}}}`,
 			getProjectFieldsQuery: mockedGetProjectFieldsQuery,
 			getProjectFieldsBody:  `{"data": {"repository":{"projectV2": {"fields": {"pageInfo": {"hasNextPage": false, "endCursor": null}, "nodes": [{"id": "1", "name": "status", "options": []}]}}}}}`,
 			expectedError:         plugins_aladino_actions.ErrProjectStatusNotFound,
@@ -164,7 +168,7 @@ func TestAddToProject(t *testing.T) {
 		{
 			name:                         "add project item error",
 			getProjectQuery:              mockedGetProjectQuery,
-			getProjectQueryBody:          `{"data": {"repository":{"projectsV2":{"nodes":[{"id": "1", "number": 1}]}}}}`,
+			getProjectQueryBody:          `{"data": {"repository":{"projectsV2":{"nodes":[{"id": "1", "number": 1, "title": "reviewpad"}]}}}}`,
 			getProjectFieldsQuery:        mockedGetProjectFieldsQuery,
 			getProjectFieldsBody:         `{"data": {"repository":{"projectV2": {"fields": {"pageInfo": {"hasNextPage": false, "endCursor": null}, "nodes": [{"id": "1", "name": "status", "options": [{"id": "1", "name": "to do"}]}]}}}}}`,
 			addProjectV2ItemByIdMutation: mockedAddProjectV2ItemByIdMutation,
@@ -173,7 +177,7 @@ func TestAddToProject(t *testing.T) {
 		{
 			name:                                  "no error",
 			getProjectQuery:                       mockedGetProjectQuery,
-			getProjectQueryBody:                   `{"data": {"repository":{"projectsV2":{"nodes":[{"id": "1", "number": 1}]}}}}`,
+			getProjectQueryBody:                   `{"data": {"repository":{"projectsV2":{"nodes":[{"id": "1", "number": 1, "title": "reviewpad"}]}}}}`,
 			getProjectFieldsQuery:                 mockedGetProjectFieldsQuery,
 			getProjectFieldsBody:                  `{"data": {"repository":{"projectV2": {"fields": {"pageInfo": {"hasNextPage": false, "endCursor": null}, "nodes": [{"id": "1", "name": "status", "options": [{"id": "1", "name": "to do"}]}]}}}}}`,
 			addProjectV2ItemByIdMutation:          mockedAddProjectV2ItemByIdMutation,
@@ -209,6 +213,8 @@ func TestAddToProject(t *testing.T) {
 						aladino.MustWrite(res, testCase.updateProjectV2ItemFieldValueBody)
 					}
 				},
+				aladino.MockBuiltIns(),
+				nil,
 			)
 
 			err := addToProject(mockedEnv, []aladino.Value{aladino.BuildStringValue("reviewpad"), aladino.BuildStringValue("to do")})

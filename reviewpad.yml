@@ -218,9 +218,13 @@ rules:
     description: Owners can ship simple pull requests
     spec: '$rule("ship-authored-by-owners") && $rule("changes-are-in-markdown")'
 
-  - name: ci-is-completed
+  # - name: ci-is-completed
+  #   kind: patch
+  #   spec: '$workflowStatus("pr-build") != "queued" && $workflowStatus("pr-build") != "in_progress"'
+
+  - name: does-not-have-linked-issues
     kind: patch
-    spec: '$workflowStatus("pr-build") != "queued" && $workflowStatus("pr-build") != "in_progress"'
+    spec: '!$hasLinkedIssues() && !$rule("work-in-progress")'
 
 workflows:
   - name: add-label-with-size
@@ -237,6 +241,50 @@ workflows:
         extra-actions:
           - '$addLabel("large")'
 
+  - name: add-to-project
+    description: Pull requests without linked issues are added to the project
+    always-run: true
+    if:
+      - rule: does-not-have-linked-issues
+    then:
+      - '$addToProject("Reviewpad", "In Review")'
+  
+  - name: attention-set
+    always-run: true
+    if:
+      - rule: '$isWaitingForReview()'
+        extra-actions:
+          - '$addLabel("waiting-review")'
+      - rule: '!$isWaitingForReview()'
+        extra-actions:
+          - '$removeLabel("waiting-review")'
+      - rule: '$hasUnaddressedThreads()'
+        extra-actions:
+          - '$addLabel("requires-author-attention")'
+      - rule: '!$hasUnaddressedThreads()'
+        extra-actions:
+          - '$removeLabel("requires-author-attention")'
+
+  # - name: add-issue-to-project
+  #   on:
+  #     - issue
+  #   description: Automatically add issues to project in the backlog state
+  #   always-run: true
+  #   if:
+  #     - 'true'
+  #   then:
+  #     - '$addToProject("Reviewpad", "Backlog")'
+
+  - name: report-empty-description
+    on:
+      - issue
+      - pull_request
+    always-run: true
+    if:
+      - '$description() == ""'
+    then:
+      - '$error("The description is empty. Please add more information!")'
+
   - name: lint-commits
     description: Lint commits
     always-run: true
@@ -252,7 +300,7 @@ workflows:
     # at all times we only have one label
     always-run: true
     if:
-      - rule: ship-state
+      - rule: ship-authored-by-owners
         extra-actions:
           - '$removeLabel("ask")'
           - '$removeLabel("show")'
@@ -309,13 +357,13 @@ workflows:
     then:
       - '$addLabel("run-build")'
 
-  - name: remove-ci-label
-    description: If the build is completed, remove the label
-    always-run: true
-    if:
-      - rule: ci-is-completed
-    then:
-      - '$removeLabel("run-build")'
+  # - name: remove-ci-label
+  #   description: If the build is completed, remove the label
+  #   always-run: true
+  #   if:
+  #     - rule: ci-is-completed
+  #   then:
+  #     - '$removeLabel("run-build")'
 
   - name: auto-merge-owner-pull-requests
     description: Auto merge pull requests

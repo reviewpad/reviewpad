@@ -7,14 +7,17 @@ package plugins_aladino_functions
 import (
 	"strings"
 
+	"github.com/reviewpad/reviewpad/v3/codehost/github/target"
+	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	"github.com/reviewpad/reviewpad/v3/utils"
 )
 
 func HasFileExtensions() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type: aladino.BuildFunctionType([]aladino.Type{aladino.BuildArrayOfType(aladino.BuildStringType())}, aladino.BuildBoolType()),
-		Code: hasFileExtensionsCode,
+		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildArrayOfType(aladino.BuildStringType())}, aladino.BuildBoolType()),
+		Code:           hasFileExtensionsCode,
+		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest},
 	}
 }
 
@@ -29,7 +32,7 @@ func hasFileExtensionsCode(e aladino.Env, args []aladino.Value) (aladino.Value, 
 		extensionSet[normalizedStr] = true
 	}
 
-	patch := e.GetPatch()
+	patch := e.GetTarget().(*target.PullRequestTarget).Patch
 	for fp := range patch {
 		fpExt := utils.FileExt(fp)
 		normalizedExt := strings.ToLower(fpExt)

@@ -17,22 +17,22 @@ import (
 
 	"github.com/google/go-github/v45/github"
 	"github.com/reviewpad/reviewpad/v3"
+	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/collector"
-	"github.com/shurcooL/githubv4"
+	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/spf13/cobra"
-	"golang.org/x/oauth2"
 )
 
 func init() {
 	rootCmd.AddCommand(runCmd)
 	runCmd.Flags().BoolVarP(&dryRun, "dry-run", "d", false, "Dry run mode")
 	runCmd.Flags().BoolVarP(&safeModeRun, "safe-mode-run", "s", false, "Safe mode")
-	runCmd.Flags().StringVarP(&pullRequestUrl, "pull-request", "p", "", "GitHub pull request url")
+	runCmd.Flags().StringVarP(&githubUrl, "github-url", "u", "", "GitHub pull request or issue url")
 	runCmd.Flags().StringVarP(&gitHubToken, "github-token", "t", "", "GitHub personal access token")
 	runCmd.Flags().StringVarP(&eventFilePath, "event-payload", "e", "", "File path to github action event in JSON format")
 	runCmd.Flags().StringVarP(&mixpanelToken, "mixpanel-token", "m", "", "Mixpanel token")
 
-	runCmd.MarkFlagRequired("pull-request")
+	runCmd.MarkFlagRequired("github-url")
 	runCmd.MarkFlagRequired("github-token")
 }
 
@@ -50,6 +50,17 @@ func parseEvent(rawEvent string) (interface{}, error) {
 	}
 
 	return github.ParseWebHook(*ev.Name, *ev.Payload)
+}
+
+func toTargetEntityKind(entityType string) (handler.TargetEntityKind, error) {
+	switch entityType {
+	case "issues":
+		return handler.Issue, nil
+	case "pull":
+		return handler.PullRequest, nil
+	default:
+		return "", fmt.Errorf("unknown entity type %s", entityType)
+	}
 }
 
 func run() error {
@@ -70,53 +81,24 @@ func run() error {
 		}
 	}
 
-	pullRequestDetailsRegex := regexp.MustCompile(`github\.com\/(.+)\/(.+)\/pull\/(\d+)`)
-	pullRequestDetails := pullRequestDetailsRegex.FindSubmatch([]byte(pullRequestUrl))
+	githubDetailsRegex := regexp.MustCompile(`github\.com\/(.+)\/(.+)\/(\w+)\/(\d+)`)
+	githubEntityDetails := githubDetailsRegex.FindSubmatch([]byte(githubUrl))
 
-	repositoryOwner := string(pullRequestDetails[1][:])
-	repositoryName := string(pullRequestDetails[2][:])
-	pullRequestNumber, err := strconv.Atoi(string(pullRequestDetails[3][:]))
+	repositoryOwner := string(githubEntityDetails[1][:])
+	repositoryName := string(githubEntityDetails[2][:])
+	entityKind, err := toTargetEntityKind(string(githubEntityDetails[3][:]))
 	if err != nil {
-		log.Fatalf("Error converting pull request number. Details %+q", err.Error())
+		log.Fatalf("Error converting entity kind. Details %+q", err.Error())
+	}
+
+	entityNumber, err := strconv.Atoi(string(githubEntityDetails[4][:]))
+	if err != nil {
+		log.Fatalf("Error converting entity number. Details %+q", err.Error())
 	}
 
 	ctx := context.Background()
-	ts := oauth2.StaticTokenSource(
-		&oauth2.Token{AccessToken: gitHubToken},
-	)
-	tc := oauth2.NewClient(ctx, ts)
-
-	gitHubClient := github.NewClient(tc)
-	gitHubClientGQL := githubv4.NewClient(tc)
-	collectorClient := collector.NewCollector(mixpanelToken, repositoryOwner)
-
-	ghPullRequest, _, err := gitHubClient.PullRequests.Get(ctx, repositoryOwner, repositoryName, pullRequestNumber)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	headRepoOwner := *ghPullRequest.Head.Repo.Owner.Login
-	headRepoName := *ghPullRequest.Head.Repo.Name
-	headRef := *ghPullRequest.Head.Ref
-
-	if *ghPullRequest.Merged {
-		if ghPullRequest.Head == nil {
-			return fmt.Errorf("team-edition: pull request is merged and head branched was automatically deleted")
-		}
-
-		if ghPullRequest.Head.Repo == nil {
-			return fmt.Errorf("team-edition: pull request is merged and head repo branched was automatically deleted")
-		}
-
-		if ghPullRequest.Head.Repo.DeleteBranchOnMerge == nil || *ghPullRequest.Head.Repo.DeleteBranchOnMerge {
-			return fmt.Errorf("team-edition: pull request is merged and head branched was automatically deleted")
-		}
-
-		_, _, err := gitHubClient.Repositories.GetBranch(ctx, headRepoOwner, headRepoName, headRef, true)
-		if err != nil {
-			return fmt.Errorf("team-edition: pull request is merged and head branched cannot be retrieved")
-		}
-	}
+	githubClient := gh.NewGithubClientFromToken(ctx, gitHubToken)
+	collectorClient := collector.NewCollector(mixpanelToken, repositoryOwner, string(entityKind), githubUrl)
 
 	data, err := os.ReadFile(reviewpadFile)
 	if err != nil {
@@ -129,7 +111,14 @@ func run() error {
 		return fmt.Errorf("error running reviewpad team edition. Details %v", err.Error())
 	}
 
-	_, err = reviewpad.Run(ctx, gitHubClient, gitHubClientGQL, collectorClient, ghPullRequest, ev, file, dryRun, safeModeRun)
+	targetEntity := &handler.TargetEntity{
+		Owner:  repositoryOwner,
+		Repo:   repositoryName,
+		Number: entityNumber,
+		Kind:   entityKind,
+	}
+
+	_, err = reviewpad.Run(ctx, githubClient, collectorClient, targetEntity, ev, file, dryRun, safeModeRun)
 	if err != nil {
 		return fmt.Errorf("error running reviewpad team edition. Details %v", err.Error())
 	}

@@ -4,15 +4,27 @@
 
 package plugins_aladino_functions
 
-import "github.com/reviewpad/reviewpad/v3/lang/aladino"
+import (
+	"github.com/reviewpad/reviewpad/v3/codehost/github/target"
+	"github.com/reviewpad/reviewpad/v3/handler"
+	"github.com/reviewpad/reviewpad/v3/lang/aladino"
+)
 
 func Base() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type: aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildStringType()),
-		Code: baseCode,
+		Type:           aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildStringType()),
+		Code:           baseCode,
+		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest},
 	}
 }
 
 func baseCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
-	return aladino.BuildStringValue(e.GetPullRequest().GetBase().GetRef()), nil
+	t := e.GetTarget().(*target.PullRequestTarget)
+
+	base, err := t.GetBase()
+	if err != nil {
+		return nil, err
+	}
+
+	return aladino.BuildStringValue(base), nil
 }

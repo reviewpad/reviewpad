@@ -15,7 +15,7 @@ import (
 var length = plugins_aladino.PluginBuiltIns().Functions["length"].Code
 
 func TestLength(t *testing.T) {
-	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
 
 	slice := aladino.BuildArrayValue(
 		[]aladino.Value{

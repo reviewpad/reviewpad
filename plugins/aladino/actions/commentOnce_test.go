@@ -40,6 +40,8 @@ func TestCommentOnce_WhenGetCommentsRequestFails(t *testing.T) {
 			),
 		},
 		nil,
+		aladino.MockBuiltIns(),
+		nil,
 	)
 
 	args := []aladino.Value{aladino.BuildStringValue(fmt.Sprintf("%v%v", ReviewpadCommentAnnotation, comment))}
@@ -71,6 +73,8 @@ func TestCommentOnce_WhenCommentAlreadyExists(t *testing.T) {
 				}),
 			),
 		},
+		nil,
+		aladino.MockBuiltIns(),
 		nil,
 	)
 
@@ -104,6 +108,8 @@ func TestCommentOnce_WhenFirstTime(t *testing.T) {
 				}),
 			),
 		},
+		nil,
+		aladino.MockBuiltIns(),
 		nil,
 	)
 

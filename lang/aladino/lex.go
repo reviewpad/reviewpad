@@ -9,6 +9,7 @@ import (
 	"log"
 	"regexp"
 	"strconv"
+	"strings"
 )
 
 type AladinoLex struct {
@@ -62,6 +63,11 @@ var tokens = []tokenDef{
 		token: FALSE,
 	},
 	{
+		regex: regexp.MustCompile(`^:\s?[a-zA-Z]*`),
+		kind:  "type",
+		token: TK_TYPE,
+	},
+	{
 		regex: regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9]*`),
 		kind:  "identifier",
 		token: IDENTIFIER,
@@ -101,6 +107,11 @@ var tokens = []tokenDef{
 		kind:  "binop",
 		token: TK_OR,
 	},
+	{
+		regex: regexp.MustCompile(`^=>`),
+		kind:  "lambda",
+		token: TK_LAMBDA,
+	},
 }
 
 func (l *AladinoLex) Lex(lval *AladinoSymType) int {
@@ -133,6 +144,8 @@ func (l *AladinoLex) Lex(lval *AladinoSymType) int {
 		case "stringLiteral":
 			// Pass string content to the parser.
 			lval.str = str[1 : len(str)-1]
+		case "type":
+			lval.str = strings.ReplaceAll(str, " ", "")[1:]
 		default:
 			lval.str = str
 		}
@@ -153,4 +166,19 @@ func (l *AladinoLex) Error(s string) {
 
 func isSpace(c byte) bool {
 	return c == ' '
+}
+
+// FIXME #320
+func ParseType(typeOf string) Type {
+	switch typeOf {
+	case "String":
+		return BuildStringType()
+	case "Int":
+		return BuildIntType()
+	case "Bool":
+		return BuildBoolType()
+	default:
+		// FIXME: throw error
+		return nil
+	}
 }

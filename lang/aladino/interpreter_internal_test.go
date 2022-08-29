@@ -14,7 +14,9 @@ import (
 
 	"github.com/google/go-github/v45/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
+	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/engine"
+	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -82,7 +84,7 @@ func TestBuildGroupAST_WhenGroupTypeFilterIsNotSet(t *testing.T) {
 }
 
 func TestEvalGroup_WhenTypeInferenceFails(t *testing.T) {
-	mockedEnv := MockDefaultEnvBuiltIns(t, nil, nil, &BuiltIns{})
+	mockedEnv := MockDefaultEnv(t, nil, nil, &BuiltIns{}, nil)
 
 	expr, err := Parse("1 == \"a\"")
 	if err != nil {
@@ -95,7 +97,7 @@ func TestEvalGroup_WhenTypeInferenceFails(t *testing.T) {
 }
 
 func TestEvalGroup_WhenExpressionIsNotValidGroup(t *testing.T) {
-	mockedEnv := MockDefaultEnvBuiltIns(t, nil, nil, &BuiltIns{})
+	mockedEnv := MockDefaultEnv(t, nil, nil, &BuiltIns{}, nil)
 
 	expr, err := Parse("true")
 	if err != nil {
@@ -117,11 +119,12 @@ func TestEvalGroup(t *testing.T) {
 				Code: func(e Env, args []Value) (Value, error) {
 					return BuildArrayValue([]Value{BuildStringValue(devName)}), nil
 				},
+				SupportedKinds: []handler.TargetEntityKind{handler.PullRequest},
 			},
 		},
 	}
 
-	mockedEnv := MockDefaultEnvBuiltIns(t, nil, nil, builtIns)
+	mockedEnv := MockDefaultEnv(t, nil, nil, builtIns, nil)
 
 	expr, err := Parse("$group(\"\")")
 	if err != nil {
@@ -137,7 +140,7 @@ func TestEvalGroup(t *testing.T) {
 }
 
 func TestProcessGroup_WhenBuildGroupASTFails(t *testing.T) {
-	mockedEnv := MockDefaultEnvBuiltIns(t, nil, nil, &BuiltIns{})
+	mockedEnv := MockDefaultEnv(t, nil, nil, &BuiltIns{}, nil)
 
 	mockedInterpreter := &Interpreter{
 		Env: mockedEnv,
@@ -159,7 +162,7 @@ func TestProcessGroup_WhenBuildGroupASTFails(t *testing.T) {
 }
 
 func TestProcessGroup_WhenEvalGroupFails(t *testing.T) {
-	mockedEnv := MockDefaultEnvBuiltIns(t, nil, nil, &BuiltIns{})
+	mockedEnv := MockDefaultEnv(t, nil, nil, &BuiltIns{}, nil)
 
 	mockedInterpreter := &Interpreter{
 		Env: mockedEnv,
@@ -181,7 +184,7 @@ func TestProcessGroup_WhenEvalGroupFails(t *testing.T) {
 }
 
 func TestProcessGroup_WhenGroupTypeFilterIsNotSet(t *testing.T) {
-	mockedEnv := MockDefaultEnvBuiltIns(t, nil, nil, &BuiltIns{})
+	mockedEnv := MockDefaultEnv(t, nil, nil, &BuiltIns{}, nil)
 
 	mockedInterpreter := &Interpreter{
 		Env: mockedEnv,
@@ -220,7 +223,7 @@ func TestBuildInternalLabelID(t *testing.T) {
 }
 
 func TestProcessLabel(t *testing.T) {
-	mockedEnv := MockDefaultEnv(t, nil, nil)
+	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), nil)
 
 	mockedInterpreter := &Interpreter{
 		Env: mockedEnv,
@@ -250,7 +253,7 @@ func TestBuildInternalRuleName(t *testing.T) {
 }
 
 func TestProcessRule(t *testing.T) {
-	mockedEnv := MockDefaultEnv(t, nil, nil)
+	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), nil)
 
 	mockedInterpreter := &Interpreter{
 		Env: mockedEnv,
@@ -270,7 +273,7 @@ func TestProcessRule(t *testing.T) {
 }
 
 func TestEvalExpr_WhenParseFails(t *testing.T) {
-	mockedEnv := MockDefaultEnv(t, nil, nil)
+	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), nil)
 
 	gotVal, err := EvalExpr(mockedEnv, "", "1 ==")
 
@@ -279,7 +282,7 @@ func TestEvalExpr_WhenParseFails(t *testing.T) {
 }
 
 func TestEvalExpr_WhenTypeInferenceFails(t *testing.T) {
-	mockedEnv := MockDefaultEnv(t, nil, nil)
+	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), nil)
 
 	gotVal, err := EvalExpr(mockedEnv, "", "1 == \"a\"")
 
@@ -288,7 +291,7 @@ func TestEvalExpr_WhenTypeInferenceFails(t *testing.T) {
 }
 
 func TestEvalExpr_WhenExprIsNotBoolType(t *testing.T) {
-	mockedEnv := MockDefaultEnv(t, nil, nil)
+	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), nil)
 
 	gotVal, err := EvalExpr(mockedEnv, "", "1")
 
@@ -297,7 +300,7 @@ func TestEvalExpr_WhenExprIsNotBoolType(t *testing.T) {
 }
 
 func TestEvalExpr(t *testing.T) {
-	mockedEnv := MockDefaultEnv(t, nil, nil)
+	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), nil)
 
 	gotVal, err := EvalExpr(mockedEnv, "", "1 == 1")
 
@@ -306,7 +309,7 @@ func TestEvalExpr(t *testing.T) {
 }
 
 func TestEvalExpr_OnInterpreter(t *testing.T) {
-	mockedEnv := MockDefaultEnv(t, nil, nil)
+	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), nil)
 
 	mockedInterpreter := &Interpreter{
 		Env: mockedEnv,
@@ -319,23 +322,19 @@ func TestEvalExpr_OnInterpreter(t *testing.T) {
 }
 
 func TestExecProgram_WhenExecStatementFails(t *testing.T) {
-	mockedEnv := MockDefaultEnv(t, nil, nil)
+	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), nil)
 
 	mockedInterpreter := &Interpreter{
 		Env: mockedEnv,
 	}
 
-	program := &engine.Program{
-		Statements: []*engine.Statement{
-			{
-				Code:     "$action()",
-				Metadata: nil,
-			},
-		},
-	}
+	statement := engine.BuildStatement("$action()")
+	statements := []*engine.Statement{statement}
+	program := engine.BuildProgram(statements)
 
-	err := mockedInterpreter.ExecProgram(program)
+	exitStatus, err := mockedInterpreter.ExecProgram(program)
 
+	assert.Equal(t, engine.ExitStatusFailure, exitStatus)
 	assert.EqualError(t, err, "no type for built-in action. Please check if the mode in the reviewpad.yml file supports it")
 }
 
@@ -347,11 +346,12 @@ func TestExecProgram(t *testing.T) {
 				Code: func(e Env, args []Value) error {
 					return nil
 				},
+				SupportedKinds: []handler.TargetEntityKind{handler.PullRequest},
 			},
 		},
 	}
 
-	mockedEnv := MockDefaultEnvBuiltIns(
+	mockedEnv := MockDefaultEnv(
 		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatch(
@@ -367,67 +367,39 @@ func TestExecProgram(t *testing.T) {
 		},
 		nil,
 		builtIns,
+		nil,
 	)
 
 	mockedInterpreter := &Interpreter{
 		Env: mockedEnv,
 	}
 
-	statementWorkflowName := "test"
-	statementRule := "testRule"
-	statementCode := "$addLabel(\"test\")"
-	statement := &engine.Statement{
-		Code: statementCode,
-		Metadata: &engine.Metadata{
-			Workflow: engine.PadWorkflow{
-				Name: statementWorkflowName,
-			},
-			TriggeredBy: []engine.PadWorkflowRule{
-				{Rule: statementRule},
-			},
-		},
-	}
+	statCode := "$addLabel(\"test\")"
 
-	program := &engine.Program{
-		Statements: []*engine.Statement{
-			statement,
-		},
-	}
+	statement := engine.BuildStatement(statCode)
+	program := engine.BuildProgram([]*engine.Statement{statement})
 
-	err := mockedInterpreter.ExecProgram(program)
+	exitStatus, err := mockedInterpreter.ExecProgram(program)
 
-	gotVal := mockedEnv.GetReport().WorkflowDetails[statementWorkflowName]
+	gotVal := mockedEnv.GetReport()
 
-	wantVal := ReportWorkflowDetails{
-		Name: statementWorkflowName,
-		Rules: map[string]bool{
-			statementRule: true,
-		},
-		Actions: []string{statementCode},
+	wantVal := &Report{
+		Actions: []string{statCode},
 	}
 
 	assert.Nil(t, err)
+	assert.Equal(t, engine.ExitStatusSuccess, exitStatus)
 	assert.Equal(t, wantVal, gotVal)
 }
 
 func TestExecStatement_WhenParseFails(t *testing.T) {
-	mockedEnv := MockDefaultEnv(t, nil, nil)
+	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), nil)
 
 	mockedInterpreter := &Interpreter{
 		Env: mockedEnv,
 	}
 
-	statement := &engine.Statement{
-		Code: "$addLabel(",
-		Metadata: &engine.Metadata{
-			Workflow: engine.PadWorkflow{
-				Name: "test",
-			},
-			TriggeredBy: []engine.PadWorkflowRule{
-				{Rule: "testRule"},
-			},
-		},
-	}
+	statement := engine.BuildStatement("$addLabel(")
 
 	err := mockedInterpreter.ExecStatement(statement)
 
@@ -442,27 +414,18 @@ func TestExecStatement_WhenTypeCheckExecFails(t *testing.T) {
 				Code: func(e Env, args []Value) error {
 					return nil
 				},
+				SupportedKinds: []handler.TargetEntityKind{handler.PullRequest},
 			},
 		},
 	}
 
-	mockedEnv := MockDefaultEnvBuiltIns(t, nil, nil, builtIns)
+	mockedEnv := MockDefaultEnv(t, nil, nil, builtIns, nil)
 
 	mockedInterpreter := &Interpreter{
 		Env: mockedEnv,
 	}
 
-	statement := &engine.Statement{
-		Code: "$addLabel(1)",
-		Metadata: &engine.Metadata{
-			Workflow: engine.PadWorkflow{
-				Name: "test",
-			},
-			TriggeredBy: []engine.PadWorkflowRule{
-				{Rule: "testRule"},
-			},
-		},
-	}
+	statement := engine.BuildStatement("$addLabel(1)")
 
 	err := mockedInterpreter.ExecStatement(statement)
 
@@ -478,27 +441,18 @@ func TestExecStatement_WhenActionExecFails(t *testing.T) {
 				Code: func(e Env, args []Value) (Value, error) {
 					return BuildArrayValue([]Value{BuildStringValue(devName)}), nil
 				},
+				SupportedKinds: []handler.TargetEntityKind{handler.PullRequest},
 			},
 		},
 	}
 
-	mockedEnv := MockDefaultEnvBuiltIns(t, nil, nil, builtIns)
+	mockedEnv := MockDefaultEnv(t, nil, nil, builtIns, nil)
 
 	mockedInterpreter := &Interpreter{
 		Env: mockedEnv,
 	}
 
-	statement := &engine.Statement{
-		Code: "$author()",
-		Metadata: &engine.Metadata{
-			Workflow: engine.PadWorkflow{
-				Name: "test",
-			},
-			TriggeredBy: []engine.PadWorkflowRule{
-				{Rule: "testRule"},
-			},
-		},
-	}
+	statement := engine.BuildStatement("$author()")
 
 	err := mockedInterpreter.ExecStatement(statement)
 
@@ -513,11 +467,12 @@ func TestExecStatement(t *testing.T) {
 				Code: func(e Env, args []Value) error {
 					return nil
 				},
+				SupportedKinds: []handler.TargetEntityKind{handler.PullRequest},
 			},
 		},
 	}
 
-	mockedEnv := MockDefaultEnvBuiltIns(
+	mockedEnv := MockDefaultEnv(
 		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatch(
@@ -533,37 +488,23 @@ func TestExecStatement(t *testing.T) {
 		},
 		nil,
 		builtIns,
+		nil,
 	)
 
 	mockedInterpreter := &Interpreter{
 		Env: mockedEnv,
 	}
 
-	statementWorkflowName := "test"
-	statementRule := "testRule"
-	statementCode := "$addLabel(\"test\")"
-	statement := &engine.Statement{
-		Code: statementCode,
-		Metadata: &engine.Metadata{
-			Workflow: engine.PadWorkflow{
-				Name: statementWorkflowName,
-			},
-			TriggeredBy: []engine.PadWorkflowRule{
-				{Rule: statementRule},
-			},
-		},
-	}
+	statCode := "$addLabel(\"test\")"
+
+	statement := engine.BuildStatement(statCode)
 
 	err := mockedInterpreter.ExecStatement(statement)
 
-	gotVal := mockedEnv.GetReport().WorkflowDetails[statementWorkflowName]
+	gotVal := mockedEnv.GetReport()
 
-	wantVal := ReportWorkflowDetails{
-		Name: statementWorkflowName,
-		Rules: map[string]bool{
-			statementRule: true,
-		},
-		Actions: []string{statementCode},
+	wantVal := &Report{
+		Actions: []string{statCode},
 	}
 
 	assert.Nil(t, err)
@@ -572,11 +513,11 @@ func TestExecStatement(t *testing.T) {
 
 func TestReport_WhenFindReportCommentFails(t *testing.T) {
 	mockedPullRequest := GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
-		User: &github.User{Login: github.String("john")},
+		User: &github.User{Login: github.String("foobar")},
 		Base: &github.PullRequestBranch{
 			Repo: &github.Repository{
 				Owner: &github.User{
-					Login: github.String("john"),
+					Login: github.String("foobar"),
 				},
 				Name: github.String("default-mock-repo"),
 			},
@@ -594,6 +535,8 @@ func TestReport_WhenFindReportCommentFails(t *testing.T) {
 			),
 		},
 		nil,
+		MockBuiltIns(),
+		nil,
 	)
 
 	mockedInterpreter := &Interpreter{
@@ -602,7 +545,7 @@ func TestReport_WhenFindReportCommentFails(t *testing.T) {
 
 	err := mockedInterpreter.Report(engine.SILENT_MODE, false)
 
-	assert.EqualError(t, err, "[report] error getting issues mock response not found for /repos/john/default-mock-repo/issues/6/comments")
+	assert.EqualError(t, err, "[report] error getting issues mock response not found for /repos/foobar/default-mock-repo/issues/6/comments")
 }
 
 func TestReport_OnSilentMode_WhenThereIsAlreadyAReviewpadComment(t *testing.T) {
@@ -627,6 +570,8 @@ func TestReport_OnSilentMode_WhenThereIsAlreadyAReviewpadComment(t *testing.T) {
 				}),
 			),
 		},
+		nil,
+		MockBuiltIns(),
 		nil,
 	)
 
@@ -658,6 +603,8 @@ func TestReport_OnSilentMode_WhenNoReviewpadCommentIsFound(t *testing.T) {
 			),
 		},
 		nil,
+		MockBuiltIns(),
+		nil,
 	)
 
 	mockedInterpreter := &Interpreter{
@@ -672,7 +619,7 @@ func TestReport_OnSilentMode_WhenNoReviewpadCommentIsFound(t *testing.T) {
 
 func TestReport_OnVerboseMode_WhenNoReviewpadCommentIsFound(t *testing.T) {
 	var addedComment string
-	commentToBeAdded := "<!--@annotation-reviewpad-report-->\n**Reviewpad Report**\n\n:scroll: **Explanation**\nNo workflows activated"
+	commentToBeAdded := "<!--@annotation-reviewpad-report-->\n**Reviewpad Report**\n\n:scroll: **Executed actions**\n```yaml\n```\n"
 	mockedEnv := MockDefaultEnv(
 		t,
 		[]mock.MockBackendOption{
@@ -693,6 +640,8 @@ func TestReport_OnVerboseMode_WhenNoReviewpadCommentIsFound(t *testing.T) {
 			),
 		},
 		nil,
+		MockBuiltIns(),
+		nil,
 	)
 
 	mockedInterpreter := &Interpreter{
@@ -707,7 +656,7 @@ func TestReport_OnVerboseMode_WhenNoReviewpadCommentIsFound(t *testing.T) {
 
 func TestReport_OnVerboseMode_WhenThereIsAlreadyAReviewpadComment(t *testing.T) {
 	var updatedComment string
-	commentUpdated := "<!--@annotation-reviewpad-report-->\n**Reviewpad Report**\n\n:scroll: **Explanation**\nNo workflows activated"
+	commentUpdated := "<!--@annotation-reviewpad-report-->\n**Reviewpad Report**\n\n:scroll: **Executed actions**\n```yaml\n```\n"
 	mockedEnv := MockDefaultEnv(
 		t,
 		[]mock.MockBackendOption{
@@ -733,6 +682,8 @@ func TestReport_OnVerboseMode_WhenThereIsAlreadyAReviewpadComment(t *testing.T) 
 			),
 		},
 		nil,
+		MockBuiltIns(),
+		nil,
 	)
 
 	mockedInterpreter := &Interpreter{
@@ -748,7 +699,7 @@ func TestReport_OnVerboseMode_WhenThereIsAlreadyAReviewpadComment(t *testing.T) 
 func TestNewInterpreter_WhenNewEvalEnvFails(t *testing.T) {
 	ctx := context.Background()
 	failMessage := "GetPullRequestFilesRequestFail"
-	client := github.NewClient(
+	clientREST := github.NewClient(
 		mock.NewMockedHTTPClient(
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsFilesByOwnerByRepoByPullNumber,
@@ -766,11 +717,10 @@ func TestNewInterpreter_WhenNewEvalEnvFails(t *testing.T) {
 	gotInterpreter, err := NewInterpreter(
 		ctx,
 		false,
-		client,
+		gh.NewGithubClient(clientREST, nil),
 		nil,
-		nil,
+		DefaultMockTargetEntity,
 		GetDefaultMockPullRequestDetails(),
-		nil,
 		nil,
 	)
 
@@ -779,7 +729,7 @@ func TestNewInterpreter_WhenNewEvalEnvFails(t *testing.T) {
 }
 
 func TestNewInterpreter(t *testing.T) {
-	mockedEnv := MockDefaultEnv(t, nil, nil)
+	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), nil)
 
 	wantInterpreter := &Interpreter{
 		Env: mockedEnv,
@@ -788,10 +738,9 @@ func TestNewInterpreter(t *testing.T) {
 	gotInterpreter, err := NewInterpreter(
 		mockedEnv.GetCtx(),
 		mockedEnv.GetDryRun(),
-		mockedEnv.GetClient(),
-		mockedEnv.GetClientGQL(),
+		mockedEnv.GetGithubClient(),
 		mockedEnv.GetCollector(),
-		mockedEnv.GetPullRequest(),
+		DefaultMockTargetEntity,
 		mockedEnv.GetEventPayload(),
 		mockedEnv.GetBuiltIns(),
 	)

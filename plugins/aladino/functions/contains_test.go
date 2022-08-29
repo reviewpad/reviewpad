@@ -15,7 +15,7 @@ import (
 var contains = plugins_aladino.PluginBuiltIns().Functions["contains"].Code
 
 func TestContainsTrue(t *testing.T) {
-	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
 
 	wantVal := aladino.BuildBoolValue(true)
 
@@ -31,7 +31,7 @@ func TestContainsTrue(t *testing.T) {
 }
 
 func TestContainsFalse(t *testing.T) {
-	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
 
 	wantVal := aladino.BuildBoolValue(false)
 

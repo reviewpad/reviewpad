@@ -20,7 +20,7 @@ import (
 var assignReviewer = plugins_aladino.PluginBuiltIns().Actions["assignReviewer"].Code
 
 func TestAssignReviewer_WhenTotalRequiredReviewersIsZero(t *testing.T) {
-	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
 
 	args := []aladino.Value{
 		aladino.BuildArrayValue(
@@ -36,7 +36,7 @@ func TestAssignReviewer_WhenTotalRequiredReviewersIsZero(t *testing.T) {
 }
 
 func TestAssignReviewer_WhenListOfReviewersIsEmpty(t *testing.T) {
-	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
 
 	args := []aladino.Value{aladino.BuildArrayValue([]aladino.Value{}), aladino.BuildIntValue(1)}
 	err := assignReviewer(mockedEnv, args)
@@ -80,6 +80,8 @@ func TestAssignReviewer_WhenAuthorIsInListOfReviewers(t *testing.T) {
 				}),
 			),
 		},
+		nil,
+		aladino.MockBuiltIns(),
 		nil,
 	)
 
@@ -136,6 +138,8 @@ func TestAssignReviewer_WhenTotalRequiredReviewersIsMoreThanTotalAvailableReview
 			),
 		},
 		nil,
+		aladino.MockBuiltIns(),
+		nil,
 	)
 
 	args := []aladino.Value{
@@ -168,6 +172,8 @@ func TestAssignReviewer_WhenListReviewsRequestFails(t *testing.T) {
 				}),
 			),
 		},
+		nil,
+		aladino.MockBuiltIns(),
 		nil,
 	)
 
@@ -208,6 +214,8 @@ func TestAssignReviewer_WhenPullRequestAlreadyHasReviews(t *testing.T) {
 				mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
 				[]*github.PullRequestReview{
 					{
+						ID:   github.Int64(1),
+						Body: github.String(""),
 						User: &github.User{
 							Login: github.String(reviewerLogin),
 						},
@@ -227,6 +235,8 @@ func TestAssignReviewer_WhenPullRequestAlreadyHasReviews(t *testing.T) {
 				}),
 			),
 		},
+		nil,
+		aladino.MockBuiltIns(),
 		nil,
 	)
 
@@ -267,6 +277,8 @@ func TestAssignReviewer_WhenPullRequestAlreadyHasApproval(t *testing.T) {
 				mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
 				[]*github.PullRequestReview{
 					{
+						ID:   github.Int64(1),
+						Body: github.String(""),
 						User: &github.User{
 							Login: github.String(reviewerLogin),
 						},
@@ -286,6 +298,8 @@ func TestAssignReviewer_WhenPullRequestAlreadyHasApproval(t *testing.T) {
 				}),
 			),
 		},
+		nil,
+		aladino.MockBuiltIns(),
 		nil,
 	)
 
@@ -343,6 +357,8 @@ func TestAssignReviewer_WhenPullRequestAlreadyHasRequestedReviewers(t *testing.T
 			),
 		},
 		nil,
+		aladino.MockBuiltIns(),
+		nil,
 	)
 
 	args := []aladino.Value{
@@ -397,6 +413,8 @@ func TestAssignReviewer_HasNoAvailableReviewers(t *testing.T) {
 			),
 		},
 		nil,
+		aladino.MockBuiltIns(),
+		nil,
 	)
 
 	args := []aladino.Value{
@@ -429,6 +447,7 @@ func TestAssignReviewer_WhenPullRequestAlreadyApproved(t *testing.T) {
 		{
 			ID:    &reviewID,
 			State: &reviewState,
+			Body:  github.String(""),
 			User:  &github.User{Login: github.String(reviewerA)},
 		},
 	}
@@ -453,6 +472,8 @@ func TestAssignReviewer_WhenPullRequestAlreadyApproved(t *testing.T) {
 				}),
 			),
 		},
+		nil,
+		aladino.MockBuiltIns(),
 		nil,
 	)
 

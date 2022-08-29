@@ -11,19 +11,11 @@ import (
 
 	"github.com/google/go-github/v45/github"
 	"github.com/reviewpad/reviewpad/v3/engine"
-	"github.com/reviewpad/reviewpad/v3/utils"
 	"github.com/reviewpad/reviewpad/v3/utils/fmtio"
 )
 
 type Report struct {
-	WorkflowDetails map[string]ReportWorkflowDetails
-}
-
-type ReportWorkflowDetails struct {
-	Name        string
-	Description string
-	Rules       map[string]bool
-	Actions     []string
+	Actions []string
 }
 
 const ReviewpadReportCommentAnnotation = "<!--@annotation-reviewpad-report-->"
@@ -32,37 +24,8 @@ func reportError(format string, a ...interface{}) error {
 	return fmtio.Errorf("report", format, a...)
 }
 
-func mergeReportWorkflowDetails(left, right ReportWorkflowDetails) ReportWorkflowDetails {
-	for rule := range right.Rules {
-		if _, ok := left.Rules[rule]; !ok {
-			left.Rules[rule] = true
-		}
-	}
-
-	return left
-}
-
 func (report *Report) addToReport(statement *engine.Statement) {
-	workflowName := statement.Metadata.Workflow.Name
-
-	rules := make(map[string]bool, len(statement.Metadata.TriggeredBy))
-	for _, rule := range statement.Metadata.TriggeredBy {
-		rules[rule.Rule] = true
-	}
-
-	reportWorkflow := ReportWorkflowDetails{
-		Name:        workflowName,
-		Description: statement.Metadata.Workflow.Description,
-		Rules:       rules,
-		Actions:     []string{statement.Code},
-	}
-
-	workflow, ok := report.WorkflowDetails[workflowName]
-	if !ok {
-		report.WorkflowDetails[workflowName] = reportWorkflow
-	} else {
-		report.WorkflowDetails[workflowName] = mergeReportWorkflowDetails(workflow, reportWorkflow)
-	}
+	report.Actions = append(report.Actions, statement.GetStatementCode())
 }
 
 func ReportHeader(safeMode bool) string {
@@ -80,11 +43,41 @@ func ReportHeader(safeMode bool) string {
 	return sb.String()
 }
 
-func buildReport(safeMode bool, report *Report) string {
+func severityToString(sev Severity) string {
+	switch sev {
+	case SEVERITY_ERROR:
+		return ":bangbang: Errors"
+	case SEVERITY_WARNING:
+		return ":warning: Warnings"
+	case SEVERITY_INFO:
+		return ":information_source: Messages"
+	default:
+		return "Fatal"
+	}
+
+}
+func buildCommentSection(comments map[Severity][]string) string {
+	var sb strings.Builder
+
+	for sev, list := range comments {
+		sb.WriteString(fmt.Sprintf("**%v**\n", severityToString(sev)))
+		for _, elem := range list {
+			sb.WriteString(fmt.Sprintf("* %v\n", elem))
+		}
+		sb.WriteString("\n")
+	}
+
+	return sb.String()
+}
+
+func buildReport(mode string, safeMode bool, reportComments map[Severity][]string, report *Report) string {
 	var sb strings.Builder
 
 	sb.WriteString(ReportHeader(safeMode))
-	sb.WriteString(BuildVerboseReport(report))
+	sb.WriteString(buildCommentSection(reportComments))
+	if mode == engine.VERBOSE_MODE || safeMode {
+		sb.WriteString(BuildVerboseReport(report))
+	}
 
 	return sb.String()
 }
@@ -96,44 +89,25 @@ func BuildVerboseReport(report *Report) string {
 
 	var sb strings.Builder
 
-	sb.WriteString(":scroll: **Explanation**\n")
+	sb.WriteString(":scroll: **Executed actions**\n")
 
-	reportDetails := report.WorkflowDetails
-
-	if len(reportDetails) == 0 {
-		sb.WriteString("No workflows activated")
-		msg := sb.String()
-		return msg
-	}
+	sb.WriteString("```yaml\n")
 
 	// Report
-	sb.WriteString("| Workflows <sub><sup>activated</sup></sub> | Rules <sub><sup>triggered</sup></sub> | Actions <sub><sup>ran</sub></sup> | Description |\n")
-	sb.WriteString("| - | - | - | - |\n")
-
-	for _, workflow := range reportDetails {
-		actRules := ""
-		for actRule := range workflow.Rules {
-			actRules += fmt.Sprintf("%v<br>", actRule)
-		}
-
-		actActions := ""
-		for _, actAction := range workflow.Actions {
-			actActions += fmt.Sprintf("`%v`<br>", actAction)
-		}
-
-		sb.WriteString(fmt.Sprintf("| %v | %v | %v | %v |\n", workflow.Name, actRules, actActions, workflow.Description))
+	for _, action := range report.Actions {
+		sb.WriteString(fmt.Sprintf("%v\n", action))
 	}
 
+	sb.WriteString("```\n")
 	return sb.String()
 }
 
 func DeleteReportComment(env Env, commentId int64) error {
-	pullRequest := env.GetPullRequest()
-	owner := utils.GetPullRequestBaseOwnerName(pullRequest)
-	repo := utils.GetPullRequestBaseRepoName(pullRequest)
+	t := env.GetTarget().GetTargetEntity()
+	owner := t.Owner
+	repo := t.Repo
 
-	_, err := env.GetClient().Issues.DeleteComment(env.GetCtx(), owner, repo, commentId)
-
+	_, err := env.GetGithubClient().DeleteComment(env.GetCtx(), owner, repo, commentId)
 	if err != nil {
 		return reportError("error on deleting report comment %v", err.(*github.ErrorResponse).Message)
 	}
@@ -146,11 +120,11 @@ func UpdateReportComment(env Env, commentId int64, report string) error {
 		Body: &report,
 	}
 
-	pullRequest := env.GetPullRequest()
-	owner := utils.GetPullRequestBaseOwnerName(pullRequest)
-	repo := utils.GetPullRequestBaseRepoName(pullRequest)
+	t := env.GetTarget().GetTargetEntity()
+	owner := t.Owner
+	repo := t.Repo
 
-	_, _, err := env.GetClient().Issues.EditComment(env.GetCtx(), owner, repo, commentId, &gitHubComment)
+	_, _, err := env.GetGithubClient().EditComment(env.GetCtx(), owner, repo, commentId, &gitHubComment)
 
 	if err != nil {
 		return reportError("error on updating report comment %v", err.(*github.ErrorResponse).Message)
@@ -164,12 +138,12 @@ func AddReportComment(env Env, report string) error {
 		Body: &report,
 	}
 
-	pullRequest := env.GetPullRequest()
-	owner := utils.GetPullRequestBaseOwnerName(pullRequest)
-	repo := utils.GetPullRequestBaseRepoName(pullRequest)
-	prNum := utils.GetPullRequestNumber(pullRequest)
+	t := env.GetTarget().GetTargetEntity()
+	owner := t.Owner
+	repo := t.Repo
+	number := t.Number
 
-	_, _, err := env.GetClient().Issues.CreateComment(env.GetCtx(), owner, repo, prNum, &gitHubComment)
+	_, _, err := env.GetGithubClient().CreateComment(env.GetCtx(), owner, repo, number, &gitHubComment)
 
 	if err != nil {
 		return reportError("error on creating report comment %v", err.(*github.ErrorResponse).Message)
@@ -179,12 +153,12 @@ func AddReportComment(env Env, report string) error {
 }
 
 func FindReportComment(env Env) (*github.IssueComment, error) {
-	pullRequest := env.GetPullRequest()
-	owner := utils.GetPullRequestBaseOwnerName(pullRequest)
-	repo := utils.GetPullRequestBaseRepoName(pullRequest)
-	prNum := utils.GetPullRequestNumber(pullRequest)
+	t := env.GetTarget().GetTargetEntity()
+	owner := t.Owner
+	repo := t.Repo
+	number := t.Number
 
-	comments, err := utils.GetPullRequestComments(env.GetCtx(), env.GetClient(), owner, repo, prNum, &github.IssueListCommentsOptions{
+	comments, err := env.GetGithubClient().GetComments(env.GetCtx(), owner, repo, number, &github.IssueListCommentsOptions{
 		Sort:      github.String("created"),
 		Direction: github.String("asc"),
 	})

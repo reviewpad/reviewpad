@@ -23,7 +23,7 @@ type MergeRequestPostBody struct {
 }
 
 func TestMerge_WhenMergeMethodIsUnsupported(t *testing.T) {
-	mockedEnv := aladino.MockDefaultEnv(t, nil, nil)
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
 
 	args := []aladino.Value{aladino.BuildStringValue("INVALID")}
 	err := merge(mockedEnv, args)
@@ -49,6 +49,8 @@ func TestMerge_WhenNoMergeMethodIsProvided(t *testing.T) {
 				}),
 			),
 		},
+		nil,
+		aladino.MockBuiltIns(),
 		nil,
 	)
 
@@ -77,6 +79,8 @@ func TestMerge_WhenMergeMethodIsProvided(t *testing.T) {
 				}),
 			),
 		},
+		nil,
+		aladino.MockBuiltIns(),
 		nil,
 	)
 

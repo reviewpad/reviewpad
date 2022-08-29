@@ -5,44 +5,25 @@
 package plugins_aladino_functions
 
 import (
+	"github.com/reviewpad/reviewpad/v3/codehost/github/target"
+	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
-	"github.com/reviewpad/reviewpad/v3/utils"
-	"github.com/shurcooL/githubv4"
 )
 
 func HasLinkedIssues() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type: aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildBoolType()),
-		Code: hasLinkedIssuesCode,
+		Type:           aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildBoolType()),
+		Code:           hasLinkedIssuesCode,
+		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest},
 	}
 }
 
 func hasLinkedIssuesCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
-	var pullRequestQuery struct {
-		Repository struct {
-			PullRequest struct {
-				ClosingIssuesReferences struct {
-					TotalCount githubv4.Int
-				}
-			} `graphql:"pullRequest(number: $pullRequestNumber)"`
-		} `graphql:"repository(owner: $repositoryOwner, name: $repositoryName)"`
-	}
-
-	prNum := utils.GetPullRequestNumber(e.GetPullRequest())
-	owner := utils.GetPullRequestBaseOwnerName(e.GetPullRequest())
-	repo := utils.GetPullRequestBaseRepoName(e.GetPullRequest())
-
-	varGQLPullRequestQuery := map[string]interface{}{
-		"repositoryOwner":   githubv4.String(owner),
-		"repositoryName":    githubv4.String(repo),
-		"pullRequestNumber": githubv4.Int(prNum),
-	}
-
-	err := e.GetClientGQL().Query(e.GetCtx(), &pullRequestQuery, varGQLPullRequestQuery)
-
+	pullRequest := e.GetTarget().(*target.PullRequestTarget)
+	closingIssuesCount, err := pullRequest.GetLinkedIssuesCount()
 	if err != nil {
 		return nil, err
 	}
 
-	return aladino.BuildBoolValue(pullRequestQuery.Repository.PullRequest.ClosingIssuesReferences.TotalCount > 0), nil
+	return aladino.BuildBoolValue(closingIssuesCount > 0), nil
 }

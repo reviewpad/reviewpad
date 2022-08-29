@@ -25,6 +25,8 @@ func TestHasLinkedIssues_WhenRequestFails(t *testing.T) {
 		func(w http.ResponseWriter, req *http.Request) {
 			http.Error(w, "404 Not Found", http.StatusNotFound)
 		},
+		aladino.MockBuiltIns(),
+		nil,
 	)
 
 	_, err := hasLinkedIssues(mockedEnv, []aladino.Value{})
@@ -83,6 +85,8 @@ func TestHasLinkedIssues_WhenHasLinkedIssues(t *testing.T) {
 				)
 			}
 		},
+		aladino.MockBuiltIns(),
+		nil,
 	)
 
 	wantVal := aladino.BuildBoolValue(true)
@@ -143,6 +147,8 @@ func TestHasLinkedIssues_WhenNoLinkedIssues(t *testing.T) {
 				)
 			}
 		},
+		aladino.MockBuiltIns(),
+		nil,
 	)
 
 	wantVal := aladino.BuildBoolValue(false)

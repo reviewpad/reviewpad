@@ -7,44 +7,66 @@ package aladino
 import (
 	"context"
 
-	"github.com/google/go-github/v45/github"
+	"github.com/reviewpad/reviewpad/v3/codehost"
+	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
+	"github.com/reviewpad/reviewpad/v3/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v3/collector"
-	"github.com/reviewpad/reviewpad/v3/utils"
-	"github.com/shurcooL/githubv4"
+	"github.com/reviewpad/reviewpad/v3/handler"
+)
+
+type Severity int
+
+const (
+	SEVERITY_FATAL   Severity = 1
+	SEVERITY_ERROR   Severity = 2
+	SEVERITY_WARNING Severity = 3
+	SEVERITY_INFO    Severity = 4
 )
 
 type TypeEnv map[string]Type
 
-type Patch map[string]*File
-
 type RegisterMap map[string]Value
 
 type Env interface {
-	GetCtx() context.Context
-	GetClient() *github.Client
-	GetClientGQL() *githubv4.Client
-	GetCollector() collector.Collector
-	GetPullRequest() *github.PullRequest
-	GetPatch() Patch
-	GetRegisterMap() RegisterMap
 	GetBuiltIns() *BuiltIns
-	GetReport() *Report
-	GetEventPayload() interface{}
+	GetBuiltInsReportedMessages() map[Severity][]string
+	GetGithubClient() *gh.GithubClient
+	GetCollector() collector.Collector
+	GetCtx() context.Context
 	GetDryRun() bool
+	GetEventPayload() interface{}
+	GetRegisterMap() RegisterMap
+	GetReport() *Report
+	GetTarget() codehost.Target
 }
 
 type BaseEnv struct {
-	Ctx          context.Context
-	DryRun       bool
-	Client       *github.Client
-	ClientGQL    *githubv4.Client
-	Collector    collector.Collector
-	PullRequest  *github.PullRequest
-	Patch        Patch
-	RegisterMap  RegisterMap
-	BuiltIns     *BuiltIns
-	Report       *Report
-	EventPayload interface{}
+	BuiltIns                 *BuiltIns
+	BuiltInsReportedMessages map[Severity][]string
+	GithubClient             *gh.GithubClient
+	Collector                collector.Collector
+	Ctx                      context.Context
+	DryRun                   bool
+	EventPayload             interface{}
+	RegisterMap              RegisterMap
+	Report                   *Report
+	Target                   codehost.Target
+}
+
+func (e *BaseEnv) GetBuiltIns() *BuiltIns {
+	return e.BuiltIns
+}
+
+func (e *BaseEnv) GetBuiltInsReportedMessages() map[Severity][]string {
+	return e.BuiltInsReportedMessages
+}
+
+func (e *BaseEnv) GetGithubClient() *gh.GithubClient {
+	return e.GithubClient
+}
+
+func (e *BaseEnv) GetCollector() collector.Collector {
+	return e.Collector
 }
 
 func (e *BaseEnv) GetCtx() context.Context {
@@ -55,40 +77,20 @@ func (e *BaseEnv) GetDryRun() bool {
 	return e.DryRun
 }
 
-func (e *BaseEnv) GetClient() *github.Client {
-	return e.Client
-}
-
-func (e *BaseEnv) GetClientGQL() *githubv4.Client {
-	return e.ClientGQL
-}
-
-func (e *BaseEnv) GetCollector() collector.Collector {
-	return e.Collector
-}
-
-func (e *BaseEnv) GetPullRequest() *github.PullRequest {
-	return e.PullRequest
-}
-
-func (e *BaseEnv) GetPatch() Patch {
-	return e.Patch
+func (e *BaseEnv) GetEventPayload() interface{} {
+	return e.EventPayload
 }
 
 func (e *BaseEnv) GetRegisterMap() RegisterMap {
 	return e.RegisterMap
 }
 
-func (e *BaseEnv) GetBuiltIns() *BuiltIns {
-	return e.BuiltIns
-}
-
 func (e *BaseEnv) GetReport() *Report {
 	return e.Report
 }
 
-func (e *BaseEnv) GetEventPayload() interface{} {
-	return e.EventPayload
+func (e *BaseEnv) GetTarget() codehost.Target {
+	return e.Target
 }
 
 func NewTypeEnv(e Env) TypeEnv {
@@ -107,49 +109,47 @@ func NewTypeEnv(e Env) TypeEnv {
 func NewEvalEnv(
 	ctx context.Context,
 	dryRun bool,
-	gitHubClient *github.Client,
-	gitHubClientGQL *githubv4.Client,
+	githubClient *gh.GithubClient,
 	collector collector.Collector,
-	pullRequest *github.PullRequest,
+	targetEntity *handler.TargetEntity,
 	eventPayload interface{},
 	builtIns *BuiltIns,
 ) (Env, error) {
-	owner := utils.GetPullRequestBaseOwnerName(pullRequest)
-	repo := utils.GetPullRequestBaseRepoName(pullRequest)
-	number := utils.GetPullRequestNumber(pullRequest)
+	registerMap := RegisterMap(make(map[string]Value))
+	report := &Report{Actions: make([]string, 0)}
 
-	files, err := utils.GetPullRequestFiles(ctx, gitHubClient, owner, repo, number)
-	if err != nil {
-		return nil, err
+	input := &BaseEnv{
+		BuiltIns:                 builtIns,
+		BuiltInsReportedMessages: make(map[Severity][]string),
+		GithubClient:             githubClient,
+		Collector:                collector,
+		Ctx:                      ctx,
+		DryRun:                   dryRun,
+		EventPayload:             eventPayload,
+		RegisterMap:              registerMap,
+		Report:                   report,
 	}
 
-	patchMap := make(map[string]*File)
+	switch targetEntity.Kind {
+	case handler.Issue:
 
-	for _, file := range files {
-		patchFile, err := NewFile(file)
+		issue, _, err := githubClient.GetIssue(ctx, targetEntity.Owner, targetEntity.Repo, targetEntity.Number)
 		if err != nil {
 			return nil, err
 		}
 
-		patchMap[file.GetFilename()] = patchFile
-	}
+		input.Target = target.NewIssueTarget(ctx, targetEntity, githubClient, issue)
+	case handler.PullRequest:
+		pullRequest, _, err := githubClient.GetPullRequest(ctx, targetEntity.Owner, targetEntity.Repo, targetEntity.Number)
+		if err != nil {
+			return nil, err
+		}
 
-	patch := Patch(patchMap)
-	registerMap := RegisterMap(make(map[string]Value))
-	report := &Report{WorkflowDetails: make(map[string]ReportWorkflowDetails, 0)}
-
-	input := &BaseEnv{
-		Ctx:          ctx,
-		DryRun:       dryRun,
-		Client:       gitHubClient,
-		ClientGQL:    gitHubClientGQL,
-		Collector:    collector,
-		PullRequest:  pullRequest,
-		Patch:        patch,
-		RegisterMap:  registerMap,
-		BuiltIns:     builtIns,
-		Report:       report,
-		EventPayload: eventPayload,
+		pullRequestTarget, err := target.NewPullRequestTarget(ctx, targetEntity, githubClient, pullRequest)
+		if err != nil {
+			return nil, err
+		}
+		input.Target = pullRequestTarget
 	}
 
 	return input, nil

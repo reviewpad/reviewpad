@@ -1,0 +1,47 @@
+api-version: reviewpad.com/v1.x
+
+rules:
+  - name: tautology
+    kind: patch
+    description: Always true
+    spec: 'true'
+
+workflows:
+  - name: size
+    if:
+      - rule: "$size() < 10"
+        extra-actions:
+          - $commentOnce("lower-then-10")
+      - rule: "$size() < 5"
+        extra-actions:
+          - $commentOnce("lower-than-5")
+    then:
+      - $commentOnce("size-done")
+  - name: hi
+    if:
+      - rule: tautology
+    then:
+      - $commentOnce("hi-done")
+  - name: world
+    if:
+      - rule: tautology
+        extra-actions:
+          - $commentOnce("world-done")
+  - name: inline-false
+    if:
+      - "$size() > 10"
+    then:
+      - $commentOnce("inline-false-done")
+  - name: inline-true
+    if:
+      - "$size() < 10"
+    then:
+      - $commentOnce("inline-true-done")
+  - name: all
+    if:
+      - "$size() < 5"
+      - rule: "$size() < 10"
+        extra-actions:
+          - $commentOnce("all-done-size-less-10")
+    then:
+      - $commentOnce("all-done")

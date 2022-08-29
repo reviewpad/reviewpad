@@ -1,11 +1,13 @@
 // Copyright 2022 Explore.dev Unipessoal Lda. All Rights Reserved.
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file
-package utils
+
+package github
 
 import (
 	"context"
 	"errors"
+	"strings"
 
 	"github.com/shurcooL/githubv4"
 )
@@ -17,6 +19,7 @@ var (
 type ProjectV2 struct {
 	ID     string
 	Number uint64
+	Title  string
 }
 
 type PageInfo struct {
@@ -42,13 +45,16 @@ type FieldDetails struct {
 	}
 }
 
-func GetProjectV2ByName(ctx context.Context, client *githubv4.Client, owner, repo, name string) (*ProjectV2, error) {
+func (c *GithubClient) GetProjectV2ByName(ctx context.Context, owner, repo, name string) (*ProjectV2, error) {
 	// Warning: we've faced trouble before with the Github GraphQL API, we'll update this later when we find a better alternative.
+	// We request the first 50 projects since GitHub can return several projects  with a partially matching name.
+	// For instance, a GitHub organization with two projects "private project" and "public project",
+	// a query for "private project" will return both projects. This is because both projects have the word "project".
 	var getProjectV2ByNameQuery struct {
 		Repository struct {
 			ProjectsV2 struct {
 				Nodes []ProjectV2
-			} `graphql:"projectsV2(query: $name, first: 1, orderBy: {field: TITLE, direction: ASC})"`
+			} `graphql:"projectsV2(query: $name, first: 50, orderBy: {field: TITLE, direction: ASC})"`
 		} `graphql:"repository(owner: $repositoryOwner, name: $repositoryName)"`
 	}
 
@@ -58,7 +64,7 @@ func GetProjectV2ByName(ctx context.Context, client *githubv4.Client, owner, rep
 		"name":            githubv4.String(name),
 	}
 
-	if err := client.Query(ctx, &getProjectV2ByNameQuery, varGetProjectV2ByNameQueryVariables); err != nil {
+	if err := c.clientGQL.Query(ctx, &getProjectV2ByNameQuery, varGetProjectV2ByNameQueryVariables); err != nil {
 		return nil, err
 	}
 
@@ -66,10 +72,17 @@ func GetProjectV2ByName(ctx context.Context, client *githubv4.Client, owner, rep
 		return nil, ErrProjectNotFound
 	}
 
-	return &getProjectV2ByNameQuery.Repository.ProjectsV2.Nodes[0], nil
+	var project ProjectV2
+	for _, node := range getProjectV2ByNameQuery.Repository.ProjectsV2.Nodes {
+		if strings.EqualFold(node.Title, name) {
+			project = node
+		}
+	}
+
+	return &project, nil
 }
 
-func GetProjectFieldsByProjectNumber(ctx context.Context, client *githubv4.Client, owner, repo string, projectNumber uint64, retryCount int) ([]FieldNode, error) {
+func (c *GithubClient) GetProjectFieldsByProjectNumber(ctx context.Context, owner, repo string, projectNumber uint64, retryCount int) ([]FieldNode, error) {
 	fields := []FieldNode{}
 	hasNextPage := true
 	currentRequestRetry := 1
@@ -90,7 +103,7 @@ func GetProjectFieldsByProjectNumber(ctx context.Context, client *githubv4.Clien
 	}
 
 	for hasNextPage {
-		if err := client.Query(ctx, &getProjectFieldsQuery, varGQLGetProjectFieldsQuery); err != nil {
+		if err := c.clientGQL.Query(ctx, &getProjectFieldsQuery, varGQLGetProjectFieldsQuery); err != nil {
 			currentRequestRetry++
 			if currentRequestRetry <= retryCount {
 				continue
