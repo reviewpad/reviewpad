@@ -58,7 +58,7 @@ func TestPaginatedRequest(t *testing.T) {
 		wantVal            interface{}
 		wantErr            string
 	}{
-		"when first request fails": {
+		"when the request for the first page fails": {
 			httpMockResponders: []httpMockResponder{
 				{
 					url:       fmt.Sprintf("https://api.github.com/orgs/%v/repos?page=1", aladino.DefaultMockPrOwner),
@@ -67,6 +67,20 @@ func TestPaginatedRequest(t *testing.T) {
 			},
 			numPages: 1,
 			wantErr:  fmt.Sprintf("Get \"https://api.github.com/orgs/foobar/repos?page=1\": %v", failMessage),
+		},
+		"when the request for the second page fails": {
+			httpMockResponders: []httpMockResponder{
+				{
+					url:       fmt.Sprintf("https://api.github.com/orgs/%v/repos?page=1", aladino.DefaultMockPrOwner),
+					responder: httpmock.NewBytesResponder(200, []byte(fmt.Sprintf("%v", firstPageContentData))),
+				},
+				{
+					url:       fmt.Sprintf("https://api.github.com/orgs/%v/repos?page=2", aladino.DefaultMockPrOwner),
+					responder: httpmock.NewErrorResponder(fmt.Errorf(failMessage)),
+				},
+			},
+			numPages: 2,
+			wantErr:  fmt.Sprintf("Get \"https://api.github.com/orgs/foobar/repos?page=2\": %v", failMessage),
 		},
 		"when there is only one page": {
 			httpMockResponders: []httpMockResponder{
@@ -92,20 +106,6 @@ func TestPaginatedRequest(t *testing.T) {
 			numPages: 2,
 			wantVal:  allPagesContent,
 		},
-		"when there second page request fails": {
-			httpMockResponders: []httpMockResponder{
-				{
-					url:       fmt.Sprintf("https://api.github.com/orgs/%v/repos?page=1", aladino.DefaultMockPrOwner),
-					responder: httpmock.NewBytesResponder(200, []byte(fmt.Sprintf("%v", firstPageContentData))),
-				},
-				{
-					url:       fmt.Sprintf("https://api.github.com/orgs/%v/repos?page=2", aladino.DefaultMockPrOwner),
-					responder: httpmock.NewErrorResponder(fmt.Errorf(failMessage)),
-				},
-			},
-			numPages: 2,
-			wantErr:  fmt.Sprintf("Get \"https://api.github.com/orgs/foobar/repos?page=2\": %v", failMessage),
-		},
 	}
 
 	for name, test := range tests {
@@ -122,6 +122,7 @@ func TestPaginatedRequest(t *testing.T) {
 			reqFn := func(i interface{}, page int) (interface{}, *github.Response, error) {
 				currentRepos := i.([]*github.Repository)
 				url := test.httpMockResponders[page-1].url
+
 				resp, err := http.Get(url)
 				if err != nil {
 					return nil, &github.Response{Response: resp}, err
@@ -154,7 +155,7 @@ func TestPaginatedRequest(t *testing.T) {
 					nextPage = page + 1
 				}
 
-				ghResp := builtGitHubResp(resp, url, nextPage)
+				ghResp := buildGitHubResponse(resp, url, nextPage)
 
 				return currentRepos, ghResp, nil
 			}
@@ -831,7 +832,7 @@ func registerHttpResponders(httpMockResponders []httpMockResponder) {
 	}
 }
 
-func builtGitHubResp(resp *http.Response, link string, nextPage int) *github.Response {
+func buildGitHubResponse(resp *http.Response, link string, nextPage int) *github.Response {
 	respHeader := make(http.Header)
 	respHeader.Add("Link", fmt.Sprintf("<%v>; rel=\"last\"", link))
 	httpResp := resp
