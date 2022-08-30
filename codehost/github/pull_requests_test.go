@@ -39,13 +39,13 @@ func TestPaginatedRequest(t *testing.T) {
 	repoAOnFirstPage := "repo-A-on-first-page"
 	repoBOnSecondPage := "repo-B-on-second-page"
 
-	firstPageRequestUrl := buildGitHubListReposRequestUrl(1)
+	firstPageRequestUrl := buildGitHubListReposPageRequestUrl(1)
 	firstPageContentData := fmt.Sprintf("[{\"name\": \"%v\"}]", repoAOnFirstPage)
 	firstPageContent := []*github.Repository{
 		{Name: github.String(repoAOnFirstPage)},
 	}
 
-	secondPageRequestUrl := buildGitHubListReposRequestUrl(2)
+	secondPageRequestUrl := buildGitHubListReposPageRequestUrl(2)
 	secondPageContentData := fmt.Sprintf("[{\"name\": \"%v\"}]", repoBOnSecondPage)
 	secondPageContent := []*github.Repository{
 		{Name: github.String(repoBOnSecondPage)},
@@ -833,7 +833,7 @@ func registerHttpResponders(httpMockResponders []httpMockResponder) {
 	}
 }
 
-func buildGitHubListReposRequestUrl(page int) string {
+func buildGitHubListReposPageRequestUrl(page int) string {
 	return fmt.Sprintf("https://api.github.com/orgs/%v/repos?page=%v", aladino.DefaultMockPrOwner, page)
 }
 
