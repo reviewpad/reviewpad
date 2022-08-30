@@ -69,6 +69,7 @@ func PluginBuiltInsWithConfig(config *PluginConfig) *aladino.BuiltIns {
 			"hasFileExtensions":     functions.HasFileExtensions(),
 			"hasFileName":           functions.HasFileName(),
 			"hasFilePattern":        functions.HasFilePattern(),
+			"hasGitConflicts":       functions.HasGitConflicts(),
 			"hasLinearHistory":      functions.HasLinearHistory(),
 			"hasLinkedIssues":       functions.HasLinkedIssues(),
 			"hasUnaddressedThreads": functions.HasUnaddressedThreads(),
