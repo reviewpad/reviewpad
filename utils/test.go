@@ -7,6 +7,7 @@ import "strings"
 
 func MinifyQuery(query string) string {
 	minifiedQuery := strings.ReplaceAll(query, "\n", "")
+	minifiedQuery = strings.ReplaceAll(minifiedQuery, "\t", "")
 	minifiedQuery = strings.ReplaceAll(minifiedQuery, " ", "")
 	minifiedQuery += "\n"
 	return minifiedQuery
