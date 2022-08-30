@@ -7,6 +7,10 @@ labels:
     name: stale
     description: Stale issue/pull request
     color: "294b69"
+  conflict-label:
+    name: has conflicts
+    description: Pull request with Git conflicts
+    color: "ff0000"
 
 rules:
   - name: labeled-as-stale
@@ -28,3 +32,10 @@ workflows:
         extra-actions:
           - '$commentOnce("Closing because this issue has been inactive for more than one week.")'
           - '$close()'
+  - name: find-git-conflicts
+    on:
+      - "pull_request"
+    if:
+      - rule: '$hasGitConflicts()'
+    then:
+      - '$addLabel("conflict-label")'
