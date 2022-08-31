@@ -38,6 +38,9 @@ labels:
   requires-author-attention:
     description: PR requires author attention
     color: "b20000"
+  has-conflicts:
+    description: Pull request with Git conflicts
+    color: "ff0000"
 
 groups:
   - name: owners
@@ -433,3 +436,13 @@ workflows:
       - rule: touchesPluginsFunctionsOrActionsAndNotBuiltins
     then:
       - '$info("If you have added a new function or action do not forget to include it in the built-in list!")'
+
+  - name: find-git-conflicts
+    description: Check for git conflicts
+    always-run: true
+    on:
+      - "pull_request"
+    if:
+      - rule: '$hasGitConflicts()'
+    then:
+      - '$addLabel("has-conflicts")'
