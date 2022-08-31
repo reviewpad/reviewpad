@@ -63,15 +63,15 @@ func TestHasGitConflicts(t *testing.T) {
 		wantVal                    aladino.Value
 		wantErr                    string
 	}{
-		"when pull request has merge conflicts": {
+		"when pull request has git conflicts": {
 			mockedPullRequestQueryBody: pullRequestQueryBodyWith("CONFLICTING"),
 			wantVal:                    aladino.BuildBoolValue(true),
 		},
-		"when pull request has no merge conflicts and is mergeable": {
+		"when pull request has no git conflicts and is mergeable": {
 			mockedPullRequestQueryBody: pullRequestQueryBodyWith("MERGEABLE"),
 			wantVal:                    aladino.BuildBoolValue(false),
 		},
-		"when pull request has no merge conflicts and is not mergeable": {
+		"when pull request has no git conflicts and is not mergeable": {
 			mockedPullRequestQueryBody: pullRequestQueryBodyWith("UNKNOWN"),
 			wantVal:                    aladino.BuildBoolValue(false),
 		},
