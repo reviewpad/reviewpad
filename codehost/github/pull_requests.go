@@ -7,6 +7,7 @@ package github
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/google/go-github/v45/github"
@@ -45,6 +46,7 @@ type LastPushQuery struct {
 					} `graphql:"... on HeadRefForcePushedEvent"`
 					PullRequestCommit struct {
 						Commit struct {
+							PushedDate    *time.Time
 							CommittedDate *time.Time
 						}
 					} `graphql:"... on PullRequestCommit"`
@@ -372,17 +374,26 @@ func (c *GithubClient) GetPullRequestLastPushDate(ctx context.Context, owner str
 	if !hasLastPush {
 		return time.Time{}, errors.New("last push not found")
 	}
+
 	var pushDate *time.Time
 
-	node := lastPushQuery.Repository.PullRequest.TimelineItems.Nodes[0]
-	if node.Typename == "HeadRefForcePushedEvent" {
-		pushDate = node.HeadRefForcePushedEvent.CreatedAt
-	} else if node.Typename == "PullRequestCommit" {
-		pushDate = node.PullRequestCommit.Commit.CommittedDate
+	event := lastPushQuery.Repository.PullRequest.TimelineItems.Nodes[0]
+	switch event.Typename {
+	case "PullRequestCommit":
+		if pushedDate := event.PullRequestCommit.Commit.PushedDate; pushDate != nil {
+			pushDate = pushedDate
+		} else {
+			pushDate = event.PullRequestCommit.Commit.PushedDate
+		}
+	case "HeadRefForcePushedEvent":
+		pushDate = event.HeadRefForcePushedEvent.CreatedAt
+	default:
+		return time.Time{}, fmt.Errorf("unknown event type %v", event.Typename)
 	}
 
 	if pushDate == nil {
 		return time.Time{}, errors.New("last push not found")
 	}
+
 	return *pushDate, nil
 }

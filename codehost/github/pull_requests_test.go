@@ -816,3 +816,7 @@ func TestGetIssueTimeLine(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, wantTimeline, gotTimeline)
 }
+
+func TestGetPullRequestLastPushDate(t *testing.T) {
+	t.Skip("FIME: #332")
+}
