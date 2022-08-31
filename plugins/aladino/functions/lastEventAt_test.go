@@ -106,7 +106,7 @@ func TestLastEvent(t *testing.T) {
 			),
 			wantVal: aladino.BuildIntValue(int(lastEventDate.Unix())),
 		},
-		"when timeline has only one event": {
+		"when target entity is pull request and timeline has only one event": {
 			mockedEnv: aladino.MockDefaultEnv(
 				t,
 				[]mock.MockBackendOption{
@@ -123,6 +123,7 @@ func TestLastEvent(t *testing.T) {
 			),
 			wantVal: aladino.BuildIntValue(int(aladino.DefaultMockPrDate.Unix())),
 		},
+		// TODO: Add tests for when target entity is handler.Issue
 	}
 
 	for name, test := range tests {
@@ -134,5 +135,4 @@ func TestLastEvent(t *testing.T) {
 			assert.Equal(t, test.wantVal, gotVal)
 		})
 	}
-
 }
