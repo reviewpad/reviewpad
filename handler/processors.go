@@ -107,9 +107,14 @@ func processIssueCommentEvent(e *github.IssueCommentEvent) []*TargetEntity {
 	Log("processing 'issue_comment' event")
 	Log("found issue %v", *e.Issue.Number)
 
+	kind := Issue
+	if e.Issue.IsPullRequest() {
+		kind = PullRequest
+	}
+
 	return []*TargetEntity{
 		{
-			Kind:   Issue,
+			Kind:   kind,
 			Number: *e.Issue.Number,
 			Owner:  *e.Repo.Owner.Login,
 			Repo:   *e.Repo.Name,
