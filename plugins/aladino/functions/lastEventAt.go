@@ -27,11 +27,13 @@ func lastEventAtCode(e aladino.Env, args []aladino.Value) (aladino.Value, error)
 		return nil, err
 	}
 
-	// The request for the issue timeline doesn't include the creation time of the first event.
+	// If we are executing this built-in against an issue or a pr with no events (only the opening event), we have distinct behaviours.
+	// If it is an issue, we get an empty timeline.
+	// If it is a pr, we get one event (opening of the PR) with the majority of parameters as nil, including the createdAt which is the most relevant one in this context.
 	// This may be because the issue event types don't include the "opened" event.
 	// To verify the claim above, check: https://docs.github.com/en/developers/webhooks-and-events/events/issue-event-types.
-	// Since the first event is the opening of the issue, we know the last event time will be its creation time.
-	if len(timeline) == 1 {
+	// Since the first event is the opening of the issue/pr, we know the last event time will be its creation time.
+	if (entity.Kind == handler.PullRequest && len(timeline) == 1) || (entity.Kind == handler.Issue && len(timeline) == 0) {
 		createdAt, err := e.GetTarget().GetCreatedAt()
 		if err != nil {
 			return nil, err
