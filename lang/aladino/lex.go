@@ -73,7 +73,7 @@ var tokens = []tokenDef{
 		token: IDENTIFIER,
 	},
 	{
-		regex: regexp.MustCompile(`^"[^"]*"`),
+		regex: regexp.MustCompile(`^".*"`),
 		kind:  "stringLiteral",
 		token: STRINGLITERAL,
 	},

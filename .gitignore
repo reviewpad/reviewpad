@@ -26,3 +26,7 @@ reviewpad-cli
 .vscode
 .idea
 .DS_Store
+
+# Temporary files
+*.tmp
+temp/
