@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -16,7 +17,7 @@ import (
 var all = plugins_aladino.PluginBuiltIns().Functions["all"].Code
 
 func TestAll(t *testing.T) {
-	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil, handler.PullRequest)
 
 	testCases := []struct {
 		name    string

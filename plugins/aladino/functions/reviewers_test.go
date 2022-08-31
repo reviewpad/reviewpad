@@ -11,6 +11,7 @@ import (
 
 	"github.com/google/go-github/v45/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
+	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -34,6 +35,7 @@ func TestReviewers_WhenListReviewsRequestFails(t *testing.T) {
 		},
 		nil, aladino.MockBuiltIns(),
 		nil,
+		handler.PullRequest,
 	)
 
 	gotReviewers, gotErr := reviewers(mockedEnv, []aladino.Value{})
@@ -140,7 +142,7 @@ func TestReviewers(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			mockedEnv := aladino.MockDefaultEnv(t, test.clientOptions, nil, aladino.MockBuiltIns(), nil)
+			mockedEnv := aladino.MockDefaultEnv(t, test.clientOptions, nil, aladino.MockBuiltIns(), nil, handler.PullRequest)
 
 			gotReviewers, gotErr := reviewers(mockedEnv, []aladino.Value{})
 

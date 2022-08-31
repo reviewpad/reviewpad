@@ -16,6 +16,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v3/engine"
+	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -131,6 +132,7 @@ func TestDeleteReportComment_WhenCommentCannotBeDeleted(t *testing.T) {
 		nil,
 		MockBuiltIns(),
 		nil,
+		handler.PullRequest,
 	)
 
 	testCommentId := int64(1234)
@@ -160,6 +162,7 @@ func TestDeleteReportComment_WhenCommentCanBeDeleted(t *testing.T) {
 		nil,
 		MockBuiltIns(),
 		nil,
+		handler.PullRequest,
 	)
 
 	commentToBeDeleted := int64(1234)
@@ -189,6 +192,7 @@ func TestUpdateReportComment_WhenCommentCannotBeEdited(t *testing.T) {
 		nil,
 		MockBuiltIns(),
 		nil,
+		handler.PullRequest,
 	)
 
 	testCommentId := int64(1234)
@@ -219,6 +223,7 @@ func TestUpdateReportComment_WhenCommentCanBeEdited(t *testing.T) {
 		nil,
 		MockBuiltIns(),
 		nil,
+		handler.PullRequest,
 	)
 
 	testCommentId := int64(1234)
@@ -249,6 +254,7 @@ func TestAddReportComment_WhenCommentCannotBeCreated(t *testing.T) {
 		nil,
 		MockBuiltIns(),
 		nil,
+		handler.PullRequest,
 	)
 
 	comment := "Test add report comment"
@@ -280,6 +286,7 @@ func TestAddReportComment_WhenCommentCanBeCreated(t *testing.T) {
 		nil,
 		MockBuiltIns(),
 		nil,
+		handler.PullRequest,
 	)
 
 	err := AddReportComment(mockedEnv, commentToBeCreated)
@@ -307,6 +314,7 @@ func TestFindReportComment_WhenPullRequestCommentsListingFails(t *testing.T) {
 		nil,
 		MockBuiltIns(),
 		nil,
+		handler.PullRequest,
 	)
 
 	gotComment, err := FindReportComment(mockedEnv)
@@ -332,6 +340,7 @@ func TestFindReportComment_WhenThereIsReviewpadComment(t *testing.T) {
 		nil,
 		MockBuiltIns(),
 		nil,
+		handler.PullRequest,
 	)
 
 	gotComment, err := FindReportComment(mockedEnv)
@@ -357,6 +366,7 @@ func TestFindReportComment_WhenThereIsNoReviewpadComment(t *testing.T) {
 		nil,
 		MockBuiltIns(),
 		nil,
+		handler.PullRequest,
 	)
 
 	gotComment, err := FindReportComment(mockedEnv)

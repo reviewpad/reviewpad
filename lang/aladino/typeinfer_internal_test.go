@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -34,7 +35,7 @@ func (op *mockBinaryOperator) Eval(lhs, rhs Value) Value {
 }
 
 func TestTypeInference_WhenGivenNonExistingBuiltIn(t *testing.T) {
-	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), nil)
+	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), nil, handler.PullRequest)
 
 	expr := BuildVariable("nonBuiltIn")
 
@@ -45,7 +46,7 @@ func TestTypeInference_WhenGivenNonExistingBuiltIn(t *testing.T) {
 }
 
 func TestTypeInference_WhenGivenBoolConst(t *testing.T) {
-	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), nil)
+	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), nil, handler.PullRequest)
 
 	expr := BuildBoolConst(true)
 

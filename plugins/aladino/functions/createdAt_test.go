@@ -11,6 +11,7 @@ import (
 
 	"github.com/google/go-github/v45/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
+	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -36,6 +37,7 @@ func TestCreatedAt(t *testing.T) {
 		nil,
 		aladino.MockBuiltIns(),
 		nil,
+		handler.PullRequest,
 	)
 
 	wantCreatedAtTime, err := time.Parse("2006-01-02 15:04:05.999999999 -0700 MST", date.String())

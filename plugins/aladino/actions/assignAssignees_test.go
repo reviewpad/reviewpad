@@ -12,6 +12,7 @@ import (
 
 	"github.com/google/go-github/v45/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
+	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -24,7 +25,7 @@ type AssigneesRequestPostBody struct {
 }
 
 func TestAssignAssignees_WhenListOfAssigneesIsEmpty(t *testing.T) {
-	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil, handler.PullRequest)
 
 	args := []aladino.Value{aladino.BuildArrayValue([]aladino.Value{})}
 	err := assignAssignees(mockedEnv, args)
@@ -33,7 +34,7 @@ func TestAssignAssignees_WhenListOfAssigneesIsEmpty(t *testing.T) {
 }
 
 func TestAssignAssignees_WhenListOfAssigneesExceeds10Users(t *testing.T) {
-	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil, handler.PullRequest)
 
 	args := []aladino.Value{aladino.BuildArrayValue([]aladino.Value{
 		aladino.BuildStringValue("john"),
@@ -86,6 +87,7 @@ func TestAssignAssignees(t *testing.T) {
 		nil,
 		aladino.MockBuiltIns(),
 		nil,
+		handler.PullRequest,
 	)
 
 	assignees := make([]aladino.Value, len(wantAssignees))

@@ -10,6 +10,7 @@ import (
 
 	"github.com/google/go-github/v45/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
+	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -18,7 +19,7 @@ import (
 var hasFilePattern = plugins_aladino.PluginBuiltIns().Functions["hasFilePattern"].Code
 
 func TestHasFilePattern_WhenFileBadPattern(t *testing.T) {
-	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil, handler.PullRequest)
 
 	args := []aladino.Value{aladino.BuildStringValue("[0-9")}
 	gotVal, err := hasFilePattern(mockedEnv, args)
@@ -50,6 +51,7 @@ func TestHasFilePattern_WhenTrue(t *testing.T) {
 		nil,
 		aladino.MockBuiltIns(),
 		nil,
+		handler.PullRequest,
 	)
 
 	args := []aladino.Value{aladino.BuildStringValue("default-mock-repo/**")}
@@ -82,6 +84,7 @@ func TestHasFilePattern_WhenFalse(t *testing.T) {
 		nil,
 		aladino.MockBuiltIns(),
 		nil,
+		handler.PullRequest,
 	)
 
 	args := []aladino.Value{aladino.BuildStringValue("default-mock-repo/test/**")}

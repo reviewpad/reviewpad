@@ -19,7 +19,7 @@ import (
 )
 
 func TestNewTypeEnv_WithDefaultEnv(t *testing.T) {
-	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil, handler.PullRequest)
 
 	wantTypeEnv := aladino.TypeEnv(map[string]aladino.Type{
 		"emptyFunction": aladino.BuildFunctionType([]aladino.Type{}, nil),

@@ -11,6 +11,7 @@ import (
 
 	"github.com/google/go-github/v45/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
+	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -36,6 +37,7 @@ func TestLastEventAt(t *testing.T) {
 		nil,
 		aladino.MockBuiltIns(),
 		nil,
+		handler.PullRequest,
 	)
 
 	wantUpdatedAt := aladino.BuildIntValue(int(date.Unix()))

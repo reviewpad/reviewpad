@@ -12,7 +12,7 @@ import (
 )
 
 func TestTypeCheckExec_WhenTypeInferenceFails(t *testing.T) {
-	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), nil)
+	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), nil, handler.PullRequest)
 
 	expr, err := Parse("$emptyAction(1)")
 	if err != nil {
@@ -26,7 +26,7 @@ func TestTypeCheckExec_WhenTypeInferenceFails(t *testing.T) {
 }
 
 func TestTypeCheck(t *testing.T) {
-	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), nil)
+	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), nil, handler.PullRequest)
 
 	expr, err := Parse("$emptyAction()")
 	if err != nil {
@@ -42,7 +42,7 @@ func TestTypeCheck(t *testing.T) {
 }
 
 func TestTypeCheck_WhenExprIsNotFunctionCall(t *testing.T) {
-	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), nil)
+	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), nil, handler.PullRequest)
 
 	expr, err := Parse("\"not a function call\"")
 	if err != nil {
@@ -56,7 +56,7 @@ func TestTypeCheck_WhenExprIsNotFunctionCall(t *testing.T) {
 }
 
 func TestExec_WhenFunctionArgsEvalFails(t *testing.T) {
-	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), nil)
+	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), nil, handler.PullRequest)
 
 	fc := &FunctionCall{
 		name: BuildVariable("invalidCmpOp"),
@@ -71,7 +71,7 @@ func TestExec_WhenFunctionArgsEvalFails(t *testing.T) {
 }
 
 func TestExec_WhenActionBuiltInNonExisting(t *testing.T) {
-	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), nil)
+	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), nil, handler.PullRequest)
 
 	delete(mockedEnv.GetBuiltIns().Actions, "tautology")
 
@@ -104,7 +104,7 @@ func TestExec_WhenActionIsEnabled(t *testing.T) {
 			},
 		},
 	}
-	mockedEnv := MockDefaultEnv(t, nil, nil, builtIns, nil)
+	mockedEnv := MockDefaultEnv(t, nil, nil, builtIns, nil, handler.PullRequest)
 
 	fc := &FunctionCall{
 		name:      BuildVariable(builtInName),
@@ -135,7 +135,7 @@ func TestExec_WhenActionIsDisabled(t *testing.T) {
 			},
 		},
 	}
-	mockedEnv := MockDefaultEnv(t, nil, nil, builtIns, nil)
+	mockedEnv := MockDefaultEnv(t, nil, nil, builtIns, nil, handler.PullRequest)
 
 	fc := &FunctionCall{
 		name:      BuildVariable(builtInName),

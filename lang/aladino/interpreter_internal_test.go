@@ -84,7 +84,7 @@ func TestBuildGroupAST_WhenGroupTypeFilterIsNotSet(t *testing.T) {
 }
 
 func TestEvalGroup_WhenTypeInferenceFails(t *testing.T) {
-	mockedEnv := MockDefaultEnv(t, nil, nil, &BuiltIns{}, nil)
+	mockedEnv := MockDefaultEnv(t, nil, nil, &BuiltIns{}, nil, handler.PullRequest)
 
 	expr, err := Parse("1 == \"a\"")
 	if err != nil {
@@ -97,7 +97,7 @@ func TestEvalGroup_WhenTypeInferenceFails(t *testing.T) {
 }
 
 func TestEvalGroup_WhenExpressionIsNotValidGroup(t *testing.T) {
-	mockedEnv := MockDefaultEnv(t, nil, nil, &BuiltIns{}, nil)
+	mockedEnv := MockDefaultEnv(t, nil, nil, &BuiltIns{}, nil, handler.PullRequest)
 
 	expr, err := Parse("true")
 	if err != nil {
@@ -124,7 +124,7 @@ func TestEvalGroup(t *testing.T) {
 		},
 	}
 
-	mockedEnv := MockDefaultEnv(t, nil, nil, builtIns, nil)
+	mockedEnv := MockDefaultEnv(t, nil, nil, builtIns, nil, handler.PullRequest)
 
 	expr, err := Parse("$group(\"\")")
 	if err != nil {
@@ -140,7 +140,7 @@ func TestEvalGroup(t *testing.T) {
 }
 
 func TestProcessGroup_WhenBuildGroupASTFails(t *testing.T) {
-	mockedEnv := MockDefaultEnv(t, nil, nil, &BuiltIns{}, nil)
+	mockedEnv := MockDefaultEnv(t, nil, nil, &BuiltIns{}, nil, handler.PullRequest)
 
 	mockedInterpreter := &Interpreter{
 		Env: mockedEnv,
@@ -162,7 +162,7 @@ func TestProcessGroup_WhenBuildGroupASTFails(t *testing.T) {
 }
 
 func TestProcessGroup_WhenEvalGroupFails(t *testing.T) {
-	mockedEnv := MockDefaultEnv(t, nil, nil, &BuiltIns{}, nil)
+	mockedEnv := MockDefaultEnv(t, nil, nil, &BuiltIns{}, nil, handler.PullRequest)
 
 	mockedInterpreter := &Interpreter{
 		Env: mockedEnv,
@@ -184,7 +184,7 @@ func TestProcessGroup_WhenEvalGroupFails(t *testing.T) {
 }
 
 func TestProcessGroup_WhenGroupTypeFilterIsNotSet(t *testing.T) {
-	mockedEnv := MockDefaultEnv(t, nil, nil, &BuiltIns{}, nil)
+	mockedEnv := MockDefaultEnv(t, nil, nil, &BuiltIns{}, nil, handler.PullRequest)
 
 	mockedInterpreter := &Interpreter{
 		Env: mockedEnv,
@@ -223,7 +223,7 @@ func TestBuildInternalLabelID(t *testing.T) {
 }
 
 func TestProcessLabel(t *testing.T) {
-	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), nil)
+	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), nil, handler.PullRequest)
 
 	mockedInterpreter := &Interpreter{
 		Env: mockedEnv,
@@ -253,7 +253,7 @@ func TestBuildInternalRuleName(t *testing.T) {
 }
 
 func TestProcessRule(t *testing.T) {
-	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), nil)
+	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), nil, handler.PullRequest)
 
 	mockedInterpreter := &Interpreter{
 		Env: mockedEnv,
@@ -273,7 +273,7 @@ func TestProcessRule(t *testing.T) {
 }
 
 func TestEvalExpr_WhenParseFails(t *testing.T) {
-	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), nil)
+	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), nil, handler.PullRequest)
 
 	gotVal, err := EvalExpr(mockedEnv, "", "1 ==")
 
@@ -282,7 +282,7 @@ func TestEvalExpr_WhenParseFails(t *testing.T) {
 }
 
 func TestEvalExpr_WhenTypeInferenceFails(t *testing.T) {
-	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), nil)
+	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), nil, handler.PullRequest)
 
 	gotVal, err := EvalExpr(mockedEnv, "", "1 == \"a\"")
 
@@ -291,7 +291,7 @@ func TestEvalExpr_WhenTypeInferenceFails(t *testing.T) {
 }
 
 func TestEvalExpr_WhenExprIsNotBoolType(t *testing.T) {
-	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), nil)
+	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), nil, handler.PullRequest)
 
 	gotVal, err := EvalExpr(mockedEnv, "", "1")
 
@@ -300,7 +300,7 @@ func TestEvalExpr_WhenExprIsNotBoolType(t *testing.T) {
 }
 
 func TestEvalExpr(t *testing.T) {
-	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), nil)
+	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), nil, handler.PullRequest)
 
 	gotVal, err := EvalExpr(mockedEnv, "", "1 == 1")
 
@@ -309,7 +309,7 @@ func TestEvalExpr(t *testing.T) {
 }
 
 func TestEvalExpr_OnInterpreter(t *testing.T) {
-	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), nil)
+	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), nil, handler.PullRequest)
 
 	mockedInterpreter := &Interpreter{
 		Env: mockedEnv,
@@ -322,7 +322,7 @@ func TestEvalExpr_OnInterpreter(t *testing.T) {
 }
 
 func TestExecProgram_WhenExecStatementFails(t *testing.T) {
-	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), nil)
+	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), nil, handler.PullRequest)
 
 	mockedInterpreter := &Interpreter{
 		Env: mockedEnv,
@@ -368,6 +368,7 @@ func TestExecProgram(t *testing.T) {
 		nil,
 		builtIns,
 		nil,
+		handler.PullRequest,
 	)
 
 	mockedInterpreter := &Interpreter{
@@ -393,7 +394,7 @@ func TestExecProgram(t *testing.T) {
 }
 
 func TestExecStatement_WhenParseFails(t *testing.T) {
-	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), nil)
+	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), nil, handler.PullRequest)
 
 	mockedInterpreter := &Interpreter{
 		Env: mockedEnv,
@@ -419,7 +420,7 @@ func TestExecStatement_WhenTypeCheckExecFails(t *testing.T) {
 		},
 	}
 
-	mockedEnv := MockDefaultEnv(t, nil, nil, builtIns, nil)
+	mockedEnv := MockDefaultEnv(t, nil, nil, builtIns, nil, handler.PullRequest)
 
 	mockedInterpreter := &Interpreter{
 		Env: mockedEnv,
@@ -446,7 +447,7 @@ func TestExecStatement_WhenActionExecFails(t *testing.T) {
 		},
 	}
 
-	mockedEnv := MockDefaultEnv(t, nil, nil, builtIns, nil)
+	mockedEnv := MockDefaultEnv(t, nil, nil, builtIns, nil, handler.PullRequest)
 
 	mockedInterpreter := &Interpreter{
 		Env: mockedEnv,
@@ -489,6 +490,7 @@ func TestExecStatement(t *testing.T) {
 		nil,
 		builtIns,
 		nil,
+		handler.PullRequest,
 	)
 
 	mockedInterpreter := &Interpreter{
@@ -537,6 +539,7 @@ func TestReport_WhenFindReportCommentFails(t *testing.T) {
 		nil,
 		MockBuiltIns(),
 		nil,
+		handler.PullRequest,
 	)
 
 	mockedInterpreter := &Interpreter{
@@ -573,6 +576,7 @@ func TestReport_OnSilentMode_WhenThereIsAlreadyAReviewpadComment(t *testing.T) {
 		nil,
 		MockBuiltIns(),
 		nil,
+		handler.PullRequest,
 	)
 
 	mockedInterpreter := &Interpreter{
@@ -605,6 +609,7 @@ func TestReport_OnSilentMode_WhenNoReviewpadCommentIsFound(t *testing.T) {
 		nil,
 		MockBuiltIns(),
 		nil,
+		handler.PullRequest,
 	)
 
 	mockedInterpreter := &Interpreter{
@@ -642,6 +647,7 @@ func TestReport_OnVerboseMode_WhenNoReviewpadCommentIsFound(t *testing.T) {
 		nil,
 		MockBuiltIns(),
 		nil,
+		handler.PullRequest,
 	)
 
 	mockedInterpreter := &Interpreter{
@@ -684,6 +690,7 @@ func TestReport_OnVerboseMode_WhenThereIsAlreadyAReviewpadComment(t *testing.T) 
 		nil,
 		MockBuiltIns(),
 		nil,
+		handler.PullRequest,
 	)
 
 	mockedInterpreter := &Interpreter{
@@ -729,7 +736,7 @@ func TestNewInterpreter_WhenNewEvalEnvFails(t *testing.T) {
 }
 
 func TestNewInterpreter(t *testing.T) {
-	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), nil)
+	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), nil, handler.PullRequest)
 
 	wantInterpreter := &Interpreter{
 		Env: mockedEnv,

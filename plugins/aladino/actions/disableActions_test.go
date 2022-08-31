@@ -7,6 +7,7 @@ package plugins_aladino_actions_test
 import (
 	"testing"
 
+	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -28,7 +29,7 @@ func TestDisableActions(t *testing.T) {
 			},
 		},
 	}
-	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, builtIns, nil)
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, builtIns, nil, handler.PullRequest)
 
 	args := []aladino.Value{aladino.BuildArrayValue([]aladino.Value{aladino.BuildStringValue(builtInName)})}
 	err := disableActions(mockedEnv, args)

@@ -11,6 +11,7 @@ import (
 	"github.com/google/go-github/v45/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v3/codehost/github/target"
+	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -37,6 +38,7 @@ func TestHasCodePattern_WhenPullRequestPatchHasNilFile(t *testing.T) {
 		nil,
 		aladino.MockBuiltIns(),
 		nil,
+		handler.PullRequest,
 	)
 
 	mockedEnv.GetTarget().(*target.PullRequestTarget).Patch[fileName] = nil
@@ -51,7 +53,7 @@ func TestHasCodePattern_WhenPullRequestPatchHasNilFile(t *testing.T) {
 }
 
 func TestHasCodePattern_WhenPatternIsInvalid(t *testing.T) {
-	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil, handler.PullRequest)
 
 	args := []aladino.Value{aladino.BuildStringValue("a(")}
 	gotVal, err := hasCodePattern(mockedEnv, args)
@@ -78,6 +80,7 @@ func TestHasCodePattern(t *testing.T) {
 		nil,
 		aladino.MockBuiltIns(),
 		nil,
+		handler.PullRequest,
 	)
 
 	args := []aladino.Value{aladino.BuildStringValue("new\\(.*\\)")}

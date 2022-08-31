@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	host "github.com/reviewpad/reviewpad/v3/codehost/github"
+	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
 	"github.com/reviewpad/reviewpad/v3/utils"
@@ -27,6 +28,7 @@ func TestHasGitConflicts_WhenRequestFails(t *testing.T) {
 		},
 		aladino.MockBuiltIns(),
 		nil,
+		handler.PullRequest,
 	)
 
 	args := []aladino.Value{}
@@ -91,6 +93,7 @@ func TestHasGitConflicts(t *testing.T) {
 				},
 				aladino.MockBuiltIns(),
 				nil,
+				handler.PullRequest,
 			)
 
 			args := []aladino.Value{}

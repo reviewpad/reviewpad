@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	host "github.com/reviewpad/reviewpad/v3/codehost/github"
+	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	plugins_aladino_actions "github.com/reviewpad/reviewpad/v3/plugins/aladino/actions"
 	"github.com/reviewpad/reviewpad/v3/utils"
@@ -19,6 +20,7 @@ import (
 
 func TestGetProjectV2ByName_WhenRequestFails(t *testing.T) {
 	mockedGithubClient := aladino.MockDefaultGithubClient(
+		handler.PullRequest,
 		nil,
 		func(w http.ResponseWriter, req *http.Request) {
 			http.Error(w, "404 Not Found", http.StatusNotFound)
@@ -67,6 +69,7 @@ func TestGetProjectV2ByName_WhenProjectNotFound(t *testing.T) {
         }
     }`
 	mockedGithubClient := aladino.MockDefaultGithubClient(
+		handler.PullRequest,
 		nil,
 		func(res http.ResponseWriter, req *http.Request) {
 			query := utils.MinifyQuery(aladino.MustRead(req.Body))
@@ -122,6 +125,7 @@ func TestGetProjectV2ByName_WhenProjectFound(t *testing.T) {
         }
     }`
 	mockedGithubClient := aladino.MockDefaultGithubClient(
+		handler.PullRequest,
 		nil,
 		func(res http.ResponseWriter, req *http.Request) {
 			query := utils.MinifyQuery(aladino.MustRead(req.Body))
@@ -149,6 +153,7 @@ func TestGetProjectV2ByName_WhenProjectFound(t *testing.T) {
 
 func TestGetProjectFieldsByProjectNumber_WhenRequestFails(t *testing.T) {
 	mockedGithubClient := aladino.MockDefaultGithubClient(
+		handler.PullRequest,
 		nil,
 		func(w http.ResponseWriter, req *http.Request) {
 			http.Error(w, "404 Not Found", http.StatusNotFound)
@@ -207,6 +212,7 @@ func TestGetProjectFieldsByProjectNumber_WhenProjectNotFound(t *testing.T) {
         }
     }`
 	mockedGithubClient := aladino.MockDefaultGithubClient(
+		handler.PullRequest,
 		nil,
 		func(res http.ResponseWriter, req *http.Request) {
 			query := utils.MinifyQuery(aladino.MustRead(req.Body))
@@ -289,6 +295,7 @@ func TestGetProjectFieldsByProjectNumber_WhenRetrySuccessful(t *testing.T) {
     }`
 	currentTry := 1
 	mockedGithubClient := aladino.MockDefaultGithubClient(
+		handler.PullRequest,
 		nil,
 		func(res http.ResponseWriter, req *http.Request) {
 			query := utils.MinifyQuery(aladino.MustRead(req.Body))
@@ -359,6 +366,7 @@ func TestGetProjectV2ByName_WhenSeveralProjectsFound(t *testing.T) {
         }
     }`
 	mockedGithubClient := aladino.MockDefaultGithubClient(
+		handler.PullRequest,
 		nil,
 		func(res http.ResponseWriter, req *http.Request) {
 			query := utils.MinifyQuery(aladino.MustRead(req.Body))

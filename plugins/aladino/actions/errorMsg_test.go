@@ -7,6 +7,7 @@ package plugins_aladino_actions_test
 import (
 	"testing"
 
+	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -15,7 +16,7 @@ import (
 var errorMsg = plugins_aladino.PluginBuiltIns().Actions["error"].Code
 
 func TestErrorMsg(t *testing.T) {
-	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil, handler.PullRequest)
 
 	message := "This pull request was considered too large."
 

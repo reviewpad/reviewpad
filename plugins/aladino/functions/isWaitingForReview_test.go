@@ -13,6 +13,7 @@ import (
 	"github.com/google/go-github/v45/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	host "github.com/reviewpad/reviewpad/v3/codehost/github"
+	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -22,6 +23,7 @@ var isWaitingForReview = plugins_aladino.PluginBuiltIns().Functions["isWaitingFo
 
 func TestIsWaitingForReview_WhenRequestFail(t *testing.T) {
 	mockedGithubClient := aladino.MockDefaultGithubClient(
+		handler.PullRequest,
 		nil,
 		func(w http.ResponseWriter, req *http.Request) {
 			http.Error(w, "404 Not Found", http.StatusNotFound)
@@ -65,6 +67,7 @@ func TestIsWaitingForReview_WhenNoCommits(t *testing.T) {
 		nil,
 		aladino.MockBuiltIns(),
 		nil,
+		handler.PullRequest,
 	)
 	args := []aladino.Value{}
 	gotValue, err := isWaitingForReview(mockedEnv, args)
@@ -145,6 +148,7 @@ func TestIsWaitingForReview_WhenHasNoReviews(t *testing.T) {
 				nil,
 				aladino.MockBuiltIns(),
 				nil,
+				handler.PullRequest,
 			)
 			args := []aladino.Value{}
 			gotValue, err := isWaitingForReview(mockedEnv, args)
@@ -302,6 +306,7 @@ func TestIsWaitingForReview_WhenHasReviews(t *testing.T) {
 				nil,
 				aladino.MockBuiltIns(),
 				nil,
+				handler.PullRequest,
 			)
 			args := []aladino.Value{}
 			gotValue, err := isWaitingForReview(mockedEnv, args)

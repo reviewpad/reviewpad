@@ -16,6 +16,7 @@ import (
 	"github.com/reviewpad/api/go/services"
 	"github.com/reviewpad/api/go/services_mocks"
 	"github.com/reviewpad/reviewpad/v3/codehost"
+	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	plugins_aladino_services "github.com/reviewpad/reviewpad/v3/plugins/aladino/services"
 	"github.com/stretchr/testify/assert"
@@ -219,6 +220,7 @@ func TestGetSymbolsFromPatch_WhenDownloadContentsFails(t *testing.T) {
 		nil,
 		aladino.MockBuiltIns(),
 		nil,
+		handler.PullRequest,
 	)
 
 	gotVal, gotErr := getSymbolsFromPatch(mockedEnv)
@@ -315,6 +317,7 @@ func TestGetSymbolsFromPatch_WhenSemanticServiceNotFound(t *testing.T) {
 		nil,
 		aladino.MockBuiltIns(),
 		nil,
+		handler.PullRequest,
 	)
 
 	gotVal, gotErr := getSymbolsFromPatch(mockedEnv)
@@ -434,6 +437,7 @@ func TestGetSymbolsFromPatch_WhenGetSymbolsRequestFails(t *testing.T) {
 		nil,
 		mockBuiltIns,
 		nil,
+		handler.PullRequest,
 	)
 	gotVal, err := getSymbolsFromPatch(mockedEnv)
 
@@ -568,6 +572,7 @@ func TestGetSymbolsFromPatch(t *testing.T) {
 		nil,
 		mockBuiltIns,
 		nil,
+		handler.PullRequest,
 	)
 	gotVal, err := getSymbolsFromPatch(mockedEnv)
 
@@ -655,6 +660,7 @@ func TestHasAnnotationCode_WhenGetSymbolsFromPatchFails(t *testing.T) {
 		nil,
 		aladino.MockBuiltIns(),
 		nil,
+		handler.PullRequest,
 	)
 
 	args := []aladino.Value{aladino.BuildStringValue("critical")}
@@ -807,6 +813,7 @@ func TestHasAnnotationCode(t *testing.T) {
 				nil,
 				mockBuiltIns,
 				nil,
+				handler.PullRequest,
 			)
 
 			gotVal, gotErr := hasAnnotationCode(mockedEnv, test.args)

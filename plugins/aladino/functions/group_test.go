@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -17,7 +18,7 @@ var group = plugins_aladino.PluginBuiltIns().Functions["group"].Code
 
 func TestGroup(t *testing.T) {
 	groupName := "techLeads"
-	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil, handler.PullRequest)
 
 	wantGroup := aladino.BuildArrayValue([]aladino.Value{aladino.BuildStringValue("john"), aladino.BuildStringValue("arthur")})
 
@@ -32,7 +33,7 @@ func TestGroup(t *testing.T) {
 
 func TestGroup_WhenGroupIsNonExisting(t *testing.T) {
 	groupName := "techLeads"
-	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil, handler.PullRequest)
 
 	// Make sure that the group 'techLeads' doesn't exist
 	delete(mockedEnv.GetRegisterMap(), groupName)

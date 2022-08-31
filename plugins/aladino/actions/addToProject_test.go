@@ -11,6 +11,7 @@ import (
 	"github.com/google/go-github/v45/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
+	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
 	plugins_aladino_actions "github.com/reviewpad/reviewpad/v3/plugins/aladino/actions"
@@ -29,6 +30,7 @@ func TestAddToProject_WhenRequestFails(t *testing.T) {
 		},
 		aladino.MockBuiltIns(),
 		nil,
+		handler.PullRequest,
 	)
 
 	err := addToProject(mockedEnv, []aladino.Value{aladino.BuildStringValue("reviewpad"), aladino.BuildStringValue("to do")})
@@ -215,6 +217,7 @@ func TestAddToProject(t *testing.T) {
 				},
 				aladino.MockBuiltIns(),
 				nil,
+				handler.PullRequest,
 			)
 
 			err := addToProject(mockedEnv, []aladino.Value{aladino.BuildStringValue("reviewpad"), aladino.BuildStringValue("to do")})

@@ -10,6 +10,7 @@ import (
 
 	"github.com/google/go-github/v45/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
+	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -28,6 +29,7 @@ func TestWorkflowStatus_WhenEventPayloadIsNotWorkflowRunEvent(t *testing.T) {
 		nil,
 		aladino.MockBuiltIns(),
 		eventPayload,
+		handler.PullRequest,
 	)
 
 	args := []aladino.Value{aladino.BuildStringValue(checkName)}
@@ -50,6 +52,7 @@ func TestWorkflowStatus_WhenWorkflowRunIsNil(t *testing.T) {
 		nil,
 		aladino.MockBuiltIns(),
 		eventPayload,
+		handler.PullRequest,
 	)
 
 	args := []aladino.Value{aladino.BuildStringValue(checkName)}
@@ -86,6 +89,7 @@ func TestWorkflowStatus_WhenListCheckRunsForRefRequestFails(t *testing.T) {
 		nil,
 		aladino.MockBuiltIns(),
 		eventPayload,
+		handler.PullRequest,
 	)
 
 	args := []aladino.Value{aladino.BuildStringValue(checkName)}
@@ -122,6 +126,7 @@ func TestWorkflowStatus_WhenCheckRunNotFoundDueToEmptyCheckRuns(t *testing.T) {
 		nil,
 		aladino.MockBuiltIns(),
 		eventPayload,
+		handler.PullRequest,
 	)
 
 	args := []aladino.Value{aladino.BuildStringValue(checkName)}
@@ -163,6 +168,7 @@ func TestWorkflowStatus_WhenCheckRunIsMissingInNonEmptyCheckRuns(t *testing.T) {
 		nil,
 		aladino.MockBuiltIns(),
 		eventPayload,
+		handler.PullRequest,
 	)
 
 	args := []aladino.Value{aladino.BuildStringValue(checkName)}
@@ -211,6 +217,7 @@ func TestWorkflowStatus_WhenEventIsCompleted(t *testing.T) {
 		nil,
 		aladino.MockBuiltIns(),
 		eventPayload,
+		handler.PullRequest,
 	)
 
 	args := []aladino.Value{aladino.BuildStringValue(checkName)}
@@ -257,6 +264,7 @@ func TestWorkflowStatus_WhenEventIsNotCompleted(t *testing.T) {
 		nil,
 		aladino.MockBuiltIns(),
 		eventPayload,
+		handler.PullRequest,
 	)
 
 	args := []aladino.Value{aladino.BuildStringValue(checkName)}

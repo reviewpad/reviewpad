@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/migueleliasweb/go-github-mock/src/mock"
+	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -23,7 +24,7 @@ type TeamReviewersRequestPostBody struct {
 }
 
 func TestAssignTeamReviewer_WhenNoTeamSlugsAreProvided(t *testing.T) {
-	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil, handler.PullRequest)
 
 	args := []aladino.Value{aladino.BuildArrayValue([]aladino.Value{})}
 	err := assignTeamReviewer(mockedEnv, args)
@@ -54,6 +55,7 @@ func TestAssignTeamReviewer(t *testing.T) {
 		nil,
 		aladino.MockBuiltIns(),
 		nil,
+		handler.PullRequest,
 	)
 
 	args := []aladino.Value{aladino.BuildArrayValue([]aladino.Value{aladino.BuildStringValue(teamA), aladino.BuildStringValue(teamB)})}

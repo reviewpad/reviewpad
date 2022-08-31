@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/migueleliasweb/go-github-mock/src/mock"
+	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -23,7 +24,7 @@ type MergeRequestPostBody struct {
 }
 
 func TestMerge_WhenMergeMethodIsUnsupported(t *testing.T) {
-	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil, handler.PullRequest)
 
 	args := []aladino.Value{aladino.BuildStringValue("INVALID")}
 	err := merge(mockedEnv, args)
@@ -52,6 +53,7 @@ func TestMerge_WhenNoMergeMethodIsProvided(t *testing.T) {
 		nil,
 		aladino.MockBuiltIns(),
 		nil,
+		handler.PullRequest,
 	)
 
 	args := []aladino.Value{}
@@ -82,6 +84,7 @@ func TestMerge_WhenMergeMethodIsProvided(t *testing.T) {
 		nil,
 		aladino.MockBuiltIns(),
 		nil,
+		handler.PullRequest,
 	)
 
 	args := []aladino.Value{aladino.BuildStringValue(wantMergeMethod)}

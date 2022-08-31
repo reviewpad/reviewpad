@@ -512,7 +512,7 @@ func TestProcessEvent(t *testing.T) {
 			wantVal: []*handler.TargetEntity{
 				{
 					Kind:   handler.PullRequest,
-					Number: aladino.DefaultMockPrNum,
+					Number: aladino.DefaultMockNumber,
 					Owner:  owner,
 					Repo:   repo,
 				},

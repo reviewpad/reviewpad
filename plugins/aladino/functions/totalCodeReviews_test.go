@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
 	"github.com/reviewpad/reviewpad/v3/utils"
@@ -29,6 +30,7 @@ func TestTotalCodeReviews_WhenRequestFails(t *testing.T) {
 		},
 		aladino.MockBuiltIns(),
 		nil,
+		handler.PullRequest,
 	)
 
 	args := []aladino.Value{aladino.BuildStringValue(author)}
@@ -78,6 +80,7 @@ func TestTotalCodeReviews(t *testing.T) {
 		},
 		aladino.MockBuiltIns(),
 		nil,
+		handler.PullRequest,
 	)
 
 	wantErr := ""

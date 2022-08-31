@@ -10,6 +10,7 @@ import (
 
 	"github.com/google/go-github/v45/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
+	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -36,6 +37,7 @@ func TestReviewerStatus_WhenRequestFails(t *testing.T) {
 		nil,
 		aladino.MockBuiltIns(),
 		nil,
+		handler.PullRequest,
 	)
 
 	args := []aladino.Value{aladino.BuildStringValue("mary")}
@@ -62,6 +64,7 @@ func TestReviewerStatus_WhenUserIsNil(t *testing.T) {
 		nil,
 		aladino.MockBuiltIns(),
 		nil,
+		handler.PullRequest,
 	)
 
 	wantReviewState := aladino.BuildStringValue("")
@@ -92,6 +95,7 @@ func TestReviewerStatus_WhenStateIsNil(t *testing.T) {
 		nil,
 		aladino.MockBuiltIns(),
 		nil,
+		handler.PullRequest,
 	)
 
 	wantReviewState := aladino.BuildStringValue("")
@@ -123,6 +127,7 @@ func TestReviewerStatus_WhenStateUnknown(t *testing.T) {
 		nil,
 		aladino.MockBuiltIns(),
 		nil,
+		handler.PullRequest,
 	)
 
 	wantReviewState := aladino.BuildStringValue("")
@@ -160,6 +165,7 @@ func TestReviewerStatus_WhenStateCommented(t *testing.T) {
 		nil,
 		aladino.MockBuiltIns(),
 		nil,
+		handler.PullRequest,
 	)
 
 	wantReviewState := aladino.BuildStringValue("COMMENTED")
@@ -215,6 +221,7 @@ func TestReviewerStatus_WhenStateApproved(t *testing.T) {
 		nil,
 		aladino.MockBuiltIns(),
 		nil,
+		handler.PullRequest,
 	)
 
 	wantReviewState := aladino.BuildStringValue("APPROVED")
@@ -264,6 +271,7 @@ func TestReviewerStatus_WhenStateRequestedChanges(t *testing.T) {
 		nil,
 		aladino.MockBuiltIns(),
 		nil,
+		handler.PullRequest,
 	)
 
 	wantReviewState := aladino.BuildStringValue("CHANGES_REQUESTED")

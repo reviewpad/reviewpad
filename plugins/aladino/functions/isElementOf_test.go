@@ -7,6 +7,7 @@ package plugins_aladino_functions_test
 import (
 	"testing"
 
+	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -15,7 +16,7 @@ import (
 var isElementOf = plugins_aladino.PluginBuiltIns().Functions["isElementOf"].Code
 
 func TestIsElementOf_WhenTrue(t *testing.T) {
-	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil, handler.PullRequest)
 
 	args := []aladino.Value{
 		aladino.BuildStringValue("elemA"),
@@ -33,7 +34,7 @@ func TestIsElementOf_WhenTrue(t *testing.T) {
 }
 
 func TestIsElementOf_WhenFalse(t *testing.T) {
-	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil, handler.PullRequest)
 
 	args := []aladino.Value{
 		aladino.BuildStringValue("elemA"),
