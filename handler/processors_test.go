@@ -153,7 +153,7 @@ func TestProcessEvent(t *testing.T) {
 		func(req *http.Request) (*http.Response, error) {
 			b, err := json.Marshal([]*github.PullRequest{
 				{
-					Number: github.Int(aladino.DefaultMockPrNum),
+					Number: github.Int(aladino.DefaultMockNumber),
 					Base: &github.PullRequestBranch{
 						Ref: github.String("refs/heads/main"),
 						Repo: &github.Repository{
@@ -197,9 +197,9 @@ func TestProcessEvent(t *testing.T) {
 		func(req *http.Request) (*http.Response, error) {
 			b, err := json.Marshal([]*github.Issue{
 				{
-					Number: github.Int(aladino.DefaultMockPrNum),
+					Number: github.Int(aladino.DefaultMockNumber),
 					PullRequestLinks: &github.PullRequestLinks{
-						HTMLURL: github.String(fmt.Sprintf("https://api.github.com/repos/%v/%v/pull/%v", owner, repo, aladino.DefaultMockPrNum)),
+						HTMLURL: github.String(fmt.Sprintf("https://api.github.com/repos/%v/%v/pull/%v", owner, repo, aladino.DefaultMockNumber)),
 					},
 				},
 				{
@@ -349,7 +349,7 @@ func TestProcessEvent(t *testing.T) {
 				},
 				{
 					Kind:   handler.PullRequest,
-					Number: aladino.DefaultMockPrNum,
+					Number: aladino.DefaultMockNumber,
 					Owner:  owner,
 					Repo:   repo,
 				},
@@ -375,7 +375,7 @@ func TestProcessEvent(t *testing.T) {
 			wantVal: []*handler.TargetEntity{
 				{
 					Kind:   handler.PullRequest,
-					Number: aladino.DefaultMockPrNum,
+					Number: aladino.DefaultMockNumber,
 					Owner:  owner,
 					Repo:   repo,
 				},
@@ -476,7 +476,7 @@ func TestProcessEvent(t *testing.T) {
 			wantVal: []*handler.TargetEntity{
 				{
 					Kind:   handler.PullRequest,
-					Number: aladino.DefaultMockPrNum,
+					Number: aladino.DefaultMockNumber,
 					Owner:  owner,
 					Repo:   repo,
 				},

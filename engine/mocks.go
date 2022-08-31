@@ -27,7 +27,7 @@ const defaultMockPrRepoName = "default-mock-repo"
 var DefaultMockCtx = context.Background()
 var DefaultMockCollector = collector.NewCollector("", "", "pull_request", "")
 var DefaultMockEventPayload = &github.CheckRunEvent{}
-var DefaultMockTargetEntity = &handler.TargetEntity{
+var DefaultMockPullRequestTargetEntity = &handler.TargetEntity{
 	Owner:  defaultMockPrOwner,
 	Repo:   defaultMockPrRepoName,
 	Number: defaultMockPrNum,
@@ -119,7 +119,7 @@ func MockEnvWith(githubClient *gh.GithubClient, interpreter Interpreter) (*Env, 
 		dryRun,
 		githubClient,
 		DefaultMockCollector,
-		DefaultMockTargetEntity,
+		DefaultMockPullRequestTargetEntity,
 		interpreter,
 	)
 

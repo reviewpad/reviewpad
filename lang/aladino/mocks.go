@@ -23,25 +23,34 @@ import (
 )
 
 const DefaultMockPrID = 1234
-const DefaultMockPrNum = 6
-const DefaultMockPrOwner = "foobar"
-const DefaultMockPrRepoName = "default-mock-repo"
+const DefaultMockIssueID = 5678
+const DefaultMockNumber = 6
+
+const DefaultMockOwner = "foobar"
+const DefaultMockRepoName = "default-mock-repo"
 
 var DefaultMockPrDate = time.Date(2009, 11, 17, 20, 34, 58, 651387237, time.UTC)
 var DefaultMockContext = context.Background()
 var DefaultMockCollector = collector.NewCollector("", "", "pull_request", "")
-var DefaultMockTargetEntity = &handler.TargetEntity{
-	Owner:  DefaultMockPrOwner,
-	Repo:   DefaultMockPrRepoName,
-	Number: DefaultMockPrNum,
+
+var DefaultMockPullRequestTargetEntity = &handler.TargetEntity{
+	Owner:  DefaultMockOwner,
+	Repo:   DefaultMockRepoName,
+	Number: DefaultMockNumber,
+	Kind:   handler.PullRequest,
+}
+var DefaultMockIssueTargetEntity = &handler.TargetEntity{
+	Owner:  DefaultMockOwner,
+	Repo:   DefaultMockRepoName,
+	Number: DefaultMockNumber,
 	Kind:   handler.PullRequest,
 }
 
 func GetDefaultMockPullRequestDetails() *github.PullRequest {
-	prNum := DefaultMockPrNum
+	prNum := DefaultMockNumber
 	prId := int64(DefaultMockPrID)
-	prOwner := DefaultMockPrOwner
-	prRepoName := DefaultMockPrRepoName
+	prOwner := DefaultMockOwner
+	prRepoName := DefaultMockRepoName
 	prUrl := fmt.Sprintf("https://api.github.com/repos/%v/%v/pulls/%v", prOwner, prRepoName, prNum)
 	prDate := DefaultMockPrDate
 
@@ -168,7 +177,7 @@ func GetDefaultMockPullRequestDetailsWith(pr *github.PullRequest) *github.PullRe
 }
 
 func getDefaultMockPullRequestFileList() []*github.CommitFile {
-	prRepoName := DefaultMockPrRepoName
+	prRepoName := DefaultMockRepoName
 	return []*github.CommitFile{
 		{
 			Filename: github.String(fmt.Sprintf("%v/file1.ts", prRepoName)),
@@ -182,6 +191,14 @@ func getDefaultMockPullRequestFileList() []*github.CommitFile {
 			Filename: github.String(fmt.Sprintf("%v/file3.ts", prRepoName)),
 			Patch:    github.String("@@ -2,9 +2,11 @@ package main\n- func previous3() {\n+ func new3() {\n+\nreturn"),
 		},
+	}
+}
+
+func GetDefaultMockIssueDetails() *github.Issue {
+	return &github.Issue{
+		ID:     github.Int64(DefaultMockIssueID),
+		Number: github.Int(DefaultMockNumber),
+		Title:  github.String("Found a bug"),
 	}
 }
 
@@ -245,15 +262,20 @@ func mockHttpClientWith(clientOptions ...mock.MockBackendOption) *http.Client {
 	return mock.NewMockedHTTPClient(clientOptions...)
 }
 
-func mockEnvWith(prOwner string, prRepoName string, prNum int, githubClient *gh.GithubClient, eventPayload interface{}, builtIns *BuiltIns) (Env, error) {
+func mockEnvWith(prOwner string, prRepoName string, prNum int, githubClient *gh.GithubClient, eventPayload interface{}, builtIns *BuiltIns, targetEntityKind handler.TargetEntityKind) (Env, error) {
 	ctx := context.Background()
+
+	targetEntity := DefaultMockPullRequestTargetEntity
+	if targetEntityKind == handler.Issue {
+		targetEntity = DefaultMockIssueTargetEntity
+	}
 
 	env, err := NewEvalEnv(
 		ctx,
 		false,
 		githubClient,
 		DefaultMockCollector,
-		DefaultMockTargetEntity,
+		targetEntity,
 		eventPayload,
 		builtIns,
 	)
@@ -269,8 +291,10 @@ func mockEnvWith(prOwner string, prRepoName string, prNum int, githubClient *gh.
 // As for now, at least two github request need to be mocked in order to build Aladino Env, mainly:
 // - Get pull request details (i.e. /repos/{owner}/{repo}/pulls/{pull_number})
 // - Get pull request files (i.e. /repos/{owner}/{repo}/pulls/{pull_number}/files)
-func mockDefaultHttpClient(clientOptions []mock.MockBackendOption) *http.Client {
-	defaultMocks := []mock.MockBackendOption{
+func mockDefaultHttpClient(targetEntityKind handler.TargetEntityKind, clientOptions []mock.MockBackendOption) *http.Client {
+	var defaultMocks []mock.MockBackendOption
+
+	defaultMocks = []mock.MockBackendOption{
 		mock.WithRequestMatchHandler(
 			// Mock request to get pull request details
 			mock.GetReposPullsByOwnerByRepoByPullNumber,
@@ -285,6 +309,18 @@ func mockDefaultHttpClient(clientOptions []mock.MockBackendOption) *http.Client 
 				w.Write(mock.MustMarshal(getDefaultMockPullRequestFileList()))
 			}),
 		),
+	}
+
+	if targetEntityKind == handler.Issue {
+		defaultMocks = []mock.MockBackendOption{
+			mock.WithRequestMatchHandler(
+				// Mock request to get pull request details
+				mock.GetReposIssuesByOwnerByRepoByIssueNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+					w.Write(mock.MustMarshal(GetDefaultMockIssueDetails()))
+				}),
+			),
+		}
 	}
 
 	mocks := append(clientOptions, defaultMocks...)
@@ -304,8 +340,8 @@ func (l localRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) 
 	return w.Result(), nil
 }
 
-func MockDefaultGithubClient(ghApiClientOptions []mock.MockBackendOption, ghGraphQLHandler func(http.ResponseWriter, *http.Request)) *gh.GithubClient {
-	client := github.NewClient(mockDefaultHttpClient(ghApiClientOptions))
+func MockDefaultGithubClient(targetEntityKind handler.TargetEntityKind, ghApiClientOptions []mock.MockBackendOption, ghGraphQLHandler func(http.ResponseWriter, *http.Request)) *gh.GithubClient {
+	client := github.NewClient(mockDefaultHttpClient(targetEntityKind, ghApiClientOptions))
 
 	// Handle GraphQL
 	var clientGQL *githubv4.Client
@@ -325,13 +361,14 @@ func MockDefaultEnv(
 	ghGraphQLHandler func(http.ResponseWriter, *http.Request),
 	builtIns *BuiltIns,
 	eventPayload interface{},
+	targetEntityKind handler.TargetEntityKind,
 ) Env {
-	prOwner := DefaultMockPrOwner
-	prRepoName := DefaultMockPrRepoName
-	prNum := DefaultMockPrNum
-	githubClient := MockDefaultGithubClient(ghApiClientOptions, ghGraphQLHandler)
+	owner := DefaultMockOwner
+	repoName := DefaultMockRepoName
+	num := DefaultMockNumber
+	githubClient := MockDefaultGithubClient(targetEntityKind, ghApiClientOptions, ghGraphQLHandler)
 
-	mockedEnv, err := mockEnvWith(prOwner, prRepoName, prNum, githubClient, eventPayload, builtIns)
+	mockedEnv, err := mockEnvWith(owner, repoName, num, githubClient, eventPayload, builtIns, targetEntityKind)
 	if err != nil {
 		t.Fatalf("[MockDefaultEnv] failed to create mock env: %v", err)
 	}

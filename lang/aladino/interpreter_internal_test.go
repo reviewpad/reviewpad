@@ -719,7 +719,7 @@ func TestNewInterpreter_WhenNewEvalEnvFails(t *testing.T) {
 		false,
 		gh.NewGithubClient(clientREST, nil),
 		nil,
-		DefaultMockTargetEntity,
+		DefaultMockPullRequestTargetEntity,
 		GetDefaultMockPullRequestDetails(),
 		nil,
 	)
@@ -740,7 +740,7 @@ func TestNewInterpreter(t *testing.T) {
 		mockedEnv.GetDryRun(),
 		mockedEnv.GetGithubClient(),
 		mockedEnv.GetCollector(),
-		DefaultMockTargetEntity,
+		DefaultMockPullRequestTargetEntity,
 		mockedEnv.GetEventPayload(),
 		mockedEnv.GetBuiltIns(),
 	)

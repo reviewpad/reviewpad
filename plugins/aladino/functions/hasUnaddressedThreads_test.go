@@ -37,9 +37,9 @@ func TestHasUnaddressedThreads_WhenRequestFails(t *testing.T) {
 func TestHasUnaddressedThreads(t *testing.T) {
 	mockedGraphQLQuery := fmt.Sprintf(
 		"{\"query\":\"query($pullRequestNumber:Int!$repositoryName:String!$repositoryOwner:String!$reviewThreadsCursor:String){repository(owner: $repositoryOwner, name: $repositoryName){pullRequest(number: $pullRequestNumber){reviewThreads(first: 10, after: $reviewThreadsCursor){nodes{isResolved,isOutdated},pageInfo{endCursor,hasNextPage}}}}}\",\"variables\":{\"pullRequestNumber\":%d,\"repositoryName\":\"%s\",\"repositoryOwner\":\"%s\",\"reviewThreadsCursor\":null}}\n",
-		aladino.DefaultMockPrNum,
-		aladino.DefaultMockPrRepoName,
-		aladino.DefaultMockPrOwner,
+		aladino.DefaultMockNumber,
+		aladino.DefaultMockRepoName,
+		aladino.DefaultMockOwner,
 	)
 
 	tests := map[string]struct {
@@ -81,13 +81,13 @@ func TestHasUnaddressedThreads(t *testing.T) {
 					http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 						w.Write(mock.MustMarshal(
 							aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
-								Number: github.Int(aladino.DefaultMockPrNum),
+								Number: github.Int(aladino.DefaultMockNumber),
 								Base: &github.PullRequestBranch{
 									Repo: &github.Repository{
 										Owner: &github.User{
-											Login: github.String(aladino.DefaultMockPrOwner),
+											Login: github.String(aladino.DefaultMockOwner),
 										},
-										Name: github.String(aladino.DefaultMockPrRepoName),
+										Name: github.String(aladino.DefaultMockRepoName),
 									},
 								},
 							}),

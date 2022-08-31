@@ -56,9 +56,9 @@ func TestNewEvalEnv_WhenGetPullRequestFilesFails(t *testing.T) {
 	ctx := context.Background()
 
 	targetEntity := &handler.TargetEntity{
-		Owner:  aladino.DefaultMockPrOwner,
-		Repo:   aladino.DefaultMockPrRepoName,
-		Number: aladino.DefaultMockPrNum,
+		Owner:  aladino.DefaultMockOwner,
+		Repo:   aladino.DefaultMockRepoName,
+		Number: aladino.DefaultMockNumber,
 		Kind:   handler.PullRequest,
 	}
 
@@ -93,9 +93,9 @@ func TestNewEvalEnv_WhenNewFileFails(t *testing.T) {
 	mockedGithubClient := gh.NewGithubClient(mockedGithubClientREST, nil)
 	ctx := context.Background()
 	targetEntity := &handler.TargetEntity{
-		Owner:  aladino.DefaultMockPrOwner,
-		Repo:   aladino.DefaultMockPrRepoName,
-		Number: aladino.DefaultMockPrNum,
+		Owner:  aladino.DefaultMockOwner,
+		Repo:   aladino.DefaultMockRepoName,
+		Number: aladino.DefaultMockNumber,
 		Kind:   handler.PullRequest,
 	}
 
@@ -136,9 +136,9 @@ func TestNewEvalEnv(t *testing.T) {
 	ctx := context.Background()
 	mockedPullRequest, _, err := mockedGithubClientREST.PullRequests.Get(
 		ctx,
-		aladino.DefaultMockPrOwner,
-		aladino.DefaultMockPrRepoName,
-		aladino.DefaultMockPrNum,
+		aladino.DefaultMockOwner,
+		aladino.DefaultMockRepoName,
+		aladino.DefaultMockNumber,
 	)
 
 	if err != nil {
@@ -152,12 +152,12 @@ func TestNewEvalEnv(t *testing.T) {
 		false,
 		mockedGithubClient,
 		aladino.DefaultMockCollector,
-		aladino.DefaultMockTargetEntity,
+		aladino.DefaultMockPullRequestTargetEntity,
 		nil,
 		aladino.MockBuiltIns(),
 	)
 
-	mockedTarget, _ := target.NewPullRequestTarget(ctx, aladino.DefaultMockTargetEntity, mockedGithubClient, mockedPullRequest)
+	mockedTarget, _ := target.NewPullRequestTarget(ctx, aladino.DefaultMockPullRequestTargetEntity, mockedGithubClient, mockedPullRequest)
 
 	wantEnv := &aladino.BaseEnv{
 		Ctx:          ctx,
@@ -213,9 +213,9 @@ func TestNewEvalEnv_WhenGetPullRequestFails(t *testing.T) {
 	ctx := context.Background()
 
 	targetEntity := &handler.TargetEntity{
-		Owner:  aladino.DefaultMockPrOwner,
-		Repo:   aladino.DefaultMockPrRepoName,
-		Number: aladino.DefaultMockPrNum,
+		Owner:  aladino.DefaultMockOwner,
+		Repo:   aladino.DefaultMockRepoName,
+		Number: aladino.DefaultMockNumber,
 		Kind:   handler.PullRequest,
 	}
 

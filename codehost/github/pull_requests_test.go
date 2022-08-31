@@ -881,9 +881,9 @@ func TestGetReviewThreads_WhenRequestFails(t *testing.T) {
 
 	gotThreads, err := mockedGithubClient.GetReviewThreads(
 		context.Background(),
-		aladino.DefaultMockPrOwner,
-		aladino.DefaultMockPrRepoName,
-		aladino.DefaultMockPrNum,
+		aladino.DefaultMockOwner,
+		aladino.DefaultMockRepoName,
+		aladino.DefaultMockNumber,
 		2,
 	)
 
@@ -894,9 +894,9 @@ func TestGetReviewThreads_WhenRequestFails(t *testing.T) {
 func TestGetReviewThreads(t *testing.T) {
 	mockedGraphQLQuery := fmt.Sprintf(
 		"{\"query\":\"query($pullRequestNumber:Int!$repositoryName:String!$repositoryOwner:String!$reviewThreadsCursor:String){repository(owner: $repositoryOwner, name: $repositoryName){pullRequest(number: $pullRequestNumber){reviewThreads(first: 10, after: $reviewThreadsCursor){nodes{isResolved,isOutdated},pageInfo{endCursor,hasNextPage}}}}}\",\"variables\":{\"pullRequestNumber\":%d,\"repositoryName\":\"%s\",\"repositoryOwner\":\"%s\",\"reviewThreadsCursor\":null}}\n",
-		aladino.DefaultMockPrNum,
-		aladino.DefaultMockPrRepoName,
-		aladino.DefaultMockPrOwner,
+		aladino.DefaultMockNumber,
+		aladino.DefaultMockRepoName,
+		aladino.DefaultMockOwner,
 	)
 
 	mockedGithubClient := aladino.MockDefaultGithubClient(
@@ -930,9 +930,9 @@ func TestGetReviewThreads(t *testing.T) {
 	}}
 	gotReviewThreads, err := mockedGithubClient.GetReviewThreads(
 		context.Background(),
-		aladino.DefaultMockPrOwner,
-		aladino.DefaultMockPrRepoName,
-		aladino.DefaultMockPrNum,
+		aladino.DefaultMockOwner,
+		aladino.DefaultMockRepoName,
+		aladino.DefaultMockNumber,
 		2,
 	)
 
@@ -1014,7 +1014,7 @@ func registerHttpResponders(httpMockResponders []httpMockResponder) {
 }
 
 func buildGitHubListReposPageRequestUrl(page int) string {
-	return fmt.Sprintf("https://api.github.com/orgs/%v/repos?page=%v", aladino.DefaultMockPrOwner, page)
+	return fmt.Sprintf("https://api.github.com/orgs/%v/repos?page=%v", aladino.DefaultMockOwner, page)
 }
 
 func buildGitHubResponse(resp *http.Response, link string, nextPage int) *github.Response {
