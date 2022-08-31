@@ -265,15 +265,15 @@ workflows:
         extra-actions:
           - '$removeLabel("requires-author-attention")'
 
-  # - name: add-issue-to-project
-  #   on:
-  #     - issue
-  #   description: Automatically add issues to project in the backlog state
-  #   always-run: true
-  #   if:
-  #     - 'true'
-  #   then:
-  #     - '$addToProject("Reviewpad", "Backlog")'
+  - name: add-issue-to-project
+    on:
+      - issue
+    description: Automatically add issues to project in the backlog state
+    always-run: true
+    if:
+      - 'true'
+    then:
+      - '$addToProject("Reviewpad", "Backlog")'
 
   - name: report-empty-description
     on:
