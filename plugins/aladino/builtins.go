@@ -87,6 +87,8 @@ func PluginBuiltInsWithConfig(config *PluginConfig) *aladino.BuiltIns {
 			"organization": functions.Organization(),
 			"team":         functions.Team(),
 			// User
+			"issueCountBy":             functions.IssueCountBy(),
+			"pullRequestCountBy":       functions.PullRequestCountBy(),
 			"totalCreatedPullRequests": functions.TotalCreatedPullRequests(),
 			// Utilities
 			"append":      functions.AppendString(),

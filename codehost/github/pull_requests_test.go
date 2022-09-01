@@ -6,205 +6,215 @@ package github_test
 
 import (
 	"context"
-	"errors"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"testing"
 	"time"
 
 	"github.com/google/go-github/v45/github"
+	"github.com/jarcoal/httpmock"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	host "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	"github.com/stretchr/testify/assert"
 )
 
-type paginatedRequestResult struct {
-	pageNum int
+type httpMockResponder struct {
+	url       string
+	responder httpmock.Responder
 }
 
-func TestGetPullRequestHeadOwnerName(t *testing.T) {
-	mockedHeadOwnerName := "reviewpad"
-	mockedPullRequest := aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
-		Head: &github.PullRequestBranch{
-			Repo: &github.Repository{
-				Owner: &github.User{
-					Login: github.String(mockedHeadOwnerName),
-				},
-			},
-		},
-	})
-	wantOwnerName := mockedPullRequest.Head.Repo.Owner.GetLogin()
-	gotOwnerName := host.GetPullRequestHeadOwnerName(mockedPullRequest)
-
-	assert.Equal(t, wantOwnerName, gotOwnerName)
-	assert.Equal(t, mockedHeadOwnerName, gotOwnerName)
-}
-
-func TestGetPullRequestHeadRepoName(t *testing.T) {
-	mockedHeadRepoName := "mocks-test"
-	mockedPullRequest := aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
-		Head: &github.PullRequestBranch{
-			Repo: &github.Repository{
-				Name: &mockedHeadRepoName,
-			},
-		},
-	})
-	wantRepoName := mockedPullRequest.Head.Repo.GetName()
-	gotRepoName := host.GetPullRequestHeadRepoName(mockedPullRequest)
-
-	assert.Equal(t, wantRepoName, gotRepoName)
-	assert.Equal(t, mockedHeadRepoName, gotRepoName)
-}
-
-func TestGetPullRequestBaseOwnerName(t *testing.T) {
-	mockedPullRequest := aladino.GetDefaultMockPullRequestDetails()
-	wantOwnerName := mockedPullRequest.Base.Repo.Owner.GetLogin()
-	gotOwnerName := host.GetPullRequestBaseOwnerName(mockedPullRequest)
-
-	assert.Equal(t, wantOwnerName, gotOwnerName)
-}
-
-func TestGetPullRequestBaseRepoName(t *testing.T) {
-	mockedPullRequest := aladino.GetDefaultMockPullRequestDetails()
-	wantRepoName := mockedPullRequest.Base.Repo.GetName()
-	gotRepoName := host.GetPullRequestBaseRepoName(mockedPullRequest)
-
-	assert.Equal(t, wantRepoName, gotRepoName)
-}
-
-func TestGetPullRequestNumber(t *testing.T) {
-	mockedPullRequest := aladino.GetDefaultMockPullRequestDetails()
-	wantPullRequestNumber := mockedPullRequest.GetNumber()
-	gotPullRequestNumber := host.GetPullRequestNumber(mockedPullRequest)
-
-	assert.Equal(t, wantPullRequestNumber, gotPullRequestNumber)
-}
-
-func TestPaginatedRequest_WhenFirstRequestFails(t *testing.T) {
-	failMessage := "PaginatedRequestFail"
-	initFn := func() interface{} {
-		return paginatedRequestResult{}
-	}
-	reqFn := func(i interface{}, page int) (interface{}, *github.Response, error) {
-		return nil, nil, errors.New(failMessage)
-	}
-
-	res, err := host.PaginatedRequest(initFn, reqFn)
-
-	assert.Nil(t, res)
-	assert.EqualError(t, err, failMessage)
-}
-
-func TestPaginatedRequest_WhenFurtherRequestsFail(t *testing.T) {
-	failMessage := "PaginatedRequestFail"
-	initFn := func() interface{} {
-		return paginatedRequestResult{
-			pageNum: 1,
-		}
-	}
-	reqFn := func(i interface{}, page int) (interface{}, *github.Response, error) {
-		if page == 1 {
-			respHeader := make(http.Header)
-			respHeader.Add("Link", "<https://api.github.com/user/58276/repos?page=3>; rel=\"last\"")
-			resp := &github.Response{
-				Response: &http.Response{
-					Header: respHeader,
-				},
-				NextPage: 3,
-			}
-
-			return paginatedRequestResult{pageNum: 1}, resp, nil
-		}
-
-		return nil, nil, errors.New(failMessage)
-	}
-
-	res, err := host.PaginatedRequest(initFn, reqFn)
-
-	assert.Nil(t, res)
-	assert.EqualError(t, err, failMessage)
+type ghRepo struct {
+	Name string `json:"name"`
 }
 
 func TestPaginatedRequest(t *testing.T) {
-	initFn := func() interface{} {
-		return []*paginatedRequestResult{
-			{pageNum: 1},
-		}
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+
+	failMessage := "PaginatedRequestFail"
+
+	repoAOnFirstPage := "repo-A-on-first-page"
+	repoBOnSecondPage := "repo-B-on-second-page"
+
+	firstPageRequestUrl := buildGitHubListReposPageRequestUrl(1)
+	firstPageContentData := fmt.Sprintf("[{\"name\": \"%v\"}]", repoAOnFirstPage)
+	firstPageContent := []*github.Repository{
+		{Name: github.String(repoAOnFirstPage)},
 	}
-	reqFn := func(i interface{}, page int) (interface{}, *github.Response, error) {
-		results := i.([]*paginatedRequestResult)
-		if page == 1 {
-			respHeader := make(http.Header)
-			respHeader.Add("Link", "<https://api.github.com/user/58276/repos?page=3>; rel=\"last\"")
-			resp := &github.Response{
-				Response: &http.Response{
-					Header: respHeader,
+
+	secondPageRequestUrl := buildGitHubListReposPageRequestUrl(2)
+	secondPageContentData := fmt.Sprintf("[{\"name\": \"%v\"}]", repoBOnSecondPage)
+	secondPageContent := []*github.Repository{
+		{Name: github.String(repoBOnSecondPage)},
+	}
+
+	allPagesContent := append(firstPageContent, secondPageContent...)
+
+	tests := map[string]struct {
+		httpMockResponders []httpMockResponder
+		numPages           int
+		wantVal            interface{}
+		wantErr            string
+	}{
+		"when the request for the first page fails": {
+			httpMockResponders: []httpMockResponder{
+				{
+					url:       firstPageRequestUrl,
+					responder: httpmock.NewErrorResponder(fmt.Errorf(failMessage)),
 				},
+			},
+			numPages: 1,
+			wantErr:  fmt.Sprintf("Get \"%v\": %v", firstPageRequestUrl, failMessage),
+		},
+		"when the request for the second page fails": {
+			httpMockResponders: []httpMockResponder{
+				{
+					url:       firstPageRequestUrl,
+					responder: httpmock.NewBytesResponder(200, []byte(fmt.Sprintf("%v", firstPageContentData))),
+				},
+				{
+					url:       secondPageRequestUrl,
+					responder: httpmock.NewErrorResponder(fmt.Errorf(failMessage)),
+				},
+			},
+			numPages: 2,
+			wantErr:  fmt.Sprintf("Get \"%v\": %v", secondPageRequestUrl, failMessage),
+		},
+		"when there is only one page": {
+			httpMockResponders: []httpMockResponder{
+				{
+					url:       firstPageRequestUrl,
+					responder: httpmock.NewBytesResponder(200, []byte(fmt.Sprintf("%v", firstPageContentData))),
+				},
+			},
+			numPages: 1,
+			wantVal:  firstPageContent,
+		},
+		"when there is more than one page": {
+			httpMockResponders: []httpMockResponder{
+				{
+					url:       firstPageRequestUrl,
+					responder: httpmock.NewBytesResponder(200, []byte(fmt.Sprintf("%v", firstPageContentData))),
+				},
+				{
+					url:       secondPageRequestUrl,
+					responder: httpmock.NewBytesResponder(200, []byte(fmt.Sprintf("%v", secondPageContentData))),
+				},
+			},
+			numPages: 2,
+			wantVal:  allPagesContent,
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			httpmock.Activate()
+			defer httpmock.DeactivateAndReset()
+
+			registerHttpResponders(test.httpMockResponders)
+
+			initFn := func() interface{} {
+				return []*github.Repository{}
 			}
 
-			return results, resp, nil
-		}
+			reqFn := func(i interface{}, page int) (interface{}, *github.Response, error) {
+				currentRepos := i.([]*github.Repository)
+				url := test.httpMockResponders[page-1].url
 
-		return results, nil, nil
+				resp, err := http.Get(url)
+				if err != nil {
+					return nil, &github.Response{Response: resp}, err
+				}
+
+				defer resp.Body.Close()
+
+				data, err := ioutil.ReadAll(resp.Body)
+				if err != nil {
+					return nil, &github.Response{Response: resp}, err
+				}
+
+				var repos []ghRepo
+				err = json.Unmarshal(data, &repos)
+				if err != nil {
+					return nil, &github.Response{Response: resp}, err
+				}
+
+				ghRepos := make([]*github.Repository, len(repos))
+				for i, repo := range repos {
+					ghRepos[i] = &github.Repository{
+						Name: github.String(repo.Name),
+					}
+				}
+
+				currentRepos = append(currentRepos, ghRepos...)
+
+				var nextPage int
+				if page < test.numPages {
+					nextPage = page + 1
+				}
+
+				ghResp := buildGitHubResponse(resp, url, nextPage)
+
+				return currentRepos, ghResp, nil
+			}
+
+			gotVal, gotErr := host.PaginatedRequest(initFn, reqFn)
+
+			if gotErr != nil {
+				var gotErrMsg string
+				if _, ok := gotErr.(*github.ErrorResponse); ok {
+					gotErrMsg = gotErr.(*github.ErrorResponse).Message
+				} else {
+					gotErrMsg = gotErr.Error()
+				}
+
+				if gotErrMsg != test.wantErr {
+					assert.FailNow(t, "PaginatedRequest() error = %v, wantErr %v", gotErrMsg, test.wantErr)
+				}
+			}
+
+			assert.Equal(t, test.wantVal, gotVal)
+		})
 	}
-
-	wantRes := []*paginatedRequestResult{{pageNum: 1}}
-	gotRes, err := host.PaginatedRequest(initFn, reqFn)
-
-	assert.Nil(t, err)
-	assert.Equal(t, gotRes, wantRes)
-}
-
-func TestParseNumPagesFromLink_WhenHTTPLinkHeaderHasNoRel(t *testing.T) {
-	link := "<https://api.github.com/user/58276/repos?page=1>"
-
-	wantNumPages := 0
-
-	gotNumPages := host.ParseNumPagesFromLink(link)
-
-	assert.Equal(t, wantNumPages, gotNumPages)
-}
-
-func TestParseNumPagesFromLink_WhenHTTPLinkHeaderIsInvalid(t *testing.T) {
-	link := "<invalid%+url>; rel=\"last\""
-
-	wantNumPages := 0
-
-	gotNumPages := host.ParseNumPagesFromLink(link)
-
-	assert.Equal(t, wantNumPages, gotNumPages)
-}
-
-func TestParseNumPagesFromLink_WhenHTTPLinkHeaderHasNoQueryParamPage(t *testing.T) {
-	link := "<https://api.github.com/user/58276/repos>; rel=\"last\""
-
-	wantNumPages := 0
-
-	gotNumPages := host.ParseNumPagesFromLink(link)
-
-	assert.Equal(t, wantNumPages, gotNumPages)
-}
-
-func TestParseNumPagesFromLink_WhenHTTPLinkHeaderHasInvalidQueryParamPage(t *testing.T) {
-	link := "<https://api.github.com/user/58276/repos?page=7B316>; rel=\"last\""
-
-	wantNumPages := 0
-
-	gotNumPages := host.ParseNumPagesFromLink(link)
-
-	assert.Equal(t, wantNumPages, gotNumPages)
 }
 
 func TestParseNumPagesFromLink(t *testing.T) {
-	link := "<https://api.github.com/user/58276/repos?page=3>; rel=\"last\""
+	tests := map[string]struct {
+		link         string
+		wantNumPages int
+	}{
+		"when http link header has no rel": {
+			link:         "<https://api.github.com/user/58276/repos?page=1>",
+			wantNumPages: 0,
+		},
+		"when http link header is invalid": {
+			link:         "<invalid%+url>; rel=\"last\"",
+			wantNumPages: 0,
+		},
+		"when http link header has no page query parameter": {
+			link:         "<https://api.github.com/user/58276/repos>; rel=\"last\"",
+			wantNumPages: 0,
+		},
+		"when http link header has invalid page query parameter": {
+			link:         "<https://api.github.com/user/58276/repos?page=7B316>; rel=\"last\"",
+			wantNumPages: 0,
+		},
+		"when parse is successful": {
+			link:         "<https://api.github.com/user/58276/repos?page=3>; rel=\"last\"",
+			wantNumPages: 3,
+		},
+	}
 
-	// The number of pages is provided in the url query parameter "page"
-	wantNumPages := 3
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			gotNumPages := host.ParseNumPagesFromLink(test.link)
 
-	gotNumPages := host.ParseNumPagesFromLink(link)
-
-	assert.Equal(t, wantNumPages, gotNumPages)
+			assert.Equal(t, test.wantNumPages, gotNumPages)
+		})
+	}
 }
 
 func TestParseNumPages_WhenHTTPLinkHeaderIsNotProvided(t *testing.T) {
@@ -815,4 +825,28 @@ func TestGetIssueTimeLine(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantTimeline, gotTimeline)
+}
+
+func registerHttpResponders(httpMockResponders []httpMockResponder) {
+	for _, httpMockResponder := range httpMockResponders {
+		httpmock.RegisterResponder("GET", httpMockResponder.url, httpMockResponder.responder)
+	}
+}
+
+func buildGitHubListReposPageRequestUrl(page int) string {
+	return fmt.Sprintf("https://api.github.com/orgs/%v/repos?page=%v", aladino.DefaultMockPrOwner, page)
+}
+
+func buildGitHubResponse(resp *http.Response, link string, nextPage int) *github.Response {
+	respHeader := make(http.Header)
+	respHeader.Add("Link", fmt.Sprintf("<%v>; rel=\"last\"", link))
+	httpResp := resp
+	httpResp.Header = respHeader
+
+	ghResp := &github.Response{
+		Response: httpResp,
+		NextPage: nextPage,
+	}
+
+	return ghResp
 }
