@@ -18,19 +18,18 @@ import (
 
 var lastEventAt = plugins_aladino.PluginBuiltIns().Functions["lastEventAt"].Code
 
-func TestLastEvent_WhenIssueTimelineRequestFails(t *testing.T) {
-	failMessage := "IssueTimelineRequestFail"
+func TestLastEventAt(t *testing.T) {
+	date := time.Date(2009, 11, 17, 20, 34, 58, 651387237, time.UTC)
+	mockedPullRequest := aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
+		UpdatedAt: &date,
+	})
 	mockedEnv := aladino.MockDefaultEnv(
 		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
-				mock.GetReposIssuesTimelineByOwnerByRepoByIssueNumber,
-				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					mock.WriteError(
-						w,
-						http.StatusInternalServerError,
-						failMessage,
-					)
+				mock.GetReposPullsByOwnerByRepoByPullNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+					w.Write(mock.MustMarshal(mockedPullRequest))
 				}),
 			),
 		},
@@ -39,100 +38,11 @@ func TestLastEvent_WhenIssueTimelineRequestFails(t *testing.T) {
 		nil,
 	)
 
+	wantUpdatedAt := aladino.BuildIntValue(int(date.Unix()))
+
 	args := []aladino.Value{}
-	gotVal, err := lastEventAt(mockedEnv, args)
+	gotUpdatedAt, gotErr := lastEventAt(mockedEnv, args)
 
-	assert.Nil(t, gotVal)
-	assert.Equal(t, err.(*github.ErrorResponse).Message, failMessage)
-}
-
-func TestLastEvent(t *testing.T) {
-	nonLastEventDate := time.Date(2022, 04, 13, 20, 49, 13, 651387237, time.UTC)
-	lastEventDate := time.Date(2022, 04, 16, 20, 49, 34, 0, time.UTC)
-
-	tests := map[string]struct {
-		mockedEnv aladino.Env
-		wantVal   *aladino.IntValue
-	}{
-		"when last event is not a review": {
-			mockedEnv: aladino.MockDefaultEnv(
-				t,
-				[]mock.MockBackendOption{
-					mock.WithRequestMatch(
-						mock.GetReposIssuesTimelineByOwnerByRepoByIssueNumber,
-						[]*github.Timeline{
-							{
-								ID:        github.Int64(6430295168),
-								Event:     github.String("locked"),
-								CreatedAt: &nonLastEventDate,
-							},
-							{
-								ID:        github.Int64(6430296748),
-								Event:     github.String("labeled"),
-								CreatedAt: &lastEventDate,
-							},
-						},
-					),
-				},
-				nil,
-				aladino.MockBuiltIns(),
-				nil,
-			),
-			wantVal: aladino.BuildIntValue(int(lastEventDate.Unix())),
-		},
-		"when last event is a review": {
-			mockedEnv: aladino.MockDefaultEnv(
-				t,
-				[]mock.MockBackendOption{
-					mock.WithRequestMatch(
-						mock.GetReposIssuesTimelineByOwnerByRepoByIssueNumber,
-						[]*github.Timeline{
-							{
-								ID:        github.Int64(6430295168),
-								Event:     github.String("locked"),
-								CreatedAt: &nonLastEventDate,
-							},
-							{
-								ID:          github.Int64(6430296748),
-								Event:       github.String("reviewed"),
-								SubmittedAt: &lastEventDate,
-							},
-						},
-					),
-				},
-				nil,
-				aladino.MockBuiltIns(),
-				nil,
-			),
-			wantVal: aladino.BuildIntValue(int(lastEventDate.Unix())),
-		},
-		"when target entity is pull request and timeline has only one event": {
-			mockedEnv: aladino.MockDefaultEnv(
-				t,
-				[]mock.MockBackendOption{
-					mock.WithRequestMatch(
-						mock.GetReposIssuesTimelineByOwnerByRepoByIssueNumber,
-						[]*github.Timeline{
-							{ID: github.Int64(6430295168)},
-						},
-					),
-				},
-				nil,
-				aladino.MockBuiltIns(),
-				nil,
-			),
-			wantVal: aladino.BuildIntValue(int(aladino.DefaultMockPrDate.Unix())),
-		},
-		// TODO: Add tests for when target entity is handler.Issue
-	}
-
-	for name, test := range tests {
-		t.Run(name, func(t *testing.T) {
-			args := []aladino.Value{}
-			gotVal, err := lastEventAt(test.mockedEnv, args)
-
-			assert.Nil(t, err)
-			assert.Equal(t, test.wantVal, gotVal)
-		})
-	}
+	assert.Nil(t, gotErr)
+	assert.Equal(t, wantUpdatedAt, gotUpdatedAt)
 }

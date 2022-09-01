@@ -160,6 +160,10 @@ func GetDefaultMockPullRequestDetailsWith(pr *github.PullRequest) *github.PullRe
 		defaultPullRequest.NodeID = pr.NodeID
 	}
 
+	if pr.UpdatedAt != nil {
+		defaultPullRequest.UpdatedAt = pr.UpdatedAt
+	}
+
 	return defaultPullRequest
 }
 
