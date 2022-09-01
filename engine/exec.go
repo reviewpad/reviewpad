@@ -82,6 +82,22 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 				return nil, err
 			}
 
+			if labelExists {
+				labelHasUpdates, err := checkLabelHasUpdates(env, &label)
+				if err != nil {
+					CollectError(env, err)
+					return nil, err
+				}
+
+				if labelHasUpdates {
+					err = updateLabel(env, &label)
+					if err != nil {
+						CollectError(env, err)
+						return nil, err
+					}
+				}
+			}
+
 			if !labelExists {
 				err = createLabel(env, &labelName, &label)
 				if err != nil {

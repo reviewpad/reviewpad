@@ -48,6 +48,42 @@ func createLabel(e *Env, labelName *string, label *PadLabel) error {
 	return err
 }
 
+func checkLabelHasUpdates(e *Env, label *PadLabel) (bool, error) {
+	owner := e.TargetEntity.Owner
+	repo := e.TargetEntity.Repo
+
+	ghLabel, _, err := e.GithubClient.GetLabel(e.Ctx, owner, repo, label.Name)
+	if err != nil {
+		return false, err
+	}
+
+	if ghLabel.Name == &label.Name && ghLabel.Color == &label.Color && ghLabel.Description == &label.Description {
+		return false, nil
+	}
+
+	return true, nil
+}
+
+func updateLabel(e *Env, label *PadLabel) error {
+	owner := e.TargetEntity.Owner
+	repo := e.TargetEntity.Repo
+
+	err := validateLabelColor(label)
+	if err != nil {
+		return err
+	}
+
+	updatedGithubLabel := &github.Label{
+		Name:        github.String(label.Name),
+		Color:       github.String(label.Color),
+		Description: github.String(label.Description),
+	}
+
+	_, _, err = e.GithubClient.EditLabel(e.Ctx, owner, repo, label.Name, updatedGithubLabel)
+
+	return err
+}
+
 func checkLabelExists(e *Env, labelName string) (bool, error) {
 	owner := e.TargetEntity.Owner
 	repo := e.TargetEntity.Repo
