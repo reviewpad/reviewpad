@@ -39,3 +39,28 @@ func (c *GithubClient) DownloadContents(ctx context.Context, filePath string, br
 
 	return ioutil.ReadAll(ioReader)
 }
+
+func (c *GithubClient) GetRepositoryLabels(ctx context.Context, owner string, repo string) ([]*github.Label, *github.Response, error) {
+	ls, err := PaginatedRequest(
+		func() interface{} {
+			return []*github.Label{}
+		},
+		func(i interface{}, page int) (interface{}, *github.Response, error) {
+			labels := i.([]*github.Label)
+			ls, resp, err := c.clientREST.Issues.ListLabels(ctx, owner, repo, &github.ListOptions{
+				Page:    page,
+				PerPage: maxPerPage,
+			})
+			if err != nil {
+				return nil, nil, err
+			}
+			labels = append(labels, ls...)
+			return labels, resp, nil
+		},
+	)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return ls.([]*github.Label), nil, nil
+}
