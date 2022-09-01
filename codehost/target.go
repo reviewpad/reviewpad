@@ -25,6 +25,7 @@ type Target interface {
 	GetCommentCount() (int, error)
 	GetComments() ([]*Comment, error)
 	GetCreatedAt() (string, error)
+	GetUpdatedAt() (string, error)
 	GetDescription() (string, error)
 	GetLabels() ([]*Label, error)
 	GetNodeID() string

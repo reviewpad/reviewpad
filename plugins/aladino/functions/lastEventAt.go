@@ -20,40 +20,15 @@ func LastEventAt() *aladino.BuiltInFunction {
 }
 
 func lastEventAtCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
-	entity := e.GetTarget().GetTargetEntity()
-
-	timeline, err := e.GetGithubClient().GetIssueTimeline(e.GetCtx(), entity.Owner, entity.Repo, entity.Number)
+	updatedAt, err := e.GetTarget().GetUpdatedAt()
 	if err != nil {
 		return nil, err
 	}
 
-	// If we are executing this built-in against an issue or a pr with no events (only the opening event), we have distinct behaviours.
-	// If it is an issue, we get an empty timeline.
-	// If it is a pr, we get one event (opening of the PR) with the majority of parameters as nil, including the createdAt which is the most relevant one in this context.
-	// This may be because the issue event types don't include the "opened" event.
-	// To verify the claim above, check: https://docs.github.com/en/developers/webhooks-and-events/events/issue-event-types.
-	// Since the first event is the opening of the issue/pr, we know the last event time will be its creation time.
-	if (entity.Kind == handler.PullRequest && len(timeline) == 1) || (entity.Kind == handler.Issue && len(timeline) == 0) {
-		createdAt, err := e.GetTarget().GetCreatedAt()
-		if err != nil {
-			return nil, err
-		}
-
-		createdAtTime, err := time.Parse("2006-01-02 15:04:05.999999999 -0700 MST", createdAt)
-		if err != nil {
-			return nil, err
-		}
-
-		return aladino.BuildIntValue(int(createdAtTime.Unix())), nil
+	updatedAtTime, err := time.Parse("2006-01-02 15:04:05.999999999 -0700 MST", updatedAt)
+	if err != nil {
+		return nil, err
 	}
 
-	lastEvent := timeline[len(timeline)-1]
-	var lastEventTime int
-	if *lastEvent.Event == "reviewed" {
-		lastEventTime = int(lastEvent.GetSubmittedAt().Unix())
-	} else {
-		lastEventTime = int(lastEvent.GetCreatedAt().Unix())
-	}
-
-	return aladino.BuildIntValue(lastEventTime), nil
+	return aladino.BuildIntValue(int(updatedAtTime.Unix())), nil
 }
