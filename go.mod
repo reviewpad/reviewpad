@@ -11,6 +11,7 @@ require (
 	github.com/gorilla/mux v1.8.0
 	github.com/jarcoal/httpmock v1.2.0
 	github.com/jinzhu/copier v0.3.5
+	github.com/libgit2/git2go/v31 v31.7.9
 	github.com/migueleliasweb/go-github-mock v0.0.10
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/reviewpad/api/go v0.0.0-20220824160655-7aaf235bcfa2
@@ -29,18 +30,18 @@ require (
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/go-github/v41 v41.0.0 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
-	github.com/inconshreveable/mousetrap v1.0.1 // indirect
+	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/rogpeppe/go-internal v1.8.1 // indirect
+	github.com/rogpeppe/go-internal v1.9.0 // indirect
 	github.com/shurcooL/graphql v0.0.0-20220606043923-3cf50f8a0a29 // indirect
 	github.com/sirupsen/logrus v1.9.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
-	golang.org/x/crypto v0.0.0-20220817201139-bc19a97f63c8 // indirect
-	golang.org/x/net v0.0.0-20220822230855-b0a4917ee28c // indirect
-	golang.org/x/sys v0.0.0-20220823224334-20c2bfdbfe24 // indirect
+	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5 // indirect
+	golang.org/x/net v0.0.0-20220812174116-3211cb980234 // indirect
+	golang.org/x/sys v0.0.0-20220811171246-fbc7d0a398ab // indirect
 	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
-	google.golang.org/genproto v0.0.0-20220822174746-9e6da59bd2fc // indirect
+	google.golang.org/genproto v0.0.0-20220815135757-37a418bb8959 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
 )
