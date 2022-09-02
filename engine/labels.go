@@ -30,10 +30,7 @@ func createLabel(e *Env, labelName *string, label *PadLabel) error {
 
 	var labelColor *string
 	if label.Color != "" {
-		if strings.HasPrefix(label.Color, "#") {
-			label.Color = label.Color[1:]
-		}
-
+		label.Color = strings.TrimPrefix(label.Color, "#")
 		labelColor = &label.Color
 	}
 
