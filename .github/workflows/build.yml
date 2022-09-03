@@ -32,8 +32,8 @@ jobs:
       - name: Convert coverage to lcov
         run: gcov2lcov -infile=coverage.out -outfile=coverage.lcov
 
-      - name: Verify that minium coverage is covered
+      - name: Verify that minimum coverage is covered
         uses: VeryGoodOpenSource/very_good_coverage@v1
         with:
           path: "coverage.lcov"
-          min_coverage: 50
+          min_coverage: 80
