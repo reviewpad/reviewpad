@@ -13,12 +13,8 @@ import (
 
 func validateLabelColor(label *PadLabel) error {
 	if label.Color != "" {
-		matched, _ := regexp.MatchString(`(?i)^([0-9A-F]{6}){1,2}$`, label.Color)
+		matched, _ := regexp.MatchString(`(?i)^#?([0-9A-F]{6}){1,2}$`, label.Color)
 		if !matched {
-			if strings.HasPrefix(label.Color, "#") {
-				return execError("evalLabel: the hexadecimal color code for the label should be without the leading #")
-			}
-
 			return execError("evalLabel: color code not valid")
 		}
 	}
@@ -34,6 +30,7 @@ func createLabel(e *Env, labelName *string, label *PadLabel) error {
 
 	var labelColor *string
 	if label.Color != "" {
+		label.Color = strings.TrimPrefix(label.Color, "#")
 		labelColor = &label.Color
 	}
 
