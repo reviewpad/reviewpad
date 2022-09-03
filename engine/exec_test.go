@@ -102,7 +102,7 @@ func TestEval_WhenGitHubRequestsFail(t *testing.T) {
 			gotProgram, err := engine.Eval(reviewpadFile, mockedEnv)
 
 			assert.Nil(t, gotProgram)
-			assert.Equal(t, err.(*github.ErrorResponse).Message, test.wantErr)
+			assert.Equal(t, test.wantErr, err.(*github.ErrorResponse).Message)
 		})
 	}
 }
