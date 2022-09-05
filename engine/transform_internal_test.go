@@ -23,6 +23,10 @@ func TestTransformAladinoExpression(t *testing.T) {
 			arg:     "$merge()",
 			wantVal: "$merge(\"merge\")",
 		},
+		"size": {
+			arg:     "$size()",
+			wantVal: "$size([])",
+		},
 		"issueCountBy simple": {
 			arg:     "$issueCountBy(\"john\", \"open\") > 0",
 			wantVal: "$issueCountBy(\"john\", \"open\") > 0",

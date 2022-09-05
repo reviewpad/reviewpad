@@ -41,7 +41,45 @@ func TestSize(t *testing.T) {
 
 	wantSize := aladino.BuildIntValue(additions + deletions)
 
-	args := []aladino.Value{}
+	args := []aladino.Value{aladino.BuildArrayValue([]aladino.Value{})}
+	gotSize, err := size(mockedEnv, args)
+
+	assert.Nil(t, err)
+	assert.Equal(t, wantSize, gotSize)
+}
+
+func TestSize_WhenPatternPassed(t *testing.T) {
+	changes := 3
+	mockedPullRequestFileList := &[]*github.CommitFile{
+		{
+			Filename: github.String("reviewpad.yml"),
+			Patch:    nil,
+			Changes:  &changes,
+		},
+		{
+			Filename: github.String("main.go"),
+			Patch:    nil,
+			Changes:  &changes,
+		},
+	}
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
+		[]mock.MockBackendOption{
+			mock.WithRequestMatchHandler(
+				mock.GetReposPullsFilesByOwnerByRepoByPullNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+					w.Write(mock.MustMarshal(mockedPullRequestFileList))
+				}),
+			),
+		},
+		nil,
+		aladino.MockBuiltIns(),
+		nil,
+	)
+
+	wantSize := aladino.BuildIntValue(changes)
+
+	args := []aladino.Value{aladino.BuildArrayValue([]aladino.Value{aladino.BuildStringValue("*.yml")})}
 	gotSize, err := size(mockedEnv, args)
 
 	assert.Nil(t, err)
