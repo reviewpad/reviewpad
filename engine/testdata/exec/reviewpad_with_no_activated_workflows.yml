@@ -2,7 +2,7 @@
 # Use of this source code is governed by a license that can be
 # found in the LICENSE file.
 
-api-version: reviewpad.com/v1alpha
+api-version: reviewpad.com/v3.x
 
 rules:
   - name: non-tautology

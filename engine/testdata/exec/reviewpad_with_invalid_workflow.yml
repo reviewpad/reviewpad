@@ -4,7 +4,7 @@
 
 # Reviewpad file with the use case of an invalid workflow due to an invalid rule which is invalid because its spec is not a condition (boolean).
 
-api-version: reviewpad.com/v1alpha
+api-version: reviewpad.com/v3.x
 
 rules:
   - name: invalid-rule

@@ -5,7 +5,7 @@
 # Reviewpad file with use case of an unnamed label.
 # A label is unnamed if it doesn't have the `name` field set.
 
-api-version: reviewpad.com/v1alpha
+api-version: reviewpad.com/v3.x
 
 labels:
   bug:

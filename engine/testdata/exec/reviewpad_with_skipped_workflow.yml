@@ -5,7 +5,7 @@
 # Reviewpad file with use case of a skipped workflow: since the workflow 'activated-workflow' is triggered and has `always-run: false`,
 # the next workflow 'non-activated-workflow' will be skipped because it doesn't have the flag `always-run: true`.
 
-api-version: reviewpad.com/v1alpha
+api-version: reviewpad.com/v3.x
 
 rules:
   - name: tautology

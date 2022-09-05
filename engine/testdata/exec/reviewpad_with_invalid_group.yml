@@ -4,7 +4,7 @@
 
 # Reviewpad file with the use case of an invalid group which is invalid because its spec is not an array type value.
 
-api-version: reviewpad.com/v1alpha
+api-version: reviewpad.com/v3.x
 
 groups:
   - name: owners

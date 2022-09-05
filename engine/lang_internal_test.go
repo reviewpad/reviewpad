@@ -12,7 +12,7 @@ import (
 )
 
 var mockedReviewpadFile = &ReviewpadFile{
-	Version:      "reviewpad.com/v1alpha",
+	Version:      "reviewpad.com/v3.x",
 	Edition:      "professional",
 	Mode:         "silent",
 	IgnoreErrors: false,

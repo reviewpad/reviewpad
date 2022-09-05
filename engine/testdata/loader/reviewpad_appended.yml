@@ -8,7 +8,7 @@
 # - reviewpad/testdata/loader/reviewpad_with_one_import.yml
 # This merge is caused by the appends that are performed in the Load functions: appendLabels, appendGroups, appendRules and appendWorkflows.
 
-api-version: reviewpad.com/v1alpha
+api-version: reviewpad.com/v3.x
 
 labels:
   small:
