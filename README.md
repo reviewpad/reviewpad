@@ -141,6 +141,24 @@ You can solve with:
 ulimit -Sn 500
 ```
 
+#### Coverage
+
+To generate the coverage report run:
+
+```
+task test
+```
+
+To display the code coverage for every package run:
+```
+go tool cover -func coverage.out
+```
+
+To display the total code coverage percentage run:
+```
+go tool cover -func coverage.out | grep total:
+```
+
 ### VSCode
 
 We strongly recommend the use of VSCode but feel free to use the IDE of your choice. For the case of VSCode we also recommend the installation of the following extensions:
