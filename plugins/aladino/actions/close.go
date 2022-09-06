@@ -11,12 +11,14 @@ import (
 
 func Close() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{}, nil),
+		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, nil),
 		Code:           closeCode,
 		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest, handler.Issue},
 	}
 }
 
 func closeCode(e aladino.Env, args []aladino.Value) error {
-	return e.GetTarget().Close()
+	comment := args[0].(*aladino.StringValue).Val
+
+	return e.GetTarget().Close(comment)
 }

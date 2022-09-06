@@ -70,7 +70,13 @@ func (t *PullRequestTarget) GetNodeID() string {
 	return t.PullRequest.GetNodeID()
 }
 
-func (t *PullRequestTarget) Close() error {
+func (t *PullRequestTarget) Close(comment string) error {
+	if comment != "" {
+		if err := t.Comment(comment); err != nil {
+			return err
+		}
+	}
+
 	ctx := t.ctx
 	targetEntity := t.targetEntity
 	owner := targetEntity.Owner

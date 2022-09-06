@@ -39,7 +39,13 @@ func (t *IssueTarget) GetNodeID() string {
 	return t.issue.GetNodeID()
 }
 
-func (t *IssueTarget) Close() error {
+func (t *IssueTarget) Close(comment string) error {
+	if comment != "" {
+		if err := t.Comment(comment); err != nil {
+			return err
+		}
+	}
+
 	ctx := t.ctx
 	targetEntity := t.targetEntity
 	owner := targetEntity.Owner
