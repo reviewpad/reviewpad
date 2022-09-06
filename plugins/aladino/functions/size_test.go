@@ -17,71 +17,72 @@ import (
 
 var size = plugins_aladino.PluginBuiltIns().Functions["size"].Code
 
-func TestSize(t *testing.T) {
-	additions := 1
-	deletions := 1
-	mockedPullRequest := aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
-		Additions: github.Int(additions),
-		Deletions: github.Int(deletions),
-	})
-	mockedEnv := aladino.MockDefaultEnv(
-		t,
-		[]mock.MockBackendOption{
-			mock.WithRequestMatchHandler(
-				mock.GetReposPullsByOwnerByRepoByPullNumber,
-				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					w.Write(mock.MustMarshal(mockedPullRequest))
-				}),
-			),
+func TestSize_WhenRegexMatchFails(t *testing.T) {
+	tests := map[string]struct {
+		args    []aladino.Value
+		wantVal aladino.Value
+	}{
+		"no exclusions": {
+			args:    []aladino.Value{aladino.BuildArrayValue([]aladino.Value{})},
+			wantVal: aladino.BuildIntValue(6),
 		},
-		nil,
-		aladino.MockBuiltIns(),
-		nil,
-	)
-
-	wantSize := aladino.BuildIntValue(additions + deletions)
-
-	args := []aladino.Value{aladino.BuildArrayValue([]aladino.Value{})}
-	gotSize, err := size(mockedEnv, args)
-
-	assert.Nil(t, err)
-	assert.Equal(t, wantSize, gotSize)
-}
-
-func TestSize_WhenPatternPassed(t *testing.T) {
-	changes := 3
-	mockedPullRequestFileList := &[]*github.CommitFile{
-		{
-			Filename: github.String("reviewpad.yml"),
-			Patch:    nil,
-			Changes:  &changes,
+		"exclude yml": {
+			args:    []aladino.Value{aladino.BuildArrayValue([]aladino.Value{aladino.BuildStringValue("*.yml")})},
+			wantVal: aladino.BuildIntValue(3),
 		},
-		{
-			Filename: github.String("main.go"),
-			Patch:    nil,
-			Changes:  &changes,
+		"invalid regex": {
+			args:    []aladino.Value{aladino.BuildArrayValue([]aladino.Value{aladino.BuildStringValue("*[.yml")})},
+			wantVal: aladino.BuildIntValue(6),
 		},
 	}
-	mockedEnv := aladino.MockDefaultEnv(
-		t,
-		[]mock.MockBackendOption{
-			mock.WithRequestMatchHandler(
-				mock.GetReposPullsFilesByOwnerByRepoByPullNumber,
-				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					w.Write(mock.MustMarshal(mockedPullRequestFileList))
-				}),
-			),
-		},
-		nil,
-		aladino.MockBuiltIns(),
-		nil,
-	)
 
-	wantSize := aladino.BuildIntValue(changes)
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			changes := 3
+			mockedPullRequestFileList := &[]*github.CommitFile{
+				{
+					Filename: github.String("reviewpad.yml"),
+					Patch:    nil,
+					Changes:  &changes,
+				},
+				{
+					Filename: github.String("main.go"),
+					Patch:    nil,
+					Changes:  &changes,
+				},
+			}
+			additions := 6
+			deletions := 0
+			mockedPullRequest := aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
+				Additions: github.Int(additions),
+				Deletions: github.Int(deletions),
+			})
 
-	args := []aladino.Value{aladino.BuildArrayValue([]aladino.Value{aladino.BuildStringValue("*.yml")})}
-	gotSize, err := size(mockedEnv, args)
+			mockedEnv := aladino.MockDefaultEnv(
+				t,
+				[]mock.MockBackendOption{
+					mock.WithRequestMatchHandler(
+						mock.GetReposPullsFilesByOwnerByRepoByPullNumber,
+						http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+							w.Write(mock.MustMarshal(mockedPullRequestFileList))
+						}),
+					),
+					mock.WithRequestMatchHandler(
+						mock.GetReposPullsByOwnerByRepoByPullNumber,
+						http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+							w.Write(mock.MustMarshal(mockedPullRequest))
+						}),
+					),
+				},
+				nil,
+				aladino.MockBuiltIns(),
+				nil,
+			)
 
-	assert.Nil(t, err)
-	assert.Equal(t, wantSize, gotSize)
+			gotSize, err := size(mockedEnv, test.args)
+
+			assert.Nil(t, err)
+			assert.Equal(t, test.wantVal, gotSize)
+		})
+	}
 }
