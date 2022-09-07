@@ -6,6 +6,7 @@ package engine
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"testing"
 
@@ -143,7 +144,7 @@ func TestCheckLabelExists_WhenGetLabelFails(t *testing.T) {
 	tests := map[string]struct {
 		labelName     string
 		clientOptions []mock.MockBackendOption
-		wantVal       bool
+		wantVal       *github.Label
 		wantErr       string
 	}{
 		"when get label request 500": {
@@ -163,7 +164,7 @@ func TestCheckLabelExists_WhenGetLabelFails(t *testing.T) {
 				),
 			},
 			wantErr: "GetLabelRequestFailed",
-			wantVal: false,
+			wantVal: nil,
 		},
 	}
 
@@ -185,14 +186,19 @@ func TestCheckLabelExists_WhenGetLabelFails(t *testing.T) {
 }
 
 func TestCheckLabelExists(t *testing.T) {
+	labelName := "test"
+	label := &github.Label{
+		Name: github.String(labelName),
+	}
+
 	tests := map[string]struct {
 		labelName     string
 		clientOptions []mock.MockBackendOption
-		wantVal       bool
+		wantVal       *github.Label
 		wantErr       error
 	}{
 		"when get label request 404": {
-			labelName: "test",
+			labelName: labelName,
 			clientOptions: []mock.MockBackendOption{
 				mock.WithRequestMatchHandler(
 					mock.GetReposLabelsByOwnerByRepoByName,
@@ -207,20 +213,21 @@ func TestCheckLabelExists(t *testing.T) {
 				),
 			},
 			wantErr: nil,
-			wantVal: false,
+			wantVal: nil,
 		},
 		"when get label request 200": {
-			labelName: "test",
+			labelName: labelName,
 			clientOptions: []mock.MockBackendOption{
 				mock.WithRequestMatchHandler(
 					mock.GetReposLabelsByOwnerByRepoByName,
 					http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 						w.WriteHeader(http.StatusOK)
+						w.Write(mock.MustMarshal(label))
 					}),
 				),
 			},
 			wantErr: nil,
-			wantVal: true,
+			wantVal: label,
 		},
 	}
 
@@ -236,6 +243,172 @@ func TestCheckLabelExists(t *testing.T) {
 			gotVal, gotErr := checkLabelExists(mockedEnv, test.labelName)
 
 			assert.Equal(t, test.wantVal, gotVal)
+			assert.Equal(t, test.wantErr, gotErr)
+		})
+	}
+}
+
+func TestCheckLabelHasUpdates(t *testing.T) {
+	labelName := "test"
+	description := "Lorem Ipsum"
+
+	tests := map[string]struct {
+		label   *PadLabel
+		ghLabel *github.Label
+		wantVal bool
+		wantErr error
+	}{
+		"label does not exist in the repository": {
+			label: &PadLabel{
+				Name: labelName,
+			},
+			ghLabel: nil,
+			wantVal: false,
+			wantErr: fmt.Errorf("checkLabelHasUpdates: impossible to check updates on a empty github label"),
+		},
+		"label has an empty description": {
+			label: &PadLabel{
+				Name: labelName,
+			},
+			ghLabel: &github.Label{
+				Name: github.String(description),
+			},
+			wantVal: false,
+			wantErr: nil,
+		},
+		"label does not have any updates": {
+			label: &PadLabel{
+				Name:        labelName,
+				Description: description,
+			},
+			ghLabel: &github.Label{
+				Name:        github.String(labelName),
+				Description: github.String(description),
+			},
+			wantVal: false,
+			wantErr: nil,
+		},
+		"label has updates": {
+			label: &PadLabel{
+				Name:        labelName,
+				Description: description,
+			},
+			ghLabel: &github.Label{
+				Name:        github.String(labelName),
+				Description: github.String("Updated label description"),
+			},
+			wantVal: true,
+			wantErr: nil,
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			mockedClient := MockGithubClient(nil)
+
+			mockedEnv, err := MockEnvWith(mockedClient, nil)
+			if err != nil {
+				assert.FailNow(t, "MockDefaultEnvWith: %v", err)
+			}
+
+			gotVal, gotErr := checkLabelHasUpdates(mockedEnv, test.label, test.ghLabel)
+
+			assert.Equal(t, test.wantVal, gotVal)
+			assert.Equal(t, test.wantErr, gotErr)
+		})
+	}
+}
+
+func TestUpdateLabel_WhenEditLabelRequestFails(t *testing.T) {
+	labelName := "test-name"
+	tests := map[string]struct {
+		labelName     string
+		label         *PadLabel
+		clientOptions []mock.MockBackendOption
+		wantErr       string
+	}{
+		"when label update is not successful": {
+			labelName: labelName,
+			label: &PadLabel{
+				Color:       "#91cf60",
+				Description: "test description",
+			},
+			clientOptions: []mock.MockBackendOption{
+				mock.WithRequestMatchHandler(
+					mock.PatchReposLabelsByOwnerByRepoByName,
+					http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+						w.WriteHeader(http.StatusInternalServerError)
+						w.Write(mock.MustMarshal(github.ErrorResponse{
+							Response: &http.Response{
+								StatusCode: 500,
+							},
+							Message: "EditLabelRequestFailed",
+						}))
+					}),
+				),
+			},
+			wantErr: "EditLabelRequestFailed",
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			mockedClient := MockGithubClient(test.clientOptions)
+
+			mockedEnv, err := MockEnvWith(mockedClient, nil)
+			if err != nil {
+				assert.FailNow(t, "engine MockDefaultEnvWith: %v", err)
+			}
+
+			gotErr := updateLabel(mockedEnv, &test.labelName, test.label)
+
+			assert.Equal(t, test.wantErr, gotErr.(*github.ErrorResponse).Message)
+		})
+	}
+}
+
+func TestUpdateLabel(t *testing.T) {
+	labelName := "test-name"
+	tests := map[string]struct {
+		labelName     string
+		label         *PadLabel
+		clientOptions []mock.MockBackendOption
+		wantErr       error
+	}{
+		"when label update is successful": {
+			labelName: labelName,
+			label: &PadLabel{
+				Color:       "#91cf60",
+				Description: "test description",
+			},
+			clientOptions: []mock.MockBackendOption{
+				mock.WithRequestMatchHandler(
+					mock.PatchReposLabelsByOwnerByRepoByName,
+					http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+						var gotLabel github.Label
+						json.NewDecoder(r.Body).Decode(&gotLabel)
+
+						assert.Equal(t, "test description", gotLabel.GetDescription())
+
+						w.WriteHeader(http.StatusOK)
+					}),
+				),
+			},
+			wantErr: nil,
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			mockedClient := MockGithubClient(test.clientOptions)
+
+			mockedEnv, err := MockEnvWith(mockedClient, nil)
+			if err != nil {
+				assert.FailNow(t, "engine MockDefaultEnvWith: %v", err)
+			}
+
+			gotErr := updateLabel(mockedEnv, &test.labelName, test.label)
+
 			assert.Equal(t, test.wantErr, gotErr)
 		})
 	}

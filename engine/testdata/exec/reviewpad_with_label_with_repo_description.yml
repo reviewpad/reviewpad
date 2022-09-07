@@ -2,12 +2,12 @@
 # Use of this source code is governed by a license that can be
 # found in the LICENSE file.
 
-api-version: reviewpad.com/v3.x
+api-version: reviewpad.com/v1alpha
 
 labels:
   bug:
     name: bug
-    color: f29513
+    description: Something is wrong
 
 rules:
   - name: tautology
@@ -19,4 +19,4 @@ workflows:
     if:
       - rule: tautology
     then:
-      - $addLabel("test-valid-label")
+      - $addLabel("test-label-with-no-updates")

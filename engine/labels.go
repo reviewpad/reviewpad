@@ -5,6 +5,7 @@
 package engine
 
 import (
+	"fmt"
 	"regexp"
 	"strings"
 
@@ -48,23 +49,23 @@ func createLabel(e *Env, labelName *string, label *PadLabel) error {
 	return err
 }
 
-func checkLabelHasUpdates(e *Env, label *PadLabel, labelName string) (bool, error) {
-	owner := e.TargetEntity.Owner
-	repo := e.TargetEntity.Repo
-
-	ghLabel, _, err := e.GithubClient.GetLabel(e.Ctx, owner, repo, labelName)
-	if err != nil {
-		return false, err
+func checkLabelHasUpdates(e *Env, label *PadLabel, ghLabel *github.Label) (bool, error) {
+	if ghLabel == nil {
+		return false, fmt.Errorf("checkLabelHasUpdates: impossible to check updates on a empty github label")
 	}
 
-	if *ghLabel.Name == labelName && ghLabel.Color == &label.Color && ghLabel.Description == &label.Description {
+	if label.Description == "" {
+		return false, nil
+	}
+
+	if ghLabel.Description != nil && *ghLabel.Description == label.Description {
 		return false, nil
 	}
 
 	return true, nil
 }
 
-func updateLabel(e *Env, label *PadLabel, labelName string) error {
+func updateLabel(e *Env, labelName *string, label *PadLabel) error {
 	owner := e.TargetEntity.Owner
 	repo := e.TargetEntity.Repo
 
@@ -72,23 +73,23 @@ func updateLabel(e *Env, label *PadLabel, labelName string) error {
 		Description: &label.Description,
 	}
 
-	_, _, err := e.GithubClient.EditLabel(e.Ctx, owner, repo, labelName, updatedGithubLabel)
+	_, _, err := e.GithubClient.EditLabel(e.Ctx, owner, repo, *labelName, updatedGithubLabel)
 
 	return err
 }
 
-func checkLabelExists(e *Env, labelName string) (bool, error) {
+func checkLabelExists(e *Env, labelName string) (*github.Label, error) {
 	owner := e.TargetEntity.Owner
 	repo := e.TargetEntity.Repo
 
-	_, _, err := e.GithubClient.GetLabel(e.Ctx, owner, repo, labelName)
+	ghLabel, _, err := e.GithubClient.GetLabel(e.Ctx, owner, repo, labelName)
 	if err != nil {
 		if err.(*github.ErrorResponse).Response.StatusCode == 404 {
-			return false, nil
+			return ghLabel, nil
 		}
 
-		return false, err
+		return ghLabel, err
 	}
 
-	return true, nil
+	return ghLabel, nil
 }

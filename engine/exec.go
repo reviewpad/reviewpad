@@ -77,20 +77,20 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 		}
 
 		if !env.DryRun {
-			labelExists, err := checkLabelExists(env, labelName)
+			ghLabel, err := checkLabelExists(env, labelName)
 			if err != nil {
 				return nil, err
 			}
 
-			if labelExists {
-				labelHasUpdates, err := checkLabelHasUpdates(env, &label, labelName)
+			if ghLabel != nil {
+				labelHasUpdates, err := checkLabelHasUpdates(env, &label, ghLabel)
 				if err != nil {
 					CollectError(env, err)
 					return nil, err
 				}
 
 				if labelHasUpdates {
-					err = updateLabel(env, &label, labelName)
+					err = updateLabel(env, &labelName, &label)
 					if err != nil {
 						CollectError(env, err)
 						return nil, err
