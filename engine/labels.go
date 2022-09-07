@@ -68,13 +68,8 @@ func updateLabel(e *Env, label *PadLabel, labelName string) error {
 	owner := e.TargetEntity.Owner
 	repo := e.TargetEntity.Repo
 
-	var updatedLabelDescription *string
-	if label.Description != "" {
-		updatedLabelDescription = &label.Description
-	}
-
 	updatedGithubLabel := &github.Label{
-		Description: updatedLabelDescription,
+		Description: &label.Description,
 	}
 
 	_, _, err := e.GithubClient.EditLabel(e.Ctx, owner, repo, labelName, updatedGithubLabel)
