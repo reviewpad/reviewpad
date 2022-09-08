@@ -34,6 +34,7 @@ func setAST(l AladinoLexer, root Expr) {
 %token <bool> TRUE
 %token <bool> FALSE
 
+%left TK_TYPE
 %left TK_OR
 %left TK_AND
 %left TK_EQ TK_NEQ TK_CMPOP
