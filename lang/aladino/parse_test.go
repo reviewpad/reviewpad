@@ -29,13 +29,6 @@ func TestParse(t *testing.T) {
 				[]Expr{BuildStringConst("medium multiline")},
 			),
 		},
-		"typed expression": {
-			input: `$developer: String`,
-			wantExpr: BuildTypedExpr(
-				BuildVariable("developer"),
-				BuildStringType(),
-			),
-		},
 		"comment with a string": {
 			input: `["hello <a href='https://www.google.com'></a> world", "hello world"]`,
 			wantExpr: BuildArray([]Expr{
@@ -51,15 +44,25 @@ func TestParse(t *testing.T) {
 			}),
 		},
 		"array of typed expression": {
-			input: `[$developer: String, "hello", ($dev => $dev == "hello")]`,
+			input: `[($developer: String => $developer), "hello", ($dev: String => $dev == "hello")]`,
 			wantExpr: BuildArray([]Expr{
-				BuildTypedExpr(
+				BuildLambda(
+					[]Expr{
+						BuildTypedExpr(
+							BuildVariable("developer"),
+							BuildStringType(),
+						),
+					},
 					BuildVariable("developer"),
-					BuildStringType(),
 				),
 				BuildStringConst("hello"),
 				BuildLambda(
-					[]Expr{BuildVariable("dev")},
+					[]Expr{
+						BuildTypedExpr(
+							BuildVariable("dev"),
+							BuildStringType(),
+						),
+					},
 					BuildBinaryOp(BuildVariable("dev"), eqOperator(), BuildStringConst("hello")),
 				),
 			}),
@@ -71,40 +74,61 @@ func TestParse(t *testing.T) {
 				BuildIntConst(10),
 			),
 		},
-		"lambda single argument with wrong type": {
-			input: `(1 => 10)`,
-			wantExpr: BuildLambda(
-				[]Expr{BuildIntConst(1)},
-				BuildIntConst(10),
-			),
-		},
 		"lambda single argument": {
-			input: `($dev => $totalCreatedPullRequests($dev) == 10)`,
+			input: `($dev: String => $totalCreatedPullRequests($dev) == 10)`,
 			wantExpr: BuildLambda(
-				[]Expr{BuildVariable("dev")},
+				[]Expr{BuildTypedExpr(BuildVariable("dev"), BuildStringType())},
 				BuildBinaryOp(BuildFunctionCall(BuildVariable("totalCreatedPullRequests"), []Expr{BuildVariable("dev")}), eqOperator(), BuildIntConst(10)),
 			),
 		},
 		"lambda single argument and operation": {
-			input: `($dev => $dev == "hello")`,
+			input: `($dev: String => $dev == "hello")`,
 			wantExpr: BuildLambda(
-				[]Expr{BuildVariable("dev")},
+				[]Expr{BuildTypedExpr(BuildVariable("dev"), BuildStringType())},
 				BuildBinaryOp(BuildVariable("dev"), eqOperator(), BuildStringConst("hello")),
 			),
 		},
 		"lambda multiple arguments": {
-			input: `($a, $b => $a > $b)`,
+			input: `($a: Int, $b: Int => $a > $b)`,
 			wantExpr: BuildLambda(
-				[]Expr{BuildVariable("a"), BuildVariable("b")},
+				[]Expr{
+					BuildTypedExpr(BuildVariable("a"), BuildIntType()),
+					BuildTypedExpr(BuildVariable("b"), BuildIntType()),
+				},
 				BuildBinaryOp(BuildVariable("a"), greaterThanOperator(), BuildVariable("b")),
 			),
 		},
+		"higher order functions": {
+			input: `$any($reviewers(), ($dev: String => $isElementOf($dev, $team("security"))))`,
+			wantExpr: BuildFunctionCall(
+				BuildVariable("any"),
+				[]Expr{
+					BuildFunctionCall(
+						BuildVariable("reviewers"),
+						[]Expr{},
+					),
+					BuildLambda(
+						[]Expr{BuildTypedExpr(BuildVariable("dev"), BuildStringType())},
+						BuildFunctionCall(
+							BuildVariable("isElementOf"),
+							[]Expr{
+								BuildVariable("dev"),
+								BuildFunctionCall(
+									BuildVariable("team"),
+									[]Expr{BuildStringConst("security")},
+								),
+							},
+						),
+					),
+				},
+			),
+		},
 		"nested lambda": {
-			input: `($a => ($b => $a > $b))`,
+			input: `($a: Int => ($b: Int => $a > $b))`,
 			wantExpr: BuildLambda(
-				[]Expr{BuildVariable("a")},
+				[]Expr{BuildTypedExpr(BuildVariable("a"), BuildIntType())},
 				BuildLambda(
-					[]Expr{BuildVariable("b")},
+					[]Expr{BuildTypedExpr(BuildVariable("b"), BuildIntType())},
 					BuildBinaryOp(BuildVariable("a"), greaterThanOperator(), BuildVariable("b")),
 				),
 			),
