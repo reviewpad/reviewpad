@@ -827,6 +827,10 @@ func TestGetIssueTimeLine(t *testing.T) {
 	assert.Equal(t, wantTimeline, gotTimeline)
 }
 
+func TestGetPullRequestLastPushDate(t *testing.T) {
+	t.Skip("FIME: #332")
+}
+
 func registerHttpResponders(httpMockResponders []httpMockResponder) {
 	for _, httpMockResponder := range httpMockResponders {
 		httpmock.RegisterResponder("GET", httpMockResponder.url, httpMockResponder.responder)

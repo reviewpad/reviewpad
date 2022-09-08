@@ -6,6 +6,9 @@ package github
 
 import (
 	"context"
+	"errors"
+	"fmt"
+	"time"
 
 	"github.com/google/go-github/v45/github"
 	"github.com/shurcooL/githubv4"
@@ -28,6 +31,27 @@ type ReviewThreadsQuery struct {
 					HasNextPage bool
 				}
 			} `graphql:"reviewThreads(first: 10, after: $reviewThreadsCursor)"`
+		} `graphql:"pullRequest(number: $pullRequestNumber)"`
+	} `graphql:"repository(owner: $repositoryOwner, name: $repositoryName)"`
+}
+
+type LastPushQuery struct {
+	Repository struct {
+		PullRequest struct {
+			TimelineItems struct {
+				Nodes []struct {
+					Typename                string `graphql:"__typename"`
+					HeadRefForcePushedEvent struct {
+						CreatedAt *time.Time
+					} `graphql:"... on HeadRefForcePushedEvent"`
+					PullRequestCommit struct {
+						Commit struct {
+							PushedDate    *time.Time
+							CommittedDate *time.Time
+						}
+					} `graphql:"... on PullRequestCommit"`
+				}
+			} `graphql:"timelineItems(last: 1, itemTypes: [HEAD_REF_FORCE_PUSHED_EVENT, PULL_REQUEST_COMMIT])"`
 		} `graphql:"pullRequest(number: $pullRequestNumber)"`
 	} `graphql:"repository(owner: $repositoryOwner, name: $repositoryName)"`
 }
@@ -331,4 +355,45 @@ func (c *GithubClient) GetPullRequestClosingIssuesCount(ctx context.Context, own
 	}
 
 	return int(pullRequestQuery.Repository.PullRequest.ClosingIssuesReferences.TotalCount), nil
+}
+
+func (c *GithubClient) GetPullRequestLastPushDate(ctx context.Context, owner string, repo string, number int) (time.Time, error) {
+	var lastPushQuery LastPushQuery
+	varGQLastPush := map[string]interface{}{
+		"repositoryOwner":   githubv4.String(owner),
+		"repositoryName":    githubv4.String(repo),
+		"pullRequestNumber": githubv4.Int(number),
+	}
+
+	err := c.GetClientGraphQL().Query(ctx, &lastPushQuery, varGQLastPush)
+	if err != nil {
+		return time.Time{}, err
+	}
+
+	hasLastPush := len(lastPushQuery.Repository.PullRequest.TimelineItems.Nodes) > 0
+	if !hasLastPush {
+		return time.Time{}, errors.New("last push not found")
+	}
+
+	var pushDate *time.Time
+
+	event := lastPushQuery.Repository.PullRequest.TimelineItems.Nodes[0]
+	switch event.Typename {
+	case "PullRequestCommit":
+		if pushedDate := event.PullRequestCommit.Commit.PushedDate; pushDate != nil {
+			pushDate = pushedDate
+		} else {
+			pushDate = event.PullRequestCommit.Commit.PushedDate
+		}
+	case "HeadRefForcePushedEvent":
+		pushDate = event.HeadRefForcePushedEvent.CreatedAt
+	default:
+		return time.Time{}, fmt.Errorf("unknown event type %v", event.Typename)
+	}
+
+	if pushDate == nil {
+		return time.Time{}, errors.New("last push not found")
+	}
+
+	return *pushDate, nil
 }

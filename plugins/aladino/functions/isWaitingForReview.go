@@ -46,13 +46,10 @@ func isWaitingForReviewCode(e aladino.Env, _ []aladino.Value) (aladino.Value, er
 		return aladino.BuildBoolValue(false), nil
 	}
 
-	// FIXME: #208
-	lastCommit := commits[len(commits)-1]
-	if lastCommit.Commit == nil || lastCommit.Commit.Committer == nil || lastCommit.Commit.Committer.Date == nil {
-		log.Printf("[WARN] Commit %v has no value for pull request %s/%s#%d.", lastCommit, owner, repo, prNum)
-		return aladino.BuildBoolValue(false), nil
+	lastPushedDate, err := e.GetGithubClient().GetPullRequestLastPushDate(e.GetCtx(), owner, repo, prNum)
+	if err != nil {
+		return nil, err
 	}
-	lastUpdateDate := *lastCommit.Commit.Committer.Date
 
 	reviews, err := e.GetGithubClient().GetPullRequestReviews(e.GetCtx(), owner, repo, prNum)
 	if err != nil {
@@ -79,7 +76,7 @@ func isWaitingForReviewCode(e aladino.Env, _ []aladino.Value) (aladino.Value, er
 
 	for _, lastUserReview := range lastReviewByUser {
 		if *lastUserReview.State != "APPROVED" {
-			if lastUserReview.GetSubmittedAt().Before(lastUpdateDate) {
+			if lastUserReview.GetSubmittedAt().Before(lastPushedDate) {
 				return aladino.BuildBoolValue(true), nil
 			}
 		}
