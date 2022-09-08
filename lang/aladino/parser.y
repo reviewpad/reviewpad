@@ -34,6 +34,7 @@ func setAST(l AladinoLexer, root Expr) {
 %token <bool> TRUE
 %token <bool> FALSE
 
+%left TK_TYPE
 %left TK_OR
 %left TK_AND
 %left TK_EQ TK_NEQ TK_CMPOP
@@ -47,24 +48,23 @@ prog :
 
 expr :
       TK_NOT expr        { $$ = BuildNotOp($2) }
+    | expr TK_TYPE       { $$ = BuildTypedExpr($1, ParseType($2)) }
     | expr TK_AND expr   { $$ = BuildAndOp($1, $3) }
     | expr TK_OR expr    { $$ = BuildOrOp($1, $3) }
     | expr TK_EQ expr    { $$ = BuildEqOp($1, $3) }
     | expr TK_NEQ expr   { $$ = BuildNeqOp($1, $3) }
     | expr TK_CMPOP expr { $$ = BuildCmpOp($1, $2, $3) }
+    | '$' IDENTIFIER '(' expr_list ')'  { $$ = BuildFunctionCall(BuildVariable($2), $4) }
+    | '$' IDENTIFIER     { $$ = BuildVariable($2) }
+    | '(' expr_list TK_LAMBDA expr  ')' { $$ = BuildLambda($2, $4) }
     | '(' expr ')'       { $$ = $2 }
+    | '[' expr_list ']'  { $$ = BuildArray($2) }
     | TIMESTAMP          { $$ = BuildTimeConst($1) }
     | RELATIVETIMESTAMP  { $$ = BuildRelativeTimeConst($1) }
     | NUMBER             { $$ = BuildIntConst($1) }
-    | STRINGLITERAL      { $$ = BuildStringConst($1) }
-    | '[' expr_list ']'  { $$ = BuildArray($2) }
-    | '$' IDENTIFIER     { $$ = BuildVariable($2) }
     | TRUE               { $$ = BuildBoolConst(true) }
     | FALSE              { $$ = BuildBoolConst(false) }
-    | '$' IDENTIFIER '(' expr_list ')' 
-        { $$ = BuildFunctionCall(BuildVariable($2), $4) }
-    | '(' expr_list TK_LAMBDA expr  ')'      { $$ = BuildLambda($2, $4) }
-    | expr TK_TYPE  { $$ = BuildTypedExpr($1, ParseType($2)) }
+    | STRINGLITERAL      { $$ = BuildStringConst($1) }
 ;
 
 expr_list :

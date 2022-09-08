@@ -10,59 +10,89 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestParse_WhenSingleLine(t *testing.T) {
-	input := `$addLabel("small")`
-	wantExpr := BuildFunctionCall(
-		BuildVariable("addLabel"),
-		[]Expr{BuildStringConst("small")},
-	)
-
-	gotExpr, err := Parse(input)
-	assert.Nil(t, err)
-	assert.Equal(t, wantExpr, gotExpr)
-}
-
-func TestParse_WhenMultilineLine(t *testing.T) {
-	input := `$addLabel("medium multiline")
-
-`
-	wantExpr := BuildFunctionCall(
-		BuildVariable("addLabel"),
-		[]Expr{BuildStringConst("medium multiline")},
-	)
-
-	gotExpr, err := Parse(input)
-	assert.Nil(t, err)
-	assert.Equal(t, wantExpr, gotExpr)
-}
-
-func TestParse_Lambda(t *testing.T) {
+func TestParse(t *testing.T) {
 	tests := map[string]struct {
 		input    string
-		wantExpr *Lambda
+		wantExpr Expr
 	}{
-		"no arguments": {
+		"single line": {
+			input: `$addLabel("small")`,
+			wantExpr: BuildFunctionCall(
+				BuildVariable("addLabel"),
+				[]Expr{BuildStringConst("small")},
+			),
+		},
+		"single line with spaces": {
+			input: `$addLabel(  "medium multiline")`,
+			wantExpr: BuildFunctionCall(
+				BuildVariable("addLabel"),
+				[]Expr{BuildStringConst("medium multiline")},
+			),
+		},
+		"typed expression": {
+			input: `$developer: String`,
+			wantExpr: BuildTypedExpr(
+				BuildVariable("developer"),
+				BuildStringType(),
+			),
+		},
+		"comment with a string": {
+			input: `["hello <a href='https://www.google.com'></a> world", "hello world"]`,
+			wantExpr: BuildArray([]Expr{
+				BuildStringConst("hello <a href='https://www.google.com'></a> world"),
+				BuildStringConst("hello world"),
+			}),
+		},
+		"array of strings": {
+			input: `["hello", "world"]`,
+			wantExpr: BuildArray([]Expr{
+				BuildStringConst("hello"),
+				BuildStringConst("world"),
+			}),
+		},
+		"array of typed expression": {
+			input: `[$developer: String, "hello", ($dev => $dev == "hello")]`,
+			wantExpr: BuildArray([]Expr{
+				BuildTypedExpr(
+					BuildVariable("developer"),
+					BuildStringType(),
+				),
+				BuildStringConst("hello"),
+				BuildLambda(
+					[]Expr{BuildVariable("dev")},
+					BuildBinaryOp(BuildVariable("dev"), eqOperator(), BuildStringConst("hello")),
+				),
+			}),
+		},
+		"lambda no arguments": {
 			input: `( => 10)`,
 			wantExpr: BuildLambda(
 				[]Expr{},
 				BuildIntConst(10),
 			),
 		},
-		"single argument with wrong type": {
+		"lambda single argument with wrong type": {
 			input: `(1 => 10)`,
 			wantExpr: BuildLambda(
 				[]Expr{BuildIntConst(1)},
 				BuildIntConst(10),
 			),
 		},
-		"single argument": {
+		"lambda single argument": {
 			input: `($dev => $totalCreatedPullRequests($dev) == 10)`,
 			wantExpr: BuildLambda(
 				[]Expr{BuildVariable("dev")},
 				BuildBinaryOp(BuildFunctionCall(BuildVariable("totalCreatedPullRequests"), []Expr{BuildVariable("dev")}), eqOperator(), BuildIntConst(10)),
 			),
 		},
-		"multiple arguments": {
+		"lambda single argument and operation": {
+			input: `($dev => $dev == "hello")`,
+			wantExpr: BuildLambda(
+				[]Expr{BuildVariable("dev")},
+				BuildBinaryOp(BuildVariable("dev"), eqOperator(), BuildStringConst("hello")),
+			),
+		},
+		"lambda multiple arguments": {
 			input: `($a, $b => $a > $b)`,
 			wantExpr: BuildLambda(
 				[]Expr{BuildVariable("a"), BuildVariable("b")},
@@ -96,16 +126,4 @@ func TestParse_Lambda(t *testing.T) {
 			assert.Equal(t, test.wantExpr, gotExpr)
 		})
 	}
-}
-
-func TestParse_TypedExpression(t *testing.T) {
-	input := `$developer: String`
-	wantExpr := BuildTypedExpr(
-		BuildVariable("developer"),
-		BuildStringType(),
-	)
-
-	gotExpr, err := Parse(input)
-	assert.Nil(t, err)
-	assert.Equal(t, wantExpr, gotExpr)
 }
