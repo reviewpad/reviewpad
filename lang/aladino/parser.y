@@ -26,7 +26,7 @@ func setAST(l AladinoLexer, root Expr) {
 // any non-terminal which returns a value needs a type, which is
 // really a field name in the above union struct
 %type <ast> expr
-%type <astList> expr_list
+%type <astList> expr_list typed_expr_list
 
 // same for terminals
 %token <str> TIMESTAMP RELATIVETIMESTAMP IDENTIFIER STRINGLITERAL TK_CMPOP TK_LAMBDA TK_TYPE
@@ -34,7 +34,6 @@ func setAST(l AladinoLexer, root Expr) {
 %token <bool> TRUE
 %token <bool> FALSE
 
-%left TK_TYPE
 %left TK_OR
 %left TK_AND
 %left TK_EQ TK_NEQ TK_CMPOP
@@ -64,8 +63,13 @@ expr :
     | FALSE              { $$ = BuildBoolConst(false) }
     | '$' IDENTIFIER '(' expr_list ')' 
         { $$ = BuildFunctionCall(BuildVariable($2), $4) }
-    | '(' expr_list TK_LAMBDA expr  ')'      { $$ = BuildLambda($2, $4) }
-    | expr TK_TYPE  { $$ = BuildTypedExpr($1, ParseType($2)) }
+    | '(' typed_expr_list TK_LAMBDA expr  ')'      { $$ = BuildLambda($2, $4) }
+;
+
+typed_expr_list:
+      expr TK_TYPE ',' typed_expr_list { $$ = append([]Expr{BuildTypedExpr($1, ParseType($2))}, $4...) }
+    | expr TK_TYPE                     { $$ = []Expr{BuildTypedExpr($1, ParseType($2))} }
+    |                                  { $$ = []Expr{} }
 ;
 
 expr_list :

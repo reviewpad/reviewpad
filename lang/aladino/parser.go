@@ -82,55 +82,58 @@ var AladinoExca = [...]int{
 
 const AladinoPrivate = 57344
 
-const AladinoLast = 85
+const AladinoLast = 87
 
 var AladinoAct = [...]int{
-	23, 2, 21, 33, 19, 20, 39, 34, 32, 1,
-	24, 17, 22, 0, 25, 26, 27, 28, 29, 15,
-	16, 5, 6, 0, 8, 0, 0, 0, 7, 11,
-	12, 0, 0, 36, 35, 3, 4, 37, 9, 17,
-	10, 18, 0, 0, 0, 14, 13, 15, 16, 0,
-	17, 30, 18, 0, 0, 31, 14, 13, 15, 16,
-	0, 17, 0, 18, 0, 0, 31, 14, 13, 15,
-	16, 0, 17, 38, 18, 17, 0, 0, 14, 13,
-	15, 16, 13, 15, 16,
+	22, 2, 20, 17, 18, 19, 21, 35, 32, 14,
+	13, 15, 16, 42, 24, 25, 26, 27, 28, 33,
+	5, 6, 17, 8, 34, 23, 31, 7, 11, 12,
+	15, 16, 36, 1, 3, 4, 40, 9, 39, 10,
+	37, 38, 17, 0, 30, 0, 0, 0, 14, 13,
+	15, 16, 17, 0, 29, 0, 0, 0, 14, 13,
+	15, 16, 0, 17, 41, 30, 0, 17, 0, 14,
+	13, 15, 16, 14, 13, 15, 16, 17, 0, 0,
+	0, 0, 0, 0, 13, 15, 16,
 }
 
 var AladinoPact = [...]int{
-	17, -1000, 64, 17, 17, -1000, -1000, -1000, -1000, 17,
-	4, -1000, -1000, 17, 17, 17, 17, 17, -1000, -1000,
-	31, -1, -19, 42, -12, 3, 67, -1000, -1000, -1000,
-	-1000, 17, 17, -1000, 17, -1000, 53, -14, -1000, -1000,
+	16, -1000, 59, 16, 16, -1000, -1000, -1000, -1000, 16,
+	19, -1000, -1000, 16, 16, 16, 16, 16, -1000, 34,
+	17, -14, -5, 5, 14, 69, -1000, -1000, -1000, -1000,
+	-17, 16, -1000, 16, 16, 16, 44, -1000, -7, -1000,
+	55, -1000, -1000,
 }
 
 var AladinoPgo = [...]int{
-	0, 0, 2, 9,
+	0, 0, 6, 2, 33,
 }
 
 var AladinoR1 = [...]int{
-	0, 3, 1, 1, 1, 1, 1, 1, 1, 1,
-	1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-	2, 2, 2,
+	0, 4, 1, 1, 1, 1, 1, 1, 1, 1,
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 3,
+	3, 3, 2, 2, 2,
 }
 
 var AladinoR2 = [...]int{
 	0, 1, 2, 3, 3, 3, 3, 3, 3, 1,
-	1, 1, 1, 3, 2, 1, 1, 5, 5, 2,
-	3, 1, 0,
+	1, 1, 1, 3, 2, 1, 1, 5, 5, 4,
+	2, 0, 3, 1, 0,
 }
 
 var AladinoChk = [...]int{
-	-1000, -3, -1, 18, 19, 4, 5, 11, 7, 21,
-	23, 12, 13, 15, 14, 16, 17, 8, 10, -1,
-	-1, -2, -2, -1, 6, -1, -1, -1, -1, -1,
-	20, 24, 9, 22, 19, -2, -1, -2, 20, 20,
+	-1000, -4, -1, 18, 19, 4, 5, 11, 7, 21,
+	23, 12, 13, 15, 14, 16, 17, 8, -1, -1,
+	-3, -2, -1, 6, -1, -1, -1, -1, -1, 20,
+	10, 9, 22, 24, 19, 24, -1, -2, -2, -3,
+	-1, 20, 20,
 }
 
 var AladinoDef = [...]int{
-	0, -2, 1, 0, 22, 9, 10, 11, 12, 22,
-	0, 15, 16, 0, 0, 0, 0, 0, 19, 2,
-	21, 0, 0, 21, 14, 3, 4, 5, 6, 7,
-	8, 22, 0, 13, 22, 20, 0, 0, 18, 17,
+	0, -2, 1, 0, 21, 9, 10, 11, 12, 24,
+	0, 15, 16, 0, 0, 0, 0, 0, 2, 0,
+	0, 0, 23, 14, 3, 4, 5, 6, 7, 8,
+	20, 0, 13, 24, 24, 21, 0, 22, 0, 19,
+	0, 18, 17,
 }
 
 var AladinoTok1 = [...]int{
@@ -581,21 +584,31 @@ Aladinodefault:
 			AladinoVAL.ast = BuildLambda(AladinoDollar[2].astList, AladinoDollar[4].ast)
 		}
 	case 19:
-		AladinoDollar = AladinoS[Aladinopt-2 : Aladinopt+1]
+		AladinoDollar = AladinoS[Aladinopt-4 : Aladinopt+1]
 		{
-			AladinoVAL.ast = BuildTypedExpr(AladinoDollar[1].ast, ParseType(AladinoDollar[2].str))
+			AladinoVAL.astList = append([]Expr{BuildTypedExpr(AladinoDollar[1].ast, ParseType(AladinoDollar[2].str))}, AladinoDollar[4].astList...)
 		}
 	case 20:
+		AladinoDollar = AladinoS[Aladinopt-2 : Aladinopt+1]
+		{
+			AladinoVAL.astList = []Expr{BuildTypedExpr(AladinoDollar[1].ast, ParseType(AladinoDollar[2].str))}
+		}
+	case 21:
+		AladinoDollar = AladinoS[Aladinopt-0 : Aladinopt+1]
+		{
+			AladinoVAL.astList = []Expr{}
+		}
+	case 22:
 		AladinoDollar = AladinoS[Aladinopt-3 : Aladinopt+1]
 		{
 			AladinoVAL.astList = append([]Expr{AladinoDollar[1].ast}, AladinoDollar[3].astList...)
 		}
-	case 21:
+	case 23:
 		AladinoDollar = AladinoS[Aladinopt-1 : Aladinopt+1]
 		{
 			AladinoVAL.astList = []Expr{AladinoDollar[1].ast}
 		}
-	case 22:
+	case 24:
 		AladinoDollar = AladinoS[Aladinopt-0 : Aladinopt+1]
 		{
 			AladinoVAL.astList = []Expr{}
