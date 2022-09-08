@@ -828,7 +828,7 @@ func TestGetIssueTimeLine(t *testing.T) {
 }
 
 func TestGetPullRequestLastPushDate(t *testing.T) {
-	t.Skip("FIME: #332")
+	t.Skip("FIXME: #332")
 }
 
 func registerHttpResponders(httpMockResponders []httpMockResponder) {
