@@ -122,6 +122,10 @@ func (t *IssueTarget) GetCreatedAt() (string, error) {
 	return t.issue.GetCreatedAt().String(), nil
 }
 
+func (t *IssueTarget) GetUpdatedAt() (string, error) {
+	return t.issue.GetUpdatedAt().String(), nil
+}
+
 func (t *IssueTarget) GetDescription() (string, error) {
 	return t.issue.GetBody(), nil
 }

@@ -5,6 +5,8 @@
 package plugins_aladino_functions
 
 import (
+	"time"
+
 	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 )
@@ -18,20 +20,15 @@ func LastEventAt() *aladino.BuiltInFunction {
 }
 
 func lastEventAtCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
-	entity := e.GetTarget().GetTargetEntity()
-
-	timeline, err := e.GetGithubClient().GetIssueTimeline(e.GetCtx(), entity.Owner, entity.Repo, entity.Number)
+	updatedAt, err := e.GetTarget().GetUpdatedAt()
 	if err != nil {
 		return nil, err
 	}
 
-	lastEvent := timeline[len(timeline)-1]
-	var lastEventTime int
-	if *lastEvent.Event == "reviewed" {
-		lastEventTime = int(lastEvent.GetSubmittedAt().Unix())
-	} else {
-		lastEventTime = int(lastEvent.GetCreatedAt().Unix())
+	updatedAtTime, err := time.Parse("2006-01-02 15:04:05.999999999 -0700 MST", updatedAt)
+	if err != nil {
+		return nil, err
 	}
 
-	return aladino.BuildIntValue(lastEventTime), nil
+	return aladino.BuildIntValue(int(updatedAtTime.Unix())), nil
 }

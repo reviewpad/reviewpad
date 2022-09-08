@@ -27,6 +27,7 @@ const DefaultMockPrNum = 6
 const DefaultMockPrOwner = "foobar"
 const DefaultMockPrRepoName = "default-mock-repo"
 
+var DefaultMockPrDate = time.Date(2009, 11, 17, 20, 34, 58, 651387237, time.UTC)
 var DefaultMockContext = context.Background()
 var DefaultMockCollector = collector.NewCollector("", "", "pull_request", "")
 var DefaultMockTargetEntity = &handler.TargetEntity{
@@ -42,7 +43,7 @@ func GetDefaultMockPullRequestDetails() *github.PullRequest {
 	prOwner := DefaultMockPrOwner
 	prRepoName := DefaultMockPrRepoName
 	prUrl := fmt.Sprintf("https://api.github.com/repos/%v/%v/pulls/%v", prOwner, prRepoName, prNum)
-	prDate := time.Date(2009, 11, 17, 20, 34, 58, 651387237, time.UTC)
+	prDate := DefaultMockPrDate
 
 	return &github.PullRequest{
 		ID:   &prId,
@@ -157,6 +158,10 @@ func GetDefaultMockPullRequestDetailsWith(pr *github.PullRequest) *github.PullRe
 
 	if pr.NodeID != nil {
 		defaultPullRequest.NodeID = pr.NodeID
+	}
+
+	if pr.UpdatedAt != nil {
+		defaultPullRequest.UpdatedAt = pr.UpdatedAt
 	}
 
 	return defaultPullRequest

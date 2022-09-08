@@ -312,6 +312,10 @@ func (t *PullRequestTarget) GetCreatedAt() (string, error) {
 	return t.PullRequest.GetCreatedAt().String(), nil
 }
 
+func (t *PullRequestTarget) GetUpdatedAt() (string, error) {
+	return t.PullRequest.GetUpdatedAt().String(), nil
+}
+
 func (t *PullRequestTarget) GetDescription() (string, error) {
 	return t.PullRequest.GetBody(), nil
 }
