@@ -39,5 +39,4 @@ func anyCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
 	}
 
 	return aladino.BuildBoolValue(match), nil
-
 }

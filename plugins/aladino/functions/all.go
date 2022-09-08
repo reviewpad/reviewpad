@@ -28,9 +28,15 @@ func All() *aladino.BuiltInFunction {
 
 func allCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
 	elems := args[0].(*aladino.ArrayValue).Vals
+	fn := args[1].(*aladino.FunctionValue).Fn
+	match := false
 
-	// ignoring error because filterCode will always return nil
-	filteredValues, _ := filterCode(e, args)
+	for _, elem := range elems {
+		match = fn([]aladino.Value{elem}).(*aladino.BoolValue).Val
+		if !match {
+			break
+		}
+	}
 
-	return aladino.BuildBoolValue(len(elems) > 0 && len(filteredValues.(*aladino.ArrayValue).Vals) == len(elems)), nil
+	return aladino.BuildBoolValue(match), nil
 }
