@@ -1,5 +1,5 @@
 ![Reviewpad-Background-Logo-Shorter@1 5x](https://user-images.githubusercontent.com/38539/185980242-be2dfd87-2e0c-4bb1-87ce-462f629cedf6.png)
-# Reviewpad 
+# Reviewpad
 
 [![x-ray-badge](https://img.shields.io/badge/Time%20to%20Merge-Fair%20team-bb3e03?link=https://xray.reviewpad.com/analysis?repository=https%3A%2F%2Fgithub.com%2Freviewpad%2Freviewpad&style=plastic.svg)](https://xray.reviewpad.com/analysis?repository=https%3A%2F%2Fgithub.com%2Freviewpad%2Freviewpad) [![Build](https://github.com/reviewpad/reviewpad/actions/workflows/build.yml/badge.svg)](https://github.com/reviewpad/reviewpad/actions/workflows/build.yml) [![Go Report Card](https://goreportcard.com/badge/github.com/reviewpad/reviewpad)](https://goreportcard.com/report/github.com/reviewpad/reviewpad)
 
@@ -58,11 +58,11 @@ You can execute Reviewpad through the CLI or through the Reviewpad [GitHub actio
 This repository generates two artifacts:
 
 1. CLI [cli](cli/main.go) that runs reviewpad open source edition.
-2. Reviewpad library packages:  
-    ├ github.com/reviewpad/reviewpad/collector  
-    ├ github.com/reviewpad/reviewpad/engine  
-    ├ github.com/reviewpad/reviewpad/lang/aladino  
-    ├ github.com/reviewpad/reviewpad/plugins/aladino  
+2. Reviewpad library packages:
+    ├ github.com/reviewpad/reviewpad/collector
+    ├ github.com/reviewpad/reviewpad/engine
+    ├ github.com/reviewpad/reviewpad/lang/aladino
+    ├ github.com/reviewpad/reviewpad/plugins/aladino
     ├ github.com/reviewpad/reviewpad/utils/fmtio
 
 Conceptually, the packages are divided into four categories:
@@ -76,13 +76,12 @@ Conceptually, the packages are divided into four categories:
 
 ## Development
 
-### Setup
+### Prerequisites
 
-This project uses the Goyacc, a version of yacc for Go, used to create the Aladino parser, to install goyacc run:
-
-```sh
-go install golang.org/x/tools/cmd/goyacc@master
-```
+Before you begin, ensure you have met the following requirements:
+* [Go](https://golang.org/doc/install) with the minimum version of 1.16.
+* [goyacc](https://pkg.go.dev/golang.org/x/tools/cmd/goyacc) used to generate Reviewpad Aladino parser (`go install golang.org/x/tools/cmd/goyacc@master`).
+* [libgit2](https://github.com/libgit2/libgit2) with version v1.2.
 
 ### Compilation
 
@@ -98,12 +97,12 @@ To generate the CLI of the team edition run:
 task build-cli
 ```
 
-This command generate the binary `reviewpad-cli` which you can run to try Reviewpad directly. 
+This command generate the binary `reviewpad-cli` which you can run to try Reviewpad directly.
 
 The CLI has the following argument list:
 
 ```sh
-./reviewpad-cli 
+./reviewpad-cli
 reviewpad-cli is command line interface to run reviewpad commands.
 
 Usage:
@@ -140,6 +139,24 @@ panic: httptest: failed to listen on a port: listen tcp6 [::1]:0: socket: too ma
 You can solve with:
 ```
 ulimit -Sn 500
+```
+
+#### Coverage
+
+To generate the coverage report run:
+
+```
+task test
+```
+
+To display the code coverage for every package run:
+```
+go tool cover -func coverage.out
+```
+
+To display the total code coverage percentage run:
+```
+go tool cover -func coverage.out | grep total:
 ```
 
 ### VSCode

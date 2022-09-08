@@ -17,7 +17,7 @@ var (
 type Target interface {
 	AddAssignees(assignees []string) error
 	AddLabels(labels []string) error
-	Close() error
+	Close(comment string) error
 	Comment(comment string) error
 	GetAssignees() ([]*User, error)
 	GetAvailableAssignees() ([]*User, error)

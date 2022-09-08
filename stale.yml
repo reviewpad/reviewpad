@@ -20,11 +20,11 @@ workflows:
       - "issue"
       - "pull_request"
     if:
-      - rule: '!$rule("labeled-as-stale") && $lastEventAt() < 30 days ago'
+      - rule: '!$rule("labeled-as-stale") && $lastEventAt() < 7 days ago'
         extra-actions:
           - '$info("This issue is stale.")'
           - '$addLabel("stale-label")'
       - rule: '$rule("labeled-as-stale") && $lastEventAt() < 7 days ago'
         extra-actions:
-          - '$commentOnce("Closing because this issue has been inactive for more than one month.")'
+          - '$commentOnce("Closing because this issue has been inactive for more than one week.")'
           - '$close()'

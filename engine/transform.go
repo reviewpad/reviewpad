@@ -31,6 +31,10 @@ func addDefaultMergeMethod(str string) string {
 	return strings.ReplaceAll(str, "$merge()", "$merge(\"merge\")")
 }
 
+func addDefaultSizeMethod(str string) string {
+	return strings.ReplaceAll(str, "$size()", "$size([])")
+}
+
 // reviewpad-an: generated-by-co-pilot
 func addDefaultIssueCountBy(str string) string {
 	m := regexp.MustCompile("\\$issueCountBy\\(\"[^\"]*\"\\)")
@@ -58,14 +62,20 @@ func addDefaultPullRequestCountBy(str string) string {
 	return transformedStr
 }
 
+func addEmptyCloseComment(str string) string {
+	return strings.ReplaceAll(str, "$close()", "$close(\"\")")
+}
+
 func transformAladinoExpression(str string) string {
 	transformedActionStr := str
 
 	var transformations = [](func(str string) string){
 		addDefaultTotalRequestedReviewers,
 		addDefaultMergeMethod,
+		addDefaultSizeMethod,
 		addDefaultIssueCountBy,
 		addDefaultPullRequestCountBy,
+		addEmptyCloseComment,
 	}
 
 	for i := range transformations {
