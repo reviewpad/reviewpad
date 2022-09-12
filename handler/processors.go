@@ -50,6 +50,10 @@ func ParseEvent(rawEvent string) (*ActionEvent, error) {
 	return event, nil
 }
 
+func processUnsupportedEvent(eventPayload interface{}) ([]*TargetEntity, error) {
+	return nil, fmt.Errorf("unsupported event payload type: %T", eventPayload)
+}
+
 func processCronEvent(token string, e *ActionEvent) ([]*TargetEntity, error) {
 	Log("processing 'schedule' event")
 
@@ -89,7 +93,7 @@ func processCronEvent(token string, e *ActionEvent) ([]*TargetEntity, error) {
 	return events, nil
 }
 
-func processIssuesEvent(e *github.IssuesEvent) []*TargetEntity {
+func processIssuesEvent(e *github.IssuesEvent) ([]*TargetEntity, error) {
 	Log("processing 'issues' event")
 	Log("found issue %v", *e.Issue.Number)
 
@@ -100,10 +104,10 @@ func processIssuesEvent(e *github.IssuesEvent) []*TargetEntity {
 			Owner:  *e.Repo.Owner.Login,
 			Repo:   *e.Repo.Name,
 		},
-	}
+	}, nil
 }
 
-func processIssueCommentEvent(e *github.IssueCommentEvent) []*TargetEntity {
+func processIssueCommentEvent(e *github.IssueCommentEvent) ([]*TargetEntity, error) {
 	Log("processing 'issue_comment' event")
 	Log("found issue %v", *e.Issue.Number)
 
@@ -119,10 +123,10 @@ func processIssueCommentEvent(e *github.IssueCommentEvent) []*TargetEntity {
 			Owner:  *e.Repo.Owner.Login,
 			Repo:   *e.Repo.Name,
 		},
-	}
+	}, nil
 }
 
-func processPullRequestEvent(e *github.PullRequestEvent) []*TargetEntity {
+func processPullRequestEvent(e *github.PullRequestEvent) ([]*TargetEntity, error) {
 	Log("processing 'pull_request' event")
 	Log("found pr %v", *e.PullRequest.Number)
 
@@ -133,10 +137,10 @@ func processPullRequestEvent(e *github.PullRequestEvent) []*TargetEntity {
 			Owner:  *e.Repo.Owner.Login,
 			Repo:   *e.Repo.Name,
 		},
-	}
+	}, nil
 }
 
-func processPullRequestReviewEvent(e *github.PullRequestReviewEvent) []*TargetEntity {
+func processPullRequestReviewEvent(e *github.PullRequestReviewEvent) ([]*TargetEntity, error) {
 	Log("processing 'pull_request_review' event")
 	Log("found pr %v", *e.PullRequest.Number)
 
@@ -147,10 +151,10 @@ func processPullRequestReviewEvent(e *github.PullRequestReviewEvent) []*TargetEn
 			Owner:  *e.Repo.Owner.Login,
 			Repo:   *e.Repo.Name,
 		},
-	}
+	}, nil
 }
 
-func processPullRequestReviewCommentEvent(e *github.PullRequestReviewCommentEvent) []*TargetEntity {
+func processPullRequestReviewCommentEvent(e *github.PullRequestReviewCommentEvent) ([]*TargetEntity, error) {
 	Log("processing 'pull_request_review_comment' event")
 	Log("found pr %v", *e.PullRequest.Number)
 
@@ -161,10 +165,10 @@ func processPullRequestReviewCommentEvent(e *github.PullRequestReviewCommentEven
 			Owner:  *e.Repo.Owner.Login,
 			Repo:   *e.Repo.Name,
 		},
-	}
+	}, nil
 }
 
-func processPullRequestTargetEvent(e *github.PullRequestTargetEvent) []*TargetEntity {
+func processPullRequestTargetEvent(e *github.PullRequestTargetEvent) ([]*TargetEntity, error) {
 	Log("processing 'pull_request_target' event")
 	Log("found pr %v", *e.PullRequest.Number)
 
@@ -175,7 +179,7 @@ func processPullRequestTargetEvent(e *github.PullRequestTargetEvent) []*TargetEn
 			Owner:  *e.Repo.Owner.Login,
 			Repo:   *e.Repo.Name,
 		},
-	}
+	}, nil
 }
 
 func processStatusEvent(token string, e *github.StatusEvent) ([]*TargetEntity, error) {
@@ -265,23 +269,115 @@ func ProcessEvent(event *ActionEvent) ([]*TargetEntity, error) {
 	switch payload := eventPayload.(type) {
 	// Handle github events triggered by actions
 	// For more information, visit: https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows
-	case *github.IssuesEvent:
-		return processIssuesEvent(payload), nil
+	case *github.BranchProtectionRuleEvent:
+		return processUnsupportedEvent(payload)
+	case *github.CheckRunEvent:
+		return processUnsupportedEvent(payload)
+	case *github.CheckSuiteEvent:
+		return processUnsupportedEvent(payload)
+	case *github.CommitCommentEvent:
+		return processUnsupportedEvent(payload)
+	case *github.ContentReferenceEvent:
+		return processUnsupportedEvent(payload)
+	case *github.CreateEvent:
+		return processUnsupportedEvent(payload)
+	case *github.DeleteEvent:
+		return processUnsupportedEvent(payload)
+	case *github.DeployKeyEvent:
+		return processUnsupportedEvent(payload)
+	case *github.DeploymentEvent:
+		return processUnsupportedEvent(payload)
+	case *github.DeploymentStatusEvent:
+		return processUnsupportedEvent(payload)
+	case *github.DiscussionEvent:
+		return processUnsupportedEvent(payload)
+	case *github.ForkEvent:
+		return processUnsupportedEvent(payload)
+	case *github.GitHubAppAuthorizationEvent:
+		return processUnsupportedEvent(payload)
+	case *github.GollumEvent:
+		return processUnsupportedEvent(payload)
+	case *github.InstallationEvent:
+		return processUnsupportedEvent(payload)
+	case *github.InstallationRepositoriesEvent:
+		return processUnsupportedEvent(payload)
 	case *github.IssueCommentEvent:
-		return processIssueCommentEvent(payload), nil
+		return processIssueCommentEvent(payload)
+	case *github.IssuesEvent:
+		return processIssuesEvent(payload)
+	case *github.LabelEvent:
+		return processUnsupportedEvent(payload)
+	case *github.MarketplacePurchaseEvent:
+		return processUnsupportedEvent(payload)
+	case *github.MemberEvent:
+		return processUnsupportedEvent(payload)
+	case *github.MembershipEvent:
+		return processUnsupportedEvent(payload)
+	case *github.MetaEvent:
+		return processUnsupportedEvent(payload)
+	case *github.MilestoneEvent:
+		return processUnsupportedEvent(payload)
+	case *github.OrganizationEvent:
+		return processUnsupportedEvent(payload)
+	case *github.OrgBlockEvent:
+		return processUnsupportedEvent(payload)
+	case *github.PackageEvent:
+		return processUnsupportedEvent(payload)
+	case *github.PageBuildEvent:
+		return processUnsupportedEvent(payload)
+	case *github.PingEvent:
+		return processUnsupportedEvent(payload)
+	case *github.ProjectEvent:
+		return processUnsupportedEvent(payload)
+	case *github.ProjectCardEvent:
+		return processUnsupportedEvent(payload)
+	case *github.ProjectColumnEvent:
+		return processUnsupportedEvent(payload)
+	case *github.PublicEvent:
+		return processUnsupportedEvent(payload)
 	case *github.PullRequestEvent:
-		return processPullRequestEvent(payload), nil
+		return processPullRequestEvent(payload)
 	case *github.PullRequestReviewEvent:
-		return processPullRequestReviewEvent(payload), nil
+		return processPullRequestReviewEvent(payload)
 	case *github.PullRequestReviewCommentEvent:
-		return processPullRequestReviewCommentEvent(payload), nil
+		return processPullRequestReviewCommentEvent(payload)
+	case *github.PullRequestReviewThreadEvent:
+		return processUnsupportedEvent(payload)
 	case *github.PullRequestTargetEvent:
-		return processPullRequestTargetEvent(payload), nil
+		return processPullRequestTargetEvent(payload)
+	case *github.PushEvent:
+		return processUnsupportedEvent(payload)
+	case *github.ReleaseEvent:
+		return processUnsupportedEvent(payload)
+	case *github.RepositoryEvent:
+		return processUnsupportedEvent(payload)
+	case *github.RepositoryDispatchEvent:
+		return processUnsupportedEvent(payload)
+	case *github.RepositoryImportEvent:
+		return processUnsupportedEvent(payload)
+	case *github.RepositoryVulnerabilityAlertEvent:
+		return processUnsupportedEvent(payload)
+	case *github.SecretScanningAlertEvent:
+		return processUnsupportedEvent(payload)
+	case *github.StarEvent:
+		return processUnsupportedEvent(payload)
 	case *github.StatusEvent:
 		return processStatusEvent(*event.Token, payload)
+	case *github.TeamEvent:
+		return processUnsupportedEvent(payload)
+	case *github.TeamAddEvent:
+		return processUnsupportedEvent(payload)
+	case *github.UserEvent:
+		return processUnsupportedEvent(payload)
+	case *github.WatchEvent:
+		return processUnsupportedEvent(payload)
+	case *github.WorkflowDispatchEvent:
+		return processUnsupportedEvent(payload)
+	case *github.WorkflowJobEvent:
+		return processUnsupportedEvent(payload)
 	case *github.WorkflowRunEvent:
 		return processWorkflowRunEvent(*event.Token, payload)
 	}
 
-	return nil, fmt.Errorf("unknown event payload type: %T", eventPayload)
+	return processUnsupportedEvent(eventPayload)
 }
