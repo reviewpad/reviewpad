@@ -1,80 +1,134 @@
 # How to contribute
 
-It is awesome that you are reading this, because we need volunteer developers to help this project!
+Reviewpad is an open source project to empower teams to automate their development process - issues and pull requests. We believe that teams should be able to contribute to a project the the most fast and efficient way. We are very excited to see your interest on how to help us make Reviewpad the best automation tool.
 
-- [How to contribute](#how-to-contribute)
-  - [Code of Conduct](#code-of-conduct)
-  - [Community](#community)
-  - [Contributing](#contributing)
-    - [Issues](#issues)
-    - [Development Policy](#development-policy)
-    - [Pull Requests](#pull-requests)
-    - [Reviews](#reviews)
-    - [Commit convention](#commit-convention)
-  - [Attribution](#attribution)
+### Code of Conduct
 
-## Code of Conduct
-
-Reviewpad projects have a [Code of Conduct](CODE_OF_CONDUCT.md) to which all contributors must adhere.
+Reviewpad projects have a [Code of Conduct](https://github.com/reviewpad/.github/blob/main/docs/CODE_OF_CONDUCT.md) to which all contributors must adhere.
 Please read it before interacting with the repository or the community in any way.
 
-## Community
+### Open Development
 
-Discussion and **support requests** should go through [Discord](http://reviewpad.com/discord).
+All work on Reviewpad happens directly on [GitHub](https://github.com/reviewpad/reviewpad). Both core team members and external contributors send pull requests which go through the same review process.
 
-We also publish FAQs and announcements in [GitHub discussions](https://github.com/reviewpad/reviewpad/discussions).
+### Semantic Versioning
 
-## Contributing
+Reviewpad follows [semantic versioning](https://semver.org/). We release patch versions for critical bugfixes, minor versions for new features or non-essential changes, and major versions for any breaking changes. When we make breaking changes, we also introduce deprecation warnings in a minor version so that our users learn about the upcoming changes and migrate their code in advance.
 
-Not surprisingly, all reviewpad projects use the [Reviewpad action](https://github.com/reviewpad/action) for contributions.
+Every significant change is documented in each [release](https://github.com/reviewpad/reviewpad/releases).
 
-The workflows are specified at [Reviewpad.yml](reviewpad.yml). 
+### Branch Organization
 
-Take the time to get familiar with the configuration in the official [docs](https://docs.reviewpad.com).
+Submit all changes directly to the [`main branch`](https://github.com/reviewpad/reviewpad/tree/main). We don't use separate branches for development or for upcoming releases. We do our best to keep `main` in good shape, with all tests passing.
 
-### Issues
+### Bugs
 
-We plan to extensively use GitHub issues to communicate the ongoing and near future development. 
+#### Where to Find Known Issues
 
-There are mainly three kinds of issues you can open:
+We are using [GitHub Issues](https://github.com/reviewpad/reviewpad/issues) for our bugs. We keep a close eye on this and try to make it clear when we have an internal fix in progress. Before filing a new task, try to make sure your problem doesn't already exist.
 
-* Bug report: you believe you found a problem in a project and you want to discuss and get it fixed,
-  creating an issue with the **bug report template** is the best way to do so.
-* Feature request: would you like a new feature/rule to be added to Reviewpad? This is the kind of issue you'll need then.
-  Do your best at explaining your intent, it is always important that others can understand what you mean in order to discuss.
-  Be open and collaborative in letting others help you get things done!
+#### Reporting New Issues
 
-The best way to **get involved** in the project is through issues. You can help in many ways:
+The best way to get your bug fixed is fill our [bug report template](https://github.com/reviewpad/reviewad/issues/new?assignees=&labels=bug&template=bug_report.md). Please follow the instructions in the template and provide as much information as possible. The more information you provide, the more likely someone will be successful reproducing the issue and finding a fix.
 
-* Issues triaging: participating in the discussion and adding details to open issues is always a good thing;
-sometimes issues need to be verified, you could be the one writing a test case to fix a bug!
-* Helping to resolve the issue: you can help in getting it fixed in many ways, more often by opening a pull request.
+### How to Get in Touch
 
-### Development Policy
+* [Discord](https://reviewpad.com/discord)
+* [GitHub Discussions](https://github.com/reviewpad/reviewpad/discussions)
 
-Our development policies are explicitly formalized in the [Reviewpad.yml](https://github.com/reviewpad/reviewpad/blob/main/reviewpad.yml) file.
+Please note that the Reviewpad [Discord](https://reviewpad.com/discord) is the same used by the team. So you'll be talking directly with the team 💪
 
-We use short-lived feature branches and pull requests to introduce changes to the codebase.
+### Proposing a Change
 
-Reviewpad will take care of most of the automation so that 90% of the pull requests do not stay open for longer than a few hours (even for outside contributors).
+If you intend to change a piece of Reviewpad that is not yet being addressed on any issue we first invite you to [fill an issue](https://github.com/reviewpad/reviewpad/issues/new?assignees=&labels=enhancement&template=feature_request.md). This lets us reach an agreement on your proposal before you put significant effort into it.
 
-Because of the limitation in described in the [official GitHub documentation](https://docs.github.com/en/actions/security-guides/automatic-token-authentication#using-the-github_token-in-a-workflow):
+If you're only fixing a bug, it's fine to submit a pull request right away but we still recommend to file an issue detailing what you're fixing. This is helpful in case we don't accept that specific fix but want to keep track of the issue.
 
-> When you use the repository's GITHUB_TOKEN to perform tasks, events triggered by the GITHUB_TOKEN will not create a new workflow run.
+### Your First Pull Request
 
-We run the Reviewpad action with an access token from the [reviewpad-bot](https://github.com/reviewpad-bot).
-As soon as GitHub resolves this [issue](https://github.community/t/triggering-a-new-workflow-from-another-workflow/16250),
-the automation actions should be done through the `github-actions (bot)`.
+Working on your first Pull Request? You can learn how from this free video series:
 
-### Pull Requests
+**[How to contribute to open source within 10 minutes - start now!](https://www.youtube.com/watch?v=8B_JWf7pG20)** by our friend [Eddie Jaoude](https://twitter.com/eddiejaoude)
 
-Thanks for taking time to make a [pull request](https://help.github.com/articles/about-pull-requests) (PR).
+To help you get your feet wet and get you familiar with our contribution process, we have a list of **[good first issues](https://github.com/reviewpad/reviewpad/issues?q=is:open+is:issue+label:"good+first+issue")** that contain bugs that have a relatively limited scope. This is a great place to get started.
 
-The PR template is there to guide you through the process of opening it.
+If you decide to fix an issue, please be sure to check the comment thread in case somebody is already working on a fix. If nobody is working on it at the moment, please leave a comment stating that you intend to work on it so other people don't accidentally duplicate your effort.
 
-### Reviews
+### Sending a Pull Request
 
-Reviewing a pull request is also a very good way of contributing.
+The [Reviewpad Action](https://github.com/reviewpad/action) is monitoring the pull requests and notifying the team. We will review your pull request and either merge it, request changes to it, or close it with an explanation. We'll do our best to provide updates and feedback throughout the process.
+
+**Before submitting a pull request,** please make sure the following is done:
+
+1. Fork [the repository](https://github.com/reviewpad/reviewpad) and create your branch from `main`.
+2. Run `go get` in the repository root.
+3. If you've fixed a bug or added code that should be tested, add tests!
+4. Ensure the test suite passes (`task test`).
+5. If you need a debugger, checkout how to run our [Reviewpad CLI](https://github.com/reviewpad/reviewpad#compilation).
+6. Format you format your code code (`task format`).
+7. Do a final check (`task check -f`).
+
+<!-- Add Contributor License Agreement (CLA) -->
+
+### Contribution Prerequisites
+
+* You have [GO](https://go.dev) installed with minimum version of 1.18.2.
+* You have [Taskfile](https://taskfile.dev/installation/) installed.
+* You have `gcc` installed or are comfortable installing a compiler if needed. Some of our dependencies may require a compilation step. On OS X, the Xcode Command Line Tools will cover this. On Ubuntu, `apt-get install build-essential` will install the required packages. Similar commands should work on other Linux distros. Windows will require some additional steps, see the [`node-gyp` installation instructions](https://github.com/nodejs/node-gyp#installation) for details.
+* You are familiar with Git.
+
+### Development Workflow
+
+After cloning Reviewpad, run `go get` to fetch its dependencies.
+Then, you can run several commands:
+
+* `task format` formats your code.
+* `task test` runs the complete test suite.
+* `task build` build the project (no output is generated).
+* `task build-ci` build Reviewpad CLI and creates the executable `reviewpad-cli`.
+* `task check` runs the code formatter, the complete test suite, and builds the project.
+
+We recommend running `task check -f` to make sure you don't introduce any issue.
+
+The easiest way to try your changes is to use [Reviewpad CLI](https://github.com/reviewpad/reviewpad#compilation) `./reviewpad-cli run -u [PULL_REQUEST_URL] -t [GITHUB_TOKEN] -e [GITHUB_EVENT] -f [REVIEWPAD_FILE]`.
+
+Another great way to test your changes it to use `VSCode` debug tool. You can do that by creating a `.vscode` folder in the root of the repository, add the file `launch.json` to it, and copy the following content into the file:
+
+```json
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch cli",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "args": [
+                "run",
+                // Flag to run on dry run
+                "-d=true",
+                // Absolute path to reviewpad.yml file to run
+                "-f=REVIEWPAD_FILE",
+                // GitHub url to run the reviewpad.yml against to
+                // e.g. https://github.com/reviewpad/action-demo/pull/1
+                // e.g.https://github.com/reviewpad/action-demo/issue/1
+                "-u=PULL_REQUEST_URL",
+                // Absolute path to JSON file with GitHub event payload (OPTIONAL)
+                "-e=GITHUB_EVENT",
+                // GiHub PAT (Personal Access Token)
+                // https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token
+                "-t=GITHUB_TOKEN",
+            ],
+            "program": "${workspaceFolder}/cli",
+        },
+    ]
+}
+```
+
+We still require that your pull request contains unit tests for any new functionality. This way we can ensure that we don't break your code in the future.
 
 ### Commit convention
 
@@ -84,6 +138,22 @@ This is not the case for all the commits in the history but any new commit shoul
 
 If you want to enforce it as a pre-hook commit you can use [tiger](https://github.com/marcelosousa/tiger).
 
-## Attribution
 
-This contributing guide is inspired from the [Falco project](https://github.com/falcosecurity/.github/blob/master/CONTRIBUTING.md).
+### Style Guide
+
+We use an automatic code formatter called [gofmt](https://pkg.go.dev/cmd/gofmt).
+Run `task format` after making any changes to the code.
+
+Then, our formatter will catch most issues that may exist in your code.
+
+<!-- Add Request for Comments (RFC) -->
+
+### License
+
+By contributing to Reviewpad, you agree that your contributions will be licensed under its LGPL-3.0 license.
+
+### Attribution
+
+This documentation is based on [reactjs.org](https://reactjs.org/) contributing guidelines.
+
+<!-- Add What Next? -->
