@@ -2,10 +2,7 @@
 # Use of this source code is governed by a license that can be
 # found in the LICENSE file.
 
-name: Scheduled Tasks
-
-# Close Issues and Pull Requests
-# Check for Git Conflicts
+name: Close Stale Pull Requests and Issues
 
 on:
   schedule:
@@ -19,5 +16,5 @@ jobs:
       - name: Reviewpad
         uses: reviewpad/action@v3.x
         with:
-          file: scheduled_tasks.yml
+          file: stale.yml
           token: ${{ secrets.REVIEWPAD_TOKEN }}
