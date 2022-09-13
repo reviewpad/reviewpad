@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/reviewpad/reviewpad/v3/codehost"
 	"github.com/reviewpad/reviewpad/v3/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
@@ -60,17 +61,17 @@ func assignReviewerCode(e aladino.Env, args []aladino.Value) error {
 		return err
 	}
 
-	// Re-request current reviewers if mention on the provided reviewers list
-	for _, review := range reviews {
-		for index, availableReviewer := range availableReviewers {
-			if availableReviewer.(*aladino.StringValue).Val == review.User.Login {
-				totalRequiredReviewers--
-				if review.State != "APPROVED" {
-					reviewers = append(reviewers, review.User.Login)
-				}
-				availableReviewers = append(availableReviewers[:index], availableReviewers[index+1:]...)
-				break
+	// Re-request current reviewers only when last review status is not APPROVED
+	for index, availableReviewer := range availableReviewers {
+		userLogin := availableReviewer.(*aladino.StringValue).Val
+		if hasReview(reviews, userLogin) {
+			if lastReviewStatus(reviews, userLogin) != "APPROVED" {
+				reviewers = append(reviewers, userLogin)
+			} else {
+				log.Printf("assignReviewer: reviewer %v has already approved the pull request", userLogin)
 			}
+			totalRequiredReviewers--
+			availableReviewers = append(availableReviewers[:index], availableReviewers[index+1:]...)
 		}
 	}
 
@@ -107,4 +108,27 @@ func assignReviewerCode(e aladino.Env, args []aladino.Value) error {
 	}
 
 	return t.RequestReviewers(reviewers)
+}
+
+func hasReview(reviews []*codehost.Review, userLogin string) bool {
+	for _, review := range reviews {
+		if review.User.Login == userLogin {
+			return true
+		}
+	}
+
+	return false
+}
+
+func lastReviewStatus(reviews []*codehost.Review, userLogin string) string {
+	var latestReview *codehost.Review
+	for _, review := range reviews {
+		if review.User.Login == userLogin {
+			if latestReview == nil || latestReview.SubmittedAt.Before(*review.SubmittedAt) {
+				latestReview = review
+			}
+		}
+	}
+
+	return latestReview.State
 }
