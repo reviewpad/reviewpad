@@ -119,6 +119,18 @@ func TestProcessEvent_Failure(t *testing.T) {
 				}`)),
 			},
 		},
+		"push": {
+			event: &handler.ActionEvent{
+				EventName: github.String("push"),
+				Token:     github.String("test-token"),
+				EventPayload: buildPayload([]byte(`{
+					"repository": {
+						"full_name": "reviewpad/reviewpad"
+					},
+					"ref": "refs/heads/main"
+				}`)),
+			},
+		},
 	}
 
 	for name, test := range tests {
@@ -143,6 +155,7 @@ func TestProcessEvent(t *testing.T) {
 				{
 					Number: github.Int(aladino.DefaultMockPrNum),
 					Base: &github.PullRequestBranch{
+						Ref: github.String("refs/heads/main"),
 						Repo: &github.Repository{
 							Name: github.String(repo),
 							Owner: &github.User{
@@ -157,6 +170,7 @@ func TestProcessEvent(t *testing.T) {
 				{
 					Number: github.Int(130),
 					Base: &github.PullRequestBranch{
+						Ref: github.String("refs/heads/feat"),
 						Repo: &github.Repository{
 							Name: github.String(repo),
 							Owner: &github.User{
@@ -480,6 +494,39 @@ func TestProcessEvent(t *testing.T) {
 						}
 					},
 					"sha": "4bf24cc72f3a62423927a0ac8d70febad7c78e0a"
+				}`)),
+			},
+			wantVal: []*handler.TargetEntity{},
+		},
+		"push": {
+			event: &handler.ActionEvent{
+				EventName: github.String("push"),
+				Token:     github.String("test-token"),
+				EventPayload: buildPayload([]byte(`{
+					"repository": {
+						"full_name": "reviewpad/reviewpad"
+					},
+					"ref": "refs/heads/main"
+				}`)),
+			},
+			wantVal: []*handler.TargetEntity{
+				{
+					Kind:   handler.PullRequest,
+					Number: aladino.DefaultMockPrNum,
+					Owner:  owner,
+					Repo:   repo,
+				},
+			},
+		},
+		"push_no_match": {
+			event: &handler.ActionEvent{
+				EventName: github.String("push"),
+				Token:     github.String("test-token"),
+				EventPayload: buildPayload([]byte(`{
+					"repository": {
+						"full_name": "reviewpad/reviewpad"
+					},
+					"ref": "refs/heads/master"
 				}`)),
 			},
 			wantVal: []*handler.TargetEntity{},

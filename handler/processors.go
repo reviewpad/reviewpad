@@ -249,6 +249,43 @@ func processWorkflowRunEvent(token string, e *github.WorkflowRunEvent) ([]*Targe
 	return []*TargetEntity{}, nil
 }
 
+func processPushEvent(token string, e *github.PushEvent) ([]*TargetEntity, error) {
+	Log("processing 'push' event")
+
+	ctx, canc := context.WithTimeout(context.Background(), time.Minute*10)
+	defer canc()
+
+	ghClient := reviewpad_gh.NewGithubClientFromToken(ctx, token)
+
+	repoParts := strings.SplitN(*e.GetRepo().FullName, "/", 2)
+
+	owner := repoParts[0]
+	repo := repoParts[1]
+
+	prs, err := ghClient.GetPullRequests(ctx, owner, repo)
+	if err != nil {
+		return nil, fmt.Errorf("get pull requests: %w", err)
+	}
+
+	Log("fetched %d pull requests", len(prs))
+
+	events := make([]*TargetEntity, 0)
+	for _, pr := range prs {
+		if pr.Base.GetRef() == e.GetRef() {
+			events = append(events, &TargetEntity{
+				Kind:   PullRequest,
+				Number: *pr.Number,
+				Owner:  owner,
+				Repo:   repo,
+			})
+		}
+	}
+
+	Log("found events %v", events)
+
+	return events, nil
+}
+
 // reviewpad-an: critical
 // output: the list of pull requests/issues that are affected by the event.
 func ProcessEvent(event *ActionEvent) ([]*TargetEntity, error) {
@@ -346,7 +383,7 @@ func ProcessEvent(event *ActionEvent) ([]*TargetEntity, error) {
 	case *github.PullRequestTargetEvent:
 		return processPullRequestTargetEvent(payload)
 	case *github.PushEvent:
-		return processUnsupportedEvent(payload)
+		return processPushEvent(*event.Token, payload)
 	case *github.ReleaseEvent:
 		return processUnsupportedEvent(payload)
 	case *github.RepositoryEvent:
