@@ -48,7 +48,7 @@ func Load(data []byte) (*ReviewpadFile, error) {
 		return nil, err
 	}
 
-	file, err = normalize(file, inlineRulesNormalizer)
+	file, err = normalize(file, inlineRulesNormalizer())
 	if err != nil {
 		return nil, err
 	}

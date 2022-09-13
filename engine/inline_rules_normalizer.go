@@ -1,6 +1,7 @@
 // Copyright 2022 Explore.dev Unipessoal Lda. All Rights Reserved.
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
+
 package engine
 
 import (
@@ -9,10 +10,12 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
-var inlineRulesNormalizer = NewNormalizeRule().WithModificators(inlineRulesModificator)
+func inlineRulesNormalizer() *NormalizeRule {
+	normalizedRule := NewNormalizeRule()
+	normalizedRule.WithModificators(inlineRulesModificator)
+	return normalizedRule
+}
 
-// inlineRulesNormalizer normalizes the inline rules in the file
-// by converting the inline rules into a PadWorkflowRule
 func inlineRulesModificator(file *ReviewpadFile) (*ReviewpadFile, error) {
 	reviewpadFile := &ReviewpadFile{
 		Version:      file.Version,

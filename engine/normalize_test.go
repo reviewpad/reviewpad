@@ -48,21 +48,21 @@ func TestNormalize_WithCustomNormalizers(t *testing.T) {
 		customApiVersion = "reviewpad.com/v4.0.0-alpha"
 	)
 
-	/*
-	   api-version: reviewpad.com/v4.0.0-alpha
-	   edition: Ultimate
-	   mode: SILENT
-	*/
+	defaultNormalizedRuleVersion := NewNormalizeRule()
+	defaultNormalizedRuleVersion.WithModificators(func(file *ReviewpadFile) (*ReviewpadFile, error) {
+		file.Version = customApiVersion
+		return file, nil
+	})
+
+	defaultNormalizedRuleMode := NewNormalizeRule()
+	defaultNormalizedRuleMode.WithModificators(func(file *ReviewpadFile) (*ReviewpadFile, error) {
+		file.Mode = strings.ToUpper(defaultMode)
+		return file, nil
+	})
+
 	var customNormalizers = []*NormalizeRule{
-		// always use version, if it's empty or not: "reviewpad.com/v4.0.0-alpha"
-		(&NormalizeRule{}).WithModificators(func(file *ReviewpadFile) (*ReviewpadFile, error) {
-			file.Version = customApiVersion
-			return file, nil
-		}),
-		(&NormalizeRule{}).WithModificators(func(file *ReviewpadFile) (*ReviewpadFile, error) {
-			file.Mode = strings.ToUpper(defaultMode)
-			return file, nil
-		}),
+		defaultNormalizedRuleVersion,
+		defaultNormalizedRuleMode,
 	}
 
 	t.Run("missing mode", func(t *testing.T) {
