@@ -29,7 +29,7 @@ func All() *aladino.BuiltInFunction {
 func allCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
 	elems := args[0].(*aladino.ArrayValue).Vals
 	fn := args[1].(*aladino.FunctionValue).Fn
-	match := false
+	match := true
 
 	for _, elem := range elems {
 		match = fn([]aladino.Value{elem}).(*aladino.BoolValue).Val

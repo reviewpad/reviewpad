@@ -91,7 +91,7 @@ func TestAll(t *testing.T) {
 					return aladino.BuildBoolValue(strings.Contains("abcd", val))
 				}),
 			},
-			res:     aladino.BuildBoolValue(false),
+			res:     aladino.BuildBoolValue(true),
 			wantErr: nil,
 		},
 	}
