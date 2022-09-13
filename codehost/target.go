@@ -6,6 +6,7 @@ package codehost
 
 import (
 	"errors"
+	"time"
 
 	"github.com/reviewpad/reviewpad/v3/handler"
 )
@@ -65,10 +66,11 @@ type Reviewers struct {
 }
 
 type Review struct {
-	ID    int64
-	User  *User
-	Body  string
-	State string
+	ID          int64
+	User        *User
+	Body        string
+	State       string
+	SubmittedAt *time.Time
 }
 
 type Project struct {

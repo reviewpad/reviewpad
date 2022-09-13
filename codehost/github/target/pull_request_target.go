@@ -187,9 +187,10 @@ func (t *PullRequestTarget) GetReviews() ([]*codehost.Review, error) {
 
 	for i, ghPrReview := range ghPrReviews {
 		reviews[i] = &codehost.Review{
-			ID:    *ghPrReview.ID,
-			Body:  *ghPrReview.Body,
-			State: *ghPrReview.State,
+			ID:          *ghPrReview.ID,
+			Body:        *ghPrReview.Body,
+			State:       *ghPrReview.State,
+			SubmittedAt: ghPrReview.SubmittedAt,
 			User: &codehost.User{
 				Login: *ghPrReview.User.Login,
 			},
