@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/google/go-github/v45/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
@@ -488,4 +489,155 @@ func TestAssignReviewer_WhenPullRequestAlreadyApproved(t *testing.T) {
 	err := assignReviewer(mockedEnv, args)
 	assert.Nil(t, err)
 	assert.False(t, isRequestReviewersRequestPerformed, "the action shouldn't request for reviewers")
+}
+
+func TestAssignReviewer_ReRequest(t *testing.T) {
+	mockedReviewerLogin := "mary"
+	tests := map[string]struct {
+		shouldRequestReview bool
+		mockedReviews       func() []*github.PullRequestReview
+	}{
+		"when reviewer last review is approved": {
+			shouldRequestReview: false,
+			mockedReviews: func() []*github.PullRequestReview {
+				time := time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)
+				return []*github.PullRequestReview{
+					{
+						ID:          github.Int64(1),
+						State:       github.String("APPROVED"),
+						Body:        github.String(""),
+						SubmittedAt: &time,
+						User:        &github.User{Login: github.String(mockedReviewerLogin)},
+					},
+				}
+			},
+		},
+		"when reviewer last review is commented": {
+			shouldRequestReview: true,
+			mockedReviews: func() []*github.PullRequestReview {
+				time := time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)
+				return []*github.PullRequestReview{
+					{
+						ID:          github.Int64(1),
+						State:       github.String("COMMENTED"),
+						Body:        github.String(""),
+						SubmittedAt: &time,
+						User:        &github.User{Login: github.String(mockedReviewerLogin)},
+					},
+				}
+			},
+		},
+		"when reviewer last review is changes requested": {
+			shouldRequestReview: true,
+			mockedReviews: func() []*github.PullRequestReview {
+				time := time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)
+				return []*github.PullRequestReview{
+					{
+						ID:          github.Int64(1),
+						State:       github.String("CHANGES_REQUESTED"),
+						Body:        github.String(""),
+						SubmittedAt: &time,
+						User:        &github.User{Login: github.String(mockedReviewerLogin)},
+					},
+				}
+			},
+		},
+		"when reviewer has approved and then requested changes": {
+			shouldRequestReview: true,
+			mockedReviews: func() []*github.PullRequestReview {
+				timeApproved := time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)
+				timeRequestedChanges := time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC)
+				return []*github.PullRequestReview{
+					{
+						ID:          github.Int64(1),
+						State:       github.String("APPROVED"),
+						Body:        github.String(""),
+						SubmittedAt: &timeApproved,
+						User:        &github.User{Login: github.String(mockedReviewerLogin)},
+					},
+					{
+						ID:          github.Int64(2),
+						State:       github.String("CHANGES_REQUESTED"),
+						Body:        github.String(""),
+						SubmittedAt: &timeRequestedChanges,
+						User:        &github.User{Login: github.String(mockedReviewerLogin)},
+					},
+				}
+			},
+		},
+		"when reviewer has requested changes and then approved": {
+			shouldRequestReview: false,
+			mockedReviews: func() []*github.PullRequestReview {
+				timeApproved := time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC)
+				timeRequestedChanges := time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)
+				return []*github.PullRequestReview{
+					{
+						ID:          github.Int64(1),
+						State:       github.String("CHANGES_REQUESTED"),
+						Body:        github.String(""),
+						SubmittedAt: &timeRequestedChanges,
+						User:        &github.User{Login: github.String(mockedReviewerLogin)},
+					},
+					{
+						ID:          github.Int64(2),
+						State:       github.String("APPROVED"),
+						Body:        github.String(""),
+						SubmittedAt: &timeApproved,
+						User:        &github.User{Login: github.String(mockedReviewerLogin)},
+					},
+				}
+			},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			isRequestReviewersRequestPerformed := false
+			mockedAuthorLogin := "john"
+			mockedReviews := test.mockedReviews()
+			mockedPullRequest := aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
+				User: &github.User{Login: github.String(mockedAuthorLogin)},
+				RequestedReviewers: []*github.User{
+					{Login: github.String(mockedReviewerLogin)},
+				},
+			})
+			mockedEnv := aladino.MockDefaultEnv(
+				t,
+				[]mock.MockBackendOption{
+					mock.WithRequestMatchHandler(
+						mock.GetReposPullsByOwnerByRepoByPullNumber,
+						http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+							w.Write(mock.MustMarshal(mockedPullRequest))
+						}),
+					),
+					mock.WithRequestMatch(
+						mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
+						mockedReviews,
+					),
+					mock.WithRequestMatchHandler(
+						mock.PostReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
+						http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+							// If the request reviewers request was performed then the reviewers were assigned to the pull request
+							isRequestReviewersRequestPerformed = true
+						}),
+					),
+				},
+				nil,
+				aladino.MockBuiltIns(),
+				nil,
+			)
+			args := []aladino.Value{
+				aladino.BuildArrayValue(
+					[]aladino.Value{
+						aladino.BuildStringValue(mockedReviewerLogin),
+					},
+				),
+				aladino.BuildIntValue(1),
+			}
+			err := assignReviewer(mockedEnv, args)
+
+			assert.Nil(t, err)
+			assert.Equal(t, test.shouldRequestReview, isRequestReviewersRequestPerformed)
+		})
+	}
 }
