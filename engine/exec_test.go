@@ -81,17 +81,17 @@ func TestEval_WhenGitHubRequestsFail(t *testing.T) {
 
 			mockedAladinoInterpreter, err := mockAladinoInterpreter(mockedClient)
 			if err != nil {
-				assert.FailNow(t, "mockDefaultAladinoInterpreterWith: %v", err)
+				assert.FailNow(t, fmt.Sprintf("mockDefaultAladinoInterpreterWith: %v", err))
 			}
 
 			mockedEnv, err := engine.MockEnvWith(mockedClient, mockedAladinoInterpreter)
 			if err != nil {
-				assert.FailNow(t, "engine MockDefaultEnvWith: %v", err)
+				assert.FailNow(t, fmt.Sprintf("engine MockDefaultEnvWith: %v", err))
 			}
 
 			reviewpadFileData, err := utils.LoadFile(test.inputReviewpadFilePath)
 			if err != nil {
-				assert.FailNow(t, "Error reading reviewpad file: %v", err)
+				assert.FailNow(t, fmt.Sprintf("Error reading reviewpad file: %v", err))
 			}
 
 			reviewpadFile, err := testutils.ParseReviewpadFile(reviewpadFileData)
@@ -229,28 +229,28 @@ func TestEval(t *testing.T) {
 
 			mockedAladinoInterpreter, err := mockAladinoInterpreter(mockedClient)
 			if err != nil {
-				assert.FailNow(t, "mockDefaultAladinoInterpreterWith: %v", err)
+				assert.FailNow(t, fmt.Sprintf("mockDefaultAladinoInterpreterWith: %v", err))
 			}
 
 			mockedEnv, err := engine.MockEnvWith(mockedClient, mockedAladinoInterpreter)
 			if err != nil {
-				assert.FailNow(t, "engine MockDefaultEnvWith: %v", err)
+				assert.FailNow(t, fmt.Sprintf("engine MockDefaultEnvWith: %v", err))
 			}
 
 			reviewpadFileData, err := utils.LoadFile(test.inputReviewpadFilePath)
 			if err != nil {
-				assert.FailNow(t, "Error reading reviewpad file: %v", err)
+				assert.FailNow(t, fmt.Sprintf("Error reading reviewpad file: %v", err))
 			}
 
 			reviewpadFile, err := testutils.ParseReviewpadFile(reviewpadFileData)
 			if err != nil {
-				assert.FailNow(t, "Error parsing reviewpad file: %v", err)
+				assert.FailNow(t, fmt.Sprintf("Error parsing reviewpad file: %v", err))
 			}
 
 			gotProgram, gotErr := engine.Eval(reviewpadFile, mockedEnv)
 
 			if gotErr != nil && gotErr.Error() != test.wantErr {
-				assert.FailNow(t, "Eval() error = %v, wantErr %v", gotErr, test.wantErr)
+				assert.FailNow(t, fmt.Sprintf("Eval() error = %v, wantErr %v", gotErr, test.wantErr))
 			}
 			assert.Equal(t, test.wantProgram, gotProgram)
 		})
