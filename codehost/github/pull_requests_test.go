@@ -18,6 +18,7 @@ import (
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	host "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
+	"github.com/reviewpad/reviewpad/v3/utils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -689,6 +690,186 @@ func TestGetPullRequests_WhenRequestFails(t *testing.T) {
 	assert.Equal(t, err.(*github.ErrorResponse).Message, failMessage)
 }
 
+func TestGetPullRequestLastPushDate_WhenRequestFails(t *testing.T) {
+	failMessage := "GetPullRequestLastPushDateFail"
+	mockedGithubClient := aladino.MockDefaultGithubClient(
+		nil,
+		func(w http.ResponseWriter, req *http.Request) {
+			http.Error(w, failMessage, http.StatusNotFound)
+		},
+	)
+
+	wantLastPushDate := time.Time{}
+
+	gotLastPushDate, err := mockedGithubClient.GetPullRequestLastPushDate(
+		context.Background(),
+		aladino.DefaultMockPrOwner,
+		aladino.DefaultMockPrRepoName,
+		aladino.DefaultMockPrNum,
+	)
+
+	assert.Equal(t, wantLastPushDate, gotLastPushDate)
+	assert.Equal(t, err.Error(), fmt.Sprintf("non-200 OK status code: 404 Not Found body: \"%s\\n\"", failMessage))
+}
+
+func TestGetPullRequestLastPushDate(t *testing.T) {
+	mockedPullRequest := aladino.GetDefaultMockPullRequestDetails()
+
+	mockedPullRequestNumber := host.GetPullRequestNumber(mockedPullRequest)
+	mockOwner := host.GetPullRequestBaseOwnerName(mockedPullRequest)
+	mockRepo := host.GetPullRequestBaseRepoName(mockedPullRequest)
+
+	mockedGQLQuery := fmt.Sprintf(`{
+		"query":"query($pullRequestNumber:Int! $repositoryName:String! $repositoryOwner:String!){
+			repository(owner: $repositoryOwner, name: $repositoryName){
+				pullRequest(number: $pullRequestNumber){
+					timelineItems(last: 1, itemTypes: [HEAD_REF_FORCE_PUSHED_EVENT, PULL_REQUEST_COMMIT]){
+						nodes{
+							__typename,
+							...on HeadRefForcePushedEvent {
+								createdAt
+							},
+							...on PullRequestCommit {
+								commit {
+									pushedDate,
+									committedDate
+								}
+							}
+						}
+					}
+				}
+			}
+		}",
+		"variables":{
+			"pullRequestNumber": %d,
+			"repositoryName": "%s",
+			"repositoryOwner": "%s"
+		}
+	}`, mockedPullRequestNumber, mockRepo, mockOwner)
+
+	tests := map[string]struct {
+		mockedGQLQueryBody string
+		wantLastPushDate   time.Time
+		wantErr            string
+	}{
+		"when pull request does not have last push": {
+			mockedGQLQueryBody: `{
+				"data": {
+					"repository": {
+						"pullRequest": {
+							"timelineItems": {
+								"nodes": []
+							}
+						}
+					}
+				}
+			}`,
+			wantLastPushDate: time.Time{},
+			wantErr:          "last push not found",
+		},
+		"when pull request's last event is a push": {
+			mockedGQLQueryBody: `{
+				"data": {
+					"repository": {
+						"pullRequest": {
+							"timelineItems": {
+								"nodes": [{
+									"__typename": "PullRequestCommit",
+									"commit": {
+										"pushedDate": "2011-01-26T19:06:43Z",
+										"committedDate": "2011-01-26T19:01:12Z"
+									}
+								}]
+							}
+						}
+					}
+				}
+			}`,
+			wantLastPushDate: time.Date(2011, 1, 26, 19, 06, 43, 0, time.UTC),
+			wantErr:          "",
+		},
+		"when pull request's last event is a force push": {
+			mockedGQLQueryBody: `{
+				"data": {
+					"repository": {
+						"pullRequest": {
+							"timelineItems": {
+								"nodes": [{
+									"__typename": "HeadRefForcePushedEvent",
+									"createdAt": "2011-01-26T19:06:43Z"
+								}]
+							}
+						}
+					}
+				}
+			}`,
+			wantLastPushDate: time.Date(2011, 1, 26, 19, 06, 43, 0, time.UTC),
+			wantErr:          "",
+		},
+		"when pull request's last event is unknown": {
+			mockedGQLQueryBody: `{
+				"data": {
+					"repository": {
+						"pullRequest": {
+							"timelineItems": {
+								"nodes": [{
+									"__typename": "dummy"
+								}]
+							}
+						}
+					}
+				}
+			}`,
+			wantLastPushDate: time.Time{},
+			wantErr:          "unknown event type dummy",
+		},
+		"when pull request has no last push date": {
+			mockedGQLQueryBody: `{
+				"data": {
+					"repository": {
+						"pullRequest": {
+							"timelineItems": {
+								"nodes": [{
+									"__typename": "HeadRefForcePushedEvent",
+									"createdAt": null
+								}]
+							}
+						}
+					}
+				}
+			}`,
+			wantLastPushDate: time.Time{},
+			wantErr:          "last push not found",
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			mockedGithubClient := aladino.MockDefaultGithubClient(
+				nil,
+				func(w http.ResponseWriter, req *http.Request) {
+					query := utils.MinifyQuery(aladino.MustRead(req.Body))
+					switch query {
+					case utils.MinifyQuery(mockedGQLQuery):
+						aladino.MustWrite(w, test.mockedGQLQueryBody)
+					}
+				},
+			)
+			gotLastPushDate, gotErr := mockedGithubClient.GetPullRequestLastPushDate(
+				context.Background(),
+				aladino.DefaultMockPrOwner,
+				aladino.DefaultMockPrRepoName,
+				aladino.DefaultMockPrNum,
+			)
+
+			if gotErr != nil && gotErr.Error() != test.wantErr {
+				assert.FailNow(t, "GetPullRequestLastPushDate() error = %v, wantErr %v", gotErr, test.wantErr)
+			}
+			assert.Equal(t, gotLastPushDate, test.wantLastPushDate)
+		})
+	}
+}
+
 func TestGetReviewThreads_WhenRequestFails(t *testing.T) {
 	failMessage := "GetReviewThreads"
 	mockedGithubClient := aladino.MockDefaultGithubClient(
@@ -757,7 +938,6 @@ func TestGetReviewThreads(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.Equal(t, gotReviewThreads, wantReviewThreads)
-
 }
 
 func TestGetIssueTimeline_WhenListIssueTimelineRequestFails(t *testing.T) {
@@ -825,10 +1005,6 @@ func TestGetIssueTimeLine(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantTimeline, gotTimeline)
-}
-
-func TestGetPullRequestLastPushDate(t *testing.T) {
-	t.Skip("FIXME: #332")
 }
 
 func registerHttpResponders(httpMockResponders []httpMockResponder) {
