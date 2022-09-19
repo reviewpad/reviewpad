@@ -18,18 +18,18 @@ import (
 var requestedReviewers = plugins_aladino.PluginBuiltIns().Functions["requestedReviewers"].Code
 
 func TestRequestedReviewers(t *testing.T) {
-	ghUsersReviewers := []*github.User{
+	ghRequestedUsersReviewers := []*github.User{
 		{Login: github.String("mary")},
 	}
-	ghTeamReviewers := []*github.Team{
+	ghRequestedTeamReviewers := []*github.Team{
 		{Slug: github.String("reviewpad")},
 	}
 	mockedPullRequest := aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
 		User: &github.User{
 			Login: github.String("john"),
 		},
-		RequestedReviewers: ghUsersReviewers,
-		RequestedTeams:     ghTeamReviewers,
+		RequestedReviewers: ghRequestedUsersReviewers,
+		RequestedTeams:     ghRequestedTeamReviewers,
 	})
 	mockedEnv := aladino.MockDefaultEnv(
 		t,
@@ -46,14 +46,14 @@ func TestRequestedReviewers(t *testing.T) {
 		nil,
 	)
 
-	wantReviewers := aladino.BuildArrayValue([]aladino.Value{
+	wantRequestedReviewers := aladino.BuildArrayValue([]aladino.Value{
 		aladino.BuildStringValue("mary"),
 		aladino.BuildStringValue("reviewpad"),
 	})
 
 	args := []aladino.Value{}
-	gotReviewers, err := requestedReviewers(mockedEnv, args)
+	gotRequestedReviewers, err := requestedReviewers(mockedEnv, args)
 
 	assert.Nil(t, err)
-	assert.Equal(t, wantReviewers, gotReviewers)
+	assert.Equal(t, wantRequestedReviewers, gotRequestedReviewers)
 }
