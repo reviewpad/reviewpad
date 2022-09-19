@@ -5,6 +5,7 @@
 package engine
 
 import (
+	"fmt"
 	"regexp"
 	"strings"
 
@@ -48,18 +49,47 @@ func createLabel(e *Env, labelName *string, label *PadLabel) error {
 	return err
 }
 
-func checkLabelExists(e *Env, labelName string) (bool, error) {
-	owner := e.TargetEntity.Owner
-	repo := e.TargetEntity.Repo
+func checkLabelHasUpdates(e *Env, label *PadLabel, ghLabel *github.Label) (bool, error) {
+	if ghLabel == nil {
+		return false, fmt.Errorf("checkLabelHasUpdates: impossible to check updates on a empty github label")
+	}
 
-	_, _, err := e.GithubClient.GetLabel(e.Ctx, owner, repo, labelName)
-	if err != nil {
-		if err.(*github.ErrorResponse).Response.StatusCode == 404 {
-			return false, nil
-		}
+	if label.Description == "" {
+		return false, nil
+	}
 
-		return false, err
+	if ghLabel.Description != nil && *ghLabel.Description == label.Description {
+		return false, nil
 	}
 
 	return true, nil
+}
+
+func updateLabel(e *Env, labelName *string, label *PadLabel) error {
+	owner := e.TargetEntity.Owner
+	repo := e.TargetEntity.Repo
+
+	updatedGithubLabel := &github.Label{
+		Description: &label.Description,
+	}
+
+	_, _, err := e.GithubClient.EditLabel(e.Ctx, owner, repo, *labelName, updatedGithubLabel)
+
+	return err
+}
+
+func checkLabelExists(e *Env, labelName string) (*github.Label, error) {
+	owner := e.TargetEntity.Owner
+	repo := e.TargetEntity.Repo
+
+	ghLabel, _, err := e.GithubClient.GetLabel(e.Ctx, owner, repo, labelName)
+	if err != nil {
+		if err.(*github.ErrorResponse).Response.StatusCode == 404 {
+			return ghLabel, nil
+		}
+
+		return ghLabel, err
+	}
+
+	return ghLabel, nil
 }

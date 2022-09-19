@@ -42,6 +42,10 @@ func (c *GithubClient) AddLabels(ctx context.Context, owner string, repo string,
 	return c.clientREST.Issues.AddLabelsToIssue(ctx, owner, repo, number, labels)
 }
 
+func (c *GithubClient) EditLabel(ctx context.Context, owner string, repo string, name string, label *github.Label) (*github.Label, *github.Response, error) {
+	return c.clientREST.Issues.EditLabel(ctx, owner, repo, name, label)
+}
+
 func (c *GithubClient) RemoveLabelForIssue(ctx context.Context, owner string, repo string, number int, label string) (*github.Response, error) {
 	return c.clientREST.Issues.RemoveLabelForIssue(ctx, owner, repo, number, label)
 }
