@@ -19,19 +19,22 @@ func Reviewers() *aladino.BuiltInFunction {
 }
 
 func reviewersCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
-	pullRequest := e.GetTarget().(*target.PullRequestTarget).PullRequest
-	usersReviewers := pullRequest.RequestedReviewers
-	teamReviewers := pullRequest.RequestedTeams
-	totalReviewers := len(usersReviewers) + len(teamReviewers)
-	reviewersLogin := make([]aladino.Value, totalReviewers)
+	t := e.GetTarget().(*target.PullRequestTarget)
+	reviewers := make([]aladino.Value, 0)
+	existsInReviewersList := make(map[string]bool)
 
-	for i, userReviewer := range usersReviewers {
-		reviewersLogin[i] = aladino.BuildStringValue(userReviewer.GetLogin())
+	reviews, err := t.GetReviews()
+	if err != nil {
+		return nil, err
 	}
 
-	for i, teamReviewer := range teamReviewers {
-		reviewersLogin[i+len(usersReviewers)] = aladino.BuildStringValue(teamReviewer.GetSlug())
+	for _, review := range reviews {
+		reviewer := review.User.Login
+		if _, ok := existsInReviewersList[reviewer]; !ok {
+			reviewers = append(reviewers, aladino.BuildStringValue(reviewer))
+			existsInReviewersList[reviewer] = true
+		}
 	}
 
-	return aladino.BuildArrayValue(reviewersLogin), nil
+	return aladino.BuildArrayValue(reviewers), nil
 }
