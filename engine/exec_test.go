@@ -81,12 +81,12 @@ func TestEval_WhenGitHubRequestsFail(t *testing.T) {
 
 			mockedAladinoInterpreter, err := mockAladinoInterpreter(mockedClient)
 			if err != nil {
-				assert.FailNow(t, fmt.Sprintf("mockDefaultAladinoInterpreterWith: %v", err))
+				assert.FailNow(t, fmt.Sprintf("mockAladinoInterpreter: %v", err))
 			}
 
 			mockedEnv, err := engine.MockEnvWith(mockedClient, mockedAladinoInterpreter)
 			if err != nil {
-				assert.FailNow(t, fmt.Sprintf("engine MockDefaultEnvWith: %v", err))
+				assert.FailNow(t, fmt.Sprintf("engine MockEnvWith: %v", err))
 			}
 
 			reviewpadFileData, err := utils.LoadFile(test.inputReviewpadFilePath)
@@ -229,12 +229,12 @@ func TestEval(t *testing.T) {
 
 			mockedAladinoInterpreter, err := mockAladinoInterpreter(mockedClient)
 			if err != nil {
-				assert.FailNow(t, fmt.Sprintf("mockDefaultAladinoInterpreterWith: %v", err))
+				assert.FailNow(t, fmt.Sprintf("mockAladinoInterpreter: %v", err))
 			}
 
 			mockedEnv, err := engine.MockEnvWith(mockedClient, mockedAladinoInterpreter)
 			if err != nil {
-				assert.FailNow(t, fmt.Sprintf("engine MockDefaultEnvWith: %v", err))
+				assert.FailNow(t, fmt.Sprintf("engine MockEnvWith: %v", err))
 			}
 
 			reviewpadFileData, err := utils.LoadFile(test.inputReviewpadFilePath)

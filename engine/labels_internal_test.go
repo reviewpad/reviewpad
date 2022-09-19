@@ -130,7 +130,7 @@ func TestCreateLabel(t *testing.T) {
 
 			mockedEnv, err := MockEnvWith(mockedClient, nil)
 			if err != nil {
-				assert.FailNow(t, "engine MockDefaultEnvWith: %v", err)
+				assert.FailNow(t, "engine MockEnvWith: %v", err)
 			}
 
 			gotErr := createLabel(mockedEnv, &test.labelName, test.label)
@@ -174,7 +174,7 @@ func TestCheckLabelExists_WhenGetLabelFails(t *testing.T) {
 
 			mockedEnv, err := MockEnvWith(mockedClient, nil)
 			if err != nil {
-				assert.FailNow(t, "MockDefaultEnvWith: %v", err)
+				assert.FailNow(t, "MockEnvWith: %v", err)
 			}
 
 			gotVal, gotErr := checkLabelExists(mockedEnv, test.labelName)
@@ -237,7 +237,7 @@ func TestCheckLabelExists(t *testing.T) {
 
 			mockedEnv, err := MockEnvWith(mockedClient, nil)
 			if err != nil {
-				assert.FailNow(t, "MockDefaultEnvWith: %v", err)
+				assert.FailNow(t, "MockEnvWith: %v", err)
 			}
 
 			gotVal, gotErr := checkLabelExists(mockedEnv, test.labelName)
@@ -308,7 +308,7 @@ func TestCheckLabelHasUpdates(t *testing.T) {
 
 			mockedEnv, err := MockEnvWith(mockedClient, nil)
 			if err != nil {
-				assert.FailNow(t, "MockDefaultEnvWith: %v", err)
+				assert.FailNow(t, "MockEnvWith: %v", err)
 			}
 
 			gotVal, gotErr := checkLabelHasUpdates(mockedEnv, test.label, test.ghLabel)
@@ -357,7 +357,7 @@ func TestUpdateLabel_WhenEditLabelRequestFails(t *testing.T) {
 
 			mockedEnv, err := MockEnvWith(mockedClient, nil)
 			if err != nil {
-				assert.FailNow(t, "engine MockDefaultEnvWith: %v", err)
+				assert.FailNow(t, "engine MockEnvWith: %v", err)
 			}
 
 			gotErr := updateLabel(mockedEnv, &test.labelName, test.label)
@@ -404,7 +404,7 @@ func TestUpdateLabel(t *testing.T) {
 
 			mockedEnv, err := MockEnvWith(mockedClient, nil)
 			if err != nil {
-				assert.FailNow(t, "engine MockDefaultEnvWith: %v", err)
+				assert.FailNow(t, "engine MockEnvWith: %v", err)
 			}
 
 			gotErr := updateLabel(mockedEnv, &test.labelName, test.label)
