@@ -36,6 +36,13 @@ func TestParse(t *testing.T) {
 				BuildStringConst("hello world"),
 			}),
 		},
+		"comment a string with spaced strings": {
+			input: `$comment("hello \"world\" and \"world\" again")`,
+			wantExpr: BuildFunctionCall(
+				BuildVariable("comment"),
+				[]Expr{BuildStringConst("hello \"world\" and \"world\" again")},
+			),
+		},
 		"array of strings": {
 			input: `["hello", "world"]`,
 			wantExpr: BuildArray([]Expr{

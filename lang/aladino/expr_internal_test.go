@@ -166,10 +166,30 @@ func TestBoolConstEquals_WhenEqual(t *testing.T) {
 }
 
 func TestBuildStringConst(t *testing.T) {
-	wantVal := &StringConst{"LoremIpsum"}
-	gotVal := BuildStringConst("LoremIpsum")
+	tests := map[string]struct {
+		input   string
+		wantVal *StringConst
+	}{
+		"empty": {
+			input:   "",
+			wantVal: &StringConst{""},
+		},
+		"non-empty": {
+			input:   "LoremIpsum",
+			wantVal: &StringConst{"LoremIpsum"},
+		},
+		"with spaced string": {
+			input:   "Lorem \\\"Ipsum\\\"",
+			wantVal: &StringConst{"Lorem \"Ipsum\""},
+		},
+	}
 
-	assert.Equal(t, wantVal, gotVal)
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			gotVal := BuildStringConst(test.input)
+			assert.Equal(t, test.wantVal, gotVal)
+		})
+	}
 }
 
 func TestStringConstKind(t *testing.T) {
