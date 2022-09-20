@@ -9,6 +9,7 @@ import (
 	"log"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/reviewpad/reviewpad/v3/utils/report"
@@ -112,7 +113,10 @@ type StringConst struct {
 }
 
 func BuildStringConst(val string) *StringConst {
-	return &StringConst{val}
+	// String may contain other strings.
+	// To handle this we need to add manual escapes for parsing substrings (e.g. "hello \"world\"")
+	// However, those escapes are escaped internally, so we need to unescape them.
+	return &StringConst{strings.ReplaceAll(val, "\\\"", "\"")}
 }
 
 func (c *StringConst) Kind() string {
