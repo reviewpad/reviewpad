@@ -21,7 +21,7 @@ func TotalCodeReviews() *aladino.BuiltInFunction {
 func totalCodeReviewsCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
 	username := args[0].(*aladino.StringValue).Val
 
-	var totalPullRequestReviewsQuery struct {
+	var totalPullRequestReviewContributionsQuery struct {
 		User struct {
 			ContributionsCollection struct {
 				TotalPullRequestReviewContributions githubv4.Int
@@ -29,14 +29,14 @@ func totalCodeReviewsCode(e aladino.Env, args []aladino.Value) (aladino.Value, e
 		} `graphql:"user(login: $username)"`
 	}
 
-	varGQLTotalPullRequestReviewsQuery := map[string]interface{}{
+	varGQLTotalPullRequestReviewContributionsQuery := map[string]interface{}{
 		"username": githubv4.String(username),
 	}
 
-	err := e.GetGithubClient().GetClientGraphQL().Query(e.GetCtx(), &totalPullRequestReviewsQuery, varGQLTotalPullRequestReviewsQuery)
+	err := e.GetGithubClient().GetClientGraphQL().Query(e.GetCtx(), &totalPullRequestReviewContributionsQuery, varGQLTotalPullRequestReviewContributionsQuery)
 	if err != nil {
 		return nil, err
 	}
 
-	return aladino.BuildIntValue(int(totalPullRequestReviewsQuery.User.ContributionsCollection.TotalPullRequestReviewContributions)), nil
+	return aladino.BuildIntValue(int(totalPullRequestReviewContributionsQuery.User.ContributionsCollection.TotalPullRequestReviewContributions)), nil
 }

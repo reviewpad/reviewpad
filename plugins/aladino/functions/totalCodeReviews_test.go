@@ -43,7 +43,7 @@ func TestTotalCodeReviews(t *testing.T) {
 	author := mockedPullRequest.GetUser().GetLogin()
 	codeReviewsNum := 80
 
-	mockedTotalPullRequestReviewsQuery := fmt.Sprintf(`{
+	mockedTotalPullRequestReviewContributionsQuery := fmt.Sprintf(`{
 	    "query": "query($username:String!) {
 			user(login:$username){
 				contributionsCollection {
@@ -56,7 +56,7 @@ func TestTotalCodeReviews(t *testing.T) {
 	    }
 	}`, author)
 
-	mockedTotalPullRequestReviewsQueryBody := fmt.Sprintf(`{
+	mockedTotalPullRequestReviewContributionsQueryBody := fmt.Sprintf(`{
 		"data": {
 			"user": {
 				"contributionsCollection": {
@@ -72,8 +72,8 @@ func TestTotalCodeReviews(t *testing.T) {
 		func(res http.ResponseWriter, req *http.Request) {
 			query := utils.MinifyQuery(aladino.MustRead(req.Body))
 			switch query {
-			case utils.MinifyQuery(mockedTotalPullRequestReviewsQuery):
-				aladino.MustWrite(res, mockedTotalPullRequestReviewsQueryBody)
+			case utils.MinifyQuery(mockedTotalPullRequestReviewContributionsQuery):
+				aladino.MustWrite(res, mockedTotalPullRequestReviewContributionsQueryBody)
 			}
 		},
 		aladino.MockBuiltIns(),
