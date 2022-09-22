@@ -85,19 +85,31 @@ func TestRemoveLabels(t *testing.T) {
 	labelBNotInIssue := "label-b-not-in-issue"
 
 	tests := map[string]struct {
-		inputLabels       []string
-		wantRemovedLabels []string
-		wantErr           string
+		inputLabels                []string
+		labelExistsInLabelsSection bool
+		wantRemovedLabels          []string
+		wantErr                    string
 	}{
 		"when no labels are provided": {
-			inputLabels:       []string{},
-			wantRemovedLabels: []string{},
-			wantErr:           "removeLabels: no labels provided",
+			inputLabels:                []string{},
+			labelExistsInLabelsSection: false,
+			wantRemovedLabels:          []string{},
+			wantErr:                    "removeLabels: no labels provided",
+		},
+		"when label exists in the labels section of reviewpad.yml": {
+			inputLabels: []string{
+				labelAInIssue,
+			},
+			labelExistsInLabelsSection: true,
+			wantRemovedLabels: []string{
+				labelAInIssue,
+			},
 		},
 		"when a label is already applied to the issue": {
 			inputLabels: []string{
 				labelAInIssue,
 			},
+			labelExistsInLabelsSection: false,
 			wantRemovedLabels: []string{
 				labelAInIssue,
 			},
@@ -106,7 +118,8 @@ func TestRemoveLabels(t *testing.T) {
 			inputLabels: []string{
 				labelBNotInIssue,
 			},
-			wantRemovedLabels: []string{},
+			labelExistsInLabelsSection: false,
+			wantRemovedLabels:          []string{},
 		},
 	}
 
@@ -154,6 +167,12 @@ func TestRemoveLabels(t *testing.T) {
 				aladino.MockBuiltIns(),
 				nil,
 			)
+
+			if test.labelExistsInLabelsSection {
+				for _, inputLabel := range test.inputLabels {
+					mockedEnv.GetRegisterMap()[aladino.BuildInternalLabelID(inputLabel)] = aladino.BuildStringValue(inputLabel)
+				}
+			}
 
 			labels := make([]aladino.Value, len(test.inputLabels))
 
