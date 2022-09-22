@@ -31,20 +31,30 @@ func removeLabelsCode(e aladino.Env, args []aladino.Value) error {
 	}
 
 	for _, labelToBeRemoved := range labelsToBeRemoved {
-		label := labelToBeRemoved.(*aladino.StringValue).Val
+		labelID := labelToBeRemoved.(*aladino.StringValue).Val
+		internalLabelID := aladino.BuildInternalLabelID(labelID)
+
+		var labelName string
+
+		if val, ok := e.GetRegisterMap()[internalLabelID]; ok {
+			labelName = val.(*aladino.StringValue).Val
+		} else {
+			labelName = labelID
+			log.Printf("[warn]: the \"%v\" label was not found in the environment", labelID)
+		}
 
 		labels, err := t.GetLabels()
 		if err != nil {
 			return err
 		}
 
-		if isLabelAppliedToIssue(label, labels) {
-			err := t.RemoveLabel(label)
+		if isLabelAppliedToIssue(labelName, labels) {
+			err := t.RemoveLabel(labelName)
 			if err != nil {
 				return err
 			}
 		} else {
-			log.Printf("[warn]: the \"%v\" label is not applied to the issue", label)
+			log.Printf("[warn]: the \"%v\" label is not applied to the issue", labelName)
 		}
 	}
 
