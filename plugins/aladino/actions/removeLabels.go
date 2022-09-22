@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/google/go-github/v45/github"
 	"github.com/reviewpad/reviewpad/v3/codehost"
 	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
@@ -24,26 +23,15 @@ func RemoveLabels() *aladino.BuiltInAction {
 
 func removeLabelsCode(e aladino.Env, args []aladino.Value) error {
 	t := e.GetTarget()
-	entity := t.GetTargetEntity()
 
-	aladinoLabels := args[0].(*aladino.ArrayValue).Vals
+	labelsToBeRemoved := args[0].(*aladino.ArrayValue).Vals
 
-	if len(aladinoLabels) == 0 {
+	if len(labelsToBeRemoved) == 0 {
 		return fmt.Errorf("removeLabels: no labels provided")
 	}
 
-	repoLabels, _, err := e.GetGithubClient().GetRepositoryLabels(e.GetCtx(), entity.Owner, entity.Repo)
-	if err != nil {
-		return err
-	}
-
-	for _, aladinoLabel := range aladinoLabels {
-		label := aladinoLabel.(*aladino.StringValue).Val
-
-		if !labelExistsInRepo(label, repoLabels) {
-			log.Printf("[warn]: the \"%v\" label does not exist in the repository", label)
-			continue
-		}
+	for _, labelToBeRemoved := range labelsToBeRemoved {
+		label := labelToBeRemoved.(*aladino.StringValue).Val
 
 		labels, err := t.GetLabels()
 		if err != nil {
@@ -61,16 +49,6 @@ func removeLabelsCode(e aladino.Env, args []aladino.Value) error {
 	}
 
 	return nil
-}
-
-func labelExistsInRepo(label string, repoLabels []*github.Label) bool {
-	for _, repoLabel := range repoLabels {
-		if label == repoLabel.GetName() {
-			return true
-		}
-	}
-
-	return false
 }
 
 func isLabelAppliedToIssue(label string, issuesLabels []*codehost.Label) bool {

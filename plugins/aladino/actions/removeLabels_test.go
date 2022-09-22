@@ -25,27 +25,6 @@ func TestRemoveLabels_WhenRequestFails(t *testing.T) {
 		mockedEnv aladino.Env
 		wantErr   string
 	}{
-		"when request for repository labels fails": {
-			mockedEnv: aladino.MockDefaultEnv(
-				t,
-				[]mock.MockBackendOption{
-					mock.WithRequestMatchHandler(
-						mock.GetReposLabelsByOwnerByRepo,
-						http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-							mock.WriteError(
-								w,
-								http.StatusInternalServerError,
-								"GetRepositoryLabelsFail",
-							)
-						}),
-					),
-				},
-				nil,
-				aladino.MockBuiltIns(),
-				nil,
-			),
-			wantErr: "GetRepositoryLabelsFail",
-		},
 		"when request to remove a label fails": {
 			mockedEnv: aladino.MockDefaultEnv(
 				t,
@@ -104,7 +83,6 @@ func TestRemoveLabels(t *testing.T) {
 
 	labelAInIssue := "label-a-in-issue"
 	labelBNotInIssue := "label-b-not-in-issue"
-	inexistentLabel := "inexistent-label"
 
 	tests := map[string]struct {
 		inputLabels       []string
@@ -115,12 +93,6 @@ func TestRemoveLabels(t *testing.T) {
 			inputLabels:       []string{},
 			wantRemovedLabels: []string{},
 			wantErr:           "removeLabels: no labels provided",
-		},
-		"when a label does not exist in the repository": {
-			inputLabels: []string{
-				inexistentLabel,
-			},
-			wantRemovedLabels: []string{},
 		},
 		"when a label is already applied to the issue": {
 			inputLabels: []string{
