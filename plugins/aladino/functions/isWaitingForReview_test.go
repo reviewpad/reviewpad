@@ -61,6 +61,8 @@ func TestIsWaitingForReview_WhenGetPullRequestCommitsRequestFail(t *testing.T) {
 }
 
 func TestIsWaitingForReview_WhenGetPullRequestLastPushDateRequestFail(t *testing.T) {
+	failMessage := "GetPullRequestLastPushDateFail"
+
 	mockedLastCommitDate := time.Now()
 	mockedCommits := []*github.RepositoryCommit{{
 		Commit: &github.Commit{
@@ -91,7 +93,7 @@ func TestIsWaitingForReview_WhenGetPullRequestLastPushDateRequestFail(t *testing
 			),
 		},
 		func(w http.ResponseWriter, req *http.Request) {
-			http.Error(w, "404 Not Found", http.StatusNotFound)
+			http.Error(w, failMessage, http.StatusNotFound)
 		},
 		aladino.MockBuiltIns(),
 		nil,
@@ -101,7 +103,7 @@ func TestIsWaitingForReview_WhenGetPullRequestLastPushDateRequestFail(t *testing
 	gotValue, gotErr := isWaitingForReview(mockedEnv, args)
 
 	assert.Nil(t, gotValue)
-	assert.EqualError(t, gotErr, "non-200 OK status code: 404 Not Found body: \"404 Not Found\\n\"")
+	assert.EqualError(t, gotErr, fmt.Sprintf("non-200 OK status code: 404 Not Found body: \"%s\\n\"", failMessage))
 }
 
 func TestIsWaitingForReview_WhenGetPullRequestReviewsRequestFail(t *testing.T) {
