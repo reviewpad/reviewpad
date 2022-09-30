@@ -161,32 +161,30 @@ go tool cover -func coverage.out | grep total:
 
 ### VSCode
 
-We strongly recommend the use of VSCode but feel free to use the IDE of your choice. For the case of VSCode we also recommend the installation of the following extensions:
+We strongly recommend using [VSCode](https://code.visualstudio.com/) with the following extensions:
 
+* [Go](https://marketplace.visualstudio.com/items?itemName=golang.go)
 * [EditorConfig](https://marketplace.visualstudio.com/items?itemName=EditorConfig.EditorConfig) - To helps maintaining consistent coding styles.
 * [licenser](https://marketplace.visualstudio.com/items?itemName=ymotongpoo.licenser) - For adding license headers.
 * [YAML](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml) - For enabling `reviewpad.yml` JSON schema.
 
-On your VSCode settings please add the following settings:
+Open the project in VSCode, open the command palette (Ctrl+Shift+P) and search for `Preferences: Open Workspace Settings (JSON)`.
+
+Paste the following configuration:
 
 ```json
 {
-    // Format files on save
+    "editor.formatOnPaste": true,
     "editor.formatOnSave": true,
-    // Licenser configuration
+    "editor.defaultFormatter": "golang.go",
+    "files.autoSave": "onFocusChange",
     "licenser.license": "Custom",
     "licenser.author": "Explore.dev, Unipessoal Lda",
     "licenser.customHeader": "Copyright (C) @YEAR@ @AUTHOR@ - All Rights Reserved\nUse of this source code is governed by a license that can be\nfound in the LICENSE file.",
-    // reviewpad.yml JSON schema
     "yaml.schemas": {
         "https://raw.githubusercontent.com/reviewpad/schemas/main/latest/schema.json": [
-            "reviewpad.yml",
+            "reviewpad.yml"
         ]
-    },
-    // File nesting
-    "explorer.fileNesting.patterns": {
-    // Next go and go test files
-    "*.go": "${capture}_test.go",
     },
 }
 ```
@@ -212,7 +210,7 @@ Add the following to your `.vscode/launch.json`.
                 "--reviewpad=_PATH_TO_REVIEWPAD_FILE_",
                 // GitHub url to run the reviewpad.yml against to
                 // e.g. https://github.com/reviewpad/action-demo/pull/1
-                // e.g.https://github.com/reviewpad/action-demo/issue/1
+                // e.g. https://github.com/reviewpad/action-demo/issue/1
                 "--github-url=_GITHUB_URL_",
                 // GiHub personal access token
                 // https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token
@@ -225,6 +223,8 @@ Add the following to your `.vscode/launch.json`.
     ]
 }
 ```
+
+You can then run the debugger by pressing F5.
 
 ### Contributing
 
