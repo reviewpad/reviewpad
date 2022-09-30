@@ -1,4 +1,5 @@
 ![Reviewpad-Background-Logo-Shorter@1 5x](https://user-images.githubusercontent.com/38539/185980242-be2dfd87-2e0c-4bb1-87ce-462f629cedf6.png)
+
 # Reviewpad
 
 [![x-ray-badge](https://img.shields.io/badge/Time%20to%20Merge-Fair%20team-bb3e03?link=https://xray.reviewpad.com/analysis?repository=https%3A%2F%2Fgithub.com%2Freviewpad%2Freviewpad&style=plastic.svg)](https://xray.reviewpad.com/analysis?repository=https%3A%2F%2Fgithub.com%2Freviewpad%2Freviewpad) [![Build](https://github.com/reviewpad/reviewpad/actions/workflows/build.yml/badge.svg)](https://github.com/reviewpad/reviewpad/actions/workflows/build.yml) [![Go Report Card](https://goreportcard.com/badge/github.com/reviewpad/reviewpad)](https://goreportcard.com/report/github.com/reviewpad/reviewpad)
@@ -14,11 +15,13 @@ For **documentation**, check out this document and the [official documentation](
 To start using Reviewpad, check out the [Reviewpad GitHub Action](https://github.com/reviewpad/action).
 
 ## What is Reviewpad?
+
 Reviewpad is an open-source tool to automate pull request and issues workflows.
 
 The workflows are specified in a YML-based configuration language described in the [official documentation](https://docs.reviewpad.com/guides/syntax).
 
 In Reviewpad, you can automate actions over the pull requests and issues such as:
+
 1. Automated [comments](https://docs.reviewpad.com/use-cases/comment-on-pull-requests);
 2. Add or remove [labels](https://docs.reviewpad.com/use-cases/automated-labelling/);
 3. Specify [reviewer assignments](https://docs.reviewpad.com/use-cases/reviewer-assignment);
@@ -30,24 +33,24 @@ As an example, the following workflow:
 api-version: reviewpad.com/v3.x
 
 labels:
-  ship:
-    description: Ship mode
-    color: 76dbbe
+    ship:
+        description: Ship mode
+        color: 76dbbe
 
 rules:
-  - name: changesToMDFiles
-    kind: patch
-    description: Patch only contains changes to files with extension .md
-    spec: $hasFileExtensions([".md"])
+    - name: changesToMDFiles
+      kind: patch
+      description: Patch only contains changes to files with extension .md
+      spec: $hasFileExtensions([".md"])
 
 workflow:
-  - name: ship
-    description: Ship process - bypass the review and merge with rebase
-    if:
-      - rule: changesToMDFiles
-    then:
-      - $addLabel("ship")
-      - $merge()
+    - name: ship
+      description: Ship process - bypass the review and merge with rebase
+      if:
+          - rule: changesToMDFiles
+      then:
+          - $addLabel("ship")
+          - $merge()
 ```
 
 Automatically adds a label `ship` and merges pull requests that only change `.md` files.
@@ -55,15 +58,16 @@ Automatically adds a label `ship` and merges pull requests that only change `.md
 You can execute Reviewpad through the CLI or through the Reviewpad [GitHub action](https://github.com/reviewpad/action).
 
 ## Architecture
+
 This repository generates two artifacts:
 
 1. CLI [cli](cli/main.go) that runs reviewpad open source edition.
 2. Reviewpad library packages:
-    ├ github.com/reviewpad/reviewpad/collector
-    ├ github.com/reviewpad/reviewpad/engine
-    ├ github.com/reviewpad/reviewpad/lang/aladino
-    ├ github.com/reviewpad/reviewpad/plugins/aladino
-    ├ github.com/reviewpad/reviewpad/utils/fmtio
+    - github.com/reviewpad/reviewpad/collector
+    - github.com/reviewpad/reviewpad/engine
+    - github.com/reviewpad/reviewpad/lang/aladino
+    - github.com/reviewpad/reviewpad/plugins/aladino
+    - github.com/reviewpad/reviewpad/utils/fmtio
 
 Conceptually, the packages are divided into four categories:
 
@@ -79,9 +83,10 @@ Conceptually, the packages are divided into four categories:
 ### Prerequisites
 
 Before you begin, ensure you have met the following requirements:
-* [Go](https://golang.org/doc/install) with the minimum version of 1.16.
-* [goyacc](https://pkg.go.dev/golang.org/x/tools/cmd/goyacc) used to generate Reviewpad Aladino parser (`go install golang.org/x/tools/cmd/goyacc@master`).
-* [libgit2](https://github.com/libgit2/libgit2) with version v1.2.
+
+-   [Go](https://golang.org/doc/install) with the minimum version of 1.16.
+-   [goyacc](https://pkg.go.dev/golang.org/x/tools/cmd/goyacc) used to generate Reviewpad Aladino parser (`go install golang.org/x/tools/cmd/goyacc@master`).
+-   [libgit2](https://github.com/libgit2/libgit2) with version v1.2.
 
 ### Compilation
 
@@ -137,6 +142,7 @@ panic: httptest: failed to listen on a port: listen tcp6 [::1]:0: socket: too ma
 ```
 
 You can solve with:
+
 ```
 ulimit -Sn 500
 ```
@@ -150,11 +156,13 @@ task test
 ```
 
 To display the code coverage for every package run:
+
 ```
 go tool cover -func coverage.out
 ```
 
 To display the total code coverage percentage run:
+
 ```
 go tool cover -func coverage.out | grep total:
 ```
@@ -163,10 +171,10 @@ go tool cover -func coverage.out | grep total:
 
 We strongly recommend using [VSCode](https://code.visualstudio.com/) with the following extensions:
 
-* [Go](https://marketplace.visualstudio.com/items?itemName=golang.go)
-* [EditorConfig](https://marketplace.visualstudio.com/items?itemName=EditorConfig.EditorConfig) - To helps maintaining consistent coding styles.
-* [licenser](https://marketplace.visualstudio.com/items?itemName=ymotongpoo.licenser) - For adding license headers.
-* [YAML](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml) - For enabling `reviewpad.yml` JSON schema.
+-   [Go](https://marketplace.visualstudio.com/items?itemName=golang.go) for Go language support.
+-   [EditorConfig](https://marketplace.visualstudio.com/items?itemName=EditorConfig.EditorConfig) to helps maintaining consistent coding styles.
+-   [licenser](https://marketplace.visualstudio.com/items?itemName=ymotongpoo.licenser) for adding license headers.
+-   [YAML](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml) for enabling `reviewpad.yml` JSON schema.
 
 Open the project in VSCode, open the command palette (Ctrl+Shift+P) and search for `Preferences: Open Workspace Settings (JSON)`.
 
@@ -185,7 +193,7 @@ Paste the following configuration:
         "https://raw.githubusercontent.com/reviewpad/schemas/main/latest/schema.json": [
             "reviewpad.yml"
         ]
-    },
+    }
 }
 ```
 
@@ -216,7 +224,7 @@ Add the following to your `.vscode/launch.json`.
                 // https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token
                 "--github-token=_GIT_HUB_TOKEN_",
                 // Absolute path to JSON file with GitHub event payload
-                "--event-payload=_PATH_TO_EVENT_JSON",
+                "--event-payload=_PATH_TO_EVENT_JSON"
             ],
             "program": "${workspaceFolder}/cli/main.go"
         }
