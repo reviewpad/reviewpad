@@ -70,6 +70,28 @@ var checkCmd = &cobra.Command{
 			}
 		}
 
+		for _, pipeline := range reviewpadFile.Pipelines {
+			if pipeline.Trigger != "" {
+				if _, err = aladino.Parse(pipeline.Trigger); err != nil {
+					return err
+				}
+			}
+
+			for _, stage := range pipeline.Stages {
+				if stage.Until != "" {
+					if _, err = aladino.Parse(stage.Until); err != nil {
+						return err
+					}
+				}
+
+				for _, action := range stage.Actions {
+					if _, err = aladino.Parse(action); err != nil {
+						return err
+					}
+				}
+			}
+		}
+
 		return nil
 	},
 }

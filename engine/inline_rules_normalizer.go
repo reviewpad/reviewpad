@@ -27,6 +27,7 @@ func inlineRulesModificator(file *ReviewpadFile) (*ReviewpadFile, error) {
 		Rules:        file.Rules,
 		Labels:       file.Labels,
 		Workflows:    file.Workflows,
+		Pipelines:    file.Pipelines,
 	}
 
 	for i, workflow := range reviewpadFile.Workflows {
