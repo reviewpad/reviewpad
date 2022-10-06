@@ -99,9 +99,9 @@ func PluginBuiltInsWithConfig(config *PluginConfig) *aladino.BuiltIns {
 			"append":      functions.AppendString(),
 			"contains":    functions.Contains(),
 			"isElementOf": functions.IsElementOf(),
-			"startsWith":  functions.StartsWith(),
 			"length":      functions.Length(),
 			"sprintf":     functions.Sprintf(),
+			"startsWith":  functions.StartsWith(),
 			// Engine
 			"group": functions.Group(),
 			"rule":  functions.Rule(),
@@ -109,8 +109,8 @@ func PluginBuiltInsWithConfig(config *PluginConfig) *aladino.BuiltIns {
 			"filter": functions.Filter(),
 		},
 		Actions: map[string]*aladino.BuiltInAction{
-			"addToProject":         actions.AddToProject(),
 			"addLabel":             actions.AddLabel(),
+			"addToProject":         actions.AddToProject(),
 			"assignAssignees":      actions.AssignAssignees(),
 			"assignRandomReviewer": actions.AssignRandomReviewer(),
 			"assignReviewer":       actions.AssignReviewer(),

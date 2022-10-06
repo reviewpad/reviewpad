@@ -18,71 +18,102 @@ import (
 
 var removeLabels = plugins_aladino.PluginBuiltIns().Actions["removeLabels"].Code
 
-func TestRemoveLabels_WhenRequestFails(t *testing.T) {
+func TestRemoveLabels_WhenDeleteLabelRequestFails(t *testing.T) {
+	defaultLabel := "default-label"
+	failMessage := "DeleteLabelsFail"
+
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
+		[]mock.MockBackendOption{
+			mock.WithRequestMatchHandler(
+				mock.GetReposPullsByOwnerByRepoByPullNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+					w.Write(mock.MustMarshal(aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
+						Labels: []*github.Label{
+							{
+								ID:   github.Int64(1234),
+								Name: github.String(defaultLabel),
+							},
+						},
+					})))
+				}),
+			),
+			mock.WithRequestMatchHandler(
+				mock.DeleteReposIssuesLabelsByOwnerByRepoByIssueNumberByName,
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					w.WriteHeader(http.StatusInternalServerError)
+					w.Write(mock.MustMarshal(github.ErrorResponse{
+						// An error response may also consist of a 404 status code.
+						// However, in this context, such response means a label does not exist.
+						Response: &http.Response{
+							StatusCode: 500,
+						},
+						Message: failMessage,
+					}))
+				}),
+			),
+		},
+		nil,
+		aladino.MockBuiltIns(),
+		nil,
+	)
+
+	wantErr := failMessage
+
+	inputLabels := []aladino.Value{aladino.BuildArrayValue([]aladino.Value{aladino.BuildStringValue(defaultLabel)})}
+	gotErr := removeLabels(mockedEnv, inputLabels)
+
+	assert.Equal(t, wantErr, gotErr.(*github.ErrorResponse).Message)
+}
+
+func TestRemoveLabels_WhenLabelDoesNotExist(t *testing.T) {
 	defaultLabel := "default-label"
 
-	tests := map[string]struct {
-		mockedEnv aladino.Env
-		wantErr   string
-	}{
-		"when request to remove a label fails": {
-			mockedEnv: aladino.MockDefaultEnv(
-				t,
-				[]mock.MockBackendOption{
-					mock.WithRequestMatchHandler(
-						mock.GetReposPullsByOwnerByRepoByPullNumber,
-						http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-							w.Write(mock.MustMarshal(aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
-								Labels: []*github.Label{
-									{
-										ID:   github.Int64(1234),
-										Name: github.String(defaultLabel),
-									},
-								},
-							})))
-						}),
-					),
-					mock.WithRequestMatch(
-						mock.GetReposLabelsByOwnerByRepo,
-						[]*github.Label{
-							{Name: github.String(defaultLabel)},
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
+		[]mock.MockBackendOption{
+			mock.WithRequestMatchHandler(
+				mock.GetReposPullsByOwnerByRepoByPullNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+					w.Write(mock.MustMarshal(aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
+						Labels: []*github.Label{
+							{
+								ID:   github.Int64(1234),
+								Name: github.String(defaultLabel),
+							},
 						},
-					),
-					mock.WithRequestMatchHandler(
-						mock.DeleteReposIssuesLabelsByOwnerByRepoByIssueNumberByName,
-						http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-							mock.WriteError(
-								w,
-								http.StatusInternalServerError,
-								"DeleteLabelsFail",
-							)
-						}),
-					),
-				},
-				nil,
-				aladino.MockBuiltIns(),
-				nil,
+					})))
+				}),
 			),
-			wantErr: "DeleteLabelsFail",
+			mock.WithRequestMatchHandler(
+				mock.DeleteReposIssuesLabelsByOwnerByRepoByIssueNumberByName,
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					w.WriteHeader(http.StatusInternalServerError)
+					w.Write(mock.MustMarshal(github.ErrorResponse{
+						Response: &http.Response{
+							StatusCode: 404,
+						},
+						Message: "Resource not found",
+					}))
+				}),
+			),
 		},
-	}
+		nil,
+		aladino.MockBuiltIns(),
+		nil,
+	)
 
 	inputLabels := []aladino.Value{aladino.BuildArrayValue([]aladino.Value{aladino.BuildStringValue(defaultLabel)})}
 
-	for name, test := range tests {
-		t.Run(name, func(t *testing.T) {
-			gotErr := removeLabels(test.mockedEnv, inputLabels)
+	gotErr := removeLabels(mockedEnv, inputLabels)
 
-			assert.Equal(t, test.wantErr, gotErr.(*github.ErrorResponse).Message)
-		})
-	}
+	assert.Nil(t, gotErr)
 }
 
 func TestRemoveLabels(t *testing.T) {
 	gotRemovedLabels := []string{}
 
 	labelAInIssue := "label-a-in-issue"
-	labelBNotInIssue := "label-b-not-in-issue"
 
 	tests := map[string]struct {
 		inputLabels                []string
@@ -105,7 +136,7 @@ func TestRemoveLabels(t *testing.T) {
 				labelAInIssue,
 			},
 		},
-		"when a label is already applied to the issue": {
+		"when label does not exist in the labels section of reviewpad.yml": {
 			inputLabels: []string{
 				labelAInIssue,
 			},
@@ -113,13 +144,6 @@ func TestRemoveLabels(t *testing.T) {
 			wantRemovedLabels: []string{
 				labelAInIssue,
 			},
-		},
-		"when a label is not yet applied to the issue": {
-			inputLabels: []string{
-				labelBNotInIssue,
-			},
-			labelExistsInLabelsSection: false,
-			wantRemovedLabels:          []string{},
 		},
 	}
 
@@ -140,19 +164,6 @@ func TestRemoveLabels(t *testing.T) {
 								},
 							})))
 						}),
-					),
-					mock.WithRequestMatch(
-						mock.GetReposLabelsByOwnerByRepo,
-						[]*github.Label{
-							{
-								ID:   github.Int64(1234),
-								Name: github.String(labelAInIssue),
-							},
-							{
-								ID:   github.Int64(5678),
-								Name: github.String(labelBNotInIssue),
-							},
-						},
 					),
 					mock.WithRequestMatchHandler(
 						mock.DeleteReposIssuesLabelsByOwnerByRepoByIssueNumberByName,
