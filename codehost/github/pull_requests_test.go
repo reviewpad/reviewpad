@@ -767,7 +767,7 @@ func TestGetPullRequestLastPushDate(t *testing.T) {
 			wantLastPushDate: time.Time{},
 			wantErr:          "last push not found",
 		},
-		"when pull request's last event is a push": {
+		"when pull request's last event is a push and pushDate is not nil": {
 			mockedGQLQueryBody: `{
 				"data": {
 					"repository": {
@@ -786,6 +786,26 @@ func TestGetPullRequestLastPushDate(t *testing.T) {
 				}
 			}`,
 			wantLastPushDate: time.Date(2011, 1, 26, 19, 06, 43, 0, time.UTC),
+			wantErr:          "",
+		},
+		"when pull request's last event is a push and pushedDate is nil": {
+			mockedGQLQueryBody: `{
+				"data": {
+					"repository": {
+						"pullRequest": {
+							"timelineItems": {
+								"nodes": [{
+									"__typename": "PullRequestCommit",
+									"commit": {
+										"committedDate": "2011-01-26T19:01:12Z"
+									}
+								}]
+							}
+						}
+					}
+				}
+			}`,
+			wantLastPushDate: time.Date(2011, 1, 26, 19, 01, 12, 0, time.UTC),
 			wantErr:          "",
 		},
 		"when pull request's last event is a force push": {
