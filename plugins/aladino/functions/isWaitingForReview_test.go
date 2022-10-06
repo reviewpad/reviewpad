@@ -5,7 +5,7 @@
 package plugins_aladino_functions_test
 
 import (
-	"context"
+	"fmt"
 	"net/http"
 	"testing"
 	"time"
@@ -15,28 +15,206 @@ import (
 	host "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
+	"github.com/reviewpad/reviewpad/v3/utils"
 	"github.com/stretchr/testify/assert"
 )
 
 var isWaitingForReview = plugins_aladino.PluginBuiltIns().Functions["isWaitingForReview"].Code
 
-func TestIsWaitingForReview_WhenRequestFail(t *testing.T) {
-	mockedGithubClient := aladino.MockDefaultGithubClient(
-		nil,
-		func(w http.ResponseWriter, req *http.Request) {
-			http.Error(w, "404 Not Found", http.StatusNotFound)
+func TestIsWaitingForReview_WhenListCommitsRequestFails(t *testing.T) {
+	failMessage := "ListCommitsRequestFail"
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
+		[]mock.MockBackendOption{
+			mock.WithRequestMatchHandler(
+				mock.GetReposPullsByOwnerByRepoByPullNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+					w.Write(mock.MustMarshal(
+						aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
+							RequestedReviewers: []*github.User{},
+							RequestedTeams:     []*github.Team{},
+						}),
+					))
+				}),
+			),
+			mock.WithRequestMatchHandler(
+				mock.GetReposPullsCommitsByOwnerByRepoByPullNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					mock.WriteError(
+						w,
+						http.StatusInternalServerError,
+						failMessage,
+					)
+				}),
+			),
 		},
+		nil,
+		aladino.MockBuiltIns(),
+		nil,
 	)
-	mockedPullRequest := aladino.GetDefaultMockPullRequestDetails()
 
+	args := []aladino.Value{}
+	gotValue, gotErr := isWaitingForReview(mockedEnv, args)
+
+	assert.Nil(t, gotValue)
+	assert.Equal(t, failMessage, gotErr.(*github.ErrorResponse).Message)
+}
+
+func TestIsWaitingForReview_WhenGetPullRequestLastPushDateRequestFails(t *testing.T) {
+	failMessage := "GetPullRequestLastPushDateRequestFail"
+
+	mockedLastCommitDate := time.Now()
+	mockedCommits := []*github.RepositoryCommit{{
+		Commit: &github.Commit{
+			Committer: &github.CommitAuthor{
+				Date: &mockedLastCommitDate,
+			},
+		},
+	}}
+
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
+		[]mock.MockBackendOption{
+			mock.WithRequestMatchHandler(
+				mock.GetReposPullsByOwnerByRepoByPullNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+					w.Write(mock.MustMarshal(
+						aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
+							RequestedReviewers: []*github.User{},
+							RequestedTeams:     []*github.Team{},
+						}),
+					))
+				}),
+			),
+			mock.WithRequestMatchHandler(
+				mock.GetReposPullsCommitsByOwnerByRepoByPullNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+					w.Write(mock.MustMarshal(mockedCommits))
+				}),
+			),
+		},
+		func(w http.ResponseWriter, req *http.Request) {
+			http.Error(w, failMessage, http.StatusNotFound)
+		},
+		aladino.MockBuiltIns(),
+		nil,
+	)
+
+	args := []aladino.Value{}
+	gotValue, gotErr := isWaitingForReview(mockedEnv, args)
+
+	assert.Nil(t, gotValue)
+	assert.EqualError(t, gotErr, fmt.Sprintf("non-200 OK status code: 404 Not Found body: \"%s\\n\"", failMessage))
+}
+
+func TestIsWaitingForReview_WhenListReviewsRequestFails(t *testing.T) {
+	failMessage := "ListReviewsRequestFail"
+
+	mockedLastCommitDate := time.Now()
+	mockedCommits := []*github.RepositoryCommit{{
+		Commit: &github.Commit{
+			Committer: &github.CommitAuthor{
+				Date: &mockedLastCommitDate,
+			},
+		},
+	}}
+
+	mockedPullRequest := aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
+		RequestedReviewers: []*github.User{},
+		RequestedTeams:     []*github.Team{},
+	})
+
+	mockedPullRequestNumber := host.GetPullRequestNumber(mockedPullRequest)
 	mockOwner := host.GetPullRequestBaseOwnerName(mockedPullRequest)
 	mockRepo := host.GetPullRequestBaseRepoName(mockedPullRequest)
-	mockPrNumber := host.GetPullRequestNumber(mockedPullRequest)
 
-	date, err := mockedGithubClient.GetPullRequestLastPushDate(context.Background(), mockOwner, mockRepo, mockPrNumber)
+	mockedPullRequestLastPushDateGQLQuery := fmt.Sprintf(`{
+		"query":"query($pullRequestNumber:Int! $repositoryName:String! $repositoryOwner:String!){
+			repository(owner: $repositoryOwner, name: $repositoryName){
+				pullRequest(number: $pullRequestNumber){
+					timelineItems(last: 1, itemTypes: [HEAD_REF_FORCE_PUSHED_EVENT, PULL_REQUEST_COMMIT]){
+						nodes{
+							__typename,
+							...on HeadRefForcePushedEvent {
+								createdAt
+							},
+							...on PullRequestCommit {
+								commit {
+									pushedDate,
+									committedDate
+								}
+							}
+						}
+					}
+				}
+			}
+		}",
+		"variables":{
+			"pullRequestNumber": %d,
+			"repositoryName": "%s",
+			"repositoryOwner": "%s"
+		}
+	}`, mockedPullRequestNumber, mockRepo, mockOwner)
 
-	assert.NotNil(t, err)
-	assert.Equal(t, time.Time{}, date)
+	mockedPullRequestLastPushDateGQLQueryBody := fmt.Sprintf(`{
+		"data": {
+			"repository": {
+				"pullRequest": {
+					"timelineItems": {
+						"nodes": [{
+							"__typename": "PullRequestCommit",
+							"commit": {
+								"pushedDate": "%s"
+							}
+						}]
+					}
+				}
+			}
+		}
+	}`, mockedLastCommitDate.Format("2006-01-02T15:04:05Z07:00"))
+
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
+		[]mock.MockBackendOption{
+			mock.WithRequestMatchHandler(
+				mock.GetReposPullsByOwnerByRepoByPullNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+					w.Write(mock.MustMarshal(mockedPullRequest))
+				}),
+			),
+			mock.WithRequestMatchHandler(
+				mock.GetReposPullsCommitsByOwnerByRepoByPullNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+					w.Write(mock.MustMarshal(mockedCommits))
+				}),
+			),
+			mock.WithRequestMatchHandler(
+				mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					mock.WriteError(
+						w,
+						http.StatusInternalServerError,
+						failMessage,
+					)
+				}),
+			),
+		},
+		func(w http.ResponseWriter, req *http.Request) {
+			query := utils.MinifyQuery(aladino.MustRead(req.Body))
+			switch query {
+			case utils.MinifyQuery(mockedPullRequestLastPushDateGQLQuery):
+				aladino.MustWrite(w, mockedPullRequestLastPushDateGQLQueryBody)
+			}
+		},
+		aladino.MockBuiltIns(),
+		nil,
+	)
+
+	args := []aladino.Value{}
+	gotValue, gotErr := isWaitingForReview(mockedEnv, args)
+
+	assert.Nil(t, gotValue)
+	assert.Equal(t, failMessage, gotErr.(*github.ErrorResponse).Message)
 }
 
 func TestIsWaitingForReview_WhenNoCommits(t *testing.T) {
@@ -69,8 +247,10 @@ func TestIsWaitingForReview_WhenNoCommits(t *testing.T) {
 	args := []aladino.Value{}
 	gotValue, err := isWaitingForReview(mockedEnv, args)
 
-	assert.Nil(t, err, "Expected no error")
-	assert.True(t, gotValue.Equals(aladino.BuildBoolValue(false)))
+	wantValue := aladino.BuildBoolValue(false)
+
+	assert.Nil(t, err)
+	assert.Equal(t, wantValue, gotValue)
 }
 
 func TestIsWaitingForReview_WhenHasNoReviews(t *testing.T) {
@@ -149,14 +329,13 @@ func TestIsWaitingForReview_WhenHasNoReviews(t *testing.T) {
 			args := []aladino.Value{}
 			gotValue, err := isWaitingForReview(mockedEnv, args)
 
-			assert.Nil(t, err, "Expected no error")
-			assert.True(t, gotValue.Equals(test.wantValue), "Expected %v, got %v", test.wantValue, gotValue)
+			assert.Nil(t, err)
+			assert.Equal(t, test.wantValue, gotValue)
 		})
 	}
 }
 
 func TestIsWaitingForReview_WhenHasReviews(t *testing.T) {
-	t.Skip("FIXME: #331")
 	mockedAuthorLogin := "author"
 	mockedLastCommitDate := time.Now()
 	mockedCreateDateAfterLastCommitDate := mockedLastCommitDate.Add(time.Hour)
@@ -173,6 +352,54 @@ func TestIsWaitingForReview_WhenHasReviews(t *testing.T) {
 		RequestedTeams:     []*github.Team{},
 		User:               &github.User{Login: github.String(mockedAuthorLogin)},
 	})
+
+	mockedPullRequestNumber := host.GetPullRequestNumber(mockedPullRequest)
+	mockOwner := host.GetPullRequestBaseOwnerName(mockedPullRequest)
+	mockRepo := host.GetPullRequestBaseRepoName(mockedPullRequest)
+	mockedPullRequestLastPushDateGQLQuery := fmt.Sprintf(`{
+		"query":"query($pullRequestNumber:Int! $repositoryName:String! $repositoryOwner:String!){
+			repository(owner: $repositoryOwner, name: $repositoryName){
+				pullRequest(number: $pullRequestNumber){
+					timelineItems(last: 1, itemTypes: [HEAD_REF_FORCE_PUSHED_EVENT, PULL_REQUEST_COMMIT]){
+						nodes{
+							__typename,
+							...on HeadRefForcePushedEvent {
+								createdAt
+							},
+							...on PullRequestCommit {
+								commit {
+									pushedDate,
+									committedDate
+								}
+							}
+						}
+					}
+				}
+			}
+		}",
+		"variables":{
+			"pullRequestNumber": %d,
+			"repositoryName": "%s",
+			"repositoryOwner": "%s"
+		}
+	}`, mockedPullRequestNumber, mockRepo, mockOwner)
+
+	mockedPullRequestLastPushDateGQLQueryBody := fmt.Sprintf(`{
+		"data": {
+			"repository": {
+				"pullRequest": {
+					"timelineItems": {
+						"nodes": [{
+							"__typename": "PullRequestCommit",
+							"commit": {
+								"pushedDate": "%s"
+							}
+						}]
+					}
+				}
+			}
+		}
+	}`, mockedLastCommitDate.Format("2006-01-02T15:04:05Z07:00"))
 
 	tests := map[string]struct {
 		reviewers []*github.PullRequestReview
@@ -299,7 +526,13 @@ func TestIsWaitingForReview_WhenHasReviews(t *testing.T) {
 						}),
 					),
 				},
-				nil,
+				func(w http.ResponseWriter, req *http.Request) {
+					query := utils.MinifyQuery(aladino.MustRead(req.Body))
+					switch query {
+					case utils.MinifyQuery(mockedPullRequestLastPushDateGQLQuery):
+						aladino.MustWrite(w, mockedPullRequestLastPushDateGQLQueryBody)
+					}
+				},
 				aladino.MockBuiltIns(),
 				nil,
 			)
