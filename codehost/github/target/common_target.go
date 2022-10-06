@@ -143,5 +143,11 @@ func (t *CommonTarget) RemoveLabel(labelName string) error {
 
 	_, err := t.githubClient.RemoveLabelForIssue(ctx, owner, repo, number, labelName)
 
+	// When the label does not exist, the API returns a 404 error.
+	// In this case, we ignore the error.
+	if err != nil && err.(*github.ErrorResponse).Response.StatusCode == 404 {
+		return nil
+	}
+
 	return err
 }
