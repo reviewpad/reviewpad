@@ -220,18 +220,6 @@ func (t *PullRequestTarget) Merge(mergeMethod string) error {
 	return err
 }
 
-func (t *PullRequestTarget) RemoveLabel(labelName string) error {
-	ctx := t.ctx
-	targetEntity := t.targetEntity
-	owner := targetEntity.Owner
-	repo := targetEntity.Repo
-	number := targetEntity.Number
-
-	_, err := t.githubClient.RemoveLabelForIssue(ctx, owner, repo, number, labelName)
-
-	return err
-}
-
 func (t *PullRequestTarget) RequestReviewers(reviewers []string) error {
 	ctx := t.ctx
 	targetEntity := t.targetEntity
