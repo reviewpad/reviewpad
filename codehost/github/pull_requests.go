@@ -380,10 +380,10 @@ func (c *GithubClient) GetPullRequestLastPushDate(ctx context.Context, owner str
 	event := lastPushQuery.Repository.PullRequest.TimelineItems.Nodes[0]
 	switch event.Typename {
 	case "PullRequestCommit":
-		if pushedDate := event.PullRequestCommit.Commit.PushedDate; pushDate != nil {
+		if pushedDate := event.PullRequestCommit.Commit.PushedDate; pushedDate != nil {
 			pushDate = pushedDate
 		} else {
-			pushDate = event.PullRequestCommit.Commit.PushedDate
+			pushDate = event.PullRequestCommit.Commit.CommittedDate
 		}
 	case "HeadRefForcePushedEvent":
 		pushDate = event.HeadRefForcePushedEvent.CreatedAt
