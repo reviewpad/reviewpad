@@ -21,8 +21,8 @@ import (
 
 var isWaitingForReview = plugins_aladino.PluginBuiltIns().Functions["isWaitingForReview"].Code
 
-func TestIsWaitingForReview_WhenGetPullRequestCommitsRequestFail(t *testing.T) {
-	failMessage := "GetPullRequestCommits request fail"
+func TestIsWaitingForReview_WhenListCommitsRequestFails(t *testing.T) {
+	failMessage := "ListCommitsRequestFail"
 	mockedEnv := aladino.MockDefaultEnv(
 		t,
 		[]mock.MockBackendOption{
@@ -60,8 +60,8 @@ func TestIsWaitingForReview_WhenGetPullRequestCommitsRequestFail(t *testing.T) {
 	assert.Equal(t, failMessage, gotErr.(*github.ErrorResponse).Message)
 }
 
-func TestIsWaitingForReview_WhenGetPullRequestLastPushDateRequestFail(t *testing.T) {
-	failMessage := "GetPullRequestLastPushDateFail"
+func TestIsWaitingForReview_WhenGetPullRequestLastPushDateRequestFails(t *testing.T) {
+	failMessage := "GetPullRequestLastPushDateRequestFail"
 
 	mockedLastCommitDate := time.Now()
 	mockedCommits := []*github.RepositoryCommit{{
@@ -71,6 +71,7 @@ func TestIsWaitingForReview_WhenGetPullRequestLastPushDateRequestFail(t *testing
 			},
 		},
 	}}
+
 	mockedEnv := aladino.MockDefaultEnv(
 		t,
 		[]mock.MockBackendOption{
@@ -106,8 +107,8 @@ func TestIsWaitingForReview_WhenGetPullRequestLastPushDateRequestFail(t *testing
 	assert.EqualError(t, gotErr, fmt.Sprintf("non-200 OK status code: 404 Not Found body: \"%s\\n\"", failMessage))
 }
 
-func TestIsWaitingForReview_WhenGetPullRequestReviewsRequestFail(t *testing.T) {
-	failMessage := "GetPullRequestReviews request fail"
+func TestIsWaitingForReview_WhenListReviewsRequestFails(t *testing.T) {
+	failMessage := "ListReviewsRequestFail"
 
 	mockedLastCommitDate := time.Now()
 	mockedCommits := []*github.RepositoryCommit{{
@@ -246,8 +247,10 @@ func TestIsWaitingForReview_WhenNoCommits(t *testing.T) {
 	args := []aladino.Value{}
 	gotValue, err := isWaitingForReview(mockedEnv, args)
 
-	assert.Nil(t, err, "Expected no error")
-	assert.True(t, gotValue.Equals(aladino.BuildBoolValue(false)))
+	wantValue := aladino.BuildBoolValue(false)
+
+	assert.Nil(t, err)
+	assert.Equal(t, wantValue, gotValue)
 }
 
 func TestIsWaitingForReview_WhenHasNoReviews(t *testing.T) {
@@ -326,8 +329,8 @@ func TestIsWaitingForReview_WhenHasNoReviews(t *testing.T) {
 			args := []aladino.Value{}
 			gotValue, err := isWaitingForReview(mockedEnv, args)
 
-			assert.Nil(t, err, "Expected no error")
-			assert.True(t, gotValue.Equals(test.wantValue), "Expected %v, got %v", test.wantValue, gotValue)
+			assert.Nil(t, err)
+			assert.Equal(t, test.wantValue, gotValue)
 		})
 	}
 }
