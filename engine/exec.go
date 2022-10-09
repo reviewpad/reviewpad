@@ -57,6 +57,7 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 		"totalLabels":    len(file.Labels),
 		"totalRules":     len(file.Rules),
 		"totalWorkflows": len(file.Workflows),
+		"totalPipelines": len(file.Pipelines),
 	}
 
 	env.Collector.Collect("Trigger Analysis", collectedData)
