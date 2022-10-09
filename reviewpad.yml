@@ -289,7 +289,7 @@ workflows:
   - name: default-review-process
     # only runs if the pull request is not automatically merged
     if:
-      - rule: '$pullRequestCountBy($author()) == 1'
+      - rule: '$pullRequestCountBy($author(), "all") == 1'
         extra-actions:
           - '$commentOnce("Thank you so much for your first pull request!")'
       - rule: authored-by-rising-stars
