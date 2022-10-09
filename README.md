@@ -35,19 +35,13 @@ api-version: reviewpad.com/v3.x
 labels:
     ship:
         description: Ship mode
-        color: 76dbbe
+        color: '#76dbbe'
 
-rules:
-    - name: changesToMDFiles
-      kind: patch
-      description: Patch only contains changes to files with extension .md
-      spec: $hasFileExtensions([".md"])
-
-workflow:
+workflows:
     - name: ship
       description: Ship process - bypass the review and merge with rebase
       if:
-          - rule: changesToMDFiles
+          - rule: '$hasFileExtensions([".md"])'
       then:
           - $addLabel("ship")
           - $merge()
