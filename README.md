@@ -16,7 +16,7 @@ To start using Reviewpad, check out the [Reviewpad GitHub Action](https://github
 
 ## What is Reviewpad?
 
-Reviewpad is an open-source tool to automate pull request and issues workflows.
+Reviewpad is an open-source project to automate pull request and issues workflows.
 
 The workflows are specified in a YML-based configuration language described in the [official documentation](https://docs.reviewpad.com/guides/syntax).
 
