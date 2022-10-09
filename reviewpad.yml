@@ -6,249 +6,173 @@ edition: professional
 labels:
   small:
     description: Small changes
-    # color is the hexadecimal color code for the label, without the leading #.
-    color: "294b69"
+    color: "#294b69"
   medium:
     description: Medium changes
-    color: "a8c3f7"
+    color: "#a8c3f7"
   large:
     description: Large changes
-    color: "8a2138"
+    color: "#8a2138"
   external-contribution:
     description: External contribution
-    color: "8a2151"
+    color: "#8a2151"
   plugins:
     description: Modifications to the plugins directory
-    color: "294b72"
+    color: "#294b72"
   critical:
     description: Modifications to critical changes
-    color: "294b75"
+    color: "#294b75"
   ship:
     description: Ship mode
-    color: "76dbbe"
+    color: "#76dbbe"
   show:
     description: Show mode
-    color: "2986cc"
+    color: "#2986cc"
   ask:
     description: Ask mode
-    color: "c90076"
+    color: "#c90076"
   waiting-review:
     description: PR waiting for review
-    color: "cccc00"
+    color: "#cccc00"
   requires-author-attention:
     description: PR requires author attention
-    color: "b20000"
+    color: "#b20000"
 
 groups:
   - name: owners
     description: Group of owners
-    kind: developers
     spec: '["marcelosousa", "ferreiratiago"]'
 
   - name: plugins-reviewers
     description: Group of plugin reviewers
-    kind: developers
     spec: '["marcelosousa", "ferreiratiago", "shay2025"]'
 
   - name: maintainers
     description: Official maintainers
-    kind: developers
     spec: '["marcelosousa", "ferreiratiago"]'
 
   - name: rising-stars
     description: Rising stars in the team
-    kind: developers
     spec: '["shay2025"]'
 
   - name: official-contributors
     description: Reviewpad core contributors
-    kind: developers
     spec: '$append($group("maintainers"), $group("rising-stars"))'
 
 rules:
-  - name: tautology
-    kind: patch
-    description: Always true
-    spec: 'true'
-
-  - name: is-small
-    kind: patch
-    description: Small pull request
-    spec: $size() <= 30
-
-  - name: is-medium
-    kind: patch
-    description: Medium-sized pull request
-    spec: $size() > 30 && $size() <= 100
-
-  - name: is-large
-    kind: patch
-    description: Large-sized pull request
-    spec: $size() > 100
-
   - name: changes-are-in-markdown
-    kind: patch
-    description: Verifies if changes are only in markdown files
+    description: Checks if changes are only in markdown files
     spec: '$hasFileExtensions([".md"])'
 
+  - name: ship-mode
+    spec: '$contains($description(), "[x] Ship:")'
+
+  - name: ship-authored-by-owners
+    description: Ship pull requests authored by owners
+    spec: '$rule("ship-mode") && $isElementOf($author(), $group("owners"))'
+
+  - name: ship-markdown-changes
+    description: Owners can ship simple pull requests
+    spec: '$rule("ship-authored-by-owners") && $rule("changes-are-in-markdown")'
+
   - name: changes-should-be-built
-    kind: patch
-    description: Verifies if changes are not only in markdown files
+    description: Checks if changes are not only in markdown files
     spec: '!$rule("changes-are-in-markdown") && !$isElementOf("run-build", $labels())'
 
   - name: ci-is-green
-    kind: patch
     description: Pipeline is green
     spec: '$workflowStatus("pr-build") == "success" && $workflowStatus("reviewpad") == "success"'
 
-  - name: is-first-time-contributor
-    kind: patch
-    description: First pull request created
-    spec: '$totalCreatedPullRequests($author()) == 1'
+  - name: auto-merge-authored-by-owners-with-ship-and-green-ci
+    description: Auto merge pull requests authored by owners with ship and green ci
+    spec: '$rule("ship-authored-by-owners") && $rule("ci-is-green")'
 
-  - name: touchesLicense
-    kind: patch
-    description: Modifies the LICENSE file
+  - name: show-mode
+    spec: '$contains($description(), "[x] Show:")'
+
+  - name: ask-mode
+    spec: '$contains($description(), "[x] Ask:")'
+
+  - name: touches-license
     spec: '$hasFileName("LICENSE")'
 
-  - name: touchesMoreThanLicense
-    kind: patch
+  - name: touches-more-than-license
     description: Modifies the LICENSE file and other files
-    spec: '$rule("touchesLicense") && $fileCount() > 1'
+    spec: '$rule("touches-license") && $fileCount() > 1'
 
-  - name: touchesLicenseByNonOwner
-    kind: patch
+  - name: touches-license-by-non-owner
     description: Non-owner modifies the LICENSE file
-    spec: '$rule("touchesLicense") && !$isElementOf($author(), $group("owners"))'
+    spec: '$rule("touches-license") && !$isElementOf($author(), $group("owners"))'
 
-  - name: touchesPluginsFunctions
-    kind: patch
+  - name: touches-plugin-functions
     description: Modifies the plugin functions
     spec: '$hasFilePattern("plugins/aladino/functions/**")'
 
-  - name: touchesPluginsActions
-    kind: patch
+  - name: touches-plugin-actions
     description: Modifies the plugin actions
     spec: '$hasFilePattern("plugins/aladino/actions/**")'
 
-  - name: touchesPluginsFunctionsAndActions
-    kind: patch
+  - name: touches-plugin-functions-and-actions
     description: Modifies both plugin actions and functions
-    spec: '$rule("touchesPluginsActions") && $rule("touchesPluginsFunctions")'
+    spec: '$rule("touches-plugin-actions") && $rule("touches-plugin-functions")'
 
-  - name: touchesPluginsFunctionsOrActionsAndNotBuiltins
-    kind: patch
+  - name: touches-plugin-functions-or-actions-and-not-builtins
     description: Modifies plugins but not built-ins
-    spec: '($rule("touchesPluginsActions") || $rule("touchesPluginsFunctions")) && !$hasFileName("plugins/aladino/builtins.go")'
-
-  - name: changes-critical-functions
-    kind: patch
-    description: Changes to functions considered critical
-    # This spec uses a special built-in that understand which functions were commented
-    # with "reviewpad-an: critical"
-    spec: '$hasAnnotation("critical")'
-
-  - name: changes-to-main-file
-    description: Changes to the main file
-    kind: patch
-    spec: '$hasFileName("runner.go")'
-
-  - name: does-not-have-linear-history
-    kind: patch
-    description: Pull request does not have a linear history
-    spec: '!$hasLinearHistory()'
+    spec: '($rule("touches-plugin-actions") || $rule("touches-plugin-functions")) && !$hasFileName("plugins/aladino/builtins.go")'
 
   - name: authored-by-rising-stars
-    kind: patch
     description: Pull request was authored by rising stars
     spec: '$isElementOf($author(), $group("rising-stars"))'
 
   - name: authored-by-maintainers
-    kind: patch
     description: Pull request was authored by maintainers
     spec: '$isElementOf($author(), $group("maintainers"))'
 
   - name: authored-by-external-contributors
-    kind: patch
     description: Pull request was authored by external contributors
     spec: '!$isElementOf($author(), $group("official-contributors"))'
 
   - name: work-in-progress
-    kind: patch
     description: Pull request is WIP
     spec: '$isDraft()'
 
-  - name: ship-state
-    kind: patch
-    description: Ship pull requests
-    spec: '$contains($description(), "[x] Ship:") || $isElementOf("ship", $labels())'
-
-  - name: show-state
-    kind: patch
-    description: Show pull requests
-    spec: '$contains($description(), "[x] Show:") || $isElementOf("show", $labels())'
-
-  - name: explicit-ask-state
-    kind: patch
-    description: Explicit ask pull requests
-    spec: '$contains($description(), "[x] Ask:") || $isElementOf("ask", $labels()) || $rule("authored-by-external-contributors")'
-
-  - name: ask-state
-    kind: patch
-    description: Ask pull request
-    spec: '(!$rule("ship-state") && !$rule("show-state")) || $rule("explicit-ask-state")'
-
   - name: inconsistent-state
-    kind: patch
     description: Pull request is in an inconsistent state
-    spec: '$rule("work-in-progress") && $rule("ship-state")'
-
-  - name: ship-authored-by-owners
-    kind: patch
-    description: Ship pull requests authored by owners
-    spec: '$rule("ship-state") && $isElementOf($author(), $group("owners"))'
-
-  - name: auto-merge-authored-by-owners-with-ship-and-green-ci
-    kind: patch
-    description: Auto merge pull requests authored by owners with ship and green ci
-    spec: '$rule("ship-authored-by-owners") && $rule("ci-is-green")'
-
-  - name: ship-markdown-changes
-    kind: patch
-    description: Owners can ship simple pull requests
-    spec: '$rule("ship-authored-by-owners") && $rule("changes-are-in-markdown")'
-
-  # - name: ci-is-completed
-  #   kind: patch
-  #   spec: '$workflowStatus("pr-build") != "queued" && $workflowStatus("pr-build") != "in_progress"'
+    spec: '$rule("work-in-progress") && $rule("ship-mode")'
 
   - name: does-not-have-linked-issues
-    kind: patch
     spec: '!$hasLinkedIssues() && !$rule("work-in-progress")'
 
 workflows:
   - name: add-label-with-size
-    description: Add label with size of the pull request
     always-run: true
     if:
-      - rule: is-small
+      - rule: '$size() <= 30'
         extra-actions:
           - '$addLabel("small")'
-      - rule: is-medium
+      - rule: '$size() > 30 && $size() <= 100'
         extra-actions:
           - '$addLabel("medium")'
-      - rule: is-large
+      - rule: '$size() > 100'
         extra-actions:
           - '$addLabel("large")'
 
-  - name: add-to-project
-    description: Pull requests without linked issues are added to the project
+  - name: label-ship-show-ask
     always-run: true
     if:
-      - rule: does-not-have-linked-issues
-    then:
-      - '$addToProject("Reviewpad", "In Review")'
-  
+      - rule: ship-authored-by-owners
+        extra-actions:
+          - '$removeLabels(["ask", "show"])'
+          - '$addLabel("ship")'
+      - rule: show-mode
+        extra-actions:
+          - '$removeLabels(["ask", "ship"])'
+          - '$addLabel("show")'
+      - rule: ask-mode
+        extra-actions:
+          - '$removeLabels(["show", "ship"])'
+          - '$addLabel("ask")'
+
   - name: attention-set
     always-run: true
     if:
@@ -264,6 +188,14 @@ workflows:
       - rule: '!$hasUnaddressedThreads()'
         extra-actions:
           - '$removeLabel("requires-author-attention")'
+
+  - name: add-to-project
+    description: Pull requests without linked issues are added to the project
+    always-run: true
+    if:
+      - rule: does-not-have-linked-issues
+    then:
+      - '$addToProject("Reviewpad", "In Review")'
 
   - name: add-issue-to-project
     on:
@@ -286,35 +218,14 @@ workflows:
       - '$error("The description is empty. Please add more information!")'
 
   - name: lint-commits
-    description: Lint commits
     always-run: true
     if:
-      - rule: does-not-have-linear-history
+      - rule: '!$hasLinearHistory()'
         extra-actions:
           - '$warn("This pull request does not have linear history - please fix this!")'
-      - rule: tautology
+      - rule: 'true'
         extra-actions:
           - '$commitLint()'
-
-  - name: label-ship-show-ask
-    # at all times we only have one label
-    always-run: true
-    if:
-      - rule: ship-authored-by-owners
-        extra-actions:
-          - '$removeLabel("ask")'
-          - '$removeLabel("show")'
-          - '$addLabel("ship")'
-      - rule: show-state
-        extra-actions:
-          - '$removeLabel("ask")'
-          - '$removeLabel("ship")'
-          - '$addLabel("show")'
-      - rule: ask-state
-        extra-actions:
-          - '$removeLabel("ship")'
-          - '$removeLabel("show")'
-          - '$addLabel("ask")'
 
   - name: setup-reviewer-assignment
     always-run: true
@@ -333,7 +244,7 @@ workflows:
   - name: unauthorized-license-workflow
     description: Protect unauthorized modifications to the LICENSE
     if:
-      - rule: touchesLicenseByNonOwner
+      - rule: touches-license-by-non-owner
     then:
       - '$error("Sorry, you are not authorized to make these changes")'
       - '$close()'
@@ -341,8 +252,8 @@ workflows:
   - name: license-workflow
     description: Protect modifications to the LICENSE
     if:
-      - rule: touchesLicense
-      - rule: touchesMoreThanLicense
+      - rule: touches-license
+      - rule: touches-more-than-license
         extra-actions:
           - '$warn("This pull request should only modify the LICENSE!")'
     then:
@@ -350,20 +261,12 @@ workflows:
       - '$assignReviewer($group("owners"), 1)'
 
   - name: add-label-for-build
-    description: Add label to kick in the build
+    description: Add label to kick-in the build
     always-run: true
     if:
       - rule: changes-should-be-built
     then:
       - '$addLabel("run-build")'
-
-  # - name: remove-ci-label
-  #   description: If the build is completed, remove the label
-  #   always-run: true
-  #   if:
-  #     - rule: ci-is-completed
-  #   then:
-  #     - '$removeLabel("run-build")'
 
   - name: auto-merge-owner-pull-requests
     description: Auto merge pull requests
@@ -371,27 +274,24 @@ workflows:
       - rule: auto-merge-authored-by-owners-with-ship-and-green-ci
       - rule: ship-markdown-changes
     then:
-      - '$addLabel("ship")' # redundant?
       - '$merge("rebase")'
 
   - name: changes-to-critical-code
-    description: Changes to critical code
     always-run: true
     if:
-      - rule: changes-critical-functions
-      - rule: changes-to-main-file
+      - rule: '$hasAnnotation("critical")'
+      - rule: '$hasFileName("runner.go")'
     then:
       - '$addLabel("critical")'
       - '$assignReviewer($group("owners"), 1)'
       - '$info("@marcelosousa: you are being notified because critical code was modified")'
 
   - name: default-review-process
-    description: Default review process
     # only runs if the pull request is not automatically merged
     if:
-      - rule: is-first-time-contributor
+      - rule: '$pullRequestCountBy($author()) == 1'
         extra-actions:
-          - '$commentOnce("Thank you so much for your first contribution!")'
+          - '$commentOnce("Thank you so much for your first pull request!")'
       - rule: authored-by-rising-stars
         extra-actions:
           - '$assignReviewer($group("maintainers"), 1)'
@@ -408,11 +308,10 @@ workflows:
           - '$assignAssignees(["marcelosousa"])'
 
   - name: label-plugins
-    description: Label changes to plugins
     always-run: true
     if:
-      - rule: touchesPluginsFunctions
-      - rule: touchesPluginsActions
+      - rule: touches-plugin-functions
+      - rule: touches-plugin-actions
     then:
       - '$addLabel("plugins")'
       - '$assignReviewer($group("plugins-reviewers"), 1)'
@@ -422,14 +321,13 @@ workflows:
     description: Warn when touching multiple changes
     always-run: true
     if:
-      - rule: touchesPluginsFunctionsAndActions
+      - rule: touches-plugin-functions-and-actions
     then:
       - '$info("It looks like you modified both functions and actions. Is that intentional?")'
 
   - name: help-with-builtins
-    description: Help with new built-in
     always-run: true
     if:
-      - rule: touchesPluginsFunctionsOrActionsAndNotBuiltins
+      - rule: touches-plugin-functions-or-actions-and-not-builtins
     then:
       - '$info("If you have added a new function or action do not forget to include it in the built-in list!")'
