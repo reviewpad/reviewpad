@@ -62,7 +62,7 @@ func (t *IssueTarget) Close(comment string) error {
 	return err
 }
 
-func (t *IssueTarget) GetLabels() ([]*codehost.Label, error) {
+func (t *IssueTarget) GetLabels() []*codehost.Label {
 	issue := t.issue
 	labels := make([]*codehost.Label, len(issue.Labels))
 
@@ -73,7 +73,7 @@ func (t *IssueTarget) GetLabels() ([]*codehost.Label, error) {
 		}
 	}
 
-	return labels, nil
+	return labels
 }
 
 func (t *IssueTarget) GetAuthor() (*codehost.User, error) {

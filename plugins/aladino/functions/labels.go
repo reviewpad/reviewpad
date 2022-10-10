@@ -18,10 +18,7 @@ func Labels() *aladino.BuiltInFunction {
 }
 
 func labelsCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
-	ghLabels, err := e.GetTarget().GetLabels()
-	if err != nil {
-		return nil, err
-	}
+	ghLabels := e.GetTarget().GetLabels()
 
 	labels := make([]aladino.Value, len(ghLabels))
 

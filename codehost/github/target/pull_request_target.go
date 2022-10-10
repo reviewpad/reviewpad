@@ -99,7 +99,7 @@ func (t *PullRequestTarget) GetAuthor() (*codehost.User, error) {
 	}, nil
 }
 
-func (t *PullRequestTarget) GetLabels() ([]*codehost.Label, error) {
+func (t *PullRequestTarget) GetLabels() []*codehost.Label {
 	pr := t.PullRequest
 	labels := make([]*codehost.Label, len(pr.Labels))
 
@@ -110,7 +110,7 @@ func (t *PullRequestTarget) GetLabels() ([]*codehost.Label, error) {
 		}
 	}
 
-	return labels, nil
+	return labels
 }
 
 func (t *PullRequestTarget) GetProjectByName(name string) (*codehost.Project, error) {
