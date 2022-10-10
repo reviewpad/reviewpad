@@ -6,6 +6,7 @@ package plugins_aladino_actions_test
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"testing"
@@ -20,6 +21,26 @@ import (
 
 var assignReviewer = plugins_aladino.PluginBuiltIns().Actions["assignReviewer"].Code
 
+func TestAssignReviewer_WhenPolicyIsNotValid(t *testing.T) {
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
+
+	invalidPolicy := "INVALID_POLICY"
+	allowedPolicies := map[string]bool{"random": true, "round-robin": true, "reviewpad": true}
+
+	args := []aladino.Value{
+		aladino.BuildArrayValue(
+			[]aladino.Value{
+				aladino.BuildStringValue("jane"),
+			},
+		),
+		aladino.BuildIntValue(0),
+		aladino.BuildStringValue(invalidPolicy),
+	}
+	err := assignReviewer(mockedEnv, args)
+
+	assert.EqualError(t, err, fmt.Sprintf("assignReviewerWithPolicy: policy %s is not supported. allowed policies %v", invalidPolicy, allowedPolicies))
+}
+
 func TestAssignReviewer_WhenTotalRequiredReviewersIsZero(t *testing.T) {
 	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
 
@@ -30,6 +51,7 @@ func TestAssignReviewer_WhenTotalRequiredReviewersIsZero(t *testing.T) {
 			},
 		),
 		aladino.BuildIntValue(0),
+		aladino.BuildStringValue("random"),
 	}
 	err := assignReviewer(mockedEnv, args)
 
@@ -39,7 +61,11 @@ func TestAssignReviewer_WhenTotalRequiredReviewersIsZero(t *testing.T) {
 func TestAssignReviewer_WhenListOfReviewersIsEmpty(t *testing.T) {
 	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
 
-	args := []aladino.Value{aladino.BuildArrayValue([]aladino.Value{}), aladino.BuildIntValue(1)}
+	args := []aladino.Value{
+		aladino.BuildArrayValue([]aladino.Value{}),
+		aladino.BuildIntValue(1),
+		aladino.BuildStringValue("random"),
+	}
 	err := assignReviewer(mockedEnv, args)
 
 	assert.EqualError(t, err, "assignReviewer: list of reviewers can't be empty")
@@ -94,6 +120,7 @@ func TestAssignReviewer_WhenAuthorIsInListOfReviewers(t *testing.T) {
 			},
 		),
 		aladino.BuildIntValue(1),
+		aladino.BuildStringValue("random"),
 	}
 	err := assignReviewer(mockedEnv, args)
 
@@ -150,6 +177,7 @@ func TestAssignReviewer_WhenTotalRequiredReviewersIsMoreThanTotalAvailableReview
 			},
 		),
 		aladino.BuildIntValue(totalRequiredReviewers),
+		aladino.BuildStringValue("random"),
 	}
 	err := assignReviewer(mockedEnv, args)
 
@@ -185,6 +213,7 @@ func TestAssignReviewer_WhenListReviewsRequestFails(t *testing.T) {
 			},
 		),
 		aladino.BuildIntValue(3),
+		aladino.BuildStringValue("random"),
 	}
 	err := assignReviewer(mockedEnv, args)
 
@@ -248,6 +277,7 @@ func TestAssignReviewer_WhenPullRequestAlreadyHasReviews(t *testing.T) {
 			},
 		),
 		aladino.BuildIntValue(1),
+		aladino.BuildStringValue("random"),
 	}
 	err := assignReviewer(mockedEnv, args)
 
@@ -311,6 +341,7 @@ func TestAssignReviewer_WhenPullRequestAlreadyHasApproval(t *testing.T) {
 			},
 		),
 		aladino.BuildIntValue(1),
+		aladino.BuildStringValue("random"),
 	}
 	err := assignReviewer(mockedEnv, args)
 
@@ -370,6 +401,7 @@ func TestAssignReviewer_WhenPullRequestAlreadyHasRequestedReviewers(t *testing.T
 			},
 		),
 		aladino.BuildIntValue(2),
+		aladino.BuildStringValue("random"),
 	}
 	err := assignReviewer(mockedEnv, args)
 
@@ -425,6 +457,7 @@ func TestAssignReviewer_HasNoAvailableReviewers(t *testing.T) {
 			},
 		),
 		aladino.BuildIntValue(totalRequiredReviewers),
+		aladino.BuildStringValue("random"),
 	}
 	err := assignReviewer(mockedEnv, args)
 
@@ -485,6 +518,7 @@ func TestAssignReviewer_WhenPullRequestAlreadyApproved(t *testing.T) {
 			},
 		),
 		aladino.BuildIntValue(1),
+		aladino.BuildStringValue("random"),
 	}
 	err := assignReviewer(mockedEnv, args)
 	assert.Nil(t, err)
@@ -633,11 +667,100 @@ func TestAssignReviewer_ReRequest(t *testing.T) {
 					},
 				),
 				aladino.BuildIntValue(1),
+				aladino.BuildStringValue("random"),
 			}
 			err := assignReviewer(mockedEnv, args)
 
 			assert.Nil(t, err)
 			assert.Equal(t, test.shouldRequestReview, isRequestReviewersRequestPerformed)
+		})
+	}
+}
+
+func TestAssignReviewer_WithPolicy(t *testing.T) {
+	mockedReviewerALogin := "mary"
+	mockedReviewerBLogin := "peter"
+	mockedReviewerCLogin := "jeff"
+	tests := map[string]struct {
+		inputPolicy       string
+		clientOptions     []mock.MockBackendOption
+		expectedReviewers []string
+	}{
+		"when policy is round-robin": {
+			inputPolicy:       "round-robin",
+			clientOptions:     []mock.MockBackendOption{},
+			expectedReviewers: []string{mockedReviewerCLogin},
+		},
+		"when policy is reviewpad": {
+			inputPolicy: "reviewpad",
+			clientOptions: []mock.MockBackendOption{
+				mock.WithRequestMatchPages(
+					mock.GetSearchIssues,
+					&github.IssuesSearchResult{
+						Total: github.Int(0),
+					},
+					&github.IssuesSearchResult{
+						Total: github.Int(0),
+					},
+					&github.IssuesSearchResult{
+						Total: github.Int(0),
+					},
+				),
+			},
+			expectedReviewers: []string{mockedReviewerALogin},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			requestedReviewers := []string{}
+			mockedAuthorLogin := "john"
+			mockedPullRequest := aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
+				User:               &github.User{Login: github.String(mockedAuthorLogin)},
+				RequestedReviewers: []*github.User{},
+			})
+			mockedEnv := aladino.MockDefaultEnv(
+				t,
+				append(
+					[]mock.MockBackendOption{
+						mock.WithRequestMatchHandler(
+							mock.GetReposPullsByOwnerByRepoByPullNumber,
+							http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+								w.Write(mock.MustMarshal(mockedPullRequest))
+							}),
+						),
+						mock.WithRequestMatch(
+							mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
+							[]*github.PullRequestReview{},
+						),
+						mock.WithRequestMatchHandler(
+							mock.PostReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
+							http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+							}),
+						),
+					},
+					test.clientOptions...,
+				),
+				nil,
+				aladino.MockBuiltIns(),
+				nil,
+			)
+			args := []aladino.Value{
+				aladino.BuildArrayValue(
+					[]aladino.Value{
+						aladino.BuildStringValue(mockedReviewerALogin),
+						aladino.BuildStringValue(mockedReviewerBLogin),
+						aladino.BuildStringValue(mockedReviewerCLogin),
+					},
+				),
+				aladino.BuildIntValue(1),
+				aladino.BuildStringValue(test.inputPolicy),
+			}
+			err := assignReviewer(mockedEnv, args)
+
+			assert.Nil(t, err)
+			assert.Equal(t, test.expectedReviewers, requestedReviewers)
 		})
 	}
 }

@@ -18,27 +18,27 @@ import (
 )
 
 // Use only for tests
-const defaultMockPrID = 1234
-const defaultMockPrNum = 6
-const defaultMockPrOwner = "foobar"
-const defaultMockPrRepoName = "default-mock-repo"
+const DefaultMockPrID = 1234
+const DefaultMockPrNum = 6
+const DefaultMockPrOwner = "foobar"
+const DefaultMockPrRepoName = "default-mock-repo"
 
 // Use only for tests
 var DefaultMockCtx = context.Background()
 var DefaultMockCollector = collector.NewCollector("", "", "pull_request", "")
 var DefaultMockEventPayload = &github.CheckRunEvent{}
 var DefaultMockTargetEntity = &handler.TargetEntity{
-	Owner:  defaultMockPrOwner,
-	Repo:   defaultMockPrRepoName,
-	Number: defaultMockPrNum,
+	Owner:  DefaultMockPrOwner,
+	Repo:   DefaultMockPrRepoName,
+	Number: DefaultMockPrNum,
 	Kind:   handler.PullRequest,
 }
 
 func GetDefaultMockPullRequestDetails() *github.PullRequest {
-	prNum := defaultMockPrNum
-	prId := int64(defaultMockPrID)
-	prOwner := defaultMockPrOwner
-	prRepoName := defaultMockPrRepoName
+	prNum := DefaultMockPrNum
+	prId := int64(DefaultMockPrID)
+	prOwner := DefaultMockPrOwner
+	prRepoName := DefaultMockPrRepoName
 	prDate := time.Date(2009, 11, 17, 20, 34, 58, 651387237, time.UTC)
 	prUrl := fmt.Sprintf("https://api.github.com/repos/%v/%v/pulls/%v", prOwner, prRepoName, prNum)
 
@@ -76,7 +76,7 @@ func GetDefaultMockPullRequestDetails() *github.PullRequest {
 func getDefaultMockPullRequestFileList() []*github.CommitFile {
 	return []*github.CommitFile{
 		{
-			Filename: github.String(fmt.Sprintf("%v/file1.ts", defaultMockPrRepoName)),
+			Filename: github.String(fmt.Sprintf("%v/file1.ts", DefaultMockPrRepoName)),
 			Patch: github.String(
 				`@@ -2,9 +2,11 @@ package main
 - func previous1() {
