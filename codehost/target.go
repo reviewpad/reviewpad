@@ -28,7 +28,7 @@ type Target interface {
 	GetCreatedAt() (string, error)
 	GetUpdatedAt() (string, error)
 	GetDescription() (string, error)
-	GetLabels() ([]*Label, error)
+	GetLabels() []*Label
 	GetNodeID() string
 	GetProjectByName(name string) (*Project, error)
 	GetProjectFieldsByProjectNumber(projectNumber uint64) ([]*ProjectField, error)

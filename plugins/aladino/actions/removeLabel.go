@@ -33,10 +33,7 @@ func removeLabelCode(e aladino.Env, args []aladino.Value) error {
 		log.Printf("[warn]: the %v label was not found in the environment", labelID)
 	}
 
-	labels, err := t.GetLabels()
-	if err != nil {
-		return err
-	}
+	labels := t.GetLabels()
 
 	labelIsAppliedToPullRequest := false
 	for _, label := range labels {
