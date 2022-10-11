@@ -138,8 +138,123 @@ func TestCheckoutBranch_BranchExists(t *testing.T) {
 	assert.Equal(t, currentHead.Name(), "refs/heads/"+branchName)
 }
 
+func TestRebaseOnto_WhenOntoBranchDoesNotExist(t *testing.T) {
+	repo := createTestRepo(t, false)
+	defer cleanupTestRepo(t, repo)
+
+	branchName := "test"
+
+	gotErr := gh.RebaseOnto(repo, branchName, &git.RebaseOptions{})
+
+	assert.EqualError(t, gotErr, "cannot locate local branch 'test'")
+}
+
+func TestRebaseOnto_WhenInitRebaseFails(t *testing.T) {
+	repo := createTestRepo(t, true)
+	defer cleanupTestRepo(t, repo)
+
+	remoteUrl := fmt.Sprintf("file://%s", repo.Path())
+	remote, err := repo.Remotes.Create("origin", remoteUrl)
+	checkFatal(t, err)
+	defer remote.Free()
+
+	branchName := "main"
+
+	loc, err := time.LoadLocation("Europe/Berlin")
+	checkFatal(t, err)
+	sig := &git.Signature{
+		Name:  "Rand Om Hacker",
+		Email: "random@hacker.com",
+		When:  time.Date(2013, 03, 06, 14, 30, 0, 0, loc),
+	}
+
+	idx, err := repo.Index()
+	checkFatal(t, err)
+	err = idx.Write()
+	checkFatal(t, err)
+	treeId, err := idx.WriteTree()
+	checkFatal(t, err)
+
+	message := "This is a commit\n"
+	tree, err := repo.LookupTree(treeId)
+	checkFatal(t, err)
+	commitId, err := repo.CreateCommit("HEAD", sig, sig, message, tree)
+	checkFatal(t, err)
+
+	commit, err := repo.LookupCommit(commitId)
+	checkFatal(t, err)
+	_, err = repo.CreateBranch(branchName, commit, false)
+	checkFatal(t, err)
+
+	gotErr := gh.RebaseOnto(repo, branchName, &git.RebaseOptions{})
+
+	assert.EqualError(t, gotErr, "cannot rebase. This operation is not allowed against bare repositories.")
+}
+
+func TestRebaseOnto_WhenRebaseCommitFails(t *testing.T) {
+	repo := createTestRepo(t, false)
+	defer cleanupTestRepo(t, repo)
+
+	remoteUrl := fmt.Sprintf("file://%s", repo.Workdir())
+	remote, err := repo.Remotes.Create("origin", remoteUrl)
+	checkFatal(t, err)
+	defer remote.Free()
+
+	branchName := "main"
+
+	head, _ := seedTestRepo(t, repo, branchName)
+	checkFatal(t, err)
+
+	headCommitId, err := repo.LookupCommit(head)
+	checkFatal(t, err)
+
+	loc, err := time.LoadLocation("Europe/Berlin")
+	checkFatal(t, err)
+	sig := &git.Signature{
+		Name:  "Rand Om Hacker",
+		Email: "random@hacker.com",
+		When:  time.Date(2013, 03, 06, 14, 30, 0, 0, loc),
+	}
+
+	idx, err := repo.Index()
+	checkFatal(t, err)
+	err = idx.AddByPath("README")
+	checkFatal(t, err)
+	err = idx.Write()
+	checkFatal(t, err)
+	treeId, err := idx.WriteTree()
+	checkFatal(t, err)
+
+	message := "This is another commit\n"
+	tree, err := repo.LookupTree(treeId)
+	checkFatal(t, err)
+	_, err = repo.CreateCommit("HEAD", sig, sig, message, tree, headCommitId)
+	checkFatal(t, err)
+
+	defaultRebaseOptions, err := git.DefaultRebaseOptions()
+	checkFatal(t, err)
+
+	gotErr := gh.RebaseOnto(repo, branchName, &defaultRebaseOptions)
+
+	assert.EqualError(t, gotErr, "this patch has already been applied")
+}
+
 func TestRebaseOnto(t *testing.T) {
-	// TODO: #309
+	repo := createTestRepo(t, false)
+	defer cleanupTestRepo(t, repo)
+
+	remoteUrl := fmt.Sprintf("file://%s", repo.Workdir())
+	remote, err := repo.Remotes.Create("origin", remoteUrl)
+	checkFatal(t, err)
+	defer remote.Free()
+
+	branchName := "main"
+
+	seedTestRepo(t, repo, branchName)
+
+	gotErr := gh.RebaseOnto(repo, branchName, &git.RebaseOptions{})
+
+	assert.Nil(t, gotErr)
 }
 
 func TestPush(t *testing.T) {
