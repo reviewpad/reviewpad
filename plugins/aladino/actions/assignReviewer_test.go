@@ -21,6 +21,10 @@ import (
 
 var assignReviewer = plugins_aladino.PluginBuiltIns().Actions["assignReviewer"].Code
 
+type reviewers struct {
+	Reviewers []string `json:"reviewers"`
+}
+
 func TestAssignReviewer_WhenPolicyIsNotValid(t *testing.T) {
 	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
 
@@ -685,11 +689,13 @@ func TestAssignReviewer_WithPolicy(t *testing.T) {
 		inputPolicy       string
 		clientOptions     []mock.MockBackendOption
 		expectedReviewers []string
+		wantErr           string
 	}{
 		"when policy is round-robin": {
 			inputPolicy:       "round-robin",
 			clientOptions:     []mock.MockBackendOption{},
 			expectedReviewers: []string{mockedReviewerCLogin},
+			wantErr:           "",
 		},
 		"when policy is reviewpad": {
 			inputPolicy: "reviewpad",
@@ -708,6 +714,24 @@ func TestAssignReviewer_WithPolicy(t *testing.T) {
 				),
 			},
 			expectedReviewers: []string{mockedReviewerALogin},
+			wantErr:           "",
+		},
+		"when policy is reviewpad and request for search issues fails": {
+			inputPolicy: "reviewpad",
+			clientOptions: []mock.MockBackendOption{
+				mock.WithRequestMatchHandler(
+					mock.GetSearchIssues,
+					http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+						mock.WriteError(
+							w,
+							http.StatusInternalServerError,
+							"SearchIssuesRequestFail",
+						)
+					}),
+				),
+			},
+			expectedReviewers: []string{},
+			wantErr:           "SearchIssuesRequestFail",
 		},
 	}
 
@@ -736,7 +760,12 @@ func TestAssignReviewer_WithPolicy(t *testing.T) {
 						mock.WithRequestMatchHandler(
 							mock.PostReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
 							http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+								rawBody, _ := ioutil.ReadAll(r.Body)
+								body := reviewers{}
 
+								json.Unmarshal(rawBody, &body)
+
+								requestedReviewers = body.Reviewers
 							}),
 						),
 					},
@@ -757,9 +786,12 @@ func TestAssignReviewer_WithPolicy(t *testing.T) {
 				aladino.BuildIntValue(1),
 				aladino.BuildStringValue(test.inputPolicy),
 			}
-			err := assignReviewer(mockedEnv, args)
 
-			assert.Nil(t, err)
+			gotErr := assignReviewer(mockedEnv, args)
+
+			if gotErr != nil && gotErr.(*github.ErrorResponse).Message != test.wantErr {
+				assert.FailNow(t, "assignReviewer() error = %v, wantErr %v", gotErr, test.wantErr)
+			}
 			assert.Equal(t, test.expectedReviewers, requestedReviewers)
 		})
 	}
