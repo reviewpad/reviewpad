@@ -192,7 +192,6 @@ func getReviewersUsingPolicyRoundRobin(e aladino.Env, availableReviewers []aladi
 func getReviewersUsingPolicyReviewpad(e aladino.Env, availableReviewers []aladino.Value, totalRequiredReviewers int) ([]string, error) {
 	reviewers := []string{}
 	reviewersMap := map[int][]string{}
-	reviewersMapKeys := []int{}
 
 	for _, reviewer := range availableReviewers {
 		// Look for reviewers with less hanging PRs
@@ -208,13 +207,15 @@ func getReviewersUsingPolicyReviewpad(e aladino.Env, availableReviewers []aladin
 		} else {
 			reviewersMap[*issues.Total] = append(r, reviewer.(*aladino.StringValue).Val)
 		}
-		reviewersMapKeys = append(reviewersMapKeys, *issues.Total)
 	}
 
+	reviewersMapKeys := []int{}
+	for key := range reviewersMap {
+		reviewersMapKeys = append(reviewersMapKeys, key)
+	}
 	sort.Ints(reviewersMapKeys)
 
 	orderedReviewers := []string{}
-
 	for _, k := range reviewersMapKeys {
 		orderedReviewers = append(orderedReviewers, reviewersMap[k]...)
 	}
