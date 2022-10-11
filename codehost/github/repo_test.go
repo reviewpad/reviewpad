@@ -23,7 +23,7 @@ const (
 
 func TestCloneRepository_WhenNoPathProvided(t *testing.T) {
 	t.Parallel()
-	repo := createTestRepo(t)
+	repo := createTestRepo(t, false)
 	defer cleanupTestRepo(t, repo)
 
 	seedTestRepo(t, repo, "main")
@@ -49,7 +49,7 @@ func TestCloneRepository_WhenNoPathProvided(t *testing.T) {
 
 func TestCloneRepository_WhenPathProvided(t *testing.T) {
 	t.Parallel()
-	repo := createTestRepo(t)
+	repo := createTestRepo(t, false)
 	defer cleanupTestRepo(t, repo)
 
 	seedTestRepo(t, repo, "main")
@@ -90,7 +90,7 @@ func TestCloneRepository_WithExternalHTTPUrl(t *testing.T) {
 
 func TestCheckoutBranch_BranchDoesNotExists(t *testing.T) {
 	t.Parallel()
-	repo := createTestRepo(t)
+	repo := createTestRepo(t, false)
 	defer cleanupTestRepo(t, repo)
 
 	seedTestRepo(t, repo, "main")
@@ -102,7 +102,7 @@ func TestCheckoutBranch_BranchDoesNotExists(t *testing.T) {
 
 func TestCheckoutBranch_BranchExists(t *testing.T) {
 	t.Parallel()
-	remoteRepo := createTestRepo(t)
+	remoteRepo := createTestRepo(t, false)
 	defer cleanupTestRepo(t, remoteRepo)
 
 	head, _ := seedTestRepo(t, remoteRepo, "main")
@@ -116,7 +116,7 @@ func TestCheckoutBranch_BranchExists(t *testing.T) {
 	checkFatal(t, err)
 	defer remoteRef.Free()
 
-	repo := createTestRepo(t)
+	repo := createTestRepo(t, false)
 	defer cleanupTestRepo(t, repo)
 
 	config, err := repo.Config()
@@ -143,14 +143,97 @@ func TestRebaseOnto(t *testing.T) {
 }
 
 func TestPush(t *testing.T) {
-	// TODO: #309
+	// Local push doesn't (yet) support pushing to non-bare repos so we need to work with bare repos.
+	repo := createTestRepo(t, true)
+	defer cleanupTestRepo(t, repo)
+
+	remoteUrl := fmt.Sprintf("file://%s", repo.Path())
+	remote, err := repo.Remotes.Create("origin", remoteUrl)
+	checkFatal(t, err)
+	defer remote.Free()
+
+	branchName := "main"
+
+	loc, err := time.LoadLocation("Europe/Berlin")
+	checkFatal(t, err)
+	sig := &git.Signature{
+		Name:  "Rand Om Hacker",
+		Email: "random@hacker.com",
+		When:  time.Date(2013, 03, 06, 14, 30, 0, 0, loc),
+	}
+
+	idx, err := repo.Index()
+	checkFatal(t, err)
+	err = idx.Write()
+	checkFatal(t, err)
+	treeId, err := idx.WriteTree()
+	checkFatal(t, err)
+
+	message := "This is a commit\n"
+	tree, err := repo.LookupTree(treeId)
+	checkFatal(t, err)
+	commitId, err := repo.CreateCommit("HEAD", sig, sig, message, tree)
+	checkFatal(t, err)
+
+	commit, err := repo.LookupCommit(commitId)
+	checkFatal(t, err)
+	_, err = repo.CreateBranch(branchName, commit, false)
+	checkFatal(t, err)
+
+	tests := map[string]struct {
+		inputRemote     string
+		inputBranchName string
+		isForcePush     bool
+		wantErr         string
+	}{
+		"when given remote cannot be found": {
+			inputRemote:     "non-existing-remote",
+			inputBranchName: "test",
+			isForcePush:     false,
+			wantErr:         "remote 'non-existing-remote' does not exist",
+		},
+		"when is a force push and push fails": {
+			inputRemote:     remote.Name(),
+			inputBranchName: "test",
+			isForcePush:     true,
+			wantErr:         "src refspec 'refs/heads/test' does not match any existing object",
+		},
+		"when is not a force push and push fails": {
+			inputRemote:     remote.Name(),
+			inputBranchName: "test",
+			isForcePush:     true,
+			wantErr:         "src refspec 'refs/heads/test' does not match any existing object",
+		},
+		"when is a force push and push is successful": {
+			inputRemote:     remote.Name(),
+			inputBranchName: branchName,
+			isForcePush:     true,
+			wantErr:         "",
+		},
+		"when is not a force push and push is successful": {
+			inputRemote:     remote.Name(),
+			inputBranchName: branchName,
+			isForcePush:     false,
+			wantErr:         "",
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			gotErr := gh.Push(repo, test.inputRemote, test.inputBranchName, test.isForcePush)
+
+			if gotErr != nil && gotErr.Error() != test.wantErr {
+				assert.FailNow(t, "Push() error = %v, wantErr %v", gotErr, test.wantErr)
+			}
+		})
+	}
 }
 
-func createTestRepo(t *testing.T) *git.Repository {
+func createTestRepo(t *testing.T, isBare bool) *git.Repository {
 	path, err := ioutil.TempDir("", TestRepo)
 	checkFatal(t, err)
 
-	repo, err := git.InitRepository(path, false)
+	repo, err := git.InitRepository(path, isBare)
 	checkFatal(t, err)
 
 	tmpfile := "README"
