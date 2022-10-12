@@ -164,6 +164,10 @@ func GetDefaultMockPullRequestDetailsWith(pr *github.PullRequest) *github.PullRe
 		defaultPullRequest.UpdatedAt = pr.UpdatedAt
 	}
 
+	if pr.Rebaseable != nil {
+		defaultPullRequest.Rebaseable = pr.Rebaseable
+	}
+
 	return defaultPullRequest
 }
 
