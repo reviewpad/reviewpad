@@ -332,6 +332,10 @@ func (c *GithubClient) Merge(ctx context.Context, owner string, repo string, num
 	return c.clientREST.PullRequests.Merge(ctx, owner, repo, number, commitMessage, options)
 }
 
+func (c *GithubClient) Review(ctx context.Context, owner string, repo string, number int, review *github.PullRequestReviewRequest) (*github.PullRequestReview, *github.Response, error) {
+	return c.clientREST.PullRequests.CreateReview(ctx, owner, repo, number, review)
+}
+
 func (c *GithubClient) GetPullRequestClosingIssuesCount(ctx context.Context, owner string, repo string, number int) (int, error) {
 	var pullRequestQuery struct {
 		Repository struct {

@@ -6,7 +6,6 @@ package target
 
 import (
 	"context"
-
 	"github.com/google/go-github/v45/github"
 	"github.com/reviewpad/reviewpad/v3/codehost"
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
@@ -215,6 +214,21 @@ func (t *PullRequestTarget) Merge(mergeMethod string) error {
 
 	_, _, err := t.githubClient.Merge(ctx, owner, repo, number, "Merged by Reviewpad", &github.PullRequestOptions{
 		MergeMethod: mergeMethod,
+	})
+
+	return err
+}
+
+func (t *PullRequestTarget) Review(reviewEvent, reviewBody string) error {
+	ctx := t.ctx
+	targetEntity := t.targetEntity
+	owner := targetEntity.Owner
+	repo := targetEntity.Repo
+	number := targetEntity.Number
+
+	_, _, err := t.githubClient.Review(ctx, owner, repo, number, &github.PullRequestReviewRequest{
+		Body:  &reviewBody,
+		Event: &reviewEvent,
 	})
 
 	return err
