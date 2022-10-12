@@ -40,7 +40,7 @@ func assignReviewerCode(e aladino.Env, args []aladino.Value) error {
 
 	allowedPolicies := map[string]bool{"random": true, "round-robin": true, "reviewpad": true}
 	if _, ok := allowedPolicies[policy]; !ok {
-		return fmt.Errorf("assignReviewerWithPolicy: policy %s is not supported. allowed policies %v", policy, allowedPolicies)
+		return fmt.Errorf("assignReviewer: policy %s is not supported. allowed policies %v", policy, allowedPolicies)
 	}
 
 	if totalRequiredReviewers == 0 {
@@ -115,7 +115,7 @@ func assignReviewerCode(e aladino.Env, args []aladino.Value) error {
 	}
 
 	if len(reviewers) == 0 {
-		log.Printf("assignReviewerWithPolicy: no reviewers were assigned")
+		log.Printf("assignReviewer: no reviewers were assigned")
 		return nil
 	}
 

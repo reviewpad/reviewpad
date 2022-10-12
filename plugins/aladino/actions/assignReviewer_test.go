@@ -42,7 +42,7 @@ func TestAssignReviewer_WhenPolicyIsNotValid(t *testing.T) {
 	}
 	err := assignReviewer(mockedEnv, args)
 
-	assert.EqualError(t, err, fmt.Sprintf("assignReviewerWithPolicy: policy %s is not supported. allowed policies %v", invalidPolicy, allowedPolicies))
+	assert.EqualError(t, err, fmt.Sprintf("assignReviewer: policy %s is not supported. allowed policies %v", invalidPolicy, allowedPolicies))
 }
 
 func TestAssignReviewer_WhenTotalRequiredReviewersIsZero(t *testing.T) {
