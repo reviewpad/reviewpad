@@ -11,8 +11,13 @@ labels:
 rules:
   - name: labeled-as-stale
     kind: patch
-    description: Issue/Pull request has stale label
+    description: Issue/Pull request has "stale" label
     spec: '$isElementOf("stale", $labels())'
+  
+  - name: labeled-as-good-first-issue
+    kind: patch
+    description: Issue has "good first issue" label
+    spec: '$isElementOf("good first issue", $labels())'
 
 workflows:
   - name: stale-issue-or-pr-handling
@@ -20,7 +25,7 @@ workflows:
       - "issue"
       - "pull_request"
     if:
-      - rule: '!$rule("labeled-as-stale") && $lastEventAt() < 7 days ago'
+      - rule: '!$rule("labeled-as-good-first-issue") && !$rule("labeled-as-stale") && $lastEventAt() < 7 days ago'
         extra-actions:
           - '$info("This issue is stale.")'
           - '$addLabel("stale-label")'
