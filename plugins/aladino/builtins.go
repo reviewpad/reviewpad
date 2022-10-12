@@ -127,6 +127,7 @@ func PluginBuiltInsWithConfig(config *PluginConfig) *aladino.BuiltIns {
 			"rebase":               actions.Rebase(),
 			"removeLabel":          actions.RemoveLabel(),
 			"removeLabels":         actions.RemoveLabels(),
+			"review":               actions.Review(),
 			"titleLint":            actions.TitleLint(),
 			"warn":                 actions.Warn(),
 		},
