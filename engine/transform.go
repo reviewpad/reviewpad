@@ -9,22 +9,28 @@ import (
 	"strings"
 )
 
-func addDefaultTotalRequestedReviewers(str string) string {
-	squadFunctionsRegex := "(\\$(team|group)\\(\"[^\"]*\"\\))"
-	reviewersListRegex := "(\\[(.*)\\])"
+func addDefaultsToRequestedReviewers(str string) string {
+	trimmedStr := strings.ReplaceAll(str, " ", "")
+	m := regexp.MustCompile(`\$assignReviewer\(((\[.*\])|(\$(team|group)\("[^"]*"\)))(,(\d+))?(,"([^"]*)")?\)`)
+	match := m.FindStringSubmatch(trimmedStr)
 
-	m := regexp.MustCompile("\\$assignReviewer\\((" + reviewersListRegex + "|" + squadFunctionsRegex + ")\\)")
-
-	match := m.FindString(str)
-
-	if match == "" {
+	if len(match) == 0 {
 		return str
 	}
 
-	matchWithDefaultNrOfRequestedReviewers := match[0:len(match)-1] + ", 99)"
-	transformedStr := strings.ReplaceAll(str, match, matchWithDefaultNrOfRequestedReviewers)
+	reviewers := match[1]
+	totalRequiredReviewers := match[6]
+	policy := match[8]
 
-	return transformedStr
+	if totalRequiredReviewers == "" {
+		totalRequiredReviewers = "99"
+	}
+
+	if policy == "" {
+		policy = "reviewpad"
+	}
+
+	return strings.Replace(trimmedStr, match[0], "$assignReviewer("+reviewers+", "+totalRequiredReviewers+", \""+policy+"\")", 1)
 }
 
 func addDefaultMergeMethod(str string) string {
@@ -70,7 +76,7 @@ func transformAladinoExpression(str string) string {
 	transformedActionStr := str
 
 	var transformations = [](func(str string) string){
-		addDefaultTotalRequestedReviewers,
+		addDefaultsToRequestedReviewers,
 		addDefaultMergeMethod,
 		addDefaultSizeMethod,
 		addDefaultIssueCountBy,
