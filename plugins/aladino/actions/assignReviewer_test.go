@@ -796,3 +796,71 @@ func TestAssignReviewer_WithPolicy(t *testing.T) {
 		})
 	}
 }
+
+func TestAssignReviewer_WhenPullRequestAlreadyApprovedBy2Reviewers(t *testing.T) {
+	var isRequestReviewersRequestPerformed bool
+	authorLogin := "john"
+	reviewerA := "mary"
+	reviewerB := "steve"
+	mockedPullRequest := aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
+		User: &github.User{Login: github.String(authorLogin)},
+		RequestedReviewers: []*github.User{
+			{Login: github.String(reviewerA)},
+		},
+	})
+	reviewID := int64(1)
+	reviewState := "APPROVED"
+	mockedReviews := []*github.PullRequestReview{
+		{
+			ID:    &reviewID,
+			State: &reviewState,
+			Body:  github.String(""),
+			User:  &github.User{Login: github.String(reviewerA)},
+		},
+		{
+			ID:    &reviewID,
+			State: &reviewState,
+			Body:  github.String(""),
+			User:  &github.User{Login: github.String(reviewerB)},
+		},
+	}
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
+		[]mock.MockBackendOption{
+			mock.WithRequestMatchHandler(
+				mock.GetReposPullsByOwnerByRepoByPullNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+					w.Write(mock.MustMarshal(mockedPullRequest))
+				}),
+			),
+			mock.WithRequestMatch(
+				mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
+				mockedReviews,
+			),
+			mock.WithRequestMatchHandler(
+				mock.PostReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					// If the request reviewers request was performed then the reviewers were assigned to the pull request
+					isRequestReviewersRequestPerformed = true
+				}),
+			),
+		},
+		nil,
+		aladino.MockBuiltIns(),
+		nil,
+	)
+
+	args := []aladino.Value{
+		aladino.BuildArrayValue(
+			[]aladino.Value{
+				aladino.BuildStringValue(reviewerA),
+				aladino.BuildStringValue(reviewerB),
+			},
+		),
+		aladino.BuildIntValue(1),
+		aladino.BuildStringValue("random"),
+	}
+	err := assignReviewer(mockedEnv, args)
+	assert.Nil(t, err)
+	assert.False(t, isRequestReviewersRequestPerformed, "the action shouldn't request for reviewers")
+}
