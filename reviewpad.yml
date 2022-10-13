@@ -77,7 +77,7 @@ rules:
 
   - name: changes-should-be-built
     description: Checks if changes are not only in markdown files
-    spec: '!$rule("changes-are-in-markdown") && !$isElementOf("run-build", $labels())'
+    spec: '!$rule("changes-are-in-markdown")'
 
   - name: ci-is-green
     description: Pipeline is green
