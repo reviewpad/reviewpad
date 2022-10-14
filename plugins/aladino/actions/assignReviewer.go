@@ -74,8 +74,9 @@ func assignReviewerCode(e aladino.Env, args []aladino.Value) error {
 	// Re-request current reviewers only when last review status is not APPROVED
 	for _, availableReviewer := range availableReviewers {
 		userLogin := availableReviewer.(*aladino.StringValue).Val
-		if hasReview(reviews, userLogin) {
-			if lastReviewStatus(reviews, userLogin) != "APPROVED" {
+		if codehost.HasReview(reviews, userLogin) {
+			lastReview := codehost.LastReview(reviews, userLogin)
+			if lastReview.State != "APPROVED" {
 				reviewers = append(reviewers, userLogin)
 			} else {
 				log.Printf("assignReviewer: reviewer %v has already approved the pull request", userLogin)
@@ -120,29 +121,6 @@ func assignReviewerCode(e aladino.Env, args []aladino.Value) error {
 	}
 
 	return target.RequestReviewers(reviewers)
-}
-
-func hasReview(reviews []*codehost.Review, userLogin string) bool {
-	for _, review := range reviews {
-		if review.User.Login == userLogin {
-			return true
-		}
-	}
-
-	return false
-}
-
-func lastReviewStatus(reviews []*codehost.Review, userLogin string) string {
-	var latestReview *codehost.Review
-	for _, review := range reviews {
-		if review.User.Login == userLogin {
-			if latestReview == nil || latestReview.SubmittedAt.Before(*review.SubmittedAt) {
-				latestReview = review
-			}
-		}
-	}
-
-	return latestReview.State
 }
 
 func filterReviewerFromReviewers(reviewers []aladino.Value, reviewer string) []aladino.Value {
