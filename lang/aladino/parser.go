@@ -30,14 +30,20 @@ const STRINGLITERAL = 57349
 const TK_CMPOP = 57350
 const TK_LAMBDA = 57351
 const TK_TYPE = 57352
-const NUMBER = 57353
-const TRUE = 57354
-const FALSE = 57355
-const TK_OR = 57356
-const TK_AND = 57357
-const TK_EQ = 57358
-const TK_NEQ = 57359
-const TK_NOT = 57360
+const TK_STRING_TYPE = 57353
+const TK_INT_TYPE = 57354
+const TK_BOOL_TYPE = 57355
+const TK_STRING_ARRAY_TYPE = 57356
+const TK_INT_ARRAY_TYPE = 57357
+const TK_BOOL_ARRAY_TYPE = 57358
+const NUMBER = 57359
+const TRUE = 57360
+const FALSE = 57361
+const TK_OR = 57362
+const TK_AND = 57363
+const TK_EQ = 57364
+const TK_NEQ = 57365
+const TK_NOT = 57366
 
 var AladinoToknames = [...]string{
 	"$end",
@@ -50,6 +56,12 @@ var AladinoToknames = [...]string{
 	"TK_CMPOP",
 	"TK_LAMBDA",
 	"TK_TYPE",
+	"TK_STRING_TYPE",
+	"TK_INT_TYPE",
+	"TK_BOOL_TYPE",
+	"TK_STRING_ARRAY_TYPE",
+	"TK_INT_ARRAY_TYPE",
+	"TK_BOOL_ARRAY_TYPE",
 	"NUMBER",
 	"TRUE",
 	"FALSE",
@@ -74,7 +86,7 @@ const AladinoInitialStackSize = 16
 
 /*  start  of  programs  */
 
-var AladinoExca = [...]int{
+var AladinoExca = [...]int8{
 	-1, 1,
 	1, -1,
 	-2, 0,
@@ -82,79 +94,88 @@ var AladinoExca = [...]int{
 
 const AladinoPrivate = 57344
 
-const AladinoLast = 87
+const AladinoLast = 118
 
-var AladinoAct = [...]int{
-	22, 2, 20, 17, 18, 19, 21, 35, 32, 14,
-	13, 15, 16, 42, 24, 25, 26, 27, 28, 33,
-	5, 6, 17, 8, 34, 23, 31, 7, 11, 12,
-	15, 16, 36, 1, 3, 4, 40, 9, 39, 10,
-	37, 38, 17, 0, 30, 0, 0, 0, 14, 13,
-	15, 16, 17, 0, 29, 0, 0, 0, 14, 13,
-	15, 16, 0, 17, 41, 30, 0, 17, 0, 14,
-	13, 15, 16, 14, 13, 15, 16, 17, 0, 0,
-	0, 0, 0, 0, 13, 15, 16,
+var AladinoAct = [...]int8{
+	20, 45, 44, 43, 42, 41, 40, 37, 57, 39,
+	50, 2, 21, 36, 18, 19, 23, 17, 1, 0,
+	22, 0, 17, 0, 24, 25, 26, 27, 28, 14,
+	13, 15, 16, 0, 14, 13, 15, 16, 0, 38,
+	56, 49, 51, 52, 53, 54, 55, 46, 17, 22,
+	22, 47, 48, 5, 6, 17, 8, 0, 0, 0,
+	14, 13, 15, 16, 0, 0, 7, 11, 12, 15,
+	16, 0, 0, 3, 4, 0, 9, 17, 10, 0,
+	30, 31, 32, 33, 34, 35, 0, 0, 0, 14,
+	13, 15, 16, 17, 0, 29, 30, 31, 32, 33,
+	34, 35, 17, 0, 0, 14, 13, 15, 16, 0,
+	0, 0, 0, 0, 0, 13, 15, 16,
 }
 
-var AladinoPact = [...]int{
-	16, -1000, 59, 16, 16, -1000, -1000, -1000, -1000, 16,
-	19, -1000, -1000, 16, 16, 16, 16, 16, -1000, 34,
-	17, -14, -5, 5, 14, 69, -1000, -1000, -1000, -1000,
-	-17, 16, -1000, 16, 16, 16, 44, -1000, -7, -1000,
-	55, -1000, -1000,
+var AladinoPact = [...]int16{
+	49, -1000, 40, 49, 49, -1000, -1000, -1000, -1000, 49,
+	10, -1000, -1000, 49, 49, 49, 49, 49, -1000, 69,
+	4, -21, 9, -16, 47, 94, -1000, -1000, -1000, -1000,
+	-24, -25, -26, -27, -28, -29, 49, -1000, 49, 49,
+	49, 49, 49, 49, 49, 49, 14, -1000, -18, -1000,
+	85, -1000, -1000, -1000, -1000, -1000, -1000, -1000,
 }
 
-var AladinoPgo = [...]int{
-	0, 0, 6, 2, 33,
+var AladinoPgo = [...]int8{
+	0, 10, 12, 0, 18,
 }
 
-var AladinoR1 = [...]int{
+var AladinoR1 = [...]int8{
 	0, 4, 1, 1, 1, 1, 1, 1, 1, 1,
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 3,
+	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 2, 2, 2,
 }
 
-var AladinoR2 = [...]int{
+var AladinoR2 = [...]int8{
 	0, 1, 2, 3, 3, 3, 3, 3, 3, 1,
 	1, 1, 1, 3, 2, 1, 1, 5, 5, 4,
+	2, 4, 2, 4, 2, 4, 2, 4, 2, 4,
 	2, 0, 3, 1, 0,
 }
 
-var AladinoChk = [...]int{
-	-1000, -4, -1, 18, 19, 4, 5, 11, 7, 21,
-	23, 12, 13, 15, 14, 16, 17, 8, -1, -1,
-	-3, -2, -1, 6, -1, -1, -1, -1, -1, 20,
-	10, 9, 22, 24, 19, 24, -1, -2, -2, -3,
-	-1, 20, 20,
+var AladinoChk = [...]int16{
+	-1000, -4, -1, 24, 25, 4, 5, 17, 7, 27,
+	29, 18, 19, 21, 20, 22, 23, 8, -1, -1,
+	-3, -2, -1, 6, -1, -1, -1, -1, -1, 26,
+	11, 12, 13, 14, 15, 16, 9, 28, 30, 25,
+	30, 30, 30, 30, 30, 30, -1, -2, -2, -3,
+	-1, -3, -3, -3, -3, -3, 26, 26,
 }
 
-var AladinoDef = [...]int{
-	0, -2, 1, 0, 21, 9, 10, 11, 12, 24,
+var AladinoDef = [...]int8{
+	0, -2, 1, 0, 31, 9, 10, 11, 12, 34,
 	0, 15, 16, 0, 0, 0, 0, 0, 2, 0,
-	0, 0, 23, 14, 3, 4, 5, 6, 7, 8,
-	20, 0, 13, 24, 24, 21, 0, 22, 0, 19,
-	0, 18, 17,
+	0, 0, 33, 14, 3, 4, 5, 6, 7, 8,
+	20, 22, 24, 26, 28, 30, 0, 13, 34, 34,
+	31, 31, 31, 31, 31, 31, 0, 32, 0, 19,
+	0, 21, 23, 25, 27, 29, 18, 17,
 }
 
-var AladinoTok1 = [...]int{
+var AladinoTok1 = [...]int8{
 	1, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-	3, 3, 3, 3, 3, 3, 23, 3, 3, 3,
-	19, 20, 3, 3, 24, 3, 3, 3, 3, 3,
+	3, 3, 3, 3, 3, 3, 29, 3, 3, 3,
+	25, 26, 3, 3, 30, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-	3, 21, 3, 22,
+	3, 27, 3, 28,
 }
 
-var AladinoTok2 = [...]int{
+var AladinoTok2 = [...]int8{
 	2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
-	12, 13, 14, 15, 16, 17, 18,
+	12, 13, 14, 15, 16, 17, 18, 19, 20, 21,
+	22, 23, 24,
 }
 
-var AladinoTok3 = [...]int{
+var AladinoTok3 = [...]int8{
 	0,
 }
 
@@ -234,9 +255,9 @@ func AladinoErrorMessage(state, lookAhead int) string {
 	expected := make([]int, 0, 4)
 
 	// Look for shiftable tokens.
-	base := AladinoPact[state]
+	base := int(AladinoPact[state])
 	for tok := TOKSTART; tok-1 < len(AladinoToknames); tok++ {
-		if n := base + tok; n >= 0 && n < AladinoLast && AladinoChk[AladinoAct[n]] == tok {
+		if n := base + tok; n >= 0 && n < AladinoLast && int(AladinoChk[int(AladinoAct[n])]) == tok {
 			if len(expected) == cap(expected) {
 				return res
 			}
@@ -246,13 +267,13 @@ func AladinoErrorMessage(state, lookAhead int) string {
 
 	if AladinoDef[state] == -2 {
 		i := 0
-		for AladinoExca[i] != -1 || AladinoExca[i+1] != state {
+		for AladinoExca[i] != -1 || int(AladinoExca[i+1]) != state {
 			i += 2
 		}
 
 		// Look for tokens that we accept or reduce.
 		for i += 2; AladinoExca[i] >= 0; i += 2 {
-			tok := AladinoExca[i]
+			tok := int(AladinoExca[i])
 			if tok < TOKSTART || AladinoExca[i+1] == 0 {
 				continue
 			}
@@ -283,30 +304,30 @@ func Aladinolex1(lex AladinoLexer, lval *AladinoSymType) (char, token int) {
 	token = 0
 	char = lex.Lex(lval)
 	if char <= 0 {
-		token = AladinoTok1[0]
+		token = int(AladinoTok1[0])
 		goto out
 	}
 	if char < len(AladinoTok1) {
-		token = AladinoTok1[char]
+		token = int(AladinoTok1[char])
 		goto out
 	}
 	if char >= AladinoPrivate {
 		if char < AladinoPrivate+len(AladinoTok2) {
-			token = AladinoTok2[char-AladinoPrivate]
+			token = int(AladinoTok2[char-AladinoPrivate])
 			goto out
 		}
 	}
 	for i := 0; i < len(AladinoTok3); i += 2 {
-		token = AladinoTok3[i+0]
+		token = int(AladinoTok3[i+0])
 		if token == char {
-			token = AladinoTok3[i+1]
+			token = int(AladinoTok3[i+1])
 			goto out
 		}
 	}
 
 out:
 	if token == 0 {
-		token = AladinoTok2[1] /* unknown char */
+		token = int(AladinoTok2[1]) /* unknown char */
 	}
 	if AladinoDebug >= 3 {
 		__yyfmt__.Printf("lex %s(%d)\n", AladinoTokname(token), uint(char))
@@ -361,7 +382,7 @@ Aladinostack:
 	AladinoS[Aladinop].yys = Aladinostate
 
 Aladinonewstate:
-	Aladinon = AladinoPact[Aladinostate]
+	Aladinon = int(AladinoPact[Aladinostate])
 	if Aladinon <= AladinoFlag {
 		goto Aladinodefault /* simple state */
 	}
@@ -372,8 +393,8 @@ Aladinonewstate:
 	if Aladinon < 0 || Aladinon >= AladinoLast {
 		goto Aladinodefault
 	}
-	Aladinon = AladinoAct[Aladinon]
-	if AladinoChk[Aladinon] == Aladinotoken { /* valid shift */
+	Aladinon = int(AladinoAct[Aladinon])
+	if int(AladinoChk[Aladinon]) == Aladinotoken { /* valid shift */
 		Aladinorcvr.char = -1
 		Aladinotoken = -1
 		AladinoVAL = Aladinorcvr.lval
@@ -386,7 +407,7 @@ Aladinonewstate:
 
 Aladinodefault:
 	/* default state action */
-	Aladinon = AladinoDef[Aladinostate]
+	Aladinon = int(AladinoDef[Aladinostate])
 	if Aladinon == -2 {
 		if Aladinorcvr.char < 0 {
 			Aladinorcvr.char, Aladinotoken = Aladinolex1(Aladinolex, &Aladinorcvr.lval)
@@ -395,18 +416,18 @@ Aladinodefault:
 		/* look through exception table */
 		xi := 0
 		for {
-			if AladinoExca[xi+0] == -1 && AladinoExca[xi+1] == Aladinostate {
+			if AladinoExca[xi+0] == -1 && int(AladinoExca[xi+1]) == Aladinostate {
 				break
 			}
 			xi += 2
 		}
 		for xi += 2; ; xi += 2 {
-			Aladinon = AladinoExca[xi+0]
+			Aladinon = int(AladinoExca[xi+0])
 			if Aladinon < 0 || Aladinon == Aladinotoken {
 				break
 			}
 		}
-		Aladinon = AladinoExca[xi+1]
+		Aladinon = int(AladinoExca[xi+1])
 		if Aladinon < 0 {
 			goto ret0
 		}
@@ -428,10 +449,10 @@ Aladinodefault:
 
 			/* find a state where "error" is a legal shift action */
 			for Aladinop >= 0 {
-				Aladinon = AladinoPact[AladinoS[Aladinop].yys] + AladinoErrCode
+				Aladinon = int(AladinoPact[AladinoS[Aladinop].yys]) + AladinoErrCode
 				if Aladinon >= 0 && Aladinon < AladinoLast {
-					Aladinostate = AladinoAct[Aladinon] /* simulate a shift of "error" */
-					if AladinoChk[Aladinostate] == AladinoErrCode {
+					Aladinostate = int(AladinoAct[Aladinon]) /* simulate a shift of "error" */
+					if int(AladinoChk[Aladinostate]) == AladinoErrCode {
 						goto Aladinostack
 					}
 				}
@@ -467,7 +488,7 @@ Aladinodefault:
 	Aladinopt := Aladinop
 	_ = Aladinopt // guard against "declared and not used"
 
-	Aladinop -= AladinoR2[Aladinon]
+	Aladinop -= int(AladinoR2[Aladinon])
 	// Aladinop is now the index of $0. Perform the default action. Iff the
 	// reduced production is ε, $1 is possibly out of range.
 	if Aladinop+1 >= len(AladinoS) {
@@ -478,16 +499,16 @@ Aladinodefault:
 	AladinoVAL = AladinoS[Aladinop+1]
 
 	/* consult goto table to find next state */
-	Aladinon = AladinoR1[Aladinon]
-	Aladinog := AladinoPgo[Aladinon]
+	Aladinon = int(AladinoR1[Aladinon])
+	Aladinog := int(AladinoPgo[Aladinon])
 	Aladinoj := Aladinog + AladinoS[Aladinop].yys + 1
 
 	if Aladinoj >= AladinoLast {
-		Aladinostate = AladinoAct[Aladinog]
+		Aladinostate = int(AladinoAct[Aladinog])
 	} else {
-		Aladinostate = AladinoAct[Aladinoj]
-		if AladinoChk[Aladinostate] != -Aladinon {
-			Aladinostate = AladinoAct[Aladinog]
+		Aladinostate = int(AladinoAct[Aladinoj])
+		if int(AladinoChk[Aladinostate]) != -Aladinon {
+			Aladinostate = int(AladinoAct[Aladinog])
 		}
 	}
 	// dummy call; replaced with literal code
@@ -586,29 +607,79 @@ Aladinodefault:
 	case 19:
 		AladinoDollar = AladinoS[Aladinopt-4 : Aladinopt+1]
 		{
-			AladinoVAL.astList = append([]Expr{BuildTypedExpr(AladinoDollar[1].ast, ParseType(AladinoDollar[2].str))}, AladinoDollar[4].astList...)
+			AladinoVAL.astList = append([]Expr{BuildTypedExpr(AladinoDollar[1].ast, BuildStringType())}, AladinoDollar[4].astList...)
 		}
 	case 20:
 		AladinoDollar = AladinoS[Aladinopt-2 : Aladinopt+1]
 		{
-			AladinoVAL.astList = []Expr{BuildTypedExpr(AladinoDollar[1].ast, ParseType(AladinoDollar[2].str))}
+			AladinoVAL.astList = []Expr{BuildTypedExpr(AladinoDollar[1].ast, BuildStringType())}
 		}
 	case 21:
+		AladinoDollar = AladinoS[Aladinopt-4 : Aladinopt+1]
+		{
+			AladinoVAL.astList = append([]Expr{BuildTypedExpr(AladinoDollar[1].ast, BuildIntType())}, AladinoDollar[4].astList...)
+		}
+	case 22:
+		AladinoDollar = AladinoS[Aladinopt-2 : Aladinopt+1]
+		{
+			AladinoVAL.astList = []Expr{BuildTypedExpr(AladinoDollar[1].ast, BuildIntType())}
+		}
+	case 23:
+		AladinoDollar = AladinoS[Aladinopt-4 : Aladinopt+1]
+		{
+			AladinoVAL.astList = append([]Expr{BuildTypedExpr(AladinoDollar[1].ast, BuildBoolType())}, AladinoDollar[4].astList...)
+		}
+	case 24:
+		AladinoDollar = AladinoS[Aladinopt-2 : Aladinopt+1]
+		{
+			AladinoVAL.astList = []Expr{BuildTypedExpr(AladinoDollar[1].ast, BuildBoolType())}
+		}
+	case 25:
+		AladinoDollar = AladinoS[Aladinopt-4 : Aladinopt+1]
+		{
+			AladinoVAL.astList = append([]Expr{BuildTypedExpr(AladinoDollar[1].ast, BuildArrayOfType(BuildStringType()))}, AladinoDollar[4].astList...)
+		}
+	case 26:
+		AladinoDollar = AladinoS[Aladinopt-2 : Aladinopt+1]
+		{
+			AladinoVAL.astList = []Expr{BuildTypedExpr(AladinoDollar[1].ast, BuildArrayOfType(BuildStringType()))}
+		}
+	case 27:
+		AladinoDollar = AladinoS[Aladinopt-4 : Aladinopt+1]
+		{
+			AladinoVAL.astList = append([]Expr{BuildTypedExpr(AladinoDollar[1].ast, BuildArrayOfType(BuildIntType()))}, AladinoDollar[4].astList...)
+		}
+	case 28:
+		AladinoDollar = AladinoS[Aladinopt-2 : Aladinopt+1]
+		{
+			AladinoVAL.astList = []Expr{BuildTypedExpr(AladinoDollar[1].ast, BuildArrayOfType(BuildIntType()))}
+		}
+	case 29:
+		AladinoDollar = AladinoS[Aladinopt-4 : Aladinopt+1]
+		{
+			AladinoVAL.astList = append([]Expr{BuildTypedExpr(AladinoDollar[1].ast, BuildArrayOfType(BuildBoolType()))}, AladinoDollar[4].astList...)
+		}
+	case 30:
+		AladinoDollar = AladinoS[Aladinopt-2 : Aladinopt+1]
+		{
+			AladinoVAL.astList = []Expr{BuildTypedExpr(AladinoDollar[1].ast, BuildArrayOfType(BuildBoolType()))}
+		}
+	case 31:
 		AladinoDollar = AladinoS[Aladinopt-0 : Aladinopt+1]
 		{
 			AladinoVAL.astList = []Expr{}
 		}
-	case 22:
+	case 32:
 		AladinoDollar = AladinoS[Aladinopt-3 : Aladinopt+1]
 		{
 			AladinoVAL.astList = append([]Expr{AladinoDollar[1].ast}, AladinoDollar[3].astList...)
 		}
-	case 23:
+	case 33:
 		AladinoDollar = AladinoS[Aladinopt-1 : Aladinopt+1]
 		{
 			AladinoVAL.astList = []Expr{AladinoDollar[1].ast}
 		}
-	case 24:
+	case 34:
 		AladinoDollar = AladinoS[Aladinopt-0 : Aladinopt+1]
 		{
 			AladinoVAL.astList = []Expr{}

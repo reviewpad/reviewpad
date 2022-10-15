@@ -29,7 +29,7 @@ func setAST(l AladinoLexer, root Expr) {
 %type <astList> expr_list typed_expr_list
 
 // same for terminals
-%token <str> TIMESTAMP RELATIVETIMESTAMP IDENTIFIER STRINGLITERAL TK_CMPOP TK_LAMBDA TK_TYPE
+%token <str> TIMESTAMP RELATIVETIMESTAMP IDENTIFIER STRINGLITERAL TK_CMPOP TK_LAMBDA TK_TYPE TK_STRING_TYPE TK_INT_TYPE TK_BOOL_TYPE TK_STRING_ARRAY_TYPE TK_INT_ARRAY_TYPE TK_BOOL_ARRAY_TYPE
 %token <int> NUMBER
 %token <bool> TRUE
 %token <bool> FALSE
@@ -61,14 +61,24 @@ expr :
     | '$' IDENTIFIER     { $$ = BuildVariable($2) }
     | TRUE               { $$ = BuildBoolConst(true) }
     | FALSE              { $$ = BuildBoolConst(false) }
-    | '$' IDENTIFIER '(' expr_list ')' 
+    | '$' IDENTIFIER '(' expr_list ')'
         { $$ = BuildFunctionCall(BuildVariable($2), $4) }
     | '(' typed_expr_list TK_LAMBDA expr  ')'      { $$ = BuildLambda($2, $4) }
 ;
 
 typed_expr_list:
-      expr TK_TYPE ',' typed_expr_list { $$ = append([]Expr{BuildTypedExpr($1, ParseType($2))}, $4...) }
-    | expr TK_TYPE                     { $$ = []Expr{BuildTypedExpr($1, ParseType($2))} }
+      expr TK_STRING_TYPE ',' typed_expr_list { $$ = append([]Expr{BuildTypedExpr($1, BuildStringType())}, $4...) }
+    | expr TK_STRING_TYPE                     { $$ = []Expr{BuildTypedExpr($1, BuildStringType())} }
+    | expr TK_INT_TYPE ',' typed_expr_list { $$ = append([]Expr{BuildTypedExpr($1, BuildIntType())}, $4...) }
+    | expr TK_INT_TYPE                     { $$ = []Expr{BuildTypedExpr($1, BuildIntType())} }
+    | expr TK_BOOL_TYPE ',' typed_expr_list { $$ = append([]Expr{BuildTypedExpr($1, BuildBoolType())}, $4...) }
+    | expr TK_BOOL_TYPE                     { $$ = []Expr{BuildTypedExpr($1, BuildBoolType())} }
+    | expr TK_STRING_ARRAY_TYPE ',' typed_expr_list { $$ = append([]Expr{BuildTypedExpr($1, BuildArrayOfType(BuildStringType()))}, $4...) }
+    | expr TK_STRING_ARRAY_TYPE                     { $$ = []Expr{BuildTypedExpr($1, BuildArrayOfType(BuildStringType()))} }
+    | expr TK_INT_ARRAY_TYPE ',' typed_expr_list { $$ = append([]Expr{BuildTypedExpr($1, BuildArrayOfType(BuildIntType()))}, $4...) }
+    | expr TK_INT_ARRAY_TYPE                     { $$ = []Expr{BuildTypedExpr($1, BuildArrayOfType(BuildIntType()))} }
+    | expr TK_BOOL_ARRAY_TYPE ',' typed_expr_list { $$ = append([]Expr{BuildTypedExpr($1, BuildArrayOfType(BuildBoolType()))}, $4...) }
+    | expr TK_BOOL_ARRAY_TYPE                     { $$ = []Expr{BuildTypedExpr($1, BuildArrayOfType(BuildBoolType()))} }
     |                                  { $$ = []Expr{} }
 ;
 
