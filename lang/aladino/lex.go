@@ -88,7 +88,7 @@ var tokens = []tokenDef{
 		token: TK_INT_ARRAY_TYPE,
 	},
 	{
-		regex: regexp.MustCompile(`^:\s?\[Int\]*`),
+		regex: regexp.MustCompile(`^:\s?\[Bool\]*`),
 		kind:  "boolArrayType",
 		token: TK_BOOL_ARRAY_TYPE,
 	},
