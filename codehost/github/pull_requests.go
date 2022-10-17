@@ -401,3 +401,8 @@ func (c *GithubClient) GetPullRequestLastPushDate(ctx context.Context, owner str
 
 	return *pushDate, nil
 }
+
+func (c *GithubClient) DeleteReference(ctx context.Context, owner, repo, ref string) error {
+	_, err := c.clientREST.Git.DeleteRef(ctx, owner, repo, ref)
+	return err
+}
