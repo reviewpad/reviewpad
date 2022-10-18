@@ -37,12 +37,14 @@ func TestDeleteHeadBranch(t *testing.T) {
 		Merged:   github.Bool(false),
 		ClosedAt: nil,
 	})
+	isDeleteHeadBranchRequestPerformed := false
 
 	testCases := []struct {
-		name                 string
-		mockPRHandler        mock.MockBackendOption
-		mockDeleteRefHandler mock.MockBackendOption
-		err                  error
+		name                    string
+		mockPRHandler           mock.MockBackendOption
+		mockDeleteRefHandler    mock.MockBackendOption
+		deleteShouldBePerformed bool
+		err                     error
 	}{
 		{
 			name: "success: pull request is closed",
@@ -55,9 +57,11 @@ func TestDeleteHeadBranch(t *testing.T) {
 			mockDeleteRefHandler: mock.WithRequestMatchHandler(
 				mock.DeleteReposGitRefsByOwnerByRepoByRef,
 				http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+					isDeleteHeadBranchRequestPerformed = true
 					w.WriteHeader(http.StatusNoContent)
 				}),
 			),
+			deleteShouldBePerformed: true,
 		},
 		{
 			name: "success: pull request is merged",
@@ -71,8 +75,10 @@ func TestDeleteHeadBranch(t *testing.T) {
 				mock.DeleteReposGitRefsByOwnerByRepoByRef,
 				http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 					w.WriteHeader(http.StatusNoContent)
+					isDeleteHeadBranchRequestPerformed = true
 				}),
 			),
+			deleteShouldBePerformed: true,
 		},
 		{
 			name: "success: pull request is merged and closed",
@@ -86,8 +92,10 @@ func TestDeleteHeadBranch(t *testing.T) {
 				mock.DeleteReposGitRefsByOwnerByRepoByRef,
 				http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 					w.WriteHeader(http.StatusNoContent)
+					isDeleteHeadBranchRequestPerformed = true
 				}),
 			),
+			deleteShouldBePerformed: true,
 		},
 		{
 			name: "success: pull request is closed but not merged",
@@ -101,8 +109,10 @@ func TestDeleteHeadBranch(t *testing.T) {
 				mock.DeleteReposGitRefsByOwnerByRepoByRef,
 				http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 					w.WriteHeader(http.StatusNoContent)
+					isDeleteHeadBranchRequestPerformed = true
 				}),
 			),
+			deleteShouldBePerformed: true,
 		},
 		{
 			name: "success: pull request is not merged or closed",
@@ -166,6 +176,10 @@ func TestDeleteHeadBranch(t *testing.T) {
 			}
 
 			assert.Equal(t, testCase.err, err)
+
+			assert.Equal(t, testCase.deleteShouldBePerformed, isDeleteHeadBranchRequestPerformed)
+
+			isDeleteHeadBranchRequestPerformed = false
 		})
 	}
 }
