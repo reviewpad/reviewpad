@@ -27,6 +27,7 @@ func setAST(l AladinoLexer, root Expr) {
 // really a field name in the above union struct
 %type <ast> expr
 %type <astList> expr_list typed_expr_list
+%type <varType> type
 
 // same for terminals
 %token <str> TIMESTAMP RELATIVETIMESTAMP IDENTIFIER STRINGLITERAL TK_CMPOP TK_LAMBDA TK_TYPE TK_STRING_TYPE TK_INT_TYPE TK_BOOL_TYPE TK_STRING_ARRAY_TYPE TK_INT_ARRAY_TYPE TK_BOOL_ARRAY_TYPE
@@ -66,20 +67,19 @@ expr :
     | '(' typed_expr_list TK_LAMBDA expr  ')'      { $$ = BuildLambda($2, $4) }
 ;
 
-typed_expr_list:
-      expr TK_STRING_TYPE ',' typed_expr_list { $$ = append([]Expr{BuildTypedExpr($1, BuildStringType())}, $4...) }
-    | expr TK_STRING_TYPE                     { $$ = []Expr{BuildTypedExpr($1, BuildStringType())} }
-    | expr TK_INT_TYPE ',' typed_expr_list { $$ = append([]Expr{BuildTypedExpr($1, BuildIntType())}, $4...) }
-    | expr TK_INT_TYPE                     { $$ = []Expr{BuildTypedExpr($1, BuildIntType())} }
-    | expr TK_BOOL_TYPE ',' typed_expr_list { $$ = append([]Expr{BuildTypedExpr($1, BuildBoolType())}, $4...) }
-    | expr TK_BOOL_TYPE                     { $$ = []Expr{BuildTypedExpr($1, BuildBoolType())} }
-    | expr TK_STRING_ARRAY_TYPE ',' typed_expr_list { $$ = append([]Expr{BuildTypedExpr($1, BuildArrayOfType(BuildStringType()))}, $4...) }
-    | expr TK_STRING_ARRAY_TYPE                     { $$ = []Expr{BuildTypedExpr($1, BuildArrayOfType(BuildStringType()))} }
-    | expr TK_INT_ARRAY_TYPE ',' typed_expr_list { $$ = append([]Expr{BuildTypedExpr($1, BuildArrayOfType(BuildIntType()))}, $4...) }
-    | expr TK_INT_ARRAY_TYPE                     { $$ = []Expr{BuildTypedExpr($1, BuildArrayOfType(BuildIntType()))} }
-    | expr TK_BOOL_ARRAY_TYPE ',' typed_expr_list { $$ = append([]Expr{BuildTypedExpr($1, BuildArrayOfType(BuildBoolType()))}, $4...) }
-    | expr TK_BOOL_ARRAY_TYPE                     { $$ = []Expr{BuildTypedExpr($1, BuildArrayOfType(BuildBoolType()))} }
-    |                                  { $$ = []Expr{} }
+type :
+      TK_STRING_TYPE       { $$ = BuildStringType() }
+    | TK_INT_TYPE          { $$ = BuildIntType() }
+    | TK_BOOL_TYPE         { $$ = BuildBoolType() }
+    | TK_STRING_ARRAY_TYPE { $$ = BuildArrayOfType(BuildStringType()) }
+    | TK_INT_ARRAY_TYPE    { $$ = BuildArrayOfType(BuildIntType()) }
+    | TK_BOOL_ARRAY_TYPE   { $$ = BuildArrayOfType(BuildBoolType()) }
+;
+
+typed_expr_list :
+      expr type ',' typed_expr_list { $$ = append([]Expr{BuildTypedExpr($1, $2)}, $4...) }
+    | expr type                     { $$ = []Expr{BuildTypedExpr($1, $2)} }
+    |                               { $$ = []Expr{} }
 ;
 
 expr_list :

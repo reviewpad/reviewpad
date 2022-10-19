@@ -148,6 +148,24 @@ func TestParse(t *testing.T) {
 				BuildBinaryOp(BuildVariable("a"), greaterThanOperator(), BuildVariable("b")),
 			),
 		},
+		"multi parameter lambda": {
+			input: `($a: [Int], $b: [Bool], $c: [String] => $concat($a, $b, $c))`,
+			wantExpr: BuildLambda(
+				[]Expr{
+					BuildTypedExpr(BuildVariable("a"), BuildArrayOfType(BuildIntType())),
+					BuildTypedExpr(BuildVariable("b"), BuildArrayOfType(BuildBoolType())),
+					BuildTypedExpr(BuildVariable("c"), BuildArrayOfType(BuildStringType())),
+				},
+				BuildFunctionCall(
+					BuildVariable("concat"),
+					[]Expr{
+						BuildVariable("a"),
+						BuildVariable("b"),
+						BuildVariable("c"),
+					},
+				),
+			),
+		},
 		"string array typed expression lambda": {
 			input: `($orgs: [String] => $isElementOf("reviewpad", $orgs))`,
 			wantExpr: BuildLambda(
