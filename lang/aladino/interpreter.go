@@ -198,13 +198,14 @@ func (i *Interpreter) Report(mode string, safeMode bool) error {
 func NewInterpreter(
 	ctx context.Context,
 	dryRun bool,
+	githubActionActor string,
 	githubClient *gh.GithubClient,
 	collector collector.Collector,
 	targetEntity *handler.TargetEntity,
 	eventPayload interface{},
 	builtIns *BuiltIns,
 ) (engine.Interpreter, error) {
-	evalEnv, err := NewEvalEnv(ctx, dryRun, githubClient, collector, targetEntity, eventPayload, builtIns)
+	evalEnv, err := NewEvalEnv(ctx, dryRun, githubActionActor, githubClient, collector, targetEntity, eventPayload, builtIns)
 	if err != nil {
 		return nil, err
 	}

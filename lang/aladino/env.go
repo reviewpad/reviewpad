@@ -30,6 +30,7 @@ type RegisterMap map[string]Value
 type Env interface {
 	GetBuiltIns() *BuiltIns
 	GetBuiltInsReportedMessages() map[Severity][]string
+	GetGithubActionActor() string
 	GetGithubClient() *gh.GithubClient
 	GetCollector() collector.Collector
 	GetCtx() context.Context
@@ -43,6 +44,7 @@ type Env interface {
 type BaseEnv struct {
 	BuiltIns                 *BuiltIns
 	BuiltInsReportedMessages map[Severity][]string
+	GithubActionActor        string
 	GithubClient             *gh.GithubClient
 	Collector                collector.Collector
 	Ctx                      context.Context
@@ -59,6 +61,10 @@ func (e *BaseEnv) GetBuiltIns() *BuiltIns {
 
 func (e *BaseEnv) GetBuiltInsReportedMessages() map[Severity][]string {
 	return e.BuiltInsReportedMessages
+}
+
+func (e *BaseEnv) GetGithubActionActor() string {
+	return e.GithubActionActor
 }
 
 func (e *BaseEnv) GetGithubClient() *gh.GithubClient {
@@ -109,6 +115,7 @@ func NewTypeEnv(e Env) TypeEnv {
 func NewEvalEnv(
 	ctx context.Context,
 	dryRun bool,
+	githubActionActor string,
 	githubClient *gh.GithubClient,
 	collector collector.Collector,
 	targetEntity *handler.TargetEntity,
@@ -121,6 +128,7 @@ func NewEvalEnv(
 	input := &BaseEnv{
 		BuiltIns:                 builtIns,
 		BuiltInsReportedMessages: make(map[Severity][]string),
+		GithubActionActor:        githubActionActor,
 		GithubClient:             githubClient,
 		Collector:                collector,
 		Ctx:                      ctx,

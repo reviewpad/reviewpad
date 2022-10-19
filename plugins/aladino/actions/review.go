@@ -7,9 +7,7 @@ package plugins_aladino_actions
 import (
 	"fmt"
 	"log"
-	"reflect"
 
-	"github.com/google/go-github/v45/github"
 	"github.com/reviewpad/reviewpad/v3/codehost"
 	"github.com/reviewpad/reviewpad/v3/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v3/handler"
@@ -26,7 +24,7 @@ func Review() *aladino.BuiltInAction {
 
 func reviewCode(e aladino.Env, args []aladino.Value) error {
 	t := e.GetTarget().(*target.PullRequestTarget)
-	reviewer := getWorkflowRunActor(e).GetLogin()
+	reviewer := e.GetGithubActionActor()
 
 	log.Printf("%+v", reviewer)
 
@@ -73,19 +71,4 @@ func checkReviewBody(reviewEvent, reviewBody string) (string, error) {
 	}
 
 	return reviewBody, nil
-}
-
-func getWorkflowRunActor(e aladino.Env) *github.User {
-	log.Printf("%+v", e.GetGithubClient().GetClientREST().UserAgent)
-	workflowPayload := e.GetEventPayload()
-	if reflect.TypeOf(workflowPayload).String() != "*github.WorkflowRunEvent" {
-		return nil
-	}
-
-	workflowRunPayload := workflowPayload.(*github.WorkflowRunEvent).WorkflowRun
-	if workflowRunPayload == nil {
-		return nil
-	}
-
-	return workflowRunPayload.Actor
 }

@@ -717,6 +717,7 @@ func TestNewInterpreter_WhenNewEvalEnvFails(t *testing.T) {
 	gotInterpreter, err := NewInterpreter(
 		ctx,
 		false,
+		"",
 		gh.NewGithubClient(clientREST, nil),
 		nil,
 		DefaultMockTargetEntity,
@@ -738,6 +739,7 @@ func TestNewInterpreter(t *testing.T) {
 	gotInterpreter, err := NewInterpreter(
 		mockedEnv.GetCtx(),
 		mockedEnv.GetDryRun(),
+		mockedEnv.GetGithubActionActor(),
 		mockedEnv.GetGithubClient(),
 		mockedEnv.GetCollector(),
 		DefaultMockTargetEntity,

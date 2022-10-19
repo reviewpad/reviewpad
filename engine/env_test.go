@@ -40,6 +40,7 @@ func TestNewEvalEnv(t *testing.T) {
 	gotEnv, err := engine.NewEvalEnv(
 		ctx,
 		false,
+		"",
 		githubClient,
 		collector,
 		engine.DefaultMockTargetEntity,

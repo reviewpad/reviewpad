@@ -37,6 +37,7 @@ func Load(buf *bytes.Buffer) (*engine.ReviewpadFile, error) {
 
 func Run(
 	ctx context.Context,
+	githubActionActor string,
 	githubClient *gh.GithubClient,
 	collector collector.Collector,
 	targetEntity *handler.TargetEntity,
@@ -56,12 +57,12 @@ func Run(
 
 	defer config.CleanupPluginConfig()
 
-	aladinoInterpreter, err := aladino.NewInterpreter(ctx, dryRun, githubClient, collector, targetEntity, eventPayload, plugins_aladino.PluginBuiltInsWithConfig(config))
+	aladinoInterpreter, err := aladino.NewInterpreter(ctx, dryRun, githubActionActor, githubClient, collector, targetEntity, eventPayload, plugins_aladino.PluginBuiltInsWithConfig(config))
 	if err != nil {
 		return engine.ExitStatusFailure, err
 	}
 
-	evalEnv, err := engine.NewEvalEnv(ctx, dryRun, githubClient, collector, targetEntity, aladinoInterpreter)
+	evalEnv, err := engine.NewEvalEnv(ctx, dryRun, githubActionActor, githubClient, collector, targetEntity, aladinoInterpreter)
 	if err != nil {
 		return engine.ExitStatusFailure, err
 	}
