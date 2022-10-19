@@ -6,6 +6,7 @@ package plugins_aladino_actions
 
 import (
 	"fmt"
+	"log"
 	"reflect"
 
 	"github.com/google/go-github/v45/github"
@@ -27,6 +28,8 @@ func reviewCode(e aladino.Env, args []aladino.Value) error {
 	t := e.GetTarget().(*target.PullRequestTarget)
 	reviewer := getWorkflowRunActor(e).GetLogin()
 
+	log.Printf("%+v", reviewer)
+
 	reviewEvent, err := parseReviewEvent(args[0].(*aladino.StringValue).Val)
 	if err != nil {
 		return err
@@ -46,6 +49,7 @@ func reviewCode(e aladino.Env, args []aladino.Value) error {
 			return nil
 		}
 
+		log.Printf("%+v", t.PullRequest.GetUpdatedAt())
 		if lastReview.SubmittedAt.After(t.PullRequest.GetUpdatedAt()) {
 			return nil
 		}
