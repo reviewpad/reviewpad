@@ -6,7 +6,9 @@ package plugins_aladino_actions
 
 import (
 	"fmt"
+	"reflect"
 
+	"github.com/google/go-github/v45/github"
 	"github.com/reviewpad/reviewpad/v3/codehost"
 	"github.com/reviewpad/reviewpad/v3/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v3/handler"
@@ -23,35 +25,28 @@ func Review() *aladino.BuiltInAction {
 
 func reviewCode(e aladino.Env, args []aladino.Value) error {
 	t := e.GetTarget().(*target.PullRequestTarget)
-	reviewpadBot := "reviewpad-bot"
+	reviewer := getWorkflowRunActor(e).GetLogin()
 
 	reviewEvent, err := parseReviewEvent(args[0].(*aladino.StringValue).Val)
 	if err != nil {
 		return err
 	}
 
-	reviewBody := args[1].(*aladino.StringValue).Val
-
-	// Only a review with APPROVE does not need a review comment
-	if reviewEvent != "APPROVE" && reviewBody == "" {
-		return fmt.Errorf("review: comment required in %v event", reviewEvent)
-	}
+	reviewBody, err := checkReviewBody(reviewEvent, args[1].(*aladino.StringValue).Val)
 
 	reviews, err := t.GetReviews()
 	if err != nil {
 		return err
 	}
 
-	// If the last review of reviewpad-bot was an approval or if there were no updates to the pull request
-	// since last review made by reviewpad-bot, then do nothing.
-	if codehost.HasReview(reviews, reviewpadBot) {
-		lastReview := codehost.LastReview(reviews, reviewpadBot)
+	if codehost.HasReview(reviews, reviewer) {
+		lastReview := codehost.LastReview(reviews, reviewer)
 
 		if lastReview.State == "APPROVED" {
 			return nil
 		}
 
-		if !lastReview.SubmittedAt.Before(t.PullRequest.GetUpdatedAt()) {
+		if lastReview.SubmittedAt.After(t.PullRequest.GetUpdatedAt()) {
 			return nil
 		}
 	}
@@ -66,4 +61,26 @@ func parseReviewEvent(reviewEvent string) (string, error) {
 	default:
 		return "", fmt.Errorf("review: unsupported review event %v", reviewEvent)
 	}
+}
+
+func checkReviewBody(reviewEvent, reviewBody string) (string, error) {
+	if reviewEvent != "APPROVE" && reviewBody == "" {
+		return "", fmt.Errorf("review: comment required in %v event", reviewEvent)
+	}
+
+	return reviewBody, nil
+}
+
+func getWorkflowRunActor(e aladino.Env) *github.User {
+	workflowPayload := e.GetEventPayload()
+	if reflect.TypeOf(workflowPayload).String() != "*github.WorkflowRunEvent" {
+		return nil
+	}
+
+	workflowRunPayload := workflowPayload.(*github.WorkflowRunEvent).WorkflowRun
+	if workflowRunPayload == nil {
+		return nil
+	}
+
+	return workflowRunPayload.Actor
 }

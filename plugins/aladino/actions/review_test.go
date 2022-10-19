@@ -27,7 +27,19 @@ type ReviewRequestPostBody struct {
 }
 
 func TestReview_WhenReviewMethodIsUnsupported(t *testing.T) {
-	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
+		nil,
+		nil,
+		aladino.MockBuiltIns(),
+		&github.WorkflowRunEvent{
+			WorkflowRun: &github.WorkflowRun{
+				Actor: &github.User{
+					Login: github.String("reviewpad-bot"),
+				},
+			},
+		},
+	)
 
 	args := []aladino.Value{aladino.BuildStringValue("INVALID"), aladino.BuildStringValue("some comment")}
 	err := review(mockedEnv, args)
@@ -53,7 +65,13 @@ func TestReview_WhenListReviewsRequestFails(t *testing.T) {
 		},
 		nil,
 		aladino.MockBuiltIns(),
-		nil,
+		&github.WorkflowRunEvent{
+			WorkflowRun: &github.WorkflowRun{
+				Actor: &github.User{
+					Login: github.String("reviewpad-bot"),
+				},
+			},
+		},
 	)
 
 	args := []aladino.Value{aladino.BuildStringValue("APPROVE"), aladino.BuildStringValue("some comment")}
@@ -105,7 +123,13 @@ func TestReview_WhenBodyIsNotEmpty(t *testing.T) {
 			},
 			nil,
 			aladino.MockBuiltIns(),
-			nil,
+			&github.WorkflowRunEvent{
+				WorkflowRun: &github.WorkflowRun{
+					Actor: &github.User{
+						Login: github.String("reviewpad-bot"),
+					},
+				},
+			},
 		)
 
 		args := []aladino.Value{aladino.BuildStringValue(test.inputReviewEvent), aladino.BuildStringValue(reviewBody)}
@@ -153,7 +177,13 @@ func TestReview_WhenBodyIsEmpty(t *testing.T) {
 				},
 				nil,
 				aladino.MockBuiltIns(),
-				nil,
+				&github.WorkflowRunEvent{
+					WorkflowRun: &github.WorkflowRun{
+						Actor: &github.User{
+							Login: github.String("reviewpad-bot"),
+						},
+					},
+				},
 			)
 
 			args := []aladino.Value{aladino.BuildStringValue(test.inputReviewEvent), aladino.BuildStringValue("")}
@@ -309,7 +339,13 @@ func TestReview_WhenExistsPreviousAutomaticReview(t *testing.T) {
 			),
 			nil,
 			aladino.MockBuiltIns(),
-			nil,
+			&github.WorkflowRunEvent{
+				WorkflowRun: &github.WorkflowRun{
+					Actor: &github.User{
+						Login: github.String("reviewpad-bot"),
+					},
+				},
+			},
 		)
 
 		args := []aladino.Value{aladino.BuildStringValue(test.inputReviewEvent), aladino.BuildStringValue(reviewBody)}
