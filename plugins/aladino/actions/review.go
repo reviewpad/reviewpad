@@ -76,6 +76,7 @@ func checkReviewBody(reviewEvent, reviewBody string) (string, error) {
 }
 
 func getWorkflowRunActor(e aladino.Env) *github.User {
+	log.Printf("%+v", e.GetEventPayload())
 	workflowPayload := e.GetEventPayload()
 	if reflect.TypeOf(workflowPayload).String() != "*github.WorkflowRunEvent" {
 		return nil
