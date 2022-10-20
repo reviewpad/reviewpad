@@ -148,6 +148,167 @@ func TestParse(t *testing.T) {
 				BuildBinaryOp(BuildVariable("a"), greaterThanOperator(), BuildVariable("b")),
 			),
 		},
+		"multi parameter lambda": {
+			input: `($a: [Int], $b: [Bool], $c: [String] => $concat($a, $b, $c))`,
+			wantExpr: BuildLambda(
+				[]Expr{
+					BuildTypedExpr(BuildVariable("a"), BuildArrayOfType(BuildIntType())),
+					BuildTypedExpr(BuildVariable("b"), BuildArrayOfType(BuildBoolType())),
+					BuildTypedExpr(BuildVariable("c"), BuildArrayOfType(BuildStringType())),
+				},
+				BuildFunctionCall(
+					BuildVariable("concat"),
+					[]Expr{
+						BuildVariable("a"),
+						BuildVariable("b"),
+						BuildVariable("c"),
+					},
+				),
+			),
+		},
+		"string array typed expression lambda": {
+			input: `($orgs: [String] => $isElementOf("reviewpad", $orgs))`,
+			wantExpr: BuildLambda(
+				[]Expr{
+					BuildTypedExpr(BuildVariable("orgs"), BuildArrayOfType(BuildStringType())),
+				},
+				BuildFunctionCall(
+					BuildVariable("isElementOf"),
+					[]Expr{
+						BuildStringConst("reviewpad"),
+						BuildVariable("orgs"),
+					},
+				),
+			),
+		},
+		"int array typed expression lambda": {
+			input: `($nums: [Int] => $isElementOf(5, $nums))`,
+			wantExpr: BuildLambda(
+				[]Expr{
+					BuildTypedExpr(BuildVariable("nums"), BuildArrayOfType(BuildIntType())),
+				},
+				BuildFunctionCall(
+					BuildVariable("isElementOf"),
+					[]Expr{
+						BuildIntConst(5),
+						BuildVariable("nums"),
+					},
+				),
+			),
+		},
+		"boolean array typed expression lambda": {
+			input: `($flags: [Bool] => $isElementOf(true, $flags))`,
+			wantExpr: BuildLambda(
+				[]Expr{
+					BuildTypedExpr(BuildVariable("flags"), BuildArrayOfType(BuildBoolType())),
+				},
+				BuildFunctionCall(
+					BuildVariable("isElementOf"),
+					[]Expr{
+						BuildBoolConst(true),
+						BuildVariable("flags"),
+					},
+				),
+			),
+		},
+		"array of string array typed expression lambda": {
+			input: `[($orgs: [String] => $isElementOf("reviewpad", $orgs)), "hello", ($users: [String] => $isElementOf("user", $users))]`,
+			wantExpr: BuildArray(
+				[]Expr{
+					BuildLambda(
+						[]Expr{
+							BuildTypedExpr(BuildVariable("orgs"), BuildArrayOfType(BuildStringType())),
+						},
+						BuildFunctionCall(
+							BuildVariable("isElementOf"),
+							[]Expr{
+								BuildStringConst("reviewpad"),
+								BuildVariable("orgs"),
+							},
+						),
+					),
+					BuildStringConst("hello"),
+					BuildLambda(
+						[]Expr{
+							BuildTypedExpr(BuildVariable("users"), BuildArrayOfType(BuildStringType())),
+						},
+						BuildFunctionCall(
+							BuildVariable("isElementOf"),
+							[]Expr{
+								BuildStringConst("user"),
+								BuildVariable("users"),
+							},
+						),
+					),
+				},
+			),
+		},
+		"array of int array typed expression lambda": {
+			input: `[($nums: [Int] => $isElementOf(5, $nums)), "hi", 1, ($ids: [Int] => $isElementOf(5, $ids))]`,
+			wantExpr: BuildArray(
+				[]Expr{
+					BuildLambda(
+						[]Expr{
+							BuildTypedExpr(BuildVariable("nums"), BuildArrayOfType(BuildIntType())),
+						},
+						BuildFunctionCall(
+							BuildVariable("isElementOf"),
+							[]Expr{
+								BuildIntConst(5),
+								BuildVariable("nums"),
+							},
+						),
+					),
+					BuildStringConst("hi"),
+					BuildIntConst(1),
+					BuildLambda(
+						[]Expr{
+							BuildTypedExpr(BuildVariable("ids"), BuildArrayOfType(BuildIntType())),
+						},
+						BuildFunctionCall(
+							BuildVariable("isElementOf"),
+							[]Expr{
+								BuildIntConst(5),
+								BuildVariable("ids"),
+							},
+						),
+					),
+				},
+			),
+		},
+		"array of boolean array typed expression lambda": {
+			input: `[($flags: [Bool] => $isElementOf(true, $flags)), "hi", 1, ($enabled: [Bool] => $isElementOf(false, $enabled))]`,
+			wantExpr: BuildArray(
+				[]Expr{
+					BuildLambda(
+						[]Expr{
+							BuildTypedExpr(BuildVariable("flags"), BuildArrayOfType(BuildBoolType())),
+						},
+						BuildFunctionCall(
+							BuildVariable("isElementOf"),
+							[]Expr{
+								BuildBoolConst(true),
+								BuildVariable("flags"),
+							},
+						),
+					),
+					BuildStringConst("hi"),
+					BuildIntConst(1),
+					BuildLambda(
+						[]Expr{
+							BuildTypedExpr(BuildVariable("enabled"), BuildArrayOfType(BuildBoolType())),
+						},
+						BuildFunctionCall(
+							BuildVariable("isElementOf"),
+							[]Expr{
+								BuildBoolConst(false),
+								BuildVariable("enabled"),
+							},
+						),
+					),
+				},
+			),
+		},
 	}
 
 	for name, test := range tests {
