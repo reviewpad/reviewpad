@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/google/go-github/v45/github"
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/collector"
 	"github.com/reviewpad/reviewpad/v3/engine"
@@ -37,7 +38,7 @@ func Load(buf *bytes.Buffer) (*engine.ReviewpadFile, error) {
 
 func Run(
 	ctx context.Context,
-	githubActionActor string,
+	githubActionActor *github.User,
 	githubClient *gh.GithubClient,
 	collector collector.Collector,
 	targetEntity *handler.TargetEntity,

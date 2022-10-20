@@ -7,6 +7,7 @@ package engine
 import (
 	"context"
 
+	"github.com/google/go-github/v45/github"
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/collector"
 	"github.com/reviewpad/reviewpad/v3/handler"
@@ -37,7 +38,7 @@ type Interpreter interface {
 type Env struct {
 	Ctx               context.Context
 	DryRun            bool
-	GithubActionActor string
+	GithubActionActor *github.User
 	GithubClient      *gh.GithubClient
 	Collector         collector.Collector
 	Interpreter       Interpreter
@@ -47,7 +48,7 @@ type Env struct {
 func NewEvalEnv(
 	ctx context.Context,
 	dryRun bool,
-	githubActionActor string,
+	githubActionActor *github.User,
 	githubClient *gh.GithubClient,
 	collector collector.Collector,
 	targetEntity *handler.TargetEntity,

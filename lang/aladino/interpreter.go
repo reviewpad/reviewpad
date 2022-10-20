@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/google/go-github/v45/github"
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/collector"
 	"github.com/reviewpad/reviewpad/v3/engine"
@@ -198,7 +199,7 @@ func (i *Interpreter) Report(mode string, safeMode bool) error {
 func NewInterpreter(
 	ctx context.Context,
 	dryRun bool,
-	githubActionActor string,
+	githubActionActor *github.User,
 	githubClient *gh.GithubClient,
 	collector collector.Collector,
 	targetEntity *handler.TargetEntity,

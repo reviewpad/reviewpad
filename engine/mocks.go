@@ -117,7 +117,7 @@ func MockEnvWith(githubClient *gh.GithubClient, interpreter Interpreter, targetE
 	mockedEnv, err := NewEvalEnv(
 		DefaultMockCtx,
 		dryRun,
-		"",
+		&github.User{},
 		githubClient,
 		DefaultMockCollector,
 		targetEntity,

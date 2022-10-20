@@ -7,6 +7,7 @@ package engine_test
 import (
 	"testing"
 
+	"github.com/google/go-github/v45/github"
 	"github.com/reviewpad/reviewpad/v3/engine"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	"github.com/stretchr/testify/assert"
@@ -40,7 +41,7 @@ func TestNewEvalEnv(t *testing.T) {
 	gotEnv, err := engine.NewEvalEnv(
 		ctx,
 		false,
-		"",
+		&github.User{},
 		githubClient,
 		collector,
 		engine.DefaultMockTargetEntity,

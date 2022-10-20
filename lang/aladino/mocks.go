@@ -263,7 +263,7 @@ func mockEnvWith(prOwner string, prRepoName string, prNum int, githubClient *gh.
 	env, err := NewEvalEnv(
 		ctx,
 		false,
-		"",
+		&github.User{},
 		githubClient,
 		DefaultMockCollector,
 		DefaultMockTargetEntity,

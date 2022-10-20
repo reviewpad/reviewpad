@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
 	"regexp"
 	"strconv"
@@ -63,6 +64,40 @@ func toTargetEntityKind(entityType string) (handler.TargetEntityKind, error) {
 	}
 }
 
+func getGithubData(accessToken string) *github.User {
+	// Get request to a set URL
+	req, err := http.NewRequest(
+		"GET",
+		"https://api.github.com/user",
+		nil,
+	)
+	if err != nil {
+		log.Panic("API Request creation failed")
+	}
+
+	// Set the Authorization header before sending the request
+	// Authorization: token XXXXXXXXXXXXXXXXXXXXXXXXXXX
+	authorizationHeaderValue := fmt.Sprintf("token %s", accessToken)
+	req.Header.Set("Authorization", authorizationHeaderValue)
+
+	// Make the request
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		log.Panic("Request failed")
+	}
+
+	// Read the response as a byte slice
+	respbody, _ := ioutil.ReadAll(resp.Body)
+
+	var actionActor *github.User
+	err = json.Unmarshal(respbody, &actionActor)
+	if err != nil {
+		log.Panic("Could not get user")
+	}
+
+	return actionActor
+}
+
 func run() error {
 	var ev interface{}
 
@@ -97,6 +132,7 @@ func run() error {
 	}
 
 	ctx := context.Background()
+	githubActionActor := getGithubData(gitHubToken)
 	githubClient := gh.NewGithubClientFromToken(ctx, gitHubToken)
 	collectorClient := collector.NewCollector(mixpanelToken, repositoryOwner, string(entityKind), githubUrl, "local-cli")
 
@@ -118,7 +154,7 @@ func run() error {
 		Kind:   entityKind,
 	}
 
-	_, err = reviewpad.Run(ctx, githubClient, collectorClient, targetEntity, ev, file, dryRun, safeModeRun)
+	_, err = reviewpad.Run(ctx, githubActionActor, githubClient, collectorClient, targetEntity, ev, file, dryRun, safeModeRun)
 	if err != nil {
 		return fmt.Errorf("error running reviewpad team edition. Details %v", err.Error())
 	}
