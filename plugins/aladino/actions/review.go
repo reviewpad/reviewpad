@@ -24,6 +24,7 @@ func Review() *aladino.BuiltInAction {
 
 func reviewCode(e aladino.Env, args []aladino.Value) error {
 	t := e.GetTarget().(*target.PullRequestTarget)
+	log.Printf("ACTION ACTOR2: %+v", *e.GetGithubActionActor())
 	actionActorLogin := e.GetGithubActionActor().GetLogin()
 	log.Printf("%+v", actionActorLogin)
 
