@@ -30,12 +30,13 @@ func TestNewEvalEnv(t *testing.T) {
 	}
 
 	wantEnv := &engine.Env{
-		Ctx:          ctx,
-		DryRun:       false,
-		GithubClient: githubClient,
-		Collector:    collector,
-		Interpreter:  mockedAladinoInterpreter,
-		TargetEntity: aladino.DefaultMockTargetEntity,
+		Ctx:               ctx,
+		DryRun:            false,
+		GithubActionActor: &github.User{},
+		GithubClient:      githubClient,
+		Collector:         collector,
+		Interpreter:       mockedAladinoInterpreter,
+		TargetEntity:      aladino.DefaultMockTargetEntity,
 	}
 
 	gotEnv, err := engine.NewEvalEnv(
