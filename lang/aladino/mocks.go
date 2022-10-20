@@ -168,6 +168,14 @@ func GetDefaultMockPullRequestDetailsWith(pr *github.PullRequest) *github.PullRe
 		defaultPullRequest.Rebaseable = pr.Rebaseable
 	}
 
+	if pr.Merged != nil {
+		defaultPullRequest.Merged = pr.Merged
+	}
+
+	if pr.ClosedAt != nil {
+		defaultPullRequest.ClosedAt = pr.ClosedAt
+	}
+
 	return defaultPullRequest
 }
 
