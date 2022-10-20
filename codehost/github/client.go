@@ -6,6 +6,7 @@ package github
 
 import (
 	"context"
+	"log"
 
 	"github.com/google/go-github/v45/github"
 	"github.com/shurcooL/githubv4"
@@ -31,6 +32,7 @@ func NewGithubClientFromToken(ctx context.Context, token string) *GithubClient {
 	tc := oauth2.NewClient(ctx, ts)
 
 	clientREST := github.NewClient(tc)
+	log.Printf("ctx: %+v", clientREST.BaseURL.User)
 	clientGQL := githubv4.NewClient(tc)
 
 	return &GithubClient{
