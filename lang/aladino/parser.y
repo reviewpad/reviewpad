@@ -27,9 +27,10 @@ func setAST(l AladinoLexer, root Expr) {
 // really a field name in the above union struct
 %type <ast> expr
 %type <astList> expr_list typed_expr_list
+%type <varType> type
 
 // same for terminals
-%token <str> TIMESTAMP RELATIVETIMESTAMP IDENTIFIER STRINGLITERAL TK_CMPOP TK_LAMBDA TK_TYPE
+%token <str> TIMESTAMP RELATIVETIMESTAMP IDENTIFIER STRINGLITERAL TK_CMPOP TK_LAMBDA TK_TYPE TK_STRING_TYPE TK_INT_TYPE TK_BOOL_TYPE TK_STRING_ARRAY_TYPE TK_INT_ARRAY_TYPE TK_BOOL_ARRAY_TYPE
 %token <int> NUMBER
 %token <bool> TRUE
 %token <bool> FALSE
@@ -61,15 +62,24 @@ expr :
     | '$' IDENTIFIER     { $$ = BuildVariable($2) }
     | TRUE               { $$ = BuildBoolConst(true) }
     | FALSE              { $$ = BuildBoolConst(false) }
-    | '$' IDENTIFIER '(' expr_list ')' 
+    | '$' IDENTIFIER '(' expr_list ')'
         { $$ = BuildFunctionCall(BuildVariable($2), $4) }
     | '(' typed_expr_list TK_LAMBDA expr  ')'      { $$ = BuildLambda($2, $4) }
 ;
 
-typed_expr_list:
-      expr TK_TYPE ',' typed_expr_list { $$ = append([]Expr{BuildTypedExpr($1, ParseType($2))}, $4...) }
-    | expr TK_TYPE                     { $$ = []Expr{BuildTypedExpr($1, ParseType($2))} }
-    |                                  { $$ = []Expr{} }
+type :
+      TK_STRING_TYPE       { $$ = BuildStringType() }
+    | TK_INT_TYPE          { $$ = BuildIntType() }
+    | TK_BOOL_TYPE         { $$ = BuildBoolType() }
+    | TK_STRING_ARRAY_TYPE { $$ = BuildArrayOfType(BuildStringType()) }
+    | TK_INT_ARRAY_TYPE    { $$ = BuildArrayOfType(BuildIntType()) }
+    | TK_BOOL_ARRAY_TYPE   { $$ = BuildArrayOfType(BuildBoolType()) }
+;
+
+typed_expr_list :
+      expr type ',' typed_expr_list { $$ = append([]Expr{BuildTypedExpr($1, $2)}, $4...) }
+    | expr type                     { $$ = []Expr{BuildTypedExpr($1, $2)} }
+    |                               { $$ = []Expr{} }
 ;
 
 expr_list :
