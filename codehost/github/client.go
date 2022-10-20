@@ -32,7 +32,7 @@ func NewGithubClientFromToken(ctx context.Context, token string) *GithubClient {
 	tc := oauth2.NewClient(ctx, ts)
 
 	clientREST := github.NewClient(tc)
-	log.Printf("ctx: %+v", clientREST.BaseURL.User)
+	log.Printf("ctx: %+v", clientREST.BaseURL.User.Username())
 	clientGQL := githubv4.NewClient(tc)
 
 	return &GithubClient{
