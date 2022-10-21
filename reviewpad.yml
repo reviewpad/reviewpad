@@ -33,6 +33,10 @@ labels:
     color: "#b20000"
 
 groups:
+  - name: owners
+    description: Group of owners
+    kind: developers
+    spec: '["marcelosousa", "ferreiratiago"]'
   - name: plugins-reviewers
     description: Group of plugin reviewers
     spec: '["marcelosousa", "ferreiratiago", "shay2025"]'
