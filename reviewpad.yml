@@ -182,14 +182,6 @@ workflows:
     then:
       - '$addToProject("Reviewpad", "Backlog")'
 
-  - name: setup-reviewer-assignment
-    always-run: true
-    if:
-      - rule: work-in-progress
-      - rule: ship-authored-by-owners
-    then:
-        - '$disableActions(["assignRandomReviewer", "assignReviewer", "assignTeamReviewer"])'
-
   - name: check-inconsistent-state
     if:
       - rule: inconsistent-state
