@@ -1,18 +1,12 @@
 api-version: reviewpad.com/v3.x
 
+imports: 
+  - url: https://raw.githubusercontent.com/reviewpad/.github/main/reviewpad-models/common.yml
+
 mode: silent
 edition: professional
 
 labels:
-  small:
-    description: Small changes
-    color: "#294b69"
-  medium:
-    description: Medium changes
-    color: "#a8c3f7"
-  large:
-    description: Large changes
-    color: "#8a2138"
   external-contribution:
     description: External contribution
     color: "#8a2151"
@@ -39,10 +33,6 @@ labels:
     color: "#b20000"
 
 groups:
-  - name: owners
-    description: Group of owners
-    spec: '["marcelosousa", "ferreiratiago"]'
-
   - name: plugins-reviewers
     description: Group of plugin reviewers
     spec: '["marcelosousa", "ferreiratiago", "shay2025"]'
@@ -132,31 +122,11 @@ rules:
     description: Pull request was authored by external contributors
     spec: '!$isElementOf($author(), $group("official-contributors"))'
 
-  - name: work-in-progress
-    description: Pull request is WIP
-    spec: '$isDraft()'
-
   - name: inconsistent-state
     description: Pull request is in an inconsistent state
     spec: '$rule("work-in-progress") && $rule("ship-mode")'
 
-  - name: does-not-have-linked-issues
-    spec: '!$hasLinkedIssues() && !$rule("work-in-progress")'
-
 workflows:
-  - name: add-label-with-size
-    always-run: true
-    if:
-      - rule: '$size() <= 30'
-        extra-actions:
-          - '$addLabel("small")'
-      - rule: '$size() > 30 && $size() <= 100'
-        extra-actions:
-          - '$addLabel("medium")'
-      - rule: '$size() > 100'
-        extra-actions:
-          - '$addLabel("large")'
-
   - name: label-ship-show-ask
     always-run: true
     if:
@@ -206,26 +176,6 @@ workflows:
       - 'true'
     then:
       - '$addToProject("Reviewpad", "Backlog")'
-
-  - name: report-empty-description
-    on:
-      - issue
-      - pull_request
-    always-run: true
-    if:
-      - '$description() == ""'
-    then:
-      - '$error("The description is empty. Please add more information!")'
-
-  - name: lint-commits
-    always-run: true
-    if:
-      - rule: '!$hasLinearHistory()'
-        extra-actions:
-          - '$warn("This pull request does not have linear history - please fix this!")'
-      - rule: 'true'
-        extra-actions:
-          - '$commitLint()'
 
   - name: setup-reviewer-assignment
     always-run: true
