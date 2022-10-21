@@ -149,7 +149,7 @@ func TestParse(t *testing.T) {
 			),
 		},
 		"multi parameter lambda": {
-			input: `($a: [Int], $b: [Bool], $c: [String] => $concat($a, $b, $c))`,
+			input: `($a: []Int, $b: []Bool, $c: []String => $concat($a, $b, $c))`,
 			wantExpr: BuildLambda(
 				[]Expr{
 					BuildTypedExpr(BuildVariable("a"), BuildArrayOfType(BuildIntType())),
@@ -167,7 +167,7 @@ func TestParse(t *testing.T) {
 			),
 		},
 		"string array typed expression lambda": {
-			input: `($orgs: [String] => $isElementOf("reviewpad", $orgs))`,
+			input: `($orgs: []String => $isElementOf("reviewpad", $orgs))`,
 			wantExpr: BuildLambda(
 				[]Expr{
 					BuildTypedExpr(BuildVariable("orgs"), BuildArrayOfType(BuildStringType())),
@@ -182,7 +182,7 @@ func TestParse(t *testing.T) {
 			),
 		},
 		"int array typed expression lambda": {
-			input: `($nums: [Int] => $isElementOf(5, $nums))`,
+			input: `($nums: []Int => $isElementOf(5, $nums))`,
 			wantExpr: BuildLambda(
 				[]Expr{
 					BuildTypedExpr(BuildVariable("nums"), BuildArrayOfType(BuildIntType())),
@@ -197,7 +197,7 @@ func TestParse(t *testing.T) {
 			),
 		},
 		"boolean array typed expression lambda": {
-			input: `($flags: [Bool] => $isElementOf(true, $flags))`,
+			input: `($flags: []Bool => $isElementOf(true, $flags))`,
 			wantExpr: BuildLambda(
 				[]Expr{
 					BuildTypedExpr(BuildVariable("flags"), BuildArrayOfType(BuildBoolType())),
@@ -212,7 +212,7 @@ func TestParse(t *testing.T) {
 			),
 		},
 		"array of string array typed expression lambda": {
-			input: `[($orgs: [String] => $isElementOf("reviewpad", $orgs)), "hello", ($users: [String] => $isElementOf("user", $users))]`,
+			input: `[($orgs: []String => $isElementOf("reviewpad", $orgs)), "hello", ($users: []String => $isElementOf("user", $users))]`,
 			wantExpr: BuildArray(
 				[]Expr{
 					BuildLambda(
@@ -244,7 +244,7 @@ func TestParse(t *testing.T) {
 			),
 		},
 		"array of int array typed expression lambda": {
-			input: `[($nums: [Int] => $isElementOf(5, $nums)), "hi", 1, ($ids: [Int] => $isElementOf(5, $ids))]`,
+			input: `[($nums: []Int => $isElementOf(5, $nums)), "hi", 1, ($ids: []Int => $isElementOf(5, $ids))]`,
 			wantExpr: BuildArray(
 				[]Expr{
 					BuildLambda(
@@ -277,7 +277,7 @@ func TestParse(t *testing.T) {
 			),
 		},
 		"array of boolean array typed expression lambda": {
-			input: `[($flags: [Bool] => $isElementOf(true, $flags)), "hi", 1, ($enabled: [Bool] => $isElementOf(false, $enabled))]`,
+			input: `[($flags: []Bool => $isElementOf(true, $flags)), "hi", 1, ($enabled: []Bool => $isElementOf(false, $enabled))]`,
 			wantExpr: BuildArray(
 				[]Expr{
 					BuildLambda(

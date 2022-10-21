@@ -64,32 +64,32 @@ var tokens = []tokenDef{
 	},
 	{
 		regex: regexp.MustCompile(`^:\s?String*`),
-		kind:  "stringType",
+		kind:  "type",
 		token: TK_STRING_TYPE,
 	},
 	{
 		regex: regexp.MustCompile(`^:\s?Int*`),
-		kind:  "intType",
+		kind:  "type",
 		token: TK_INT_TYPE,
 	},
 	{
 		regex: regexp.MustCompile(`^:\s?Bool*`),
-		kind:  "boolType",
+		kind:  "type",
 		token: TK_BOOL_TYPE,
 	},
 	{
-		regex: regexp.MustCompile(`^:\s?\[String\]*`),
-		kind:  "stringArrayType",
+		regex: regexp.MustCompile(`^:\s?\[\]String*`),
+		kind:  "type",
 		token: TK_STRING_ARRAY_TYPE,
 	},
 	{
-		regex: regexp.MustCompile(`^:\s?\[Int\]*`),
-		kind:  "intArrayType",
+		regex: regexp.MustCompile(`^:\s?\[\]Int*`),
+		kind:  "type",
 		token: TK_INT_ARRAY_TYPE,
 	},
 	{
-		regex: regexp.MustCompile(`^:\s?\[Bool\]*`),
-		kind:  "boolArrayType",
+		regex: regexp.MustCompile(`^:\s?\[\]Bool*`),
+		kind:  "type",
 		token: TK_BOOL_ARRAY_TYPE,
 	},
 	{
@@ -169,7 +169,7 @@ func (l *AladinoLex) Lex(lval *AladinoSymType) int {
 		case "stringLiteral":
 			// Pass string content to the parser.
 			lval.str = str[1 : len(str)-1]
-		case "stringType", "intType", "boolType", "stringArrayType", "intArrayType", "boolArrayType":
+		case "type":
 			lval.str = strings.ReplaceAll(str, " ", "")[1:]
 		default:
 			lval.str = str
