@@ -309,6 +309,132 @@ func TestParse(t *testing.T) {
 				},
 			),
 		},
+		"array of string lambda": {
+			input: `($a: []String => $length($a))`,
+			wantExpr: BuildLambda(
+				[]Expr{
+					BuildTypedExpr(BuildVariable("a"), BuildArrayOfType(BuildStringType())),
+				},
+				BuildFunctionCall(
+					BuildVariable("length"),
+					[]Expr{
+						BuildVariable("a"),
+					},
+				),
+			),
+		},
+		"array of int lambda": {
+			input: `($a: []Int => $length($a))`,
+			wantExpr: BuildLambda(
+				[]Expr{
+					BuildTypedExpr(BuildVariable("a"), BuildArrayOfType(BuildIntType())),
+				},
+				BuildFunctionCall(
+					BuildVariable("length"),
+					[]Expr{
+						BuildVariable("a"),
+					},
+				),
+			),
+		},
+		"array of bool lambda": {
+			input: `($a: []Bool => $length($a))`,
+			wantExpr: BuildLambda(
+				[]Expr{
+					BuildTypedExpr(BuildVariable("a"), BuildArrayOfType(BuildBoolType())),
+				},
+				BuildFunctionCall(
+					BuildVariable("length"),
+					[]Expr{
+						BuildVariable("a"),
+					},
+				),
+			),
+		},
+		"nested array of string lambda": {
+			input: `($a: [][]String => $length($a))`,
+			wantExpr: BuildLambda(
+				[]Expr{
+					BuildTypedExpr(BuildVariable("a"), BuildArrayOfType(BuildArrayOfType(BuildStringType()))),
+				},
+				BuildFunctionCall(
+					BuildVariable("length"),
+					[]Expr{
+						BuildVariable("a"),
+					},
+				),
+			),
+		},
+		"thriple nested array of string lambda": {
+			input: `($a: [][][]String => $length($a))`,
+			wantExpr: BuildLambda(
+				[]Expr{
+					BuildTypedExpr(BuildVariable("a"), BuildArrayOfType(BuildArrayOfType(BuildArrayOfType(BuildStringType())))),
+				},
+				BuildFunctionCall(
+					BuildVariable("length"),
+					[]Expr{
+						BuildVariable("a"),
+					},
+				),
+			),
+		},
+		"nested array of int lambda": {
+			input: `($a: [][]Int => $length($a))`,
+			wantExpr: BuildLambda(
+				[]Expr{
+					BuildTypedExpr(BuildVariable("a"), BuildArrayOfType(BuildArrayOfType(BuildIntType()))),
+				},
+				BuildFunctionCall(
+					BuildVariable("length"),
+					[]Expr{
+						BuildVariable("a"),
+					},
+				),
+			),
+		},
+		"thriple nested array of int lambda": {
+			input: `($a: [][][]Int => $length($a))`,
+			wantExpr: BuildLambda(
+				[]Expr{
+					BuildTypedExpr(BuildVariable("a"), BuildArrayOfType(BuildArrayOfType(BuildArrayOfType(BuildIntType())))),
+				},
+				BuildFunctionCall(
+					BuildVariable("length"),
+					[]Expr{
+						BuildVariable("a"),
+					},
+				),
+			),
+		},
+		"nested array of bool lambda": {
+			input: `($a: [][]Bool => $length($a))`,
+			wantExpr: BuildLambda(
+				[]Expr{
+					BuildTypedExpr(BuildVariable("a"), BuildArrayOfType(BuildArrayOfType(BuildBoolType()))),
+				},
+				BuildFunctionCall(
+					BuildVariable("length"),
+					[]Expr{
+						BuildVariable("a"),
+					},
+				),
+			),
+		},
+		"thriple nested array of bool lambda": {
+			input: `($a: [][][]Bool => $length($a))`,
+			wantExpr: BuildLambda(
+				[]Expr{
+					BuildTypedExpr(BuildVariable("a"), BuildArrayOfType(BuildArrayOfType(BuildArrayOfType(BuildBoolType())))),
+				},
+				BuildFunctionCall(
+					BuildVariable("length"),
+					[]Expr{
+						BuildVariable("a"),
+					},
+				),
+			),
+		},
 	}
 
 	for name, test := range tests {

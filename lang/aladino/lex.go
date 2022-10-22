@@ -63,34 +63,34 @@ var tokens = []tokenDef{
 		token: FALSE,
 	},
 	{
-		regex: regexp.MustCompile(`^:\s?String*`),
+		regex: regexp.MustCompile(`^:*`),
+		kind:  "symbol",
+		token: TK_COLON,
+	},
+	{
+		regex: regexp.MustCompile(`^\[*`),
+		kind:  "symbol",
+		token: TK_LEFT_ANGLE_BRACE,
+	},
+	{
+		regex: regexp.MustCompile(`^\]*`),
+		kind:  "symbol",
+		token: TK_RIGHT_ANGLE_BRACE,
+	},
+	{
+		regex: regexp.MustCompile(`^String*`),
 		kind:  "type",
 		token: TK_STRING_TYPE,
 	},
 	{
-		regex: regexp.MustCompile(`^:\s?Int*`),
+		regex: regexp.MustCompile(`^Int*`),
 		kind:  "type",
 		token: TK_INT_TYPE,
 	},
 	{
-		regex: regexp.MustCompile(`^:\s?Bool*`),
+		regex: regexp.MustCompile(`^Bool*`),
 		kind:  "type",
 		token: TK_BOOL_TYPE,
-	},
-	{
-		regex: regexp.MustCompile(`^:\s?\[\]String*`),
-		kind:  "type",
-		token: TK_STRING_ARRAY_TYPE,
-	},
-	{
-		regex: regexp.MustCompile(`^:\s?\[\]Int*`),
-		kind:  "type",
-		token: TK_INT_ARRAY_TYPE,
-	},
-	{
-		regex: regexp.MustCompile(`^:\s?\[\]Bool*`),
-		kind:  "type",
-		token: TK_BOOL_ARRAY_TYPE,
 	},
 	{
 		regex: regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9]*`),

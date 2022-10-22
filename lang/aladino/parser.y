@@ -30,7 +30,7 @@ func setAST(l AladinoLexer, root Expr) {
 %type <varType> type
 
 // same for terminals
-%token <str> TIMESTAMP RELATIVETIMESTAMP IDENTIFIER STRINGLITERAL TK_CMPOP TK_LAMBDA TK_TYPE TK_STRING_TYPE TK_INT_TYPE TK_BOOL_TYPE TK_STRING_ARRAY_TYPE TK_INT_ARRAY_TYPE TK_BOOL_ARRAY_TYPE
+%token <str> TIMESTAMP RELATIVETIMESTAMP IDENTIFIER STRINGLITERAL TK_CMPOP TK_LAMBDA TK_TYPE TK_STRING_TYPE TK_INT_TYPE TK_BOOL_TYPE TK_STRING_ARRAY_TYPE TK_INT_ARRAY_TYPE TK_BOOL_ARRAY_TYPE TK_COLON TK_LEFT_ANGLE_BRACE TK_RIGHT_ANGLE_BRACE
 %token <int> NUMBER
 %token <bool> TRUE
 %token <bool> FALSE
@@ -58,7 +58,7 @@ expr :
     | RELATIVETIMESTAMP  { $$ = BuildRelativeTimeConst($1) }
     | NUMBER             { $$ = BuildIntConst($1) }
     | STRINGLITERAL      { $$ = BuildStringConst($1) }
-    | '[' expr_list ']'  { $$ = BuildArray($2) }
+    | TK_LEFT_ANGLE_BRACE expr_list TK_RIGHT_ANGLE_BRACE { $$ = BuildArray($2) }
     | '$' IDENTIFIER     { $$ = BuildVariable($2) }
     | TRUE               { $$ = BuildBoolConst(true) }
     | FALSE              { $$ = BuildBoolConst(false) }
@@ -71,15 +71,13 @@ type :
       TK_STRING_TYPE       { $$ = BuildStringType() }
     | TK_INT_TYPE          { $$ = BuildIntType() }
     | TK_BOOL_TYPE         { $$ = BuildBoolType() }
-    | TK_STRING_ARRAY_TYPE { $$ = BuildArrayOfType(BuildStringType()) }
-    | TK_INT_ARRAY_TYPE    { $$ = BuildArrayOfType(BuildIntType()) }
-    | TK_BOOL_ARRAY_TYPE   { $$ = BuildArrayOfType(BuildBoolType()) }
+    | TK_LEFT_ANGLE_BRACE TK_RIGHT_ANGLE_BRACE type { $$ = BuildArrayOfType($3) }
 ;
 
 typed_expr_list :
-      expr type ',' typed_expr_list { $$ = append([]Expr{BuildTypedExpr($1, $2)}, $4...) }
-    | expr type                     { $$ = []Expr{BuildTypedExpr($1, $2)} }
-    |                               { $$ = []Expr{} }
+      expr TK_COLON type ',' typed_expr_list { $$ = append([]Expr{BuildTypedExpr($1, $3)}, $5...) }
+    | expr TK_COLON type                     { $$ = []Expr{BuildTypedExpr($1, $3)} }
+    |                                        { $$ = []Expr{} }
 ;
 
 expr_list :

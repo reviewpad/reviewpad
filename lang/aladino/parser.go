@@ -36,14 +36,17 @@ const TK_BOOL_TYPE = 57355
 const TK_STRING_ARRAY_TYPE = 57356
 const TK_INT_ARRAY_TYPE = 57357
 const TK_BOOL_ARRAY_TYPE = 57358
-const NUMBER = 57359
-const TRUE = 57360
-const FALSE = 57361
-const TK_OR = 57362
-const TK_AND = 57363
-const TK_EQ = 57364
-const TK_NEQ = 57365
-const TK_NOT = 57366
+const TK_COLON = 57359
+const TK_LEFT_ANGLE_BRACE = 57360
+const TK_RIGHT_ANGLE_BRACE = 57361
+const NUMBER = 57362
+const TRUE = 57363
+const FALSE = 57364
+const TK_OR = 57365
+const TK_AND = 57366
+const TK_EQ = 57367
+const TK_NEQ = 57368
+const TK_NOT = 57369
 
 var AladinoToknames = [...]string{
 	"$end",
@@ -62,6 +65,9 @@ var AladinoToknames = [...]string{
 	"TK_STRING_ARRAY_TYPE",
 	"TK_INT_ARRAY_TYPE",
 	"TK_BOOL_ARRAY_TYPE",
+	"TK_COLON",
+	"TK_LEFT_ANGLE_BRACE",
+	"TK_RIGHT_ANGLE_BRACE",
 	"NUMBER",
 	"TRUE",
 	"FALSE",
@@ -72,8 +78,6 @@ var AladinoToknames = [...]string{
 	"TK_NOT",
 	"'('",
 	"')'",
-	"'['",
-	"']'",
 	"'$'",
 	"','",
 }
@@ -94,81 +98,72 @@ var AladinoExca = [...]int8{
 
 const AladinoPrivate = 57344
 
-const AladinoLast = 106
+const AladinoLast = 90
 
 var AladinoAct = [...]int8{
-	22, 2, 20, 41, 18, 19, 21, 5, 6, 38,
-	8, 48, 40, 37, 24, 25, 26, 27, 28, 17,
-	7, 11, 12, 23, 1, 30, 17, 3, 4, 0,
-	9, 0, 10, 15, 16, 0, 0, 0, 42, 13,
-	15, 16, 46, 0, 45, 17, 43, 44, 31, 32,
-	33, 34, 35, 36, 17, 0, 0, 14, 13, 15,
-	16, 0, 0, 29, 0, 0, 14, 13, 15, 16,
-	0, 0, 0, 0, 17, 0, 39, 31, 32, 33,
-	34, 35, 36, 17, 0, 0, 14, 13, 15, 16,
-	17, 0, 0, 0, 0, 14, 13, 15, 16, 0,
-	0, 47, 14, 13, 15, 16,
+	22, 2, 35, 43, 18, 19, 20, 5, 6, 46,
+	8, 21, 34, 44, 24, 25, 26, 27, 28, 17,
+	32, 9, 31, 7, 11, 12, 23, 1, 0, 0,
+	3, 4, 40, 10, 14, 13, 15, 16, 0, 17,
+	0, 0, 33, 0, 48, 41, 42, 49, 30, 17,
+	47, 36, 37, 38, 14, 13, 15, 16, 39, 17,
+	29, 0, 0, 17, 14, 13, 15, 16, 30, 17,
+	45, 17, 0, 0, 14, 13, 15, 16, 14, 13,
+	15, 16, 0, 0, 0, 13, 15, 16, 15, 16,
 }
 
 var AladinoPact = [...]int16{
-	3, -1000, 82, 3, 3, -1000, -1000, -1000, -1000, 3,
-	17, -1000, -1000, 3, 3, 3, 3, 3, -1000, 37,
-	4, -19, 46, -13, 11, 18, -1000, -1000, -1000, -1000,
-	-27, -1000, -1000, -1000, -1000, -1000, -1000, 3, -1000, 3,
-	3, 3, 75, -1000, -15, -1000, 66, -1000, -1000,
+	3, -1000, 55, 3, 3, -1000, -1000, -1000, -1000, 3,
+	20, -1000, -1000, 3, 3, 3, 3, 3, -1000, 31,
+	13, 1, 11, -16, 63, 61, -1000, -1000, -1000, -1000,
+	40, 3, -1000, 3, 3, -28, -1000, -1000, -1000, -6,
+	41, -1000, -20, 3, 40, -1000, -1000, -1000, 51, -1000,
 }
 
 var AladinoPgo = [...]int8{
-	0, 0, 6, 2, 25, 24,
+	0, 0, 11, 6, 2, 27,
 }
 
 var AladinoR1 = [...]int8{
 	0, 5, 1, 1, 1, 1, 1, 1, 1, 1,
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 4,
-	4, 4, 4, 4, 4, 3, 3, 3, 2, 2,
-	2,
+	4, 4, 4, 3, 3, 3, 2, 2, 2,
 }
 
 var AladinoR2 = [...]int8{
 	0, 1, 2, 3, 3, 3, 3, 3, 3, 1,
 	1, 1, 1, 3, 2, 1, 1, 5, 5, 1,
-	1, 1, 1, 1, 1, 4, 2, 0, 3, 1,
-	0,
+	1, 1, 3, 5, 3, 0, 3, 1, 0,
 }
 
 var AladinoChk = [...]int16{
-	-1000, -5, -1, 24, 25, 4, 5, 17, 7, 27,
-	29, 18, 19, 21, 20, 22, 23, 8, -1, -1,
-	-3, -2, -1, 6, -1, -1, -1, -1, -1, 26,
-	-4, 11, 12, 13, 14, 15, 16, 9, 28, 30,
-	25, 30, -1, -2, -2, -3, -1, 26, 26,
+	-1000, -5, -1, 27, 28, 4, 5, 20, 7, 18,
+	30, 21, 22, 24, 23, 25, 26, 8, -1, -1,
+	-3, -2, -1, 6, -1, -1, -1, -1, -1, 29,
+	17, 9, 19, 31, 28, -4, 11, 12, 13, 18,
+	-1, -2, -2, 31, 19, 29, 29, -3, -1, -4,
 }
 
 var AladinoDef = [...]int8{
-	0, -2, 1, 0, 27, 9, 10, 11, 12, 30,
+	0, -2, 1, 0, 25, 9, 10, 11, 12, 28,
 	0, 15, 16, 0, 0, 0, 0, 0, 2, 0,
-	0, 0, 29, 14, 3, 4, 5, 6, 7, 8,
-	26, 19, 20, 21, 22, 23, 24, 0, 13, 30,
-	30, 27, 0, 28, 0, 25, 0, 18, 17,
+	0, 0, 27, 14, 3, 4, 5, 6, 7, 8,
+	0, 0, 13, 28, 28, 24, 19, 20, 21, 0,
+	0, 26, 0, 25, 0, 18, 17, 23, 0, 22,
 }
 
 var AladinoTok1 = [...]int8{
 	1, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-	3, 3, 3, 3, 3, 3, 29, 3, 3, 3,
-	25, 26, 3, 3, 30, 3, 3, 3, 3, 3,
-	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-	3, 27, 3, 28,
+	3, 3, 3, 3, 3, 3, 30, 3, 3, 3,
+	28, 29, 3, 3, 31,
 }
 
 var AladinoTok2 = [...]int8{
 	2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
 	12, 13, 14, 15, 16, 17, 18, 19, 20, 21,
-	22, 23, 24,
+	22, 23, 24, 25, 26, 27,
 }
 
 var AladinoTok3 = [...]int8{
@@ -616,46 +611,36 @@ Aladinodefault:
 			AladinoVAL.varType = BuildBoolType()
 		}
 	case 22:
-		AladinoDollar = AladinoS[Aladinopt-1 : Aladinopt+1]
+		AladinoDollar = AladinoS[Aladinopt-3 : Aladinopt+1]
 		{
-			AladinoVAL.varType = BuildArrayOfType(BuildStringType())
+			AladinoVAL.varType = BuildArrayOfType(AladinoDollar[3].varType)
 		}
 	case 23:
-		AladinoDollar = AladinoS[Aladinopt-1 : Aladinopt+1]
+		AladinoDollar = AladinoS[Aladinopt-5 : Aladinopt+1]
 		{
-			AladinoVAL.varType = BuildArrayOfType(BuildIntType())
+			AladinoVAL.astList = append([]Expr{BuildTypedExpr(AladinoDollar[1].ast, AladinoDollar[3].varType)}, AladinoDollar[5].astList...)
 		}
 	case 24:
-		AladinoDollar = AladinoS[Aladinopt-1 : Aladinopt+1]
+		AladinoDollar = AladinoS[Aladinopt-3 : Aladinopt+1]
 		{
-			AladinoVAL.varType = BuildArrayOfType(BuildBoolType())
+			AladinoVAL.astList = []Expr{BuildTypedExpr(AladinoDollar[1].ast, AladinoDollar[3].varType)}
 		}
 	case 25:
-		AladinoDollar = AladinoS[Aladinopt-4 : Aladinopt+1]
-		{
-			AladinoVAL.astList = append([]Expr{BuildTypedExpr(AladinoDollar[1].ast, AladinoDollar[2].varType)}, AladinoDollar[4].astList...)
-		}
-	case 26:
-		AladinoDollar = AladinoS[Aladinopt-2 : Aladinopt+1]
-		{
-			AladinoVAL.astList = []Expr{BuildTypedExpr(AladinoDollar[1].ast, AladinoDollar[2].varType)}
-		}
-	case 27:
 		AladinoDollar = AladinoS[Aladinopt-0 : Aladinopt+1]
 		{
 			AladinoVAL.astList = []Expr{}
 		}
-	case 28:
+	case 26:
 		AladinoDollar = AladinoS[Aladinopt-3 : Aladinopt+1]
 		{
 			AladinoVAL.astList = append([]Expr{AladinoDollar[1].ast}, AladinoDollar[3].astList...)
 		}
-	case 29:
+	case 27:
 		AladinoDollar = AladinoS[Aladinopt-1 : Aladinopt+1]
 		{
 			AladinoVAL.astList = []Expr{AladinoDollar[1].ast}
 		}
-	case 30:
+	case 28:
 		AladinoDollar = AladinoS[Aladinopt-0 : Aladinopt+1]
 		{
 			AladinoVAL.astList = []Expr{}
