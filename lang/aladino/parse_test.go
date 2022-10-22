@@ -149,12 +149,14 @@ func TestParse(t *testing.T) {
 			),
 		},
 		"multi parameter lambda": {
-			input: `($a: []Int, $b: []Bool, $c: []String => $concat($a, $b, $c))`,
+			input: `($a: []Int, $b: []Bool, $c: []String, $d: Func(String) String, $e: Func(Int) String  => $concat($a, $b, $c))`,
 			wantExpr: BuildLambda(
 				[]Expr{
 					BuildTypedExpr(BuildVariable("a"), BuildArrayOfType(BuildIntType())),
 					BuildTypedExpr(BuildVariable("b"), BuildArrayOfType(BuildBoolType())),
 					BuildTypedExpr(BuildVariable("c"), BuildArrayOfType(BuildStringType())),
+					BuildTypedExpr(BuildVariable("d"), BuildFunctionType([]Type{BuildStringType()}, BuildStringType())),
+					BuildTypedExpr(BuildVariable("e"), BuildFunctionType([]Type{BuildIntType()}, BuildStringType())),
 				},
 				BuildFunctionCall(
 					BuildVariable("concat"),
@@ -426,6 +428,252 @@ func TestParse(t *testing.T) {
 			wantExpr: BuildLambda(
 				[]Expr{
 					BuildTypedExpr(BuildVariable("a"), BuildArrayOfType(BuildArrayOfType(BuildArrayOfType(BuildBoolType())))),
+				},
+				BuildFunctionCall(
+					BuildVariable("length"),
+					[]Expr{
+						BuildVariable("a"),
+					},
+				),
+			),
+		},
+		"function typed expression lambda": {
+			input: `($a: Func(Int, String) String, $b: Func(Int) Int => $a(1, "a") > $b(2))`,
+			wantExpr: BuildLambda(
+				[]Expr{
+					BuildTypedExpr(BuildVariable("a"), BuildFunctionType([]Type{BuildIntType(), BuildStringType()}, BuildStringType())),
+					BuildTypedExpr(BuildVariable("b"), BuildFunctionType([]Type{BuildIntType()}, BuildIntType())),
+				},
+				BuildBinaryOp(
+					BuildFunctionCall(BuildVariable("a"), []Expr{BuildIntConst(1), BuildStringConst("a")}),
+					greaterThanOperator(),
+					BuildFunctionCall(BuildVariable("b"), []Expr{BuildIntConst(2)}),
+				),
+			),
+		},
+		"array of func(string) string lambda": {
+			input: `($a: []Func(String) String => $length($a))`,
+			wantExpr: BuildLambda(
+				[]Expr{
+					BuildTypedExpr(BuildVariable("a"), BuildArrayOfType(BuildFunctionType([]Type{BuildStringType()}, BuildStringType()))),
+				},
+				BuildFunctionCall(
+					BuildVariable("length"),
+					[]Expr{
+						BuildVariable("a"),
+					},
+				),
+			),
+		},
+		"array of func(string) int lambda": {
+			input: `($a: []Func(String) Int => $length($a))`,
+			wantExpr: BuildLambda(
+				[]Expr{
+					BuildTypedExpr(BuildVariable("a"), BuildArrayOfType(BuildFunctionType([]Type{BuildStringType()}, BuildIntType()))),
+				},
+				BuildFunctionCall(
+					BuildVariable("length"),
+					[]Expr{
+						BuildVariable("a"),
+					},
+				),
+			),
+		},
+		"array of func(string) bool lambda": {
+			input: `($a: []Func(String) Bool => $length($a))`,
+			wantExpr: BuildLambda(
+				[]Expr{
+					BuildTypedExpr(BuildVariable("a"), BuildArrayOfType(BuildFunctionType([]Type{BuildStringType()}, BuildBoolType()))),
+				},
+				BuildFunctionCall(
+					BuildVariable("length"),
+					[]Expr{
+						BuildVariable("a"),
+					},
+				),
+			),
+		},
+		"array of func(string) func(string) string lambda": {
+			input: `($a: []Func(String) Func(String) String => $length($a))`,
+			wantExpr: BuildLambda(
+				[]Expr{
+					BuildTypedExpr(
+						BuildVariable("a"),
+						BuildArrayOfType(
+							BuildFunctionType(
+								[]Type{BuildStringType()},
+								BuildFunctionType(
+									[]Type{BuildStringType()},
+									BuildStringType(),
+								),
+							),
+						),
+					),
+				},
+				BuildFunctionCall(
+					BuildVariable("length"),
+					[]Expr{
+						BuildVariable("a"),
+					},
+				),
+			),
+		},
+		"array of func(string) func(string) int lambda": {
+			input: `($a: []Func(String) Func(String) Int => $length($a))`,
+			wantExpr: BuildLambda(
+				[]Expr{
+					BuildTypedExpr(
+						BuildVariable("a"),
+						BuildArrayOfType(
+							BuildFunctionType(
+								[]Type{BuildStringType()},
+								BuildFunctionType(
+									[]Type{BuildStringType()},
+									BuildIntType(),
+								),
+							),
+						),
+					),
+				},
+				BuildFunctionCall(
+					BuildVariable("length"),
+					[]Expr{
+						BuildVariable("a"),
+					},
+				),
+			),
+		},
+		"array of func(string) func(string) bool lambda": {
+			input: `($a: []Func(String) Func(String) Bool => $length($a))`,
+			wantExpr: BuildLambda(
+				[]Expr{
+					BuildTypedExpr(
+						BuildVariable("a"),
+						BuildArrayOfType(
+							BuildFunctionType(
+								[]Type{BuildStringType()},
+								BuildFunctionType(
+									[]Type{BuildStringType()},
+									BuildBoolType(),
+								),
+							),
+						),
+					),
+				},
+				BuildFunctionCall(
+					BuildVariable("length"),
+					[]Expr{
+						BuildVariable("a"),
+					},
+				),
+			),
+		},
+		"array of func(int) string lambda": {
+			input: `($a: []Func(Int) String => $length($a))`,
+			wantExpr: BuildLambda(
+				[]Expr{
+					BuildTypedExpr(BuildVariable("a"), BuildArrayOfType(BuildFunctionType([]Type{BuildIntType()}, BuildStringType()))),
+				},
+				BuildFunctionCall(
+					BuildVariable("length"),
+					[]Expr{
+						BuildVariable("a"),
+					},
+				),
+			),
+		},
+		"array of func(int) int lambda": {
+			input: `($a: []Func(Int) Int => $length($a))`,
+			wantExpr: BuildLambda(
+				[]Expr{
+					BuildTypedExpr(BuildVariable("a"), BuildArrayOfType(BuildFunctionType([]Type{BuildIntType()}, BuildIntType()))),
+				},
+				BuildFunctionCall(
+					BuildVariable("length"),
+					[]Expr{
+						BuildVariable("a"),
+					},
+				),
+			),
+		},
+		"array of func(int) bool lambda": {
+			input: `($a: []Func(Int) Bool => $length($a))`,
+			wantExpr: BuildLambda(
+				[]Expr{
+					BuildTypedExpr(BuildVariable("a"), BuildArrayOfType(BuildFunctionType([]Type{BuildIntType()}, BuildBoolType()))),
+				},
+				BuildFunctionCall(
+					BuildVariable("length"),
+					[]Expr{
+						BuildVariable("a"),
+					},
+				),
+			),
+		},
+		"array of func(bool) string lambda": {
+			input: `($a: []Func(Bool) String => $length($a))`,
+			wantExpr: BuildLambda(
+				[]Expr{
+					BuildTypedExpr(BuildVariable("a"), BuildArrayOfType(BuildFunctionType([]Type{BuildBoolType()}, BuildStringType()))),
+				},
+				BuildFunctionCall(
+					BuildVariable("length"),
+					[]Expr{
+						BuildVariable("a"),
+					},
+				),
+			),
+		},
+		"array of func(bool) int lambda": {
+			input: `($a: []Func(Bool) Int => $length($a))`,
+			wantExpr: BuildLambda(
+				[]Expr{
+					BuildTypedExpr(BuildVariable("a"), BuildArrayOfType(BuildFunctionType([]Type{BuildBoolType()}, BuildIntType()))),
+				},
+				BuildFunctionCall(
+					BuildVariable("length"),
+					[]Expr{
+						BuildVariable("a"),
+					},
+				),
+			),
+		},
+		"array of func(bool) bool lambda": {
+			input: `($a: []Func(Bool) Bool => $length($a))`,
+			wantExpr: BuildLambda(
+				[]Expr{
+					BuildTypedExpr(BuildVariable("a"), BuildArrayOfType(BuildFunctionType([]Type{BuildBoolType()}, BuildBoolType()))),
+				},
+				BuildFunctionCall(
+					BuildVariable("length"),
+					[]Expr{
+						BuildVariable("a"),
+					},
+				),
+			),
+		},
+		"nested array of func(string) string lambda": {
+			input: `($a: [][]Func(String) String => $length($a))`,
+			wantExpr: BuildLambda(
+				[]Expr{
+					BuildTypedExpr(BuildVariable("a"), BuildArrayOfType(BuildArrayOfType(BuildFunctionType([]Type{BuildStringType()}, BuildStringType())))),
+				},
+				BuildFunctionCall(
+					BuildVariable("length"),
+					[]Expr{
+						BuildVariable("a"),
+					},
+				),
+			),
+		},
+		"func(func(string) string) func(string) int lambda": {
+			input: `($a: Func(Func(String) String) Func(String) Int => $length($a))`,
+			wantExpr: BuildLambda(
+				[]Expr{
+					BuildTypedExpr(BuildVariable("a"), BuildFunctionType(
+						[]Type{BuildFunctionType([]Type{BuildStringType()}, BuildStringType())},
+						BuildFunctionType([]Type{BuildStringType()}, BuildIntType()),
+					)),
 				},
 				BuildFunctionCall(
 					BuildVariable("length"),

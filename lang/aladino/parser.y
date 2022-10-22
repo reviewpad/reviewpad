@@ -21,6 +21,7 @@ func setAST(l AladinoLexer, root Expr) {
     astList []Expr
     bool bool
     varType Type
+    varTypeList []Type
 }
 
 // any non-terminal which returns a value needs a type, which is
@@ -28,9 +29,10 @@ func setAST(l AladinoLexer, root Expr) {
 %type <ast> expr
 %type <astList> expr_list typed_expr_list
 %type <varType> type
+%type <varTypeList> type_list
 
 // same for terminals
-%token <str> TIMESTAMP RELATIVETIMESTAMP IDENTIFIER STRINGLITERAL TK_CMPOP TK_LAMBDA TK_TYPE TK_STRING_TYPE TK_INT_TYPE TK_BOOL_TYPE TK_STRING_ARRAY_TYPE TK_INT_ARRAY_TYPE TK_BOOL_ARRAY_TYPE TK_COLON TK_LEFT_ANGLE_BRACE TK_RIGHT_ANGLE_BRACE
+%token <str> TIMESTAMP RELATIVETIMESTAMP IDENTIFIER STRINGLITERAL TK_CMPOP TK_LAMBDA TK_TYPE TK_STRING_TYPE TK_INT_TYPE TK_BOOL_TYPE TK_STRING_ARRAY_TYPE TK_INT_ARRAY_TYPE TK_BOOL_ARRAY_TYPE TK_FUNCTION_TYPE
 %token <int> NUMBER
 %token <bool> TRUE
 %token <bool> FALSE
@@ -58,7 +60,7 @@ expr :
     | RELATIVETIMESTAMP  { $$ = BuildRelativeTimeConst($1) }
     | NUMBER             { $$ = BuildIntConst($1) }
     | STRINGLITERAL      { $$ = BuildStringConst($1) }
-    | TK_LEFT_ANGLE_BRACE expr_list TK_RIGHT_ANGLE_BRACE { $$ = BuildArray($2) }
+    | '[' expr_list ']'  { $$ = BuildArray($2) }
     | '$' IDENTIFIER     { $$ = BuildVariable($2) }
     | TRUE               { $$ = BuildBoolConst(true) }
     | FALSE              { $$ = BuildBoolConst(false) }
@@ -71,13 +73,19 @@ type :
       TK_STRING_TYPE       { $$ = BuildStringType() }
     | TK_INT_TYPE          { $$ = BuildIntType() }
     | TK_BOOL_TYPE         { $$ = BuildBoolType() }
-    | TK_LEFT_ANGLE_BRACE TK_RIGHT_ANGLE_BRACE type { $$ = BuildArrayOfType($3) }
+    | '[' ']' type { $$ = BuildArrayOfType($3) }
+    | TK_FUNCTION_TYPE '(' type_list ')' type { $$ = BuildFunctionType($3, $5) }
+;
+
+type_list :
+      type ',' type_list { $$ = append([]Type{$1}, $3...) }
+    | type               { $$ = []Type{$1} }
 ;
 
 typed_expr_list :
-      expr TK_COLON type ',' typed_expr_list { $$ = append([]Expr{BuildTypedExpr($1, $3)}, $5...) }
-    | expr TK_COLON type                     { $$ = []Expr{BuildTypedExpr($1, $3)} }
-    |                                        { $$ = []Expr{} }
+      expr ':' type ',' typed_expr_list { $$ = append([]Expr{BuildTypedExpr($1, $3)}, $5...) }
+    | expr ':' type                     { $$ = []Expr{BuildTypedExpr($1, $3)} }
+    |                                   { $$ = []Expr{} }
 ;
 
 expr_list :

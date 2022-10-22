@@ -63,21 +63,6 @@ var tokens = []tokenDef{
 		token: FALSE,
 	},
 	{
-		regex: regexp.MustCompile(`^:*`),
-		kind:  "symbol",
-		token: TK_COLON,
-	},
-	{
-		regex: regexp.MustCompile(`^\[*`),
-		kind:  "symbol",
-		token: TK_LEFT_ANGLE_BRACE,
-	},
-	{
-		regex: regexp.MustCompile(`^\]*`),
-		kind:  "symbol",
-		token: TK_RIGHT_ANGLE_BRACE,
-	},
-	{
 		regex: regexp.MustCompile(`^String*`),
 		kind:  "type",
 		token: TK_STRING_TYPE,
@@ -91,6 +76,11 @@ var tokens = []tokenDef{
 		regex: regexp.MustCompile(`^Bool*`),
 		kind:  "type",
 		token: TK_BOOL_TYPE,
+	},
+	{
+		regex: regexp.MustCompile(`^Func*`),
+		kind:  "type",
+		token: TK_FUNCTION_TYPE,
 	},
 	{
 		regex: regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9]*`),
