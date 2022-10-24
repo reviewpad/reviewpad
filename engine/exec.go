@@ -118,9 +118,16 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 			matches := r.FindAllStringSubmatch(env.TargetEntity.Comment, 1)
 
 			if len(matches) == 1 {
-				if err := command(file, matches[0]); err != nil {
+				rule, workflow, err := command(matches[0])
+				if err != nil {
 					return nil, err
 				}
+
+				file.Rules = append(file.Rules, *rule)
+
+				file.Workflows = append(file.Workflows, *workflow)
+
+				break
 			}
 		}
 	}
