@@ -112,6 +112,19 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 		}
 	}
 
+	// process commands
+	if env.TargetEntity.EventName == "issue_comment" {
+		for r, command := range commands {
+			matches := r.FindAllStringSubmatch(env.TargetEntity.Comment, 1)
+
+			if len(matches) == 1 {
+				if err := command(file, matches[0]); err != nil {
+					return nil, err
+				}
+			}
+		}
+	}
+
 	// process groups
 	for _, group := range file.Groups {
 		err := interpreter.ProcessGroup(group.Name, GroupKind(group.Kind), GroupType(group.Type), group.Spec, group.Param, group.Where)
