@@ -36,32 +36,32 @@ type Interpreter interface {
 }
 
 type Env struct {
-	Ctx               context.Context
-	DryRun            bool
-	GithubActionActor *github.User
-	GithubClient      *gh.GithubClient
-	Collector         collector.Collector
-	Interpreter       Interpreter
-	TargetEntity      *handler.TargetEntity
+	Ctx              context.Context
+	DryRun           bool
+	GithubBotAccount *github.User
+	GithubClient     *gh.GithubClient
+	Collector        collector.Collector
+	Interpreter      Interpreter
+	TargetEntity     *handler.TargetEntity
 }
 
 func NewEvalEnv(
 	ctx context.Context,
 	dryRun bool,
-	githubActionActor *github.User,
+	githubBotAccount *github.User,
 	githubClient *gh.GithubClient,
 	collector collector.Collector,
 	targetEntity *handler.TargetEntity,
 	interpreter Interpreter,
 ) (*Env, error) {
 	input := &Env{
-		Ctx:               ctx,
-		DryRun:            dryRun,
-		GithubActionActor: githubActionActor,
-		GithubClient:      githubClient,
-		Collector:         collector,
-		Interpreter:       interpreter,
-		TargetEntity:      targetEntity,
+		Ctx:              ctx,
+		DryRun:           dryRun,
+		GithubBotAccount: githubBotAccount,
+		GithubClient:     githubClient,
+		Collector:        collector,
+		Interpreter:      interpreter,
+		TargetEntity:     targetEntity,
 	}
 
 	return input, nil

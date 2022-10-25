@@ -6,7 +6,6 @@ package plugins_aladino_actions
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/reviewpad/reviewpad/v3/codehost"
 	"github.com/reviewpad/reviewpad/v3/codehost/github/target"
@@ -24,9 +23,7 @@ func Review() *aladino.BuiltInAction {
 
 func reviewCode(e aladino.Env, args []aladino.Value) error {
 	t := e.GetTarget().(*target.PullRequestTarget)
-	log.Printf("ACTION ACTOR2: %+v", *e.GetGithubActionActor())
 	actionActorLogin := e.GetGithubActionActor().GetLogin()
-	log.Printf("%+v", actionActorLogin)
 
 	reviewEvent, err := parseReviewEvent(args[0].(*aladino.StringValue).Val)
 	if err != nil {
@@ -47,7 +44,6 @@ func reviewCode(e aladino.Env, args []aladino.Value) error {
 			return nil
 		}
 
-		log.Printf("%+v", t.PullRequest.GetUpdatedAt())
 		if lastReview.SubmittedAt.After(t.PullRequest.GetUpdatedAt()) {
 			return nil
 		}

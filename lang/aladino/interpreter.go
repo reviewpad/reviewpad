@@ -199,14 +199,14 @@ func (i *Interpreter) Report(mode string, safeMode bool) error {
 func NewInterpreter(
 	ctx context.Context,
 	dryRun bool,
-	githubActionActor *github.User,
+	githubBotAccount *github.User,
 	githubClient *gh.GithubClient,
 	collector collector.Collector,
 	targetEntity *handler.TargetEntity,
 	eventPayload interface{},
 	builtIns *BuiltIns,
 ) (engine.Interpreter, error) {
-	evalEnv, err := NewEvalEnv(ctx, dryRun, githubActionActor, githubClient, collector, targetEntity, eventPayload, builtIns)
+	evalEnv, err := NewEvalEnv(ctx, dryRun, githubBotAccount, githubClient, collector, targetEntity, eventPayload, builtIns)
 	if err != nil {
 		return nil, err
 	}
