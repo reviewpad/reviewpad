@@ -739,7 +739,7 @@ func TestNewInterpreter(t *testing.T) {
 	gotInterpreter, err := NewInterpreter(
 		mockedEnv.GetCtx(),
 		mockedEnv.GetDryRun(),
-		mockedEnv.GetGithubActionActor(),
+		mockedEnv.GetGithubBotAccount(),
 		mockedEnv.GetGithubClient(),
 		mockedEnv.GetCollector(),
 		DefaultMockTargetEntity,

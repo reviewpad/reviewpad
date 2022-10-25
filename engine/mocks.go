@@ -34,7 +34,7 @@ var DefaultMockTargetEntity = &handler.TargetEntity{
 	Kind:   handler.PullRequest,
 }
 var DefaultBotAccount = &github.User{
-	Name: github.String("bot-account"),
+	Login: github.String("bot-account"),
 }
 
 func GetDefaultMockPullRequestDetails() *github.PullRequest {
