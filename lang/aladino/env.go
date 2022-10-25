@@ -31,7 +31,7 @@ type RegisterMap map[string]Value
 type Env interface {
 	GetBuiltIns() *BuiltIns
 	GetBuiltInsReportedMessages() map[Severity][]string
-	GetGithubActionActor() *github.User
+	GetGithubBotAccount() *github.User
 	GetGithubClient() *gh.GithubClient
 	GetCollector() collector.Collector
 	GetCtx() context.Context
@@ -64,7 +64,7 @@ func (e *BaseEnv) GetBuiltInsReportedMessages() map[Severity][]string {
 	return e.BuiltInsReportedMessages
 }
 
-func (e *BaseEnv) GetGithubActionActor() *github.User {
+func (e *BaseEnv) GetGithubBotAccount() *github.User {
 	return e.GithubBotAccount
 }
 
