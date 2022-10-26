@@ -26,8 +26,47 @@ type ReviewRequestPostBody struct {
 	Body  string `json:"body"`
 }
 
+func TestReview_WhenGetAuthenticatedUserRequestFails(t *testing.T) {
+	failMessage := "GetAuthenticatedUserRequestFail"
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
+		[]mock.MockBackendOption{
+			mock.WithRequestMatchHandler(
+				mock.GetUser,
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					mock.WriteError(
+						w,
+						http.StatusInternalServerError,
+						failMessage,
+					)
+				}),
+			),
+		},
+		nil,
+		aladino.MockBuiltIns(),
+		nil,
+	)
+
+	args := []aladino.Value{aladino.BuildStringValue("APPROVE"), aladino.BuildStringValue("some comment")}
+	err := review(mockedEnv, args)
+
+	assert.Equal(t, failMessage, err.(*github.ErrorResponse).Message)
+}
+
 func TestReview_WhenReviewMethodIsUnsupported(t *testing.T) {
-	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
+	mockedEnv := aladino.MockDefaultEnv(t,
+		[]mock.MockBackendOption{
+			mock.WithRequestMatch(
+				mock.GetUser,
+				&github.User{
+					Login: github.String("bot-account"),
+				},
+			),
+		},
+		nil,
+		aladino.MockBuiltIns(),
+		nil,
+	)
 
 	args := []aladino.Value{aladino.BuildStringValue("INVALID"), aladino.BuildStringValue("some comment")}
 	err := review(mockedEnv, args)
@@ -40,6 +79,12 @@ func TestReview_WhenListReviewsRequestFails(t *testing.T) {
 	mockedEnv := aladino.MockDefaultEnv(
 		t,
 		[]mock.MockBackendOption{
+			mock.WithRequestMatch(
+				mock.GetUser,
+				&github.User{
+					Login: github.String("bot-account"),
+				},
+			),
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
 				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -85,6 +130,12 @@ func TestReview_WhenBodyIsNotEmpty(t *testing.T) {
 		mockedEnv := aladino.MockDefaultEnv(
 			t,
 			[]mock.MockBackendOption{
+				mock.WithRequestMatch(
+					mock.GetUser,
+					&github.User{
+						Login: github.String("bot-account"),
+					},
+				),
 				mock.WithRequestMatch(
 					mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
 					[]*github.PullRequestReview{},
@@ -143,6 +194,12 @@ func TestReview_WhenBodyIsEmpty(t *testing.T) {
 				t,
 				[]mock.MockBackendOption{
 					mock.WithRequestMatch(
+						mock.GetUser,
+						&github.User{
+							Login: github.String("bot-account"),
+						},
+					),
+					mock.WithRequestMatch(
 						mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
 						[]*github.PullRequestReview{},
 					),
@@ -188,6 +245,12 @@ func TestReview_WhenPreviousAutomaticReviewWasMade(t *testing.T) {
 			inputReviewEvent: "APPROVE",
 			clientOptions: []mock.MockBackendOption{
 				mock.WithRequestMatch(
+					mock.GetUser,
+					&github.User{
+						Login: github.String("bot-account"),
+					},
+				),
+				mock.WithRequestMatch(
 					mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
 					[]*github.PullRequestReview{
 						{
@@ -207,6 +270,12 @@ func TestReview_WhenPreviousAutomaticReviewWasMade(t *testing.T) {
 		"when last review event was REQUEST_CHANGES and the pull request has updates since then": {
 			inputReviewEvent: "APPROVE",
 			clientOptions: []mock.MockBackendOption{
+				mock.WithRequestMatch(
+					mock.GetUser,
+					&github.User{
+						Login: github.String("bot-account"),
+					},
+				),
 				mock.WithRequestMatch(
 					mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
 					[]*github.PullRequestReview{
@@ -228,6 +297,12 @@ func TestReview_WhenPreviousAutomaticReviewWasMade(t *testing.T) {
 			inputReviewEvent: "APPROVE",
 			clientOptions: []mock.MockBackendOption{
 				mock.WithRequestMatch(
+					mock.GetUser,
+					&github.User{
+						Login: github.String("bot-account"),
+					},
+				),
+				mock.WithRequestMatch(
 					mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
 					[]*github.PullRequestReview{
 						{
@@ -248,6 +323,12 @@ func TestReview_WhenPreviousAutomaticReviewWasMade(t *testing.T) {
 			inputReviewEvent: "APPROVE",
 			clientOptions: []mock.MockBackendOption{
 				mock.WithRequestMatch(
+					mock.GetUser,
+					&github.User{
+						Login: github.String("bot-account"),
+					},
+				),
+				mock.WithRequestMatch(
 					mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
 					[]*github.PullRequestReview{
 						{
@@ -267,6 +348,12 @@ func TestReview_WhenPreviousAutomaticReviewWasMade(t *testing.T) {
 		"when last review event was COMMENT and the pull request has no updates since then": {
 			inputReviewEvent: "APPROVE",
 			clientOptions: []mock.MockBackendOption{
+				mock.WithRequestMatch(
+					mock.GetUser,
+					&github.User{
+						Login: github.String("bot-account"),
+					},
+				),
 				mock.WithRequestMatch(
 					mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
 					[]*github.PullRequestReview{
@@ -292,6 +379,12 @@ func TestReview_WhenPreviousAutomaticReviewWasMade(t *testing.T) {
 			t,
 			append(
 				[]mock.MockBackendOption{
+					mock.WithRequestMatch(
+						mock.GetUser,
+						&github.User{
+							Login: github.String("bot-account"),
+						},
+					),
 					mock.WithRequestMatchHandler(
 						mock.GetReposPullsByOwnerByRepoByPullNumber,
 						http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
