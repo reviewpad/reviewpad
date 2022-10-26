@@ -16,7 +16,6 @@ import (
 func TestAssignReviewer(t *testing.T) {
 	testCases := map[string]struct {
 		matches     []string
-		wantRule    *engine.PadRule
 		wantActions []string
 		wantErr     error
 	}{
@@ -46,46 +45,43 @@ func TestAssignReviewer(t *testing.T) {
 				"",
 				"",
 			},
-			wantRule: &engine.PadRule{
-				Spec: "true",
-			},
 			wantActions: []string{`$assignReviewer(["john"], 1, "reviewpad")`},
 		},
 		"when missing policy": {
 			matches: []string{
-				"/reviewpad assign-reviewer john-123, jane 1",
+				"/reviewpad assign-reviewers john-123, jane 1",
 				"john-123, jane",
 				"1",
 				"",
 			},
-			wantRule: &engine.PadRule{
-				Spec: "true",
-			},
 			wantActions: []string{`$assignReviewer(["john-123","jane"], 1, "reviewpad")`},
 		},
-		"when only one reviewer is provided.": {
+		"when only one reviewer is provided": {
 			matches: []string{
-				"/reviewpad assign-reviewer john-123-jane 1 reviewpad",
+				"/reviewpad assign-reviewers john-123-jane 1 reviewpad",
 				"john-123-jane",
 				"1",
 				"reviewpad",
 			},
-			wantRule: &engine.PadRule{
-				Spec: "true",
-			},
 			wantActions: []string{`$assignReviewer(["john-123-jane"], 1, "reviewpad")`},
 		},
-		"when only two reviewers is provided.": {
+		"when only two reviewers is provided": {
 			matches: []string{
-				"/reviewpad assign-reviewer jane, john 2 random",
+				"/reviewpad assign-reviewers jane, john 2 random",
 				"jane, john",
 				"2",
 				"random",
 			},
-			wantRule: &engine.PadRule{
-				Spec: "true",
-			},
 			wantActions: []string{`$assignReviewer(["jane","john"], 2, "random")`},
+		},
+		"when number of provided reviewers is greater than requested reviewers": {
+			matches: []string{
+				"/reviewpad assign-reviewers jane, john 1 reviewpad",
+				"jane, john",
+				"1",
+				"reviewpad",
+			},
+			wantActions: []string{`$assignReviewer(["jane","john"], 1, "reviewpad")`},
 		},
 	}
 
