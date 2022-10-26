@@ -41,13 +41,9 @@ func hasRequiredApprovalsCode(e aladino.Env, args []aladino.Value) (aladino.Valu
 		if contains(approvedBy, requiredApproval.(*aladino.StringValue).Val) {
 			totalApprovedReviews++
 		}
-
-		if totalApprovedReviews == totalRequiredApprovals {
-			return aladino.BuildBoolValue(true), nil
-		}
 	}
 
-	return aladino.BuildBoolValue(false), nil
+	return aladino.BuildBoolValue(totalApprovedReviews >= totalRequiredApprovals), nil
 }
 
 func getUserLoginsFromApprovals(pullRequest *target.PullRequestTarget) ([]string, error) {
