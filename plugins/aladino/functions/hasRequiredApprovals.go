@@ -10,14 +10,20 @@ import (
 
 func HasRequiredApprovals() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildIntType(), aladino.BuildArrayOfType(aladino.BuildStringType())}, aladino.BuildBoolType()),
+		Type: aladino.BuildFunctionType(
+			[]aladino.Type{
+				aladino.BuildIntType(),
+				aladino.BuildArrayOfType(aladino.BuildStringType()),
+			},
+			aladino.BuildBoolType(),
+		),
 		Code:           hasRequiredApprovalsCode,
 		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest},
 	}
 }
 
 func hasRequiredApprovalsCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
-	target := e.GetTarget().(*target.PullRequestTarget)
+	pullRequest := e.GetTarget().(*target.PullRequestTarget)
 	totalRequiredApprovals := args[0].(*aladino.IntValue).Val
 	requiredApprovalsFrom := args[1].(*aladino.ArrayValue).Vals
 
@@ -25,18 +31,18 @@ func hasRequiredApprovalsCode(e aladino.Env, args []aladino.Value) (aladino.Valu
 		return nil, fmt.Errorf("hasRequiredApprovals: the number of required approvals exceeds the number of members from the given list of required approvals")
 	}
 
-	approvedBy, err := getApprovals(target)
+	approvedBy, err := getUserLoginsFromApprovals(pullRequest)
 	if err != nil {
 		return nil, err
 	}
 
-	var requiredApprovalsCount int
+	totalApprovedReviews := 0
 	for _, requiredApproval := range requiredApprovalsFrom {
 		if contains(approvedBy, requiredApproval.(*aladino.StringValue).Val) {
-			requiredApprovalsCount++
+			totalApprovedReviews++
 		}
 
-		if requiredApprovalsCount == totalRequiredApprovals {
+		if totalApprovedReviews == totalRequiredApprovals {
 			return aladino.BuildBoolValue(true), nil
 		}
 	}
@@ -44,7 +50,7 @@ func hasRequiredApprovalsCode(e aladino.Env, args []aladino.Value) (aladino.Valu
 	return aladino.BuildBoolValue(false), nil
 }
 
-func getApprovals(pullRequest *target.PullRequestTarget) ([]string, error) {
+func getUserLoginsFromApprovals(pullRequest *target.PullRequestTarget) ([]string, error) {
 	reviews, err := pullRequest.GetReviews()
 	if err != nil {
 		return nil, err
