@@ -16,109 +16,109 @@ import (
 
 func TestAssignReviewer(t *testing.T) {
 	testCases := map[string]struct {
-		matches  []string
-		rule     *engine.PadRule
-		workflow *engine.PadWorkflow
-		err      error
+		matches      []string
+		wantRule     *engine.PadRule
+		wantWorkflow *engine.PadWorkflow
+		wantErr      error
 	}{
 		"when arguments are empty": {
 			matches: []string{},
-			err:     errors.New("invalid assign reviewer command"),
+			wantErr: errors.New("invalid assign reviewer command"),
 		},
 		"when invalid number of arguments": {
 			matches: []string{
-				"/reviewpad assign-reviewer marcelosousa, shay2025 2",
+				"/reviewpad assign-reviewers",
 			},
-			err: errors.New("invalid assign reviewer command"),
+			wantErr: errors.New("invalid assign reviewer command"),
 		},
 		"when number of reviewers is not a number": {
 			matches: []string{
-				"/reviewpad assign-reviewer marcelosousa, shay2025 z random",
+				"/reviewpad assign-reviewers marcelosousa, shay2025 z random",
 				"marcelosousa, shay2025",
 				"z",
 				"random",
 			},
-			err: &strconv.NumError{Func: "Atoi", Num: "z", Err: errors.New("invalid syntax")},
+			wantErr: &strconv.NumError{Func: "Atoi", Num: "z", Err: errors.New("invalid syntax")},
 		},
-		"when missing number of reviewers and strategy": {
+		"when missing number of reviewers and policy": {
 			matches: []string{
-				"/reviewpad assign-reviewer marcelosousa",
+				"/reviewpad assign-reviewers marcelosousa",
 				"marcelosousa",
 			},
-			rule: &engine.PadRule{
+			wantRule: &engine.PadRule{
 				Spec: "true",
 			},
-			workflow: &engine.PadWorkflow{
+			wantWorkflow: &engine.PadWorkflow{
 				On:          []handler.TargetEntityKind{handler.PullRequest},
 				Description: "assign reviewer command",
 				Rules: []engine.PadWorkflowRule{
 					{
-						Rule: "assign-reviewer",
+						Rule: "assign-reviewer-command",
 					},
 				},
 				AlwaysRun: true,
 				Actions:   []string{`$assignReviewer(["marcelosousa"], 1, "reviewpad")`},
 			},
 		},
-		"when missing number of strategy": {
+		"when missing policy": {
 			matches: []string{
 				"/reviewpad assign-reviewer marcelosousa, shay2025 1",
 				"marcelosousa, shay2025",
 				"1",
 			},
-			rule: &engine.PadRule{
+			wantRule: &engine.PadRule{
 				Spec: "true",
 			},
-			workflow: &engine.PadWorkflow{
+			wantWorkflow: &engine.PadWorkflow{
 				On:          []handler.TargetEntityKind{handler.PullRequest},
 				Description: "assign reviewer command",
 				Rules: []engine.PadWorkflowRule{
 					{
-						Rule: "assign-reviewer",
+						Rule: "assign-reviewer-command",
 					},
 				},
 				AlwaysRun: true,
 				Actions:   []string{`$assignReviewer(["marcelosousa","shay2025"], 1, "reviewpad")`},
 			},
 		},
-		"when one reviewer": {
+		"when only one reviewer is provided.": {
 			matches: []string{
 				"/reviewpad assign-reviewer marcelosousa 1 reviewpad",
 				"marcelosousa",
 				"1",
 				"reviewpad",
 			},
-			rule: &engine.PadRule{
+			wantRule: &engine.PadRule{
 				Spec: "true",
 			},
-			workflow: &engine.PadWorkflow{
+			wantWorkflow: &engine.PadWorkflow{
 				On:          []handler.TargetEntityKind{handler.PullRequest},
 				Description: "assign reviewer command",
 				Rules: []engine.PadWorkflowRule{
 					{
-						Rule: "assign-reviewer",
+						Rule: "assign-reviewer-command",
 					},
 				},
 				AlwaysRun: true,
 				Actions:   []string{`$assignReviewer(["marcelosousa"], 1, "reviewpad")`},
 			},
 		},
-		"when two reviewer": {
+		"when only two reviewers is provided.": {
 			matches: []string{
 				"/reviewpad assign-reviewer marcelosousa, shay2025 2 random",
 				"marcelosousa, shay2025",
 				"2",
 				"random",
 			},
-			rule: &engine.PadRule{
+			wantRule: &engine.PadRule{
 				Spec: "true",
 			},
-			workflow: &engine.PadWorkflow{
+			wantWorkflow: &engine.PadWorkflow{
 				On:          []handler.TargetEntityKind{handler.PullRequest},
 				Description: "assign reviewer command",
 				Rules: []engine.PadWorkflowRule{
 					{
-						Rule: "assign-reviewer",
+						Rule: "assign-reviewer-command",
 					},
 				},
 				AlwaysRun: true,
@@ -135,14 +135,14 @@ func TestAssignReviewer(t *testing.T) {
 			// to the dynamically generated rule name
 			// we are setting them to the same value
 			if rule != nil {
-				test.rule.Name = rule.Name
-				test.workflow.Name = rule.Name
-				test.workflow.Rules[0].Rule = rule.Name
+				test.wantRule.Name = rule.Name
+				test.wantWorkflow.Name = rule.Name
+				test.wantWorkflow.Rules[0].Rule = rule.Name
 			}
 
-			assert.Equal(t, test.err, err)
-			assert.Equal(t, test.rule, rule)
-			assert.Equal(t, test.workflow, workflow)
+			assert.Equal(t, test.wantErr, err)
+			assert.Equal(t, test.wantRule, rule)
+			assert.Equal(t, test.wantWorkflow, workflow)
 		})
 	}
 }

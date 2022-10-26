@@ -32,26 +32,26 @@ func AssignReviewerCommand(matches []string) (*PadRule, *PadWorkflow, error) {
 
 	reviewersList := strings.Split(strings.ReplaceAll(matches[1], " ", ""), ",")
 
-	reviewers := `"` + strings.Join(reviewersList, `","`) + `"`
+	availableReviewers := `"` + strings.Join(reviewersList, `","`) + `"`
 
-	requiredReviewers := len(reviewersList)
+	totalRequiredReviewers := len(reviewersList)
 
 	if len(matches) > 2 {
-		requiredReviewers, err = strconv.Atoi(matches[2])
+		totalRequiredReviewers, err = strconv.Atoi(matches[2])
 		if err != nil {
 			return nil, nil, err
 		}
 	}
 
-	strategy := "reviewpad"
+	policy := "reviewpad"
 
 	if len(matches) > 3 && matches[3] != "" {
-		strategy = matches[3]
+		policy = matches[3]
 	}
 
-	name := fmt.Sprintf(`assign-reviewer-%s`, utils.RandomString(10))
+	name := fmt.Sprintf(`assign-reviewer-command-%s`, utils.RandomString(10))
 
-	action := fmt.Sprintf(`$assignReviewer([%s], %d, %q)`, reviewers, requiredReviewers, strategy)
+	action := fmt.Sprintf(`$assignReviewer([%s], %d, %q)`, availableReviewers, totalRequiredReviewers, policy)
 
 	rule := &PadRule{
 		Name: name,
