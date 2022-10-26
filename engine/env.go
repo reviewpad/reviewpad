@@ -7,7 +7,6 @@ package engine
 import (
 	"context"
 
-	"github.com/google/go-github/v45/github"
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/collector"
 	"github.com/reviewpad/reviewpad/v3/handler"
@@ -36,32 +35,29 @@ type Interpreter interface {
 }
 
 type Env struct {
-	Ctx              context.Context
-	DryRun           bool
-	GithubBotAccount *github.User
-	GithubClient     *gh.GithubClient
-	Collector        collector.Collector
-	Interpreter      Interpreter
-	TargetEntity     *handler.TargetEntity
+	Ctx          context.Context
+	DryRun       bool
+	GithubClient *gh.GithubClient
+	Collector    collector.Collector
+	Interpreter  Interpreter
+	TargetEntity *handler.TargetEntity
 }
 
 func NewEvalEnv(
 	ctx context.Context,
 	dryRun bool,
-	githubBotAccount *github.User,
 	githubClient *gh.GithubClient,
 	collector collector.Collector,
 	targetEntity *handler.TargetEntity,
 	interpreter Interpreter,
 ) (*Env, error) {
 	input := &Env{
-		Ctx:              ctx,
-		DryRun:           dryRun,
-		GithubBotAccount: githubBotAccount,
-		GithubClient:     githubClient,
-		Collector:        collector,
-		Interpreter:      interpreter,
-		TargetEntity:     targetEntity,
+		Ctx:          ctx,
+		DryRun:       dryRun,
+		GithubClient: githubClient,
+		Collector:    collector,
+		Interpreter:  interpreter,
+		TargetEntity: targetEntity,
 	}
 
 	return input, nil

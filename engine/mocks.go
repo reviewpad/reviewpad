@@ -33,9 +33,6 @@ var DefaultMockTargetEntity = &handler.TargetEntity{
 	Number: DefaultMockPrNum,
 	Kind:   handler.PullRequest,
 }
-var DefaultBotAccount = &github.User{
-	Login: github.String("bot-account"),
-}
 
 func GetDefaultMockPullRequestDetails() *github.PullRequest {
 	prNum := DefaultMockPrNum
@@ -120,7 +117,6 @@ func MockEnvWith(githubClient *gh.GithubClient, interpreter Interpreter, targetE
 	mockedEnv, err := NewEvalEnv(
 		DefaultMockCtx,
 		dryRun,
-		DefaultBotAccount,
 		githubClient,
 		DefaultMockCollector,
 		targetEntity,

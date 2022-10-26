@@ -7,7 +7,6 @@ package aladino
 import (
 	"context"
 
-	"github.com/google/go-github/v45/github"
 	"github.com/reviewpad/reviewpad/v3/codehost"
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/codehost/github/target"
@@ -31,7 +30,6 @@ type RegisterMap map[string]Value
 type Env interface {
 	GetBuiltIns() *BuiltIns
 	GetBuiltInsReportedMessages() map[Severity][]string
-	GetGithubBotAccount() *github.User
 	GetGithubClient() *gh.GithubClient
 	GetCollector() collector.Collector
 	GetCtx() context.Context
@@ -45,7 +43,6 @@ type Env interface {
 type BaseEnv struct {
 	BuiltIns                 *BuiltIns
 	BuiltInsReportedMessages map[Severity][]string
-	GithubBotAccount         *github.User
 	GithubClient             *gh.GithubClient
 	Collector                collector.Collector
 	Ctx                      context.Context
@@ -62,10 +59,6 @@ func (e *BaseEnv) GetBuiltIns() *BuiltIns {
 
 func (e *BaseEnv) GetBuiltInsReportedMessages() map[Severity][]string {
 	return e.BuiltInsReportedMessages
-}
-
-func (e *BaseEnv) GetGithubBotAccount() *github.User {
-	return e.GithubBotAccount
 }
 
 func (e *BaseEnv) GetGithubClient() *gh.GithubClient {
@@ -116,7 +109,6 @@ func NewTypeEnv(e Env) TypeEnv {
 func NewEvalEnv(
 	ctx context.Context,
 	dryRun bool,
-	githubBotAccount *github.User,
 	githubClient *gh.GithubClient,
 	collector collector.Collector,
 	targetEntity *handler.TargetEntity,
@@ -129,7 +121,6 @@ func NewEvalEnv(
 	input := &BaseEnv{
 		BuiltIns:                 builtIns,
 		BuiltInsReportedMessages: make(map[Severity][]string),
-		GithubBotAccount:         githubBotAccount,
 		GithubClient:             githubClient,
 		Collector:                collector,
 		Ctx:                      ctx,

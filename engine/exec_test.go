@@ -357,7 +357,6 @@ func mockAladinoInterpreter(githubClient *gh.GithubClient) (engine.Interpreter, 
 	mockedAladinoInterpreter, err := aladino.NewInterpreter(
 		engine.DefaultMockCtx,
 		dryRun,
-		engine.DefaultBotAccount,
 		githubClient,
 		engine.DefaultMockCollector,
 		engine.DefaultMockTargetEntity,
