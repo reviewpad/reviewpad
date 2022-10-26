@@ -23,7 +23,13 @@ func Review() *aladino.BuiltInAction {
 
 func reviewCode(e aladino.Env, args []aladino.Value) error {
 	t := e.GetTarget().(*target.PullRequestTarget)
-	botAccount := e.GetGithubBotAccount().GetLogin()
+
+	botAccount, _, err := e.GetGithubClient().GetClientREST().Users.Get(e.GetCtx(), "")
+	if err != nil {
+		return err
+	}
+
+	botLogin := botAccount.GetLogin()
 
 	reviewEvent, err := parseReviewEvent(args[0].(*aladino.StringValue).Val)
 	if err != nil {
@@ -37,8 +43,8 @@ func reviewCode(e aladino.Env, args []aladino.Value) error {
 		return err
 	}
 
-	if codehost.HasReview(reviews, botAccount) {
-		lastReview := codehost.LastReview(reviews, botAccount)
+	if codehost.HasReview(reviews, botLogin) {
+		lastReview := codehost.LastReview(reviews, botLogin)
 
 		if lastReview.State == "APPROVED" {
 			return nil
