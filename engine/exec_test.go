@@ -249,15 +249,15 @@ func TestEval(t *testing.T) {
 				Owner:     engine.DefaultMockTargetEntity.Owner,
 				Repo:      engine.DefaultMockTargetEntity.Repo,
 				EventName: "issue_comment",
-				Comment:   "/reviewpad assign-reviewers marcelosousa, shay2025, 1 random",
+				Comment:   "/reviewpad assign-reviewers john, jane, 1 random",
 			},
 		},
-		"when missing strategy assign reviewer command": {
+		"when missing policy in assign reviewer command args": {
 			inputReviewpadFilePath: "testdata/exec/reviewpad_with_valid_group.yml",
 			wantProgram: engine.BuildProgram(
 				[]*engine.Statement{
 					engine.BuildStatement(`$addLabel("test-valid-group")`),
-					engine.BuildStatement(`$assignReviewer(["marcelosousa"], 1, "reviewpad")`),
+					engine.BuildStatement(`$assignReviewer(["john"], 1, "reviewpad")`),
 				},
 			),
 			targetEntity: &handler.TargetEntity{
@@ -266,15 +266,15 @@ func TestEval(t *testing.T) {
 				Owner:     engine.DefaultMockTargetEntity.Owner,
 				Repo:      engine.DefaultMockTargetEntity.Repo,
 				EventName: "issue_comment",
-				Comment:   "/reviewpad assign-reviewers marcelosousa 1",
+				Comment:   "/reviewpad assign-reviewers john 1",
 			},
 		},
-		"when random assign reviewer strategy": {
+		"when assign reviewer has random policy": {
 			inputReviewpadFilePath: "testdata/exec/reviewpad_with_valid_group.yml",
 			wantProgram: engine.BuildProgram(
 				[]*engine.Statement{
 					engine.BuildStatement(`$addLabel("test-valid-group")`),
-					engine.BuildStatement(`$assignReviewer(["marcelosousa","shay2025"], 1, "random")`),
+					engine.BuildStatement(`$assignReviewer(["jane-12","john01"], 1, "random")`),
 				},
 			),
 			targetEntity: &handler.TargetEntity{
@@ -283,15 +283,15 @@ func TestEval(t *testing.T) {
 				Owner:     engine.DefaultMockTargetEntity.Owner,
 				Repo:      engine.DefaultMockTargetEntity.Repo,
 				EventName: "issue_comment",
-				Comment:   "/reviewpad assign-reviewers marcelosousa, shay2025 1 random",
+				Comment:   "/reviewpad assign-reviewers jane-12, john01 1 random",
 			},
 		},
-		"when reviewpad assign reviewer strategy": {
+		"when assign reviewer has reviewpad policy": {
 			inputReviewpadFilePath: "testdata/exec/reviewpad_with_valid_group.yml",
 			wantProgram: engine.BuildProgram(
 				[]*engine.Statement{
 					engine.BuildStatement(`$addLabel("test-valid-group")`),
-					engine.BuildStatement(`$assignReviewer(["marcelosousa","shay2025"], 1, "reviewpad")`),
+					engine.BuildStatement(`$assignReviewer(["john","jane"], 1, "reviewpad")`),
 				},
 			),
 			targetEntity: &handler.TargetEntity{
@@ -300,15 +300,15 @@ func TestEval(t *testing.T) {
 				Owner:     engine.DefaultMockTargetEntity.Owner,
 				Repo:      engine.DefaultMockTargetEntity.Repo,
 				EventName: "issue_comment",
-				Comment:   "/reviewpad assign-reviewers marcelosousa, shay2025 1 reviewpad",
+				Comment:   "/reviewpad assign-reviewers john, jane 1 reviewpad",
 			},
 		},
-		"when round-robin assign reviewer strategy": {
+		"when assign reviewer has round-robin policy": {
 			inputReviewpadFilePath: "testdata/exec/reviewpad_with_valid_group.yml",
 			wantProgram: engine.BuildProgram(
 				[]*engine.Statement{
 					engine.BuildStatement(`$addLabel("test-valid-group")`),
-					engine.BuildStatement(`$assignReviewer(["marcelosousa","shay2025"], 1, "round-robin")`),
+					engine.BuildStatement(`$assignReviewer(["john","johnny"], 1, "round-robin")`),
 				},
 			),
 			targetEntity: &handler.TargetEntity{
@@ -317,7 +317,7 @@ func TestEval(t *testing.T) {
 				Owner:     engine.DefaultMockTargetEntity.Owner,
 				Repo:      engine.DefaultMockTargetEntity.Repo,
 				EventName: "issue_comment",
-				Comment:   "/reviewpad assign-reviewers marcelosousa, shay2025 1 round-robin",
+				Comment:   "/reviewpad assign-reviewers john, johnny 1 round-robin",
 			},
 		},
 	}

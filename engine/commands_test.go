@@ -33,8 +33,8 @@ func TestAssignReviewer(t *testing.T) {
 		},
 		"when number of reviewers is not a number": {
 			matches: []string{
-				"/reviewpad assign-reviewers marcelosousa, shay2025 z random",
-				"marcelosousa, shay2025",
+				"/reviewpad assign-reviewers john, jane, john2, jane27 z random",
+				"john, jane, john2, jane27",
 				"z",
 				"random",
 			},
@@ -42,8 +42,8 @@ func TestAssignReviewer(t *testing.T) {
 		},
 		"when missing number of reviewers and policy": {
 			matches: []string{
-				"/reviewpad assign-reviewers marcelosousa",
-				"marcelosousa",
+				"/reviewpad assign-reviewers john",
+				"john",
 			},
 			wantRule: &engine.PadRule{
 				Spec: "true",
@@ -57,13 +57,13 @@ func TestAssignReviewer(t *testing.T) {
 					},
 				},
 				AlwaysRun: true,
-				Actions:   []string{`$assignReviewer(["marcelosousa"], 1, "reviewpad")`},
+				Actions:   []string{`$assignReviewer(["john"], 1, "reviewpad")`},
 			},
 		},
 		"when missing policy": {
 			matches: []string{
-				"/reviewpad assign-reviewer marcelosousa, shay2025 1",
-				"marcelosousa, shay2025",
+				"/reviewpad assign-reviewer john-123, jane 1",
+				"john-123, jane",
 				"1",
 			},
 			wantRule: &engine.PadRule{
@@ -78,13 +78,13 @@ func TestAssignReviewer(t *testing.T) {
 					},
 				},
 				AlwaysRun: true,
-				Actions:   []string{`$assignReviewer(["marcelosousa","shay2025"], 1, "reviewpad")`},
+				Actions:   []string{`$assignReviewer(["john-123","jane"], 1, "reviewpad")`},
 			},
 		},
 		"when only one reviewer is provided.": {
 			matches: []string{
-				"/reviewpad assign-reviewer marcelosousa 1 reviewpad",
-				"marcelosousa",
+				"/reviewpad assign-reviewer john-123-jane 1 reviewpad",
+				"john-123-jane",
 				"1",
 				"reviewpad",
 			},
@@ -100,13 +100,13 @@ func TestAssignReviewer(t *testing.T) {
 					},
 				},
 				AlwaysRun: true,
-				Actions:   []string{`$assignReviewer(["marcelosousa"], 1, "reviewpad")`},
+				Actions:   []string{`$assignReviewer(["john-123-jane"], 1, "reviewpad")`},
 			},
 		},
 		"when only two reviewers is provided.": {
 			matches: []string{
-				"/reviewpad assign-reviewer marcelosousa, shay2025 2 random",
-				"marcelosousa, shay2025",
+				"/reviewpad assign-reviewer jane, john 2 random",
+				"jane, john",
 				"2",
 				"random",
 			},
@@ -122,7 +122,7 @@ func TestAssignReviewer(t *testing.T) {
 					},
 				},
 				AlwaysRun: true,
-				Actions:   []string{`$assignReviewer(["marcelosousa","shay2025"], 2, "random")`},
+				Actions:   []string{`$assignReviewer(["jane","john"], 2, "random")`},
 			},
 		},
 	}
