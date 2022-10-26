@@ -44,6 +44,8 @@ func TestAssignReviewer(t *testing.T) {
 			matches: []string{
 				"/reviewpad assign-reviewers john",
 				"john",
+				"",
+				"",
 			},
 			wantRule: &engine.PadRule{
 				Spec: "true",
@@ -65,6 +67,7 @@ func TestAssignReviewer(t *testing.T) {
 				"/reviewpad assign-reviewer john-123, jane 1",
 				"john-123, jane",
 				"1",
+				"",
 			},
 			wantRule: &engine.PadRule{
 				Spec: "true",

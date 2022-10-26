@@ -256,7 +256,6 @@ func TestEval(t *testing.T) {
 			inputReviewpadFilePath: "testdata/exec/reviewpad_with_valid_group.yml",
 			wantProgram: engine.BuildProgram(
 				[]*engine.Statement{
-					engine.BuildStatement(`$addLabel("test-valid-group")`),
 					engine.BuildStatement(`$assignReviewer(["john"], 1, "reviewpad")`),
 				},
 			),
@@ -273,7 +272,6 @@ func TestEval(t *testing.T) {
 			inputReviewpadFilePath: "testdata/exec/reviewpad_with_valid_group.yml",
 			wantProgram: engine.BuildProgram(
 				[]*engine.Statement{
-					engine.BuildStatement(`$addLabel("test-valid-group")`),
 					engine.BuildStatement(`$assignReviewer(["jane-12","john01"], 1, "random")`),
 				},
 			),
@@ -290,7 +288,6 @@ func TestEval(t *testing.T) {
 			inputReviewpadFilePath: "testdata/exec/reviewpad_with_valid_group.yml",
 			wantProgram: engine.BuildProgram(
 				[]*engine.Statement{
-					engine.BuildStatement(`$addLabel("test-valid-group")`),
 					engine.BuildStatement(`$assignReviewer(["john","jane"], 1, "reviewpad")`),
 				},
 			),
@@ -307,7 +304,6 @@ func TestEval(t *testing.T) {
 			inputReviewpadFilePath: "testdata/exec/reviewpad_with_valid_group.yml",
 			wantProgram: engine.BuildProgram(
 				[]*engine.Statement{
-					engine.BuildStatement(`$addLabel("test-valid-group")`),
 					engine.BuildStatement(`$assignReviewer(["john","johnny"], 1, "round-robin")`),
 				},
 			),

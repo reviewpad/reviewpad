@@ -36,7 +36,7 @@ func AssignReviewerCommand(matches []string) (*PadRule, *PadWorkflow, error) {
 
 	totalRequiredReviewers := len(reviewersList)
 
-	if len(matches) > 2 {
+	if len(matches) > 2 && matches[2] != "" {
 		totalRequiredReviewers, err = strconv.Atoi(matches[2])
 		if err != nil {
 			return nil, nil, err

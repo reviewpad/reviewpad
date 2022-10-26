@@ -118,6 +118,12 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 			matches := r.FindAllStringSubmatch(env.TargetEntity.Comment, 1)
 
 			if len(matches) == 1 {
+				// clear already present workflows and rules
+				// since we don't want other workflows to run
+				// when command is executed
+				file.Rules = []PadRule{}
+				file.Workflows = []PadWorkflow{}
+
 				rule, workflow, err := command(matches[0])
 				if err != nil {
 					return nil, err
