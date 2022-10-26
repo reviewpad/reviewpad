@@ -2,14 +2,14 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-package engine_test
+package commands_test
 
 import (
 	"errors"
 	"strconv"
 	"testing"
 
-	"github.com/reviewpad/reviewpad/v3/engine"
+	"github.com/reviewpad/reviewpad/v3/engine/commands"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -87,7 +87,7 @@ func TestAssignReviewer(t *testing.T) {
 
 	for name, test := range testCases {
 		t.Run(name, func(t *testing.T) {
-			actions, err := engine.AssignReviewerCommand(test.matches)
+			actions, err := commands.AssignReviewerCommand(test.matches)
 
 			assert.Equal(t, test.wantErr, err)
 			assert.Equal(t, test.wantActions, actions)

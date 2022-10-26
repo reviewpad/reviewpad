@@ -9,6 +9,7 @@ import (
 	"log"
 
 	"github.com/google/go-github/v45/github"
+	"github.com/reviewpad/reviewpad/v3/engine/commands"
 	"github.com/reviewpad/reviewpad/v3/utils/fmtio"
 )
 
@@ -126,7 +127,7 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 
 	// process commands
 	if env.TargetEntity.EventName == "issue_comment" {
-		for r, command := range commands {
+		for r, command := range commands.Commands {
 			matches := r.FindAllStringSubmatch(env.TargetEntity.Comment, 1)
 
 			if len(matches) == 1 {

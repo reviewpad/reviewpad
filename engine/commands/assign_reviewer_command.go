@@ -2,7 +2,7 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-package engine
+package commands
 
 import (
 	"errors"
@@ -15,10 +15,6 @@ import (
 var (
 	assignReviewerCommandRegex = regexp.MustCompile(`^\/reviewpad assign-reviewers\s+((?:[a-zA-Z0-9\-]+[a-zA-Z0-9])(?:,\s*[a-zA-Z0-9\-]+[a-zA-Z0-9])*)(?:\s+(\d+))?(?:\s+(random|round-robin|reviewpad))?$`)
 )
-
-var commands = map[*regexp.Regexp]func(matches []string) ([]string, error){
-	assignReviewerCommandRegex: AssignReviewerCommand,
-}
 
 func AssignReviewerCommand(matches []string) ([]string, error) {
 	var err error
