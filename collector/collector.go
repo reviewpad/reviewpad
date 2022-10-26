@@ -14,9 +14,10 @@ type Collector interface {
 }
 
 type collector struct {
-	Client mixpanel.Mixpanel
-	Id     string
-	Token  string
+	Client    mixpanel.Mixpanel
+	Id        string
+	Token     string
+	RunnerEnv string
 	// Allows to identify a unique source of events
 	RunnerId string
 	// Allows to identify the correct order of events
@@ -27,11 +28,12 @@ type collector struct {
 	Url string
 }
 
-func NewCollector(token, id, eventType, url string) Collector {
+func NewCollector(token, id, eventType, url, runner string) Collector {
 	c := collector{
 		Client:    mixpanel.New(token, ""),
 		Id:        id,
 		Token:     token,
+		RunnerEnv: runner,
 		RunnerId:  uuid.NewString(),
 		Order:     0,
 		EventType: eventType,
@@ -54,6 +56,7 @@ func (c *collector) Collect(eventName string, properties map[string]interface{})
 	if c.Token == "" {
 		return nil
 	}
+	properties["runner"] = c.RunnerEnv
 	properties["runnerId"] = c.RunnerId
 	properties["order"] = c.Order
 	properties["eventType"] = c.EventType

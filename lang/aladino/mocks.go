@@ -29,7 +29,7 @@ const DefaultMockPrRepoName = "default-mock-repo"
 
 var DefaultMockPrDate = time.Date(2009, 11, 17, 20, 34, 58, 651387237, time.UTC)
 var DefaultMockContext = context.Background()
-var DefaultMockCollector = collector.NewCollector("", "", "pull_request", "")
+var DefaultMockCollector = collector.NewCollector("", "", "pull_request", "", "dev-test")
 var DefaultMockTargetEntity = &handler.TargetEntity{
 	Owner:  DefaultMockPrOwner,
 	Repo:   DefaultMockPrRepoName,
