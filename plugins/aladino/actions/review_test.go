@@ -6,6 +6,7 @@ package plugins_aladino_actions_test
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"testing"
@@ -14,8 +15,10 @@ import (
 	"github.com/google/go-github/v45/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 
+	host "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
+	"github.com/reviewpad/reviewpad/v3/utils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -107,8 +110,57 @@ func TestReview_WhenListReviewsRequestFails(t *testing.T) {
 	assert.Equal(t, failMessage, err.(*github.ErrorResponse).Message)
 }
 
+func TestReview_WhenGetPullRequestLastPushDateRequestFails(t *testing.T) {
+	failMessage := "GetPullRequestLastPushDateRequestFail"
+
+	pullRequestSubmittedAt := time.Now()
+
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
+		[]mock.MockBackendOption{
+			mock.WithRequestMatch(
+				mock.GetUser,
+				&github.User{
+					Login: github.String("bot-account"),
+				},
+			),
+			mock.WithRequestMatch(
+				mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
+				[]*github.PullRequestReview{
+					{
+						ID:   github.Int64(1),
+						Body: github.String(""),
+						User: &github.User{
+							Login: github.String("bot-account"),
+						},
+						State:       github.String("COMMENTED"),
+						SubmittedAt: &pullRequestSubmittedAt,
+					},
+				},
+			),
+		},
+		func(w http.ResponseWriter, req *http.Request) {
+			http.Error(w, failMessage, http.StatusNotFound)
+		},
+		aladino.MockBuiltIns(),
+		nil,
+	)
+
+	args := []aladino.Value{aladino.BuildStringValue("APPROVE"), aladino.BuildStringValue("some comment")}
+	err := review(mockedEnv, args)
+
+	assert.EqualError(t, err, fmt.Sprintf("non-200 OK status code: 404 Not Found body: \"%s\\n\"", failMessage))
+}
+
 func TestReview_WhenBodyIsNotEmpty(t *testing.T) {
 	reviewBody := "test comment"
+
+	mockedLastCommitDate := time.Now()
+
+	mockedPullRequest := aladino.GetDefaultMockPullRequestDetails()
+
+	mockedPullRequestLastPushDateGQLQuery := getMockedPullRequestLastPushDateGQLQuery(mockedPullRequest)
+	mockedPullRequestLastPushDateGQLQueryBody := getMockedPullRequestLastPushDateGQLQueryBody(mockedLastCommitDate)
 
 	tests := map[string]struct {
 		inputReviewEvent string
@@ -154,7 +206,13 @@ func TestReview_WhenBodyIsNotEmpty(t *testing.T) {
 					}),
 				),
 			},
-			nil,
+			func(w http.ResponseWriter, req *http.Request) {
+				query := utils.MinifyQuery(aladino.MustRead(req.Body))
+				switch query {
+				case utils.MinifyQuery(mockedPullRequestLastPushDateGQLQuery):
+					aladino.MustWrite(w, mockedPullRequestLastPushDateGQLQueryBody)
+				}
+			},
 			aladino.MockBuiltIns(),
 			nil,
 		)
@@ -170,6 +228,13 @@ func TestReview_WhenBodyIsNotEmpty(t *testing.T) {
 }
 
 func TestReview_WhenBodyIsEmpty(t *testing.T) {
+	mockedLastCommitDate := time.Now()
+
+	mockedPullRequest := aladino.GetDefaultMockPullRequestDetails()
+
+	mockedPullRequestLastPushDateGQLQuery := getMockedPullRequestLastPushDateGQLQuery(mockedPullRequest)
+	mockedPullRequestLastPushDateGQLQueryBody := getMockedPullRequestLastPushDateGQLQueryBody(mockedLastCommitDate)
+
 	tests := map[string]struct {
 		inputReviewEvent string
 		wantErr          string
@@ -208,7 +273,13 @@ func TestReview_WhenBodyIsEmpty(t *testing.T) {
 						&ReviewRequestPostBody{},
 					),
 				},
-				nil,
+				func(w http.ResponseWriter, req *http.Request) {
+					query := utils.MinifyQuery(aladino.MustRead(req.Body))
+					switch query {
+					case utils.MinifyQuery(mockedPullRequestLastPushDateGQLQuery):
+						aladino.MustWrite(w, mockedPullRequestLastPushDateGQLQueryBody)
+					}
+				},
 				aladino.MockBuiltIns(),
 				nil,
 			)
@@ -228,13 +299,14 @@ func TestReview_WhenPreviousAutomaticReviewWasMade(t *testing.T) {
 	reviewBody := "test comment"
 	reviewerLogin := "bot-account"
 
-	pullRequestUpdate := time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)
-	mockedPullRequest := aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
-		UpdatedAt: &pullRequestUpdate,
-	})
+	mockedLastCommitDate := time.Now()
+	mockedCreateDateAfterLastCommitDate := mockedLastCommitDate.Add(time.Hour)
+	mockedCreateDateBeforeLastCommitDate := mockedLastCommitDate.Add(time.Hour * -1)
 
-	timeBeforePullRequestUpdate := time.Date(2019, 12, 29, 0, 0, 0, 0, time.UTC)
-	timeAfterPullRequestUpdate := time.Date(2020, 1, 3, 0, 0, 0, 0, time.UTC)
+	mockedPullRequest := aladino.GetDefaultMockPullRequestDetails()
+
+	mockedPullRequestLastPushDateGQLQuery := getMockedPullRequestLastPushDateGQLQuery(mockedPullRequest)
+	mockedPullRequestLastPushDateGQLQueryBody := getMockedPullRequestLastPushDateGQLQueryBody(mockedLastCommitDate)
 
 	tests := map[string]struct {
 		inputReviewEvent   string
@@ -260,7 +332,7 @@ func TestReview_WhenPreviousAutomaticReviewWasMade(t *testing.T) {
 								Login: github.String(reviewerLogin),
 							},
 							State:       github.String("APPROVED"),
-							SubmittedAt: &timeAfterPullRequestUpdate,
+							SubmittedAt: &mockedCreateDateAfterLastCommitDate,
 						},
 					},
 				),
@@ -286,7 +358,7 @@ func TestReview_WhenPreviousAutomaticReviewWasMade(t *testing.T) {
 								Login: github.String(reviewerLogin),
 							},
 							State:       github.String("REQUEST_CHANGES"),
-							SubmittedAt: &timeBeforePullRequestUpdate,
+							SubmittedAt: &mockedCreateDateBeforeLastCommitDate,
 						},
 					},
 				),
@@ -312,7 +384,7 @@ func TestReview_WhenPreviousAutomaticReviewWasMade(t *testing.T) {
 								Login: github.String(reviewerLogin),
 							},
 							State:       github.String("REQUEST_CHANGES"),
-							SubmittedAt: &timeAfterPullRequestUpdate,
+							SubmittedAt: &mockedCreateDateAfterLastCommitDate,
 						},
 					},
 				),
@@ -338,7 +410,7 @@ func TestReview_WhenPreviousAutomaticReviewWasMade(t *testing.T) {
 								Login: github.String(reviewerLogin),
 							},
 							State:       github.String("COMMENTED"),
-							SubmittedAt: &timeBeforePullRequestUpdate,
+							SubmittedAt: &mockedCreateDateBeforeLastCommitDate,
 						},
 					},
 				),
@@ -364,7 +436,7 @@ func TestReview_WhenPreviousAutomaticReviewWasMade(t *testing.T) {
 								Login: github.String(reviewerLogin),
 							},
 							State:       github.String("COMMENTED"),
-							SubmittedAt: &timeAfterPullRequestUpdate,
+							SubmittedAt: &mockedCreateDateAfterLastCommitDate,
 						},
 					},
 				),
@@ -400,7 +472,13 @@ func TestReview_WhenPreviousAutomaticReviewWasMade(t *testing.T) {
 				},
 				test.clientOptions...,
 			),
-			nil,
+			func(w http.ResponseWriter, req *http.Request) {
+				query := utils.MinifyQuery(aladino.MustRead(req.Body))
+				switch query {
+				case utils.MinifyQuery(mockedPullRequestLastPushDateGQLQuery):
+					aladino.MustWrite(w, mockedPullRequestLastPushDateGQLQueryBody)
+				}
+			},
 			aladino.MockBuiltIns(),
 			nil,
 		)
@@ -412,4 +490,57 @@ func TestReview_WhenPreviousAutomaticReviewWasMade(t *testing.T) {
 		assert.Nil(t, err)
 		assert.Equal(t, test.shouldReviewBeDone, isPostReviewRequestPerformed)
 	}
+}
+
+func getMockedPullRequestLastPushDateGQLQuery(mockedPullRequest *github.PullRequest) string {
+	mockedPullRequestNumber := host.GetPullRequestNumber(mockedPullRequest)
+	mockOwner := host.GetPullRequestBaseOwnerName(mockedPullRequest)
+	mockRepo := host.GetPullRequestBaseRepoName(mockedPullRequest)
+
+	return fmt.Sprintf(`{
+		"query":"query($pullRequestNumber:Int! $repositoryName:String! $repositoryOwner:String!){
+			repository(owner: $repositoryOwner, name: $repositoryName){
+				pullRequest(number: $pullRequestNumber){
+					timelineItems(last: 1, itemTypes: [HEAD_REF_FORCE_PUSHED_EVENT, PULL_REQUEST_COMMIT]){
+						nodes{
+							__typename,
+							...on HeadRefForcePushedEvent {
+								createdAt
+							},
+							...on PullRequestCommit {
+								commit {
+									pushedDate,
+									committedDate
+								}
+							}
+						}
+					}
+				}
+			}
+		}",
+		"variables":{
+			"pullRequestNumber": %d,
+			"repositoryName": "%s",
+			"repositoryOwner": "%s"
+		}
+	}`, mockedPullRequestNumber, mockRepo, mockOwner)
+}
+
+func getMockedPullRequestLastPushDateGQLQueryBody(mockedLastCommitDate time.Time) string {
+	return fmt.Sprintf(`{
+		"data": {
+			"repository": {
+				"pullRequest": {
+					"timelineItems": {
+						"nodes": [{
+							"__typename": "PullRequestCommit",
+							"commit": {
+								"pushedDate": "%s"
+							}
+						}]
+					}
+				}
+			}
+		}
+	}`, mockedLastCommitDate.Format("2006-01-02T15:04:05Z07:00"))
 }
