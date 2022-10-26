@@ -10,24 +10,21 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-
-	"github.com/reviewpad/reviewpad/v3/handler"
-	"github.com/reviewpad/reviewpad/v3/utils"
 )
 
 var (
 	assignReviewerCommandRegex = regexp.MustCompile(`^\/reviewpad assign-reviewers\s+((?:[a-zA-Z0-9\-]+[a-zA-Z0-9])(?:,\s*[a-zA-Z0-9\-]+[a-zA-Z0-9])*)(?:\s+(\d+))?(?:\s+(random|round-robin|reviewpad))?$`)
 )
 
-var commands = map[*regexp.Regexp]func(matches []string) (*PadRule, *PadWorkflow, error){
+var commands = map[*regexp.Regexp]func(matches []string) ([]string, error){
 	assignReviewerCommandRegex: AssignReviewerCommand,
 }
 
-func AssignReviewerCommand(matches []string) (*PadRule, *PadWorkflow, error) {
+func AssignReviewerCommand(matches []string) ([]string, error) {
 	var err error
 
 	if len(matches) < 2 {
-		return nil, nil, errors.New("invalid assign reviewer command")
+		return nil, errors.New("invalid assign reviewer command")
 	}
 
 	reviewersList := strings.Split(strings.ReplaceAll(matches[1], " ", ""), ",")
@@ -39,7 +36,7 @@ func AssignReviewerCommand(matches []string) (*PadRule, *PadWorkflow, error) {
 	if len(matches) > 2 && matches[2] != "" {
 		totalRequiredReviewers, err = strconv.Atoi(matches[2])
 		if err != nil {
-			return nil, nil, err
+			return nil, err
 		}
 	}
 
@@ -49,27 +46,7 @@ func AssignReviewerCommand(matches []string) (*PadRule, *PadWorkflow, error) {
 		policy = matches[3]
 	}
 
-	name := fmt.Sprintf(`assign-reviewer-command-%s`, utils.RandomString(10))
-
 	action := fmt.Sprintf(`$assignReviewer([%s], %d, %q)`, availableReviewers, totalRequiredReviewers, policy)
 
-	rule := &PadRule{
-		Name: name,
-		Spec: "true",
-	}
-
-	workflow := &PadWorkflow{
-		Name:        name,
-		On:          []handler.TargetEntityKind{handler.PullRequest},
-		Description: "assign reviewer command",
-		Rules: []PadWorkflowRule{
-			{
-				Rule: name,
-			},
-		},
-		AlwaysRun: true,
-		Actions:   []string{action},
-	}
-
-	return rule, workflow, nil
+	return []string{action}, nil
 }
