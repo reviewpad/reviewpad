@@ -87,7 +87,7 @@ func TestAssignReviewer(t *testing.T) {
 
 	for name, test := range testCases {
 		t.Run(name, func(t *testing.T) {
-			actions, err := commands.AssignReviewerCommand(test.matches)
+			actions, err := commands.AssignReviewer(test.matches)
 
 			assert.Equal(t, test.wantErr, err)
 			assert.Equal(t, test.wantActions, actions)

@@ -12,11 +12,9 @@ import (
 	"strings"
 )
 
-var (
-	assignReviewerCommandRegex = regexp.MustCompile(`^\/reviewpad assign-reviewers\s+((?:[a-zA-Z0-9\-]+[a-zA-Z0-9])(?:,\s*[a-zA-Z0-9\-]+[a-zA-Z0-9])*)(?:\s+(\d+))?(?:\s+(random|round-robin|reviewpad))?$`)
-)
+var assignReviewerRegex = regexp.MustCompile(`^\/reviewpad assign-reviewers\s+((?:[a-zA-Z0-9\-]+[a-zA-Z0-9])(?:,\s*[a-zA-Z0-9\-]+[a-zA-Z0-9])*)(?:\s+(\d+))?(?:\s+(random|round-robin|reviewpad))?$`)
 
-func AssignReviewerCommand(matches []string) ([]string, error) {
+func AssignReviewer(matches []string) ([]string, error) {
 	var err error
 
 	if len(matches) < 2 {

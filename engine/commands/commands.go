@@ -9,5 +9,5 @@ import (
 )
 
 var Commands = map[*regexp.Regexp]func(matches []string) ([]string, error){
-	assignReviewerCommandRegex: AssignReviewerCommand,
+	assignReviewerRegex: AssignReviewer,
 }
