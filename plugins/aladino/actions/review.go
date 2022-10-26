@@ -6,6 +6,7 @@ package plugins_aladino_actions
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/reviewpad/reviewpad/v3/codehost"
 	"github.com/reviewpad/reviewpad/v3/codehost/github/target"
@@ -50,6 +51,8 @@ func reviewCode(e aladino.Env, args []aladino.Value) error {
 			return nil
 		}
 
+		log.Printf("LAST REVIEW: %+v", lastReview)
+		log.Printf("UPDATED: %+v", t.PullRequest.GetUpdatedAt())
 		if lastReview.SubmittedAt.After(t.PullRequest.GetUpdatedAt()) {
 			return nil
 		}
