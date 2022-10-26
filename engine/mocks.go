@@ -25,7 +25,7 @@ const DefaultMockPrRepoName = "default-mock-repo"
 
 // Use only for tests
 var DefaultMockCtx = context.Background()
-var DefaultMockCollector = collector.NewCollector("", "", "pull_request", "")
+var DefaultMockCollector = collector.NewCollector("", "", "pull_request", "", "dev-test")
 var DefaultMockEventPayload = &github.CheckRunEvent{}
 var DefaultMockTargetEntity = &handler.TargetEntity{
 	Owner:  DefaultMockPrOwner,

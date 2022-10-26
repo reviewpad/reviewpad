@@ -98,7 +98,7 @@ func run() error {
 
 	ctx := context.Background()
 	githubClient := gh.NewGithubClientFromToken(ctx, gitHubToken)
-	collectorClient := collector.NewCollector(mixpanelToken, repositoryOwner, string(entityKind), githubUrl)
+	collectorClient := collector.NewCollector(mixpanelToken, repositoryOwner, string(entityKind), githubUrl, "local-cli")
 
 	data, err := os.ReadFile(reviewpadFile)
 	if err != nil {
