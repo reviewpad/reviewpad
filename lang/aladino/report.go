@@ -19,6 +19,7 @@ type Report struct {
 }
 
 const ReviewpadReportCommentAnnotation = "<!--@annotation-reviewpad-report-->"
+const ReviewpadMetricReportCommentAnnotation = "<!--@annotation-reviewpad-metric-report-->"
 
 func reportError(format string, a ...interface{}) error {
 	return fmtio.Errorf("report", format, a...)
@@ -152,7 +153,7 @@ func AddReportComment(env Env, report string) error {
 	return nil
 }
 
-func FindReportComment(env Env) (*github.IssueComment, error) {
+func FindReportCommentByAnnotation(env Env, annotation string) (*github.IssueComment, error) {
 	t := env.GetTarget().GetTargetEntity()
 	owner := t.Owner
 	repo := t.Repo
@@ -166,7 +167,7 @@ func FindReportComment(env Env) (*github.IssueComment, error) {
 		return nil, reportError("error getting issues %v", err.(*github.ErrorResponse).Message)
 	}
 
-	reviewpadCommentAnnotationRegex := regexp.MustCompile(fmt.Sprintf("^%v", ReviewpadReportCommentAnnotation))
+	reviewpadCommentAnnotationRegex := regexp.MustCompile(fmt.Sprintf("^%v", annotation))
 
 	var reviewpadExistingComment *github.IssueComment
 

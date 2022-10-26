@@ -244,10 +244,12 @@ func TestProcessEvent(t *testing.T) {
 			},
 			wantVal: []*handler.TargetEntity{
 				{
-					Kind:   handler.PullRequest,
-					Number: 130,
-					Owner:  owner,
-					Repo:   repo,
+					Kind:        handler.PullRequest,
+					Number:      130,
+					Owner:       owner,
+					Repo:        repo,
+					EventName:   "pull_request",
+					EventAction: "opened",
 				},
 			},
 		},

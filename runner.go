@@ -85,6 +85,14 @@ func Run(
 		}
 	}
 
+	if targetEntity.Kind == handler.PullRequest && targetEntity.EventName == "pull_request" && targetEntity.EventAction == "closed" {
+		err = aladinoInterpreter.ReportMetrics()
+		if err != nil {
+			engine.CollectError(evalEnv, err)
+			return engine.ExitStatusFailure, err
+		}
+	}
+
 	collectedData := map[string]interface{}{}
 
 	err = evalEnv.Collector.Collect("Completed Analysis", collectedData)

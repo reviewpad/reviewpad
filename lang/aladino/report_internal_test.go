@@ -309,7 +309,7 @@ func TestFindReportComment_WhenPullRequestCommentsListingFails(t *testing.T) {
 		nil,
 	)
 
-	gotComment, err := FindReportComment(mockedEnv)
+	gotComment, err := FindReportCommentByAnnotation(mockedEnv, ReviewpadReportCommentAnnotation)
 
 	assert.Nil(t, gotComment)
 	assert.EqualError(t, err, fmt.Sprintf("[report] error getting issues %v", failMessage))
@@ -334,7 +334,7 @@ func TestFindReportComment_WhenThereIsReviewpadComment(t *testing.T) {
 		nil,
 	)
 
-	gotComment, err := FindReportComment(mockedEnv)
+	gotComment, err := FindReportCommentByAnnotation(mockedEnv, ReviewpadReportCommentAnnotation)
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantComment, gotComment)
@@ -359,7 +359,7 @@ func TestFindReportComment_WhenThereIsNoReviewpadComment(t *testing.T) {
 		nil,
 	)
 
-	gotComment, err := FindReportComment(mockedEnv)
+	gotComment, err := FindReportCommentByAnnotation(mockedEnv, ReviewpadReportCommentAnnotation)
 
 	assert.Nil(t, err)
 	assert.Nil(t, gotComment)

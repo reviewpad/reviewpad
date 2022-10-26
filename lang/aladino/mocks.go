@@ -90,6 +90,7 @@ func GetDefaultMockPullRequestDetails() *github.PullRequest {
 		RequestedReviewers: []*github.User{
 			{Login: github.String("jane")},
 		},
+		Merged: github.Bool(true),
 	}
 }
 

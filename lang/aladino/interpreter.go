@@ -8,8 +8,11 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 
+	"github.com/nleeper/goment"
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
+	"github.com/reviewpad/reviewpad/v3/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v3/collector"
 	"github.com/reviewpad/reviewpad/v3/engine"
 	"github.com/reviewpad/reviewpad/v3/handler"
@@ -171,7 +174,7 @@ func (i *Interpreter) Report(mode string, safeMode bool) error {
 
 	var err error
 
-	comment, err := FindReportComment(env)
+	comment, err := FindReportCommentByAnnotation(env, ReviewpadReportCommentAnnotation)
 	if err != nil {
 		return err
 	}
@@ -193,6 +196,85 @@ func (i *Interpreter) Report(mode string, safeMode bool) error {
 
 	return UpdateReportComment(env, *comment.ID, report)
 
+}
+
+func (i *Interpreter) ReportMetrics() error {
+	targetEntity := i.Env.GetTarget().GetTargetEntity()
+	owner := targetEntity.Owner
+	prNum := targetEntity.Number
+	repo := targetEntity.Repo
+	ctx := i.Env.GetCtx()
+	pr := i.Env.GetTarget().(*target.PullRequestTarget).PullRequest
+
+	if !*pr.Merged {
+		return nil
+	}
+
+	report := strings.Builder{}
+
+	firstcommitDate, err := i.Env.GetGithubClient().GetFirstCommitDate(ctx, owner, repo, prNum)
+	if err != nil {
+		return err
+	}
+
+	firstReviewDate, err := i.Env.GetGithubClient().GetFirstReviewDate(ctx, owner, repo, prNum)
+	if err != nil {
+		return err
+	}
+
+	if firstcommitDate != nil {
+		firstcommitDate, err := goment.New(*firstcommitDate)
+		if err != nil {
+			return err
+		}
+
+		report.WriteString(fmt.Sprintf("**💻 Coding Time**: %s", firstcommitDate.To(*pr.CreatedAt)))
+	}
+
+	if firstReviewDate != nil && firstReviewDate.Before(*pr.CreatedAt) {
+		firstReviewDate, err := goment.New(*firstReviewDate)
+		if err != nil {
+			return err
+		}
+
+		prCreatedAt, err := goment.New(*pr.CreatedAt)
+		if err != nil {
+			return err
+		}
+
+		prMergedAt, err := goment.New(*pr.MergedAt)
+		if err != nil {
+			return err
+		}
+
+		report.WriteString(fmt.Sprintf("\n**🛻 Pickup Time**: %s", prCreatedAt.To(firstReviewDate)))
+
+		report.WriteString(fmt.Sprintf("\n**👀 Review Time**: %s", firstReviewDate.To(prMergedAt)))
+	}
+
+	if report.Len() > 0 {
+		comment, err := FindReportCommentByAnnotation(i.Env, ReviewpadMetricReportCommentAnnotation)
+		if err != nil {
+			return err
+		}
+
+		r := ReviewpadMetricReportCommentAnnotation + "\n## 📈 Pull Request Metrics\n" + report.String()
+
+		if comment == nil {
+			err = AddReportComment(i.Env, r)
+			if err != nil {
+				return err
+			}
+			return nil
+		}
+
+		err = UpdateReportComment(i.Env, *comment.ID, r)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func NewInterpreter(

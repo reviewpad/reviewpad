@@ -31,12 +31,13 @@ func (entityType TargetEntityKind) String() string {
 }
 
 type TargetEntity struct {
-	Kind      TargetEntityKind
-	Number    int
-	Owner     string
-	Repo      string
-	EventName string
-	Comment   string
+	Kind        TargetEntityKind
+	Number      int
+	Owner       string
+	Repo        string
+	EventName   string
+	Comment     string
+	EventAction string
 }
 
 func ParseEvent(rawEvent string) (*ActionEvent, error) {
@@ -136,10 +137,12 @@ func processPullRequestEvent(e *github.PullRequestEvent) ([]*TargetEntity, error
 
 	return []*TargetEntity{
 		{
-			Kind:   PullRequest,
-			Number: *e.PullRequest.Number,
-			Owner:  *e.Repo.Owner.Login,
-			Repo:   *e.Repo.Name,
+			Kind:        PullRequest,
+			Number:      *e.PullRequest.Number,
+			Owner:       *e.Repo.Owner.Login,
+			Repo:        *e.Repo.Name,
+			EventName:   "pull_request",
+			EventAction: *e.Action,
 		},
 	}, nil
 }
