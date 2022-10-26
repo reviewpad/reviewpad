@@ -112,6 +112,15 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 		}
 	}
 
+	// process groups
+	for _, group := range file.Groups {
+		err := interpreter.ProcessGroup(group.Name, GroupKind(group.Kind), GroupType(group.Type), group.Spec, group.Param, group.Where)
+		if err != nil {
+			CollectError(env, err)
+			return nil, err
+		}
+	}
+
 	// a program is a list of statements to be executed based on the command, workflow rules and actions.
 	program := BuildProgram(make([]*Statement, 0))
 
@@ -121,12 +130,6 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 			matches := r.FindAllStringSubmatch(env.TargetEntity.Comment, 1)
 
 			if len(matches) == 1 {
-				// clear already present workflows and rules
-				// since we don't want other workflows to run
-				// when command is executed
-				file.Rules = []PadRule{}
-				file.Workflows = []PadWorkflow{}
-
 				actions, err := command(matches[0])
 				if err != nil {
 					return nil, err
@@ -134,17 +137,8 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 
 				program.append(actions)
 
-				break
+				return program, nil
 			}
-		}
-	}
-
-	// process groups
-	for _, group := range file.Groups {
-		err := interpreter.ProcessGroup(group.Name, GroupKind(group.Kind), GroupType(group.Type), group.Spec, group.Param, group.Where)
-		if err != nil {
-			CollectError(env, err)
-			return nil, err
 		}
 	}
 
