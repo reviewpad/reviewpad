@@ -7,7 +7,7 @@ package github
 import (
 	"context"
 
-	"github.com/google/go-github/v45/github"
+	"github.com/google/go-github/v48/github"
 )
 
 func (c *GithubClient) ListCheckRunsForRef(ctx context.Context, owner string, repo string, ref string, opts *github.ListCheckRunsOptions) (*github.ListCheckRunsResults, *github.Response, error) {

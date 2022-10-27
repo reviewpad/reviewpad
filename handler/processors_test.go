@@ -10,7 +10,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/google/go-github/v45/github"
+	"github.com/google/go-github/v48/github"
 	"github.com/jarcoal/httpmock"
 	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"

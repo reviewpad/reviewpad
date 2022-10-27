@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/google/go-github/v45/github"
+	"github.com/google/go-github/v48/github"
 	"github.com/tomnomnom/linkheader"
 )
 
@@ -59,7 +59,7 @@ func ParseNumPagesFromLink(link string) int {
 	return int(numPages)
 }
 
-//ParseNumPages Given a link header string representing pagination info, returns total number of pages.
+// ParseNumPages Given a link header string representing pagination info, returns total number of pages.
 func ParseNumPages(resp *github.Response) int {
 	link := resp.Header.Get("Link")
 	if strings.Trim(link, " ") == "" {

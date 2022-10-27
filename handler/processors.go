@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/google/go-github/v45/github"
+	"github.com/google/go-github/v48/github"
 	reviewpad_gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 )
 

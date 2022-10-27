@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/google/go-github/v45/github"
+	"github.com/google/go-github/v48/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
