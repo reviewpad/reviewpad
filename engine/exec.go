@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/google/go-github/v45/github"
+	"github.com/google/go-github/v48/github"
 	"github.com/reviewpad/reviewpad/v3/engine/commands"
 	"github.com/reviewpad/reviewpad/v3/utils/fmtio"
 )
