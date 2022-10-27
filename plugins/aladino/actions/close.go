@@ -11,7 +11,7 @@ import (
 
 func Close() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, nil),
+		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType(), aladino.BuildStringType()}, nil),
 		Code:           closeCode,
 		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest, handler.Issue},
 	}
@@ -19,6 +19,7 @@ func Close() *aladino.BuiltInAction {
 
 func closeCode(e aladino.Env, args []aladino.Value) error {
 	comment := args[0].(*aladino.StringValue).Val
+	stateReason := args[1].(*aladino.StringValue).Val
 
-	return e.GetTarget().Close(comment)
+	return e.GetTarget().Close(comment, stateReason)
 }
