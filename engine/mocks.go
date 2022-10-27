@@ -112,14 +112,14 @@ func MockGithubClient(clientOptions []mock.MockBackendOption) *gh.GithubClient {
 	return gh.NewGithubClient(githubClientREST, nil)
 }
 
-func MockEnvWith(githubClient *gh.GithubClient, interpreter Interpreter) (*Env, error) {
+func MockEnvWith(githubClient *gh.GithubClient, interpreter Interpreter, targetEntity *handler.TargetEntity) (*Env, error) {
 	dryRun := false
 	mockedEnv, err := NewEvalEnv(
 		DefaultMockCtx,
 		dryRun,
 		githubClient,
 		DefaultMockCollector,
-		DefaultMockTargetEntity,
+		targetEntity,
 		interpreter,
 	)
 

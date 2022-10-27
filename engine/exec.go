@@ -9,6 +9,7 @@ import (
 	"log"
 
 	"github.com/google/go-github/v45/github"
+	"github.com/reviewpad/reviewpad/v3/engine/commands"
 	"github.com/reviewpad/reviewpad/v3/utils/fmtio"
 )
 
@@ -121,6 +122,27 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 		}
 	}
 
+	// a program is a list of statements to be executed based on the command, workflow rules and actions.
+	program := BuildProgram(make([]*Statement, 0))
+
+	// process commands
+	if env.TargetEntity.EventName == "issue_comment" {
+		for r, command := range commands.Commands {
+			matches := r.FindAllStringSubmatch(env.TargetEntity.Comment, 1)
+
+			if len(matches) == 1 {
+				actions, err := command(matches[0])
+				if err != nil {
+					return nil, err
+				}
+
+				program.append(actions)
+
+				return program, nil
+			}
+		}
+	}
+
 	// process rules
 	for _, rule := range file.Rules {
 		err := interpreter.ProcessRule(rule.Name, rule.Spec)
@@ -130,9 +152,6 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 		}
 		rules[rule.Name] = rule
 	}
-
-	// a program is a list of statements to be executed based on the workflow rules and actions.
-	program := BuildProgram(make([]*Statement, 0))
 
 	// triggeredExclusiveWorkflow is a control variable to denote if a workflow `always-run: false` has been triggered.
 	triggeredExclusiveWorkflow := false
