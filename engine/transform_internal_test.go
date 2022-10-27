@@ -55,6 +55,18 @@ func TestTransformAladinoExpression(t *testing.T) {
 			arg:     "$pullRequestCountBy(\"john\") > 0 && true && $issueCountBy(\"dev\") > 0",
 			wantVal: "$pullRequestCountBy(\"john\", \"all\") > 0 && true && $issueCountBy(\"dev\", \"all\") > 0",
 		},
+		"close": {
+			arg:     "$close()",
+			wantVal: `$close("", "completed")`,
+		},
+		"close with comment": {
+			arg:     `$close("comment")`,
+			wantVal: `$close("comment", "completed")`,
+		},
+		"close with comment and state reason": {
+			arg:     `$close("comment", "not_planned")`,
+			wantVal: `$close("comment", "not_planned")`,
+		},
 		// TODO: test addDefaultTotalRequestedReviewers
 	}
 
