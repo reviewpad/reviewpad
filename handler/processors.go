@@ -36,7 +36,7 @@ type TargetEntity struct {
 	Owner       string
 	Repo        string
 	EventName   string
-	Comment     string
+	Comment     *github.IssueComment
 	EventAction string
 }
 
@@ -121,12 +121,13 @@ func processIssueCommentEvent(e *github.IssueCommentEvent) ([]*TargetEntity, err
 
 	return []*TargetEntity{
 		{
-			Kind:      kind,
-			Number:    *e.Issue.Number,
-			Owner:     *e.Repo.Owner.Login,
-			Repo:      *e.Repo.Name,
-			EventName: "issue_comment",
-			Comment:   *e.Comment.Body,
+			Kind:        kind,
+			Number:      *e.Issue.Number,
+			Owner:       *e.Repo.Owner.Login,
+			Repo:        *e.Repo.Name,
+			EventName:   "issue_comment",
+			Comment:     e.Comment,
+			EventAction: *e.Action,
 		},
 	}, nil
 }

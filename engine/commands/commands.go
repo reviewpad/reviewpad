@@ -5,9 +5,35 @@
 package commands
 
 import (
-	"regexp"
+	"errors"
+	"io"
+
+	"github.com/spf13/cobra"
 )
 
-var Commands = map[*regexp.Regexp]func(matches []string) ([]string, error){
-	assignReviewerRegex: AssignReviewer,
+func NewCommands(out io.Writer, args []string) *cobra.Command {
+	root := &cobra.Command{
+		Use:    "/reviewpad",
+		Hidden: true,
+		CompletionOptions: cobra.CompletionOptions{
+			DisableDefaultCmd: true,
+		},
+		SilenceUsage:  true,
+		SilenceErrors: true,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			cmd.Flags().Lookup("help").Hidden = true
+			return errors.New(cmd.UsageString())
+		},
+		DisableFlagParsing: true,
+	}
+
+	root.SetHelpCommand(&cobra.Command{Hidden: true})
+
+	root.SetOut(out)
+
+	root.SetArgs(args)
+
+	root.AddCommand(AssignReviewerCmd())
+
+	return root
 }
