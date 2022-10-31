@@ -26,11 +26,19 @@ func TestAssignReviewer(t *testing.T) {
 			},
 			wantErr: errors.New("accepts 1 arg(s), received 2"),
 		},
-		"when invalid github usernames": {
+		"when list of reviewers has invalid github username": {
 			args: []string{
 				"john2,jane-",
 			},
 			wantErr: errors.New("reviewers must be a list of comma separated valid github usernames"),
+		},
+		"when review policy is invalid": {
+			args: []string{
+				"jane,john",
+				"--total-reviewers=1",
+				"--review-policy=unknown",
+			},
+			wantErr: errors.New("invalid review policy, valid review policies are (reviewpad, round-robin, random)"),
 		},
 		"when number of reviewers is not a number": {
 			args: []string{
