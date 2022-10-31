@@ -168,7 +168,7 @@ workflows:
     description: Pull requests without linked issues are added to the project
     always-run: true
     if:
-      - rule: does-not-have-linked-issues
+      - rule: '!$hasLinkedIssues()'
     then:
       - '$addToProject("Reviewpad", "In Review")'
 
