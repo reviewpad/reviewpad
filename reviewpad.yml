@@ -129,7 +129,7 @@ rules:
 
   - name: inconsistent-state
     description: Pull request is in an inconsistent state
-    spec: '$rule("work-in-progress") && $rule("ship-mode")'
+    spec: '$isDraft() && $rule("ship-mode")'
 
 workflows:
   - name: label-ship-show-ask
