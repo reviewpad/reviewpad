@@ -51,6 +51,8 @@ Automatically adds a label `ship` and merges pull requests that only change `.md
 
 You can execute Reviewpad through the CLI or through the Reviewpad [GitHub action](https://github.com/reviewpad/action).
 
+Note: We are currently using the experimental Reviewpad service through a [GitHub app](https://github.com/apps/reviewpad).
+
 ## Architecture
 
 This repository generates two artifacts:
