@@ -454,12 +454,15 @@ func TestProcessEvent(t *testing.T) {
 			},
 			wantVal: []*handler.TargetEntity{
 				{
-					Kind:      handler.Issue,
-					Number:    130,
-					Owner:     owner,
-					Repo:      repo,
-					EventName: "issue_comment",
-					Comment:   "comment",
+					Kind:        handler.Issue,
+					Number:      130,
+					Owner:       owner,
+					Repo:        repo,
+					EventName:   "issue_comment",
+					EventAction: "opened",
+					Comment: &github.IssueComment{
+						Body: github.String("comment"),
+					},
 				},
 			},
 		},
