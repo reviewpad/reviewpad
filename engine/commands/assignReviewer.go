@@ -24,7 +24,7 @@ func AssignReviewerCmd() *cobra.Command {
 				return fmt.Errorf("accepts 1 arg(s), received %d", len(args))
 			}
 
-			if !regexp.MustCompile(`^((?:[a-zA-Z0-9\-]+[a-zA-Z0-9])(?:,\s*[a-zA-Z0-9\-]+[a-zA-Z0-9])*)$`).MatchString(args[0]) {
+			if !regexp.MustCompile(`^([a-zA-Z0-9\-]+[a-zA-Z0-9])(,[a-zA-Z0-9\-]+[a-zA-Z0-9])*$`).MatchString(args[0]) {
 				return errors.New("reviewers must be a list of comma separated valid github usernames")
 			}
 
