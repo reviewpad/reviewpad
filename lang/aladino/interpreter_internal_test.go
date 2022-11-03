@@ -780,13 +780,15 @@ func TestReportMetric(t *testing.T) {
 		graphQLHandler         func(res http.ResponseWriter, req *http.Request)
 		commentShouldBeCreated bool
 		commentShouldBeUpdated bool
+		mode                   string
 		err                    error
 	}{
 		"when getting first commit date failed": {
 			graphQLHandler: func(res http.ResponseWriter, req *http.Request) {
 				res.WriteHeader(http.StatusBadRequest)
 			},
-			err: errors.New("non-200 OK status code: 400 Bad Request body: \"\""),
+			err:  errors.New("non-200 OK status code: 400 Bad Request body: \"\""),
+			mode: "verbose",
 		},
 		"when getting first review date failed": {
 			graphQLHandler: func(res http.ResponseWriter, req *http.Request) {
@@ -814,7 +816,8 @@ func TestReportMetric(t *testing.T) {
 					res.WriteHeader(http.StatusUnprocessableEntity)
 				}
 			},
-			err: errors.New("non-200 OK status code: 422 Unprocessable Entity body: \"\""),
+			err:  errors.New("non-200 OK status code: 422 Unprocessable Entity body: \"\""),
+			mode: "verbose",
 		},
 		"when find report comment failed": {
 			graphQLHandler: func(res http.ResponseWriter, req *http.Request) {
@@ -860,7 +863,8 @@ func TestReportMetric(t *testing.T) {
 					}),
 				),
 			},
-			err: errors.New("[report] error getting issues "),
+			err:  errors.New("[report] error getting issues "),
+			mode: "verbose",
 		},
 		"when create comment failed": {
 			graphQLHandler: func(res http.ResponseWriter, req *http.Request) {
@@ -910,7 +914,8 @@ func TestReportMetric(t *testing.T) {
 					[]*github.IssueComment{},
 				),
 			},
-			err: errors.New("[report] error on creating report comment "),
+			err:  errors.New("[report] error on creating report comment "),
+			mode: "verbose",
 		},
 		"when update comment failed": {
 			graphQLHandler: func(res http.ResponseWriter, req *http.Request) {
@@ -965,7 +970,8 @@ func TestReportMetric(t *testing.T) {
 					},
 				),
 			},
-			err: errors.New("[report] error on updating report comment "),
+			err:  errors.New("[report] error on updating report comment "),
+			mode: "verbose",
 		},
 		"when successfully created report comment": {
 			graphQLHandler: func(res http.ResponseWriter, req *http.Request) {
@@ -1017,6 +1023,7 @@ func TestReportMetric(t *testing.T) {
 			},
 			commentShouldBeCreated: true,
 			err:                    nil,
+			mode:                   "verbose",
 		},
 		"when successfully updated report comment": {
 			graphQLHandler: func(res http.ResponseWriter, req *http.Request) {
@@ -1073,6 +1080,12 @@ func TestReportMetric(t *testing.T) {
 			},
 			commentShouldBeUpdated: true,
 			err:                    nil,
+			mode:                   "verbose",
+		},
+		"when mode is silent": {
+			commentShouldBeUpdated: false,
+			err:                    nil,
+			mode:                   "silent",
 		},
 	}
 
@@ -1091,7 +1104,7 @@ func TestReportMetric(t *testing.T) {
 
 			assert.Nil(t, err)
 
-			err = interpreter.ReportMetrics()
+			err = interpreter.ReportMetrics(test.mode)
 
 			assert.Equal(t, test.err, err)
 			assert.Equal(t, test.commentShouldBeCreated, commentCreated)

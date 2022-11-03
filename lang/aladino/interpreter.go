@@ -198,7 +198,7 @@ func (i *Interpreter) Report(mode string, safeMode bool) error {
 
 }
 
-func (i *Interpreter) ReportMetrics() error {
+func (i *Interpreter) ReportMetrics(mode string) error {
 	targetEntity := i.Env.GetTarget().GetTargetEntity()
 	owner := targetEntity.Owner
 	prNum := targetEntity.Number
@@ -206,7 +206,7 @@ func (i *Interpreter) ReportMetrics() error {
 	ctx := i.Env.GetCtx()
 	pr := i.Env.GetTarget().(*target.PullRequestTarget).PullRequest
 
-	if !*pr.Merged {
+	if mode != engine.VERBOSE_MODE || !*pr.Merged {
 		return nil
 	}
 

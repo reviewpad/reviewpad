@@ -86,7 +86,7 @@ func Run(
 	}
 
 	if targetEntity.Kind == handler.PullRequest && targetEntity.EventName == "pull_request" && targetEntity.EventAction == "closed" {
-		err = aladinoInterpreter.ReportMetrics()
+		err = aladinoInterpreter.ReportMetrics(reviewpadFile.Mode)
 		if err != nil {
 			engine.CollectError(evalEnv, err)
 			return engine.ExitStatusFailure, err
