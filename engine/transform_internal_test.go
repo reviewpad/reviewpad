@@ -63,9 +63,21 @@ func TestTransformAladinoExpression(t *testing.T) {
 			arg:     `$close("comment")`,
 			wantVal: `$close("comment", "completed")`,
 		},
-		"close with comment and state reason": {
+		"close with comment and not_planned state reason": {
 			arg:     `$close("comment", "not_planned")`,
 			wantVal: `$close("comment", "not_planned")`,
+		},
+		"close with comment and completed state reason": {
+			arg:     `$close("comment", "completed")`,
+			wantVal: `$close("comment", "completed")`,
+		},
+		"close with empty comment and completed state reason": {
+			arg:     `$close("", "completed")`,
+			wantVal: `$close("", "completed")`,
+		},
+		"close with empty comment and not_planned state reason": {
+			arg:     `$close("", "not_planned")`,
+			wantVal: `$close("", "not_planned")`,
 		},
 		// TODO: test addDefaultTotalRequestedReviewers
 	}
