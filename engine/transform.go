@@ -72,7 +72,7 @@ func addEmptyCloseComment(str string) string {
 	return strings.ReplaceAll(str, "$close()", "$close(\"\", \"completed\")")
 }
 
-func addCompletedCloseReason(str string) string {
+func addDefaultCloseReason(str string) string {
 	r := regexp.MustCompile(`\$close\("([^"]*)"\)`)
 	return r.ReplaceAllString(str, `$$close("$1", "completed")`)
 }
@@ -87,7 +87,7 @@ func transformAladinoExpression(str string) string {
 		addDefaultIssueCountBy,
 		addDefaultPullRequestCountBy,
 		addEmptyCloseComment,
-		addCompletedCloseReason,
+		addDefaultCloseReason,
 	}
 
 	for i := range transformations {
