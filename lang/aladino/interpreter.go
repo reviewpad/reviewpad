@@ -10,12 +10,12 @@ import (
 	"log"
 	"strings"
 
-	"github.com/nleeper/goment"
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v3/collector"
 	"github.com/reviewpad/reviewpad/v3/engine"
 	"github.com/reviewpad/reviewpad/v3/handler"
+	"github.com/reviewpad/reviewpad/v3/utils"
 	"github.com/reviewpad/reviewpad/v3/utils/fmtio"
 )
 
@@ -223,33 +223,13 @@ func (i *Interpreter) ReportMetrics(mode string) error {
 	}
 
 	if firstcommitDate != nil {
-		firstcommitDate, err := goment.New(*firstcommitDate)
-		if err != nil {
-			return err
-		}
-
-		report.WriteString(fmt.Sprintf("**💻 Coding Time**: %s", firstcommitDate.To(*pr.CreatedAt)))
+		report.WriteString(fmt.Sprintf("**💻 Coding Time**: %s", utils.FormatTimeDiff(*firstcommitDate, *pr.CreatedAt)))
 	}
 
-	if firstReviewDate != nil && firstReviewDate.Before(*pr.CreatedAt) {
-		firstReviewDate, err := goment.New(*firstReviewDate)
-		if err != nil {
-			return err
-		}
+	if firstReviewDate != nil && firstReviewDate.Before(*pr.MergedAt) {
+		report.WriteString(fmt.Sprintf("\n**🛻 Pickup Time**: %s", utils.FormatTimeDiff(*firstReviewDate, *pr.CreatedAt)))
 
-		prCreatedAt, err := goment.New(*pr.CreatedAt)
-		if err != nil {
-			return err
-		}
-
-		prMergedAt, err := goment.New(*pr.MergedAt)
-		if err != nil {
-			return err
-		}
-
-		report.WriteString(fmt.Sprintf("\n**🛻 Pickup Time**: %s", prCreatedAt.To(firstReviewDate)))
-
-		report.WriteString(fmt.Sprintf("\n**👀 Review Time**: %s", firstReviewDate.To(prMergedAt)))
+		report.WriteString(fmt.Sprintf("\n**👀 Review Time**: %s", utils.FormatTimeDiff(*pr.MergedAt, *firstReviewDate)))
 	}
 
 	if report.Len() > 0 {
