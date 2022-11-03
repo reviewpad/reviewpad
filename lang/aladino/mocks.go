@@ -104,8 +104,8 @@ func GetDefaultMockIssueDetails() *github.Issue {
 		Assignees: []*github.User{
 			{Login: github.String("jane")},
 		},
-		Title:     github.String("Amazing new feature"),
-		Body:      github.String("Please pull these awesome changes in!"),
+		Title:     github.String("Found a bug"),
+		Body:      github.String("I'm having a problem with this"),
 		URL:       github.String("https://foo.bar"),
 		CreatedAt: &issueDate,
 		Comments:  github.Int(6),
@@ -116,7 +116,7 @@ func GetDefaultMockIssueDetails() *github.Issue {
 		Labels: []*github.Label{
 			{
 				ID:   github.Int64(1),
-				Name: github.String("enhancement"),
+				Name: github.String("bug"),
 			},
 		},
 	}
