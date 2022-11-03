@@ -70,7 +70,7 @@ func (t *PullRequestTarget) GetNodeID() string {
 	return t.PullRequest.GetNodeID()
 }
 
-func (t *PullRequestTarget) Close(comment string, state string) error {
+func (t *PullRequestTarget) Close(comment string, _ string) error {
 	if comment != "" {
 		if err := t.Comment(comment); err != nil {
 			return err
