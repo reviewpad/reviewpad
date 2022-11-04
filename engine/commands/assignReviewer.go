@@ -61,7 +61,7 @@ func AssignReviewer(cmd *cobra.Command, args []string) error {
 	}
 
 	if policy != "reviewpad" && policy != "round-robin" && policy != "random" {
-		return errors.New("invalid review policy, valid review policies are (reviewpad, round-robin, random)")
+		return fmt.Errorf("invalid review policy specified: %s", policy)
 	}
 
 	action := fmt.Sprintf(`$assignReviewer([%s], %d, %q)`, availableReviewers, totalRequiredReviewers, policy)

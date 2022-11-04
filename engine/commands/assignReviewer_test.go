@@ -38,7 +38,7 @@ func TestAssignReviewer(t *testing.T) {
 				"--total-reviewers=1",
 				"--review-policy=unknown",
 			},
-			wantErr: errors.New("invalid review policy, valid review policies are (reviewpad, round-robin, random)"),
+			wantErr: errors.New("invalid review policy specified: unknown"),
 		},
 		"when number of reviewers is not a number": {
 			args: []string{
@@ -68,7 +68,7 @@ func TestAssignReviewer(t *testing.T) {
 			},
 			wantAction: `$assignReviewer(["john-123-jane"], 1, "reviewpad")`,
 		},
-		"when only two reviewers is provided": {
+		"when only two reviewers are provided": {
 			args: []string{
 				"jane,john",
 				"--total-reviewers=2",
