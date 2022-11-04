@@ -53,8 +53,8 @@ func FormatTimeDiff(x time.Time, y time.Time) string {
 	if l == 1 {
 		return parts[0]
 	} else if l == 2 {
-		return parts[0] + ", and " + parts[1]
+		return parts[0] + " and " + parts[1]
 	}
 
-	return strings.Join(parts[:l-1], ", ") + ", and " + parts[l-1]
+	return strings.Join(parts[:l-1], ", ") + " and " + parts[l-1]
 }
