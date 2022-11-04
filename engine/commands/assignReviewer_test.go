@@ -84,6 +84,14 @@ func TestAssignReviewer(t *testing.T) {
 			},
 			wantAction: `$assignReviewer(["jane","john"], 1, "round-robin")`,
 		},
+		"when number of provided reviewers is less than requested reviewers": {
+			args: []string{
+				"jane,john,jane123",
+				"--total-reviewers=5",
+				"--review-policy=round-robin",
+			},
+			wantAction: `$assignReviewer(["jane","john","jane123"], 5, "round-robin")`,
+		},
 	}
 
 	for name, test := range testCases {
