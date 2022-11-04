@@ -16,7 +16,8 @@ import (
 func AssignReviewerCmd() *cobra.Command {
 	assignReviewerCmd := &cobra.Command{
 		Use:           "assign-reviewers",
-		Short:         "Assign Reviewer To Pull Request",
+		Short:         "Assign reviewers to a pull request",
+		Long:          "Assigns a defined amount of reviewers to the pull request from the provided list of reviewers.",
 		SilenceUsage:  true,
 		SilenceErrors: true,
 		Args: func(cmd *cobra.Command, args []string) error {
