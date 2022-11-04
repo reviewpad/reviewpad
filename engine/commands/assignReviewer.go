@@ -36,7 +36,7 @@ func AssignReviewerCmd() *cobra.Command {
 
 	flags := assignReviewerCmd.Flags()
 
-	flags.StringP("review-policy", "p", "reviewpad", "valid values are random, round-robin, reviewpad, default value is reviewpad")
+	flags.StringP("review-policy", "p", "reviewpad", "The policy followed for reviewer assignment. The valid values can only be: random, round-robin, reviewpad. By default, the policy is reviewpad.")
 
 	flags.Int8P("total-reviewers", "t", 1, "Total number of reviewers, default value is 1")
 
