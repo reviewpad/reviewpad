@@ -3,6 +3,7 @@ module github.com/reviewpad/reviewpad/v3
 go 1.18
 
 require (
+	github.com/aws/aws-secretsmanager-caching-go v1.1.0
 	github.com/bmatcuk/doublestar/v4 v4.2.0
 	github.com/dukex/mixpanel v1.0.1
 	github.com/golang/mock v1.6.0
@@ -27,11 +28,13 @@ require (
 )
 
 require (
+	github.com/aws/aws-sdk-go v1.19.23 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/go-github/v41 v41.0.0 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
+	github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rogpeppe/go-internal v1.9.0 // indirect
