@@ -45,7 +45,7 @@ func TestAssignReviewer(t *testing.T) {
 				"john,jane,john2,jane27",
 				"--total-reviewers=z",
 			},
-			wantErr: errors.New("invalid argument \"z\" for \"-t, --total-reviewers\" flag: strconv.ParseInt: parsing \"z\": invalid syntax"),
+			wantErr: errors.New("invalid argument \"z\" for \"-t, --total-reviewers\" flag: strconv.ParseUint: parsing \"z\": invalid syntax"),
 		},
 		"when missing number of reviewers and policy": {
 			args: []string{
