@@ -92,6 +92,13 @@ func TestAssignReviewer(t *testing.T) {
 			},
 			wantAction: `$assignReviewer(["jane","john","jane123"], 5, "round-robin")`,
 		},
+		"when missing number of reviewers": {
+			args: []string{
+				"jane,john,jane123",
+				"--review-policy=reviewpad",
+			},
+			wantAction: `$assignReviewer(["jane","john","jane123"], 3, "reviewpad")`,
+		},
 	}
 
 	for name, test := range testCases {
