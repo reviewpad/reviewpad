@@ -71,8 +71,10 @@ func TestAssignReviewer(t *testing.T) {
 		"when only two reviewers are provided": {
 			args: []string{
 				"jane,john",
-				"--total-reviewers=2",
-				"--review-policy=random",
+				"--total-reviewers",
+				"2",
+				"--review-policy",
+				"random",
 			},
 			wantAction: `$assignReviewer(["jane","john"], 2, "random")`,
 		},
@@ -80,14 +82,16 @@ func TestAssignReviewer(t *testing.T) {
 			args: []string{
 				"jane,john",
 				"--total-reviewers=1",
-				"--review-policy=round-robin",
+				"--review-policy",
+				"round-robin",
 			},
 			wantAction: `$assignReviewer(["jane","john"], 1, "round-robin")`,
 		},
 		"when number of provided reviewers is less than requested reviewers": {
 			args: []string{
 				"jane,john,jane123",
-				"--total-reviewers=5",
+				"--total-reviewers",
+				"5",
 				"--review-policy=round-robin",
 			},
 			wantAction: `$assignReviewer(["jane","john","jane123"], 5, "round-robin")`,
