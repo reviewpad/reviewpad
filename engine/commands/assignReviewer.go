@@ -38,7 +38,7 @@ func AssignReviewerCmd() *cobra.Command {
 
 	flags.StringP("review-policy", "p", "reviewpad", "The policy followed for reviewer assignment. The valid values can only be: random, round-robin, reviewpad. By default, the policy is reviewpad.")
 
-	flags.Int8P("total-reviewers", "t", 1, "Total number of reviewers, default value is 1")
+	flags.Uint8P("total-reviewers", "t", 0, "The total number of reviewers to assign to. By default, it assigns to all reviewers.")
 
 	return assignReviewerCmd
 }
@@ -50,9 +50,13 @@ func AssignReviewer(cmd *cobra.Command, args []string) error {
 
 	availableReviewers := `"` + strings.Join(reviewersList, `","`) + `"`
 
-	totalRequiredReviewers, err := flags.GetInt8("total-reviewers")
+	totalRequiredReviewers, err := flags.GetUint8("total-reviewers")
 	if err != nil {
 		return err
+	}
+
+	if totalRequiredReviewers == 0 {
+		totalRequiredReviewers = uint8(len(reviewersList))
 	}
 
 	policy, err := flags.GetString("review-policy")
