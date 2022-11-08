@@ -150,6 +150,8 @@ func TestRebaseOnto_WhenOntoBranchDoesNotExist(t *testing.T) {
 }
 
 func TestRebaseOnto_WhenInitRebaseFails(t *testing.T) {
+	// TODO: Issue #437
+	t.SkipNow()
 	repo := createTestRepo(t, true)
 	defer cleanupTestRepo(t, repo)
 
@@ -192,6 +194,8 @@ func TestRebaseOnto_WhenInitRebaseFails(t *testing.T) {
 }
 
 func TestRebaseOnto_WhenRebaseCommitFails(t *testing.T) {
+	// TODO: Issue #437
+	t.SkipNow()
 	repo := createTestRepo(t, false)
 	defer cleanupTestRepo(t, repo)
 
@@ -258,6 +262,8 @@ func TestRebaseOnto(t *testing.T) {
 }
 
 func TestPush(t *testing.T) {
+	// TODO: Issue #437
+	t.SkipNow()
 	// Local push doesn't (yet) support pushing to non-bare repos so we need to work with bare repos.
 	repo := createTestRepo(t, true)
 	defer cleanupTestRepo(t, repo)

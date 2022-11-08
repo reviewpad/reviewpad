@@ -74,6 +74,8 @@ func TestRebase(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
+			// TODO: Issue #437
+			t.SkipNow()
 			mockedEnv := aladino.MockDefaultEnv(
 				t,
 				[]mock.MockBackendOption{
