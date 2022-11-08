@@ -16,6 +16,7 @@ import (
 	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
+	"github.com/reviewpad/reviewpad/v3/utils"
 	"github.com/reviewpad/reviewpad/v3/utils/fmtio"
 )
 
@@ -85,7 +86,7 @@ func Run(
 		}
 	}
 
-	if targetEntity.Kind == handler.PullRequest && targetEntity.EventName == "pull_request" && targetEntity.EventAction == "closed" {
+	if utils.IsPullRequestReadyForReportMetrics(targetEntity) {
 		err = aladinoInterpreter.ReportMetrics(reviewpadFile.Mode)
 		if err != nil {
 			engine.CollectError(evalEnv, err)

@@ -74,7 +74,7 @@ func diff(a, b time.Time) (year, month, day, hour, min, sec int) {
 	return
 }
 
-func FormatTimeDiff(x time.Time, y time.Time) string {
+func ReadableTimeDiff(x time.Time, y time.Time) string {
 	years, months, days, hours, minutes, seconds := diff(x, y)
 	parts := make([]string, 0, 6)
 

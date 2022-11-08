@@ -218,13 +218,13 @@ func (i *Interpreter) ReportMetrics(mode string) error {
 	}
 
 	if firstCommitDate != nil {
-		report.WriteString(fmt.Sprintf("**💻 Coding Time**: %s", utils.FormatTimeDiff(*firstCommitDate, *pr.CreatedAt)))
+		report.WriteString(fmt.Sprintf("**💻 Coding Time**: %s", utils.ReadableTimeDiff(*firstCommitDate, *pr.CreatedAt)))
 	}
 
 	if firstReviewDate != nil && firstReviewDate.Before(*pr.MergedAt) {
-		report.WriteString(fmt.Sprintf("\n**🛻 Pickup Time**: %s", utils.FormatTimeDiff(*firstReviewDate, *pr.CreatedAt)))
+		report.WriteString(fmt.Sprintf("\n**🛻 Pickup Time**: %s", utils.ReadableTimeDiff(*pr.CreatedAt, *firstReviewDate)))
 
-		report.WriteString(fmt.Sprintf("\n**👀 Review Time**: %s", utils.FormatTimeDiff(*pr.MergedAt, *firstReviewDate)))
+		report.WriteString(fmt.Sprintf("\n**👀 Review Time**: %s", utils.ReadableTimeDiff(*firstReviewDate, *pr.MergedAt)))
 	}
 
 	if report.Len() > 0 {

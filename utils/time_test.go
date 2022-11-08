@@ -83,7 +83,7 @@ func TestFormatTimeDiff(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			result := utils.FormatTimeDiff(test.firstTime, test.secondTime)
+			result := utils.ReadableTimeDiff(test.firstTime, test.secondTime)
 			assert.Equal(t, test.result, result)
 		})
 	}
