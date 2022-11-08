@@ -212,18 +212,13 @@ func (i *Interpreter) ReportMetrics(mode string) error {
 
 	report := strings.Builder{}
 
-	firstcommitDate, err := i.Env.GetGithubClient().GetFirstCommitDate(ctx, owner, repo, prNum)
+	firstCommitDate, firstReviewDate, err := i.Env.GetGithubClient().GetFirstCommitAndReviewDate(ctx, owner, repo, prNum)
 	if err != nil {
 		return err
 	}
 
-	firstReviewDate, err := i.Env.GetGithubClient().GetFirstReviewDate(ctx, owner, repo, prNum)
-	if err != nil {
-		return err
-	}
-
-	if firstcommitDate != nil {
-		report.WriteString(fmt.Sprintf("**💻 Coding Time**: %s", utils.FormatTimeDiff(*firstcommitDate, *pr.CreatedAt)))
+	if firstCommitDate != nil {
+		report.WriteString(fmt.Sprintf("**💻 Coding Time**: %s", utils.FormatTimeDiff(*firstCommitDate, *pr.CreatedAt)))
 	}
 
 	if firstReviewDate != nil && firstReviewDate.Before(*pr.MergedAt) {

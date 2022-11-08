@@ -56,7 +56,7 @@ type LastPushQuery struct {
 	} `graphql:"repository(owner: $repositoryOwner, name: $repositoryName)"`
 }
 
-type FirstCommitDateQuery struct {
+type FirstCommitAndReviewDateQuery struct {
 	Repository struct {
 		PullRequest struct {
 			Commits struct {
@@ -66,13 +66,6 @@ type FirstCommitDateQuery struct {
 					}
 				}
 			} `graphql:"commits(first: 1)"`
-		} `graphql:"pullRequest(number: $pullRequestNumber)"`
-	} `graphql:"repository(owner: $repositoryOwner, name: $repositoryName)"`
-}
-
-type FirstReviewDateQuery struct {
-	Repository struct {
-		PullRequest struct {
 			Reviews struct {
 				Nodes []struct {
 					CreatedAt time.Time
@@ -433,42 +426,28 @@ func (c *GithubClient) DeleteReference(ctx context.Context, owner, repo, ref str
 	return err
 }
 
-func (c *GithubClient) GetFirstCommitDate(ctx context.Context, owner, repo string, number int) (*time.Time, error) {
-	var firstCommitDateQuery FirstCommitDateQuery
+func (c *GithubClient) GetFirstCommitAndReviewDate(ctx context.Context, owner, repo string, number int) (*time.Time, *time.Time, error) {
+	var firstCommitAndReviewDateQuery FirstCommitAndReviewDateQuery
 	varGQLFirstCommitDate := map[string]interface{}{
 		"repositoryOwner":   githubv4.String(owner),
 		"repositoryName":    githubv4.String(repo),
 		"pullRequestNumber": githubv4.Int(number),
 	}
 
-	err := c.GetClientGraphQL().Query(ctx, &firstCommitDateQuery, varGQLFirstCommitDate)
+	err := c.GetClientGraphQL().Query(ctx, &firstCommitAndReviewDateQuery, varGQLFirstCommitDate)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	if len(firstCommitDateQuery.Repository.PullRequest.Commits.Nodes) == 1 {
-		return &firstCommitDateQuery.Repository.PullRequest.Commits.Nodes[0].Commit.AuthoredDate, nil
+	var firstCommit, firstReview *time.Time
+
+	if len(firstCommitAndReviewDateQuery.Repository.PullRequest.Commits.Nodes) == 1 {
+		firstCommit = &firstCommitAndReviewDateQuery.Repository.PullRequest.Commits.Nodes[0].Commit.AuthoredDate
 	}
 
-	return nil, nil
-}
-
-func (c *GithubClient) GetFirstReviewDate(ctx context.Context, owner, repo string, number int) (*time.Time, error) {
-	var firstReviewDateQuery FirstReviewDateQuery
-	varGQLFirstReviewDate := map[string]interface{}{
-		"repositoryOwner":   githubv4.String(owner),
-		"repositoryName":    githubv4.String(repo),
-		"pullRequestNumber": githubv4.Int(number),
+	if len(firstCommitAndReviewDateQuery.Repository.PullRequest.Reviews.Nodes) == 1 {
+		firstReview = &firstCommitAndReviewDateQuery.Repository.PullRequest.Reviews.Nodes[0].CreatedAt
 	}
 
-	err := c.GetClientGraphQL().Query(ctx, &firstReviewDateQuery, varGQLFirstReviewDate)
-	if err != nil {
-		return nil, err
-	}
-
-	if len(firstReviewDateQuery.Repository.PullRequest.Reviews.Nodes) == 1 {
-		return &firstReviewDateQuery.Repository.PullRequest.Reviews.Nodes[0].CreatedAt, nil
-	}
-
-	return nil, nil
+	return firstCommit, firstReview, nil
 }

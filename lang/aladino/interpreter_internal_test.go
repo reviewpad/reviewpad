@@ -18,7 +18,6 @@ import (
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/engine"
 	"github.com/reviewpad/reviewpad/v3/handler"
-	"github.com/reviewpad/reviewpad/v3/utils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -752,27 +751,6 @@ func TestNewInterpreter(t *testing.T) {
 }
 
 func TestReportMetric(t *testing.T) {
-	getFirstCommitDateQuery := `{
-		"query": "query($pullRequestNumber:Int! $repositoryName:String! $repositoryOwner:String!) {
-			repository(owner: $repositoryOwner, name: $repositoryName) {
-				pullRequest(number: $pullRequestNumber) {
-					commits(first: 1){
-						nodes{
-							commit{
-								authoredDate
-							}
-						}
-					}
-				}
-			}
-		}",
-		"variables":{
-			"pullRequestNumber": 6,
-			"repositoryName": "default-mock-repo",
-			"repositoryOwner":"foobar"
-		}
-	}
-	`
 	commentCreated := false
 	commentUpdated := false
 	tests := map[string]struct {
@@ -783,48 +761,18 @@ func TestReportMetric(t *testing.T) {
 		mode                   string
 		err                    error
 	}{
-		"when getting first commit date failed": {
+		"when getting first commit and review date failed": {
 			graphQLHandler: func(res http.ResponseWriter, req *http.Request) {
 				res.WriteHeader(http.StatusBadRequest)
 			},
 			err:  errors.New("non-200 OK status code: 400 Bad Request body: \"\""),
 			mode: "verbose",
 		},
-		"when getting first review date failed": {
-			graphQLHandler: func(res http.ResponseWriter, req *http.Request) {
-				query := utils.MinifyQuery(MustRead(req.Body))
-				switch string(query) {
-				case utils.MinifyQuery(getFirstCommitDateQuery):
-					MustWrite(res, `{
-						"data": {
-							"repository": {
-								"pullRequest": {
-									"commits": {
-										"nodes": [
-											{
-												"commit": {
-													"authoredDate": "2022-10-26T07:53:27Z"
-												}
-											}
-										]
-									}
-								}
-							}
-						}
-					}`)
-				default:
-					res.WriteHeader(http.StatusUnprocessableEntity)
-				}
-			},
-			err:  errors.New("non-200 OK status code: 422 Unprocessable Entity body: \"\""),
-			mode: "verbose",
-		},
 		"when find report comment failed": {
 			graphQLHandler: func(res http.ResponseWriter, req *http.Request) {
-				query := utils.MinifyQuery(MustRead(req.Body))
-				switch string(query) {
-				case utils.MinifyQuery(getFirstCommitDateQuery):
-					MustWrite(res, `{
+				MustWrite(
+					res,
+					`{
 						"data": {
 							"repository": {
 								"pullRequest": {
@@ -836,24 +784,15 @@ func TestReportMetric(t *testing.T) {
 												}
 											}
 										]
-									}
-								}
-							}
-						}
-					}`)
-				default:
-					MustWrite(res, `{
-						"data": {
-							"repository": {
-								"pullRequest": {
+									},
 									"reviews": {
 										"nodes": []
 									}
 								}
 							}
 						}
-					}`)
-				}
+					}`,
+				)
 			},
 			clientOptions: []mock.MockBackendOption{
 				mock.WithRequestMatchHandler(
@@ -868,10 +807,9 @@ func TestReportMetric(t *testing.T) {
 		},
 		"when create comment failed": {
 			graphQLHandler: func(res http.ResponseWriter, req *http.Request) {
-				query := utils.MinifyQuery(MustRead(req.Body))
-				switch string(query) {
-				case utils.MinifyQuery(getFirstCommitDateQuery):
-					MustWrite(res, `{
+				MustWrite(
+					res,
+					`{
 						"data": {
 							"repository": {
 								"pullRequest": {
@@ -883,24 +821,15 @@ func TestReportMetric(t *testing.T) {
 												}
 											}
 										]
-									}
-								}
-							}
-						}
-					}`)
-				default:
-					MustWrite(res, `{
-						"data": {
-							"repository": {
-								"pullRequest": {
+									},
 									"reviews": {
 										"nodes": []
 									}
 								}
 							}
 						}
-					}`)
-				}
+					}`,
+				)
 			},
 			clientOptions: []mock.MockBackendOption{
 				mock.WithRequestMatchHandler(
@@ -919,10 +848,9 @@ func TestReportMetric(t *testing.T) {
 		},
 		"when update comment failed": {
 			graphQLHandler: func(res http.ResponseWriter, req *http.Request) {
-				query := utils.MinifyQuery(MustRead(req.Body))
-				switch string(query) {
-				case utils.MinifyQuery(getFirstCommitDateQuery):
-					MustWrite(res, `{
+				MustWrite(
+					res,
+					`{
 						"data": {
 							"repository": {
 								"pullRequest": {
@@ -934,24 +862,15 @@ func TestReportMetric(t *testing.T) {
 												}
 											}
 										]
-									}
-								}
-							}
-						}
-					}`)
-				default:
-					MustWrite(res, `{
-						"data": {
-							"repository": {
-								"pullRequest": {
+									},
 									"reviews": {
 										"nodes": []
 									}
 								}
 							}
 						}
-					}`)
-				}
+					}`,
+				)
 			},
 			clientOptions: []mock.MockBackendOption{
 				mock.WithRequestMatchHandler(
@@ -975,10 +894,9 @@ func TestReportMetric(t *testing.T) {
 		},
 		"when successfully created report comment": {
 			graphQLHandler: func(res http.ResponseWriter, req *http.Request) {
-				query := utils.MinifyQuery(MustRead(req.Body))
-				switch string(query) {
-				case utils.MinifyQuery(getFirstCommitDateQuery):
-					MustWrite(res, `{
+				MustWrite(
+					res,
+					`{
 						"data": {
 							"repository": {
 								"pullRequest": {
@@ -990,24 +908,15 @@ func TestReportMetric(t *testing.T) {
 												}
 											}
 										]
-									}
-								}
-							}
-						}
-					}`)
-				default:
-					MustWrite(res, `{
-						"data": {
-							"repository": {
-								"pullRequest": {
+									},
 									"reviews": {
 										"nodes": []
 									}
 								}
 							}
 						}
-					}`)
-				}
+					}`,
+				)
 			},
 			clientOptions: []mock.MockBackendOption{
 				mock.WithRequestMatchHandler(
@@ -1027,10 +936,9 @@ func TestReportMetric(t *testing.T) {
 		},
 		"when successfully updated report comment": {
 			graphQLHandler: func(res http.ResponseWriter, req *http.Request) {
-				query := utils.MinifyQuery(MustRead(req.Body))
-				switch string(query) {
-				case utils.MinifyQuery(getFirstCommitDateQuery):
-					MustWrite(res, `{
+				MustWrite(
+					res,
+					`{
 						"data": {
 							"repository": {
 								"pullRequest": {
@@ -1042,24 +950,15 @@ func TestReportMetric(t *testing.T) {
 												}
 											}
 										]
-									}
-								}
-							}
-						}
-					}`)
-				default:
-					MustWrite(res, `{
-						"data": {
-							"repository": {
-								"pullRequest": {
+									},
 									"reviews": {
 										"nodes": []
 									}
 								}
 							}
 						}
-					}`)
-				}
+					}`,
+				)
 			},
 			clientOptions: []mock.MockBackendOption{
 				mock.WithRequestMatchHandler(
