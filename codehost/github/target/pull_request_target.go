@@ -71,12 +71,6 @@ func (t *PullRequestTarget) GetNodeID() string {
 }
 
 func (t *PullRequestTarget) Close(comment string, _ string) error {
-	if comment != "" {
-		if err := t.Comment(comment); err != nil {
-			return err
-		}
-	}
-
 	ctx := t.ctx
 	targetEntity := t.targetEntity
 	owner := targetEntity.Owner
@@ -87,6 +81,15 @@ func (t *PullRequestTarget) Close(comment string, _ string) error {
 	pr.State = github.String("closed")
 
 	_, _, err := t.githubClient.EditPullRequest(ctx, owner, repo, number, pr)
+	if err != nil {
+		return err
+	}
+
+	if comment != "" {
+		if err := t.Comment(comment); err != nil {
+			return err
+		}
+	}
 
 	return err
 }
