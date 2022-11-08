@@ -70,10 +70,10 @@ expr :
 ;
 
 type :
-      TK_STRING_TYPE       { $$ = BuildStringType() }
-    | TK_INT_TYPE          { $$ = BuildIntType() }
-    | TK_BOOL_TYPE         { $$ = BuildBoolType() }
-    | '[' ']' type { $$ = BuildArrayOfType($3) }
+      TK_STRING_TYPE                          { $$ = BuildStringType() }
+    | TK_INT_TYPE                             { $$ = BuildIntType() }
+    | TK_BOOL_TYPE                            { $$ = BuildBoolType() }
+    | '[' ']' type                            { $$ = BuildArrayOfType($3) }
     | TK_FUNCTION_TYPE '(' type_list ')' type { $$ = BuildFunctionType($3, $5) }
 ;
 
