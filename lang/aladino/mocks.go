@@ -93,6 +93,35 @@ func GetDefaultMockPullRequestDetails() *github.PullRequest {
 	}
 }
 
+func GetDefaultMockIssueDetails() *github.Issue {
+	issueNum := DefaultMockPrNum
+	issueId := int64(DefaultMockPrID)
+	issueDate := DefaultMockPrDate
+
+	return &github.Issue{
+		ID:   &issueId,
+		User: &github.User{Login: github.String("john")},
+		Assignees: []*github.User{
+			{Login: github.String("jane")},
+		},
+		Title:     github.String("Found a bug"),
+		Body:      github.String("I'm having a problem with this"),
+		URL:       github.String("https://foo.bar"),
+		CreatedAt: &issueDate,
+		Comments:  github.Int(6),
+		Number:    github.Int(issueNum),
+		Milestone: &github.Milestone{
+			Title: github.String("v1.0"),
+		},
+		Labels: []*github.Label{
+			{
+				ID:   github.Int64(1),
+				Name: github.String("bug"),
+			},
+		},
+	}
+}
+
 func GetDefaultMockPullRequestDetailsWith(pr *github.PullRequest) *github.PullRequest {
 	defaultPullRequest := GetDefaultMockPullRequestDetails()
 
@@ -257,7 +286,7 @@ func mockHttpClientWith(clientOptions ...mock.MockBackendOption) *http.Client {
 	return mock.NewMockedHTTPClient(clientOptions...)
 }
 
-func mockEnvWith(prOwner string, prRepoName string, prNum int, githubClient *gh.GithubClient, eventPayload interface{}, builtIns *BuiltIns) (Env, error) {
+func mockEnvWith(prOwner string, prRepoName string, prNum int, githubClient *gh.GithubClient, eventPayload interface{}, builtIns *BuiltIns, targetEntity *handler.TargetEntity) (Env, error) {
 	ctx := context.Background()
 
 	env, err := NewEvalEnv(
@@ -265,7 +294,7 @@ func mockEnvWith(prOwner string, prRepoName string, prNum int, githubClient *gh.
 		false,
 		githubClient,
 		DefaultMockCollector,
-		DefaultMockTargetEntity,
+		targetEntity,
 		eventPayload,
 		builtIns,
 	)
@@ -295,6 +324,13 @@ func mockDefaultHttpClient(clientOptions []mock.MockBackendOption) *http.Client 
 			mock.GetReposPullsFilesByOwnerByRepoByPullNumber,
 			http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 				w.Write(mock.MustMarshal(getDefaultMockPullRequestFileList()))
+			}),
+		),
+		mock.WithRequestMatchHandler(
+			// Mock request to get issue details
+			mock.GetReposIssuesByOwnerByRepoByIssueNumber,
+			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w.Write(mock.MustMarshal(GetDefaultMockIssueDetails()))
 			}),
 		),
 	}
@@ -343,9 +379,31 @@ func MockDefaultEnv(
 	prNum := DefaultMockPrNum
 	githubClient := MockDefaultGithubClient(ghApiClientOptions, ghGraphQLHandler)
 
-	mockedEnv, err := mockEnvWith(prOwner, prRepoName, prNum, githubClient, eventPayload, builtIns)
+	mockedEnv, err := mockEnvWith(prOwner, prRepoName, prNum, githubClient, eventPayload, builtIns, DefaultMockTargetEntity)
 	if err != nil {
 		t.Fatalf("[MockDefaultEnv] failed to create mock env: %v", err)
+	}
+
+	return mockedEnv
+}
+
+// MockDefaultEnvWithTargetEntity mocks an Aladino Env with default values and a custom TargetEntity.
+func MockDefaultEnvWithTargetEntity(
+	t *testing.T,
+	ghApiClientOptions []mock.MockBackendOption,
+	ghGraphQLHandler func(http.ResponseWriter, *http.Request),
+	builtIns *BuiltIns,
+	eventPayload interface{},
+	targetEntity *handler.TargetEntity,
+) Env {
+	prOwner := DefaultMockPrOwner
+	prRepoName := DefaultMockPrRepoName
+	prNum := DefaultMockPrNum
+	githubClient := MockDefaultGithubClient(ghApiClientOptions, ghGraphQLHandler)
+
+	mockedEnv, err := mockEnvWith(prOwner, prRepoName, prNum, githubClient, eventPayload, builtIns, targetEntity)
+	if err != nil {
+		t.Fatalf("[MockDefaultEnvWithTargetEntity] failed to create mock env: %v", err)
 	}
 
 	return mockedEnv
