@@ -24,7 +24,9 @@ tasks:
 
       Run with --watch or -w to watch for changes on Go files.
     cmds:
-      - go build
+      # We are using -buildmode=pie to avoid the following error on MacOS:
+      # ld: warning: -no_pie is deprecated when targeting new OS versions
+      - go build -buildmode=pie
     sources:
       - ./**/*.go
 
@@ -33,8 +35,8 @@ tasks:
       Generates Aladino parser written in Go.
 
       Run with --watch or -w to watch for changes on yacc file.
-    # For debug purposes, remove the -l argumment enabling the line directives in parser.go.
     cmds:
+      # For debug purposes, remove the -l argumment enabling the line directives in parser.go.
       - goyacc -l -o lang/aladino/parser.go -p Aladino lang/aladino/parser.y
     sources:
       - lang/aladino/parser.y
@@ -47,7 +49,7 @@ tasks:
 
       Run with --watch or -w to watch for changes on Go files.
     cmds:
-      - go build -o reviewpad-cli ./cli/main.go
+      - go build -buildmode=pie -o reviewpad-cli ./cli/main.go
     sources:
       - ./cli/**/*.go
 
@@ -57,7 +59,7 @@ tasks:
 
       Run with --watch or -w to watch for changes on _test.go files.
     cmds:
-      - gotestsum -- -coverprofile=coverage.out ./...
+      - gotestsum -- -buildmode=pie -coverprofile=coverage.out ./...
       - . scripts/exclude-from-code-coverage.sh
     sources:
       - ./**/*_test.go
