@@ -40,12 +40,6 @@ func (t *IssueTarget) GetNodeID() string {
 }
 
 func (t *IssueTarget) Close(comment string, stateReason string) error {
-	if comment != "" {
-		if err := t.Comment(comment); err != nil {
-			return err
-		}
-	}
-
 	ctx := t.ctx
 	targetEntity := t.targetEntity
 	owner := targetEntity.Owner
@@ -59,6 +53,15 @@ func (t *IssueTarget) Close(comment string, stateReason string) error {
 	}
 
 	_, _, err := t.githubClient.EditIssue(ctx, owner, repo, number, issueRequest)
+	if err != nil {
+		return err
+	}
+
+	if comment != "" {
+		if err := t.Comment(comment); err != nil {
+			return err
+		}
+	}
 
 	return err
 }
