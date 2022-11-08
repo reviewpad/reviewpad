@@ -8,11 +8,14 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
+	"github.com/reviewpad/reviewpad/v3/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v3/collector"
 	"github.com/reviewpad/reviewpad/v3/engine"
 	"github.com/reviewpad/reviewpad/v3/handler"
+	"github.com/reviewpad/reviewpad/v3/utils"
 	"github.com/reviewpad/reviewpad/v3/utils/fmtio"
 )
 
@@ -171,7 +174,7 @@ func (i *Interpreter) Report(mode string, safeMode bool) error {
 
 	var err error
 
-	comment, err := FindReportComment(env)
+	comment, err := FindReportCommentByAnnotation(env, ReviewpadReportCommentAnnotation)
 	if err != nil {
 		return err
 	}
@@ -193,6 +196,60 @@ func (i *Interpreter) Report(mode string, safeMode bool) error {
 
 	return UpdateReportComment(env, *comment.ID, report)
 
+}
+
+func (i *Interpreter) ReportMetrics(mode string) error {
+	targetEntity := i.Env.GetTarget().GetTargetEntity()
+	owner := targetEntity.Owner
+	prNum := targetEntity.Number
+	repo := targetEntity.Repo
+	ctx := i.Env.GetCtx()
+	pr := i.Env.GetTarget().(*target.PullRequestTarget).PullRequest
+
+	if mode != engine.VERBOSE_MODE || !*pr.Merged {
+		return nil
+	}
+
+	report := strings.Builder{}
+
+	firstCommitDate, firstReviewDate, err := i.Env.GetGithubClient().GetFirstCommitAndReviewDate(ctx, owner, repo, prNum)
+	if err != nil {
+		return err
+	}
+
+	if firstCommitDate != nil {
+		report.WriteString(fmt.Sprintf("**💻 Coding Time**: %s", utils.ReadableTimeDiff(*firstCommitDate, *pr.CreatedAt)))
+	}
+
+	if firstReviewDate != nil && firstReviewDate.Before(*pr.MergedAt) {
+		report.WriteString(fmt.Sprintf("\n**🛻 Pickup Time**: %s", utils.ReadableTimeDiff(*pr.CreatedAt, *firstReviewDate)))
+
+		report.WriteString(fmt.Sprintf("\n**👀 Review Time**: %s", utils.ReadableTimeDiff(*firstReviewDate, *pr.MergedAt)))
+	}
+
+	if report.Len() > 0 {
+		comment, err := FindReportCommentByAnnotation(i.Env, ReviewpadMetricReportCommentAnnotation)
+		if err != nil {
+			return err
+		}
+
+		r := ReviewpadMetricReportCommentAnnotation + "\n## 📈 Pull Request Metrics\n" + report.String()
+
+		if comment == nil {
+			err = AddReportComment(i.Env, r)
+			if err != nil {
+				return err
+			}
+			return nil
+		}
+
+		err = UpdateReportComment(i.Env, *comment.ID, r)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func NewInterpreter(

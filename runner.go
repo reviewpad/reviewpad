@@ -16,6 +16,7 @@ import (
 	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
+	"github.com/reviewpad/reviewpad/v3/utils"
 	"github.com/reviewpad/reviewpad/v3/utils/fmtio"
 )
 
@@ -79,6 +80,14 @@ func Run(
 
 	if safeMode || !dryRun {
 		err = aladinoInterpreter.Report(reviewpadFile.Mode, safeMode)
+		if err != nil {
+			engine.CollectError(evalEnv, err)
+			return engine.ExitStatusFailure, err
+		}
+	}
+
+	if utils.IsPullRequestReadyForReportMetrics(targetEntity) {
+		err = aladinoInterpreter.ReportMetrics(reviewpadFile.Mode)
 		if err != nil {
 			engine.CollectError(evalEnv, err)
 			return engine.ExitStatusFailure, err

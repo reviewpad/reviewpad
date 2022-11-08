@@ -7,6 +7,7 @@ package aladino
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -747,4 +748,269 @@ func TestNewInterpreter(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantInterpreter, gotInterpreter)
+}
+
+func TestReportMetric(t *testing.T) {
+	commentCreated := false
+	commentUpdated := false
+	tests := map[string]struct {
+		clientOptions          []mock.MockBackendOption
+		graphQLHandler         func(res http.ResponseWriter, req *http.Request)
+		commentShouldBeCreated bool
+		commentShouldBeUpdated bool
+		mode                   string
+		err                    error
+	}{
+		"when getting first commit and review date failed": {
+			graphQLHandler: func(res http.ResponseWriter, req *http.Request) {
+				res.WriteHeader(http.StatusBadRequest)
+			},
+			err:  errors.New("non-200 OK status code: 400 Bad Request body: \"\""),
+			mode: "verbose",
+		},
+		"when find report comment failed": {
+			graphQLHandler: func(res http.ResponseWriter, req *http.Request) {
+				MustWrite(
+					res,
+					`{
+						"data": {
+							"repository": {
+								"pullRequest": {
+									"commits": {
+										"nodes": [
+											{
+												"commit": {
+													"authoredDate": "2022-10-26T07:53:27Z"
+												}
+											}
+										]
+									},
+									"reviews": {
+										"nodes": []
+									}
+								}
+							}
+						}
+					}`,
+				)
+			},
+			clientOptions: []mock.MockBackendOption{
+				mock.WithRequestMatchHandler(
+					mock.GetReposIssuesCommentsByOwnerByRepoByIssueNumber,
+					http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+						w.WriteHeader(http.StatusExpectationFailed)
+					}),
+				),
+			},
+			err:  errors.New("[report] error getting issues "),
+			mode: "verbose",
+		},
+		"when create comment failed": {
+			graphQLHandler: func(res http.ResponseWriter, req *http.Request) {
+				MustWrite(
+					res,
+					`{
+						"data": {
+							"repository": {
+								"pullRequest": {
+									"commits": {
+										"nodes": [
+											{
+												"commit": {
+													"authoredDate": "2022-10-26T07:53:27Z"
+												}
+											}
+										]
+									},
+									"reviews": {
+										"nodes": []
+									}
+								}
+							}
+						}
+					}`,
+				)
+			},
+			clientOptions: []mock.MockBackendOption{
+				mock.WithRequestMatchHandler(
+					mock.PostReposIssuesCommentsByOwnerByRepoByIssueNumber,
+					http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+						w.WriteHeader(http.StatusBadRequest)
+					}),
+				),
+				mock.WithRequestMatch(
+					mock.GetReposIssuesCommentsByOwnerByRepoByIssueNumber,
+					[]*github.IssueComment{},
+				),
+			},
+			err:  errors.New("[report] error on creating report comment "),
+			mode: "verbose",
+		},
+		"when update comment failed": {
+			graphQLHandler: func(res http.ResponseWriter, req *http.Request) {
+				MustWrite(
+					res,
+					`{
+						"data": {
+							"repository": {
+								"pullRequest": {
+									"commits": {
+										"nodes": [
+											{
+												"commit": {
+													"authoredDate": "2022-10-26T07:53:27Z"
+												}
+											}
+										]
+									},
+									"reviews": {
+										"nodes": []
+									}
+								}
+							}
+						}
+					}`,
+				)
+			},
+			clientOptions: []mock.MockBackendOption{
+				mock.WithRequestMatchHandler(
+					mock.PatchReposIssuesCommentsByOwnerByRepoByCommentId,
+					http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+						w.WriteHeader(http.StatusBadRequest)
+					}),
+				),
+				mock.WithRequestMatch(
+					mock.GetReposIssuesCommentsByOwnerByRepoByIssueNumber,
+					[]*github.IssueComment{
+						{
+							ID:   github.Int64(1),
+							Body: github.String(ReviewpadMetricReportCommentAnnotation),
+						},
+					},
+				),
+			},
+			err:  errors.New("[report] error on updating report comment "),
+			mode: "verbose",
+		},
+		"when successfully created report comment": {
+			graphQLHandler: func(res http.ResponseWriter, req *http.Request) {
+				MustWrite(
+					res,
+					`{
+						"data": {
+							"repository": {
+								"pullRequest": {
+									"commits": {
+										"nodes": [
+											{
+												"commit": {
+													"authoredDate": "2022-10-26T07:53:27Z"
+												}
+											}
+										]
+									},
+									"reviews": {
+										"nodes": []
+									}
+								}
+							}
+						}
+					}`,
+				)
+			},
+			clientOptions: []mock.MockBackendOption{
+				mock.WithRequestMatchHandler(
+					mock.PostReposIssuesCommentsByOwnerByRepoByIssueNumber,
+					http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+						commentCreated = true
+					}),
+				),
+				mock.WithRequestMatch(
+					mock.GetReposIssuesCommentsByOwnerByRepoByIssueNumber,
+					[]*github.IssueComment{},
+				),
+			},
+			commentShouldBeCreated: true,
+			err:                    nil,
+			mode:                   "verbose",
+		},
+		"when successfully updated report comment": {
+			graphQLHandler: func(res http.ResponseWriter, req *http.Request) {
+				MustWrite(
+					res,
+					`{
+						"data": {
+							"repository": {
+								"pullRequest": {
+									"commits": {
+										"nodes": [
+											{
+												"commit": {
+													"authoredDate": "2022-10-26T07:53:27Z"
+												}
+											}
+										]
+									},
+									"reviews": {
+										"nodes": []
+									}
+								}
+							}
+						}
+					}`,
+				)
+			},
+			clientOptions: []mock.MockBackendOption{
+				mock.WithRequestMatchHandler(
+					mock.PatchReposIssuesCommentsByOwnerByRepoByCommentId,
+					http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+						commentUpdated = true
+					}),
+				),
+				mock.WithRequestMatch(
+					mock.GetReposIssuesCommentsByOwnerByRepoByIssueNumber,
+					[]*github.IssueComment{
+						{
+							ID:   github.Int64(1),
+							Body: github.String(ReviewpadMetricReportCommentAnnotation),
+						},
+					},
+				),
+			},
+			commentShouldBeUpdated: true,
+			err:                    nil,
+			mode:                   "verbose",
+		},
+		"when mode is silent": {
+			commentShouldBeUpdated: false,
+			err:                    nil,
+			mode:                   "silent",
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			env := MockDefaultEnv(t, test.clientOptions, test.graphQLHandler, nil, nil)
+			interpreter, err := NewInterpreter(
+				env.GetCtx(),
+				env.GetDryRun(),
+				env.GetGithubClient(),
+				env.GetCollector(),
+				env.GetTarget().GetTargetEntity(),
+				nil,
+				nil,
+			)
+
+			assert.Nil(t, err)
+
+			err = interpreter.ReportMetrics(test.mode)
+
+			assert.Equal(t, test.err, err)
+			assert.Equal(t, test.commentShouldBeCreated, commentCreated)
+			assert.Equal(t, test.commentShouldBeUpdated, commentUpdated)
+
+			commentCreated = false
+			commentUpdated = false
+		})
+	}
 }

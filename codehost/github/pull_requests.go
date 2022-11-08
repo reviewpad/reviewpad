@@ -56,6 +56,25 @@ type LastPushQuery struct {
 	} `graphql:"repository(owner: $repositoryOwner, name: $repositoryName)"`
 }
 
+type FirstCommitAndReviewDateQuery struct {
+	Repository struct {
+		PullRequest struct {
+			Commits struct {
+				Nodes []struct {
+					Commit struct {
+						AuthoredDate time.Time
+					}
+				}
+			} `graphql:"commits(first: 1)"`
+			Reviews struct {
+				Nodes []struct {
+					CreatedAt time.Time
+				}
+			} `graphql:"reviews(first: 1)"`
+		} `graphql:"pullRequest(number: $pullRequestNumber)"`
+	} `graphql:"repository(owner: $repositoryOwner, name: $repositoryName)"`
+}
+
 func GetPullRequestHeadOwnerName(pullRequest *github.PullRequest) string {
 	return pullRequest.Head.Repo.Owner.GetLogin()
 }
@@ -405,4 +424,30 @@ func (c *GithubClient) GetPullRequestLastPushDate(ctx context.Context, owner str
 func (c *GithubClient) DeleteReference(ctx context.Context, owner, repo, ref string) error {
 	_, err := c.clientREST.Git.DeleteRef(ctx, owner, repo, ref)
 	return err
+}
+
+func (c *GithubClient) GetFirstCommitAndReviewDate(ctx context.Context, owner, repo string, number int) (*time.Time, *time.Time, error) {
+	var firstCommitAndReviewDateQuery FirstCommitAndReviewDateQuery
+	varGQLFirstCommitDate := map[string]interface{}{
+		"repositoryOwner":   githubv4.String(owner),
+		"repositoryName":    githubv4.String(repo),
+		"pullRequestNumber": githubv4.Int(number),
+	}
+
+	err := c.GetClientGraphQL().Query(ctx, &firstCommitAndReviewDateQuery, varGQLFirstCommitDate)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	var firstCommit, firstReview *time.Time
+
+	if len(firstCommitAndReviewDateQuery.Repository.PullRequest.Commits.Nodes) == 1 {
+		firstCommit = &firstCommitAndReviewDateQuery.Repository.PullRequest.Commits.Nodes[0].Commit.AuthoredDate
+	}
+
+	if len(firstCommitAndReviewDateQuery.Repository.PullRequest.Reviews.Nodes) == 1 {
+		firstReview = &firstCommitAndReviewDateQuery.Repository.PullRequest.Reviews.Nodes[0].CreatedAt
+	}
+
+	return firstCommit, firstReview, nil
 }
