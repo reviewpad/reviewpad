@@ -43,29 +43,17 @@ func addDefaultSizeMethod(str string) string {
 
 // reviewpad-an: generated-by-co-pilot
 func addDefaultIssueCountBy(str string) string {
-	m := regexp.MustCompile("\\$issueCountBy\\(\"[^\"]*\"\\)")
-	match := m.FindString(str)
-
-	if match == "" {
-		return str
-	}
-
-	matchWithDefaultState := match[0:len(match)-1] + ", \"all\")"
-	transformedStr := strings.ReplaceAll(str, match, matchWithDefaultState)
-	return transformedStr
+	r := regexp.MustCompile(`\$issueCountBy\(([^,\s]+)(?:,\s*("[^\(\)]*"))?\)`)
+	str = r.ReplaceAllString(str, `$$issueCountBy($1, $2)`)
+	r = regexp.MustCompile(`\$issueCountBy\(([^,\s]+),\s*("")?\)`)
+	return r.ReplaceAllString(str, `$$issueCountBy($1, "all")`)
 }
 
 func addDefaultPullRequestCountBy(str string) string {
-	m := regexp.MustCompile("\\$pullRequestCountBy\\(\"[^\"]*\"\\)")
-	match := m.FindString(str)
-
-	if match == "" {
-		return str
-	}
-
-	matchWithDefaultState := match[0:len(match)-1] + ", \"all\")"
-	transformedStr := strings.ReplaceAll(str, match, matchWithDefaultState)
-	return transformedStr
+	r := regexp.MustCompile(`\$pullRequestCountBy\(([^,\s]+)(?:,\s*("[^\(\)]*"))?\)`)
+	str = r.ReplaceAllString(str, `$$pullRequestCountBy($1, $2)`)
+	r = regexp.MustCompile(`\$pullRequestCountBy\(([^,\s]+),\s*("")?\)`)
+	return r.ReplaceAllString(str, `$$pullRequestCountBy($1, "all")`)
 }
 
 func addEmptyCloseComment(str string) string {
