@@ -111,7 +111,29 @@ func TestAssignReviewer_WhenAuthorIsInListOfReviewers(t *testing.T) {
 				}),
 			),
 		},
-		nil,
+		func(w http.ResponseWriter, r *http.Request) {
+			aladino.MustWrite(w, `
+			{
+				"data": {
+				  "repository": {
+					"pullRequest": {
+					  "timelineItems": {
+						"nodes": [
+						  {
+							"__typename": "PullRequestCommit",
+							"commit": {
+							  "pushedDate": "2022-11-11T13:36:05Z",
+							  "committedDate": "2022-11-11T13:36:05Z"
+							}
+						  }
+						]
+					  }
+					}
+				  }
+				}
+			  }
+			`)
+		},
 		aladino.MockBuiltIns(),
 		nil,
 	)
@@ -169,7 +191,29 @@ func TestAssignReviewer_WhenTotalRequiredReviewersIsMoreThanTotalAvailableReview
 				}),
 			),
 		},
-		nil,
+		func(w http.ResponseWriter, r *http.Request) {
+			aladino.MustWrite(w, `
+			{
+				"data": {
+				  "repository": {
+					"pullRequest": {
+					  "timelineItems": {
+						"nodes": [
+						  {
+							"__typename": "PullRequestCommit",
+							"commit": {
+							  "pushedDate": "2022-11-11T13:36:05Z",
+							  "committedDate": "2022-11-11T13:36:05Z"
+							}
+						  }
+						]
+					  }
+					}
+				  }
+				}
+			  }
+			`)
+		},
 		aladino.MockBuiltIns(),
 		nil,
 	)
@@ -225,6 +269,7 @@ func TestAssignReviewer_WhenListReviewsRequestFails(t *testing.T) {
 }
 
 func TestAssignReviewer_WhenPullRequestAlreadyHasReviews(t *testing.T) {
+	time := time.Date(2022, 1, 1, 1, 1, 1, 1, time.UTC)
 	var gotReviewers []string
 	authorLogin := "john"
 	reviewerLogin := "mary"
@@ -253,7 +298,8 @@ func TestAssignReviewer_WhenPullRequestAlreadyHasReviews(t *testing.T) {
 						User: &github.User{
 							Login: github.String(reviewerLogin),
 						},
-						State: github.String("COMMENTED"),
+						State:       github.String("COMMENTED"),
+						SubmittedAt: &time,
 					},
 				},
 			),
@@ -269,7 +315,29 @@ func TestAssignReviewer_WhenPullRequestAlreadyHasReviews(t *testing.T) {
 				}),
 			),
 		},
-		nil,
+		func(w http.ResponseWriter, r *http.Request) {
+			aladino.MustWrite(w, `
+			{
+				"data": {
+				  "repository": {
+					"pullRequest": {
+					  "timelineItems": {
+						"nodes": [
+						  {
+							"__typename": "PullRequestCommit",
+							"commit": {
+							  "pushedDate": "2022-01-11T01:01:01Z",
+							  "committedDate": "2022-01-11T01:01:01Z"
+							}
+						  }
+						]
+					  }
+					}
+				  }
+				}
+			  }
+			`)
+		},
 		aladino.MockBuiltIns(),
 		nil,
 	)
@@ -294,6 +362,7 @@ func TestAssignReviewer_WhenPullRequestAlreadyHasApproval(t *testing.T) {
 	authorLogin := "john"
 	reviewerLogin := "mary"
 	wantReviewers := []string{}
+	time := time.Date(2022, 1, 1, 1, 1, 1, 1, time.UTC)
 
 	mockedPullRequest := aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
 		User:               &github.User{Login: github.String(authorLogin)},
@@ -317,7 +386,8 @@ func TestAssignReviewer_WhenPullRequestAlreadyHasApproval(t *testing.T) {
 						User: &github.User{
 							Login: github.String(reviewerLogin),
 						},
-						State: github.String("APPROVED"),
+						State:       github.String("APPROVED"),
+						SubmittedAt: &time,
 					},
 				},
 			),
@@ -333,7 +403,29 @@ func TestAssignReviewer_WhenPullRequestAlreadyHasApproval(t *testing.T) {
 				}),
 			),
 		},
-		nil,
+		func(w http.ResponseWriter, r *http.Request) {
+			aladino.MustWrite(w, `
+			{
+				"data": {
+				  "repository": {
+					"pullRequest": {
+					  "timelineItems": {
+						"nodes": [
+						  {
+							"__typename": "PullRequestCommit",
+							"commit": {
+							  "pushedDate": "2022-01-11T01:01:01Z",
+							  "committedDate": "2022-01-11T01:01:01Z"
+							}
+						  }
+						]
+					  }
+					}
+				  }
+				}
+			  }
+			`)
+		},
 		aladino.MockBuiltIns(),
 		nil,
 	)
@@ -392,7 +484,29 @@ func TestAssignReviewer_WhenPullRequestAlreadyHasRequestedReviewers(t *testing.T
 				}),
 			),
 		},
-		nil,
+		func(w http.ResponseWriter, r *http.Request) {
+			aladino.MustWrite(w, `
+			{
+				"data": {
+				  "repository": {
+					"pullRequest": {
+					  "timelineItems": {
+						"nodes": [
+						  {
+							"__typename": "PullRequestCommit",
+							"commit": {
+							  "pushedDate": "2022-01-11T01:01:01Z",
+							  "committedDate": "2022-01-11T01:01:01Z"
+							}
+						  }
+						]
+					  }
+					}
+				  }
+				}
+			  }
+			`)
+		},
 		aladino.MockBuiltIns(),
 		nil,
 	)
@@ -449,7 +563,29 @@ func TestAssignReviewer_HasNoAvailableReviewers(t *testing.T) {
 				}),
 			),
 		},
-		nil,
+		func(w http.ResponseWriter, r *http.Request) {
+			aladino.MustWrite(w, `
+			{
+				"data": {
+				  "repository": {
+					"pullRequest": {
+					  "timelineItems": {
+						"nodes": [
+						  {
+							"__typename": "PullRequestCommit",
+							"commit": {
+							  "pushedDate": "2022-01-11T01:01:01Z",
+							  "committedDate": "2022-01-11T01:01:01Z"
+							}
+						  }
+						]
+					  }
+					}
+				  }
+				}
+			  }
+			`)
+		},
 		aladino.MockBuiltIns(),
 		nil,
 	)
@@ -481,12 +617,14 @@ func TestAssignReviewer_WhenPullRequestAlreadyApproved(t *testing.T) {
 	})
 	reviewID := int64(1)
 	reviewState := "APPROVED"
+	time := time.Date(2022, 1, 1, 1, 1, 1, 1, time.UTC)
 	mockedReviews := []*github.PullRequestReview{
 		{
-			ID:    &reviewID,
-			State: &reviewState,
-			Body:  github.String(""),
-			User:  &github.User{Login: github.String(reviewerA)},
+			ID:          &reviewID,
+			State:       &reviewState,
+			Body:        github.String(""),
+			User:        &github.User{Login: github.String(reviewerA)},
+			SubmittedAt: &time,
 		},
 	}
 	mockedEnv := aladino.MockDefaultEnv(
@@ -510,7 +648,29 @@ func TestAssignReviewer_WhenPullRequestAlreadyApproved(t *testing.T) {
 				}),
 			),
 		},
-		nil,
+		func(w http.ResponseWriter, r *http.Request) {
+			aladino.MustWrite(w, `
+			{
+				"data": {
+				  "repository": {
+					"pullRequest": {
+					  "timelineItems": {
+						"nodes": [
+						  {
+							"__typename": "PullRequestCommit",
+							"commit": {
+							  "pushedDate": "2022-01-11T01:01:01Z",
+							  "committedDate": "2022-01-11T01:01:01Z"
+							}
+						  }
+						]
+					  }
+					}
+				  }
+				}
+			  }
+			`)
+		},
 		aladino.MockBuiltIns(),
 		nil,
 	)
@@ -532,8 +692,9 @@ func TestAssignReviewer_WhenPullRequestAlreadyApproved(t *testing.T) {
 func TestAssignReviewer_ReRequest(t *testing.T) {
 	mockedReviewerLogin := "mary"
 	tests := map[string]struct {
-		shouldRequestReview bool
-		mockedReviews       func() []*github.PullRequestReview
+		shouldRequestReview  bool
+		mockedReviews        func() []*github.PullRequestReview
+		lastPushDateResponse string
 	}{
 		"when reviewer last review is approved": {
 			shouldRequestReview: false,
@@ -549,6 +710,26 @@ func TestAssignReviewer_ReRequest(t *testing.T) {
 					},
 				}
 			},
+			lastPushDateResponse: `
+			{
+				"data": {
+					"repository": {
+						"pullRequest": {
+						  "timelineItems": {
+							"nodes": [
+							  {
+								"__typename": "PullRequestCommit",
+								"commit": {
+								  "pushedDate": "2022-01-11T01:01:01Z",
+								  "committedDate": "2022-01-11T01:01:01Z"
+								}
+							  }
+							]
+						  }
+						}
+					}
+				}
+			}`,
 		},
 		"when reviewer last review is commented": {
 			shouldRequestReview: true,
@@ -564,6 +745,26 @@ func TestAssignReviewer_ReRequest(t *testing.T) {
 					},
 				}
 			},
+			lastPushDateResponse: `
+			{
+				"data": {
+					"repository": {
+						"pullRequest": {
+						  "timelineItems": {
+							"nodes": [
+							  {
+								"__typename": "PullRequestCommit",
+								"commit": {
+								  "pushedDate": "2022-01-11T01:01:01Z",
+								  "committedDate": "2022-01-11T01:01:01Z"
+								}
+							  }
+							]
+						  }
+						}
+					}
+				}
+			}`,
 		},
 		"when reviewer last review is changes requested": {
 			shouldRequestReview: true,
@@ -579,6 +780,26 @@ func TestAssignReviewer_ReRequest(t *testing.T) {
 					},
 				}
 			},
+			lastPushDateResponse: `
+			{
+				"data": {
+					"repository": {
+						"pullRequest": {
+						  "timelineItems": {
+							"nodes": [
+							  {
+								"__typename": "PullRequestCommit",
+								"commit": {
+								  "pushedDate": "2022-01-11T01:01:01Z",
+								  "committedDate": "2022-01-11T01:01:01Z"
+								}
+							  }
+							]
+						  }
+						}
+					}
+				}
+			}`,
 		},
 		"when reviewer has approved and then requested changes": {
 			shouldRequestReview: true,
@@ -602,6 +823,26 @@ func TestAssignReviewer_ReRequest(t *testing.T) {
 					},
 				}
 			},
+			lastPushDateResponse: `
+			{
+				"data": {
+					"repository": {
+						"pullRequest": {
+						  "timelineItems": {
+							"nodes": [
+							  {
+								"__typename": "PullRequestCommit",
+								"commit": {
+								  "pushedDate": "2022-01-11T01:01:01Z",
+								  "committedDate": "2022-01-11T01:01:01Z"
+								}
+							  }
+							]
+						  }
+						}
+					}
+				}
+			}`,
 		},
 		"when reviewer has requested changes and then approved": {
 			shouldRequestReview: false,
@@ -625,6 +866,96 @@ func TestAssignReviewer_ReRequest(t *testing.T) {
 					},
 				}
 			},
+			lastPushDateResponse: `
+			{
+				"data": {
+					"repository": {
+						"pullRequest": {
+						  "timelineItems": {
+							"nodes": [
+							  {
+								"__typename": "PullRequestCommit",
+								"commit": {
+								  "pushedDate": "2022-01-11T01:01:01Z",
+								  "committedDate": "2022-01-11T01:01:01Z"
+								}
+							  }
+							]
+						  }
+						}
+					}
+				}
+			}`,
+		},
+		"when reviewer has requested changes and no commits have been pushed after": {
+			shouldRequestReview: false,
+			mockedReviews: func() []*github.PullRequestReview {
+				timeRequestedChanges := time.Date(2022, 2, 1, 1, 1, 1, 1, time.UTC)
+				return []*github.PullRequestReview{
+					{
+						ID:          github.Int64(1),
+						State:       github.String("CHANGES_REQUESTED"),
+						Body:        github.String(""),
+						SubmittedAt: &timeRequestedChanges,
+						User:        &github.User{Login: github.String(mockedReviewerLogin)},
+					},
+				}
+			},
+			lastPushDateResponse: `
+			{
+				"data": {
+					"repository": {
+						"pullRequest": {
+						  "timelineItems": {
+							"nodes": [
+							  {
+								"__typename": "PullRequestCommit",
+								"commit": {
+								  "pushedDate": "2022-01-11T01:01:01Z",
+								  "committedDate": "2022-01-11T01:01:01Z"
+								}
+							  }
+							]
+						  }
+						}
+					}
+				}
+			}`,
+		},
+		"when reviewer has requested changes and some commits have been pushed after": {
+			shouldRequestReview: true,
+			mockedReviews: func() []*github.PullRequestReview {
+				timeRequestedChanges := time.Date(2022, 2, 1, 1, 1, 1, 1, time.UTC)
+				return []*github.PullRequestReview{
+					{
+						ID:          github.Int64(1),
+						State:       github.String("CHANGES_REQUESTED"),
+						Body:        github.String(""),
+						SubmittedAt: &timeRequestedChanges,
+						User:        &github.User{Login: github.String(mockedReviewerLogin)},
+					},
+				}
+			},
+			lastPushDateResponse: `
+			{
+				"data": {
+					"repository": {
+						"pullRequest": {
+						  "timelineItems": {
+							"nodes": [
+							  {
+								"__typename": "PullRequestCommit",
+								"commit": {
+								  "pushedDate": "2022-03-11T01:01:01Z",
+								  "committedDate": "2022-03-11T01:01:01Z"
+								}
+							  }
+							]
+						  }
+						}
+					}
+				}
+			}`,
 		},
 	}
 
@@ -660,7 +991,9 @@ func TestAssignReviewer_ReRequest(t *testing.T) {
 						}),
 					),
 				},
-				nil,
+				func(w http.ResponseWriter, r *http.Request) {
+					aladino.MustWrite(w, test.lastPushDateResponse)
+				},
 				aladino.MockBuiltIns(),
 				nil,
 			)
@@ -771,7 +1104,29 @@ func TestAssignReviewer_WithPolicy(t *testing.T) {
 					},
 					test.clientOptions...,
 				),
-				nil,
+				func(w http.ResponseWriter, r *http.Request) {
+					aladino.MustWrite(w, `
+					{
+						"data": {
+						  "repository": {
+							"pullRequest": {
+							  "timelineItems": {
+								"nodes": [
+								  {
+									"__typename": "PullRequestCommit",
+									"commit": {
+									  "pushedDate": "2022-01-11T01:01:01Z",
+									  "committedDate": "2022-01-11T01:01:01Z"
+									}
+								  }
+								]
+							  }
+							}
+						  }
+						}
+					  }
+					`)
+				},
 				aladino.MockBuiltIns(),
 				nil,
 			)
@@ -845,7 +1200,29 @@ func TestAssignReviewer_WhenPullRequestAlreadyApprovedBy2Reviewers(t *testing.T)
 				}),
 			),
 		},
-		nil,
+		func(w http.ResponseWriter, r *http.Request) {
+			aladino.MustWrite(w, `
+			{
+				"data": {
+				  "repository": {
+					"pullRequest": {
+					  "timelineItems": {
+						"nodes": [
+						  {
+							"__typename": "PullRequestCommit",
+							"commit": {
+							  "pushedDate": "2022-01-11T01:01:01Z",
+							  "committedDate": "2022-01-11T01:01:01Z"
+							}
+						  }
+						]
+					  }
+					}
+				  }
+				}
+			  }
+			`)
+		},
 		aladino.MockBuiltIns(),
 		nil,
 	)
