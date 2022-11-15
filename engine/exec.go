@@ -131,31 +131,12 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 
 	// process commands
 	if utils.IsReviewPadCommand(env.TargetEntity) {
-		comment := *env.TargetEntity.Comment.Body
-		out := new(bytes.Buffer)
-		comment = strings.TrimPrefix(comment, "/reviewpad")
-
-		args, err := shellwords.Parse(comment)
+		action, err := processCommand(env, *env.TargetEntity.Comment.Body)
 		if err != nil {
 			return nil, err
 		}
 
-		root := commands.NewCommands(out, args)
-
-		err = root.Execute()
-		if err != nil {
-			comment := fmt.Sprintf("%s\n```\n🚫 error\n\n%s\n```", *env.TargetEntity.Comment.Body, err.Error())
-
-			if _, _, err := env.GithubClient.EditComment(env.Ctx, env.TargetEntity.Owner, env.TargetEntity.Repo, *env.TargetEntity.Comment.ID, &github.IssueComment{
-				Body: github.String(comment),
-			}); err != nil {
-				return nil, err
-			}
-
-			return nil, err
-		}
-
-		program.append([]string{out.String()})
+		program.append([]string{action})
 
 		return program, nil
 	}
@@ -266,4 +247,32 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 	}
 
 	return program, nil
+}
+
+func processCommand(env *Env, command string) (string, error) {
+	comment := *env.TargetEntity.Comment.Body
+	out := new(bytes.Buffer)
+	comment = strings.TrimPrefix(comment, "/reviewpad")
+
+	args, err := shellwords.Parse(comment)
+	if err != nil {
+		return "", err
+	}
+
+	root := commands.NewCommands(out, args)
+
+	err = root.Execute()
+	if err != nil {
+		comment := fmt.Sprintf("%s\n```\n🚫 error\n\n%s\n```", *env.TargetEntity.Comment.Body, err.Error())
+
+		if _, _, err := env.GithubClient.EditComment(env.Ctx, env.TargetEntity.Owner, env.TargetEntity.Repo, *env.TargetEntity.Comment.ID, &github.IssueComment{
+			Body: github.String(comment),
+		}); err != nil {
+			return "", err
+		}
+
+		return "", err
+	}
+
+	return out.String(), nil
 }
