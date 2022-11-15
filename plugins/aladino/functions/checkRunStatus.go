@@ -5,6 +5,8 @@
 package plugins_aladino_functions
 
 import (
+	"log"
+
 	"github.com/google/go-github/v48/github"
 	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
@@ -38,6 +40,7 @@ func checkRunStatusCode(e aladino.Env, args []aladino.Value) (aladino.Value, err
 	}
 
 	for _, check := range checkRuns.CheckRuns {
+		log.Printf("CHECK: %+v", check)
 		if *check.Name == checkRunName {
 			return aladino.BuildStringValue(*check.Status), nil
 		}
