@@ -118,7 +118,7 @@ func parseLines(line string) (*chunkLinesInfo, error) {
 
 func parseVersionSection(section string) (int32, int32, error) {
 	blocks := strings.Split(section, ",")
-	line, err := strconv.Atoi(blocks[0])
+	line, err := strconv.ParseInt(blocks[0], 10, 32)
 	if err != nil {
 		return 0, 0, fmt.Errorf("wrong line format (%s): %v", blocks[0], err)
 	}
@@ -127,7 +127,7 @@ func parseVersionSection(section string) (int32, int32, error) {
 		return replyLine, replyLine, nil
 	}
 
-	numLines, err := strconv.Atoi(blocks[1])
+	numLines, err := strconv.ParseInt(blocks[1], 10, 32)
 	if err != nil {
 		return 0, 0, fmt.Errorf("wrong num old lines format (%s): %v", blocks[1], err)
 	}
