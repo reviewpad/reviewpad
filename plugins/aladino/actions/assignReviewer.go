@@ -37,11 +37,6 @@ func assignReviewerCode(e aladino.Env, args []aladino.Value) error {
 	totalRequiredReviewers := args[1].(*aladino.IntValue).Val
 	policy := args[2].(*aladino.StringValue).Val
 	target := e.GetTarget().(*target.PullRequestTarget)
-	targetEntity := target.GetTargetEntity()
-	ctx := e.GetCtx()
-	owner := targetEntity.Owner
-	repo := targetEntity.Repo
-	prNum := targetEntity.Number
 
 	allowedPolicies := map[string]bool{"random": true, "round-robin": true, "reviewpad": true}
 	if _, ok := allowedPolicies[policy]; !ok {
@@ -76,7 +71,7 @@ func assignReviewerCode(e aladino.Env, args []aladino.Value) error {
 		return err
 	}
 
-	lastPushDate, err := e.GetGithubClient().GetPullRequestLastPushDate(ctx, owner, repo, prNum)
+	lastPushDate, err := target.GetPullRequestLastPushDate()
 	if err != nil {
 		return err
 	}
