@@ -7,6 +7,7 @@ package utils_test
 import (
 	"testing"
 
+	"github.com/google/go-github/v48/github"
 	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/utils"
 	"github.com/stretchr/testify/assert"
@@ -54,6 +55,55 @@ func TestIsPullRequestReadyForReportMetrics(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			val := utils.IsPullRequestReadyForReportMetrics(test.targetEntity)
+			assert.Equal(t, test.wantVal, val)
+		})
+	}
+}
+
+func TestIsReviewPadCommand(t *testing.T) {
+	tests := map[string]struct {
+		targetEntity *handler.TargetEntity
+		wantVal      bool
+	}{
+		"when target entity is nil": {
+			wantVal: false,
+		},
+		"when event name is pull request review": {
+			wantVal: false,
+			targetEntity: &handler.TargetEntity{
+				EventName: "pull_request_review",
+			},
+		},
+		"when comment body is nil": {
+			wantVal: false,
+			targetEntity: &handler.TargetEntity{
+				Comment: &github.IssueComment{
+					Body: nil,
+				},
+			},
+		},
+		"when comment body doesn't have /reviewpad prefix": {
+			wantVal: false,
+			targetEntity: &handler.TargetEntity{
+				Comment: &github.IssueComment{
+					Body: github.String("some comment"),
+				},
+			},
+		},
+		"when event name is issue comment and body has /reviewpad prefix": {
+			wantVal: true,
+			targetEntity: &handler.TargetEntity{
+				EventName: "issue_comment",
+				Comment: &github.IssueComment{
+					Body: github.String("/reviewpad"),
+				},
+			},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			val := utils.IsReviewPadCommand(test.targetEntity)
 			assert.Equal(t, test.wantVal, val)
 		})
 	}

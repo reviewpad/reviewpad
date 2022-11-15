@@ -13,6 +13,7 @@ import (
 	"github.com/google/go-github/v48/github"
 	"github.com/mattn/go-shellwords"
 	"github.com/reviewpad/reviewpad/v3/engine/commands"
+	"github.com/reviewpad/reviewpad/v3/utils"
 	"github.com/reviewpad/reviewpad/v3/utils/fmtio"
 )
 
@@ -129,10 +130,7 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 	program := BuildProgram(make([]*Statement, 0))
 
 	// process commands
-	if env.TargetEntity.EventName == "issue_comment" &&
-		env.TargetEntity.EventAction == "created" &&
-		env.TargetEntity.Comment.Body != nil &&
-		strings.HasPrefix(*env.TargetEntity.Comment.Body, "/reviewpad") {
+	if utils.IsReviewPadCommand(env.TargetEntity) {
 		comment := *env.TargetEntity.Comment.Body
 		out := new(bytes.Buffer)
 		comment = strings.TrimPrefix(comment, "/reviewpad")
