@@ -6,31 +6,32 @@ package plugins_aladino_functions
 
 import (
 	"github.com/google/go-github/v48/github"
+	"github.com/reviewpad/reviewpad/v3/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 )
 
-func CheckRunStatus() *aladino.BuiltInFunction {
+func CheckRunConclusion() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
 		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, aladino.BuildStringType()),
-		Code:           checkRunStatusCode,
+		Code:           checkRunConclusionCode,
 		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest},
 	}
 }
 
-func checkRunStatusCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
+func checkRunConclusionCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
 	checkRunName := args[0].(*aladino.StringValue).Val
-	entity := e.GetTarget().GetTargetEntity()
-	owner := entity.Owner
-	repo := entity.Repo
-	number := entity.Number
+	pullRequest := e.GetTarget().(*target.PullRequestTarget)
+	owner := pullRequest.GetTargetEntity().Owner
+	repo := pullRequest.GetTargetEntity().Repo
+	number := pullRequest.GetTargetEntity().Number
 
-	commits, _, err := e.GetGithubClient().GetClientREST().PullRequests.ListCommits(e.GetCtx(), owner, repo, number, &github.ListOptions{})
+	ghCommits, err := e.GetGithubClient().GetPullRequestCommits(e.GetCtx(), owner, repo, number)
 	if err != nil {
 		return nil, err
 	}
 
-	lastCommitSha := commits[len(commits)-1].GetSHA()
+	lastCommitSha := ghCommits[len(ghCommits)-1].GetSHA()
 
 	checkRuns, _, err := e.GetGithubClient().ListCheckRunsForRef(e.GetCtx(), owner, repo, lastCommitSha, &github.ListCheckRunsOptions{})
 	if err != nil {

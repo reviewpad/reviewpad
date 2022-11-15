@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var checkRunStatus = plugins_aladino.PluginBuiltIns().Functions["checkRunStatus"].Code
+var checkRunConclusion = plugins_aladino.PluginBuiltIns().Functions["checkRunConclusion"].Code
 
 func TestCheckRunStatus_WhenRequestsFail(t *testing.T) {
 	checkName := "test-check-run"
@@ -68,7 +68,7 @@ func TestCheckRunStatus_WhenRequestsFail(t *testing.T) {
 		)
 
 		args := []aladino.Value{aladino.BuildStringValue(checkName)}
-		gotStatus, err := checkRunStatus(mockedEnv, args)
+		gotStatus, err := checkRunConclusion(mockedEnv, args)
 
 		assert.Nil(t, gotStatus)
 		assert.Equal(t, test.wantErr, err.(*github.ErrorResponse).Message)
@@ -161,7 +161,7 @@ func TestCheckRunStatus(t *testing.T) {
 		)
 
 		args := []aladino.Value{aladino.BuildStringValue(checkName)}
-		gotStatus, err := checkRunStatus(mockedEnv, args)
+		gotStatus, err := checkRunConclusion(mockedEnv, args)
 
 		assert.Nil(t, err)
 		assert.Equal(t, test.wantStatus, gotStatus)
