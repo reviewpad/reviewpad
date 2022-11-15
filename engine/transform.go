@@ -41,7 +41,6 @@ func addDefaultSizeMethod(str string) string {
 	return strings.ReplaceAll(str, "$size()", "$size([])")
 }
 
-// reviewpad-an: generated-by-co-pilot
 func addDefaultIssueCountBy(str string) string {
 	r := regexp.MustCompile(`\$issueCountBy\(([^,\s]+)(?:,\s*("[^\(\)]*"))?\)`)
 	str = r.ReplaceAllString(str, `$$issueCountBy($1, $2)`)
