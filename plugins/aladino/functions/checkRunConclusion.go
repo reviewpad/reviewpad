@@ -5,6 +5,8 @@
 package plugins_aladino_functions
 
 import (
+	"log"
+
 	"github.com/google/go-github/v48/github"
 	"github.com/reviewpad/reviewpad/v3/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v3/handler"
@@ -33,12 +35,13 @@ func checkRunConclusionCode(e aladino.Env, args []aladino.Value) (aladino.Value,
 
 	lastCommitSha := ghCommits[len(ghCommits)-1].GetSHA()
 
-	checkRuns, _, err := e.GetGithubClient().ListCheckRunsForRef(e.GetCtx(), owner, repo, lastCommitSha, &github.ListCheckRunsOptions{})
+	checkRuns, err := e.GetGithubClient().GetCheckRunsForRef(e.GetCtx(), owner, repo, number, lastCommitSha, &github.ListCheckRunsOptions{})
 	if err != nil {
 		return nil, err
 	}
 
-	for _, check := range checkRuns.CheckRuns {
+	for _, check := range checkRuns {
+		log.Printf("check: %+v", check)
 		if *check.Name == checkRunName {
 			return aladino.BuildStringValue(*check.Status), nil
 		}

@@ -451,3 +451,33 @@ func (c *GithubClient) GetFirstCommitAndReviewDate(ctx context.Context, owner, r
 
 	return firstCommit, firstReview, nil
 }
+
+func (c *GithubClient) GetCheckRunsForRef(ctx context.Context, owner string, repo string, number int, ref string, opts *github.ListCheckRunsOptions) ([]*github.CheckRun, error) {
+	checks, err := PaginatedRequest(
+		func() interface{} {
+			return []*github.CheckRun{}
+		},
+		func(i interface{}, page int) (interface{}, *github.Response, error) {
+			currentChecks := i.([]*github.CheckRun)
+			checks, resp, err := c.clientREST.Checks.ListCheckRunsForRef(ctx, owner, repo, ref, &github.ListCheckRunsOptions{
+				CheckName: opts.CheckName,
+				Status:    opts.Status,
+				AppID:     opts.AppID,
+				ListOptions: github.ListOptions{
+					Page:    page,
+					PerPage: maxPerPage,
+				},
+			})
+			if err != nil {
+				return nil, nil, err
+			}
+			currentChecks = append(currentChecks, checks.CheckRuns...)
+			return currentChecks, resp, nil
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return checks.([]*github.CheckRun), nil
+}
