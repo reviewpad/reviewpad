@@ -128,8 +128,8 @@ func TestCheckRunStatus(t *testing.T) {
 										Name: github.String("dummy-check"),
 									},
 									{
-										Name:   &checkName,
-										Status: github.String("completed"),
+										Name:       &checkName,
+										Conclusion: github.String("success"),
 									},
 								},
 							},
@@ -137,7 +137,7 @@ func TestCheckRunStatus(t *testing.T) {
 					}),
 				),
 			},
-			wantStatus: aladino.BuildStringValue("completed"),
+			wantStatus: aladino.BuildStringValue("success"),
 		},
 	}
 

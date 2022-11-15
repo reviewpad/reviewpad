@@ -45,7 +45,7 @@ func checkRunConclusionCode(e aladino.Env, args []aladino.Value) (aladino.Value,
 		log.Printf("check-name: %+v", *check.Name)
 		log.Printf("checkNname: %+v", checkRunName)
 		if *check.Name == checkRunName {
-			return aladino.BuildStringValue(*check.Status), nil
+			return aladino.BuildStringValue(*check.Conclusion), nil
 		}
 	}
 
