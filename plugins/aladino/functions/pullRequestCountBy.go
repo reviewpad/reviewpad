@@ -22,13 +22,8 @@ func pullRequestCountByCode(e aladino.Env, args []aladino.Value) (aladino.Value,
 	loginArg := args[0].(*aladino.StringValue).Val
 	stateArg := args[1].(*aladino.StringValue).Val
 
-	state := "all"
-	if stateArg != "" {
-		state = stateArg
-	}
-
 	opts := &github.IssueListByRepoOptions{
-		State: state,
+		State: stateArg,
 	}
 	if loginArg != "" {
 		opts.Creator = loginArg
