@@ -36,9 +36,9 @@ func sprintfCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
 	}
 
 	for _, val := range vals {
-		switch val.(type) {
+		switch v := val.(type) {
 		case *aladino.StringValue:
-			clearVals = append(clearVals, val.(*aladino.StringValue).Val)
+			clearVals = append(clearVals, v.Val)
 		}
 	}
 
