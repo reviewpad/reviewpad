@@ -10,14 +10,6 @@ import (
 	"time"
 )
 
-const (
-	SecondsInAYear   = 31536000
-	SecondsInAMonth  = 2628288
-	SecondsInADay    = 86400
-	SecondsInAnHour  = 3600
-	SecondsInAMinute = 60
-)
-
 func pluralize(part int, label string) string {
 	if part > 1 {
 		return label + "s"
