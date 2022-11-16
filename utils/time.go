@@ -6,7 +6,6 @@ package utils
 
 import (
 	"fmt"
-	"strings"
 	"time"
 )
 
@@ -44,6 +43,7 @@ func diff(a, b time.Time) (year, month, day, hour, min, sec int) {
 		sec += 60
 		min--
 	}
+
 	if min < 0 {
 		min += 60
 		hour--
@@ -68,39 +68,30 @@ func diff(a, b time.Time) (year, month, day, hour, min, sec int) {
 
 func ReadableTimeDiff(x time.Time, y time.Time) string {
 	years, months, days, hours, minutes, seconds := diff(x, y)
-	parts := make([]string, 0, 6)
 
 	if years > 0 {
-		parts = append(parts, fmt.Sprintf("%d %s", years, pluralize(years, "year")))
+		return fmt.Sprintf("%d %s", years, pluralize(years, "year"))
 	}
 
 	if months > 0 {
-		parts = append(parts, fmt.Sprintf("%d %s", months, pluralize(months, "month")))
+		return fmt.Sprintf("%d %s", months, pluralize(months, "month"))
 	}
 
 	if days > 0 {
-		parts = append(parts, fmt.Sprintf("%d %s", days, pluralize(days, "day")))
+		return fmt.Sprintf("%d %s", days, pluralize(days, "day"))
 	}
 
 	if hours > 0 {
-		parts = append(parts, fmt.Sprintf("%d %s", hours, pluralize(hours, "hour")))
+		return fmt.Sprintf("%d %s", hours, pluralize(hours, "hour"))
 	}
 
 	if minutes > 0 {
-		parts = append(parts, fmt.Sprintf("%d %s", minutes, pluralize(minutes, "minute")))
+		return fmt.Sprintf("%d %s", minutes, pluralize(minutes, "minute"))
 	}
 
 	if seconds > 0 {
-		parts = append(parts, fmt.Sprintf("%d %s", seconds, pluralize(seconds, "second")))
+		return fmt.Sprintf("%d %s", seconds, pluralize(seconds, "second"))
 	}
 
-	l := len(parts)
-
-	if l == 1 {
-		return parts[0]
-	} else if l == 2 {
-		return parts[0] + " and " + parts[1]
-	}
-
-	return strings.Join(parts[:l-1], ", ") + " and " + parts[l-1]
+	return "0 seconds"
 }
