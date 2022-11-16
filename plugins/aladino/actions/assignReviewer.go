@@ -71,12 +71,17 @@ func assignReviewerCode(e aladino.Env, args []aladino.Value) error {
 		return err
 	}
 
+	lastPushDate, err := target.GetPullRequestLastPushDate()
+	if err != nil {
+		return err
+	}
+
 	// Re-request current reviewers only when last review status is not APPROVED
 	for _, availableReviewer := range availableReviewers {
 		userLogin := availableReviewer.(*aladino.StringValue).Val
 		if codehost.HasReview(reviews, userLogin) {
 			lastReview := codehost.LastReview(reviews, userLogin)
-			if lastReview.State != "APPROVED" {
+			if lastReview.State != "APPROVED" && lastReview.SubmittedAt.Before(lastPushDate) {
 				reviewers = append(reviewers, userLogin)
 			} else {
 				log.Printf("assignReviewer: reviewer %v has already approved the pull request", userLogin)
