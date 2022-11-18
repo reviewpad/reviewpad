@@ -115,7 +115,14 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 
 	// process groups
 	for _, group := range file.Groups {
-		err := interpreter.ProcessGroup(group.Name, GroupKind(group.Kind), GroupType(group.Type), group.Spec, group.Param, group.Where)
+		err := interpreter.ProcessGroup(
+			group.Name,
+			GroupKind(group.Kind),
+			GroupType(group.Type),
+			group.Spec,
+			group.Param,
+			transformAladinoExpression(group.Where),
+		)
 		if err != nil {
 			CollectError(env, err)
 			return nil, err
