@@ -85,7 +85,7 @@ func TestEval_WhenGitHubRequestsFail(t *testing.T) {
 				assert.FailNow(t, fmt.Sprintf("mockAladinoInterpreter: %v", err))
 			}
 
-			mockedEnv, err := engine.MockEnvWith(mockedClient, mockedAladinoInterpreter, engine.DefaultMockTargetEntity)
+			mockedEnv, err := engine.MockEnvWith(mockedClient, mockedAladinoInterpreter, engine.DefaultMockTargetEntity, engine.DefaultMockEventData)
 			if err != nil {
 				assert.FailNow(t, fmt.Sprintf("engine MockEnvWith: %v", err))
 			}
@@ -113,6 +113,7 @@ func TestEval(t *testing.T) {
 		inputReviewpadFilePath string
 		clientOptions          []mock.MockBackendOption
 		targetEntity           *handler.TargetEntity
+		eventData              *handler.EventData
 		wantProgram            *engine.Program
 		wantErr                string
 	}{
@@ -244,12 +245,18 @@ func TestEval(t *testing.T) {
 				},
 			),
 			targetEntity: &handler.TargetEntity{
-				Kind:      engine.DefaultMockTargetEntity.Kind,
-				Number:    engine.DefaultMockTargetEntity.Number,
-				Owner:     engine.DefaultMockTargetEntity.Owner,
-				Repo:      engine.DefaultMockTargetEntity.Repo,
-				EventName: "issue_comment",
-				Comment:   "/reviewpad assign-reviewers john, jane, 1 random",
+				Kind:   engine.DefaultMockTargetEntity.Kind,
+				Number: engine.DefaultMockTargetEntity.Number,
+				Owner:  engine.DefaultMockTargetEntity.Owner,
+				Repo:   engine.DefaultMockTargetEntity.Repo,
+			},
+			eventData: &handler.EventData{
+				EventName:   "issue_comment",
+				EventAction: "created",
+				Comment: &github.IssueComment{
+					ID:   github.Int64(1),
+					Body: github.String("/reviewpad assign-reviewers john, jane, 1 random"),
+				},
 			},
 		},
 		"when missing policy in assign reviewer command args": {
@@ -260,12 +267,24 @@ func TestEval(t *testing.T) {
 				},
 			),
 			targetEntity: &handler.TargetEntity{
-				Kind:      engine.DefaultMockTargetEntity.Kind,
-				Number:    engine.DefaultMockTargetEntity.Number,
-				Owner:     engine.DefaultMockTargetEntity.Owner,
-				Repo:      engine.DefaultMockTargetEntity.Repo,
-				EventName: "issue_comment",
-				Comment:   "/reviewpad assign-reviewers john 1",
+				Kind:   engine.DefaultMockTargetEntity.Kind,
+				Number: engine.DefaultMockTargetEntity.Number,
+				Owner:  engine.DefaultMockTargetEntity.Owner,
+				Repo:   engine.DefaultMockTargetEntity.Repo,
+			},
+			eventData: &handler.EventData{
+				EventName:   "issue_comment",
+				EventAction: "created",
+				Comment: &github.IssueComment{
+					ID:   github.Int64(1),
+					Body: github.String("/reviewpad assign-reviewers john 1"),
+				},
+			},
+			clientOptions: []mock.MockBackendOption{
+				mock.WithRequestMatch(
+					mock.PatchReposIssuesCommentsByOwnerByRepoByCommentId,
+					&github.IssueComment{},
+				),
 			},
 		},
 		"when assign reviewer has random policy": {
@@ -276,12 +295,18 @@ func TestEval(t *testing.T) {
 				},
 			),
 			targetEntity: &handler.TargetEntity{
-				Kind:      engine.DefaultMockTargetEntity.Kind,
-				Number:    engine.DefaultMockTargetEntity.Number,
-				Owner:     engine.DefaultMockTargetEntity.Owner,
-				Repo:      engine.DefaultMockTargetEntity.Repo,
-				EventName: "issue_comment",
-				Comment:   "/reviewpad assign-reviewers jane-12, john01 1 random",
+				Kind:   engine.DefaultMockTargetEntity.Kind,
+				Number: engine.DefaultMockTargetEntity.Number,
+				Owner:  engine.DefaultMockTargetEntity.Owner,
+				Repo:   engine.DefaultMockTargetEntity.Repo,
+			},
+			eventData: &handler.EventData{
+				EventName:   "issue_comment",
+				EventAction: "created",
+				Comment: &github.IssueComment{
+					ID:   github.Int64(1),
+					Body: github.String("/reviewpad assign-reviewers jane-12, john01 1 random"),
+				},
 			},
 		},
 		"when assign reviewer has reviewpad policy": {
@@ -292,12 +317,18 @@ func TestEval(t *testing.T) {
 				},
 			),
 			targetEntity: &handler.TargetEntity{
-				Kind:      engine.DefaultMockTargetEntity.Kind,
-				Number:    engine.DefaultMockTargetEntity.Number,
-				Owner:     engine.DefaultMockTargetEntity.Owner,
-				Repo:      engine.DefaultMockTargetEntity.Repo,
-				EventName: "issue_comment",
-				Comment:   "/reviewpad assign-reviewers john, jane 1 reviewpad",
+				Kind:   engine.DefaultMockTargetEntity.Kind,
+				Number: engine.DefaultMockTargetEntity.Number,
+				Owner:  engine.DefaultMockTargetEntity.Owner,
+				Repo:   engine.DefaultMockTargetEntity.Repo,
+			},
+			eventData: &handler.EventData{
+				EventName:   "issue_comment",
+				EventAction: "created",
+				Comment: &github.IssueComment{
+					ID:   github.Int64(1),
+					Body: github.String("/reviewpad assign-reviewers john, jane 1 reviewpad"),
+				},
 			},
 		},
 		"when assign reviewer has round-robin policy": {
@@ -308,12 +339,18 @@ func TestEval(t *testing.T) {
 				},
 			),
 			targetEntity: &handler.TargetEntity{
-				Kind:      engine.DefaultMockTargetEntity.Kind,
-				Number:    engine.DefaultMockTargetEntity.Number,
-				Owner:     engine.DefaultMockTargetEntity.Owner,
-				Repo:      engine.DefaultMockTargetEntity.Repo,
-				EventName: "issue_comment",
-				Comment:   "/reviewpad assign-reviewers john, johnny 1 round-robin",
+				Kind:   engine.DefaultMockTargetEntity.Kind,
+				Number: engine.DefaultMockTargetEntity.Number,
+				Owner:  engine.DefaultMockTargetEntity.Owner,
+				Repo:   engine.DefaultMockTargetEntity.Repo,
+			},
+			eventData: &handler.EventData{
+				EventName:   "issue_comment",
+				EventAction: "created",
+				Comment: &github.IssueComment{
+					ID:   github.Int64(1),
+					Body: github.String("/reviewpad assign-reviewers john, johnny 1 round-robin"),
+				},
 			},
 		},
 	}
@@ -327,7 +364,7 @@ func TestEval(t *testing.T) {
 				assert.FailNow(t, fmt.Sprintf("mockAladinoInterpreter: %v", err))
 			}
 
-			mockedEnv, err := engine.MockEnvWith(mockedClient, mockedAladinoInterpreter, test.targetEntity)
+			mockedEnv, err := engine.MockEnvWith(mockedClient, mockedAladinoInterpreter, test.targetEntity, test.eventData)
 			if err != nil {
 				assert.FailNow(t, fmt.Sprintf("engine MockEnvWith: %v", err))
 			}

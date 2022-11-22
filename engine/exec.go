@@ -133,9 +133,9 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 	program := BuildProgram(make([]*Statement, 0))
 
 	// process commands
-	if env.TargetEntity.EventName == "issue_comment" {
+	if env.EventData != nil && env.EventData.EventName == "issue_comment" {
 		for r, command := range commands.Commands {
-			matches := r.FindAllStringSubmatch(env.TargetEntity.Comment, 1)
+			matches := r.FindAllStringSubmatch(*env.EventData.Comment.Body, 1)
 
 			if len(matches) == 1 {
 				actions, err := command(matches[0])

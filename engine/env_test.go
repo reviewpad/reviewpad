@@ -35,6 +35,7 @@ func TestNewEvalEnv(t *testing.T) {
 		Collector:    collector,
 		Interpreter:  mockedAladinoInterpreter,
 		TargetEntity: aladino.DefaultMockTargetEntity,
+		EventData:    aladino.DefaultMockEventData,
 	}
 
 	gotEnv, err := engine.NewEvalEnv(
@@ -42,8 +43,9 @@ func TestNewEvalEnv(t *testing.T) {
 		false,
 		githubClient,
 		collector,
-		engine.DefaultMockTargetEntity,
+		aladino.DefaultMockTargetEntity,
 		mockedAladinoInterpreter,
+		aladino.DefaultMockEventData,
 	)
 
 	assert.Nil(t, err)
