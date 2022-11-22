@@ -1027,6 +1027,78 @@ func TestGetIssueTimeLine(t *testing.T) {
 	assert.Equal(t, wantTimeline, gotTimeline)
 }
 
+func TestGetCheckRunsForRef_WhenListCheckRunsForRefRequestFails(t *testing.T) {
+	failMessage := "ListCheckRunsForRefRequestFail"
+	ref := "1234abc"
+	mockedGithubClient := aladino.MockDefaultGithubClient(
+		[]mock.MockBackendOption{
+			mock.WithRequestMatchHandler(
+				mock.GetReposCommitsCheckRunsByOwnerByRepoByRef,
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					mock.WriteError(
+						w,
+						http.StatusInternalServerError,
+						failMessage,
+					)
+				}),
+			),
+		},
+		nil,
+	)
+
+	mockedPullRequest := aladino.GetDefaultMockPullRequestDetails()
+	gotCheckRuns, err := mockedGithubClient.GetCheckRunsForRef(
+		context.Background(),
+		mockedPullRequest.GetBase().GetRepo().GetOwner().GetLogin(),
+		mockedPullRequest.GetBase().GetRepo().GetName(),
+		mockedPullRequest.GetNumber(),
+		ref,
+		&github.ListCheckRunsOptions{},
+	)
+
+	assert.Nil(t, gotCheckRuns)
+	assert.Equal(t, err.(*github.ErrorResponse).Message, failMessage)
+}
+
+func TestGetCheckRunsForRef(t *testing.T) {
+	ref := "1234abc"
+	wantCheckRuns := []*github.CheckRun{
+		{
+			Name:       github.String("dummy-check-a"),
+			Conclusion: github.String("action_required"),
+		},
+		{
+			Name:       github.String("dummy-check-b"),
+			Conclusion: github.String("success"),
+		},
+	}
+	mockedGithubClient := aladino.MockDefaultGithubClient(
+		[]mock.MockBackendOption{
+			mock.WithRequestMatch(
+				mock.GetReposCommitsCheckRunsByOwnerByRepoByRef,
+				&github.ListCheckRunsResults{
+					Total:     github.Int(len(wantCheckRuns)),
+					CheckRuns: wantCheckRuns,
+				},
+			),
+		},
+		nil,
+	)
+
+	mockedPullRequest := aladino.GetDefaultMockPullRequestDetails()
+	gotCheckRuns, err := mockedGithubClient.GetCheckRunsForRef(
+		context.Background(),
+		mockedPullRequest.GetBase().GetRepo().GetOwner().GetLogin(),
+		mockedPullRequest.GetBase().GetRepo().GetName(),
+		mockedPullRequest.GetNumber(),
+		ref,
+		&github.ListCheckRunsOptions{},
+	)
+
+	assert.Nil(t, err)
+	assert.Equal(t, wantCheckRuns, gotCheckRuns)
+}
+
 func registerHttpResponders(httpMockResponders []httpMockResponder) {
 	for _, httpMockResponder := range httpMockResponders {
 		httpmock.RegisterResponder("GET", httpMockResponder.url, httpMockResponder.responder)
