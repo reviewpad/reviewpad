@@ -192,10 +192,15 @@ func (p PadGroup) equals(o PadGroup) bool {
 	return true
 }
 
+type Recipes struct {
+	Size bool `yaml:"size"`
+}
+
 type ReviewpadFile struct {
 	Version      string              `yaml:"api-version"`
 	Edition      string              `yaml:"edition"`
 	Mode         string              `yaml:"mode"`
+	Recipes      Recipes             `yaml:"recipes"`
 	IgnoreErrors bool                `yaml:"ignore-errors"`
 	Imports      []PadImport         `yaml:"imports"`
 	Groups       []PadGroup          `yaml:"groups"`

@@ -59,6 +59,8 @@ github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZb
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/reviewpad/api/go v0.0.0-20220824160655-7aaf235bcfa2 h1:5ijJs1cNGk3p3M80nbJpANst4KhA5XF2KVwdE3RyQ6w=
 github.com/reviewpad/api/go v0.0.0-20220824160655-7aaf235bcfa2/go.mod h1:VnmEx5qIUsA4cTexyTr/HaEMq4j5bYYvEN0q5ty/v7U=
+github.com/reviewpad/cookbook v0.0.0-20221122234256-ce824bf5235c h1:kQEAU1tgoPTp7LishFXnB4F2a7fv1/mfHHvdfdldA84=
+github.com/reviewpad/cookbook v0.0.0-20221122234256-ce824bf5235c/go.mod h1:EpnZvQvE0JLlFNklBS0AkI8fRgKGrEpIv7uAwSmHVPI=
 github.com/reviewpad/go-conventionalcommits v0.10.0 h1:49Fv1q5vougqA7g5mpFZ+W5sQs9kJ5F5zH7kCEwZ+w8=
 github.com/reviewpad/go-conventionalcommits v0.10.0/go.mod h1:NWUK2G+V+KrhmHW2fBAWGEgZFW8jUXqqBkm9mYJJNi4=
 github.com/rogpeppe/go-internal v1.9.0 h1:73kH8U+JUqXU8lRuOHeVHaa/SZPifC7BkcraZVejAe8=

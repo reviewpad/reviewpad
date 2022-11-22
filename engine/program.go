@@ -4,12 +4,14 @@
 
 package engine
 
+import "github.com/reviewpad/cookbook/recipes"
+
 type Statement struct {
 	code string
 }
 
-type Program struct {
-	statements []*Statement
+func (s *Statement) GetStatementCode() string {
+	return s.code
 }
 
 func BuildStatement(code string) *Statement {
@@ -18,24 +20,29 @@ func BuildStatement(code string) *Statement {
 	}
 }
 
-func BuildProgram(statements []*Statement) *Program {
+type Program struct {
+	recipes    []recipes.Recipe
+	statements []*Statement
+}
+
+func BuildProgram(recipes []recipes.Recipe, statements []*Statement) *Program {
 	return &Program{
+		recipes,
 		statements,
 	}
 }
 
-func (s *Statement) GetStatementCode() string {
-	return s.code
-}
-
-func (p *Program) GetProgramStatements() []*Statement {
+func (p *Program) GetStatements() []*Statement {
 	return p.statements
 }
 
-func (program *Program) append(workflowActions []string) {
-	for _, workflowAction := range workflowActions {
-		statement := BuildStatement(workflowAction)
+func (p *Program) GetRecipes() []recipes.Recipe {
+	return p.recipes
+}
 
-		program.statements = append(program.statements, statement)
+func (p *Program) appendInstructions(instructions []string) {
+	for _, instruction := range instructions {
+		statement := BuildStatement(instruction)
+		p.statements = append(p.statements, statement)
 	}
 }

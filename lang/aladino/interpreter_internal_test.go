@@ -15,6 +15,7 @@ import (
 
 	"github.com/google/go-github/v48/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
+	"github.com/reviewpad/cookbook/recipes"
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/engine"
 	"github.com/reviewpad/reviewpad/v3/handler"
@@ -331,7 +332,7 @@ func TestExecProgram_WhenExecStatementFails(t *testing.T) {
 
 	statement := engine.BuildStatement("$action()")
 	statements := []*engine.Statement{statement}
-	program := engine.BuildProgram(statements)
+	program := engine.BuildProgram([]recipes.Recipe{}, statements)
 
 	exitStatus, err := mockedInterpreter.ExecProgram(program)
 
@@ -378,7 +379,7 @@ func TestExecProgram(t *testing.T) {
 	statCode := "$addLabel(\"test\")"
 
 	statement := engine.BuildStatement(statCode)
-	program := engine.BuildProgram([]*engine.Statement{statement})
+	program := engine.BuildProgram([]recipes.Recipe{}, []*engine.Statement{statement})
 
 	exitStatus, err := mockedInterpreter.ExecProgram(program)
 

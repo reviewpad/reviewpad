@@ -119,7 +119,7 @@ func (i *Interpreter) EvalExpr(kind, expr string) (bool, error) {
 func (i *Interpreter) ExecProgram(program *engine.Program) (engine.ExitStatus, error) {
 	execLog("executing program")
 
-	for _, statement := range program.GetProgramStatements() {
+	for _, statement := range program.GetStatements() {
 		err := i.ExecStatement(statement)
 		if err != nil {
 			return engine.ExitStatusFailure, err

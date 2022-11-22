@@ -72,6 +72,14 @@ func Run(
 		return engine.ExitStatusFailure, err
 	}
 
+	// execute recipes
+	for _, recipe := range program.GetRecipes() {
+		err := recipe.Run()
+		if err != nil {
+			return engine.ExitStatusFailure, err
+		}
+	}
+
 	exitStatus, err := aladinoInterpreter.ExecProgram(program)
 	if err != nil {
 		engine.CollectError(evalEnv, err)

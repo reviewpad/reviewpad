@@ -16,6 +16,7 @@ require (
 	github.com/migueleliasweb/go-github-mock v0.0.10
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/reviewpad/api/go v0.0.0-20220824160655-7aaf235bcfa2
+	github.com/reviewpad/cookbook v0.0.0-20221122234256-ce824bf5235c
 	github.com/reviewpad/go-conventionalcommits v0.10.0
 	github.com/shurcooL/githubv4 v0.0.0-20220520033151-0b4e3294ff00
 	github.com/sirupsen/logrus v1.9.0

@@ -11,6 +11,7 @@ import (
 
 	"github.com/google/go-github/v48/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
+	"github.com/reviewpad/cookbook/recipes"
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/engine"
 	"github.com/reviewpad/reviewpad/v3/engine/testutils"
@@ -120,6 +121,7 @@ func TestEval(t *testing.T) {
 			inputReviewpadFilePath: "testdata/exec/reviewpad_with_unnamed_label.yml",
 			clientOptions:          []mock.MockBackendOption{mockGetReposLabelsByOwnerByRepoByName("bug", "")},
 			wantProgram: engine.BuildProgram(
+				[]recipes.Recipe{},
 				[]*engine.Statement{
 					engine.BuildStatement(`$addLabel("test-unnamed-label")`),
 				},
@@ -130,6 +132,7 @@ func TestEval(t *testing.T) {
 			inputReviewpadFilePath: "testdata/exec/reviewpad_with_label_without_description.yml",
 			clientOptions:          []mock.MockBackendOption{mockGetReposLabelsByOwnerByRepoByName("bug", "")},
 			wantProgram: engine.BuildProgram(
+				[]recipes.Recipe{},
 				[]*engine.Statement{
 					engine.BuildStatement(`$addLabel("test-label-without-description")`),
 				},
@@ -143,6 +146,7 @@ func TestEval(t *testing.T) {
 				mockPostReposLabelsByOwnerByRepo("bug", ""),
 			},
 			wantProgram: engine.BuildProgram(
+				[]recipes.Recipe{},
 				[]*engine.Statement{
 					engine.BuildStatement(`$addLabel("test-label-without-description")`),
 				},
@@ -156,6 +160,7 @@ func TestEval(t *testing.T) {
 				mockPatchReposLabelsByOwnerByRepo("bug", "Something is definitely wrong"),
 			},
 			wantProgram: engine.BuildProgram(
+				[]recipes.Recipe{},
 				[]*engine.Statement{
 					engine.BuildStatement(`$addLabel("test-label-update")`),
 				},
@@ -166,6 +171,7 @@ func TestEval(t *testing.T) {
 			inputReviewpadFilePath: "testdata/exec/reviewpad_with_label_with_repo_description.yml",
 			clientOptions:          []mock.MockBackendOption{mockGetReposLabelsByOwnerByRepoByName("bug", "Something is wrong")},
 			wantProgram: engine.BuildProgram(
+				[]recipes.Recipe{},
 				[]*engine.Statement{
 					engine.BuildStatement(`$addLabel("test-label-with-no-updates")`),
 				},
@@ -175,6 +181,7 @@ func TestEval(t *testing.T) {
 		"when group is valid": {
 			inputReviewpadFilePath: "testdata/exec/reviewpad_with_valid_group.yml",
 			wantProgram: engine.BuildProgram(
+				[]recipes.Recipe{},
 				[]*engine.Statement{
 					engine.BuildStatement(`$addLabel("test-valid-group")`),
 				},
@@ -194,6 +201,7 @@ func TestEval(t *testing.T) {
 		"when no workflow is activated": {
 			inputReviewpadFilePath: "testdata/exec/reviewpad_with_no_activated_workflows.yml",
 			wantProgram: engine.BuildProgram(
+				[]recipes.Recipe{},
 				[]*engine.Statement{},
 			),
 			targetEntity: engine.DefaultMockTargetEntity,
@@ -201,6 +209,7 @@ func TestEval(t *testing.T) {
 		"when one workflow is activated": {
 			inputReviewpadFilePath: "testdata/exec/reviewpad_with_one_activated_workflow.yml",
 			wantProgram: engine.BuildProgram(
+				[]recipes.Recipe{},
 				[]*engine.Statement{
 					engine.BuildStatement(`$addLabel("activate-one-workflow")`),
 				},
@@ -210,6 +219,7 @@ func TestEval(t *testing.T) {
 		"when multiple workflows are activated": {
 			inputReviewpadFilePath: "testdata/exec/reviewpad_with_multiple_activated_workflows.yml",
 			wantProgram: engine.BuildProgram(
+				[]recipes.Recipe{},
 				[]*engine.Statement{
 					engine.BuildStatement(`$addLabel("activated-workflow-a")`),
 					engine.BuildStatement(`$addLabel("activated-workflow-b")`),
@@ -220,6 +230,7 @@ func TestEval(t *testing.T) {
 		"when workflow is activated and has extra actions": {
 			inputReviewpadFilePath: "testdata/exec/reviewpad_with_activated_workflow_with_extra_actions.yml",
 			wantProgram: engine.BuildProgram(
+				[]recipes.Recipe{},
 				[]*engine.Statement{
 					engine.BuildStatement(`$addLabel("activated-workflow")`),
 					engine.BuildStatement(`$addLabel("workflow-with-extra-actions")`),
@@ -230,6 +241,7 @@ func TestEval(t *testing.T) {
 		"when workflow is skipped": {
 			inputReviewpadFilePath: "testdata/exec/reviewpad_with_skipped_workflow.yml",
 			wantProgram: engine.BuildProgram(
+				[]recipes.Recipe{},
 				[]*engine.Statement{
 					engine.BuildStatement(`$addLabel("activated-workflow")`),
 				},
@@ -239,6 +251,7 @@ func TestEval(t *testing.T) {
 		"when invalid assign reviewer command": {
 			inputReviewpadFilePath: "testdata/exec/reviewpad_with_valid_group.yml",
 			wantProgram: engine.BuildProgram(
+				[]recipes.Recipe{},
 				[]*engine.Statement{
 					engine.BuildStatement(`$addLabel("test-valid-group")`),
 				},
@@ -255,6 +268,7 @@ func TestEval(t *testing.T) {
 		"when missing policy in assign reviewer command args": {
 			inputReviewpadFilePath: "testdata/exec/reviewpad_with_valid_group.yml",
 			wantProgram: engine.BuildProgram(
+				[]recipes.Recipe{},
 				[]*engine.Statement{
 					engine.BuildStatement(`$assignReviewer(["john"], 1, "reviewpad")`),
 				},
@@ -271,6 +285,7 @@ func TestEval(t *testing.T) {
 		"when assign reviewer has random policy": {
 			inputReviewpadFilePath: "testdata/exec/reviewpad_with_valid_group.yml",
 			wantProgram: engine.BuildProgram(
+				[]recipes.Recipe{},
 				[]*engine.Statement{
 					engine.BuildStatement(`$assignReviewer(["jane-12","john01"], 1, "random")`),
 				},
@@ -287,6 +302,7 @@ func TestEval(t *testing.T) {
 		"when assign reviewer has reviewpad policy": {
 			inputReviewpadFilePath: "testdata/exec/reviewpad_with_valid_group.yml",
 			wantProgram: engine.BuildProgram(
+				[]recipes.Recipe{},
 				[]*engine.Statement{
 					engine.BuildStatement(`$assignReviewer(["john","jane"], 1, "reviewpad")`),
 				},
@@ -303,6 +319,7 @@ func TestEval(t *testing.T) {
 		"when assign reviewer has round-robin policy": {
 			inputReviewpadFilePath: "testdata/exec/reviewpad_with_valid_group.yml",
 			wantProgram: engine.BuildProgram(
+				[]recipes.Recipe{},
 				[]*engine.Statement{
 					engine.BuildStatement(`$assignReviewer(["john","johnny"], 1, "round-robin")`),
 				},

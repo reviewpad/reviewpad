@@ -7,6 +7,7 @@ package engine
 import (
 	"testing"
 
+	"github.com/reviewpad/cookbook/recipes"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -24,15 +25,18 @@ func TestAppend(t *testing.T) {
 
 	initialStat := BuildStatement("$actionB()")
 
-	programUnderTest := BuildProgram([]*Statement{initialStat})
+	programUnderTest := BuildProgram([]recipes.Recipe{}, []*Statement{initialStat})
 
 	addedStat := BuildStatement(action)
-	wantProgram := BuildProgram([]*Statement{
-		initialStat,
-		addedStat,
-	})
+	wantProgram := BuildProgram(
+		[]recipes.Recipe{},
+		[]*Statement{
+			initialStat,
+			addedStat,
+		},
+	)
 
-	programUnderTest.append(workflow.Actions)
+	programUnderTest.appendInstructions(workflow.Actions)
 
 	assert.Equal(t, wantProgram, programUnderTest)
 }

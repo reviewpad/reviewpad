@@ -9,6 +9,7 @@ import (
 	"log"
 
 	"github.com/google/go-github/v48/github"
+	"github.com/reviewpad/cookbook/recipes"
 	"github.com/reviewpad/reviewpad/v3/engine/commands"
 	"github.com/reviewpad/reviewpad/v3/utils/fmtio"
 )
@@ -70,6 +71,14 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 	execLogf("detected %v rules", len(file.Rules))
 	execLogf("detected %v workflows", len(file.Workflows))
 
+	// a program is a list of statements to be executed based on the command, workflow rules and actions.
+	program := BuildProgram([]recipes.Recipe{}, make([]*Statement, 0))
+
+	// process recipes
+	if file.Recipes.Size {
+		program.recipes = append(program.recipes, &recipes.Size{})
+	}
+
 	// process labels
 	for labelKeyName, label := range file.Labels {
 		labelName := labelKeyName
@@ -122,9 +131,6 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 		}
 	}
 
-	// a program is a list of statements to be executed based on the command, workflow rules and actions.
-	program := BuildProgram(make([]*Statement, 0))
-
 	// process commands
 	if env.TargetEntity.EventName == "issue_comment" {
 		for r, command := range commands.Commands {
@@ -136,7 +142,7 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 					return nil, err
 				}
 
-				program.append(actions)
+				program.appendInstructions(actions)
 
 				return program, nil
 			}
@@ -199,10 +205,10 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 		}
 
 		if len(ruleActivatedQueue) > 0 {
-			program.append(workflow.Actions)
+			program.appendInstructions(workflow.Actions)
 
 			for _, activatedRule := range ruleActivatedQueue {
-				program.append(activatedRule.ExtraActions)
+				program.appendInstructions(activatedRule.ExtraActions)
 			}
 
 			if !workflow.AlwaysRun {
@@ -230,7 +236,7 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 			for num, stage := range pipeline.Stages {
 				execLogf("evaluating pipeline stage %v", num)
 				if stage.Until == "" {
-					program.append(stage.Actions)
+					program.appendInstructions(stage.Actions)
 					break
 				}
 
@@ -241,7 +247,7 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 				}
 
 				if !isDone {
-					program.append(stage.Actions)
+					program.appendInstructions(stage.Actions)
 					break
 				}
 			}
