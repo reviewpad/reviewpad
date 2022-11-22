@@ -31,13 +31,16 @@ func (entityType TargetEntityKind) String() string {
 }
 
 type TargetEntity struct {
-	Kind        TargetEntityKind
-	Number      int
-	Owner       string
-	Repo        string
+	Kind   TargetEntityKind
+	Number int
+	Owner  string
+	Repo   string
+}
+
+type EventData struct {
 	EventName   string
-	Comment     string
 	EventAction string
+	Comment     *github.IssueComment
 }
 
 func ParseEvent(rawEvent string) (*ActionEvent, error) {
@@ -53,11 +56,11 @@ func ParseEvent(rawEvent string) (*ActionEvent, error) {
 	return event, nil
 }
 
-func processUnsupportedEvent(eventPayload interface{}) ([]*TargetEntity, error) {
-	return nil, fmt.Errorf("unsupported event payload type: %T", eventPayload)
+func processUnsupportedEvent(eventPayload interface{}) ([]*TargetEntity, []*EventData, error) {
+	return nil, nil, fmt.Errorf("unsupported event payload type: %T", eventPayload)
 }
 
-func processCronEvent(token string, e *ActionEvent) ([]*TargetEntity, error) {
+func processCronEvent(token string, e *ActionEvent) ([]*TargetEntity, []*EventData, error) {
 	Log("processing 'schedule' event")
 
 	ctx, canc := context.WithTimeout(context.Background(), time.Minute*10)
@@ -72,45 +75,55 @@ func processCronEvent(token string, e *ActionEvent) ([]*TargetEntity, error) {
 
 	issues, _, err := ghClient.ListIssuesByRepo(ctx, owner, repo, nil)
 	if err != nil {
-		return nil, fmt.Errorf("get pull requests: %w", err)
+		return nil, nil, fmt.Errorf("get pull requests: %w", err)
 	}
 
 	Log("fetched %d issues", len(issues))
 
-	events := make([]*TargetEntity, 0)
+	targets := make([]*TargetEntity, 0)
+	events := make([]*EventData, 0)
 	for _, issue := range issues {
 		kind := Issue
 		if issue.IsPullRequest() {
 			kind = PullRequest
 		}
-		events = append(events, &TargetEntity{
+		targets = append(targets, &TargetEntity{
 			Kind:   kind,
 			Number: *issue.Number,
 			Owner:  owner,
 			Repo:   repo,
 		})
+
+		events = append(events, &EventData{
+			EventName: *e.EventName,
+		})
 	}
 
-	Log("found events %v", events)
+	Log("found events %v", targets)
 
-	return events, nil
+	return targets, events, nil
 }
 
-func processIssuesEvent(e *github.IssuesEvent) ([]*TargetEntity, error) {
+func processIssuesEvent(e *github.IssuesEvent) ([]*TargetEntity, []*EventData, error) {
 	Log("processing 'issues' event")
 	Log("found issue %v", *e.Issue.Number)
 
 	return []*TargetEntity{
-		{
-			Kind:   Issue,
-			Number: *e.Issue.Number,
-			Owner:  *e.Repo.Owner.Login,
-			Repo:   *e.Repo.Name,
-		},
-	}, nil
+			{
+				Kind:   Issue,
+				Number: *e.Issue.Number,
+				Owner:  *e.Repo.Owner.Login,
+				Repo:   *e.Repo.Name,
+			},
+		}, []*EventData{
+			{
+				EventName:   "issues",
+				EventAction: *e.Action,
+			},
+		}, nil
 }
 
-func processIssueCommentEvent(e *github.IssueCommentEvent) ([]*TargetEntity, error) {
+func processIssueCommentEvent(e *github.IssueCommentEvent) ([]*TargetEntity, []*EventData, error) {
 	Log("processing 'issue_comment' event")
 	Log("found issue %v", *e.Issue.Number)
 
@@ -120,76 +133,98 @@ func processIssueCommentEvent(e *github.IssueCommentEvent) ([]*TargetEntity, err
 	}
 
 	return []*TargetEntity{
-		{
-			Kind:      kind,
-			Number:    *e.Issue.Number,
-			Owner:     *e.Repo.Owner.Login,
-			Repo:      *e.Repo.Name,
-			EventName: "issue_comment",
-			Comment:   *e.Comment.Body,
-		},
-	}, nil
+			{
+				Kind:   kind,
+				Number: *e.Issue.Number,
+				Owner:  *e.Repo.Owner.Login,
+				Repo:   *e.Repo.Name,
+			},
+		}, []*EventData{
+			{
+				EventName:   "issue_comment",
+				Comment:     e.Comment,
+				EventAction: *e.Action,
+			},
+		}, nil
 }
 
-func processPullRequestEvent(e *github.PullRequestEvent) ([]*TargetEntity, error) {
+func processPullRequestEvent(e *github.PullRequestEvent) ([]*TargetEntity, []*EventData, error) {
 	Log("processing 'pull_request' event")
 	Log("found pr %v", *e.PullRequest.Number)
 
 	return []*TargetEntity{
-		{
-			Kind:        PullRequest,
-			Number:      *e.PullRequest.Number,
-			Owner:       *e.Repo.Owner.Login,
-			Repo:        *e.Repo.Name,
-			EventName:   "pull_request",
-			EventAction: *e.Action,
-		},
-	}, nil
+			{
+				Kind:   PullRequest,
+				Number: *e.PullRequest.Number,
+				Owner:  *e.Repo.Owner.Login,
+				Repo:   *e.Repo.Name,
+			},
+		}, []*EventData{
+			{
+				EventName:   "pull_request",
+				EventAction: *e.Action,
+			},
+		}, nil
 }
 
-func processPullRequestReviewEvent(e *github.PullRequestReviewEvent) ([]*TargetEntity, error) {
+func processPullRequestReviewEvent(e *github.PullRequestReviewEvent) ([]*TargetEntity, []*EventData, error) {
 	Log("processing 'pull_request_review' event")
 	Log("found pr %v", *e.PullRequest.Number)
 
 	return []*TargetEntity{
-		{
-			Kind:   PullRequest,
-			Number: *e.PullRequest.Number,
-			Owner:  *e.Repo.Owner.Login,
-			Repo:   *e.Repo.Name,
-		},
-	}, nil
+			{
+				Kind:   PullRequest,
+				Number: *e.PullRequest.Number,
+				Owner:  *e.Repo.Owner.Login,
+				Repo:   *e.Repo.Name,
+			},
+		}, []*EventData{
+			{
+				EventName:   "pull_request_review",
+				EventAction: *e.Action,
+			},
+		}, nil
 }
 
-func processPullRequestReviewCommentEvent(e *github.PullRequestReviewCommentEvent) ([]*TargetEntity, error) {
+func processPullRequestReviewCommentEvent(e *github.PullRequestReviewCommentEvent) ([]*TargetEntity, []*EventData, error) {
 	Log("processing 'pull_request_review_comment' event")
 	Log("found pr %v", *e.PullRequest.Number)
 
 	return []*TargetEntity{
-		{
-			Kind:   PullRequest,
-			Number: *e.PullRequest.Number,
-			Owner:  *e.Repo.Owner.Login,
-			Repo:   *e.Repo.Name,
-		},
-	}, nil
+			{
+				Kind:   PullRequest,
+				Number: *e.PullRequest.Number,
+				Owner:  *e.Repo.Owner.Login,
+				Repo:   *e.Repo.Name,
+			},
+		}, []*EventData{
+			{
+				EventName:   "pull_request_review_comment",
+				EventAction: *e.Action,
+			},
+		}, nil
 }
 
-func processPullRequestTargetEvent(e *github.PullRequestTargetEvent) ([]*TargetEntity, error) {
+func processPullRequestTargetEvent(e *github.PullRequestTargetEvent) ([]*TargetEntity, []*EventData, error) {
 	Log("processing 'pull_request_target' event")
 	Log("found pr %v", *e.PullRequest.Number)
 
 	return []*TargetEntity{
-		{
-			Kind:   PullRequest,
-			Number: *e.PullRequest.Number,
-			Owner:  *e.Repo.Owner.Login,
-			Repo:   *e.Repo.Name,
-		},
-	}, nil
+			{
+				Kind:   PullRequest,
+				Number: *e.PullRequest.Number,
+				Owner:  *e.Repo.Owner.Login,
+				Repo:   *e.Repo.Name,
+			},
+		}, []*EventData{
+			{
+				EventName:   "pull_request_target",
+				EventAction: *e.Action,
+			},
+		}, nil
 }
 
-func processStatusEvent(token string, e *github.StatusEvent) ([]*TargetEntity, error) {
+func processStatusEvent(token string, e *github.StatusEvent) ([]*TargetEntity, []*EventData, error) {
 	Log("processing 'status' event")
 
 	ctx, canc := context.WithTimeout(context.Background(), time.Minute*10)
@@ -199,7 +234,7 @@ func processStatusEvent(token string, e *github.StatusEvent) ([]*TargetEntity, e
 
 	prs, err := ghClient.GetPullRequests(ctx, *e.Repo.Owner.Login, *e.Repo.Name)
 	if err != nil {
-		return nil, fmt.Errorf("get pull requests: %w", err)
+		return nil, nil, fmt.Errorf("get pull requests: %w", err)
 	}
 
 	Log("fetched %v prs", len(prs))
@@ -208,22 +243,26 @@ func processStatusEvent(token string, e *github.StatusEvent) ([]*TargetEntity, e
 		if *pr.Head.SHA == *e.SHA {
 			Log("found pr %v", *pr.Number)
 			return []*TargetEntity{
-				{
-					Kind:   PullRequest,
-					Number: *pr.Number,
-					Owner:  *pr.Base.Repo.Owner.Login,
-					Repo:   *pr.Base.Repo.Name,
-				},
-			}, nil
+					{
+						Kind:   PullRequest,
+						Number: *pr.Number,
+						Owner:  *pr.Base.Repo.Owner.Login,
+						Repo:   *pr.Base.Repo.Name,
+					},
+				}, []*EventData{
+					{
+						EventName: "status",
+					},
+				}, nil
 		}
 	}
 
 	Log("no pr found with the head sha %v", *e.SHA)
 
-	return []*TargetEntity{}, nil
+	return []*TargetEntity{}, []*EventData{}, nil
 }
 
-func processWorkflowRunEvent(token string, e *github.WorkflowRunEvent) ([]*TargetEntity, error) {
+func processWorkflowRunEvent(token string, e *github.WorkflowRunEvent) ([]*TargetEntity, []*EventData, error) {
 	Log("processing 'workflow_run' event")
 
 	ctx, canc := context.WithTimeout(context.Background(), time.Minute*10)
@@ -232,7 +271,7 @@ func processWorkflowRunEvent(token string, e *github.WorkflowRunEvent) ([]*Targe
 
 	prs, err := ghClient.GetPullRequests(ctx, *e.Repo.Owner.Login, *e.Repo.Name)
 	if err != nil {
-		return nil, fmt.Errorf("get pull requests: %w", err)
+		return nil, nil, fmt.Errorf("get pull requests: %w", err)
 	}
 
 	Log("fetched %v prs", len(prs))
@@ -241,22 +280,27 @@ func processWorkflowRunEvent(token string, e *github.WorkflowRunEvent) ([]*Targe
 		if *pr.Head.SHA == *e.WorkflowRun.HeadSHA {
 			Log("found pr %v", *pr.Number)
 			return []*TargetEntity{
-				{
-					Kind:   PullRequest,
-					Number: *pr.Number,
-					Owner:  *pr.Base.Repo.Owner.Login,
-					Repo:   *pr.Base.Repo.Name,
-				},
-			}, nil
+					{
+						Kind:   PullRequest,
+						Number: *pr.Number,
+						Owner:  *pr.Base.Repo.Owner.Login,
+						Repo:   *pr.Base.Repo.Name,
+					},
+				}, []*EventData{
+					{
+						EventName:   "workflow_run",
+						EventAction: *e.Action,
+					},
+				}, nil
 		}
 	}
 
 	Log("no pr found with the head sha %v", *e.WorkflowRun.HeadSHA)
 
-	return []*TargetEntity{}, nil
+	return []*TargetEntity{}, []*EventData{}, nil
 }
 
-func processPushEvent(token string, e *github.PushEvent) ([]*TargetEntity, error) {
+func processPushEvent(token string, e *github.PushEvent) ([]*TargetEntity, []*EventData, error) {
 	Log("processing 'push' event")
 
 	ctx, canc := context.WithTimeout(context.Background(), time.Minute*10)
@@ -271,31 +315,35 @@ func processPushEvent(token string, e *github.PushEvent) ([]*TargetEntity, error
 
 	prs, err := ghClient.GetPullRequests(ctx, owner, repo)
 	if err != nil {
-		return nil, fmt.Errorf("get pull requests: %w", err)
+		return nil, nil, fmt.Errorf("get pull requests: %w", err)
 	}
 
 	Log("fetched %d pull requests", len(prs))
 
-	events := make([]*TargetEntity, 0)
+	targets := make([]*TargetEntity, 0)
+	events := make([]*EventData, 0)
 	for _, pr := range prs {
 		if pr.Base.GetRef() == e.GetRef() {
-			events = append(events, &TargetEntity{
+			targets = append(targets, &TargetEntity{
 				Kind:   PullRequest,
 				Number: *pr.Number,
 				Owner:  owner,
 				Repo:   repo,
 			})
+			events = append(events, &EventData{
+				EventName: "push",
+			})
 		}
 	}
 
-	Log("found events %v", events)
+	Log("found events %v", targets)
 
-	return events, nil
+	return targets, events, nil
 }
 
 // reviewpad-an: critical
 // output: the list of pull requests/issues that are affected by the event.
-func ProcessEvent(event *ActionEvent) ([]*TargetEntity, error) {
+func ProcessEvent(event *ActionEvent) ([]*TargetEntity, []*EventData, error) {
 	// These events do not have an equivalent in the GitHub webhooks, thus
 	// parsing them with github.ParseWebhook would return an error.
 	// These are the webhook events: https://docs.github.com/en/developers/webhooks-and-events/webhooks/webhook-events-and-payloads
@@ -307,7 +355,7 @@ func ProcessEvent(event *ActionEvent) ([]*TargetEntity, error) {
 
 	eventPayload, err := github.ParseWebHook(*event.EventName, *event.EventPayload)
 	if err != nil {
-		return nil, fmt.Errorf("parse github webhook: %w", err)
+		return nil, nil, fmt.Errorf("parse github webhook: %w", err)
 	}
 
 	switch payload := eventPayload.(type) {

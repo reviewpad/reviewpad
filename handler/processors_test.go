@@ -135,9 +135,10 @@ func TestProcessEvent_Failure(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			gotVal, gotErr := handler.ProcessEvent(test.event)
+			gotTargets, gotEvents, gotErr := handler.ProcessEvent(test.event)
 
-			assert.Nil(t, gotVal)
+			assert.Nil(t, gotTargets)
+			assert.Nil(t, gotEvents)
 			assert.NotNil(t, gotErr)
 		})
 	}
@@ -220,8 +221,9 @@ func TestProcessEvent(t *testing.T) {
 	)
 
 	tests := map[string]struct {
-		event   *handler.ActionEvent
-		wantVal []*handler.TargetEntity
+		event       *handler.ActionEvent
+		wantTargets []*handler.TargetEntity
+		wantEvents  []*handler.EventData
 	}{
 		"pull_request": {
 			event: &handler.ActionEvent{
@@ -242,12 +244,16 @@ func TestProcessEvent(t *testing.T) {
 					}
 				}`)),
 			},
-			wantVal: []*handler.TargetEntity{
+			wantTargets: []*handler.TargetEntity{
 				{
-					Kind:        handler.PullRequest,
-					Number:      130,
-					Owner:       owner,
-					Repo:        repo,
+					Kind:   handler.PullRequest,
+					Number: 130,
+					Owner:  owner,
+					Repo:   repo,
+				},
+			},
+			wantEvents: []*handler.EventData{
+				{
 					EventName:   "pull_request",
 					EventAction: "opened",
 				},
@@ -272,12 +278,18 @@ func TestProcessEvent(t *testing.T) {
 					}
 				}`)),
 			},
-			wantVal: []*handler.TargetEntity{
+			wantTargets: []*handler.TargetEntity{
 				{
 					Kind:   handler.PullRequest,
 					Number: 130,
 					Owner:  owner,
 					Repo:   repo,
+				},
+			},
+			wantEvents: []*handler.EventData{
+				{
+					EventName:   "pull_request_target",
+					EventAction: "opened",
 				},
 			},
 		},
@@ -300,12 +312,18 @@ func TestProcessEvent(t *testing.T) {
 					}
 				}`)),
 			},
-			wantVal: []*handler.TargetEntity{
+			wantTargets: []*handler.TargetEntity{
 				{
 					Kind:   handler.PullRequest,
 					Number: 130,
 					Owner:  owner,
 					Repo:   repo,
+				},
+			},
+			wantEvents: []*handler.EventData{
+				{
+					EventName:   "pull_request_review",
+					EventAction: "opened",
 				},
 			},
 		},
@@ -327,12 +345,18 @@ func TestProcessEvent(t *testing.T) {
 					}
 				}`)),
 			},
-			wantVal: []*handler.TargetEntity{
+			wantTargets: []*handler.TargetEntity{
 				{
 					Kind:   handler.PullRequest,
 					Number: 130,
 					Owner:  owner,
 					Repo:   repo,
+				},
+			},
+			wantEvents: []*handler.EventData{
+				{
+					EventName:   "pull_request_review_comment",
+					EventAction: "created",
 				},
 			},
 		},
@@ -342,7 +366,7 @@ func TestProcessEvent(t *testing.T) {
 				Token:      github.String("test-token"),
 				Repository: github.String("reviewpad/reviewpad"),
 			},
-			wantVal: []*handler.TargetEntity{
+			wantTargets: []*handler.TargetEntity{
 				{
 					Kind:   handler.PullRequest,
 					Number: 130,
@@ -354,6 +378,14 @@ func TestProcessEvent(t *testing.T) {
 					Number: aladino.DefaultMockPrNum,
 					Owner:  owner,
 					Repo:   repo,
+				},
+			},
+			wantEvents: []*handler.EventData{
+				{
+					EventName: "schedule",
+				},
+				{
+					EventName: "schedule",
 				},
 			},
 		},
@@ -374,12 +406,18 @@ func TestProcessEvent(t *testing.T) {
 					}
 				}`)),
 			},
-			wantVal: []*handler.TargetEntity{
+			wantTargets: []*handler.TargetEntity{
 				{
 					Kind:   handler.PullRequest,
 					Number: aladino.DefaultMockPrNum,
 					Owner:  owner,
 					Repo:   repo,
+				},
+			},
+			wantEvents: []*handler.EventData{
+				{
+					EventName:   "workflow_run",
+					EventAction: "completed",
 				},
 			},
 		},
@@ -400,7 +438,8 @@ func TestProcessEvent(t *testing.T) {
 					}
 				}`)),
 			},
-			wantVal: []*handler.TargetEntity{},
+			wantTargets: []*handler.TargetEntity{},
+			wantEvents:  []*handler.EventData{},
 		},
 		"issues": {
 			event: &handler.ActionEvent{
@@ -421,12 +460,18 @@ func TestProcessEvent(t *testing.T) {
 					}
 				}`)),
 			},
-			wantVal: []*handler.TargetEntity{
+			wantTargets: []*handler.TargetEntity{
 				{
 					Kind:   handler.Issue,
 					Number: 130,
 					Owner:  owner,
 					Repo:   owner,
+				},
+			},
+			wantEvents: []*handler.EventData{
+				{
+					EventName:   "issues",
+					EventAction: "opened",
 				},
 			},
 		},
@@ -452,14 +497,21 @@ func TestProcessEvent(t *testing.T) {
 					}
 				}`)),
 			},
-			wantVal: []*handler.TargetEntity{
+			wantTargets: []*handler.TargetEntity{
 				{
-					Kind:      handler.Issue,
-					Number:    130,
-					Owner:     owner,
-					Repo:      repo,
-					EventName: "issue_comment",
-					Comment:   "comment",
+					Kind:   handler.Issue,
+					Number: 130,
+					Owner:  owner,
+					Repo:   repo,
+				},
+			},
+			wantEvents: []*handler.EventData{
+				{
+					EventName:   "issue_comment",
+					EventAction: "opened",
+					Comment: &github.IssueComment{
+						Body: github.String("comment"),
+					},
 				},
 			},
 		},
@@ -480,12 +532,17 @@ func TestProcessEvent(t *testing.T) {
 					"sha": "4bf24cc72f3a62423927a0ac8d70febad7c78e0g"
 				}`)),
 			},
-			wantVal: []*handler.TargetEntity{
+			wantTargets: []*handler.TargetEntity{
 				{
 					Kind:   handler.PullRequest,
 					Number: aladino.DefaultMockPrNum,
 					Owner:  owner,
 					Repo:   repo,
+				},
+			},
+			wantEvents: []*handler.EventData{
+				{
+					EventName: "status",
 				},
 			},
 		},
@@ -503,7 +560,8 @@ func TestProcessEvent(t *testing.T) {
 					"sha": "4bf24cc72f3a62423927a0ac8d70febad7c78e0a"
 				}`)),
 			},
-			wantVal: []*handler.TargetEntity{},
+			wantTargets: []*handler.TargetEntity{},
+			wantEvents:  []*handler.EventData{},
 		},
 		"push": {
 			event: &handler.ActionEvent{
@@ -516,12 +574,17 @@ func TestProcessEvent(t *testing.T) {
 					"ref": "refs/heads/main"
 				}`)),
 			},
-			wantVal: []*handler.TargetEntity{
+			wantTargets: []*handler.TargetEntity{
 				{
 					Kind:   handler.PullRequest,
 					Number: aladino.DefaultMockPrNum,
 					Owner:  owner,
 					Repo:   repo,
+				},
+			},
+			wantEvents: []*handler.EventData{
+				{
+					EventName: "push",
 				},
 			},
 		},
@@ -536,16 +599,18 @@ func TestProcessEvent(t *testing.T) {
 					"ref": "refs/heads/master"
 				}`)),
 			},
-			wantVal: []*handler.TargetEntity{},
+			wantTargets: []*handler.TargetEntity{},
+			wantEvents:  []*handler.EventData{},
 		},
 	}
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			gotVal, err := handler.ProcessEvent(test.event)
+			gotTargets, gotEvents, err := handler.ProcessEvent(test.event)
 
 			assert.Nil(t, err)
-			assert.ElementsMatch(t, test.wantVal, gotVal)
+			assert.ElementsMatch(t, test.wantEvents, gotEvents)
+			assert.ElementsMatch(t, test.wantTargets, gotTargets)
 		})
 	}
 }
