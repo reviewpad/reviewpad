@@ -57,27 +57,27 @@ func TestFormatTimeDiff(t *testing.T) {
 		"1 year, and 1 month": {
 			firstTime:  time.Date(2020, 1, 1, 1, 1, 1, 1, time.UTC),
 			secondTime: time.Date(2021, 2, 1, 1, 1, 1, 1, time.UTC),
-			result:     "1 year and 1 month",
+			result:     "1 year",
 		},
 		"1 year, and 2 months": {
 			firstTime:  time.Date(2020, 1, 1, 1, 1, 1, 1, time.UTC),
 			secondTime: time.Date(2021, 3, 1, 1, 1, 1, 1, time.UTC),
-			result:     "1 year and 2 months",
+			result:     "1 year",
 		},
 		"2 years, 4 months, and 10 days": {
 			firstTime:  time.Date(2022, 5, 11, 1, 1, 1, 1, time.UTC),
 			secondTime: time.Date(2020, 1, 1, 1, 1, 1, 1, time.UTC),
-			result:     "2 years, 4 months and 10 days",
+			result:     "2 years",
 		},
 		"1 hour, 10 minutes, and 5 seconds": {
 			firstTime:  time.Date(2020, 1, 1, 2, 11, 6, 1, time.UTC),
 			secondTime: time.Date(2020, 1, 1, 1, 1, 1, 1, time.UTC),
-			result:     "1 hour, 10 minutes and 5 seconds",
+			result:     "1 hour",
 		},
 		"1 minute, and 5 seconds": {
 			firstTime:  time.Date(2020, 1, 1, 1, 1, 1, 1, time.UTC),
 			secondTime: time.Date(2020, 1, 1, 1, 2, 6, 1, time.UTC),
-			result:     "1 minute and 5 seconds",
+			result:     "1 minute",
 		},
 	}
 
