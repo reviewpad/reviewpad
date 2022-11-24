@@ -15,20 +15,68 @@ import (
 var sprintf = plugins_aladino.PluginBuiltIns().Functions["sprintf"].Code
 
 func TestSprintf(t *testing.T) {
-	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
-
-	format := aladino.BuildStringValue("Hello %v!")
-	slice := aladino.BuildArrayValue(
-		[]aladino.Value{
-			aladino.BuildStringValue("world"),
+	tests := map[string]struct {
+		format     string
+		args       *aladino.ArrayValue
+		wantString *aladino.StringValue
+		wantErr    error
+	}{
+		"when in default format": {
+			format: "Hello %v!",
+			args: aladino.BuildArrayValue([]aladino.Value{
+				aladino.BuildStringValue("world"),
+			}),
+			wantString: aladino.BuildStringValue("Hello world!"),
 		},
-	)
-	args := []aladino.Value{format, slice}
+		"when in string and quotation format": {
+			format: `Hello %q %s`,
+			args: aladino.BuildArrayValue([]aladino.Value{
+				aladino.BuildStringValue("world"),
+				aladino.BuildStringValue("again"),
+			}),
+			wantString: aladino.BuildStringValue(`Hello "world" again`),
+		},
+		"when there are extra args": {
+			format: "Hello %s",
+			args: aladino.BuildArrayValue([]aladino.Value{
+				aladino.BuildStringValue("earth"),
+				aladino.BuildStringValue("mars"),
+				aladino.BuildStringValue("venus"),
+			}),
+			wantString: aladino.BuildStringValue("Hello earth"),
+		},
+		"when there are extra args with index formatting": {
+			format: "Hello %[1]s",
+			args: aladino.BuildArrayValue([]aladino.Value{
+				aladino.BuildStringValue("earth"),
+				aladino.BuildStringValue("mars"),
+				aladino.BuildStringValue("venus"),
+			}),
+			wantString: aladino.BuildStringValue("Hello earth"),
+		},
+		"when empty format and args": {
+			format:     "",
+			args:       aladino.BuildArrayValue([]aladino.Value{}),
+			wantString: aladino.BuildStringValue(""),
+		},
+		"when there is no formatting with args": {
+			format: "Hello world",
+			args: aladino.BuildArrayValue([]aladino.Value{
+				aladino.BuildStringValue("earth"),
+				aladino.BuildStringValue("mars"),
+				aladino.BuildStringValue("venus"),
+			}),
+			wantString: aladino.BuildStringValue("Hello world"),
+		},
+	}
 
-	wantString := &aladino.StringValue{Val: "Hello world!"}
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
+			gotString, err := sprintf(mockedEnv, []aladino.Value{aladino.BuildStringValue(test.format), test.args})
 
-	gotString, err := sprintf(mockedEnv, args)
-
-	assert.Nil(t, err)
-	assert.Equal(t, wantString, gotString)
+			assert.Equal(t, test.wantErr, err)
+			assert.Equal(t, test.wantString, gotString)
+		})
+	}
 }
