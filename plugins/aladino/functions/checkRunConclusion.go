@@ -31,6 +31,10 @@ func checkRunConclusionCode(e aladino.Env, args []aladino.Value) (aladino.Value,
 		return nil, err
 	}
 
+	if len(ghCommits) == 0 {
+		return aladino.BuildStringValue(""), nil
+	}
+
 	lastCommitSha := ghCommits[len(ghCommits)-1].GetSHA()
 
 	checkRuns, err := e.GetGithubClient().GetCheckRunsForRef(e.GetCtx(), owner, repo, number, lastCommitSha, &github.ListCheckRunsOptions{})
@@ -38,11 +42,35 @@ func checkRunConclusionCode(e aladino.Env, args []aladino.Value) (aladino.Value,
 		return nil, err
 	}
 
-	for _, check := range checkRuns {
-		if *check.Name == checkRunName {
-			return aladino.BuildStringValue(*check.Conclusion), nil
+	var checkRunConclusion string
+	var checkRunCompletedAt *github.Timestamp
+
+	for _, checkRun := range checkRuns {
+		if isCheckEligible(checkRun, checkRunName, checkRunCompletedAt) {
+			checkRunConclusion = *checkRun.Conclusion
+			checkRunCompletedAt = checkRun.CompletedAt
 		}
 	}
 
-	return aladino.BuildStringValue(""), nil
+	return aladino.BuildStringValue(checkRunConclusion), nil
+}
+
+func isCheckEligible(checkRun *github.CheckRun, requiredName string, requiredMinCompletedAt *github.Timestamp) bool {
+	if *checkRun.Name != requiredName {
+		return false
+	}
+
+	if *checkRun.Status != "completed" {
+		return false
+	}
+
+	if requiredMinCompletedAt != nil && checkRun.CompletedAt.Before(requiredMinCompletedAt.Time) {
+		return false
+	}
+
+	if checkRun.Conclusion == nil {
+		return false
+	}
+
+	return true
 }

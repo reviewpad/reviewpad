@@ -3,6 +3,7 @@ package plugins_aladino_functions_test
 import (
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/google/go-github/v48/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
@@ -82,7 +83,7 @@ func TestCheckRunStatus(t *testing.T) {
 		clientOptions []mock.MockBackendOption
 		wantStatus    aladino.Value
 	}{
-		"when check run not found due to empty check runs": {
+		"when there are no checks": {
 			clientOptions: []mock.MockBackendOption{
 				mock.WithRequestMatchHandler(
 					mock.GetReposCommitsCheckRunsByOwnerByRepoByRef,
@@ -97,7 +98,7 @@ func TestCheckRunStatus(t *testing.T) {
 			},
 			wantStatus: aladino.BuildStringValue(""),
 		},
-		"when check run is missing in non empty check runs": {
+		"when check name is not found": {
 			clientOptions: []mock.MockBackendOption{
 				mock.WithRequestMatchHandler(
 					mock.GetReposCommitsCheckRunsByOwnerByRepoByRef,
@@ -116,7 +117,48 @@ func TestCheckRunStatus(t *testing.T) {
 			},
 			wantStatus: aladino.BuildStringValue(""),
 		},
-		"when check run is found": {
+		"when check status is not completed": {
+			clientOptions: []mock.MockBackendOption{
+				mock.WithRequestMatchHandler(
+					mock.GetReposCommitsCheckRunsByOwnerByRepoByRef,
+					http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+						w.Write(mock.MustMarshal(
+							&github.ListCheckRunsResults{
+								CheckRuns: []*github.CheckRun{
+									{
+										Name:   github.String("test-check-run"),
+										Status: github.String("in_progress"),
+									},
+								},
+							},
+						))
+					}),
+				),
+			},
+			wantStatus: aladino.BuildStringValue(""),
+		},
+		"when check conclusion is not set": {
+			clientOptions: []mock.MockBackendOption{
+				mock.WithRequestMatchHandler(
+					mock.GetReposCommitsCheckRunsByOwnerByRepoByRef,
+					http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+						w.Write(mock.MustMarshal(
+							&github.ListCheckRunsResults{
+								CheckRuns: []*github.CheckRun{
+									{
+										Name:       github.String("test-check-run"),
+										Status:     github.String("completed"),
+										Conclusion: nil,
+									},
+								},
+							},
+						))
+					}),
+				),
+			},
+			wantStatus: aladino.BuildStringValue(""),
+		},
+		"when check is eligible": {
 			clientOptions: []mock.MockBackendOption{
 				mock.WithRequestMatchHandler(
 					mock.GetReposCommitsCheckRunsByOwnerByRepoByRef,
@@ -129,6 +171,7 @@ func TestCheckRunStatus(t *testing.T) {
 									},
 									{
 										Name:       &checkName,
+										Status:     github.String("completed"),
 										Conclusion: github.String("success"),
 									},
 								},
@@ -138,6 +181,34 @@ func TestCheckRunStatus(t *testing.T) {
 				),
 			},
 			wantStatus: aladino.BuildStringValue("success"),
+		},
+		"when there are multiple checks": {
+			clientOptions: []mock.MockBackendOption{
+				mock.WithRequestMatchHandler(
+					mock.GetReposCommitsCheckRunsByOwnerByRepoByRef,
+					http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+						w.Write(mock.MustMarshal(
+							&github.ListCheckRunsResults{
+								CheckRuns: []*github.CheckRun{
+									{
+										Name:        github.String("test-check-run"),
+										Status:      github.String("completed"),
+										CompletedAt: &github.Timestamp{Time: time.Now()},
+										Conclusion:  github.String("success"),
+									},
+									{
+										Name:        github.String("test-check-run"),
+										Status:      github.String("completed"),
+										CompletedAt: &github.Timestamp{Time: time.Now().Add(1 * time.Hour)},
+										Conclusion:  github.String("failure"),
+									},
+								},
+							},
+						))
+					}),
+				),
+			},
+			wantStatus: aladino.BuildStringValue("failure"),
 		},
 	}
 
