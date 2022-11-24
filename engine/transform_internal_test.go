@@ -41,7 +41,7 @@ func TestTransformAladinoExpression(t *testing.T) {
 		},
 		"pullRequestCountBy nil state": {
 			arg:     "$pullRequestCountBy(\"john\", \"\") > 0",
-			wantVal: "$pullRequestCountBy(\"john\", \"\") > 0",
+			wantVal: "$pullRequestCountBy(\"john\", \"all\") > 0",
 		},
 		"pullRequestCountBy nil dev": {
 			arg:     "$pullRequestCountBy(\"\", \"closed\") > 0",
@@ -54,6 +54,22 @@ func TestTransformAladinoExpression(t *testing.T) {
 		"pullRequestCountBy and issueCountBy": {
 			arg:     "$pullRequestCountBy(\"john\") > 0 && true && $issueCountBy(\"dev\") > 0",
 			wantVal: "$pullRequestCountBy(\"john\", \"all\") > 0 && true && $issueCountBy(\"dev\", \"all\") > 0",
+		},
+		"pullRequestCountBy with dev": {
+			arg:     `$pullRequestCountBy("john") > 0 && true && $pullRequestCountBy("john", "open") > 1`,
+			wantVal: `$pullRequestCountBy("john", "all") > 0 && true && $pullRequestCountBy("john", "open") > 1`,
+		},
+		"pullRequestCountBy with function call": {
+			arg:     `$pullRequestCountBy($author()) > 1 && $pullRequestCountBy($author(), "open") > 2`,
+			wantVal: `$pullRequestCountBy($author(), "all") > 1 && $pullRequestCountBy($author(), "open") > 2`,
+		},
+		"pullRequestCountBy with function call and state": {
+			arg:     `$pullRequestCountBy($author(), "open")`,
+			wantVal: `$pullRequestCountBy($author(), "open")`,
+		},
+		"pullRequestCountBy with function call and empty state": {
+			arg:     `$pullRequestCountBy($author(), "")`,
+			wantVal: `$pullRequestCountBy($author(), "all")`,
 		},
 		"close": {
 			arg:     "$close()",

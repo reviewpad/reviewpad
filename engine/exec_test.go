@@ -85,7 +85,7 @@ func TestEval_WhenGitHubRequestsFail(t *testing.T) {
 				assert.FailNow(t, fmt.Sprintf("mockAladinoInterpreter: %v", err))
 			}
 
-			mockedEnv, err := engine.MockEnvWith(mockedClient, mockedAladinoInterpreter, engine.DefaultMockTargetEntity)
+			mockedEnv, err := engine.MockEnvWith(mockedClient, mockedAladinoInterpreter, engine.DefaultMockTargetEntity, engine.DefaultMockEventData)
 			if err != nil {
 				assert.FailNow(t, fmt.Sprintf("engine MockEnvWith: %v", err))
 			}
@@ -113,6 +113,7 @@ func TestEval(t *testing.T) {
 		inputReviewpadFilePath string
 		clientOptions          []mock.MockBackendOption
 		targetEntity           *handler.TargetEntity
+		eventData              *handler.EventData
 		wantProgram            *engine.Program
 		wantErr                string
 	}{
@@ -239,10 +240,12 @@ func TestEval(t *testing.T) {
 		"when invalid assign reviewer command": {
 			inputReviewpadFilePath: "testdata/exec/reviewpad_with_valid_group.yml",
 			targetEntity: &handler.TargetEntity{
-				Kind:        engine.DefaultMockTargetEntity.Kind,
-				Number:      engine.DefaultMockTargetEntity.Number,
-				Owner:       engine.DefaultMockTargetEntity.Owner,
-				Repo:        engine.DefaultMockTargetEntity.Repo,
+				Kind:   engine.DefaultMockTargetEntity.Kind,
+				Number: engine.DefaultMockTargetEntity.Number,
+				Owner:  engine.DefaultMockTargetEntity.Owner,
+				Repo:   engine.DefaultMockTargetEntity.Repo,
+			},
+			eventData: &handler.EventData{
 				EventName:   "issue_comment",
 				EventAction: "created",
 				Comment: &github.IssueComment{
@@ -266,10 +269,12 @@ func TestEval(t *testing.T) {
 				},
 			),
 			targetEntity: &handler.TargetEntity{
-				Kind:        engine.DefaultMockTargetEntity.Kind,
-				Number:      engine.DefaultMockTargetEntity.Number,
-				Owner:       engine.DefaultMockTargetEntity.Owner,
-				Repo:        engine.DefaultMockTargetEntity.Repo,
+				Kind:   engine.DefaultMockTargetEntity.Kind,
+				Number: engine.DefaultMockTargetEntity.Number,
+				Owner:  engine.DefaultMockTargetEntity.Owner,
+				Repo:   engine.DefaultMockTargetEntity.Repo,
+			},
+			eventData: &handler.EventData{
 				EventName:   "issue_comment",
 				EventAction: "created",
 				Comment: &github.IssueComment{
@@ -292,10 +297,12 @@ func TestEval(t *testing.T) {
 				},
 			),
 			targetEntity: &handler.TargetEntity{
-				Kind:        engine.DefaultMockTargetEntity.Kind,
-				Number:      engine.DefaultMockTargetEntity.Number,
-				Owner:       engine.DefaultMockTargetEntity.Owner,
-				Repo:        engine.DefaultMockTargetEntity.Repo,
+				Kind:   engine.DefaultMockTargetEntity.Kind,
+				Number: engine.DefaultMockTargetEntity.Number,
+				Owner:  engine.DefaultMockTargetEntity.Owner,
+				Repo:   engine.DefaultMockTargetEntity.Repo,
+			},
+			eventData: &handler.EventData{
 				EventName:   "issue_comment",
 				EventAction: "created",
 				Comment: &github.IssueComment{
@@ -312,10 +319,12 @@ func TestEval(t *testing.T) {
 				},
 			),
 			targetEntity: &handler.TargetEntity{
-				Kind:        engine.DefaultMockTargetEntity.Kind,
-				Number:      engine.DefaultMockTargetEntity.Number,
-				Owner:       engine.DefaultMockTargetEntity.Owner,
-				Repo:        engine.DefaultMockTargetEntity.Repo,
+				Kind:   engine.DefaultMockTargetEntity.Kind,
+				Number: engine.DefaultMockTargetEntity.Number,
+				Owner:  engine.DefaultMockTargetEntity.Owner,
+				Repo:   engine.DefaultMockTargetEntity.Repo,
+			},
+			eventData: &handler.EventData{
 				EventName:   "issue_comment",
 				EventAction: "created",
 				Comment: &github.IssueComment{
@@ -332,10 +341,12 @@ func TestEval(t *testing.T) {
 				},
 			),
 			targetEntity: &handler.TargetEntity{
-				Kind:        engine.DefaultMockTargetEntity.Kind,
-				Number:      engine.DefaultMockTargetEntity.Number,
-				Owner:       engine.DefaultMockTargetEntity.Owner,
-				Repo:        engine.DefaultMockTargetEntity.Repo,
+				Kind:   engine.DefaultMockTargetEntity.Kind,
+				Number: engine.DefaultMockTargetEntity.Number,
+				Owner:  engine.DefaultMockTargetEntity.Owner,
+				Repo:   engine.DefaultMockTargetEntity.Repo,
+			},
+			eventData: &handler.EventData{
 				EventName:   "issue_comment",
 				EventAction: "created",
 				Comment: &github.IssueComment{
@@ -355,7 +366,7 @@ func TestEval(t *testing.T) {
 				assert.FailNow(t, fmt.Sprintf("mockAladinoInterpreter: %v", err))
 			}
 
-			mockedEnv, err := engine.MockEnvWith(mockedClient, mockedAladinoInterpreter, test.targetEntity)
+			mockedEnv, err := engine.MockEnvWith(mockedClient, mockedAladinoInterpreter, test.targetEntity, test.eventData)
 			if err != nil {
 				assert.FailNow(t, fmt.Sprintf("engine MockEnvWith: %v", err))
 			}

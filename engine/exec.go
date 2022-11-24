@@ -119,7 +119,14 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 
 	// process groups
 	for _, group := range file.Groups {
-		err := interpreter.ProcessGroup(group.Name, GroupKind(group.Kind), GroupType(group.Type), group.Spec, group.Param, group.Where)
+		err := interpreter.ProcessGroup(
+			group.Name,
+			GroupKind(group.Kind),
+			GroupType(group.Type),
+			group.Spec,
+			group.Param,
+			transformAladinoExpression(group.Where),
+		)
 		if err != nil {
 			CollectError(env, err)
 			return nil, err
@@ -130,8 +137,8 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 	program := BuildProgram(make([]*Statement, 0))
 
 	// process commands
-	if utils.IsReviewPadCommand(env.TargetEntity) {
-		action, err := processCommand(env, *env.TargetEntity.Comment.Body)
+	if utils.IsReviewPadCommand(env.EventData) {
+		action, err := processCommand(env, *env.EventData.Comment.Body)
 		if err != nil {
 			return nil, err
 		}
@@ -249,8 +256,7 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 	return program, nil
 }
 
-func processCommand(env *Env, command string) (string, error) {
-	comment := *env.TargetEntity.Comment.Body
+func processCommand(env *Env, comment string) (string, error) {
 	out := new(bytes.Buffer)
 	comment = strings.TrimPrefix(comment, "/reviewpad")
 
@@ -263,9 +269,9 @@ func processCommand(env *Env, command string) (string, error) {
 
 	err = root.Execute()
 	if err != nil {
-		comment := fmt.Sprintf("%s\n```\n🚫 error\n\n%s\n```", *env.TargetEntity.Comment.Body, err.Error())
+		comment := fmt.Sprintf("%s\n```\n🚫 error\n\n%s\n```", *env.EventData.Comment.Body, err.Error())
 
-		if _, _, err := env.GithubClient.EditComment(env.Ctx, env.TargetEntity.Owner, env.TargetEntity.Repo, *env.TargetEntity.Comment.ID, &github.IssueComment{
+		if _, _, err := env.GithubClient.EditComment(env.Ctx, env.TargetEntity.Owner, env.TargetEntity.Repo, *env.EventData.Comment.ID, &github.IssueComment{
 			Body: github.String(comment),
 		}); err != nil {
 			return "", err

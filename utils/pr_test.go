@@ -15,36 +15,27 @@ import (
 
 func TestIsPullRequestReadyForReportMetrics(t *testing.T) {
 	tests := map[string]struct {
-		targetEntity *handler.TargetEntity
-		wantVal      bool
+		eventData *handler.EventData
+		wantVal   bool
 	}{
-		"when target entity is nil": {
-			wantVal: false,
-		},
-		"when issue target entity": {
-			targetEntity: &handler.TargetEntity{
-				Kind: handler.Issue,
-			},
+		"when event data is nil": {
 			wantVal: false,
 		},
 		"when event name is not pull request": {
-			targetEntity: &handler.TargetEntity{
-				Kind:      handler.PullRequest,
+			eventData: &handler.EventData{
 				EventName: "pull_request_review",
 			},
 			wantVal: false,
 		},
 		"when event action is not closed": {
-			targetEntity: &handler.TargetEntity{
-				Kind:        handler.PullRequest,
+			eventData: &handler.EventData{
 				EventName:   "pull_request",
 				EventAction: "opened",
 			},
 			wantVal: false,
 		},
 		"when event name is pull request and event action is closed": {
-			targetEntity: &handler.TargetEntity{
-				Kind:        handler.PullRequest,
+			eventData: &handler.EventData{
 				EventName:   "pull_request",
 				EventAction: "closed",
 			},
@@ -54,7 +45,7 @@ func TestIsPullRequestReadyForReportMetrics(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			val := utils.IsPullRequestReadyForReportMetrics(test.targetEntity)
+			val := utils.IsPullRequestReadyForReportMetrics(test.eventData)
 			assert.Equal(t, test.wantVal, val)
 		})
 	}
@@ -62,21 +53,22 @@ func TestIsPullRequestReadyForReportMetrics(t *testing.T) {
 
 func TestIsReviewPadCommand(t *testing.T) {
 	tests := map[string]struct {
-		targetEntity *handler.TargetEntity
-		wantVal      bool
+		eventData *handler.EventData
+		wantVal   bool
 	}{
 		"when target entity is nil": {
 			wantVal: false,
 		},
 		"when event name is pull request review": {
 			wantVal: false,
-			targetEntity: &handler.TargetEntity{
+			eventData: &handler.EventData{
 				EventName: "pull_request_review",
 			},
 		},
 		"when comment body is nil": {
 			wantVal: false,
-			targetEntity: &handler.TargetEntity{
+			eventData: &handler.EventData{
+				EventName: "issue_comment",
 				Comment: &github.IssueComment{
 					Body: nil,
 				},
@@ -84,7 +76,8 @@ func TestIsReviewPadCommand(t *testing.T) {
 		},
 		"when comment body doesn't have /reviewpad prefix": {
 			wantVal: false,
-			targetEntity: &handler.TargetEntity{
+			eventData: &handler.EventData{
+				EventName: "issue_comment",
 				Comment: &github.IssueComment{
 					Body: github.String("some comment"),
 				},
@@ -92,7 +85,7 @@ func TestIsReviewPadCommand(t *testing.T) {
 		},
 		"when event name is issue comment and body has /reviewpad prefix": {
 			wantVal: true,
-			targetEntity: &handler.TargetEntity{
+			eventData: &handler.EventData{
 				EventName: "issue_comment",
 				Comment: &github.IssueComment{
 					Body: github.String("/reviewpad"),
@@ -103,7 +96,7 @@ func TestIsReviewPadCommand(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			val := utils.IsReviewPadCommand(test.targetEntity)
+			val := utils.IsReviewPadCommand(test.eventData)
 			assert.Equal(t, test.wantVal, val)
 		})
 	}

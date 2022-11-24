@@ -6,6 +6,7 @@
 
 ## Welcome to Reviewpad!
 
+
 For **questions**, check out the [discussions](https://github.com/reviewpad/reviewpad/discussions).
 
 For **documentation**, check out this document and the [official documentation](https://docs.reviewpad.com).

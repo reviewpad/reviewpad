@@ -6,6 +6,7 @@ package target
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/go-github/v48/github"
 	"github.com/reviewpad/reviewpad/v3/codehost"
@@ -371,4 +372,14 @@ func (t *PullRequestTarget) IsDraft() (bool, error) {
 
 func (t *PullRequestTarget) GetTitle() string {
 	return t.PullRequest.GetTitle()
+}
+
+func (t *PullRequestTarget) GetPullRequestLastPushDate() (time.Time, error) {
+	ctx := t.ctx
+	targetEntity := t.targetEntity
+	owner := targetEntity.Owner
+	repo := targetEntity.Repo
+	number := targetEntity.Number
+
+	return t.githubClient.GetPullRequestLastPushDate(ctx, owner, repo, number)
 }

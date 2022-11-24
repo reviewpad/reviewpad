@@ -10,13 +10,13 @@ import (
 	"github.com/reviewpad/reviewpad/v3/handler"
 )
 
-func IsPullRequestReadyForReportMetrics(targetEntity *handler.TargetEntity) bool {
-	return targetEntity != nil && targetEntity.Kind == handler.PullRequest && targetEntity.EventName == "pull_request" && targetEntity.EventAction == "closed"
+func IsPullRequestReadyForReportMetrics(eventData *handler.EventData) bool {
+	return eventData != nil && eventData.EventName == "pull_request" && eventData.EventAction == "closed"
 }
 
-func IsReviewPadCommand(targetEntity *handler.TargetEntity) bool {
-	return targetEntity != nil &&
-		targetEntity.EventName == "issue_comment" &&
-		targetEntity.Comment.Body != nil &&
-		strings.HasPrefix(*targetEntity.Comment.Body, "/reviewpad")
+func IsReviewPadCommand(eventData *handler.EventData) bool {
+	return eventData != nil &&
+		eventData.EventName == "issue_comment" &&
+		eventData.Comment.Body != nil &&
+		strings.HasPrefix(*eventData.Comment.Body, "/reviewpad")
 }

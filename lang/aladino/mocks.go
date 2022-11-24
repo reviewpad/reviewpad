@@ -26,6 +26,8 @@ const DefaultMockPrID = 1234
 const DefaultMockPrNum = 6
 const DefaultMockPrOwner = "foobar"
 const DefaultMockPrRepoName = "default-mock-repo"
+const DefaultMockEventName = "pull_request"
+const DefaultMockEventAction = "opened"
 
 var DefaultMockPrDate = time.Date(2009, 11, 17, 20, 34, 58, 651387237, time.UTC)
 var DefaultMockContext = context.Background()
@@ -35,6 +37,10 @@ var DefaultMockTargetEntity = &handler.TargetEntity{
 	Repo:   DefaultMockPrRepoName,
 	Number: DefaultMockPrNum,
 	Kind:   handler.PullRequest,
+}
+var DefaultMockEventData = &handler.EventData{
+	EventName:   DefaultMockEventName,
+	EventAction: DefaultMockEventAction,
 }
 
 func GetDefaultMockPullRequestDetails() *github.PullRequest {
