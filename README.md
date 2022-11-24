@@ -6,7 +6,6 @@
 
 ## Welcome to Reviewpad!
 
-
 For **questions**, check out the [discussions](https://github.com/reviewpad/reviewpad/discussions).
 
 For **documentation**, check out this document and the [official documentation](https://docs.reviewpad.com).
@@ -26,7 +25,7 @@ In Reviewpad, you can automate actions over the pull requests and issues such as
 1. Automated [comments](https://docs.reviewpad.com/use-cases/comment-on-pull-requests);
 2. Add or remove [labels](https://docs.reviewpad.com/use-cases/automated-labelling/);
 3. Specify [reviewer assignments](https://docs.reviewpad.com/use-cases/reviewer-assignment);
-4. Automate [close/merge actions](https://docs.reviewpad.com/use-cases/auto-merge).
+4. Automate [close/merge actions](https://docs.reviewpad.com/use-cases/auto-merge);
 
 As an example, the following workflow:
 
@@ -42,7 +41,7 @@ workflows:
     - name: ship
       description: Ship process - bypass the review and merge with rebase
       if:
-          - rule: '$hasFileExtensions([".md"])'
+          - rule: $hasFileExtensions([".md"])
       then:
           - $addLabel("ship")
           - $merge()
@@ -50,9 +49,7 @@ workflows:
 
 Automatically adds a label `ship` and merges pull requests that only change `.md` files.
 
-You can execute Reviewpad through the CLI or through the Reviewpad [GitHub action](https://github.com/reviewpad/action).
-
-Note: We are currently using the experimental Reviewpad service through a [GitHub app](https://github.com/apps/reviewpad).
+You can execute Reviewpad through the CLI or install Reviewpad [GitHub App](https://github.com/marketplace/reviewpad).
 
 ## Architecture
 
@@ -179,10 +176,6 @@ Paste the following configuration:
 
 ```json
 {
-    "editor.formatOnPaste": true,
-    "editor.formatOnSave": true,
-    "editor.defaultFormatter": "golang.go",
-    "files.autoSave": "onFocusChange",
     "licenser.license": "Custom",
     "licenser.author": "Explore.dev, Unipessoal Lda",
     "licenser.customHeader": "Copyright (C) @YEAR@ @AUTHOR@ - All Rights Reserved\nUse of this source code is governed by a license that can be\nfound in the LICENSE file.",
@@ -210,18 +203,18 @@ Add the following to your `.vscode/launch.json`.
             "args": [
                 "run",
                 // Flag to run on dry run
-                "--dry-run",
+                "-d",
                 // Absolute path to reviewpad.yml file to run
-                "--reviewpad=_PATH_TO_REVIEWPAD_FILE_",
+                "-f=<<PATH_TO_REVIEWPAD_FILE>>",
                 // GitHub url to run the reviewpad.yml against to
                 // e.g. https://github.com/reviewpad/action-demo/pull/1
                 // e.g. https://github.com/reviewpad/action-demo/issue/1
-                "--github-url=_GITHUB_URL_",
+                "-u=<<GITHUB_URL>>",
                 // GiHub personal access token
                 // https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token
-                "--github-token=_GIT_HUB_TOKEN_",
+                "-t=<<GIT_HUB_TOKEN>>",
                 // Absolute path to JSON file with GitHub event payload
-                "--event-payload=_PATH_TO_EVENT_JSON"
+                "-e=<<PATH_TO_EVENT_JSON>>"
             ],
             "program": "${workspaceFolder}/cli/main.go"
         }
