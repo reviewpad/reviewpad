@@ -6,6 +6,6 @@ package utils
 
 import "github.com/reviewpad/reviewpad/v3/handler"
 
-func IsPullRequestReadyForReportMetrics(targetEntity *handler.TargetEntity) bool {
-	return targetEntity != nil && targetEntity.Kind == handler.PullRequest && targetEntity.EventName == "pull_request" && targetEntity.EventAction == "closed"
+func IsPullRequestReadyForReportMetrics(eventData *handler.EventData) bool {
+	return eventData != nil && eventData.EventName == "pull_request" && eventData.EventAction == "closed"
 }
