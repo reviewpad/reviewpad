@@ -13,6 +13,7 @@ import (
 )
 
 var (
+	// this regexp matches the golang formatting verbs such as %v, %s...
 	verbsRegExp = regexp.MustCompile(`%(\#|\+|\-| |0)?(\[\d+\])?(([1-9])\.([1-9])|([1-9])|([1-9])\.|\.([1-9]))?(\w{1,9})`)
 )
 
