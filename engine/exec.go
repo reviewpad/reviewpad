@@ -137,7 +137,7 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 	program := BuildProgram(make([]*Statement, 0))
 
 	// process commands
-	if utils.IsReviewPadCommand(env.EventData) {
+	if utils.IsReviewpadCommand(env.EventData) {
 		action, err := processCommand(env, *env.EventData.Comment.Body)
 		if err != nil {
 			return nil, err

@@ -96,7 +96,7 @@ func TestIsReviewPadCommand(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			val := utils.IsReviewPadCommand(test.eventData)
+			val := utils.IsReviewpadCommand(test.eventData)
 			assert.Equal(t, test.wantVal, val)
 		})
 	}

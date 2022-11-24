@@ -14,7 +14,7 @@ func IsPullRequestReadyForReportMetrics(eventData *handler.EventData) bool {
 	return eventData != nil && eventData.EventName == "pull_request" && eventData.EventAction == "closed"
 }
 
-func IsReviewPadCommand(eventData *handler.EventData) bool {
+func IsReviewpadCommand(eventData *handler.EventData) bool {
 	return eventData != nil &&
 		eventData.EventName == "issue_comment" &&
 		eventData.Comment.Body != nil &&
