@@ -239,11 +239,6 @@ func TestEval(t *testing.T) {
 		},
 		"when invalid assign reviewer command": {
 			inputReviewpadFilePath: "testdata/exec/reviewpad_with_valid_group.yml",
-			wantProgram: engine.BuildProgram(
-				[]*engine.Statement{
-					engine.BuildStatement(`$addLabel("test-valid-group")`),
-				},
-			),
 			targetEntity: &handler.TargetEntity{
 				Kind:   engine.DefaultMockTargetEntity.Kind,
 				Number: engine.DefaultMockTargetEntity.Number,
@@ -258,6 +253,13 @@ func TestEval(t *testing.T) {
 					Body: github.String("/reviewpad assign-reviewers john, jane, 1 random"),
 				},
 			},
+			clientOptions: []mock.MockBackendOption{
+				mock.WithRequestMatch(
+					mock.PatchReposIssuesCommentsByOwnerByRepoByCommentId,
+					&github.IssueComment{},
+				),
+			},
+			wantErr: "accepts 1 arg(s), received 4",
 		},
 		"when missing policy in assign reviewer command args": {
 			inputReviewpadFilePath: "testdata/exec/reviewpad_with_valid_group.yml",
@@ -277,7 +279,7 @@ func TestEval(t *testing.T) {
 				EventAction: "created",
 				Comment: &github.IssueComment{
 					ID:   github.Int64(1),
-					Body: github.String("/reviewpad assign-reviewers john 1"),
+					Body: github.String("/reviewpad assign-reviewers john -t 1"),
 				},
 			},
 			clientOptions: []mock.MockBackendOption{
@@ -305,7 +307,7 @@ func TestEval(t *testing.T) {
 				EventAction: "created",
 				Comment: &github.IssueComment{
 					ID:   github.Int64(1),
-					Body: github.String("/reviewpad assign-reviewers jane-12, john01 1 random"),
+					Body: github.String("/reviewpad assign-reviewers jane-12,john01 --total-reviewers 1 -p random"),
 				},
 			},
 		},
@@ -327,7 +329,7 @@ func TestEval(t *testing.T) {
 				EventAction: "created",
 				Comment: &github.IssueComment{
 					ID:   github.Int64(1),
-					Body: github.String("/reviewpad assign-reviewers john, jane 1 reviewpad"),
+					Body: github.String("/reviewpad assign-reviewers john,jane -t 1 --review-policy reviewpad"),
 				},
 			},
 		},
@@ -349,7 +351,7 @@ func TestEval(t *testing.T) {
 				EventAction: "created",
 				Comment: &github.IssueComment{
 					ID:   github.Int64(1),
-					Body: github.String("/reviewpad assign-reviewers john, johnny 1 round-robin"),
+					Body: github.String("/reviewpad assign-reviewers john,johnny -t 1 -p round-robin"),
 				},
 			},
 		},

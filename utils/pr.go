@@ -4,8 +4,19 @@
 
 package utils
 
-import "github.com/reviewpad/reviewpad/v3/handler"
+import (
+	"strings"
+
+	"github.com/reviewpad/reviewpad/v3/handler"
+)
 
 func IsPullRequestReadyForReportMetrics(eventData *handler.EventData) bool {
 	return eventData != nil && eventData.EventName == "pull_request" && eventData.EventAction == "closed"
+}
+
+func IsReviewpadCommand(eventData *handler.EventData) bool {
+	return eventData != nil &&
+		eventData.EventName == "issue_comment" &&
+		eventData.Comment.Body != nil &&
+		strings.HasPrefix(*eventData.Comment.Body, "/reviewpad")
 }

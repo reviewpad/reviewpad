@@ -5,11 +5,15 @@
 package engine
 
 import (
+	"bytes"
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/google/go-github/v48/github"
+	"github.com/mattn/go-shellwords"
 	"github.com/reviewpad/reviewpad/v3/engine/commands"
+	"github.com/reviewpad/reviewpad/v3/utils"
 	"github.com/reviewpad/reviewpad/v3/utils/fmtio"
 )
 
@@ -133,21 +137,15 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 	program := BuildProgram(make([]*Statement, 0))
 
 	// process commands
-	if env.EventData != nil && env.EventData.EventName == "issue_comment" {
-		for r, command := range commands.Commands {
-			matches := r.FindAllStringSubmatch(*env.EventData.Comment.Body, 1)
-
-			if len(matches) == 1 {
-				actions, err := command(matches[0])
-				if err != nil {
-					return nil, err
-				}
-
-				program.append(actions)
-
-				return program, nil
-			}
+	if utils.IsReviewpadCommand(env.EventData) {
+		action, err := processCommand(env, *env.EventData.Comment.Body)
+		if err != nil {
+			return nil, err
 		}
+
+		program.append([]string{action})
+
+		return program, nil
 	}
 
 	// process rules
@@ -256,4 +254,31 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 	}
 
 	return program, nil
+}
+
+func processCommand(env *Env, comment string) (string, error) {
+	out := new(bytes.Buffer)
+	comment = strings.TrimPrefix(comment, "/reviewpad")
+
+	args, err := shellwords.Parse(comment)
+	if err != nil {
+		return "", err
+	}
+
+	root := commands.NewCommands(out, args)
+
+	err = root.Execute()
+	if err != nil {
+		comment := fmt.Sprintf("%s\n```\n🚫 error\n\n%s\n```", *env.EventData.Comment.Body, err.Error())
+
+		if _, _, err := env.GithubClient.EditComment(env.Ctx, env.TargetEntity.Owner, env.TargetEntity.Repo, *env.EventData.Comment.ID, &github.IssueComment{
+			Body: github.String(comment),
+		}); err != nil {
+			return "", err
+		}
+
+		return "", err
+	}
+
+	return out.String(), nil
 }
