@@ -4,7 +4,11 @@
 
 package engine
 
-import "github.com/reviewpad/reviewpad/v3/handler"
+import (
+	"reflect"
+
+	"github.com/reviewpad/reviewpad/v3/handler"
+)
 
 const (
 	PROFESSIONAL_EDITION string = "professional"
@@ -286,7 +290,7 @@ func (r *ReviewpadFile) equals(o *ReviewpadFile) bool {
 		}
 	}
 
-	return true
+	return reflect.DeepEqual(r.Recipes, o.Recipes)
 }
 
 func (r *ReviewpadFile) appendLabels(o *ReviewpadFile) {

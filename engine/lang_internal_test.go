@@ -58,6 +58,11 @@ var mockedReviewpadFile = &ReviewpadFile{
 			},
 		},
 	},
+	Recipes: map[string]bool{
+		"size":                 true,
+		"conventional-commits": true,
+		"has-description":      false,
+	},
 }
 
 func TestEquals_WhenPadImportsAreEqual(t *testing.T) {
@@ -1310,4 +1315,17 @@ func TestFindRule_WhenRuleDoesNotExists(t *testing.T) {
 
 	assert.False(t, found)
 	assert.Nil(t, gotRule)
+}
+
+func TestEquals_WhenReviewpadFilesHaveDiffRecipes(t *testing.T) {
+	otherReviewpadFile := &ReviewpadFile{}
+	copier.Copy(otherReviewpadFile, mockedReviewpadFile)
+
+	otherReviewpadFile.Recipes = map[string]bool{
+		"size":                 false,
+		"conventional-commits": true,
+		"has-description":      false,
+	}
+
+	assert.False(t, mockedReviewpadFile.equals(otherReviewpadFile))
 }
