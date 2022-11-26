@@ -23,3 +23,6 @@ workflows:
       - rule: is-small
     then:
       - '$addLabel("small")'
+
+recipes:
+  assign: true
