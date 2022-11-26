@@ -203,6 +203,7 @@ type ReviewpadFile struct {
 	Labels       map[string]PadLabel `yaml:"labels"`
 	Workflows    []PadWorkflow       `yaml:"workflows"`
 	Pipelines    []PadPipeline       `yaml:"pipelines"`
+	Recipes      map[string]bool     `yaml:"recipes"`
 }
 
 type PadPipeline struct {
