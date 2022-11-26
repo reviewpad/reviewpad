@@ -323,6 +323,16 @@ func (r *ReviewpadFile) appendWorkflows(o *ReviewpadFile) {
 	r.Workflows = append(r.Workflows, o.Workflows...)
 }
 
+func (r *ReviewpadFile) appendRecipes(o *ReviewpadFile) {
+	if r.Recipes == nil {
+		r.Recipes = make(map[string]bool)
+	}
+
+	for name, active := range o.Recipes {
+		r.Recipes[name] = active
+	}
+}
+
 func findGroup(groups []PadGroup, name string) (*PadGroup, bool) {
 	for _, group := range groups {
 		if group.Name == name {

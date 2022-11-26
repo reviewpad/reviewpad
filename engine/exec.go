@@ -12,6 +12,8 @@ import (
 
 	"github.com/google/go-github/v48/github"
 	"github.com/mattn/go-shellwords"
+	"github.com/reviewpad/cookbook"
+	cookbookGithubCodehost "github.com/reviewpad/cookbook/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/engine/commands"
 	"github.com/reviewpad/reviewpad/v3/utils"
 	"github.com/reviewpad/reviewpad/v3/utils/fmtio"
@@ -63,6 +65,7 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 		"totalRules":     len(file.Rules),
 		"totalWorkflows": len(file.Workflows),
 		"totalPipelines": len(file.Pipelines),
+		"totalRecipes":   len(file.Recipes),
 	}
 
 	env.Collector.Collect("Trigger Analysis", collectedData)
@@ -73,6 +76,7 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 	execLogf("detected %v labels", len(file.Labels))
 	execLogf("detected %v rules", len(file.Rules))
 	execLogf("detected %v workflows", len(file.Workflows))
+	execLogf("detected %v recipes", len(file.Recipes))
 
 	// process labels
 	for labelKeyName, label := range file.Labels {
@@ -249,6 +253,28 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 					program.append(stage.Actions)
 					break
 				}
+			}
+		}
+	}
+
+	for name, active := range file.Recipes {
+		if active {
+			initRecipe, ok := cookbook.Recipes[name]
+			if !ok {
+				execError("%s recipe not found", name)
+			}
+
+			cookbookCodehost := cookbookGithubCodehost.New(env.GithubClient.GetClientREST(), env.GithubClient.GetClientGraphQL())
+
+			recipe, err := initRecipe(*env.TargetEntity, cookbookCodehost, env.Collector)
+			if err != nil {
+				CollectError(env, err)
+				return nil, err
+			}
+
+			if err := recipe.Run(env.Ctx); err != nil {
+				CollectError(env, err)
+				return nil, err
 			}
 		}
 	}
