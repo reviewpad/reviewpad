@@ -272,6 +272,8 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 				return nil, err
 			}
 
+			execLogf("running recipe: %s", name)
+
 			if err := recipe.Run(env.Ctx); err != nil {
 				CollectError(env, err)
 				return nil, err
