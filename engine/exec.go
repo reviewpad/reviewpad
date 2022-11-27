@@ -259,20 +259,13 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 
 	for name, active := range file.Recipes {
 		if active {
-			initRecipe, ok := cookbook.Recipes[name]
-			if !ok {
-				execError("%s recipe not found", name)
-			}
-
 			cookbookCodehost := cookbookGithubCodehost.New(env.GithubClient.GetClientREST(), env.GithubClient.GetClientGraphQL())
 
-			recipe, err := initRecipe(*env.TargetEntity, cookbookCodehost, env.Collector)
+			recipe, err := cookbook.GetRecipeByName(name, *env.TargetEntity, cookbookCodehost, env.Collector)
 			if err != nil {
 				CollectError(env, err)
 				return nil, err
 			}
-
-			execLogf("running recipe: %s", name)
 
 			if err := recipe.Run(env.Ctx); err != nil {
 				CollectError(env, err)
