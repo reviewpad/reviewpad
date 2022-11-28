@@ -33,7 +33,7 @@ jobs:
         run: gcov2lcov -infile=coverage.out -outfile=coverage.lcov
 
       - name: Verify that minimum coverage is covered
-        uses: VeryGoodOpenSource/very_good_coverage@v1
+        uses: VeryGoodOpenSource/very_good_coverage@v2
         with:
           path: "coverage.lcov"
           min_coverage: 80
