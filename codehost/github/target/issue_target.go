@@ -134,6 +134,10 @@ func (t *IssueTarget) GetDescription() (string, error) {
 	return t.issue.GetBody(), nil
 }
 
+func (t *IssueTarget) GetState() string {
+	return t.issue.GetState()
+}
+
 func (t *IssueTarget) GetTitle() string {
 	return t.issue.GetTitle()
 }
