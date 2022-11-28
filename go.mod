@@ -1,6 +1,6 @@
 module github.com/reviewpad/reviewpad/v3
 
-go 1.18
+go 1.19
 
 require (
 	github.com/aws/aws-secretsmanager-caching-go v1.1.0
