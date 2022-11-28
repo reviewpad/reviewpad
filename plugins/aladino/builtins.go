@@ -66,6 +66,7 @@ func PluginBuiltInsWithConfig(config *PluginConfig) *aladino.BuiltIns {
 			"description":           functions.Description(),
 			"fileCount":             functions.FileCount(),
 			"hasAnnotation":         functions.HasAnnotation(),
+			"hasBinaryFile":         functions.HasBinaryFile(),
 			"hasCodePattern":        functions.HasCodePattern(),
 			"hasFileExtensions":     functions.HasFileExtensions(),
 			"hasFileName":           functions.HasFileName(),
