@@ -17,7 +17,6 @@ require (
 	github.com/migueleliasweb/go-github-mock v0.0.10
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/reviewpad/api/go v0.0.0-20220824160655-7aaf235bcfa2
-	github.com/reviewpad/cookbook v0.0.0-00010101000000-000000000000
 	github.com/reviewpad/go-conventionalcommits v0.10.0
 	github.com/shurcooL/githubv4 v0.0.0-20221021030919-a134b1472cc7
 	github.com/sirupsen/logrus v1.9.0
@@ -39,6 +38,7 @@ require (
 	github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/reviewpad/cookbook v0.0.0-20221127102634-fca2c5764209 // indirect
 	github.com/rogpeppe/go-internal v1.9.0 // indirect
 	github.com/shurcooL/graphql v0.0.0-20220606043923-3cf50f8a0a29 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
@@ -51,5 +51,3 @@ require (
 	google.golang.org/genproto v0.0.0-20220815135757-37a418bb8959 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
 )
-
-replace github.com/reviewpad/cookbook => /omega/go/src/github.com/reviewpad/cookbook
