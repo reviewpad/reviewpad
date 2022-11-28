@@ -32,6 +32,7 @@ type Target interface {
 	GetNodeID() string
 	GetProjectByName(name string) (*Project, error)
 	GetProjectFieldsByProjectNumber(projectNumber uint64) ([]*ProjectField, error)
+	GetState() string
 	GetTargetEntity() *handler.TargetEntity
 	GetTitle() string
 	RemoveLabel(labelName string) error

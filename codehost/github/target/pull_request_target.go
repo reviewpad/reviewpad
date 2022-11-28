@@ -370,6 +370,10 @@ func (t *PullRequestTarget) IsDraft() (bool, error) {
 	return t.PullRequest.GetDraft(), nil
 }
 
+func (t *PullRequestTarget) GetState() string {
+	return t.PullRequest.GetState()
+}
+
 func (t *PullRequestTarget) GetTitle() string {
 	return t.PullRequest.GetTitle()
 }

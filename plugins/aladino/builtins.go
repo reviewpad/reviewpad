@@ -85,6 +85,7 @@ func PluginBuiltInsWithConfig(config *PluginConfig) *aladino.BuiltIns {
 			"reviewers":             functions.Reviewers(),
 			"reviewerStatus":        functions.ReviewerStatus(),
 			"size":                  functions.Size(),
+			"state":                 functions.State(),
 			"title":                 functions.Title(),
 			"workflowStatus":        functions.WorkflowStatus(),
 			// Organization

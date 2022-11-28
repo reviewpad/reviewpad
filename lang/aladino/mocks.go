@@ -212,6 +212,10 @@ func GetDefaultMockPullRequestDetailsWith(pr *github.PullRequest) *github.PullRe
 		defaultPullRequest.ClosedAt = pr.ClosedAt
 	}
 
+	if pr.State != nil {
+		defaultPullRequest.State = pr.State
+	}
+
 	return defaultPullRequest
 }
 
