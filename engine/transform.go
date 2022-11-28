@@ -64,6 +64,10 @@ func addDefaultCloseReason(str string) string {
 	return r.ReplaceAllString(str, `$$close("$1", "completed")`)
 }
 
+func addDefaultCheckRunsToIgnore(str string) string {
+	return strings.ReplaceAll(str, "$haveAllChecksRunCompleted()", "$haveAllChecksRunCompleted([])")
+}
+
 func transformAladinoExpression(str string) string {
 	transformedActionStr := str
 
@@ -75,6 +79,7 @@ func transformAladinoExpression(str string) string {
 		addDefaultPullRequestCountBy,
 		addEmptyCloseComment,
 		addDefaultCloseReason,
+		addDefaultCheckRunsToIgnore,
 	}
 
 	for i := range transformations {
