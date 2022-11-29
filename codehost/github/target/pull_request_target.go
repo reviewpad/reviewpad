@@ -387,3 +387,12 @@ func (t *PullRequestTarget) GetPullRequestLastPushDate() (time.Time, error) {
 
 	return t.githubClient.GetPullRequestLastPushDate(ctx, owner, repo, number)
 }
+
+func (t *PullRequestTarget) IsFileBinary(branch, file string) (bool, error) {
+	ctx := t.ctx
+	targetEntity := t.targetEntity
+	owner := targetEntity.Owner
+	repo := targetEntity.Repo
+
+	return t.githubClient.IsFileBinary(ctx, owner, repo, branch, file)
+}

@@ -75,6 +75,16 @@ type FirstCommitAndReviewDateQuery struct {
 	} `graphql:"repository(owner: $repositoryOwner, name: $repositoryName)"`
 }
 
+type GetObjectQuery struct {
+	Repository struct {
+		Object struct {
+			Blog struct {
+				IsBinary bool
+			} `graphql:"... on Blob"`
+		} `graphql:"object(expression: $expression)"`
+	} `graphql:"repository(owner: $repositoryOwner, name: $repositoryName)"`
+}
+
 func GetPullRequestHeadOwnerName(pullRequest *github.PullRequest) string {
 	return pullRequest.Head.Repo.Owner.GetLogin()
 }
@@ -480,4 +490,20 @@ func (c *GithubClient) GetCheckRunsForRef(ctx context.Context, owner string, rep
 	}
 
 	return checks.([]*github.CheckRun), nil
+}
+
+func (c *GithubClient) IsFileBinary(ctx context.Context, owner, repo, branch, file string) (bool, error) {
+	var getObjectQuery GetObjectQuery
+	varGQLGetObject := map[string]interface{}{
+		"repositoryOwner": githubv4.String(owner),
+		"repositoryName":  githubv4.String(repo),
+		"expression":      githubv4.String(fmt.Sprintf("%s:%s", branch, file)),
+	}
+
+	err := c.GetClientGraphQL().Query(ctx, &getObjectQuery, varGQLGetObject)
+	if err != nil {
+		return false, err
+	}
+
+	return getObjectQuery.Repository.Object.Blog.IsBinary, nil
 }
