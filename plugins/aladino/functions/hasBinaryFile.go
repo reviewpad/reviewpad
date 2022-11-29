@@ -22,9 +22,9 @@ func hasBinaryFile(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
 	patch := e.GetTarget().(*target.PullRequestTarget).Patch
 	hasBinaryFile := false
 
-	for _, patch := range patch {
+	for _, patchFile := range patch {
 		// file is binary if GitHub does not display a textual diff
-		if patch.Repr.GetPatch() == "" {
+		if patchFile.Repr.GetPatch() == "" {
 			hasBinaryFile = true
 			break
 		}
