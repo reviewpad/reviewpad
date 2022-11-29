@@ -370,6 +370,10 @@ func (t *PullRequestTarget) IsDraft() (bool, error) {
 	return t.PullRequest.GetDraft(), nil
 }
 
+func (t *PullRequestTarget) GetState() string {
+	return t.PullRequest.GetState()
+}
+
 func (t *PullRequestTarget) GetTitle() string {
 	return t.PullRequest.GetTitle()
 }
@@ -382,4 +386,13 @@ func (t *PullRequestTarget) GetPullRequestLastPushDate() (time.Time, error) {
 	number := targetEntity.Number
 
 	return t.githubClient.GetPullRequestLastPushDate(ctx, owner, repo, number)
+}
+
+func (t *PullRequestTarget) IsFileBinary(branch, file string) (bool, error) {
+	ctx := t.ctx
+	targetEntity := t.targetEntity
+	owner := targetEntity.Owner
+	repo := targetEntity.Repo
+
+	return t.githubClient.IsFileBinary(ctx, owner, repo, branch, file)
 }
