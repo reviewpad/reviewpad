@@ -132,7 +132,7 @@ func TestHaveAllChecksRunCompleted(t *testing.T) {
 			},
 			wantResult: aladino.BuildBoolValue(true),
 		},
-		"when all check runs are not completed with conclusion": {
+		"when all check runs are not completed with success conclusion": {
 			checkRunsToIgnore: aladino.BuildArrayValue([]aladino.Value{}),
 			conclusion:        aladino.BuildStringValue("success"),
 			mockBackendOptions: []mock.MockBackendOption{
@@ -168,7 +168,7 @@ func TestHaveAllChecksRunCompleted(t *testing.T) {
 			},
 			wantResult: aladino.BuildBoolValue(false),
 		},
-		"when all check runs are completed with conclusion": {
+		"when all check runs are completed with success conclusion": {
 			checkRunsToIgnore: aladino.BuildArrayValue([]aladino.Value{}),
 			conclusion:        aladino.BuildStringValue("success"),
 			mockBackendOptions: []mock.MockBackendOption{
@@ -239,7 +239,7 @@ func TestHaveAllChecksRunCompleted(t *testing.T) {
 			},
 			wantResult: aladino.BuildBoolValue(true),
 		},
-		"when all check runs are completed with ignored and conclusion": {
+		"when all check runs are completed with ignored and success conclusion": {
 			checkRunsToIgnore: aladino.BuildArrayValue([]aladino.Value{aladino.BuildStringValue("run")}),
 			conclusion:        aladino.BuildStringValue("success"),
 			mockBackendOptions: []mock.MockBackendOption{
@@ -273,6 +273,47 @@ func TestHaveAllChecksRunCompleted(t *testing.T) {
 								Name:       github.String("test"),
 								Status:     github.String("completed"),
 								Conclusion: github.String("success"),
+							},
+						},
+					},
+				),
+			},
+			wantResult: aladino.BuildBoolValue(true),
+		},
+		"when all check runs are completed with ignored and failure conclusion": {
+			checkRunsToIgnore: aladino.BuildArrayValue([]aladino.Value{aladino.BuildStringValue("build")}),
+			conclusion:        aladino.BuildStringValue("failure"),
+			mockBackendOptions: []mock.MockBackendOption{
+				mock.WithRequestMatch(
+					mock.GetReposPullsCommitsByOwnerByRepoByPullNumber,
+					[]*github.RepositoryCommit{
+						{
+							SHA: github.String("2a4d4e32a88ee6cb6520ee7232ce6217"),
+						},
+						{
+							SHA: github.String("1992f2a6442859ff07f452282e1cd5b0"),
+						},
+					},
+				),
+				mock.WithRequestMatch(
+					mock.GetReposCommitsCheckRunsByOwnerByRepoByRef,
+					github.ListCheckRunsResults{
+						Total: github.Int(2),
+						CheckRuns: []*github.CheckRun{
+							{
+								Name:       github.String("build"),
+								Status:     github.String("completed"),
+								Conclusion: github.String("success"),
+							},
+							{
+								Name:       github.String("run"),
+								Status:     github.String("completed"),
+								Conclusion: github.String("failure"),
+							},
+							{
+								Name:       github.String("test"),
+								Status:     github.String("completed"),
+								Conclusion: github.String("failure"),
 							},
 						},
 					},
