@@ -5,9 +5,10 @@
 package plugins_aladino_functions_test
 
 import (
+	"errors"
+	"net/http"
 	"testing"
 
-	"github.com/google/go-github/v48/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
@@ -18,64 +19,50 @@ var hasBinaryFile = plugins_aladino.PluginBuiltIns().Functions["hasBinaryFile"].
 
 func TestHasBinaryFile(t *testing.T) {
 	tests := map[string]struct {
-		wantResult *aladino.BoolValue
-		wantErr    error
-		files      []*github.CommitFile
+		wantResult     aladino.Value
+		wantErr        error
+		graphqlHandler func(http.ResponseWriter, *http.Request)
 	}{
-		"when there is one file with patch": {
+		"when graphql query errors": {
+			wantResult: (aladino.Value)(nil),
+			graphqlHandler: func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(http.StatusInternalServerError)
+			},
+			wantErr: errors.New(`non-200 OK status code: 500 Internal Server Error body: ""`),
+		},
+		"when object is not binary file": {
 			wantResult: aladino.BuildBoolValue(false),
-			files: []*github.CommitFile{
-				{
-					Filename: github.String("test.go"),
-					Patch:    github.String("@@ -1,3 +1,3 @@ package test"),
-				},
+			graphqlHandler: func(w http.ResponseWriter, r *http.Request) {
+				aladino.MustWrite(w, `{
+					"data": {
+						"repository": {
+							"object": {
+								"isBinary": false
+							}
+						}
+					}
+				}`)
 			},
 		},
-		"when there are two files with patch": {
-			wantResult: aladino.BuildBoolValue(false),
-			files: []*github.CommitFile{
-				{
-					Filename: github.String("test.go"),
-					Patch:    github.String("@@ -1,3 +1,3 @@ package test"),
-				},
-				{
-					Filename: github.String("test-2.go"),
-					Patch:    github.String("@@ -1,3 +1,3 @@ package test_2"),
-				},
-			},
-		},
-		"when there is one file with no patch": {
+		"when object is binary file": {
 			wantResult: aladino.BuildBoolValue(true),
-			files: []*github.CommitFile{
-				{
-					Filename: github.String("test_bin_file"),
-					Patch:    github.String(""),
-				},
-			},
-		},
-		"when there are two files one with no patch": {
-			wantResult: aladino.BuildBoolValue(true),
-			files: []*github.CommitFile{
-				{
-					Filename: github.String("test_bin_file"),
-					Patch:    github.String(""),
-				},
-				{
-					Filename: github.String("test-2.go"),
-					Patch:    github.String("@@ -1,3 +1,3 @@ package test_2"),
-				},
+			graphqlHandler: func(w http.ResponseWriter, r *http.Request) {
+				aladino.MustWrite(w, `{
+					"data": {
+						"repository": {
+							"object": {
+								"isBinary": true
+							}
+						}
+					}
+				}`)
 			},
 		},
 	}
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			env := aladino.MockDefaultEnv(t, []mock.MockBackendOption{
-				mock.WithRequestMatch(
-					mock.GetReposPullsFilesByOwnerByRepoByPullNumber,
-					test.files,
-				),
-			}, nil, aladino.MockBuiltIns(), nil)
+			env := aladino.MockDefaultEnv(t, []mock.MockBackendOption{}, test.graphqlHandler, aladino.MockBuiltIns(), nil)
 
 			res, err := hasBinaryFile(env, []aladino.Value{})
 
