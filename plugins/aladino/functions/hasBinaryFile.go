@@ -20,15 +20,13 @@ func HasBinaryFile() *aladino.BuiltInFunction {
 
 func hasBinaryFile(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
 	patch := e.GetTarget().(*target.PullRequestTarget).Patch
-	hasBinaryFile := false
 
 	for _, patchFile := range patch {
 		// file is binary if GitHub does not display a textual diff
 		if patchFile.Repr.GetPatch() == "" {
-			hasBinaryFile = true
-			break
+			return aladino.BuildBoolValue(true), nil
 		}
 	}
 
-	return aladino.BuildBoolValue(hasBinaryFile), nil
+	return aladino.BuildBoolValue(false), nil
 }
