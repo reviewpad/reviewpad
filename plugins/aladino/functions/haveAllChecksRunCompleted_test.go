@@ -67,7 +67,9 @@ func TestHaveAllChecksRunCompleted(t *testing.T) {
 								"commits": {
 									"nodes": [
 										{
-											"oid": "b0b55a8a10139a324f3ccb1a6481862a4b5b5bcc"
+											"commit": {
+												"oid": "b0b55a8a10139a324f3ccb1a6481862a4b5b5bcc"
+											}
 										}
 									]
 								}
@@ -100,7 +102,9 @@ func TestHaveAllChecksRunCompleted(t *testing.T) {
 								"commits": {
 									"nodes": [
 										{
-											"oid": "b0b55a8a10139a324f3ccb1a6481862a4b5b5bcc"
+											"commit": {
+												"oid": "b0b55a8a10139a324f3ccb1a6481862a4b5b5bcc"
+											}
 										}
 									]
 								}
@@ -142,7 +146,9 @@ func TestHaveAllChecksRunCompleted(t *testing.T) {
 								"commits": {
 									"nodes": [
 										{
-											"oid": "b0b55a8a10139a324f3ccb1a6481862a4b5b5bcc"
+											"commit": {
+												"oid": "b0b55a8a10139a324f3ccb1a6481862a4b5b5bcc"
+											}
 										}
 									]
 								}
@@ -184,7 +190,9 @@ func TestHaveAllChecksRunCompleted(t *testing.T) {
 								"commits": {
 									"nodes": [
 										{
-											"oid": "b0b55a8a10139a324f3ccb1a6481862a4b5b5bcc"
+											"commit": {
+												"oid": "b0b55a8a10139a324f3ccb1a6481862a4b5b5bcc"
+											}
 										}
 									]
 								}
@@ -226,7 +234,9 @@ func TestHaveAllChecksRunCompleted(t *testing.T) {
 								"commits": {
 									"nodes": [
 										{
-											"oid": "b0b55a8a10139a324f3ccb1a6481862a4b5b5bcc"
+											"commit": {
+												"oid": "b0b55a8a10139a324f3ccb1a6481862a4b5b5bcc"
+											}
 										}
 									]
 								}
@@ -267,7 +277,9 @@ func TestHaveAllChecksRunCompleted(t *testing.T) {
 								"commits": {
 									"nodes": [
 										{
-											"oid": "b0b55a8a10139a324f3ccb1a6481862a4b5b5bcc"
+											"commit": {
+												"oid": "b0b55a8a10139a324f3ccb1a6481862a4b5b5bcc"
+											}
 										}
 									]
 								}
@@ -314,7 +326,9 @@ func TestHaveAllChecksRunCompleted(t *testing.T) {
 								"commits": {
 									"nodes": [
 										{
-											"oid": "b0b55a8a10139a324f3ccb1a6481862a4b5b5bcc"
+											"commit": {
+												"oid": "b0b55a8a10139a324f3ccb1a6481862a4b5b5bcc"
+											}
 										}
 									]
 								}
@@ -361,7 +375,9 @@ func TestHaveAllChecksRunCompleted(t *testing.T) {
 								"commits": {
 									"nodes": [
 										{
-											"oid": "b0b55a8a10139a324f3ccb1a6481862a4b5b5bcc"
+											"commit": {
+												"oid": "b0b55a8a10139a324f3ccb1a6481862a4b5b5bcc"
+											}
 										}
 									]
 								}
