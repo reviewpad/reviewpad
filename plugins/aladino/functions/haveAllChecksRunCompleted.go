@@ -11,7 +11,7 @@ import (
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 )
 
-func HaveAllChecksRunComplted() *aladino.BuiltInFunction {
+func HaveAllChecksRunCompleted() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
 		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildArrayOfType(aladino.BuildStringType()), aladino.BuildStringType()}, aladino.BuildBoolType()),
 		Code:           haveAllChecksRunCompleted,
