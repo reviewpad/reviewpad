@@ -111,3 +111,4 @@ tasks:
       - format
       - build
       - test
+      - shadow
