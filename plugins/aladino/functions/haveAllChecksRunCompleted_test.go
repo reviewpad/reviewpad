@@ -19,28 +19,31 @@ func TestHaveAllChecksRunCompleted(t *testing.T) {
 		checkRunsToIgnore  *aladino.ArrayValue
 		conclusion         *aladino.StringValue
 		mockBackendOptions []mock.MockBackendOption
+		graphQLHandler     http.HandlerFunc
 		wantResult         aladino.Value
 		wantErr            error
 	}{
-		"when get pull request commits failed": {
-			mockBackendOptions: []mock.MockBackendOption{
-				mock.WithRequestMatchHandler(
-					mock.GetReposPullsCommitsByOwnerByRepoByPullNumber,
-					http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-						w.WriteHeader(http.StatusBadRequest)
-						aladino.MustWrite(w, `{"message": "mock error"}`)
-					})),
+		"when last commit sha failed": {
+			mockBackendOptions: []mock.MockBackendOption{},
+			graphQLHandler: func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(http.StatusBadRequest)
 			},
-			wantErr: &github.ErrorResponse{
-				Message: "mock error",
-			},
+			wantErr: errors.New(`non-200 OK status code: 400 Bad Request body: ""`),
 		},
 		"when there are no github commits": {
-			mockBackendOptions: []mock.MockBackendOption{
-				mock.WithRequestMatch(
-					mock.GetReposPullsCommitsByOwnerByRepoByPullNumber,
-					[]github.Commit{},
-				),
+			mockBackendOptions: []mock.MockBackendOption{},
+			graphQLHandler: func(w http.ResponseWriter, r *http.Request) {
+				aladino.MustWrite(w, `{
+					"data": {
+						"repository": {
+							"pullRequest": {
+								"commits": {
+									"nodes": []
+								}
+							}
+						}
+					}
+				}`)
 			},
 			wantResult: aladino.BuildBoolValue(false),
 		},
@@ -48,17 +51,6 @@ func TestHaveAllChecksRunCompleted(t *testing.T) {
 			checkRunsToIgnore: aladino.BuildArrayValue([]aladino.Value{}),
 			conclusion:        aladino.BuildStringValue(""),
 			mockBackendOptions: []mock.MockBackendOption{
-				mock.WithRequestMatch(
-					mock.GetReposPullsCommitsByOwnerByRepoByPullNumber,
-					[]*github.RepositoryCommit{
-						{
-							SHA: github.String("2a4d4e32a88ee6cb6520ee7232ce6217"),
-						},
-						{
-							SHA: github.String("1992f2a6442859ff07f452282e1cd5b0"),
-						},
-					},
-				),
 				mock.WithRequestMatchHandler(
 					mock.GetReposCommitsCheckRunsByOwnerByRepoByRef,
 					http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -66,6 +58,23 @@ func TestHaveAllChecksRunCompleted(t *testing.T) {
 						aladino.MustWrite(w, `{"message": "mock error"}`)
 					}),
 				),
+			},
+			graphQLHandler: func(w http.ResponseWriter, r *http.Request) {
+				aladino.MustWrite(w, `{
+					"data": {
+						"repository": {
+							"pullRequest": {
+								"commits": {
+									"nodes": [
+										{
+											"oid": "b0b55a8a10139a324f3ccb1a6481862a4b5b5bcc"
+										}
+									]
+								}
+							}
+						}
+					}
+				}`)
 			},
 			wantErr: &github.ErrorResponse{
 				Message: "mock error",
@@ -76,17 +85,6 @@ func TestHaveAllChecksRunCompleted(t *testing.T) {
 			conclusion:        aladino.BuildStringValue(""),
 			mockBackendOptions: []mock.MockBackendOption{
 				mock.WithRequestMatch(
-					mock.GetReposPullsCommitsByOwnerByRepoByPullNumber,
-					[]*github.RepositoryCommit{
-						{
-							SHA: github.String("2a4d4e32a88ee6cb6520ee7232ce6217"),
-						},
-						{
-							SHA: github.String("1992f2a6442859ff07f452282e1cd5b0"),
-						},
-					},
-				),
-				mock.WithRequestMatch(
 					mock.GetReposCommitsCheckRunsByOwnerByRepoByRef,
 					github.ListCheckRunsResults{
 						Total:     github.Int(0),
@@ -94,23 +92,29 @@ func TestHaveAllChecksRunCompleted(t *testing.T) {
 					},
 				),
 			},
+			graphQLHandler: func(w http.ResponseWriter, r *http.Request) {
+				aladino.MustWrite(w, `{
+					"data": {
+						"repository": {
+							"pullRequest": {
+								"commits": {
+									"nodes": [
+										{
+											"oid": "b0b55a8a10139a324f3ccb1a6481862a4b5b5bcc"
+										}
+									]
+								}
+							}
+						}
+					}
+				}`)
+			},
 			wantResult: aladino.BuildBoolValue(true),
 		},
 		"when all check runs are completed": {
 			checkRunsToIgnore: aladino.BuildArrayValue([]aladino.Value{}),
 			conclusion:        aladino.BuildStringValue(""),
 			mockBackendOptions: []mock.MockBackendOption{
-				mock.WithRequestMatch(
-					mock.GetReposPullsCommitsByOwnerByRepoByPullNumber,
-					[]*github.RepositoryCommit{
-						{
-							SHA: github.String("2a4d4e32a88ee6cb6520ee7232ce6217"),
-						},
-						{
-							SHA: github.String("1992f2a6442859ff07f452282e1cd5b0"),
-						},
-					},
-				),
 				mock.WithRequestMatch(
 					mock.GetReposCommitsCheckRunsByOwnerByRepoByRef,
 					github.ListCheckRunsResults{
@@ -130,23 +134,29 @@ func TestHaveAllChecksRunCompleted(t *testing.T) {
 					},
 				),
 			},
+			graphQLHandler: func(w http.ResponseWriter, r *http.Request) {
+				aladino.MustWrite(w, `{
+					"data": {
+						"repository": {
+							"pullRequest": {
+								"commits": {
+									"nodes": [
+										{
+											"oid": "b0b55a8a10139a324f3ccb1a6481862a4b5b5bcc"
+										}
+									]
+								}
+							}
+						}
+					}
+				}`)
+			},
 			wantResult: aladino.BuildBoolValue(true),
 		},
 		"when all check runs are not completed with success conclusion": {
 			checkRunsToIgnore: aladino.BuildArrayValue([]aladino.Value{}),
 			conclusion:        aladino.BuildStringValue("success"),
 			mockBackendOptions: []mock.MockBackendOption{
-				mock.WithRequestMatch(
-					mock.GetReposPullsCommitsByOwnerByRepoByPullNumber,
-					[]*github.RepositoryCommit{
-						{
-							SHA: github.String("2a4d4e32a88ee6cb6520ee7232ce6217"),
-						},
-						{
-							SHA: github.String("1992f2a6442859ff07f452282e1cd5b0"),
-						},
-					},
-				),
 				mock.WithRequestMatch(
 					mock.GetReposCommitsCheckRunsByOwnerByRepoByRef,
 					github.ListCheckRunsResults{
@@ -166,23 +176,29 @@ func TestHaveAllChecksRunCompleted(t *testing.T) {
 					},
 				),
 			},
+			graphQLHandler: func(w http.ResponseWriter, r *http.Request) {
+				aladino.MustWrite(w, `{
+					"data": {
+						"repository": {
+							"pullRequest": {
+								"commits": {
+									"nodes": [
+										{
+											"oid": "b0b55a8a10139a324f3ccb1a6481862a4b5b5bcc"
+										}
+									]
+								}
+							}
+						}
+					}
+				}`)
+			},
 			wantResult: aladino.BuildBoolValue(false),
 		},
 		"when all check runs are completed with success conclusion": {
 			checkRunsToIgnore: aladino.BuildArrayValue([]aladino.Value{}),
 			conclusion:        aladino.BuildStringValue("success"),
 			mockBackendOptions: []mock.MockBackendOption{
-				mock.WithRequestMatch(
-					mock.GetReposPullsCommitsByOwnerByRepoByPullNumber,
-					[]*github.RepositoryCommit{
-						{
-							SHA: github.String("2a4d4e32a88ee6cb6520ee7232ce6217"),
-						},
-						{
-							SHA: github.String("1992f2a6442859ff07f452282e1cd5b0"),
-						},
-					},
-				),
 				mock.WithRequestMatch(
 					mock.GetReposCommitsCheckRunsByOwnerByRepoByRef,
 					github.ListCheckRunsResults{
@@ -202,23 +218,29 @@ func TestHaveAllChecksRunCompleted(t *testing.T) {
 					},
 				),
 			},
+			graphQLHandler: func(w http.ResponseWriter, r *http.Request) {
+				aladino.MustWrite(w, `{
+					"data": {
+						"repository": {
+							"pullRequest": {
+								"commits": {
+									"nodes": [
+										{
+											"oid": "b0b55a8a10139a324f3ccb1a6481862a4b5b5bcc"
+										}
+									]
+								}
+							}
+						}
+					}
+				}`)
+			},
 			wantResult: aladino.BuildBoolValue(true),
 		},
 		"when all check runs are completed with ignored": {
 			checkRunsToIgnore: aladino.BuildArrayValue([]aladino.Value{aladino.BuildStringValue("build")}),
 			conclusion:        aladino.BuildStringValue(""),
 			mockBackendOptions: []mock.MockBackendOption{
-				mock.WithRequestMatch(
-					mock.GetReposPullsCommitsByOwnerByRepoByPullNumber,
-					[]*github.RepositoryCommit{
-						{
-							SHA: github.String("2a4d4e32a88ee6cb6520ee7232ce6217"),
-						},
-						{
-							SHA: github.String("1992f2a6442859ff07f452282e1cd5b0"),
-						},
-					},
-				),
 				mock.WithRequestMatch(
 					mock.GetReposCommitsCheckRunsByOwnerByRepoByRef,
 					github.ListCheckRunsResults{
@@ -237,23 +259,29 @@ func TestHaveAllChecksRunCompleted(t *testing.T) {
 					},
 				),
 			},
+			graphQLHandler: func(w http.ResponseWriter, r *http.Request) {
+				aladino.MustWrite(w, `{
+					"data": {
+						"repository": {
+							"pullRequest": {
+								"commits": {
+									"nodes": [
+										{
+											"oid": "b0b55a8a10139a324f3ccb1a6481862a4b5b5bcc"
+										}
+									]
+								}
+							}
+						}
+					}
+				}`)
+			},
 			wantResult: aladino.BuildBoolValue(true),
 		},
 		"when all check runs are completed with ignored and success conclusion": {
 			checkRunsToIgnore: aladino.BuildArrayValue([]aladino.Value{aladino.BuildStringValue("run")}),
 			conclusion:        aladino.BuildStringValue("success"),
 			mockBackendOptions: []mock.MockBackendOption{
-				mock.WithRequestMatch(
-					mock.GetReposPullsCommitsByOwnerByRepoByPullNumber,
-					[]*github.RepositoryCommit{
-						{
-							SHA: github.String("2a4d4e32a88ee6cb6520ee7232ce6217"),
-						},
-						{
-							SHA: github.String("1992f2a6442859ff07f452282e1cd5b0"),
-						},
-					},
-				),
 				mock.WithRequestMatch(
 					mock.GetReposCommitsCheckRunsByOwnerByRepoByRef,
 					github.ListCheckRunsResults{
@@ -277,6 +305,23 @@ func TestHaveAllChecksRunCompleted(t *testing.T) {
 						},
 					},
 				),
+			},
+			graphQLHandler: func(w http.ResponseWriter, r *http.Request) {
+				aladino.MustWrite(w, `{
+					"data": {
+						"repository": {
+							"pullRequest": {
+								"commits": {
+									"nodes": [
+										{
+											"oid": "b0b55a8a10139a324f3ccb1a6481862a4b5b5bcc"
+										}
+									]
+								}
+							}
+						}
+					}
+				}`)
 			},
 			wantResult: aladino.BuildBoolValue(true),
 		},
@@ -285,17 +330,6 @@ func TestHaveAllChecksRunCompleted(t *testing.T) {
 			conclusion:        aladino.BuildStringValue("failure"),
 			mockBackendOptions: []mock.MockBackendOption{
 				mock.WithRequestMatch(
-					mock.GetReposPullsCommitsByOwnerByRepoByPullNumber,
-					[]*github.RepositoryCommit{
-						{
-							SHA: github.String("2a4d4e32a88ee6cb6520ee7232ce6217"),
-						},
-						{
-							SHA: github.String("1992f2a6442859ff07f452282e1cd5b0"),
-						},
-					},
-				),
-				mock.WithRequestMatch(
 					mock.GetReposCommitsCheckRunsByOwnerByRepoByRef,
 					github.ListCheckRunsResults{
 						Total: github.Int(2),
@@ -319,13 +353,30 @@ func TestHaveAllChecksRunCompleted(t *testing.T) {
 					},
 				),
 			},
+			graphQLHandler: func(w http.ResponseWriter, r *http.Request) {
+				aladino.MustWrite(w, `{
+					"data": {
+						"repository": {
+							"pullRequest": {
+								"commits": {
+									"nodes": [
+										{
+											"oid": "b0b55a8a10139a324f3ccb1a6481862a4b5b5bcc"
+										}
+									]
+								}
+							}
+						}
+					}
+				}`)
+			},
 			wantResult: aladino.BuildBoolValue(true),
 		},
 	}
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			env := aladino.MockDefaultEnv(t, test.mockBackendOptions, nil, nil, nil)
+			env := aladino.MockDefaultEnv(t, test.mockBackendOptions, test.graphQLHandler, nil, nil)
 
 			res, err := haveAllChecksRunCompleted(env, []aladino.Value{test.checkRunsToIgnore, test.conclusion})
 

@@ -90,7 +90,9 @@ type GetLastCommitSHAQuery struct {
 		PullRequest struct {
 			Commits struct {
 				Nodes []struct {
-					OID string `graphql:"oid"`
+					Commit struct {
+						OID string
+					}
 				}
 			} `graphql:"commits(last: 1)"`
 		} `graphql:"pullRequest(number: $pullRequestNumber)"`
@@ -537,5 +539,5 @@ func (c *GithubClient) GetLastCommitSHA(ctx context.Context, owner, repo string,
 		return "", nil
 	}
 
-	return getLastCommitQuery.Repository.PullRequest.Commits.Nodes[0].OID, nil
+	return getLastCommitQuery.Repository.PullRequest.Commits.Nodes[0].Commit.OID, nil
 }

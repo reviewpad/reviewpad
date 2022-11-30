@@ -27,18 +27,16 @@ func haveAllChecksRunCompleted(e aladino.Env, args []aladino.Value) (aladino.Val
 	repo := pullRequest.GetTargetEntity().Repo
 	number := pullRequest.GetTargetEntity().Number
 
-	ghCommits, err := e.GetGithubClient().GetPullRequestCommits(e.GetCtx(), owner, repo, number)
+	lastCommitSHA, err := pullRequest.GetLastCommit()
 	if err != nil {
 		return nil, err
 	}
 
-	if len(ghCommits) == 0 {
+	if lastCommitSHA == "" {
 		return aladino.BuildBoolValue(false), nil
 	}
 
-	lastCommitSha := ghCommits[len(ghCommits)-1].GetSHA()
-
-	checkRuns, err := e.GetGithubClient().GetCheckRunsForRef(e.GetCtx(), owner, repo, number, lastCommitSha, &github.ListCheckRunsOptions{})
+	checkRuns, err := e.GetGithubClient().GetCheckRunsForRef(e.GetCtx(), owner, repo, number, lastCommitSHA, &github.ListCheckRunsOptions{})
 	if err != nil {
 		return nil, err
 	}
