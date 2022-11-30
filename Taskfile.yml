@@ -100,9 +100,15 @@ tasks:
         fi
     silent: true
 
+  lint:
+    summary: |
+      Runs the linter
+      If error try `brew install golangci-lint`
+    cmds:
+      - golangci-lint run
+
   check:
     deps:
       - format
       - build
       - test
-
