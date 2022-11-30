@@ -53,7 +53,11 @@ func haveAllChecksRunCompleted(e aladino.Env, args []aladino.Value) (aladino.Val
 			continue
 		}
 
-		if checkRun.GetStatus() != "completed" || (conclusion.Val != "" && checkRun.GetConclusion() != conclusion.Val) {
+		if checkRun.GetStatus() != "completed" {
+			return aladino.BuildBoolValue(false), nil
+		}
+
+		if conclusion.Val != "" && checkRun.GetConclusion() != conclusion.Val {
 			return aladino.BuildBoolValue(false), nil
 		}
 	}
