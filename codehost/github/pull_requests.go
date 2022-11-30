@@ -85,6 +85,18 @@ type GetObjectQuery struct {
 	} `graphql:"repository(owner: $repositoryOwner, name: $repositoryName)"`
 }
 
+type GetLastCommitSHAQuery struct {
+	Repository struct {
+		PullRequest struct {
+			Commits struct {
+				Nodes []struct {
+					OID string `graphql:"oid"`
+				}
+			} `graphql:"commits(last: 1)"`
+		} `graphql:"pullRequest(number: $pullRequestNumber)"`
+	} `graphql:"repository(owner: $repositoryOwner, name: $repositoryName)"`
+}
+
 func GetPullRequestHeadOwnerName(pullRequest *github.PullRequest) string {
 	return pullRequest.Head.Repo.Owner.GetLogin()
 }
@@ -506,4 +518,24 @@ func (c *GithubClient) IsFileBinary(ctx context.Context, owner, repo, branch, fi
 	}
 
 	return getObjectQuery.Repository.Object.Blog.IsBinary, nil
+}
+
+func (c *GithubClient) GetLastCommitSHA(ctx context.Context, owner, repo string, number int) (string, error) {
+	var getLastCommitQuery GetLastCommitSHAQuery
+	varGQLLastCommitSHAData := map[string]interface{}{
+		"repositoryOwner":   githubv4.String(owner),
+		"repositoryName":    githubv4.String(repo),
+		"pullRequestNumber": githubv4.Int(number),
+	}
+
+	err := c.GetClientGraphQL().Query(ctx, &getLastCommitQuery, varGQLLastCommitSHAData)
+	if err != nil {
+		return "", err
+	}
+
+	if len(getLastCommitQuery.Repository.PullRequest.Commits.Nodes) < 1 {
+		return "", nil
+	}
+
+	return getLastCommitQuery.Repository.PullRequest.Commits.Nodes[0].OID, nil
 }
