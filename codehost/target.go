@@ -89,6 +89,7 @@ type ProjectField struct {
 		Name string
 	}
 }
+
 type Commit struct {
 	Message      string
 	ParentsCount int
