@@ -134,7 +134,7 @@ func (t *CommonTarget) GetTargetEntity() *handler.TargetEntity {
 	return t.targetEntity
 }
 
-func (t *CommonTarget) IsLinkedToProject(name string) (bool, error) {
+func (t *CommonTarget) IsLinkedToProject(title string) (bool, error) {
 	ctx := t.ctx
 	targetEntity := t.targetEntity
 	owner := targetEntity.Owner
@@ -148,7 +148,7 @@ func (t *CommonTarget) IsLinkedToProject(name string) (bool, error) {
 	}
 
 	for _, project := range projects {
-		if project.Project.Title == name {
+		if project.Project.Title == title {
 			return true, nil
 		}
 	}
