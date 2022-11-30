@@ -35,6 +35,7 @@ type Target interface {
 	GetState() string
 	GetTargetEntity() *handler.TargetEntity
 	GetTitle() string
+	IsLinkedToProject(name string) (bool, error)
 	RemoveLabel(labelName string) error
 }
 
