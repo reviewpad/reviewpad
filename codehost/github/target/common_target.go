@@ -134,6 +134,28 @@ func (t *CommonTarget) GetTargetEntity() *handler.TargetEntity {
 	return t.targetEntity
 }
 
+func (t *CommonTarget) IsLinkedToProject(title string) (bool, error) {
+	ctx := t.ctx
+	targetEntity := t.targetEntity
+	owner := targetEntity.Owner
+	repo := targetEntity.Repo
+	number := targetEntity.Number
+	totalRetries := 2
+
+	projects, err := t.githubClient.GetLinkedProjects(ctx, owner, repo, number, totalRetries)
+	if err != nil {
+		return false, err
+	}
+
+	for _, project := range projects {
+		if project.Project.Title == title {
+			return true, nil
+		}
+	}
+
+	return false, nil
+}
+
 func (t *CommonTarget) RemoveLabel(labelName string) error {
 	ctx := t.ctx
 	targetEntity := t.targetEntity

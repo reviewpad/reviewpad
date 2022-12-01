@@ -89,10 +89,10 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 			}
 
 			if ghLabel != nil {
-				labelHasUpdates, err := checkLabelHasUpdates(env, &label, ghLabel)
-				if err != nil {
-					CollectError(env, err)
-					return nil, err
+				labelHasUpdates, errCheckUpdates := checkLabelHasUpdates(env, &label, ghLabel)
+				if errCheckUpdates != nil {
+					CollectError(env, errCheckUpdates)
+					return nil, errCheckUpdates
 				}
 
 				if labelHasUpdates {
@@ -271,10 +271,10 @@ func processCommand(env *Env, comment string) (string, error) {
 	if err != nil {
 		comment := fmt.Sprintf("%s\n```\n🚫 error\n\n%s\n```", *env.EventData.Comment.Body, err.Error())
 
-		if _, _, err := env.GithubClient.EditComment(env.Ctx, env.TargetEntity.Owner, env.TargetEntity.Repo, *env.EventData.Comment.ID, &github.IssueComment{
+		if _, _, errEditComment := env.GithubClient.EditComment(env.Ctx, env.TargetEntity.Owner, env.TargetEntity.Repo, *env.EventData.Comment.ID, &github.IssueComment{
 			Body: github.String(comment),
-		}); err != nil {
-			return "", err
+		}); errEditComment != nil {
+			return "", errEditComment
 		}
 
 		return "", err

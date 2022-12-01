@@ -35,6 +35,7 @@ type Target interface {
 	GetState() string
 	GetTargetEntity() *handler.TargetEntity
 	GetTitle() string
+	IsLinkedToProject(title string) (bool, error)
 	RemoveLabel(labelName string) error
 }
 
@@ -89,6 +90,7 @@ type ProjectField struct {
 		Name string
 	}
 }
+
 type Commit struct {
 	Message      string
 	ParentsCount int
