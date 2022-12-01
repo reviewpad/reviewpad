@@ -87,8 +87,8 @@ func (t *PullRequestTarget) Close(comment string, _ string) error {
 	}
 
 	if comment != "" {
-		if err := t.Comment(comment); err != nil {
-			return err
+		if errComment := t.Comment(comment); errComment != nil {
+			return errComment
 		}
 	}
 

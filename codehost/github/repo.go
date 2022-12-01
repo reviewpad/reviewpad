@@ -147,9 +147,9 @@ func RebaseOnto(repo *git.Repository, branchName string, rebaseOptions *git.Reba
 	// Iterate over rebase operations based on operation count
 	opCount := int(rebase.OperationCount())
 	for op := 0; op < opCount; op++ {
-		operation, err := rebase.Next()
-		if err != nil {
-			return err
+		operation, errRebaseNext := rebase.Next()
+		if errRebaseNext != nil {
+			return errRebaseNext
 		}
 
 		// Verify that operation index is correct
@@ -167,9 +167,9 @@ func RebaseOnto(repo *git.Repository, branchName string, rebaseOptions *git.Reba
 		}
 
 		// Get current rebase operation created commit
-		commit, err := repo.LookupCommit(operation.Id)
-		if err != nil {
-			return err
+		commit, errCommitLookup := repo.LookupCommit(operation.Id)
+		if errCommitLookup != nil {
+			return errCommitLookup
 		}
 		defer commit.Free()
 
