@@ -17,6 +17,7 @@ func IsPullRequestReadyForReportMetrics(eventData *handler.EventData) bool {
 func IsReviewpadCommand(eventData *handler.EventData) bool {
 	return eventData != nil &&
 		eventData.EventName == "issue_comment" &&
+		eventData.EventAction == "created" &&
 		eventData.Comment.Body != nil &&
 		strings.HasPrefix(*eventData.Comment.Body, "/reviewpad")
 }
