@@ -396,3 +396,13 @@ func (t *PullRequestTarget) IsFileBinary(branch, file string) (bool, error) {
 
 	return t.githubClient.IsFileBinary(ctx, owner, repo, branch, file)
 }
+
+func (t *PullRequestTarget) GetLastCommit() (string, error) {
+	ctx := t.ctx
+	targetEntity := t.targetEntity
+	owner := targetEntity.Owner
+	repo := targetEntity.Repo
+	number := targetEntity.Number
+
+	return t.githubClient.GetLastCommitSHA(ctx, owner, repo, number)
+}
