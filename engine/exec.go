@@ -269,12 +269,12 @@ func processCommand(env *Env, comment string) (string, error) {
 
 	err = root.Execute()
 	if err != nil {
-		comment := fmt.Sprintf("%s\n```\n🚫 error\n\n%s\n```", *env.EventData.Comment.Body, err.Error())
+		comment := fmt.Sprintf("```\n🚫 error\n\n%s```", err.Error())
 
-		if _, _, errEditComment := env.GithubClient.EditComment(env.Ctx, env.TargetEntity.Owner, env.TargetEntity.Repo, *env.EventData.Comment.ID, &github.IssueComment{
+		if _, _, errCreateComment := env.GithubClient.CreateComment(env.Ctx, env.TargetEntity.Owner, env.TargetEntity.Repo, env.TargetEntity.Number, &github.IssueComment{
 			Body: github.String(comment),
-		}); errEditComment != nil {
-			return "", errEditComment
+		}); errCreateComment != nil {
+			return "", errCreateComment
 		}
 
 		return "", err
