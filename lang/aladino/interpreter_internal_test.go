@@ -6,10 +6,9 @@ package aladino
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"testing"
 
@@ -18,6 +17,7 @@ import (
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/engine"
 	"github.com/reviewpad/reviewpad/v3/handler"
+	"github.com/reviewpad/reviewpad/v3/utils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -531,7 +531,7 @@ func TestReport_WhenFindReportCommentFails(t *testing.T) {
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsByOwnerByRepoByPullNumber,
 				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					w.Write(mock.MustMarshal(mockedPullRequest))
+					utils.MustWriteBytes(w, mock.MustMarshal(mockedPullRequest))
 				}),
 			),
 		},
@@ -631,10 +631,10 @@ func TestReport_OnVerboseMode_WhenNoReviewpadCommentIsFound(t *testing.T) {
 			mock.WithRequestMatchHandler(
 				mock.PostReposIssuesCommentsByOwnerByRepoByIssueNumber,
 				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					rawBody, _ := ioutil.ReadAll(r.Body)
+					rawBody, _ := io.ReadAll(r.Body)
 					body := github.IssueComment{}
 
-					json.Unmarshal(rawBody, &body)
+					utils.MustUnmarshal(rawBody, &body)
 
 					addedComment = *body.Body
 				}),
@@ -673,10 +673,10 @@ func TestReport_OnVerboseMode_WhenThereIsAlreadyAReviewpadComment(t *testing.T) 
 			mock.WithRequestMatchHandler(
 				mock.PatchReposIssuesCommentsByOwnerByRepoByCommentId,
 				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					rawBody, _ := ioutil.ReadAll(r.Body)
+					rawBody, _ := io.ReadAll(r.Body)
 					body := github.IssueComment{}
 
-					json.Unmarshal(rawBody, &body)
+					utils.MustUnmarshal(rawBody, &body)
 
 					updatedComment = *body.Body
 				}),
@@ -770,7 +770,7 @@ func TestReportMetric(t *testing.T) {
 		},
 		"when find report comment failed": {
 			graphQLHandler: func(res http.ResponseWriter, req *http.Request) {
-				MustWrite(
+				utils.MustWrite(
 					res,
 					`{
 						"data": {
@@ -807,7 +807,7 @@ func TestReportMetric(t *testing.T) {
 		},
 		"when create comment failed": {
 			graphQLHandler: func(res http.ResponseWriter, req *http.Request) {
-				MustWrite(
+				utils.MustWrite(
 					res,
 					`{
 						"data": {
@@ -848,7 +848,7 @@ func TestReportMetric(t *testing.T) {
 		},
 		"when update comment failed": {
 			graphQLHandler: func(res http.ResponseWriter, req *http.Request) {
-				MustWrite(
+				utils.MustWrite(
 					res,
 					`{
 						"data": {
@@ -894,7 +894,7 @@ func TestReportMetric(t *testing.T) {
 		},
 		"when successfully created report comment": {
 			graphQLHandler: func(res http.ResponseWriter, req *http.Request) {
-				MustWrite(
+				utils.MustWrite(
 					res,
 					`{
 						"data": {
@@ -936,7 +936,7 @@ func TestReportMetric(t *testing.T) {
 		},
 		"when successfully updated report comment": {
 			graphQLHandler: func(res http.ResponseWriter, req *http.Request) {
-				MustWrite(
+				utils.MustWrite(
 					res,
 					`{
 						"data": {

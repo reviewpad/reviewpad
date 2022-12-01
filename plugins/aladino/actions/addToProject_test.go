@@ -196,21 +196,21 @@ func TestAddToProject(t *testing.T) {
 					mock.WithRequestMatchHandler(
 						mock.GetReposPullsByOwnerByRepoByPullNumber,
 						http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-							w.Write(mock.MustMarshal(mockedPullRequest))
+							utils.MustWriteBytes(w, mock.MustMarshal(mockedPullRequest))
 						}),
 					),
 				},
 				func(res http.ResponseWriter, req *http.Request) {
-					query := utils.MinifyQuery(aladino.MustRead(req.Body))
+					query := utils.MinifyQuery(utils.MustRead(req.Body))
 					switch query {
 					case utils.MinifyQuery(testCase.getProjectQuery):
-						aladino.MustWrite(res, testCase.getProjectQueryBody)
+						utils.MustWrite(res, testCase.getProjectQueryBody)
 					case utils.MinifyQuery(testCase.getProjectFieldsQuery):
-						aladino.MustWrite(res, testCase.getProjectFieldsBody)
+						utils.MustWrite(res, testCase.getProjectFieldsBody)
 					case utils.MinifyQuery(testCase.addProjectV2ItemByIdMutation):
-						aladino.MustWrite(res, testCase.addProjectV2ItemByIdBody)
+						utils.MustWrite(res, testCase.addProjectV2ItemByIdBody)
 					case utils.MinifyQuery(testCase.updateProjectV2ItemFieldValueMutation):
-						aladino.MustWrite(res, testCase.updateProjectV2ItemFieldValueBody)
+						utils.MustWrite(res, testCase.updateProjectV2ItemFieldValueBody)
 					}
 				},
 				aladino.MockBuiltIns(),

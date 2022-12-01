@@ -43,7 +43,9 @@ func CollectError(env *Env, err error) {
 		"details": errMsg,
 	}
 
-	env.Collector.Collect("Error", collectedData)
+	if err = env.Collector.Collect("Error", collectedData); err != nil {
+		_ = execError(err.Error())
+	}
 }
 
 // Eval: main function that generates the program to be executed
@@ -65,7 +67,9 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 		"totalPipelines": len(file.Pipelines),
 	}
 
-	env.Collector.Collect("Trigger Analysis", collectedData)
+	if err := env.Collector.Collect("Trigger Analysis", collectedData); err != nil {
+		_ = execError("error collecting trigger analysis: %v\n", err)
+	}
 
 	rules := make(map[string]PadRule)
 

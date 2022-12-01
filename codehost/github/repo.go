@@ -7,8 +7,8 @@ package github
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"log"
+	"os"
 	"strings"
 
 	git "github.com/libgit2/git2go/v31"
@@ -20,7 +20,7 @@ import (
 func CloneRepository(url string, token string, path string, options *git.CloneOptions) (*git.Repository, string, error) {
 	dir := path
 	if dir == "" {
-		tempDir, err := ioutil.TempDir("", "repository")
+		tempDir, err := os.MkdirTemp("", "repository")
 		if err != nil {
 			log.Print("[error] failed to create temporary folder")
 			return nil, "", err
@@ -109,7 +109,11 @@ func CheckoutBranch(repo *git.Repository, branchName string) error {
 	}
 
 	// Set current Head to the checkout branch
-	repo.SetHead("refs/heads/" + branchName)
+	err = repo.SetHead("refs/heads/" + branchName)
+	if err != nil {
+		log.Printf("[error] failed to set head: %s", branchName)
+		return err
+	}
 
 	return nil
 }

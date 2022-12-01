@@ -9,7 +9,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"regexp"
@@ -32,8 +31,13 @@ func init() {
 	runCmd.Flags().StringVarP(&eventFilePath, "event-payload", "e", "", "File path to github action event in JSON format")
 	runCmd.Flags().StringVarP(&mixpanelToken, "mixpanel-token", "m", "", "Mixpanel token")
 
-	runCmd.MarkFlagRequired("github-url")
-	runCmd.MarkFlagRequired("github-token")
+	if err := runCmd.MarkFlagRequired("github-url"); err != nil {
+		panic(err)
+	}
+
+	if err := runCmd.MarkFlagRequired("github-token"); err != nil {
+		panic(err)
+	}
 }
 
 type Event struct {
@@ -69,7 +73,7 @@ func run() error {
 	if eventFilePath == "" {
 		log.Print("[WARN] No event payload provided. Assuming empty event.")
 	} else {
-		content, err := ioutil.ReadFile(eventFilePath)
+		content, err := os.ReadFile(eventFilePath)
 		if err != nil {
 			return err
 		}
@@ -98,7 +102,10 @@ func run() error {
 
 	ctx := context.Background()
 	githubClient := gh.NewGithubClientFromToken(ctx, gitHubToken)
-	collectorClient := collector.NewCollector(mixpanelToken, repositoryOwner, string(entityKind), githubUrl, "local-cli")
+	collectorClient, err := collector.NewCollector(mixpanelToken, repositoryOwner, string(entityKind), githubUrl, "local-cli")
+	if err != nil {
+		log.Printf("error creating new collector: %v", err)
+	}
 
 	data, err := os.ReadFile(reviewpadFile)
 	if err != nil {

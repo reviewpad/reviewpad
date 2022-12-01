@@ -5,13 +5,14 @@
 package engine
 
 import (
-	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"testing"
 
 	"github.com/google/go-github/v48/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
+	"github.com/reviewpad/reviewpad/v3/utils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -87,7 +88,8 @@ func TestCreateLabel(t *testing.T) {
 					mock.PostReposLabelsByOwnerByRepo,
 					http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 						var gotLabel github.Label
-						json.NewDecoder(r.Body).Decode(&gotLabel)
+						rawBody, _ := io.ReadAll(r.Body)
+						utils.MustUnmarshal(rawBody, &gotLabel)
 
 						assert.Equal(t, "test-name", gotLabel.GetName())
 						assert.Equal(t, "91cf60", gotLabel.GetColor())
@@ -110,7 +112,8 @@ func TestCreateLabel(t *testing.T) {
 					mock.PostReposLabelsByOwnerByRepo,
 					http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 						var gotLabel github.Label
-						json.NewDecoder(r.Body).Decode(&gotLabel)
+						rawBody, _ := io.ReadAll(r.Body)
+						utils.MustUnmarshal(rawBody, &gotLabel)
 
 						assert.Equal(t, "test-name", gotLabel.GetName())
 						assert.Equal(t, "91cf60", gotLabel.GetColor())
@@ -154,7 +157,7 @@ func TestCheckLabelExists_WhenGetLabelFails(t *testing.T) {
 					mock.GetReposLabelsByOwnerByRepoByName,
 					http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 						w.WriteHeader(http.StatusInternalServerError)
-						w.Write(mock.MustMarshal(github.ErrorResponse{
+						MustWriteBytes(w, mock.MustMarshal(github.ErrorResponse{
 							Response: &http.Response{
 								StatusCode: 500,
 							},
@@ -204,7 +207,7 @@ func TestCheckLabelExists(t *testing.T) {
 					mock.GetReposLabelsByOwnerByRepoByName,
 					http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 						w.WriteHeader(http.StatusInternalServerError)
-						w.Write(mock.MustMarshal(github.ErrorResponse{
+						MustWriteBytes(w, mock.MustMarshal(github.ErrorResponse{
 							Response: &http.Response{
 								StatusCode: 404,
 							},
@@ -222,7 +225,7 @@ func TestCheckLabelExists(t *testing.T) {
 					mock.GetReposLabelsByOwnerByRepoByName,
 					http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 						w.WriteHeader(http.StatusOK)
-						w.Write(mock.MustMarshal(label))
+						MustWriteBytes(w, mock.MustMarshal(label))
 					}),
 				),
 			},
@@ -338,7 +341,7 @@ func TestUpdateLabel_WhenEditLabelRequestFails(t *testing.T) {
 					mock.PatchReposLabelsByOwnerByRepoByName,
 					http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 						w.WriteHeader(http.StatusInternalServerError)
-						w.Write(mock.MustMarshal(github.ErrorResponse{
+						MustWriteBytes(w, mock.MustMarshal(github.ErrorResponse{
 							Response: &http.Response{
 								StatusCode: 500,
 							},
@@ -386,7 +389,8 @@ func TestUpdateLabel(t *testing.T) {
 					mock.PatchReposLabelsByOwnerByRepoByName,
 					http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 						var gotLabel github.Label
-						json.NewDecoder(r.Body).Decode(&gotLabel)
+						rawBody, _ := io.ReadAll(r.Body)
+						utils.MustUnmarshal(rawBody, &gotLabel)
 
 						assert.Equal(t, "test description", gotLabel.GetDescription())
 

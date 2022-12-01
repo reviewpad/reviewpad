@@ -12,6 +12,7 @@ import (
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
+	"github.com/reviewpad/reviewpad/v3/utils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -33,7 +34,7 @@ func TestHasBinaryFile(t *testing.T) {
 		"when object is not binary file": {
 			wantResult: aladino.BuildBoolValue(false),
 			graphqlHandler: func(w http.ResponseWriter, r *http.Request) {
-				aladino.MustWrite(w, `{
+				utils.MustWrite(w, `{
 					"data": {
 						"repository": {
 							"object": {
@@ -47,7 +48,7 @@ func TestHasBinaryFile(t *testing.T) {
 		"when object is binary file": {
 			wantResult: aladino.BuildBoolValue(true),
 			graphqlHandler: func(w http.ResponseWriter, r *http.Request) {
-				aladino.MustWrite(w, `{
+				utils.MustWrite(w, `{
 					"data": {
 						"repository": {
 							"object": {
