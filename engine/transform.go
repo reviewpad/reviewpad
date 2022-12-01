@@ -64,6 +64,15 @@ func addDefaultCloseReason(str string) string {
 	return r.ReplaceAllString(str, `$$close("$1", "completed")`)
 }
 
+func addDefaultHaveAllChecksRunCompleted(str string) string {
+	r := regexp.MustCompile(`\$haveAllChecksRunCompleted\(((?:\[(?:".*")?(?:,".*")?\])|(?:[^,\s\[\]]+))?(?:,\s*("[^\(\)]*"))?\)`)
+	str = r.ReplaceAllString(str, `$$haveAllChecksRunCompleted($1, $2)`)
+	r = regexp.MustCompile(`\$haveAllChecksRunCompleted\(((?:\[(?:".*")?(?:,".*")?\])|(?:[^,\s]+))?(\,\s?)?\)`)
+	str = r.ReplaceAllString(str, `$$haveAllChecksRunCompleted($1, "")`)
+	r = regexp.MustCompile(`\$haveAllChecksRunCompleted\(,\s?""\)`)
+	return r.ReplaceAllString(str, `$$haveAllChecksRunCompleted([], "")`)
+}
+
 func transformAladinoExpression(str string) string {
 	transformedActionStr := str
 
@@ -75,6 +84,7 @@ func transformAladinoExpression(str string) string {
 		addDefaultPullRequestCountBy,
 		addEmptyCloseComment,
 		addDefaultCloseReason,
+		addDefaultHaveAllChecksRunCompleted,
 	}
 
 	for i := range transformations {

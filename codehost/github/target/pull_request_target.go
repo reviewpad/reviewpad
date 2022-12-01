@@ -87,8 +87,8 @@ func (t *PullRequestTarget) Close(comment string, _ string) error {
 	}
 
 	if comment != "" {
-		if err := t.Comment(comment); err != nil {
-			return err
+		if errComment := t.Comment(comment); errComment != nil {
+			return errComment
 		}
 	}
 
@@ -395,4 +395,14 @@ func (t *PullRequestTarget) IsFileBinary(branch, file string) (bool, error) {
 	repo := targetEntity.Repo
 
 	return t.githubClient.IsFileBinary(ctx, owner, repo, branch, file)
+}
+
+func (t *PullRequestTarget) GetLastCommit() (string, error) {
+	ctx := t.ctx
+	targetEntity := t.targetEntity
+	owner := targetEntity.Owner
+	repo := targetEntity.Repo
+	number := targetEntity.Number
+
+	return t.githubClient.GetLastCommitSHA(ctx, owner, repo, number)
 }

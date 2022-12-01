@@ -107,9 +107,16 @@ tasks:
     cmds:
       - golangci-lint run
 
+  shadow:
+    summary: Detect shadowed variables
+    cmds:
+      - go install golang.org/x/tools/go/analysis/passes/shadow/cmd/shadow@latest
+      - shadow ./...
+
   check:
     deps:
       - format
       - build
       - test
       - lint
+      - shadow
