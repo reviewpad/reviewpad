@@ -112,3 +112,4 @@ tasks:
       - format
       - build
       - test
+      - lint
