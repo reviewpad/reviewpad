@@ -134,10 +134,12 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 	}
 
 	// a program is a list of statements to be executed based on the command, workflow rules and actions.
-	program := BuildProgram(make([]*Statement, 0))
+	program := BuildProgram(make([]*Statement, 0), false)
 
 	// process commands
 	if utils.IsReviewpadCommand(env.EventData) {
+		program := BuildProgram(make([]*Statement, 0), true)
+
 		action, err := processCommand(env, *env.EventData.Comment.Body)
 		if err != nil {
 			return nil, err

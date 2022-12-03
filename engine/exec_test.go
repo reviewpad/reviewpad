@@ -124,6 +124,7 @@ func TestEval(t *testing.T) {
 				[]*engine.Statement{
 					engine.BuildStatement(`$addLabel("test-unnamed-label")`),
 				},
+				false,
 			),
 			targetEntity: engine.DefaultMockTargetEntity,
 		},
@@ -134,6 +135,7 @@ func TestEval(t *testing.T) {
 				[]*engine.Statement{
 					engine.BuildStatement(`$addLabel("test-label-without-description")`),
 				},
+				false,
 			),
 			targetEntity: engine.DefaultMockTargetEntity,
 		},
@@ -147,6 +149,7 @@ func TestEval(t *testing.T) {
 				[]*engine.Statement{
 					engine.BuildStatement(`$addLabel("test-label-without-description")`),
 				},
+				false,
 			),
 			targetEntity: engine.DefaultMockTargetEntity,
 		},
@@ -160,6 +163,7 @@ func TestEval(t *testing.T) {
 				[]*engine.Statement{
 					engine.BuildStatement(`$addLabel("test-label-update")`),
 				},
+				false,
 			),
 			targetEntity: engine.DefaultMockTargetEntity,
 		},
@@ -170,6 +174,7 @@ func TestEval(t *testing.T) {
 				[]*engine.Statement{
 					engine.BuildStatement(`$addLabel("test-label-with-no-updates")`),
 				},
+				false,
 			),
 			targetEntity: engine.DefaultMockTargetEntity,
 		},
@@ -179,6 +184,7 @@ func TestEval(t *testing.T) {
 				[]*engine.Statement{
 					engine.BuildStatement(`$addLabel("test-valid-group")`),
 				},
+				false,
 			),
 			targetEntity: engine.DefaultMockTargetEntity,
 		},
@@ -196,6 +202,7 @@ func TestEval(t *testing.T) {
 			inputReviewpadFilePath: "testdata/exec/reviewpad_with_no_activated_workflows.yml",
 			wantProgram: engine.BuildProgram(
 				[]*engine.Statement{},
+				false,
 			),
 			targetEntity: engine.DefaultMockTargetEntity,
 		},
@@ -205,6 +212,7 @@ func TestEval(t *testing.T) {
 				[]*engine.Statement{
 					engine.BuildStatement(`$addLabel("activate-one-workflow")`),
 				},
+				false,
 			),
 			targetEntity: engine.DefaultMockTargetEntity,
 		},
@@ -215,6 +223,7 @@ func TestEval(t *testing.T) {
 					engine.BuildStatement(`$addLabel("activated-workflow-a")`),
 					engine.BuildStatement(`$addLabel("activated-workflow-b")`),
 				},
+				false,
 			),
 			targetEntity: engine.DefaultMockTargetEntity,
 		},
@@ -225,6 +234,7 @@ func TestEval(t *testing.T) {
 					engine.BuildStatement(`$addLabel("activated-workflow")`),
 					engine.BuildStatement(`$addLabel("workflow-with-extra-actions")`),
 				},
+				false,
 			),
 			targetEntity: engine.DefaultMockTargetEntity,
 		},
@@ -234,6 +244,7 @@ func TestEval(t *testing.T) {
 				[]*engine.Statement{
 					engine.BuildStatement(`$addLabel("activated-workflow")`),
 				},
+				false,
 			),
 			targetEntity: engine.DefaultMockTargetEntity,
 		},
@@ -267,6 +278,7 @@ func TestEval(t *testing.T) {
 				[]*engine.Statement{
 					engine.BuildStatement(`$assignReviewer(["john"], 1, "reviewpad")`),
 				},
+				true,
 			),
 			targetEntity: &handler.TargetEntity{
 				Kind:   engine.DefaultMockTargetEntity.Kind,
@@ -295,6 +307,7 @@ func TestEval(t *testing.T) {
 				[]*engine.Statement{
 					engine.BuildStatement(`$assignReviewer(["jane-12","john01"], 1, "random")`),
 				},
+				true,
 			),
 			targetEntity: &handler.TargetEntity{
 				Kind:   engine.DefaultMockTargetEntity.Kind,
@@ -317,6 +330,7 @@ func TestEval(t *testing.T) {
 				[]*engine.Statement{
 					engine.BuildStatement(`$assignReviewer(["john","jane"], 1, "reviewpad")`),
 				},
+				true,
 			),
 			targetEntity: &handler.TargetEntity{
 				Kind:   engine.DefaultMockTargetEntity.Kind,
@@ -339,6 +353,7 @@ func TestEval(t *testing.T) {
 				[]*engine.Statement{
 					engine.BuildStatement(`$assignReviewer(["john","johnny"], 1, "round-robin")`),
 				},
+				true,
 			),
 			targetEntity: &handler.TargetEntity{
 				Kind:   engine.DefaultMockTargetEntity.Kind,

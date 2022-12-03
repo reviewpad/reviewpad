@@ -331,7 +331,7 @@ func TestExecProgram_WhenExecStatementFails(t *testing.T) {
 
 	statement := engine.BuildStatement("$action()")
 	statements := []*engine.Statement{statement}
-	program := engine.BuildProgram(statements)
+	program := engine.BuildProgram(statements, false)
 
 	exitStatus, err := mockedInterpreter.ExecProgram(program)
 
@@ -378,7 +378,7 @@ func TestExecProgram(t *testing.T) {
 	statCode := "$addLabel(\"test\")"
 
 	statement := engine.BuildStatement(statCode)
-	program := engine.BuildProgram([]*engine.Statement{statement})
+	program := engine.BuildProgram([]*engine.Statement{statement}, false)
 
 	exitStatus, err := mockedInterpreter.ExecProgram(program)
 
