@@ -38,6 +38,7 @@ type Env interface {
 	GetRegisterMap() RegisterMap
 	GetReport() *Report
 	GetTarget() codehost.Target
+	GetEventData() *handler.EventData
 }
 
 type BaseEnv struct {
@@ -51,6 +52,7 @@ type BaseEnv struct {
 	RegisterMap              RegisterMap
 	Report                   *Report
 	Target                   codehost.Target
+	EventData                *handler.EventData
 }
 
 func (e *BaseEnv) GetBuiltIns() *BuiltIns {
@@ -93,6 +95,10 @@ func (e *BaseEnv) GetTarget() codehost.Target {
 	return e.Target
 }
 
+func (e *BaseEnv) GetEventData() *handler.EventData {
+	return e.EventData
+}
+
 func NewTypeEnv(e Env) TypeEnv {
 	builtInsType := make(map[string]Type)
 	for builtInName, builtInFunction := range e.GetBuiltIns().Functions {
@@ -114,6 +120,7 @@ func NewEvalEnv(
 	targetEntity *handler.TargetEntity,
 	eventPayload interface{},
 	builtIns *BuiltIns,
+	eventData *handler.EventData,
 ) (Env, error) {
 	registerMap := RegisterMap(make(map[string]Value))
 	report := &Report{Actions: make([]string, 0)}
@@ -128,6 +135,7 @@ func NewEvalEnv(
 		EventPayload:             eventPayload,
 		RegisterMap:              registerMap,
 		Report:                   report,
+		EventData:                eventData,
 	}
 
 	switch targetEntity.Kind {

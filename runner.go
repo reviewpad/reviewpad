@@ -58,7 +58,16 @@ func Run(
 
 	defer config.CleanupPluginConfig()
 
-	aladinoInterpreter, err := aladino.NewInterpreter(ctx, dryRun, githubClient, collector, targetEntity, eventPayload, plugins_aladino.PluginBuiltInsWithConfig(config))
+	aladinoInterpreter, err := aladino.NewInterpreter(
+		ctx,
+		dryRun,
+		githubClient,
+		collector,
+		targetEntity,
+		eventPayload,
+		plugins_aladino.PluginBuiltInsWithConfig(config),
+		eventData,
+	)
 	if err != nil {
 		return engine.ExitStatusFailure, err
 	}

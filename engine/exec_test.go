@@ -416,6 +416,7 @@ func mockAladinoInterpreter(githubClient *gh.GithubClient) (engine.Interpreter, 
 		engine.DefaultMockTargetEntity,
 		engine.DefaultMockEventPayload,
 		aladino.MockBuiltIns(),
+		nil,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("aladino NewInterpreter returned unexpected error: %v", err)
