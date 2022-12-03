@@ -210,6 +210,28 @@ func (t *PullRequestTarget) GetReviews() ([]*codehost.Review, error) {
 	return reviews, nil
 }
 
+func (t *PullRequestTarget) IsLinkedToProject(title string) (bool, error) {
+	ctx := t.ctx
+	targetEntity := t.targetEntity
+	owner := targetEntity.Owner
+	repo := targetEntity.Repo
+	number := targetEntity.Number
+	totalRetries := 2
+
+	projects, err := t.githubClient.GetLinkedProjectsForIssue(ctx, owner, repo, number, totalRetries)
+	if err != nil {
+		return false, err
+	}
+
+	for _, project := range projects {
+		if project.Project.Title == title {
+			return true, nil
+		}
+	}
+
+	return false, nil
+}
+
 func (t *PullRequestTarget) Merge(mergeMethod string) error {
 	ctx := t.ctx
 	targetEntity := t.targetEntity
