@@ -6,10 +6,12 @@ package aladino
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"strings"
 
+	"github.com/google/go-github/v48/github"
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v3/collector"
@@ -122,6 +124,12 @@ func (i *Interpreter) ExecProgram(program *engine.Program) (engine.ExitStatus, e
 	for _, statement := range program.GetProgramStatements() {
 		err := i.ExecStatement(statement)
 		if err != nil {
+			if program.IsFromCommand {
+				if err := commentCommandError(i.Env, err); err != nil {
+					return engine.ExitStatusFailure, err
+				}
+				return engine.ExitStatusSuccess, nil
+			}
 			return engine.ExitStatusFailure, err
 		}
 
@@ -252,6 +260,35 @@ func (i *Interpreter) ReportMetrics(mode string) error {
 	return nil
 }
 
+func commentCommandError(env Env, err error) error {
+	targetEntity := env.GetTarget().GetTargetEntity()
+	eventData := env.GetEventData()
+	owner := targetEntity.Owner
+	repo := targetEntity.Repo
+	number := targetEntity.Number
+	ctx := env.GetCtx()
+
+	body := new(strings.Builder)
+	githubError := &github.ErrorResponse{}
+
+	body.WriteString(fmt.Sprintf("> %s\n\n", *eventData.Comment.Body))
+	body.WriteString(fmt.Sprintf("@%s an error occured running your command\n", *eventData.Comment.User.Login))
+
+	if errors.As(err, &githubError) {
+		for _, e := range githubError.Errors {
+			body.WriteString(fmt.Sprintf("- %s\n", e.Message))
+		}
+	} else {
+		body.WriteString(fmt.Sprintf("- %s\n", err.Error()))
+	}
+
+	_, _, createCommentErr := env.GetGithubClient().CreateComment(ctx, owner, repo, number, &github.IssueComment{
+		Body: github.String(body.String()),
+	})
+
+	return createCommentErr
+}
+
 func NewInterpreter(
 	ctx context.Context,
 	dryRun bool,
@@ -260,8 +297,9 @@ func NewInterpreter(
 	targetEntity *handler.TargetEntity,
 	eventPayload interface{},
 	builtIns *BuiltIns,
+	eventData *handler.EventData,
 ) (engine.Interpreter, error) {
-	evalEnv, err := NewEvalEnv(ctx, dryRun, githubClient, collector, targetEntity, eventPayload, builtIns)
+	evalEnv, err := NewEvalEnv(ctx, dryRun, githubClient, collector, targetEntity, eventPayload, builtIns, eventData)
 	if err != nil {
 		return nil, err
 	}
