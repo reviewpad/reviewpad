@@ -29,7 +29,7 @@ func TestGetLinkedProjects_WhenRequestFails(t *testing.T) {
 	mockRepo := host.GetPullRequestBaseRepoName(mockedPullRequest)
 	mockIssuerNumber := 10
 
-	projects, err := mockedGithubClient.GetLinkedProjects(context.Background(), mockOwner, mockRepo, mockIssuerNumber, 3)
+	projects, err := mockedGithubClient.GetLinkedProjectsForIssue(context.Background(), mockOwner, mockRepo, mockIssuerNumber, 3)
 
 	assert.NotNil(t, err)
 
@@ -85,7 +85,7 @@ func TestGetLinkedProjects_WhenProjectItemsNotFound(t *testing.T) {
 	mockRepo := host.GetPullRequestBaseRepoName(mockedPullRequest)
 	mockIssuerNumber := 10
 
-	projects, err := mockedGithubClient.GetLinkedProjects(context.Background(), mockOwner, mockRepo, mockIssuerNumber, 3)
+	projects, err := mockedGithubClient.GetLinkedProjectsForIssue(context.Background(), mockOwner, mockRepo, mockIssuerNumber, 3)
 
 	assert.NotNil(t, err)
 
@@ -152,7 +152,7 @@ func TestGetLinkedProjects_WhenProjectFound(t *testing.T) {
 	mockRepo := host.GetPullRequestBaseRepoName(mockedPullRequest)
 	mockIssuerNumber := 10
 
-	gotProjects, err := mockedGithubClient.GetLinkedProjects(context.Background(), mockOwner, mockRepo, mockIssuerNumber, 3)
+	gotProjects, err := mockedGithubClient.GetLinkedProjectsForIssue(context.Background(), mockOwner, mockRepo, mockIssuerNumber, 3)
 
 	wantProjects := []host.GQLProjectV2Item{
 		{

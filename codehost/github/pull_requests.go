@@ -99,6 +99,20 @@ type GetLastCommitSHAQuery struct {
 	} `graphql:"repository(owner: $repositoryOwner, name: $repositoryName)"`
 }
 
+type PullRequestLinkedProjectsQuery struct {
+	Repository struct {
+		PullRequest struct {
+			ProjectItems *struct {
+				Nodes    []GQLProjectV2Item
+				PageInfo struct {
+					EndCursor   githubv4.String
+					HasNextPage bool
+				}
+			} `graphql:"projectItems(first: 10, after: $projectItemsCursor)"`
+		} `graphql:"pullRequest(number: $issueNumber)"`
+	} `graphql:"repository(owner: $repositoryOwner, name: $repositoryName)"`
+}
+
 func GetPullRequestHeadOwnerName(pullRequest *github.PullRequest) string {
 	return pullRequest.Head.Repo.Owner.GetLogin()
 }
@@ -520,6 +534,44 @@ func (c *GithubClient) IsFileBinary(ctx context.Context, owner, repo, branch, fi
 	}
 
 	return getObjectQuery.Repository.Object.Blog.IsBinary, nil
+}
+
+func (c *GithubClient) GetLinkedProjectsForPullRequest(ctx context.Context, owner, repo string, number int, retryCount int) ([]GQLProjectV2Item, error) {
+	projectItems := []GQLProjectV2Item{}
+	hasNextPage := true
+	currentRequestRetry := 1
+
+	varGQLGetProjectFieldsQuery := map[string]interface{}{
+		"repositoryOwner":    githubv4.String(owner),
+		"repositoryName":     githubv4.String(repo),
+		"issueNumber":        githubv4.Int(number),
+		"projectItemsCursor": githubv4.String(""),
+	}
+
+	var getLinkedProjects PullRequestLinkedProjectsQuery
+
+	for hasNextPage {
+		if err := c.clientGQL.Query(ctx, &getLinkedProjects, varGQLGetProjectFieldsQuery); err != nil {
+			currentRequestRetry++
+			if currentRequestRetry <= retryCount {
+				continue
+			}
+			return nil, err
+		}
+
+		items := getLinkedProjects.Repository.PullRequest.ProjectItems
+		if items == nil {
+			return nil, ErrProjectItemsNotFound
+		}
+
+		projectItems = append(projectItems, items.Nodes...)
+
+		hasNextPage = items.PageInfo.HasNextPage
+
+		varGQLGetProjectFieldsQuery["projectItemsCursor"] = githubv4.String(items.PageInfo.EndCursor)
+	}
+
+	return projectItems, nil
 }
 
 func (c *GithubClient) GetLastCommitSHA(ctx context.Context, owner, repo string, number int) (string, error) {

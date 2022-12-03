@@ -20,7 +20,7 @@ type GQLProjectV2Item struct {
 	Project ProjectV2
 }
 
-type LinkedProjectsQuery struct {
+type IssueLinkedProjectsQuery struct {
 	Repository struct {
 		Issue struct {
 			ProjectItems *struct {
@@ -130,7 +130,7 @@ func (c *GithubClient) GetComments(ctx context.Context, owner string, repo strin
 	return fs.([]*github.IssueComment), nil
 }
 
-func (c *GithubClient) GetLinkedProjects(ctx context.Context, owner, repo string, number int, retryCount int) ([]GQLProjectV2Item, error) {
+func (c *GithubClient) GetLinkedProjectsForIssue(ctx context.Context, owner, repo string, number int, retryCount int) ([]GQLProjectV2Item, error) {
 	projectItems := []GQLProjectV2Item{}
 	hasNextPage := true
 	currentRequestRetry := 1
@@ -142,7 +142,7 @@ func (c *GithubClient) GetLinkedProjects(ctx context.Context, owner, repo string
 		"projectItemsCursor": githubv4.String(""),
 	}
 
-	var getLinkedProjects LinkedProjectsQuery
+	var getLinkedProjects IssueLinkedProjectsQuery
 
 	for hasNextPage {
 		if err := c.clientGQL.Query(ctx, &getLinkedProjects, varGQLGetProjectFieldsQuery); err != nil {
