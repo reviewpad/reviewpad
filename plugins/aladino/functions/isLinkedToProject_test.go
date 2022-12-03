@@ -39,7 +39,7 @@ func TestIsLinkedToProject(t *testing.T) {
 				aladino.MustWrite(w, `{
 					"data": {
 						"repository":{
-							"issue":{
+							"pullRequest":{
 							}
 						}
 					}
@@ -54,7 +54,7 @@ func TestIsLinkedToProject(t *testing.T) {
 				aladino.MustWrite(w, `{
 					"data": {
 						"repository":{
-							"issue":{
+							"pullRequest":{
 								"projectItems":{
 									"nodes":[
 										{
@@ -79,7 +79,7 @@ func TestIsLinkedToProject(t *testing.T) {
 				aladino.MustWrite(w, `{
 					"data": {
 						"repository":{
-							"issue":{
+							"pullRequest":{
 								"projectItems":{
 									"nodes":[
 										{
