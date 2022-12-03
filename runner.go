@@ -46,44 +46,44 @@ func Run(
 	reviewpadFile *engine.ReviewpadFile,
 	dryRun bool,
 	safeMode bool,
-) (engine.ExitStatus, error) {
+) (engine.ExitStatus, *engine.Program, error) {
 	if safeMode && !dryRun {
-		return engine.ExitStatusFailure, fmt.Errorf("when reviewpad is running in safe mode, it must also run in dry-run")
+		return engine.ExitStatusFailure, nil, fmt.Errorf("when reviewpad is running in safe mode, it must also run in dry-run")
 	}
 
 	config, err := plugins_aladino.DefaultPluginConfig()
 	if err != nil {
-		return engine.ExitStatusFailure, err
+		return engine.ExitStatusFailure, nil, err
 	}
 
 	defer config.CleanupPluginConfig()
 
 	aladinoInterpreter, err := aladino.NewInterpreter(ctx, dryRun, githubClient, collector, targetEntity, eventPayload, plugins_aladino.PluginBuiltInsWithConfig(config))
 	if err != nil {
-		return engine.ExitStatusFailure, err
+		return engine.ExitStatusFailure, nil, err
 	}
 
 	evalEnv, err := engine.NewEvalEnv(ctx, dryRun, githubClient, collector, targetEntity, aladinoInterpreter, eventData)
 	if err != nil {
-		return engine.ExitStatusFailure, err
+		return engine.ExitStatusFailure, nil, err
 	}
 
 	program, err := engine.Eval(reviewpadFile, evalEnv)
 	if err != nil {
-		return engine.ExitStatusFailure, err
+		return engine.ExitStatusFailure, nil, err
 	}
 
 	exitStatus, err := aladinoInterpreter.ExecProgram(program)
 	if err != nil {
 		engine.CollectError(evalEnv, err)
-		return engine.ExitStatusFailure, err
+		return engine.ExitStatusFailure, nil, err
 	}
 
 	if safeMode || !dryRun {
 		err = aladinoInterpreter.Report(reviewpadFile.Mode, safeMode)
 		if err != nil {
 			engine.CollectError(evalEnv, err)
-			return engine.ExitStatusFailure, err
+			return engine.ExitStatusFailure, nil, err
 		}
 	}
 
@@ -91,7 +91,7 @@ func Run(
 		err = aladinoInterpreter.ReportMetrics(reviewpadFile.Mode)
 		if err != nil {
 			engine.CollectError(evalEnv, err)
-			return engine.ExitStatusFailure, err
+			return engine.ExitStatusFailure, nil, err
 		}
 	}
 
@@ -103,5 +103,5 @@ func Run(
 		log.Printf("error on collector due to %v", err.Error())
 	}
 
-	return exitStatus, nil
+	return exitStatus, program, nil
 }
