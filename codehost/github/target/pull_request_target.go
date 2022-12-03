@@ -218,7 +218,7 @@ func (t *PullRequestTarget) IsLinkedToProject(title string) (bool, error) {
 	number := targetEntity.Number
 	totalRetries := 2
 
-	projects, err := t.githubClient.GetLinkedProjectsForIssue(ctx, owner, repo, number, totalRetries)
+	projects, err := t.githubClient.GetLinkedProjectsForPullRequest(ctx, owner, repo, number, totalRetries)
 	if err != nil {
 		return false, err
 	}
