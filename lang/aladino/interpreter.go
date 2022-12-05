@@ -125,8 +125,8 @@ func (i *Interpreter) ExecProgram(program *engine.Program) (engine.ExitStatus, e
 		err := i.ExecStatement(statement)
 		if err != nil {
 			if program.IsFromCommand {
-				if err := commentCommandError(i.Env, err); err != nil {
-					return engine.ExitStatusFailure, err
+				if commentErr := commentCommandError(i.Env, err); commentErr != nil {
+					return engine.ExitStatusFailure, commentErr
 				}
 				return engine.ExitStatusSuccess, nil
 			}

@@ -138,16 +138,16 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 
 	// process commands
 	if utils.IsReviewpadCommand(env.EventData) {
-		program := BuildProgram(make([]*Statement, 0), true)
+		commandProgram := BuildProgram(make([]*Statement, 0), true)
 
 		action, err := processCommand(env, *env.EventData.Comment.Body)
 		if err != nil {
 			return nil, err
 		}
 
-		program.append([]string{action})
+		commandProgram.append([]string{action})
 
-		return program, nil
+		return commandProgram, nil
 	}
 
 	// process rules
