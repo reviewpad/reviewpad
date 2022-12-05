@@ -745,7 +745,7 @@ func TestNewInterpreter(t *testing.T) {
 		DefaultMockTargetEntity,
 		mockedEnv.GetEventPayload(),
 		mockedEnv.GetBuiltIns(),
-		nil,
+		mockedEnv.GetEventData(),
 	)
 
 	assert.Nil(t, err)
@@ -1014,6 +1014,88 @@ func TestReportMetric(t *testing.T) {
 
 			commentCreated = false
 			commentUpdated = false
+		})
+	}
+}
+
+func TestCommandErrorComment(t *testing.T) {
+	successfullyCommented := false
+	tests := map[string]struct {
+		clientOptions             []mock.MockBackendOption
+		graphQLHandler            func(res http.ResponseWriter, req *http.Request)
+		eventData                 *handler.EventData
+		commandError              error
+		wantError                 error
+		wantSuccessfullyCommented bool
+	}{
+		"when create comment fails": {
+			clientOptions: []mock.MockBackendOption{
+				mock.WithRequestMatchHandler(
+					mock.PostReposIssuesCommentsByOwnerByRepoByIssueNumber,
+					http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+						w.WriteHeader(http.StatusInternalServerError)
+						MustWrite(w, `{"message": "internal error"}`)
+					}),
+				),
+			},
+			eventData: &handler.EventData{
+				EventName:   "issue_comment",
+				EventAction: "created",
+				Comment: &github.IssueComment{
+					Body: github.String("/reviewpad assign-reviewers testuser"),
+					User: &github.User{
+						Login: github.String("test"),
+					},
+				},
+			},
+			commandError: errors.New("unexpected error happened running command"),
+			wantError: &github.ErrorResponse{
+				Message: "internal error",
+			},
+		},
+		"when comment is created successfully": {
+			clientOptions: []mock.MockBackendOption{
+				mock.WithRequestMatchHandler(
+					mock.PostReposIssuesCommentsByOwnerByRepoByIssueNumber,
+					http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+						successfullyCommented = true
+					}),
+				),
+			},
+			eventData: &handler.EventData{
+				EventName:   "issue_comment",
+				EventAction: "created",
+				Comment: &github.IssueComment{
+					Body: github.String("/reviewpad assign-reviewers testuser"),
+					User: &github.User{
+						Login: github.String("test"),
+					},
+				},
+			},
+			commandError: &github.ErrorResponse{
+				Errors: []github.Error{
+					{
+						Message: "github user not found",
+					},
+				},
+			},
+			wantSuccessfullyCommented: true,
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			env := MockDefaultEnvWithTargetEntityAndEventData(t, test.clientOptions, test.graphQLHandler, nil, nil, DefaultMockTargetEntity, test.eventData)
+
+			err := commentCommandError(env, test.commandError)
+
+			githubError := &github.ErrorResponse{}
+			if errors.As(err, &githubError) {
+				githubError.Response = nil
+			}
+
+			assert.Equal(t, test.wantError, err)
+			assert.Equal(t, test.wantSuccessfullyCommented, successfullyCommented)
 		})
 	}
 }

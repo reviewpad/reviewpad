@@ -121,7 +121,7 @@ func TestClose(t *testing.T) {
 			wantState: "closed",
 		},
 		"when issue is closed with comment and with reason completed": {
-			mockedEnv: aladino.MockDefaultEnvWithTargetEntity(
+			mockedEnv: aladino.MockDefaultEnvWithTargetEntityAndEventData(
 				t,
 				[]mock.MockBackendOption{
 					mock.WithRequestMatchHandler(
@@ -161,6 +161,7 @@ func TestClose(t *testing.T) {
 					Number: aladino.DefaultMockPrNum,
 					Kind:   handler.Issue,
 				},
+				aladino.DefaultMockEventData,
 			),
 			inputComment:     "done",
 			inputStateReason: "completed",
@@ -169,7 +170,7 @@ func TestClose(t *testing.T) {
 			wantComment:      true,
 		},
 		"when issue is closed with comment and with reason not_planned": {
-			mockedEnv: aladino.MockDefaultEnvWithTargetEntity(
+			mockedEnv: aladino.MockDefaultEnvWithTargetEntityAndEventData(
 				t,
 				[]mock.MockBackendOption{
 					mock.WithRequestMatchHandler(
@@ -209,6 +210,7 @@ func TestClose(t *testing.T) {
 					Number: aladino.DefaultMockPrNum,
 					Kind:   handler.Issue,
 				},
+				aladino.DefaultMockEventData,
 			),
 			inputComment:     "wont do",
 			inputStateReason: "not_planned",
@@ -217,7 +219,7 @@ func TestClose(t *testing.T) {
 			wantComment:      true,
 		},
 		"when issue is closed with no comment and with reason completed": {
-			mockedEnv: aladino.MockDefaultEnvWithTargetEntity(
+			mockedEnv: aladino.MockDefaultEnvWithTargetEntityAndEventData(
 				t,
 				[]mock.MockBackendOption{
 					mock.WithRequestMatchHandler(
@@ -245,6 +247,7 @@ func TestClose(t *testing.T) {
 					Number: aladino.DefaultMockPrNum,
 					Kind:   handler.Issue,
 				},
+				aladino.DefaultMockEventData,
 			),
 			inputStateReason: "completed",
 			wantState:        "closed",
@@ -252,7 +255,7 @@ func TestClose(t *testing.T) {
 			wantComment:      false,
 		},
 		"when issue is closed with no comment and with reason not_planned": {
-			mockedEnv: aladino.MockDefaultEnvWithTargetEntity(
+			mockedEnv: aladino.MockDefaultEnvWithTargetEntityAndEventData(
 				t,
 				[]mock.MockBackendOption{
 					mock.WithRequestMatchHandler(
@@ -280,6 +283,7 @@ func TestClose(t *testing.T) {
 					Number: aladino.DefaultMockPrNum,
 					Kind:   handler.Issue,
 				},
+				aladino.DefaultMockEventData,
 			),
 			inputStateReason: "not_planned",
 			wantState:        "closed",

@@ -297,7 +297,7 @@ func mockHttpClientWith(clientOptions ...mock.MockBackendOption) *http.Client {
 	return mock.NewMockedHTTPClient(clientOptions...)
 }
 
-func mockEnvWith(prOwner string, prRepoName string, prNum int, githubClient *gh.GithubClient, eventPayload interface{}, builtIns *BuiltIns, targetEntity *handler.TargetEntity) (Env, error) {
+func mockEnvWith(prOwner string, prRepoName string, prNum int, githubClient *gh.GithubClient, eventPayload interface{}, builtIns *BuiltIns, targetEntity *handler.TargetEntity, eventData *handler.EventData) (Env, error) {
 	ctx := context.Background()
 
 	env, err := NewEvalEnv(
@@ -308,7 +308,7 @@ func mockEnvWith(prOwner string, prRepoName string, prNum int, githubClient *gh.
 		targetEntity,
 		eventPayload,
 		builtIns,
-		nil,
+		eventData,
 	)
 	if err != nil {
 		return nil, err
@@ -391,7 +391,7 @@ func MockDefaultEnv(
 	prNum := DefaultMockPrNum
 	githubClient := MockDefaultGithubClient(ghApiClientOptions, ghGraphQLHandler)
 
-	mockedEnv, err := mockEnvWith(prOwner, prRepoName, prNum, githubClient, eventPayload, builtIns, DefaultMockTargetEntity)
+	mockedEnv, err := mockEnvWith(prOwner, prRepoName, prNum, githubClient, eventPayload, builtIns, DefaultMockTargetEntity, DefaultMockEventData)
 	if err != nil {
 		t.Fatalf("[MockDefaultEnv] failed to create mock env: %v", err)
 	}
@@ -399,21 +399,22 @@ func MockDefaultEnv(
 	return mockedEnv
 }
 
-// MockDefaultEnvWithTargetEntity mocks an Aladino Env with default values and a custom TargetEntity.
-func MockDefaultEnvWithTargetEntity(
+// MockDefaultEnvWithTargetEntityAndEventData mocks an Aladino Env with default values and a custom TargetEntity.
+func MockDefaultEnvWithTargetEntityAndEventData(
 	t *testing.T,
 	ghApiClientOptions []mock.MockBackendOption,
 	ghGraphQLHandler func(http.ResponseWriter, *http.Request),
 	builtIns *BuiltIns,
 	eventPayload interface{},
 	targetEntity *handler.TargetEntity,
+	eventData *handler.EventData,
 ) Env {
 	prOwner := DefaultMockPrOwner
 	prRepoName := DefaultMockPrRepoName
 	prNum := DefaultMockPrNum
 	githubClient := MockDefaultGithubClient(ghApiClientOptions, ghGraphQLHandler)
 
-	mockedEnv, err := mockEnvWith(prOwner, prRepoName, prNum, githubClient, eventPayload, builtIns, targetEntity)
+	mockedEnv, err := mockEnvWith(prOwner, prRepoName, prNum, githubClient, eventPayload, builtIns, targetEntity, eventData)
 	if err != nil {
 		t.Fatalf("[MockDefaultEnvWithTargetEntity] failed to create mock env: %v", err)
 	}
