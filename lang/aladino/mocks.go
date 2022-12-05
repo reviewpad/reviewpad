@@ -399,7 +399,7 @@ func MockDefaultEnv(
 	return mockedEnv
 }
 
-// MockDefaultEnvWithTargetEntityAndEventData mocks an Aladino Env with default values and a custom TargetEntity.
+// MockDefaultEnvWithTargetEntityAndEventData mocks an Aladino Env with default values, a custom TargetEntity and event data.
 func MockDefaultEnvWithTargetEntityAndEventData(
 	t *testing.T,
 	ghApiClientOptions []mock.MockBackendOption,
