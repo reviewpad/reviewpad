@@ -260,7 +260,7 @@ func (i *Interpreter) ReportMetrics(mode string) error {
 	return nil
 }
 
-func commentCommandError(env Env, err error) error {
+func commentCommandError(env Env, commandErr error) error {
 	targetEntity := env.GetTarget().GetTargetEntity()
 	eventData := env.GetEventData()
 	owner := targetEntity.Owner
@@ -274,12 +274,12 @@ func commentCommandError(env Env, err error) error {
 	body.WriteString(fmt.Sprintf("> %s\n\n", *eventData.Comment.Body))
 	body.WriteString(fmt.Sprintf("@%s an error occured running your command\n", *eventData.Comment.User.Login))
 
-	if errors.As(err, &githubError) {
+	if errors.As(commandErr, &githubError) {
 		for _, e := range githubError.Errors {
 			body.WriteString(fmt.Sprintf("- %s\n", e.Message))
 		}
 	} else {
-		body.WriteString(fmt.Sprintf("- %s\n", err.Error()))
+		body.WriteString(fmt.Sprintf("- %s\n", commandErr.Error()))
 	}
 
 	_, _, createCommentErr := env.GetGithubClient().CreateComment(ctx, owner, repo, number, &github.IssueComment{
