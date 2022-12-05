@@ -1022,7 +1022,6 @@ func TestCommandErrorComment(t *testing.T) {
 	successfullyCommented := false
 	tests := map[string]struct {
 		clientOptions             []mock.MockBackendOption
-		graphQLHandler            func(res http.ResponseWriter, req *http.Request)
 		eventData                 *handler.EventData
 		commandError              error
 		wantError                 error
@@ -1085,7 +1084,7 @@ func TestCommandErrorComment(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			env := MockDefaultEnvWithTargetEntityAndEventData(t, test.clientOptions, test.graphQLHandler, nil, nil, DefaultMockTargetEntity, test.eventData)
+			env := MockDefaultEnvWithTargetEntityAndEventData(t, test.clientOptions, nil, nil, nil, DefaultMockTargetEntity, test.eventData)
 
 			err := commentCommandError(env, test.commandError)
 
