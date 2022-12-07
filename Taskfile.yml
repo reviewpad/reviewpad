@@ -5,6 +5,12 @@
 version: "3"
 
 tasks:
+  deps:
+    summary: Install dependencies
+    cmds:
+      - go mod download
+      - go mod tidy
+
   format:
     summary: |
       Formats Go files.
@@ -24,9 +30,7 @@ tasks:
 
       Run with --watch or -w to watch for changes on Go files.
     cmds:
-      # We are using -buildmode=pie to avoid the following error on MacOS:
-      # ld: warning: -no_pie is deprecated when targeting new OS versions
-      - go build -buildmode=pie
+      - go build
     sources:
       - ./**/*.go
 
@@ -49,7 +53,7 @@ tasks:
 
       Run with --watch or -w to watch for changes on Go files.
     cmds:
-      - go build -buildmode=pie -o reviewpad-cli ./cli/main.go
+      - go build -o reviewpad-cli ./cli/main.go
     sources:
       - ./cli/**/*.go
 
@@ -59,7 +63,7 @@ tasks:
 
       Run with --watch or -w to watch for changes on _test.go files.
     cmds:
-      - gotestsum -- -buildmode=pie -coverprofile=coverage.out ./...
+      - gotestsum -- -coverprofile=coverage.out ./...
       - . scripts/exclude-from-code-coverage.sh
     sources:
       - ./**/*_test.go
@@ -105,7 +109,6 @@ tasks:
       Runs the linter
       If error try `brew install golangci-lint`
     cmds:
-      - go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.50.1
       - golangci-lint run
 
   shadow:
@@ -117,7 +120,11 @@ tasks:
   check:
     deps:
       - format
+      - shadow
+      - lint
       - build
       - test
-      - lint
-      - shadow
+
+  default:
+    deps:
+      - build

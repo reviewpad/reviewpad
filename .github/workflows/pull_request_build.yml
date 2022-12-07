@@ -22,9 +22,18 @@ jobs:
           go install gotest.tools/gotestsum@latest
           go install github.com/jandelgado/gcov2lcov@latest
           go install github.com/go-task/task/v3/cmd/task@latest
+          go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.50.1
 
       - name: Check
-        run: task check
+        run: |
+          task format
+          task shadow
+
+      - name: Build
+        run: task build
+
+      - name: Test
+        run: task test
 
       - name: Convert coverage to lcov
         run: gcov2lcov -infile=coverage.out -outfile=coverage.lcov
