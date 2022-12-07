@@ -40,7 +40,7 @@ tasks:
 
       Run with --watch or -w to watch for changes on yacc file.
     cmds:
-      # For debug purposes, remove the -l argumment enabling the line directives in parser.go.
+      # For debug purposes, remove the -l argument enabling the line directives in parser.go.
       - goyacc -l -o lang/aladino/parser.go -p Aladino lang/aladino/parser.y
     sources:
       - lang/aladino/parser.y
@@ -112,9 +112,10 @@ tasks:
       - golangci-lint run
 
   shadow:
-    summary: Detect shadowed variables
+    summary: |
+      Detect shadowed variables
+      If error try `go install golang.org/x/tools/go/analysis/passes/shadow/cmd/shadow@latest`
     cmds:
-      - go install golang.org/x/tools/go/analysis/passes/shadow/cmd/shadow@latest
       - shadow ./...
 
   check:
