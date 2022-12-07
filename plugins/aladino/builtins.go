@@ -80,6 +80,7 @@ func PluginBuiltInsWithConfig(config *PluginConfig) *aladino.BuiltIns {
 			"head":                      functions.Head(),
 			"isDraft":                   functions.IsDraft(),
 			"isLinkedToProject":         functions.IsLinkedToProject(),
+			"isMerged":                  functions.IsMerged(),
 			"isWaitingForReview":        functions.IsWaitingForReview(),
 			"labels":                    functions.Labels(),
 			"lastEventAt":               functions.LastEventAt(),
