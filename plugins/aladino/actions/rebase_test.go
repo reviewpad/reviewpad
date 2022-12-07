@@ -12,10 +12,12 @@ import (
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
+	"github.com/reviewpad/reviewpad/v3/utils"
 	"github.com/stretchr/testify/assert"
 )
 
-var rebase = plugins_aladino.PluginBuiltIns().Actions["rebase"].Code
+// golangci-lint seems to reporting a false positive unused variable on this
+var rebase = plugins_aladino.PluginBuiltIns().Actions["info"].Code //nolint
 
 func TestRebase(t *testing.T) {
 	prOwner := aladino.DefaultMockPrOwner
@@ -82,7 +84,7 @@ func TestRebase(t *testing.T) {
 					mock.WithRequestMatchHandler(
 						mock.GetReposPullsByOwnerByRepoByPullNumber,
 						http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-							w.Write(mock.MustMarshal(test.mockedPullRequest))
+							utils.MustWriteBytes(w, mock.MustMarshal(test.mockedPullRequest))
 						}),
 					),
 				},

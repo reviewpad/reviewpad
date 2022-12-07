@@ -9,6 +9,7 @@ import (
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
+	"github.com/reviewpad/reviewpad/v3/utils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -88,7 +89,7 @@ func TestCheckRunStatus(t *testing.T) {
 				mock.WithRequestMatchHandler(
 					mock.GetReposCommitsCheckRunsByOwnerByRepoByRef,
 					http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-						w.Write(mock.MustMarshal(
+						utils.MustWriteBytes(w, mock.MustMarshal(
 							&github.ListCheckRunsResults{
 								CheckRuns: []*github.CheckRun{},
 							},
@@ -103,7 +104,7 @@ func TestCheckRunStatus(t *testing.T) {
 				mock.WithRequestMatchHandler(
 					mock.GetReposCommitsCheckRunsByOwnerByRepoByRef,
 					http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-						w.Write(mock.MustMarshal(
+						utils.MustWriteBytes(w, mock.MustMarshal(
 							&github.ListCheckRunsResults{
 								CheckRuns: []*github.CheckRun{
 									{
@@ -122,7 +123,7 @@ func TestCheckRunStatus(t *testing.T) {
 				mock.WithRequestMatchHandler(
 					mock.GetReposCommitsCheckRunsByOwnerByRepoByRef,
 					http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-						w.Write(mock.MustMarshal(
+						utils.MustWriteBytes(w, mock.MustMarshal(
 							&github.ListCheckRunsResults{
 								CheckRuns: []*github.CheckRun{
 									{
@@ -142,7 +143,7 @@ func TestCheckRunStatus(t *testing.T) {
 				mock.WithRequestMatchHandler(
 					mock.GetReposCommitsCheckRunsByOwnerByRepoByRef,
 					http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-						w.Write(mock.MustMarshal(
+						utils.MustWriteBytes(w, mock.MustMarshal(
 							&github.ListCheckRunsResults{
 								CheckRuns: []*github.CheckRun{
 									{
@@ -163,7 +164,7 @@ func TestCheckRunStatus(t *testing.T) {
 				mock.WithRequestMatchHandler(
 					mock.GetReposCommitsCheckRunsByOwnerByRepoByRef,
 					http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-						w.Write(mock.MustMarshal(
+						utils.MustWriteBytes(w, mock.MustMarshal(
 							&github.ListCheckRunsResults{
 								CheckRuns: []*github.CheckRun{
 									{
@@ -187,7 +188,7 @@ func TestCheckRunStatus(t *testing.T) {
 				mock.WithRequestMatchHandler(
 					mock.GetReposCommitsCheckRunsByOwnerByRepoByRef,
 					http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-						w.Write(mock.MustMarshal(
+						utils.MustWriteBytes(w, mock.MustMarshal(
 							&github.ListCheckRunsResults{
 								CheckRuns: []*github.CheckRun{
 									{

@@ -5,7 +5,6 @@
 package plugins_aladino_actions_test
 
 import (
-	"encoding/json"
 	"net/http"
 	"testing"
 	"time"
@@ -14,6 +13,7 @@ import (
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
+	"github.com/reviewpad/reviewpad/v3/utils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -32,7 +32,7 @@ func TestDeleteHeadBranch(t *testing.T) {
 				mock.WithRequestMatchHandler(
 					mock.GetReposPullsByOwnerByRepoByPullNumber,
 					http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-						w.Write(mock.MustMarshal(aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
+						utils.MustWriteBytes(w, mock.MustMarshal(aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
 							Merged:   github.Bool(false),
 							ClosedAt: &now,
 						})))
@@ -53,7 +53,7 @@ func TestDeleteHeadBranch(t *testing.T) {
 				mock.WithRequestMatchHandler(
 					mock.GetReposPullsByOwnerByRepoByPullNumber,
 					http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-						w.Write(mock.MustMarshal(aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
+						utils.MustWriteBytes(w, mock.MustMarshal(aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
 							Merged:   github.Bool(true),
 							ClosedAt: &now,
 						})))
@@ -74,7 +74,7 @@ func TestDeleteHeadBranch(t *testing.T) {
 				mock.WithRequestMatchHandler(
 					mock.GetReposPullsByOwnerByRepoByPullNumber,
 					http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-						w.Write(mock.MustMarshal(aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
+						utils.MustWriteBytes(w, mock.MustMarshal(aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
 							Merged:   github.Bool(false),
 							ClosedAt: nil,
 						})))
@@ -94,7 +94,7 @@ func TestDeleteHeadBranch(t *testing.T) {
 				mock.WithRequestMatchHandler(
 					mock.GetReposPullsByOwnerByRepoByPullNumber,
 					http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-						w.Write(mock.MustMarshal(aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
+						utils.MustWriteBytes(w, mock.MustMarshal(aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
 							Merged: github.Bool(true),
 						})))
 					}),
@@ -103,10 +103,10 @@ func TestDeleteHeadBranch(t *testing.T) {
 					mock.DeleteReposGitRefsByOwnerByRepoByRef,
 					http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 						w.WriteHeader(http.StatusUnprocessableEntity)
-						json.NewEncoder(w).Encode(map[string]string{
-							"message":           "Reference does not exist",
-							"documentation_url": "https://docs.github.com/rest/reference/git#delete-a-reference",
-						})
+						utils.MustWrite(w, `{
+							"message": "Reference does not exist",
+							"documentation_url": "https://docs.github.com/rest/reference/git#delete-a-reference"
+						}`)
 					}),
 				),
 			},

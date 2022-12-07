@@ -38,6 +38,9 @@ func reviewCode(e aladino.Env, args []aladino.Value) error {
 	}
 
 	reviewBody, err := checkReviewBody(reviewEvent, args[1].(*aladino.StringValue).Val)
+	if err != nil {
+		return err
+	}
 
 	reviews, err := t.GetReviews()
 	if err != nil {

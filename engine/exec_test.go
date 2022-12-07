@@ -33,7 +33,7 @@ func TestEval_WhenGitHubRequestsFail(t *testing.T) {
 					mock.GetReposLabelsByOwnerByRepoByName,
 					http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 						w.WriteHeader(http.StatusInternalServerError)
-						w.Write(mock.MustMarshal(github.ErrorResponse{
+						engine.MustWriteBytes(w, mock.MustMarshal(github.ErrorResponse{
 							// An error response may also consist of a 404 status code.
 							// However, in this context, such response means a label does not exist.
 							Response: &http.Response{
@@ -53,7 +53,7 @@ func TestEval_WhenGitHubRequestsFail(t *testing.T) {
 					mock.GetReposLabelsByOwnerByRepoByName,
 					http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 						w.WriteHeader(http.StatusInternalServerError)
-						w.Write(mock.MustMarshal(github.ErrorResponse{
+						engine.MustWriteBytes(w, mock.MustMarshal(github.ErrorResponse{
 							Response: &http.Response{
 								StatusCode: 404,
 							},

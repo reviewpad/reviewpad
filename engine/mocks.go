@@ -6,7 +6,9 @@ package engine
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"time"
 
@@ -27,7 +29,7 @@ const DefaultMockEventAction = "opened"
 
 // Use only for tests
 var DefaultMockCtx = context.Background()
-var DefaultMockCollector = collector.NewCollector("", "", "pull_request", "", "dev-test")
+var DefaultMockCollector, _ = collector.NewCollector("", "", "pull_request", "", "dev-test")
 var DefaultMockEventPayload = &github.CheckRunEvent{}
 var DefaultMockTargetEntity = &handler.TargetEntity{
 	Owner:  DefaultMockPrOwner,
@@ -99,13 +101,13 @@ func MockGithubClient(clientOptions []mock.MockBackendOption) *gh.GithubClient {
 		mock.WithRequestMatchHandler(
 			mock.GetReposPullsByOwnerByRepoByPullNumber,
 			http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-				w.Write(mock.MustMarshal(GetDefaultMockPullRequestDetails()))
+				MustWriteBytes(w, mock.MustMarshal(GetDefaultMockPullRequestDetails()))
 			}),
 		),
 		mock.WithRequestMatchHandler(
 			mock.GetReposPullsFilesByOwnerByRepoByPullNumber,
 			http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-				w.Write(mock.MustMarshal(getDefaultMockPullRequestFileList()))
+				MustWriteBytes(w, mock.MustMarshal(getDefaultMockPullRequestFileList()))
 			}),
 		),
 	}
@@ -135,4 +137,18 @@ func MockEnvWith(githubClient *gh.GithubClient, interpreter Interpreter, targetE
 	}
 
 	return mockedEnv, nil
+}
+
+func MustUnmarshal(data []byte, v interface{}) {
+	err := json.Unmarshal(data, v)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func MustWriteBytes(w io.Writer, data []byte) {
+	_, err := w.Write(data)
+	if err != nil {
+		panic(err)
+	}
 }

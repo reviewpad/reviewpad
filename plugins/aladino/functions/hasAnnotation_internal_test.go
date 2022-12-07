@@ -18,6 +18,7 @@ import (
 	"github.com/reviewpad/reviewpad/v3/codehost"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	plugins_aladino_services "github.com/reviewpad/reviewpad/v3/plugins/aladino/services"
+	"github.com/reviewpad/reviewpad/v3/utils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -196,13 +197,13 @@ func TestGetSymbolsFromPatch_WhenDownloadContentsFails(t *testing.T) {
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsByOwnerByRepoByPullNumber,
 				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					w.Write(mock.MustMarshal(mockedPullRequest))
+					utils.MustWriteBytes(w, mock.MustMarshal(mockedPullRequest))
 				}),
 			),
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsFilesByOwnerByRepoByPullNumber,
 				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					w.Write(mock.MustMarshal(mockedPullRequestFileList))
+					utils.MustWriteBytes(w, mock.MustMarshal(mockedPullRequestFileList))
 				}),
 			),
 			mock.WithRequestMatchHandler(
@@ -283,19 +284,19 @@ func TestGetSymbolsFromPatch_WhenSemanticServiceNotFound(t *testing.T) {
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsByOwnerByRepoByPullNumber,
 				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					w.Write(mock.MustMarshal(mockedPullRequest))
+					utils.MustWriteBytes(w, mock.MustMarshal(mockedPullRequest))
 				}),
 			),
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsFilesByOwnerByRepoByPullNumber,
 				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					w.Write(mock.MustMarshal(mockedPullRequestFileList))
+					utils.MustWriteBytes(w, mock.MustMarshal(mockedPullRequestFileList))
 				}),
 			),
 			mock.WithRequestMatchHandler(
 				mock.GetReposContentsByOwnerByRepoByPath,
 				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					w.Write(mock.MustMarshal([]github.RepositoryContent{
+					utils.MustWriteBytes(w, mock.MustMarshal([]github.RepositoryContent{
 						{
 							Name:        github.String(mockedPatchFileName),
 							Path:        github.String(mockedPatchFilePath),
@@ -402,19 +403,19 @@ func TestGetSymbolsFromPatch_WhenGetSymbolsRequestFails(t *testing.T) {
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsByOwnerByRepoByPullNumber,
 				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					w.Write(mock.MustMarshal(mockedPullRequest))
+					utils.MustWriteBytes(w, mock.MustMarshal(mockedPullRequest))
 				}),
 			),
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsFilesByOwnerByRepoByPullNumber,
 				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					w.Write(mock.MustMarshal(mockedPullRequestFileList))
+					utils.MustWriteBytes(w, mock.MustMarshal(mockedPullRequestFileList))
 				}),
 			),
 			mock.WithRequestMatchHandler(
 				mock.GetReposContentsByOwnerByRepoByPath,
 				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					w.Write(mock.MustMarshal([]github.RepositoryContent{
+					utils.MustWriteBytes(w, mock.MustMarshal([]github.RepositoryContent{
 						{
 							Name:        github.String(mockedPatchFileName),
 							Path:        github.String(mockedPatchFilePath),
@@ -536,19 +537,19 @@ func TestGetSymbolsFromPatch(t *testing.T) {
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsByOwnerByRepoByPullNumber,
 				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					w.Write(mock.MustMarshal(mockedPullRequest))
+					utils.MustWriteBytes(w, mock.MustMarshal(mockedPullRequest))
 				}),
 			),
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsFilesByOwnerByRepoByPullNumber,
 				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					w.Write(mock.MustMarshal(mockedPullRequestFileList))
+					utils.MustWriteBytes(w, mock.MustMarshal(mockedPullRequestFileList))
 				}),
 			),
 			mock.WithRequestMatchHandler(
 				mock.GetReposContentsByOwnerByRepoByPath,
 				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					w.Write(mock.MustMarshal([]github.RepositoryContent{
+					utils.MustWriteBytes(w, mock.MustMarshal([]github.RepositoryContent{
 						{
 							Name:        github.String(mockedPatchFileName),
 							Path:        github.String(mockedPatchFilePath),
@@ -632,13 +633,13 @@ func TestHasAnnotationCode_WhenGetSymbolsFromPatchFails(t *testing.T) {
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsByOwnerByRepoByPullNumber,
 				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					w.Write(mock.MustMarshal(mockedPullRequest))
+					utils.MustWriteBytes(w, mock.MustMarshal(mockedPullRequest))
 				}),
 			),
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsFilesByOwnerByRepoByPullNumber,
 				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					w.Write(mock.MustMarshal(mockedPullRequestFileList))
+					utils.MustWriteBytes(w, mock.MustMarshal(mockedPullRequestFileList))
 				}),
 			),
 			mock.WithRequestMatchHandler(
@@ -775,19 +776,19 @@ func TestHasAnnotationCode(t *testing.T) {
 					mock.WithRequestMatchHandler(
 						mock.GetReposPullsByOwnerByRepoByPullNumber,
 						http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-							w.Write(mock.MustMarshal(mockedPullRequest))
+							utils.MustWriteBytes(w, mock.MustMarshal(mockedPullRequest))
 						}),
 					),
 					mock.WithRequestMatchHandler(
 						mock.GetReposPullsFilesByOwnerByRepoByPullNumber,
 						http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-							w.Write(mock.MustMarshal(mockedPullRequestFileList))
+							utils.MustWriteBytes(w, mock.MustMarshal(mockedPullRequestFileList))
 						}),
 					),
 					mock.WithRequestMatchHandler(
 						mock.GetReposContentsByOwnerByRepoByPath,
 						http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-							w.Write(mock.MustMarshal([]github.RepositoryContent{
+							utils.MustWriteBytes(w, mock.MustMarshal([]github.RepositoryContent{
 								{
 									Name:        github.String(mockedPatchFileName),
 									Path:        github.String(mockedPatchFilePath),

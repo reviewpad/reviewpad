@@ -7,7 +7,7 @@ package engine
 import (
 	"crypto/sha256"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 
 	"github.com/reviewpad/reviewpad/v3/handler"
@@ -163,7 +163,7 @@ func loadImport(reviewpadImport PadImport) (*ReviewpadFile, string, error) {
 
 	defer resp.Body.Close()
 
-	content, err := ioutil.ReadAll(resp.Body)
+	content, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, "", err
 	}

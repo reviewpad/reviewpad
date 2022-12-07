@@ -28,7 +28,7 @@ type collector struct {
 	Url string
 }
 
-func NewCollector(token, id, eventType, url, runner string) Collector {
+func NewCollector(token, id, eventType, url, runner string) (Collector, error) {
 	c := collector{
 		Client:    mixpanel.New(token, ""),
 		Id:        id,
@@ -41,15 +41,17 @@ func NewCollector(token, id, eventType, url, runner string) Collector {
 	}
 
 	if token != "" {
-		c.Client.UpdateUser(c.Id, &mixpanel.Update{
+		if err := c.Client.UpdateUser(c.Id, &mixpanel.Update{
 			Operation: "$set",
 			Properties: map[string]interface{}{
 				"name": id,
 			},
-		})
+		}); err != nil {
+			return nil, err
+		}
 	}
 
-	return &c
+	return &c, nil
 }
 
 func (c *collector) Collect(eventName string, properties map[string]interface{}) error {

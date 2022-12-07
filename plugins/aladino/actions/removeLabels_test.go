@@ -13,6 +13,7 @@ import (
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
+	"github.com/reviewpad/reviewpad/v3/utils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -28,7 +29,7 @@ func TestRemoveLabels_WhenDeleteLabelRequestFails(t *testing.T) {
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsByOwnerByRepoByPullNumber,
 				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					w.Write(mock.MustMarshal(aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
+					utils.MustWriteBytes(w, mock.MustMarshal(aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
 						Labels: []*github.Label{
 							{
 								ID:   github.Int64(1234),
@@ -42,7 +43,7 @@ func TestRemoveLabels_WhenDeleteLabelRequestFails(t *testing.T) {
 				mock.DeleteReposIssuesLabelsByOwnerByRepoByIssueNumberByName,
 				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 					w.WriteHeader(http.StatusInternalServerError)
-					w.Write(mock.MustMarshal(github.ErrorResponse{
+					utils.MustWriteBytes(w, mock.MustMarshal(github.ErrorResponse{
 						// An error response may also consist of a 404 status code.
 						// However, in this context, such response means a label does not exist.
 						Response: &http.Response{
@@ -75,7 +76,7 @@ func TestRemoveLabels_WhenLabelDoesNotExist(t *testing.T) {
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsByOwnerByRepoByPullNumber,
 				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					w.Write(mock.MustMarshal(aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
+					utils.MustWriteBytes(w, mock.MustMarshal(aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
 						Labels: []*github.Label{
 							{
 								ID:   github.Int64(1234),
@@ -89,7 +90,7 @@ func TestRemoveLabels_WhenLabelDoesNotExist(t *testing.T) {
 				mock.DeleteReposIssuesLabelsByOwnerByRepoByIssueNumberByName,
 				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 					w.WriteHeader(http.StatusInternalServerError)
-					w.Write(mock.MustMarshal(github.ErrorResponse{
+					utils.MustWriteBytes(w, mock.MustMarshal(github.ErrorResponse{
 						Response: &http.Response{
 							StatusCode: 404,
 						},
@@ -155,7 +156,7 @@ func TestRemoveLabels(t *testing.T) {
 					mock.WithRequestMatchHandler(
 						mock.GetReposPullsByOwnerByRepoByPullNumber,
 						http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-							w.Write(mock.MustMarshal(aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
+							utils.MustWriteBytes(w, mock.MustMarshal(aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
 								Labels: []*github.Label{
 									{
 										ID:   github.Int64(1234),

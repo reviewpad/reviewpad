@@ -29,7 +29,7 @@ func TestIsWaitingForReview_WhenListCommitsRequestFails(t *testing.T) {
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsByOwnerByRepoByPullNumber,
 				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					w.Write(mock.MustMarshal(
+					utils.MustWriteBytes(w, mock.MustMarshal(
 						aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
 							RequestedReviewers: []*github.User{},
 							RequestedTeams:     []*github.Team{},
@@ -78,7 +78,7 @@ func TestIsWaitingForReview_WhenGetPullRequestLastPushDateRequestFails(t *testin
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsByOwnerByRepoByPullNumber,
 				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					w.Write(mock.MustMarshal(
+					utils.MustWriteBytes(w, mock.MustMarshal(
 						aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
 							RequestedReviewers: []*github.User{},
 							RequestedTeams:     []*github.Team{},
@@ -89,7 +89,7 @@ func TestIsWaitingForReview_WhenGetPullRequestLastPushDateRequestFails(t *testin
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsCommitsByOwnerByRepoByPullNumber,
 				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					w.Write(mock.MustMarshal(mockedCommits))
+					utils.MustWriteBytes(w, mock.MustMarshal(mockedCommits))
 				}),
 			),
 		},
@@ -179,13 +179,13 @@ func TestIsWaitingForReview_WhenListReviewsRequestFails(t *testing.T) {
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsByOwnerByRepoByPullNumber,
 				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					w.Write(mock.MustMarshal(mockedPullRequest))
+					utils.MustWriteBytes(w, mock.MustMarshal(mockedPullRequest))
 				}),
 			),
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsCommitsByOwnerByRepoByPullNumber,
 				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					w.Write(mock.MustMarshal(mockedCommits))
+					utils.MustWriteBytes(w, mock.MustMarshal(mockedCommits))
 				}),
 			),
 			mock.WithRequestMatchHandler(
@@ -200,10 +200,10 @@ func TestIsWaitingForReview_WhenListReviewsRequestFails(t *testing.T) {
 			),
 		},
 		func(w http.ResponseWriter, req *http.Request) {
-			query := utils.MinifyQuery(aladino.MustRead(req.Body))
+			query := utils.MinifyQuery(utils.MustRead(req.Body))
 			switch query {
 			case utils.MinifyQuery(mockedPullRequestLastPushDateGQLQuery):
-				aladino.MustWrite(w, mockedPullRequestLastPushDateGQLQueryBody)
+				utils.MustWrite(w, mockedPullRequestLastPushDateGQLQueryBody)
 			}
 		},
 		aladino.MockBuiltIns(),
@@ -225,7 +225,7 @@ func TestIsWaitingForReview_WhenNoCommits(t *testing.T) {
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsByOwnerByRepoByPullNumber,
 				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					w.Write(mock.MustMarshal(
+					utils.MustWriteBytes(w, mock.MustMarshal(
 						aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
 							RequestedReviewers: []*github.User{},
 							RequestedTeams:     []*github.Team{},
@@ -236,7 +236,7 @@ func TestIsWaitingForReview_WhenNoCommits(t *testing.T) {
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsCommitsByOwnerByRepoByPullNumber,
 				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					w.Write(mock.MustMarshal(mockedCommits))
+					utils.MustWriteBytes(w, mock.MustMarshal(mockedCommits))
 				}),
 			),
 		},
@@ -293,7 +293,7 @@ func TestIsWaitingForReview_WhenHasNoReviews(t *testing.T) {
 					mock.WithRequestMatchHandler(
 						mock.GetReposPullsByOwnerByRepoByPullNumber,
 						http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-							w.Write(mock.MustMarshal(
+							utils.MustWriteBytes(w, mock.MustMarshal(
 								aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
 									RequestedReviewers: test.requestedReviewers,
 									RequestedTeams:     test.requestedTeams,
@@ -304,7 +304,7 @@ func TestIsWaitingForReview_WhenHasNoReviews(t *testing.T) {
 					mock.WithRequestMatchHandler(
 						mock.GetReposPullsCommitsByOwnerByRepoByPullNumber,
 						http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-							w.Write(mock.MustMarshal(
+							utils.MustWriteBytes(w, mock.MustMarshal(
 								[]*github.RepositoryCommit{{
 									Commit: &github.Commit{
 										Committer: &github.CommitAuthor{
@@ -318,7 +318,7 @@ func TestIsWaitingForReview_WhenHasNoReviews(t *testing.T) {
 					mock.WithRequestMatchHandler(
 						mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
 						http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-							w.Write(mock.MustMarshal([]*github.PullRequestReview{}))
+							utils.MustWriteBytes(w, mock.MustMarshal([]*github.PullRequestReview{}))
 						}),
 					),
 				},
@@ -510,27 +510,27 @@ func TestIsWaitingForReview_WhenHasReviews(t *testing.T) {
 					mock.WithRequestMatchHandler(
 						mock.GetReposPullsByOwnerByRepoByPullNumber,
 						http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-							w.Write(mock.MustMarshal(mockedPullRequest))
+							utils.MustWriteBytes(w, mock.MustMarshal(mockedPullRequest))
 						}),
 					),
 					mock.WithRequestMatchHandler(
 						mock.GetReposPullsCommitsByOwnerByRepoByPullNumber,
 						http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-							w.Write(mock.MustMarshal(mockedCommits))
+							utils.MustWriteBytes(w, mock.MustMarshal(mockedCommits))
 						}),
 					),
 					mock.WithRequestMatchHandler(
 						mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
 						http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-							w.Write(mock.MustMarshal(test.reviewers))
+							utils.MustWriteBytes(w, mock.MustMarshal(test.reviewers))
 						}),
 					),
 				},
 				func(w http.ResponseWriter, req *http.Request) {
-					query := utils.MinifyQuery(aladino.MustRead(req.Body))
+					query := utils.MinifyQuery(utils.MustRead(req.Body))
 					switch query {
 					case utils.MinifyQuery(mockedPullRequestLastPushDateGQLQuery):
-						aladino.MustWrite(w, mockedPullRequestLastPushDateGQLQueryBody)
+						utils.MustWrite(w, mockedPullRequestLastPushDateGQLQueryBody)
 					}
 				},
 				aladino.MockBuiltIns(),

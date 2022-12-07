@@ -5,9 +5,8 @@
 package plugins_aladino_actions_test
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"testing"
 	"time"
@@ -195,11 +194,11 @@ func TestReview_WhenBodyIsNotEmpty(t *testing.T) {
 				mock.WithRequestMatchHandler(
 					mock.PostReposPullsReviewsByOwnerByRepoByPullNumber,
 					http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-						rawBody, _ := ioutil.ReadAll(r.Body)
+						rawBody, _ := io.ReadAll(r.Body)
 
 						body := ReviewRequestPostBody{}
 
-						json.Unmarshal(rawBody, &body)
+						utils.MustUnmarshal(rawBody, &body)
 
 						gotReviewEvent = body.Event
 						gotReviewBody = body.Body
@@ -207,10 +206,10 @@ func TestReview_WhenBodyIsNotEmpty(t *testing.T) {
 				),
 			},
 			func(w http.ResponseWriter, req *http.Request) {
-				query := utils.MinifyQuery(aladino.MustRead(req.Body))
+				query := utils.MinifyQuery(utils.MustRead(req.Body))
 				switch query {
 				case utils.MinifyQuery(mockedPullRequestLastPushDateGQLQuery):
-					aladino.MustWrite(w, mockedPullRequestLastPushDateGQLQueryBody)
+					utils.MustWrite(w, mockedPullRequestLastPushDateGQLQueryBody)
 				}
 			},
 			aladino.MockBuiltIns(),
@@ -274,10 +273,10 @@ func TestReview_WhenBodyIsEmpty(t *testing.T) {
 					),
 				},
 				func(w http.ResponseWriter, req *http.Request) {
-					query := utils.MinifyQuery(aladino.MustRead(req.Body))
+					query := utils.MinifyQuery(utils.MustRead(req.Body))
 					switch query {
 					case utils.MinifyQuery(mockedPullRequestLastPushDateGQLQuery):
-						aladino.MustWrite(w, mockedPullRequestLastPushDateGQLQueryBody)
+						utils.MustWrite(w, mockedPullRequestLastPushDateGQLQueryBody)
 					}
 				},
 				aladino.MockBuiltIns(),
@@ -460,7 +459,7 @@ func TestReview_WhenPreviousAutomaticReviewWasMade(t *testing.T) {
 					mock.WithRequestMatchHandler(
 						mock.GetReposPullsByOwnerByRepoByPullNumber,
 						http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-							w.Write(mock.MustMarshal(mockedPullRequest))
+							utils.MustWriteBytes(w, mock.MustMarshal(mockedPullRequest))
 						}),
 					),
 					mock.WithRequestMatchHandler(
@@ -473,10 +472,10 @@ func TestReview_WhenPreviousAutomaticReviewWasMade(t *testing.T) {
 				test.clientOptions...,
 			),
 			func(w http.ResponseWriter, req *http.Request) {
-				query := utils.MinifyQuery(aladino.MustRead(req.Body))
+				query := utils.MinifyQuery(utils.MustRead(req.Body))
 				switch query {
 				case utils.MinifyQuery(mockedPullRequestLastPushDateGQLQuery):
-					aladino.MustWrite(w, mockedPullRequestLastPushDateGQLQueryBody)
+					utils.MustWrite(w, mockedPullRequestLastPushDateGQLQueryBody)
 				}
 			},
 			aladino.MockBuiltIns(),

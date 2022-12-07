@@ -68,11 +68,11 @@ func TestGetLinkedProjects_WhenProjectItemsNotFound(t *testing.T) {
 	mockedGithubClient := aladino.MockDefaultGithubClient(
 		nil,
 		func(res http.ResponseWriter, req *http.Request) {
-			query := utils.MinifyQuery(aladino.MustRead(req.Body))
+			query := utils.MinifyQuery(utils.MustRead(req.Body))
 			mockedQuery := utils.MinifyQuery(mockedGetLinkedProjectsQuery)
 			switch query {
 			case mockedQuery:
-				aladino.MustWrite(
+				utils.MustWrite(
 					res,
 					mockedGetProjectByNameQueryBody,
 				)
@@ -135,11 +135,11 @@ func TestGetLinkedProjects_WhenProjectFound(t *testing.T) {
 	mockedGithubClient := aladino.MockDefaultGithubClient(
 		nil,
 		func(res http.ResponseWriter, req *http.Request) {
-			query := utils.MinifyQuery(aladino.MustRead(req.Body))
+			query := utils.MinifyQuery(utils.MustRead(req.Body))
 			mockedQuery := utils.MinifyQuery(mockedGetLinkedProjectsQuery)
 			switch query {
 			case mockedQuery:
-				aladino.MustWrite(
+				utils.MustWrite(
 					res,
 					mockedGetProjectByNameQueryBody,
 				)
