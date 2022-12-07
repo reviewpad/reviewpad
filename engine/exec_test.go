@@ -255,7 +255,7 @@ func TestEval(t *testing.T) {
 			},
 			clientOptions: []mock.MockBackendOption{
 				mock.WithRequestMatch(
-					mock.PatchReposIssuesCommentsByOwnerByRepoByCommentId,
+					mock.PostReposIssuesCommentsByOwnerByRepoByIssueNumber,
 					&github.IssueComment{},
 				),
 			},
@@ -284,7 +284,7 @@ func TestEval(t *testing.T) {
 			},
 			clientOptions: []mock.MockBackendOption{
 				mock.WithRequestMatch(
-					mock.PatchReposIssuesCommentsByOwnerByRepoByCommentId,
+					mock.PostReposIssuesCommentsByOwnerByRepoByIssueNumber,
 					&github.IssueComment{},
 				),
 			},
