@@ -341,77 +341,110 @@ func (r *ReviewpadFile) appendPipelines(o *ReviewpadFile) {
 	r.Pipelines = append(r.Pipelines, o.Pipelines...)
 }
 
-func (r *ReviewpadFile) extends(o *ReviewpadFile) {
-	// extend labels
-	if r.Labels == nil {
-		r.Labels = make(map[string]PadLabel)
+func extendLabels(left, right map[string]PadLabel) map[string]PadLabel {
+	if left == nil && right == nil {
+		return nil
 	}
 
-	for labelName, label := range o.Labels {
-		if _, ok := r.Labels[labelName]; !ok {
-			r.Labels[labelName] = label
+	if left == nil {
+		left = make(map[string]PadLabel)
+	}
+
+	for labelName, label := range right {
+		if _, ok := left[labelName]; !ok {
+			left[labelName] = label
 		}
 	}
 
-	// extend groups
-	if r.Groups == nil {
-		r.Groups = make([]PadGroup, 0)
+	return left
+}
+
+func extendGroups(left, right []PadGroup) []PadGroup {
+	if left == nil && right == nil {
+		return nil
+	}
+
+	if left == nil {
+		left = make([]PadGroup, 0)
 	}
 
 	filteredGroups := make([]PadGroup, 0)
 
-	for _, group := range o.Groups {
-		if _, ok := findGroup(r.Groups, group.Name); !ok {
+	for _, group := range right {
+		if _, ok := findGroup(left, group.Name); !ok {
 			filteredGroups = append(filteredGroups, group)
 		}
 	}
 
-	r.Groups = append(filteredGroups, r.Groups...)
+	return append(filteredGroups, left...)
+}
 
-	// extend rules
-	if r.Rules == nil {
-		r.Rules = make([]PadRule, 0)
+func extendRules(left, right []PadRule) []PadRule {
+	if left == nil && right == nil {
+		return nil
+	}
+
+	if left == nil {
+		left = make([]PadRule, 0)
 	}
 
 	filteredRules := make([]PadRule, 0)
 
-	for _, rule := range o.Rules {
-		if _, ok := findRule(r.Rules, rule.Name); !ok {
+	for _, rule := range right {
+		if _, ok := findRule(left, rule.Name); !ok {
 			filteredRules = append(filteredRules, rule)
 		}
 	}
 
-	r.Rules = append(filteredRules, r.Rules...)
+	return append(filteredRules, left...)
+}
 
-	// extend workflows
-	if r.Workflows == nil {
-		r.Workflows = make([]PadWorkflow, 0)
+func extendWorkflows(left, right []PadWorkflow) []PadWorkflow {
+	if left == nil && right == nil {
+		return nil
+	}
+
+	if left == nil {
+		left = make([]PadWorkflow, 0)
 	}
 
 	filteredWorkflows := make([]PadWorkflow, 0)
 
-	for _, workflow := range o.Workflows {
-		if _, ok := findWorkflow(r.Workflows, workflow.Name); !ok {
+	for _, workflow := range right {
+		if _, ok := findWorkflow(left, workflow.Name); !ok {
 			filteredWorkflows = append(filteredWorkflows, workflow)
 		}
 	}
 
-	r.Workflows = append(filteredWorkflows, r.Workflows...)
+	return append(filteredWorkflows, left...)
+}
 
-	// extend pipelines
-	if r.Pipelines == nil {
-		r.Pipelines = make([]PadPipeline, 0)
+func extendPipelines(left, right []PadPipeline) []PadPipeline {
+	if left == nil && right == nil {
+		return nil
+	}
+
+	if left == nil {
+		left = make([]PadPipeline, 0)
 	}
 
 	filteredPipelines := make([]PadPipeline, 0)
 
-	for _, pipeline := range o.Pipelines {
-		if _, ok := findPipeline(r.Pipelines, pipeline.Name); !ok {
+	for _, pipeline := range right {
+		if _, ok := findPipeline(left, pipeline.Name); !ok {
 			filteredPipelines = append(filteredPipelines, pipeline)
 		}
 	}
 
-	r.Pipelines = append(filteredPipelines, r.Pipelines...)
+	return append(filteredPipelines, left...)
+}
+
+func (r *ReviewpadFile) extends(o *ReviewpadFile) {
+	r.Labels = extendLabels(r.Labels, o.Labels)
+	r.Groups = extendGroups(r.Groups, o.Groups)
+	r.Rules = extendRules(r.Rules, o.Rules)
+	r.Workflows = extendWorkflows(r.Workflows, o.Workflows)
+	r.Pipelines = extendPipelines(r.Pipelines, o.Pipelines)
 }
 
 func findGroup(groups []PadGroup, name string) (*PadGroup, bool) {

@@ -1,0 +1,29 @@
+# Copyright 2022 Explore.dev Unipessoal Lda. All Rights Reserved.
+# Use of this source code is governed by a license that can be
+# found in the LICENSE file.
+
+api-version: reviewpad.com/v3.x
+
+extends:
+  - https://github.com/reviewpad/reviewpad/blob/main/engine/testdata/reviewpad_with_no_extends.yml
+
+labels:
+  small:
+    color: #aa12ab
+
+groups:
+  - name: owners
+    kind: developers
+    spec: '["anonymous"]'
+
+rules:
+  - name: is-small
+    kind: patch
+    spec: $size() < 30
+
+workflows:
+  - name: add-label-with-small-size
+    if:
+      - rule: is-small
+    then:
+      - '$addLabel("small")'
