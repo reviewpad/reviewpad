@@ -5,6 +5,7 @@
 package engine_test
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -133,7 +134,7 @@ func TestLoad(t *testing.T) {
 					assert.FailNow(t, "Error reading reviewpad file: %v", err)
 				}
 
-				wantReviewpadFile, err = testutils.ParseReviewpadFile(wantReviewpadFileData)
+				wantReviewpadFile, err = testutils.ParseReviewpadFile(context.Background(), nil, wantReviewpadFileData)
 				if err != nil {
 					assert.FailNow(t, "Error parsing reviewpad file: %v", err)
 				}
@@ -144,7 +145,7 @@ func TestLoad(t *testing.T) {
 				assert.FailNow(t, "Error reading reviewpad file: %v", err)
 			}
 
-			gotReviewpadFile, gotErr := engine.Load(reviewpadFileData)
+			gotReviewpadFile, gotErr := engine.Load(context.Background(), nil, reviewpadFileData)
 
 			if gotErr != nil && gotErr.Error() != test.wantErr {
 				assert.FailNow(t, "Load() error = %v, wantErr %v", gotErr, test.wantErr)

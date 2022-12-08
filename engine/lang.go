@@ -198,6 +198,7 @@ type ReviewpadFile struct {
 	Mode         string              `yaml:"mode"`
 	IgnoreErrors bool                `yaml:"ignore-errors"`
 	Imports      []PadImport         `yaml:"imports"`
+	Extends      []string            `yaml:"extends"`
 	Groups       []PadGroup          `yaml:"groups"`
 	Rules        []PadRule           `yaml:"rules"`
 	Labels       map[string]PadLabel `yaml:"labels"`
@@ -240,6 +241,16 @@ func (r *ReviewpadFile) equals(o *ReviewpadFile) bool {
 	for i, rI := range r.Imports {
 		oI := o.Imports[i]
 		if !rI.equals(oI) {
+			return false
+		}
+	}
+
+	if len(r.Extends) != len(o.Extends) {
+		return false
+	}
+	for i, rE := range r.Extends {
+		oE := o.Extends[i]
+		if rE != oE {
 			return false
 		}
 	}
@@ -322,6 +333,87 @@ func (r *ReviewpadFile) appendWorkflows(o *ReviewpadFile) {
 	r.Workflows = append(r.Workflows, o.Workflows...)
 }
 
+func (r *ReviewpadFile) appendPipelines(o *ReviewpadFile) {
+	if r.Pipelines == nil {
+		r.Pipelines = make([]PadPipeline, 0)
+	}
+
+	r.Pipelines = append(r.Pipelines, o.Pipelines...)
+}
+
+func (r *ReviewpadFile) extends(o *ReviewpadFile) {
+	// extend labels
+	if r.Labels == nil {
+		r.Labels = make(map[string]PadLabel)
+	}
+
+	for labelName, label := range o.Labels {
+		if _, ok := r.Labels[labelName]; !ok {
+			r.Labels[labelName] = label
+		}
+	}
+
+	// extend groups
+	if r.Groups == nil {
+		r.Groups = make([]PadGroup, 0)
+	}
+
+	filteredGroups := make([]PadGroup, 0)
+
+	for _, group := range o.Groups {
+		if _, ok := findGroup(r.Groups, group.Name); !ok {
+			filteredGroups = append(filteredGroups, group)
+		}
+	}
+
+	r.Groups = append(filteredGroups, r.Groups...)
+
+	// extend rules
+	if r.Rules == nil {
+		r.Rules = make([]PadRule, 0)
+	}
+
+	filteredRules := make([]PadRule, 0)
+
+	for _, rule := range o.Rules {
+		if _, ok := findRule(r.Rules, rule.Name); !ok {
+			filteredRules = append(filteredRules, rule)
+		}
+	}
+
+	r.Rules = append(filteredRules, r.Rules...)
+
+	// extend workflows
+	if r.Workflows == nil {
+		r.Workflows = make([]PadWorkflow, 0)
+	}
+
+	filteredWorkflows := make([]PadWorkflow, 0)
+
+	for _, workflow := range o.Workflows {
+		if _, ok := findWorkflow(r.Workflows, workflow.Name); !ok {
+			filteredWorkflows = append(filteredWorkflows, workflow)
+		}
+	}
+
+	r.Workflows = append(filteredWorkflows, r.Workflows...)
+
+	// extend pipelines
+	if r.Pipelines == nil {
+		r.Pipelines = make([]PadPipeline, 0)
+	}
+
+	filteredPipelines := make([]PadPipeline, 0)
+
+	for _, pipeline := range o.Pipelines {
+		if _, ok := findPipeline(r.Pipelines, pipeline.Name); !ok {
+			filteredPipelines = append(filteredPipelines, pipeline)
+		}
+	}
+
+	r.Pipelines = append(filteredPipelines, r.Pipelines...)
+}
+
 func findGroup(groups []PadGroup, name string) (*PadGroup, bool) {
 	for _, group := range groups {
 		if group.Name == name {
@@ -336,6 +428,26 @@ func findRule(rules []PadRule, name string) (*PadRule, bool) {
 	for _, rule := range rules {
 		if rule.Name == name {
 			return &rule, true
+		}
+	}
+
+	return nil, false
+}
+
+func findWorkflow(workflows []PadWorkflow, name string) (*PadWorkflow, bool) {
+	for _, workflow := range workflows {
+		if workflow.Name == name {
+			return &workflow, true
+		}
+	}
+
+	return nil, false
+}
+
+func findPipeline(pipelines []PadPipeline, name string) (*PadPipeline, bool) {
+	for _, pipeline := range pipelines {
+		if pipeline.Name == name {
+			return &pipeline, true
 		}
 	}
 

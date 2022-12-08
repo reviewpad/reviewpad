@@ -5,12 +5,15 @@
 package engine
 
 import (
+	"context"
 	"crypto/sha256"
 	"fmt"
 	"io"
 	"net/http"
 
+	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/handler"
+	"github.com/reviewpad/reviewpad/v3/utils"
 	"gopkg.in/yaml.v3"
 )
 
@@ -25,7 +28,7 @@ func hash(data []byte) string {
 	return dHash
 }
 
-func Load(data []byte) (*ReviewpadFile, error) {
+func Load(ctx context.Context, githubClient *gh.GithubClient, data []byte) (*ReviewpadFile, error) {
 	file, err := parse(data)
 	if err != nil {
 		return nil, err
@@ -44,6 +47,11 @@ func Load(data []byte) (*ReviewpadFile, error) {
 	}
 
 	file, err = processImports(file, env)
+	if err != nil {
+		return nil, err
+	}
+
+	file, err = processExtends(ctx, githubClient, file, env)
 	if err != nil {
 		return nil, err
 	}
@@ -213,10 +221,74 @@ func processImports(file *ReviewpadFile, env *LoadEnv) (*ReviewpadFile, error) {
 		file.appendGroups(subTreeFile)
 		file.appendRules(subTreeFile)
 		file.appendWorkflows(subTreeFile)
+		file.appendPipelines(subTreeFile)
 	}
 
 	// reset all imports
 	file.Imports = []PadImport{}
+
+	return file, nil
+}
+
+func loadExtension(ctx context.Context, githubClient *gh.GithubClient, extension string) (*ReviewpadFile, string, error) {
+	branch, filePath, err := utils.ValidateUrl(extension)
+	if err != nil {
+		return nil, "", err
+	}
+
+	content, err := githubClient.DownloadContents(ctx, filePath, branch)
+	if err != nil {
+		return nil, "", err
+	}
+
+	file, err := parse(content)
+	if err != nil {
+		return nil, "", err
+	}
+
+	return file, hash(content), nil
+}
+
+// processExtends inlines files into the current reviewpad file
+// precedence: current file > extends file
+// Post-condition: ReviewpadFile without extends statements
+func processExtends(ctx context.Context, githubClient *gh.GithubClient, file *ReviewpadFile, env *LoadEnv) (*ReviewpadFile, error) {
+	for i := len(file.Extends) - 1; i >= 0; i-- {
+		extension := file.Extends[i]
+
+		eFile, eHash, err := loadExtension(ctx, githubClient, extension)
+		if err != nil {
+			return nil, err
+		}
+
+		// check for cycles
+		if _, ok := env.Stack[eHash]; ok {
+			return nil, fmt.Errorf("loader: cyclic extends dependency")
+		}
+
+		// optimize visits
+		if _, ok := env.Visited[eHash]; ok {
+			continue
+		}
+
+		// DFS call inline imports
+		// update the environment
+		env.Stack[eHash] = true
+		env.Visited[eHash] = true
+
+		extensionFile, err := processExtends(ctx, githubClient, eFile, env)
+		if err != nil {
+			return nil, err
+		}
+
+		// remove from the stack
+		delete(env.Stack, eHash)
+
+		file.extends(extensionFile)
+	}
+
+	// reset all extends
+	file.Extends = []string{}
 
 	return file, nil
 }

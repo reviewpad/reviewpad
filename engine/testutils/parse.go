@@ -5,11 +5,14 @@
 package testutils
 
 import (
+	"context"
+
+	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/engine"
 )
 
-func ParseReviewpadFile(data []byte) (*engine.ReviewpadFile, error) {
-	reviewpadFile, err := engine.Load(data)
+func ParseReviewpadFile(ctx context.Context, githubClient *gh.GithubClient, data []byte) (*engine.ReviewpadFile, error) {
+	reviewpadFile, err := engine.Load(ctx, githubClient, data)
 	if err != nil {
 		return nil, err
 	}

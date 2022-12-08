@@ -5,6 +5,7 @@
 package engine_test
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"testing"
@@ -95,7 +96,7 @@ func TestEval_WhenGitHubRequestsFail(t *testing.T) {
 				assert.FailNow(t, fmt.Sprintf("Error reading reviewpad file: %v", err))
 			}
 
-			reviewpadFile, err := testutils.ParseReviewpadFile(reviewpadFileData)
+			reviewpadFile, err := testutils.ParseReviewpadFile(context.Background(), nil, reviewpadFileData)
 			if err != nil {
 				assert.FailNow(t, "Error parsing reviewpad file: %v", err)
 			}
@@ -376,7 +377,7 @@ func TestEval(t *testing.T) {
 				assert.FailNow(t, fmt.Sprintf("Error reading reviewpad file: %v", err))
 			}
 
-			reviewpadFile, err := testutils.ParseReviewpadFile(reviewpadFileData)
+			reviewpadFile, err := testutils.ParseReviewpadFile(context.Background(), nil, reviewpadFileData)
 			if err != nil {
 				assert.FailNow(t, fmt.Sprintf("Error parsing reviewpad file: %v", err))
 			}
