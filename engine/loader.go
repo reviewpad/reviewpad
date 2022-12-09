@@ -155,6 +155,7 @@ func transform(file *ReviewpadFile) *ReviewpadFile {
 		Mode:         file.Mode,
 		IgnoreErrors: file.IgnoreErrors,
 		Imports:      file.Imports,
+		Extends:      file.Extends,
 		Groups:       file.Groups,
 		Rules:        transformedRules,
 		Labels:       file.Labels,
@@ -253,26 +254,21 @@ func loadExtension(ctx context.Context, githubClient *gh.GithubClient, extension
 // precedence: current file > extends file
 // Post-condition: ReviewpadFile without extends statements
 func processExtends(ctx context.Context, githubClient *gh.GithubClient, file *ReviewpadFile, env *LoadEnv) (*ReviewpadFile, error) {
-	for i := len(file.Extends) - 1; i >= 0; i-- {
-		extension := file.Extends[i]
-
-		eFile, eHash, err := loadExtension(ctx, githubClient, extension)
+	extendedFile := &ReviewpadFile{}
+	for _, extensionUri := range file.Extends {
+		eFile, eHash, err := loadExtension(ctx, githubClient, extensionUri)
 		if err != nil {
 			return nil, err
 		}
 
-		// check for cycles
 		if _, ok := env.Stack[eHash]; ok {
 			return nil, fmt.Errorf("loader: cyclic extends dependency")
 		}
 
-		// optimize visits
 		if _, ok := env.Visited[eHash]; ok {
 			continue
 		}
 
-		// DFS call inline imports
-		// update the environment
 		env.Stack[eHash] = true
 		env.Visited[eHash] = true
 
@@ -284,11 +280,13 @@ func processExtends(ctx context.Context, githubClient *gh.GithubClient, file *Re
 		// remove from the stack
 		delete(env.Stack, eHash)
 
-		file.extends(extensionFile)
+		extendedFile.extend(extensionFile)
 	}
 
-	// reset all extends
-	file.Extends = []string{}
+	extendedFile.extend(file)
 
-	return file, nil
+	// reset all extends
+	extendedFile.Extends = []string{}
+
+	return extendedFile, nil
 }

@@ -6,9 +6,9 @@ api-version: reviewpad.com/v3.x
 
 labels:
   small:
-    color: #aaf1aa
+    color: '#aaf1aa'
   medium:
-    color: #a8c3f7
+    color: '#a8c3f7'
 
 groups:
   - name: owners

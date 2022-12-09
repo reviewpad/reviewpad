@@ -6,9 +6,9 @@ api-version: reviewpad.com/v3.x
 
 labels:
   small:
-    color: #aa12ab
+    color: '#aa12ab'
   medium:
-    color: #a8c3f7
+    color: '#a8c3f7'
 
 groups:
   - name: owners
@@ -36,7 +36,13 @@ workflows:
     if:
       - rule: $isElementOf($author(), $group("owners"))
     then:
-      - $info("owner has authored a PR")
+      - $info("bob has authored a PR")
+
+  - name: check-title
+    if:
+      - 'true'
+    then:
+      - $titleLint()
 
   - name: add-label-with-small-size
     if:

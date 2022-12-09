@@ -5,11 +5,12 @@
 api-version: reviewpad.com/v3.x
 
 extends:
-  - https://github.com/reviewpad/reviewpad/blob/main/engine/testdata/reviewpad_with_no_extends.yml
+  - https://github.com/reviewpad/reviewpad/blob/main/engine/testdata/reviewpad_with_no_extends_a.yml
+  - https://github.com/reviewpad/reviewpad/blob/main/engine/testdata/reviewpad_with_no_extends_b.yml
 
 labels:
   small:
-    color: #aa12ab
+    color: '#aa12ab'
 
 groups:
   - name: owners

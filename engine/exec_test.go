@@ -14,7 +14,6 @@ import (
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/engine"
-	"github.com/reviewpad/reviewpad/v3/engine/testutils"
 	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	"github.com/reviewpad/reviewpad/v3/utils"
@@ -24,6 +23,8 @@ import (
 func TestEval_WhenGitHubRequestsFail(t *testing.T) {
 	tests := map[string]struct {
 		inputReviewpadFilePath string
+		inputContext           context.Context
+		inputGitHubClient      *gh.GithubClient
 		clientOptions          []mock.MockBackendOption
 		wantErr                string
 	}{
@@ -91,12 +92,12 @@ func TestEval_WhenGitHubRequestsFail(t *testing.T) {
 				assert.FailNow(t, fmt.Sprintf("engine MockEnvWith: %v", err))
 			}
 
-			reviewpadFileData, err := utils.LoadFile(test.inputReviewpadFilePath)
+			reviewpadFileData, err := utils.ReadFile(test.inputReviewpadFilePath)
 			if err != nil {
 				assert.FailNow(t, fmt.Sprintf("Error reading reviewpad file: %v", err))
 			}
 
-			reviewpadFile, err := testutils.ParseReviewpadFile(context.Background(), nil, reviewpadFileData)
+			reviewpadFile, err := engine.Load(test.inputContext, test.inputGitHubClient, reviewpadFileData)
 			if err != nil {
 				assert.FailNow(t, "Error parsing reviewpad file: %v", err)
 			}
@@ -112,6 +113,8 @@ func TestEval_WhenGitHubRequestsFail(t *testing.T) {
 func TestEval(t *testing.T) {
 	tests := map[string]struct {
 		inputReviewpadFilePath string
+		inputContext           context.Context
+		inputGitHubClient      *gh.GithubClient
 		clientOptions          []mock.MockBackendOption
 		targetEntity           *handler.TargetEntity
 		eventData              *handler.EventData
@@ -372,12 +375,12 @@ func TestEval(t *testing.T) {
 				assert.FailNow(t, fmt.Sprintf("engine MockEnvWith: %v", err))
 			}
 
-			reviewpadFileData, err := utils.LoadFile(test.inputReviewpadFilePath)
+			reviewpadFileData, err := utils.ReadFile(test.inputReviewpadFilePath)
 			if err != nil {
 				assert.FailNow(t, fmt.Sprintf("Error reading reviewpad file: %v", err))
 			}
 
-			reviewpadFile, err := testutils.ParseReviewpadFile(context.Background(), nil, reviewpadFileData)
+			reviewpadFile, err := engine.Load(test.inputContext, test.inputGitHubClient, reviewpadFileData)
 			if err != nil {
 				assert.FailNow(t, fmt.Sprintf("Error parsing reviewpad file: %v", err))
 			}

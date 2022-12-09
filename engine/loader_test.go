@@ -15,7 +15,6 @@ import (
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/engine"
-	"github.com/reviewpad/reviewpad/v3/engine/testutils"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	"github.com/reviewpad/reviewpad/v3/utils"
 	"github.com/stretchr/testify/assert"
@@ -131,12 +130,16 @@ func TestLoad(t *testing.T) {
 				[]mock.MockBackendOption{
 					mock.WithRequestMatchHandler(
 						mock.GetReposContentsByOwnerByRepoByPath,
-						http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+						http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 							utils.MustWriteBytes(w, mock.MustMarshal(
 								[]github.RepositoryContent{
 									{
-										Name:        github.String("reviewpad_with_no_extends.yml"),
-										DownloadURL: github.String("https://raw.githubusercontent.com/reviewpad_with_no_extends.yml"),
+										Name:        github.String("reviewpad_with_no_extends_a.yml"),
+										DownloadURL: github.String("https://raw.githubusercontent.com/reviewpad_with_no_extends_a.yml"),
+									},
+									{
+										Name:        github.String("reviewpad_with_no_extends_b.yml"),
+										DownloadURL: github.String("https://raw.githubusercontent.com/reviewpad_with_no_extends_b.yml"),
 									},
 								},
 							))
@@ -144,10 +147,17 @@ func TestLoad(t *testing.T) {
 					),
 					mock.WithRequestMatch(
 						mock.EndpointPattern{
-							Pattern: "/reviewpad_with_no_extends.yml",
+							Pattern: "/reviewpad_with_no_extends_a.yml",
 							Method:  "GET",
 						},
-						httpmock.File("testdata/loader/reviewpad_with_no_extends.yml").Bytes(),
+						httpmock.File("testdata/loader/reviewpad_with_no_extends_a.yml").Bytes(),
+					),
+					mock.WithRequestMatch(
+						mock.EndpointPattern{
+							Pattern: "/reviewpad_with_no_extends_b.yml",
+							Method:  "GET",
+						},
+						httpmock.File("testdata/loader/reviewpad_with_no_extends_b.yml").Bytes(),
 					),
 				},
 				nil,
@@ -166,18 +176,18 @@ func TestLoad(t *testing.T) {
 
 			var wantReviewpadFile *engine.ReviewpadFile
 			if test.wantReviewpadFilePath != "" {
-				wantReviewpadFileData, err := utils.LoadFile(test.wantReviewpadFilePath)
+				wantReviewpadFileData, err := utils.ReadFile(test.wantReviewpadFilePath)
 				if err != nil {
 					assert.FailNow(t, "Error reading reviewpad file: %v", err)
 				}
 
-				wantReviewpadFile, err = testutils.ParseReviewpadFile(test.inputContext, test.inputGitHubClient, wantReviewpadFileData)
+				wantReviewpadFile, err = engine.Load(test.inputContext, test.inputGitHubClient, wantReviewpadFileData)
 				if err != nil {
 					assert.FailNow(t, "Error parsing reviewpad file: %v", err)
 				}
 			}
 
-			reviewpadFileData, err := utils.LoadFile(test.inputReviewpadFilePath)
+			reviewpadFileData, err := utils.ReadFile(test.inputReviewpadFilePath)
 			if err != nil {
 				assert.FailNow(t, "Error reading reviewpad file: %v", err)
 			}
