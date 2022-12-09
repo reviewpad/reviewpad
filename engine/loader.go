@@ -265,12 +265,7 @@ func processExtends(ctx context.Context, githubClient *gh.GithubClient, file *Re
 			return nil, fmt.Errorf("loader: cyclic extends dependency")
 		}
 
-		if _, ok := env.Visited[eHash]; ok {
-			continue
-		}
-
 		env.Stack[eHash] = true
-		env.Visited[eHash] = true
 
 		extensionFile, err := processExtends(ctx, githubClient, eFile, env)
 		if err != nil {

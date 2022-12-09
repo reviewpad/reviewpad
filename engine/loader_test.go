@@ -6,6 +6,7 @@ package engine_test
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"testing"
@@ -122,6 +123,31 @@ func TestLoad(t *testing.T) {
 			inputReviewpadFilePath: "testdata/loader/process/reviewpad_with_multiple_inline_rules.yml",
 			wantReviewpadFilePath:  "testdata/loader/process/reviewpad_with_multiple_inline_rules_after_processing.yml",
 		},
+		"when the file has non-existing extends": {
+			inputReviewpadFilePath: "testdata/loader/reviewpad_with_extends.yml",
+			inputContext:           context.Background(),
+			inputGitHubClient: aladino.MockDefaultGithubClient(
+				[]mock.MockBackendOption{
+					mock.WithRequestMatchHandler(
+						mock.GetReposContentsByOwnerByRepoByPath,
+						http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+							mock.WriteError(
+								w,
+								http.StatusInternalServerError,
+								"loader: extends file not found",
+							)
+						}),
+					),
+				},
+				nil,
+			),
+			wantErr: "loader: extends file not found",
+		},
+		"when the file has invalid extends": {
+			inputReviewpadFilePath: "testdata/loader/reviewpad_with_invalid_extends.yml",
+			inputContext:           context.Background(),
+			wantErr:                "fatal: url must be a link to a GitHub blob, e.g. https://github.com/reviewpad/action/blob/main/main.go",
+		},
 		"when the file has an extends": {
 			inputReviewpadFilePath: "testdata/loader/reviewpad_with_extends.yml",
 			wantReviewpadFilePath:  "testdata/loader/process/reviewpad_with_extends_after_processing.yml",
@@ -163,6 +189,47 @@ func TestLoad(t *testing.T) {
 				nil,
 			),
 		},
+		"when the file has cyclic extends": {
+			inputReviewpadFilePath: "testdata/loader/reviewpad_with_cyclic_extends_dependency_a.yml",
+			inputContext:           context.Background(),
+			inputGitHubClient: aladino.MockDefaultGithubClient(
+				[]mock.MockBackendOption{
+					mock.WithRequestMatchHandler(
+						mock.GetReposContentsByOwnerByRepoByPath,
+						http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+							utils.MustWriteBytes(w, mock.MustMarshal(
+								[]github.RepositoryContent{
+									{
+										Name:        github.String("reviewpad_with_cyclic_extends_dependency_a.yml"),
+										DownloadURL: github.String("https://raw.githubusercontent.com/reviewpad_with_cyclic_extends_dependency_a.yml"),
+									},
+									{
+										Name:        github.String("reviewpad_with_cyclic_extends_dependency_b.yml"),
+										DownloadURL: github.String("https://raw.githubusercontent.com/reviewpad_with_cyclic_extends_dependency_b.yml"),
+									},
+								},
+							))
+						}),
+					),
+					mock.WithRequestMatch(
+						mock.EndpointPattern{
+							Pattern: "/reviewpad_with_cyclic_extends_dependency_a.yml",
+							Method:  "GET",
+						},
+						httpmock.File("testdata/loader/reviewpad_with_cyclic_extends_dependency_a.yml").Bytes(),
+					),
+					mock.WithRequestMatch(
+						mock.EndpointPattern{
+							Pattern: "/reviewpad_with_cyclic_extends_dependency_b.yml",
+							Method:  "GET",
+						},
+						httpmock.File("testdata/loader/reviewpad_with_cyclic_extends_dependency_b.yml").Bytes(),
+					),
+				},
+				nil,
+			),
+			wantErr: "loader: cyclic extends dependency",
+		},
 	}
 
 	for name, test := range tests {
@@ -194,8 +261,17 @@ func TestLoad(t *testing.T) {
 
 			gotReviewpadFile, gotErr := engine.Load(test.inputContext, test.inputGitHubClient, reviewpadFileData)
 
-			if gotErr != nil && gotErr.Error() != test.wantErr {
-				assert.FailNow(t, "Load() error = %v, wantErr %v", gotErr, test.wantErr)
+			if gotErr != nil {
+				githubError := &github.ErrorResponse{}
+				if errors.As(gotErr, &githubError) {
+					if githubError.Message != test.wantErr {
+						assert.FailNow(t, "Load() error = %v, wantErr %v", gotErr, test.wantErr)
+					}
+				} else {
+					if gotErr.Error() != test.wantErr {
+						assert.FailNow(t, "Load() error = %v, wantErr %v", gotErr, test.wantErr)
+					}
+				}
 			}
 
 			assert.Equal(t, wantReviewpadFile, gotReviewpadFile)
