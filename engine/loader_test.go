@@ -5,12 +5,18 @@
 package engine_test
 
 import (
+	"context"
+	"errors"
 	"fmt"
+	"net/http"
 	"testing"
 
+	"github.com/google/go-github/v48/github"
 	"github.com/jarcoal/httpmock"
+	"github.com/migueleliasweb/go-github-mock/src/mock"
+	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/engine"
-	"github.com/reviewpad/reviewpad/v3/engine/testutils"
+	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	"github.com/reviewpad/reviewpad/v3/utils"
 	"github.com/stretchr/testify/assert"
 )
@@ -24,6 +30,8 @@ func TestLoad(t *testing.T) {
 	tests := map[string]struct {
 		httpMockResponders     []httpMockResponder
 		inputReviewpadFilePath string
+		inputContext           context.Context
+		inputGitHubClient      *gh.GithubClient
 		wantReviewpadFilePath  string
 		wantErr                string
 	}{
@@ -115,6 +123,113 @@ func TestLoad(t *testing.T) {
 			inputReviewpadFilePath: "testdata/loader/process/reviewpad_with_multiple_inline_rules.yml",
 			wantReviewpadFilePath:  "testdata/loader/process/reviewpad_with_multiple_inline_rules_after_processing.yml",
 		},
+		"when the file has non-existing extends": {
+			inputReviewpadFilePath: "testdata/loader/reviewpad_with_extends.yml",
+			inputContext:           context.Background(),
+			inputGitHubClient: aladino.MockDefaultGithubClient(
+				[]mock.MockBackendOption{
+					mock.WithRequestMatchHandler(
+						mock.GetReposContentsByOwnerByRepoByPath,
+						http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+							mock.WriteError(
+								w,
+								http.StatusInternalServerError,
+								"loader: extends file not found",
+							)
+						}),
+					),
+				},
+				nil,
+			),
+			wantErr: "loader: extends file not found",
+		},
+		"when the file has invalid extends": {
+			inputReviewpadFilePath: "testdata/loader/reviewpad_with_invalid_extends.yml",
+			inputContext:           context.Background(),
+			wantErr:                "fatal: url must be a link to a GitHub blob, e.g. https://github.com/reviewpad/action/blob/main/main.go",
+		},
+		"when the file has an extends": {
+			inputReviewpadFilePath: "testdata/loader/reviewpad_with_extends.yml",
+			wantReviewpadFilePath:  "testdata/loader/process/reviewpad_with_extends_after_processing.yml",
+			inputContext:           context.Background(),
+			inputGitHubClient: aladino.MockDefaultGithubClient(
+				[]mock.MockBackendOption{
+					mock.WithRequestMatchHandler(
+						mock.GetReposContentsByOwnerByRepoByPath,
+						http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+							utils.MustWriteBytes(w, mock.MustMarshal(
+								[]github.RepositoryContent{
+									{
+										Name:        github.String("reviewpad_with_no_extends_a.yml"),
+										DownloadURL: github.String("https://raw.githubusercontent.com/reviewpad_with_no_extends_a.yml"),
+									},
+									{
+										Name:        github.String("reviewpad_with_no_extends_b.yml"),
+										DownloadURL: github.String("https://raw.githubusercontent.com/reviewpad_with_no_extends_b.yml"),
+									},
+								},
+							))
+						}),
+					),
+					mock.WithRequestMatch(
+						mock.EndpointPattern{
+							Pattern: "/reviewpad_with_no_extends_a.yml",
+							Method:  "GET",
+						},
+						httpmock.File("testdata/loader/reviewpad_with_no_extends_a.yml").Bytes(),
+					),
+					mock.WithRequestMatch(
+						mock.EndpointPattern{
+							Pattern: "/reviewpad_with_no_extends_b.yml",
+							Method:  "GET",
+						},
+						httpmock.File("testdata/loader/reviewpad_with_no_extends_b.yml").Bytes(),
+					),
+				},
+				nil,
+			),
+		},
+		"when the file has cyclic extends": {
+			inputReviewpadFilePath: "testdata/loader/reviewpad_with_cyclic_extends_dependency_a.yml",
+			inputContext:           context.Background(),
+			inputGitHubClient: aladino.MockDefaultGithubClient(
+				[]mock.MockBackendOption{
+					mock.WithRequestMatchHandler(
+						mock.GetReposContentsByOwnerByRepoByPath,
+						http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+							utils.MustWriteBytes(w, mock.MustMarshal(
+								[]github.RepositoryContent{
+									{
+										Name:        github.String("reviewpad_with_cyclic_extends_dependency_a.yml"),
+										DownloadURL: github.String("https://raw.githubusercontent.com/reviewpad_with_cyclic_extends_dependency_a.yml"),
+									},
+									{
+										Name:        github.String("reviewpad_with_cyclic_extends_dependency_b.yml"),
+										DownloadURL: github.String("https://raw.githubusercontent.com/reviewpad_with_cyclic_extends_dependency_b.yml"),
+									},
+								},
+							))
+						}),
+					),
+					mock.WithRequestMatch(
+						mock.EndpointPattern{
+							Pattern: "/reviewpad_with_cyclic_extends_dependency_a.yml",
+							Method:  "GET",
+						},
+						httpmock.File("testdata/loader/reviewpad_with_cyclic_extends_dependency_a.yml").Bytes(),
+					),
+					mock.WithRequestMatch(
+						mock.EndpointPattern{
+							Pattern: "/reviewpad_with_cyclic_extends_dependency_b.yml",
+							Method:  "GET",
+						},
+						httpmock.File("testdata/loader/reviewpad_with_cyclic_extends_dependency_b.yml").Bytes(),
+					),
+				},
+				nil,
+			),
+			wantErr: "loader: cyclic extends dependency",
+		},
 	}
 
 	for name, test := range tests {
@@ -128,27 +243,37 @@ func TestLoad(t *testing.T) {
 
 			var wantReviewpadFile *engine.ReviewpadFile
 			if test.wantReviewpadFilePath != "" {
-				wantReviewpadFileData, err := utils.LoadFile(test.wantReviewpadFilePath)
+				wantReviewpadFileData, err := utils.ReadFile(test.wantReviewpadFilePath)
 				if err != nil {
 					assert.FailNow(t, "Error reading reviewpad file: %v", err)
 				}
 
-				wantReviewpadFile, err = testutils.ParseReviewpadFile(wantReviewpadFileData)
+				wantReviewpadFile, err = engine.Load(test.inputContext, test.inputGitHubClient, wantReviewpadFileData)
 				if err != nil {
 					assert.FailNow(t, "Error parsing reviewpad file: %v", err)
 				}
 			}
 
-			reviewpadFileData, err := utils.LoadFile(test.inputReviewpadFilePath)
+			reviewpadFileData, err := utils.ReadFile(test.inputReviewpadFilePath)
 			if err != nil {
 				assert.FailNow(t, "Error reading reviewpad file: %v", err)
 			}
 
-			gotReviewpadFile, gotErr := engine.Load(reviewpadFileData)
+			gotReviewpadFile, gotErr := engine.Load(test.inputContext, test.inputGitHubClient, reviewpadFileData)
 
-			if gotErr != nil && gotErr.Error() != test.wantErr {
-				assert.FailNow(t, "Load() error = %v, wantErr %v", gotErr, test.wantErr)
+			if gotErr != nil {
+				githubError := &github.ErrorResponse{}
+				if errors.As(gotErr, &githubError) {
+					if githubError.Message != test.wantErr {
+						assert.FailNow(t, "Load() error = %v, wantErr %v", gotErr, test.wantErr)
+					}
+				} else {
+					if gotErr.Error() != test.wantErr {
+						assert.FailNow(t, "Load() error = %v, wantErr %v", gotErr, test.wantErr)
+					}
+				}
 			}
+
 			assert.Equal(t, wantReviewpadFile, gotReviewpadFile)
 		})
 	}
