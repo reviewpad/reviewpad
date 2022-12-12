@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/google/go-github/v48/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
@@ -23,7 +24,23 @@ type MergeRequestPostBody struct {
 }
 
 func TestMerge_WhenMergeMethodIsUnsupported(t *testing.T) {
-	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
+	mockedPullRequest := aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
+		State: github.String("open"),
+	})
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
+		[]mock.MockBackendOption{
+			mock.WithRequestMatchHandler(
+				mock.GetReposPullsByOwnerByRepoByPullNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+					utils.MustWriteBytes(w, mock.MustMarshal(mockedPullRequest))
+				}),
+			),
+		},
+		nil,
+		aladino.MockBuiltIns(),
+		nil,
+	)
 
 	args := []aladino.Value{aladino.BuildStringValue("INVALID")}
 	err := merge(mockedEnv, args)
@@ -34,6 +51,12 @@ func TestMerge_WhenMergeMethodIsUnsupported(t *testing.T) {
 func TestMerge_WhenNoMergeMethodIsProvided(t *testing.T) {
 	wantMergeMethod := "merge"
 	var gotMergeMethod string
+
+	mockedPullRequest := aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
+		State:  github.String("open"),
+		Merged: github.Bool(false),
+	})
+
 	mockedEnv := aladino.MockDefaultEnv(
 		t,
 		[]mock.MockBackendOption{
@@ -46,6 +69,12 @@ func TestMerge_WhenNoMergeMethodIsProvided(t *testing.T) {
 					utils.MustUnmarshal(rawBody, &body)
 
 					gotMergeMethod = body.MergeMethod
+				}),
+			),
+			mock.WithRequestMatchHandler(
+				mock.GetReposPullsByOwnerByRepoByPullNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+					utils.MustWriteBytes(w, mock.MustMarshal(mockedPullRequest))
 				}),
 			),
 		},
@@ -64,6 +93,12 @@ func TestMerge_WhenNoMergeMethodIsProvided(t *testing.T) {
 func TestMerge_WhenMergeMethodIsProvided(t *testing.T) {
 	wantMergeMethod := "rebase"
 	var gotMergeMethod string
+
+	mockedPullRequest := aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
+		State:  github.String("open"),
+		Merged: github.Bool(false),
+	})
+
 	mockedEnv := aladino.MockDefaultEnv(
 		t,
 		[]mock.MockBackendOption{
@@ -78,6 +113,12 @@ func TestMerge_WhenMergeMethodIsProvided(t *testing.T) {
 					gotMergeMethod = body.MergeMethod
 				}),
 			),
+			mock.WithRequestMatchHandler(
+				mock.GetReposPullsByOwnerByRepoByPullNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+					utils.MustWriteBytes(w, mock.MustMarshal(mockedPullRequest))
+				}),
+			),
 		},
 		nil,
 		aladino.MockBuiltIns(),
@@ -89,4 +130,59 @@ func TestMerge_WhenMergeMethodIsProvided(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantMergeMethod, gotMergeMethod)
+}
+
+func TestMerge_WhenMergeIsOnDraftPullRequest(t *testing.T) {
+	wantMergeMethod := "rebase"
+
+	mockedPullRequest := aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
+		State: github.String("open"),
+		Draft: github.Bool(true),
+	})
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
+		[]mock.MockBackendOption{
+			mock.WithRequestMatchHandler(
+				mock.GetReposPullsByOwnerByRepoByPullNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+					utils.MustWriteBytes(w, mock.MustMarshal(mockedPullRequest))
+				}),
+			),
+		},
+		nil,
+		aladino.MockBuiltIns(),
+		nil,
+	)
+
+	args := []aladino.Value{aladino.BuildStringValue(wantMergeMethod)}
+	err := merge(mockedEnv, args)
+
+	assert.Nil(t, err)
+}
+
+func TestMerge_WhenMergeIsClosedPullRequest(t *testing.T) {
+	wantMergeMethod := "rebase"
+
+	mockedPullRequest := aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
+		State: github.String("closed"),
+	})
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
+		[]mock.MockBackendOption{
+			mock.WithRequestMatchHandler(
+				mock.GetReposPullsByOwnerByRepoByPullNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+					utils.MustWriteBytes(w, mock.MustMarshal(mockedPullRequest))
+				}),
+			),
+		},
+		nil,
+		aladino.MockBuiltIns(),
+		nil,
+	)
+
+	args := []aladino.Value{aladino.BuildStringValue(wantMergeMethod)}
+	err := merge(mockedEnv, args)
+
+	assert.Nil(t, err)
 }
