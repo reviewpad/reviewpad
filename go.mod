@@ -18,7 +18,7 @@ require (
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/reviewpad/api/go v0.0.0-20220830170955-4342a58c9339
 	github.com/reviewpad/go-conventionalcommits v0.10.0
-	github.com/shurcooL/githubv4 v0.0.0-20221126192849-0b5c4c7994eb
+	github.com/shurcooL/githubv4 v0.0.0-20221203213311-70889c5dac07
 	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/cobra v1.6.1
 	github.com/stretchr/testify v1.8.1
