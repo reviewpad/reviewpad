@@ -200,7 +200,7 @@ func lintRulesMentions(rules []PadRule, groups []PadGroup, workflows []PadWorkfl
 
 	for ruleName, totalUses := range totalUsesByRule {
 		if totalUses == 0 {
-			return lintError("unused rule %v", ruleName)
+			lintLog("unused rule %v", ruleName)
 		}
 	}
 
