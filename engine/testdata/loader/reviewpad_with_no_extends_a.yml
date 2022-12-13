@@ -6,6 +6,8 @@ api-version: reviewpad.com/v3.x
 
 mode: verbose
 
+metrics-on-merge: true
+
 labels:
   small:
     color: '#aaf1aa'

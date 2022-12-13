@@ -3,12 +3,10 @@
 # found in the LICENSE file.
 
 api-version: reviewpad.com/v3.x
-
 mode: verbose
-
 edition: enterprise
-
 ignore-errors: true
+metrics-on-merge: true
 
 labels:
   small:

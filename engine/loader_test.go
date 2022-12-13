@@ -78,11 +78,14 @@ func TestLoadWithAST(t *testing.T) {
 	}
 
 	noIgnoreErrors := true
+	noMetricsOnMerge := true
 	wantReviewpadFile := &engine.ReviewpadFile{
-		Version:      "reviewpad.com/v3.x",
-		Edition:      "enterprise",
-		Mode:         "verbose",
-		IgnoreErrors: &noIgnoreErrors,
+		Version:        "reviewpad.com/v3.x",
+		Edition:        "enterprise",
+		Mode:           "verbose",
+		IgnoreErrors:   &noIgnoreErrors,
+		MetricsOnMerge: &noMetricsOnMerge,
+		Extends:        []string{},
 		Labels: map[string]engine.PadLabel{
 			"small": {
 				Color: "#aa12ab",

@@ -758,15 +758,13 @@ func TestReportMetric(t *testing.T) {
 		graphQLHandler         func(res http.ResponseWriter, req *http.Request)
 		commentShouldBeCreated bool
 		commentShouldBeUpdated bool
-		mode                   string
 		err                    error
 	}{
 		"when getting first commit and review date failed": {
 			graphQLHandler: func(res http.ResponseWriter, req *http.Request) {
 				res.WriteHeader(http.StatusBadRequest)
 			},
-			err:  errors.New("non-200 OK status code: 400 Bad Request body: \"\""),
-			mode: "verbose",
+			err: errors.New("non-200 OK status code: 400 Bad Request body: \"\""),
 		},
 		"when find report comment failed": {
 			graphQLHandler: func(res http.ResponseWriter, req *http.Request) {
@@ -802,8 +800,7 @@ func TestReportMetric(t *testing.T) {
 					}),
 				),
 			},
-			err:  errors.New("[report] error getting issues "),
-			mode: "verbose",
+			err: errors.New("[report] error getting issues "),
 		},
 		"when create comment failed": {
 			graphQLHandler: func(res http.ResponseWriter, req *http.Request) {
@@ -843,8 +840,7 @@ func TestReportMetric(t *testing.T) {
 					[]*github.IssueComment{},
 				),
 			},
-			err:  errors.New("[report] error on creating report comment "),
-			mode: "verbose",
+			err: errors.New("[report] error on creating report comment "),
 		},
 		"when update comment failed": {
 			graphQLHandler: func(res http.ResponseWriter, req *http.Request) {
@@ -889,8 +885,7 @@ func TestReportMetric(t *testing.T) {
 					},
 				),
 			},
-			err:  errors.New("[report] error on updating report comment "),
-			mode: "verbose",
+			err: errors.New("[report] error on updating report comment "),
 		},
 		"when successfully created report comment": {
 			graphQLHandler: func(res http.ResponseWriter, req *http.Request) {
@@ -932,7 +927,6 @@ func TestReportMetric(t *testing.T) {
 			},
 			commentShouldBeCreated: true,
 			err:                    nil,
-			mode:                   "verbose",
 		},
 		"when successfully updated report comment": {
 			graphQLHandler: func(res http.ResponseWriter, req *http.Request) {
@@ -979,12 +973,6 @@ func TestReportMetric(t *testing.T) {
 			},
 			commentShouldBeUpdated: true,
 			err:                    nil,
-			mode:                   "verbose",
-		},
-		"when mode is silent": {
-			commentShouldBeUpdated: false,
-			err:                    nil,
-			mode:                   "silent",
 		},
 	}
 
@@ -1003,7 +991,7 @@ func TestReportMetric(t *testing.T) {
 
 			assert.Nil(t, err)
 
-			err = interpreter.ReportMetrics(test.mode)
+			err = interpreter.ReportMetrics()
 
 			assert.Equal(t, test.err, err)
 			assert.Equal(t, test.commentShouldBeCreated, commentCreated)
