@@ -28,9 +28,5 @@ func isBinaryCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
 		return nil, err
 	}
 
-	if isBinary {
-		return aladino.BuildTrueValue(), nil
-	}
-
-	return aladino.BuildFalseValue(), nil
+	return aladino.BuildBoolValue(isBinary), nil
 }
