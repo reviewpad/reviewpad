@@ -196,7 +196,7 @@ type ReviewpadFile struct {
 	Version      string              `yaml:"api-version"`
 	Edition      string              `yaml:"edition"`
 	Mode         string              `yaml:"mode"`
-	IgnoreErrors bool                `yaml:"ignore-errors"`
+	IgnoreErrors *bool               `yaml:"ignore-errors"`
 	Imports      []PadImport         `yaml:"imports"`
 	Extends      []string            `yaml:"extends"`
 	Groups       []PadGroup          `yaml:"groups"`
@@ -358,6 +358,22 @@ func (r *ReviewpadFile) appendPipelines(o *ReviewpadFile) {
 }
 
 func (r *ReviewpadFile) extend(o *ReviewpadFile) {
+	if o.Version != "" {
+		r.Version = o.Version
+	}
+
+	if o.Edition != "" {
+		r.Edition = o.Edition
+	}
+
+	if o.Mode != "" {
+		r.Mode = o.Mode
+	}
+
+	if o.IgnoreErrors != nil {
+		r.IgnoreErrors = o.IgnoreErrors
+	}
+
 	r.appendLabels(o)
 	r.appendGroups(o)
 	r.appendRules(o)

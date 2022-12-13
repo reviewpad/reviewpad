@@ -16,6 +16,7 @@ import (
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/engine"
+	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	"github.com/reviewpad/reviewpad/v3/utils"
 	"github.com/stretchr/testify/assert"
@@ -24,6 +25,166 @@ import (
 type httpMockResponder struct {
 	url       string
 	responder httpmock.Responder
+}
+
+func TestLoadWithAST(t *testing.T) {
+	inputContext := context.Background()
+	inputGitHubClient := aladino.MockDefaultGithubClient(
+		[]mock.MockBackendOption{
+			mock.WithRequestMatchHandler(
+				mock.GetReposContentsByOwnerByRepoByPath,
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					utils.MustWriteBytes(w, mock.MustMarshal(
+						[]github.RepositoryContent{
+							{
+								Name:        github.String("reviewpad_with_no_extends_a.yml"),
+								DownloadURL: github.String("https://raw.githubusercontent.com/reviewpad_with_no_extends_a.yml"),
+							},
+							{
+								Name:        github.String("reviewpad_with_no_extends_b.yml"),
+								DownloadURL: github.String("https://raw.githubusercontent.com/reviewpad_with_no_extends_b.yml"),
+							},
+						},
+					))
+				}),
+			),
+			mock.WithRequestMatch(
+				mock.EndpointPattern{
+					Pattern: "/reviewpad_with_no_extends_a.yml",
+					Method:  "GET",
+				},
+				httpmock.File("testdata/loader/reviewpad_with_no_extends_a.yml").Bytes(),
+			),
+			mock.WithRequestMatch(
+				mock.EndpointPattern{
+					Pattern: "/reviewpad_with_no_extends_b.yml",
+					Method:  "GET",
+				},
+				httpmock.File("testdata/loader/reviewpad_with_no_extends_b.yml").Bytes(),
+			),
+		},
+		nil,
+	)
+
+	inputReviewpadFilePath := "testdata/loader/reviewpad_with_extends.yml"
+	reviewpadFileData, err := utils.ReadFile(inputReviewpadFilePath)
+	if err != nil {
+		assert.FailNow(t, "Error reading reviewpad file: %v", err)
+	}
+
+	gotReviewpadFile, err := engine.Load(inputContext, inputGitHubClient, reviewpadFileData)
+	if err != nil {
+		assert.FailNow(t, "Error parsing reviewpad file: %v", err)
+	}
+
+	noIgnoreErrors := true
+	wantReviewpadFile := &engine.ReviewpadFile{
+		Version:      "reviewpad.com/v3.x",
+		Edition:      "enterprise",
+		Mode:         "verbose",
+		IgnoreErrors: &noIgnoreErrors,
+		Labels: map[string]engine.PadLabel{
+			"small": {
+				Color: "#aa12ab",
+			},
+			"medium": {
+				Color: "#a8c3f7",
+			},
+		},
+		Groups: []engine.PadGroup{
+			{
+				Name: "owners",
+				Kind: "developers",
+				Spec: "[\"anonymous\"]",
+			},
+		},
+		Rules: []engine.PadRule{
+			{
+				Name: "is-medium",
+				Kind: "patch",
+				Spec: "$size([]) > 30 && $size([]) <= 100",
+			},
+			{
+				Name: "is-small",
+				Kind: "patch",
+				Spec: "$size([]) < 30",
+			},
+			{
+				Name: "$isElementOf($author(), $group(\"owners\"))",
+				Kind: "patch",
+				Spec: "$isElementOf($author(), $group(\"owners\"))",
+			},
+			{
+				Name: "true",
+				Kind: "patch",
+				Spec: "true",
+			},
+		},
+		Workflows: []engine.PadWorkflow{
+			{
+				Name:      "add-label-with-medium-size",
+				AlwaysRun: false,
+				On: []handler.TargetEntityKind{
+					"pull_request",
+				},
+				Rules: []engine.PadWorkflowRule{
+					{
+						Rule: "is-medium",
+					},
+				},
+				Actions: []string{
+					"$addLabel(\"medium\")",
+				},
+			},
+			{
+				Name:      "info-owners",
+				AlwaysRun: false,
+				On: []handler.TargetEntityKind{
+					"pull_request",
+				},
+				Rules: []engine.PadWorkflowRule{
+					{
+						Rule: "$isElementOf($author(), $group(\"owners\"))",
+					},
+				},
+				Actions: []string{
+					"$info(\"bob has authored a PR\")",
+				},
+			},
+			{
+				Name:      "check-title",
+				AlwaysRun: false,
+				On: []handler.TargetEntityKind{
+					"pull_request",
+				},
+				Rules: []engine.PadWorkflowRule{
+					{
+						Rule: "true",
+					},
+				},
+				Actions: []string{
+					"$titleLint()",
+				},
+			},
+			{
+				Name:      "add-label-with-small-size",
+				AlwaysRun: false,
+				On: []handler.TargetEntityKind{
+					"pull_request",
+				},
+				Rules: []engine.PadWorkflowRule{
+					{
+						Rule: "is-small",
+					},
+				},
+				Actions: []string{
+					"$addLabel(\"small\")",
+				},
+			},
+		},
+	}
+
+	assert.Equal(t, wantReviewpadFile, gotReviewpadFile)
 }
 
 func TestLoad(t *testing.T) {

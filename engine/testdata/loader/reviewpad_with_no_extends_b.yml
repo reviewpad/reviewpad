@@ -4,6 +4,10 @@
 
 api-version: reviewpad.com/v3.x
 
+ignore-errors: true
+
+edition: enterprise
+
 groups:
   - name: owners
     kind: developers
