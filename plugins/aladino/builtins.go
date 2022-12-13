@@ -54,6 +54,7 @@ func PluginBuiltInsWithConfig(config *PluginConfig) *aladino.BuiltIns {
 		Functions: map[string]*aladino.BuiltInFunction{
 			// Pull Request
 			"assignees":                 functions.Assignees(),
+			"approvalsCount":            functions.ApprovalsCount(),
 			"author":                    functions.Author(),
 			"base":                      functions.Base(),
 			"changed":                   functions.Changed(),
