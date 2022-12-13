@@ -15,7 +15,7 @@ var mockedReviewpadFile = &ReviewpadFile{
 	Version:      "reviewpad.com/v3.x",
 	Edition:      "professional",
 	Mode:         "silent",
-	IgnoreErrors: false,
+	IgnoreErrors: nil,
 	Imports: []PadImport{
 		{Url: "https://foo.bar/draft-rule.yml"},
 	},
@@ -764,7 +764,8 @@ func TestEquals_WhenReviewpadFilesHaveDiffIgnoreErrors(t *testing.T) {
 
 	assert.Nil(t, err)
 
-	otherReviewpadFile.IgnoreErrors = true
+	ignoreErrors := true
+	otherReviewpadFile.IgnoreErrors = &ignoreErrors
 
 	assert.False(t, mockedReviewpadFile.equals(otherReviewpadFile))
 }
