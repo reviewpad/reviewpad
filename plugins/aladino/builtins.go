@@ -78,6 +78,7 @@ func PluginBuiltInsWithConfig(config *PluginConfig) *aladino.BuiltIns {
 			"hasUnaddressedThreads":     functions.HasUnaddressedThreads(),
 			"haveAllChecksRunCompleted": functions.HaveAllChecksRunCompleted(),
 			"head":                      functions.Head(),
+			"isBinary":                  functions.IsBinary(),
 			"isDraft":                   functions.IsDraft(),
 			"isLinkedToProject":         functions.IsLinkedToProject(),
 			"isMerged":                  functions.IsMerged(),
