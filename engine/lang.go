@@ -193,17 +193,18 @@ func (p PadGroup) equals(o PadGroup) bool {
 }
 
 type ReviewpadFile struct {
-	Version      string              `yaml:"api-version"`
-	Edition      string              `yaml:"edition"`
-	Mode         string              `yaml:"mode"`
-	IgnoreErrors *bool               `yaml:"ignore-errors"`
-	Imports      []PadImport         `yaml:"imports"`
-	Extends      []string            `yaml:"extends"`
-	Groups       []PadGroup          `yaml:"groups"`
-	Rules        []PadRule           `yaml:"rules"`
-	Labels       map[string]PadLabel `yaml:"labels"`
-	Workflows    []PadWorkflow       `yaml:"workflows"`
-	Pipelines    []PadPipeline       `yaml:"pipelines"`
+	Version        string              `yaml:"api-version"`
+	Edition        string              `yaml:"edition"`
+	Mode           string              `yaml:"mode"`
+	IgnoreErrors   *bool               `yaml:"ignore-errors"`
+	MetricsOnMerge *bool               `yaml:"metrics-on-merge"`
+	Imports        []PadImport         `yaml:"imports"`
+	Extends        []string            `yaml:"extends"`
+	Groups         []PadGroup          `yaml:"groups"`
+	Rules          []PadRule           `yaml:"rules"`
+	Labels         map[string]PadLabel `yaml:"labels"`
+	Workflows      []PadWorkflow       `yaml:"workflows"`
+	Pipelines      []PadPipeline       `yaml:"pipelines"`
 }
 
 type PadPipeline struct {
@@ -232,6 +233,10 @@ func (r *ReviewpadFile) equals(o *ReviewpadFile) bool {
 	}
 
 	if r.IgnoreErrors != o.IgnoreErrors {
+		return false
+	}
+
+	if r.MetricsOnMerge != o.MetricsOnMerge {
 		return false
 	}
 
@@ -372,6 +377,10 @@ func (r *ReviewpadFile) extend(o *ReviewpadFile) {
 
 	if o.IgnoreErrors != nil {
 		r.IgnoreErrors = o.IgnoreErrors
+	}
+
+	if o.MetricsOnMerge != nil {
+		r.MetricsOnMerge = o.MetricsOnMerge
 	}
 
 	r.appendLabels(o)

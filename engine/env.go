@@ -32,7 +32,7 @@ type Interpreter interface {
 	ExecProgram(program *Program) (ExitStatus, error)
 	ExecStatement(statement *Statement) error
 	Report(mode string, safeMode bool) error
-	ReportMetrics(mode string) error
+	ReportMetrics() error
 }
 
 type Env struct {

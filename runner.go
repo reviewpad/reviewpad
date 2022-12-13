@@ -88,10 +88,12 @@ func Run(
 	}
 
 	if utils.IsPullRequestReadyForReportMetrics(eventData) {
-		err = aladinoInterpreter.ReportMetrics(reviewpadFile.Mode)
-		if err != nil {
-			engine.CollectError(evalEnv, err)
-			return engine.ExitStatusFailure, nil, err
+		if reviewpadFile.MetricsOnMerge != nil && *reviewpadFile.MetricsOnMerge {
+			err = aladinoInterpreter.ReportMetrics()
+			if err != nil {
+				engine.CollectError(evalEnv, err)
+				return engine.ExitStatusFailure, nil, err
+			}
 		}
 	}
 
