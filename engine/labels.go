@@ -54,23 +54,37 @@ func checkLabelHasUpdates(e *Env, label *PadLabel, ghLabel *github.Label) (bool,
 		return false, fmt.Errorf("checkLabelHasUpdates: impossible to check updates on a empty github label")
 	}
 
-	if label.Description == "" {
-		return false, nil
+	ghPadLabelDescription := ""
+	if ghLabel.Description != nil {
+		ghPadLabelDescription = *ghLabel.Description
 	}
 
-	if ghLabel.Description != nil && *ghLabel.Description == label.Description {
-		return false, nil
+	ghPadLabelColor := ""
+	if ghLabel.Color != nil {
+		ghPadLabelColor = *ghLabel.Color
 	}
 
-	return true, nil
+	ghPadLabel := PadLabel{
+		Name:        label.Name,
+		Description: ghPadLabelDescription,
+		Color:       ghPadLabelColor,
+	}
+
+	return !label.equals(ghPadLabel), nil
 }
 
 func updateLabel(e *Env, labelName *string, label *PadLabel) error {
 	owner := e.TargetEntity.Owner
 	repo := e.TargetEntity.Repo
 
-	updatedGithubLabel := &github.Label{
-		Description: &label.Description,
+	updatedGithubLabel := &github.Label{}
+
+	if label.Description != "" {
+		updatedGithubLabel.Description = &label.Description
+	}
+
+	if label.Color != "" {
+		updatedGithubLabel.Color = &label.Color
 	}
 
 	_, _, err := e.GithubClient.EditLabel(e.Ctx, owner, repo, *labelName, updatedGithubLabel)

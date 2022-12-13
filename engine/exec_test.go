@@ -123,7 +123,10 @@ func TestEval(t *testing.T) {
 	}{
 		"when label has no name": {
 			inputReviewpadFilePath: "testdata/exec/reviewpad_with_unnamed_label.yml",
-			clientOptions:          []mock.MockBackendOption{mockGetReposLabelsByOwnerByRepoByName("bug", "")},
+			clientOptions: []mock.MockBackendOption{
+				mockGetReposLabelsByOwnerByRepoByName("bug", ""),
+				mockPatchReposLabelsByOwnerByRepo("bug", ""),
+			},
 			wantProgram: engine.BuildProgram(
 				[]*engine.Statement{
 					engine.BuildStatement(`$addLabel("test-unnamed-label")`),

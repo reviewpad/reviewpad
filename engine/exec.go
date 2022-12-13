@@ -84,6 +84,8 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 		// for backwards compatibility, a label has both a key and a name
 		if label.Name != "" {
 			labelName = label.Name
+		} else {
+			label.Name = labelName
 		}
 
 		if !env.DryRun {
