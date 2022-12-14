@@ -438,3 +438,15 @@ func (t *PullRequestTarget) GetApprovalsCount() (int, error) {
 
 	return t.githubClient.GetApprovalsCount(ctx, owner, repo, number)
 }
+
+func (t *PullRequestTarget) TriggerWorkflowByFileName(workflowFileName string) error {
+	ctx := t.ctx
+	targetEntity := t.targetEntity
+	owner := targetEntity.Owner
+	repo := targetEntity.Repo
+	head := t.PullRequest.GetHead().GetRef()
+
+	_, err := t.githubClient.TriggerWorkflowByFileName(ctx, owner, repo, head, workflowFileName)
+
+	return err
+}
