@@ -428,3 +428,13 @@ func (t *PullRequestTarget) GetLastCommit() (string, error) {
 
 	return t.githubClient.GetLastCommitSHA(ctx, owner, repo, number)
 }
+
+func (t *PullRequestTarget) GetApprovalsCount() (int, error) {
+	ctx := t.ctx
+	targetEntity := t.targetEntity
+	owner := targetEntity.Owner
+	repo := targetEntity.Repo
+	number := targetEntity.Number
+
+	return t.githubClient.GetApprovalsCount(ctx, owner, repo, number)
+}

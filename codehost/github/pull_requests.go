@@ -113,6 +113,16 @@ type PullRequestLinkedProjectsQuery struct {
 	} `graphql:"repository(owner: $repositoryOwner, name: $repositoryName)"`
 }
 
+type GetApprovalsCountQuery struct {
+	Repository struct {
+		PullRequest struct {
+			Reviews struct {
+				TotalCount int `graphql:"totalCount"`
+			} `graphql:"reviews(first: 1, states: [APPROVED])"`
+		} `graphql:"pullRequest(number: $pullRequestNumber)"`
+	} `graphql:"repository(owner: $repositoryOwner, name: $repositoryName)"`
+}
+
 func GetPullRequestHeadOwnerName(pullRequest *github.PullRequest) string {
 	return pullRequest.Head.Repo.Owner.GetLogin()
 }
@@ -592,4 +602,20 @@ func (c *GithubClient) GetLastCommitSHA(ctx context.Context, owner, repo string,
 	}
 
 	return getLastCommitQuery.Repository.PullRequest.Commits.Nodes[0].Commit.OID, nil
+}
+
+func (c *GithubClient) GetApprovalsCount(ctx context.Context, owner, repo string, number int) (int, error) {
+	var getApprovalsCountQuery GetApprovalsCountQuery
+	varGQLApprovalCountData := map[string]interface{}{
+		"repositoryOwner":   githubv4.String(owner),
+		"repositoryName":    githubv4.String(repo),
+		"pullRequestNumber": githubv4.Int(number),
+	}
+
+	err := c.GetClientGraphQL().Query(ctx, &getApprovalsCountQuery, varGQLApprovalCountData)
+	if err != nil {
+		return 0, err
+	}
+
+	return getApprovalsCountQuery.Repository.PullRequest.Reviews.TotalCount, nil
 }
