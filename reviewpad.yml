@@ -1,10 +1,7 @@
 api-version: reviewpad.com/v3.x
 
-imports: 
-  - url: https://raw.githubusercontent.com/reviewpad/.github/main/reviewpad-models/common.yml
-
-mode: silent
-edition: professional
+extends: 
+  - https://github.com/reviewpad/.github/blob/main/reviewpad-models/common.yml
 
 labels:
   external-contribution:
