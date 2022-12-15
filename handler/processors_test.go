@@ -602,6 +602,46 @@ func TestProcessEvent(t *testing.T) {
 			wantTargets: []*handler.TargetEntity{},
 			wantEvents:  []*handler.EventData{},
 		},
+		"installation": {
+			event: &handler.ActionEvent{
+				EventName: github.String("installation"),
+				EventPayload: buildPayload([]byte(`{
+					"action": "created",
+					"repositories": [
+						{
+							"full_name": "testowner/testrepo"
+						},
+						{
+							"full_name": "testowner2/testrepo2"
+						}
+					]
+				}`)),
+			},
+			wantTargets: []*handler.TargetEntity{
+				{
+					Repo:   "testrepo",
+					Owner:  "testowner",
+					Kind:   "",
+					Number: 0,
+				},
+				{
+					Repo:   "testrepo2",
+					Owner:  "testowner2",
+					Kind:   "",
+					Number: 0,
+				},
+			},
+			wantEvents: []*handler.EventData{
+				{
+					EventName:   "installation",
+					EventAction: "created",
+				},
+				{
+					EventName:   "installation",
+					EventAction: "created",
+				},
+			},
+		},
 	}
 
 	for name, test := range tests {

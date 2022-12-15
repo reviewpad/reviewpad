@@ -341,6 +341,46 @@ func processPushEvent(token string, e *github.PushEvent) ([]*TargetEntity, []*Ev
 	return targets, events, nil
 }
 
+func processInstallationEvent(event *github.InstallationEvent) ([]*TargetEntity, []*EventData, error) {
+	targetEntities := make([]*TargetEntity, 0)
+	events := make([]*EventData, 0)
+
+	for _, repo := range event.Repositories {
+		parts := strings.Split(repo.GetFullName(), "/")
+
+		targetEntities = append(targetEntities, &TargetEntity{
+			Owner: parts[0],
+			Repo:  parts[1],
+		})
+
+		events = append(events, &EventData{
+			EventName:   "installation",
+			EventAction: event.GetAction(),
+		})
+	}
+
+	return targetEntities, events, nil
+}
+
+func processInstallationRepositoriesEvent(event *github.InstallationRepositoriesEvent) ([]*TargetEntity, []*EventData, error) {
+	targetEntities := make([]*TargetEntity, 0)
+	events := make([]*EventData, 0)
+
+	for _, repo := range event.RepositoriesAdded {
+		targetEntities = append(targetEntities, &TargetEntity{
+			Owner: repo.GetOwner().GetLogin(),
+			Repo:  repo.GetName(),
+		})
+
+		events = append(events, &EventData{
+			EventName:   "installation",
+			EventAction: event.GetAction(),
+		})
+	}
+
+	return targetEntities, events, nil
+}
+
 // reviewpad-an: critical
 // output: the list of pull requests/issues that are affected by the event.
 func ProcessEvent(event *ActionEvent) ([]*TargetEntity, []*EventData, error) {
@@ -390,9 +430,9 @@ func ProcessEvent(event *ActionEvent) ([]*TargetEntity, []*EventData, error) {
 	case *github.GollumEvent:
 		return processUnsupportedEvent(payload)
 	case *github.InstallationEvent:
-		return processUnsupportedEvent(payload)
+		return processInstallationEvent(payload)
 	case *github.InstallationRepositoriesEvent:
-		return processUnsupportedEvent(payload)
+		return processInstallationRepositoriesEvent(payload)
 	case *github.IssueCommentEvent:
 		return processIssueCommentEvent(payload)
 	case *github.IssuesEvent:
