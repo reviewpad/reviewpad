@@ -61,7 +61,7 @@ func checkLabelHasUpdates(e *Env, label *PadLabel, ghLabel *github.Label) (bool,
 
 	ghPadLabelColor := ""
 	if ghLabel.Color != nil {
-		ghPadLabelColor = *ghLabel.Color
+		ghPadLabelColor = strings.TrimPrefix(*ghLabel.Color, "#")
 	}
 
 	ghPadLabel := PadLabel{
@@ -84,7 +84,8 @@ func updateLabel(e *Env, labelName *string, label *PadLabel) error {
 	}
 
 	if label.Color != "" {
-		updatedGithubLabel.Color = &label.Color
+		color := strings.TrimPrefix(label.Color, "#")
+		updatedGithubLabel.Color = &color
 	}
 
 	_, _, err := e.GithubClient.EditLabel(e.Ctx, owner, repo, *labelName, updatedGithubLabel)
