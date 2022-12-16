@@ -218,7 +218,7 @@ func (t *IssueTarget) SetProjectFieldSingleSelect(projectTitle string, fieldName
 	}
 
 	for _, option := range fieldDetails.Options {
-		if strings.EqualFold(option.Name, fieldValue) {
+		if option.Name == fieldValue {
 			fieldOptionID = option.ID
 			break
 		}
