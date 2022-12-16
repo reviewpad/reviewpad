@@ -6,6 +6,7 @@ package handler_test
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"testing"
@@ -224,6 +225,7 @@ func TestProcessEvent(t *testing.T) {
 		event       *handler.ActionEvent
 		wantTargets []*handler.TargetEntity
 		wantEvents  []*handler.EventData
+		wantErr     error
 	}{
 		"pull_request": {
 			event: &handler.ActionEvent{
@@ -638,6 +640,25 @@ func TestProcessEvent(t *testing.T) {
 				},
 			},
 		},
+		"installation with invalid repo full name": {
+			event: &handler.ActionEvent{
+				EventName: github.String("installation"),
+				EventPayload: buildPayload([]byte(`{
+					"action": "created",
+					"repositories": [
+						{
+							"full_name": "testowner/testrepo"
+						},
+						{
+							"full_name": "testowner2"
+						}
+					]
+				}`)),
+			},
+			wantTargets: nil,
+			wantEvents:  nil,
+			wantErr:     errors.New("invalid full repository name: testowner2"),
+		},
 		"installation_repositories added": {
 			event: &handler.ActionEvent{
 				EventName: github.String("installation_repositories"),
@@ -716,7 +737,7 @@ func TestProcessEvent(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			gotTargets, gotEvents, err := handler.ProcessEvent(test.event)
 
-			assert.Nil(t, err)
+			assert.Equal(t, test.wantErr, err)
 			assert.ElementsMatch(t, test.wantEvents, gotEvents)
 			assert.ElementsMatch(t, test.wantTargets, gotTargets)
 		})

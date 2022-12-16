@@ -342,47 +342,70 @@ func processPushEvent(token string, e *github.PushEvent) ([]*TargetEntity, []*Ev
 }
 
 func processInstallationEvent(event *github.InstallationEvent) ([]*TargetEntity, []*EventData, error) {
-	targetEntities, events := transformSingleEventMultiRepos(event.Repositories, &EventData{
+	targetEntities, err := extractTargetEntitiesFromRepositories(event.Repositories)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	eventsData := duplicateEventDataForMultipleRepositories(event.Repositories, &EventData{
 		EventName:   "installation",
 		EventAction: event.GetAction(),
 	})
 
-	return targetEntities, events, nil
+	return targetEntities, eventsData, nil
 }
 
 func processInstallationRepositoriesEvent(event *github.InstallationRepositoriesEvent) ([]*TargetEntity, []*EventData, error) {
-	if event.GetAction() == "added" {
-		targetEntities, events := transformSingleEventMultiRepos(event.RepositoriesAdded, &EventData{
-			EventName:   "installation_repositories",
-			EventAction: event.GetAction(),
-		})
+	repositories := make([]*github.Repository, 0)
 
-		return targetEntities, events, nil
+	if event.GetAction() == "added" {
+		repositories = event.RepositoriesAdded
 	}
 
-	targetEntities, events := transformSingleEventMultiRepos(event.RepositoriesRemoved, &EventData{
+	if event.GetAction() == "removed" {
+		repositories = event.RepositoriesRemoved
+	}
+
+	targetEntities, err := extractTargetEntitiesFromRepositories(repositories)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	eventsData := duplicateEventDataForMultipleRepositories(repositories, &EventData{
 		EventName:   "installation_repositories",
 		EventAction: event.GetAction(),
 	})
 
-	return targetEntities, events, nil
+	return targetEntities, eventsData, nil
 }
 
-func transformSingleEventMultiRepos(repos []*github.Repository, eventData *EventData) ([]*TargetEntity, []*EventData) {
+func extractTargetEntitiesFromRepositories(repos []*github.Repository) ([]*TargetEntity, error) {
 	targetEntities := make([]*TargetEntity, 0)
-	events := make([]*EventData, 0)
 
 	for _, repo := range repos {
 		parts := strings.Split(repo.GetFullName(), "/")
+
+		if len(parts) != 2 {
+			return nil, fmt.Errorf("invalid full repository name: %v", repo.GetFullName())
+		}
+
 		targetEntities = append(targetEntities, &TargetEntity{
 			Owner: parts[0],
 			Repo:  parts[1],
 		})
-
-		events = append(events, eventData)
 	}
 
-	return targetEntities, events
+	return targetEntities, nil
+}
+
+func duplicateEventDataForMultipleRepositories(repos []*github.Repository, eventData *EventData) []*EventData {
+	eventsData := make([]*EventData, 0)
+
+	for range repos {
+		eventsData = append(eventsData, eventData)
+	}
+
+	return eventsData
 }
 
 // reviewpad-an: critical
