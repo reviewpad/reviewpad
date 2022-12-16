@@ -102,7 +102,7 @@ func run() error {
 
 	ctx := context.Background()
 	githubClient := gh.NewGithubClientFromToken(ctx, gitHubToken)
-	collectorClient, err := collector.NewCollector(mixpanelToken, repositoryOwner, string(entityKind), githubUrl, "local-cli")
+	collectorClient, err := collector.NewCollector(mixpanelToken, repositoryOwner, string(entityKind), "local-cli", nil)
 	if err != nil {
 		log.Printf("error creating new collector: %v", err)
 	}

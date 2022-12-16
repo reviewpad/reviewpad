@@ -29,7 +29,7 @@ const DefaultMockEventAction = "opened"
 
 // Use only for tests
 var DefaultMockCtx = context.Background()
-var DefaultMockCollector, _ = collector.NewCollector("", "", "pull_request", "", "dev-test")
+var DefaultMockCollector, _ = collector.NewCollector("", "distinctId", "pull_request", "runnerName", nil)
 var DefaultMockEventPayload = &github.CheckRunEvent{}
 var DefaultMockTargetEntity = &handler.TargetEntity{
 	Owner:  DefaultMockPrOwner,
