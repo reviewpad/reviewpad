@@ -13,10 +13,11 @@ import (
 )
 
 var (
-	ErrProjectNotFound            = errors.New("project not found")
+	ErrProjectHasNoStatusField    = errors.New("project has no status field")
 	ErrProjectHasNoSuchField      = errors.New("project field not found")
 	ErrProjectHasNoSuchFieldValue = errors.New("project field value not found")
-	ErrProjectHasNoStatusField    = errors.New("project has no status field")
+	ErrProjectItemsNotFound       = errors.New("project items not found")
+	ErrProjectNotFound            = errors.New("project not found")
 	ErrProjectStatusNotFound      = errors.New("project status not found")
 )
 
@@ -55,10 +56,10 @@ type Fields struct {
 }
 
 type FieldNode struct {
-	Details FieldDetails `graphql:"... on ProjectV2SingleSelectField"`
+	SingleSelectFieldDetails SingleSelectFieldDetails `graphql:"... on ProjectV2SingleSelectField"`
 }
 
-type FieldDetails struct {
+type SingleSelectFieldDetails struct {
 	ID      string
 	Name    string
 	Options []struct {

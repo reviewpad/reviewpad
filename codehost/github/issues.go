@@ -6,14 +6,9 @@ package github
 
 import (
 	"context"
-	"errors"
 
 	"github.com/google/go-github/v48/github"
 	"github.com/shurcooL/githubv4"
-)
-
-var (
-	ErrProjectItemsNotFound = errors.New("project items not found")
 )
 
 type GQLProjectV2Item struct {

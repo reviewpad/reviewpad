@@ -40,11 +40,11 @@ func addToProjectCode(e aladino.Env, args []aladino.Value) error {
 		return err
 	}
 
-	statusField := gh.FieldDetails{}
+	statusField := gh.SingleSelectFieldDetails{}
 
 	for _, field := range fields {
-		if strings.EqualFold(field.Details.Name, "status") {
-			statusField = field.Details
+		if strings.EqualFold(field.SingleSelectFieldDetails.Name, "status") {
+			statusField = field.SingleSelectFieldDetails
 			break
 		}
 	}

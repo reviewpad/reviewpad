@@ -122,9 +122,9 @@ func (t *CommonTarget) GetProjectFieldsByProjectNumber(projectNumber uint64) ([]
 	fields := make([]*codehost.ProjectField, len(ghFields))
 	for i, field := range ghFields {
 		fields[i] = &codehost.ProjectField{
-			ID:      field.Details.ID,
-			Name:    field.Details.Name,
-			Options: field.Details.Options,
+			ID:      field.SingleSelectFieldDetails.ID,
+			Name:    field.SingleSelectFieldDetails.Name,
+			Options: field.SingleSelectFieldDetails.Options,
 		}
 	}
 
@@ -184,12 +184,12 @@ func (t *CommonTarget) SetProjectFieldSingleSelect(projectItems []gh.GQLProjectV
 		return err
 	}
 
-	fieldDetails := gh.FieldDetails{}
+	fieldDetails := gh.SingleSelectFieldDetails{}
 	fieldOptionID := ""
 
 	for _, field := range fields {
-		if strings.EqualFold(field.Details.Name, fieldName) {
-			fieldDetails = field.Details
+		if strings.EqualFold(field.SingleSelectFieldDetails.Name, fieldName) {
+			fieldDetails = field.SingleSelectFieldDetails
 			break
 		}
 	}

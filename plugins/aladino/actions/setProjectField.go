@@ -9,15 +9,15 @@ import (
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 )
 
-func SetProjectFieldSingleSelect() *aladino.BuiltInAction {
+func SetProjectField() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
 		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType(), aladino.BuildStringType(), aladino.BuildStringType()}, nil),
-		Code:           setProjectFieldSingleSelect,
+		Code:           setProjectField,
 		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest, handler.Issue},
 	}
 }
 
-func setProjectFieldSingleSelect(e aladino.Env, args []aladino.Value) error {
+func setProjectField(e aladino.Env, args []aladino.Value) error {
 	projectTitle := args[0].(*aladino.StringValue).Val
 	fieldName := args[1].(*aladino.StringValue).Val
 	fieldValue := args[2].(*aladino.StringValue).Val
