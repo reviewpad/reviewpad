@@ -21,11 +21,12 @@ func setProjectFieldSingleSelect(e aladino.Env, args []aladino.Value) error {
 	projectTitle := args[0].(*aladino.StringValue).Val
 	fieldName := args[1].(*aladino.StringValue).Val
 	fieldValue := args[2].(*aladino.StringValue).Val
+	target := e.GetTarget()
 
-	err := e.GetTarget().SetProjectFieldSingleSelect(projectTitle, fieldName, fieldValue)
+	projectItems, err := target.GetLinkedProjects()
 	if err != nil {
 		return err
 	}
 
-	return nil
+	return target.SetProjectFieldSingleSelect(projectItems, projectTitle, fieldName, fieldValue)
 }
