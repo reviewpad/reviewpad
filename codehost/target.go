@@ -37,6 +37,7 @@ type Target interface {
 	GetTitle() string
 	IsLinkedToProject(title string) (bool, error)
 	RemoveLabel(labelName string) error
+	SetProjectFieldSingleSelect(projectTitle string, fieldName string, fieldValue string) error
 }
 
 type User struct {

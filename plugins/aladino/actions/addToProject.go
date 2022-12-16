@@ -5,37 +5,12 @@
 package plugins_aladino_actions
 
 import (
-	"errors"
 	"strings"
 
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 )
-
-var (
-	ErrProjectNotFound         = errors.New("project not found")
-	ErrProjectHasNoStatusField = errors.New("project has no status field")
-	ErrProjectStatusNotFound   = errors.New("project status not found")
-)
-
-type AddProjectV2ItemByIdInput struct {
-	ProjectID string `json:"projectId"`
-	ContentID string `json:"contentId"`
-	// A unique identifier for the client performing the mutation. (Optional.)
-	ClientMutationID *string `json:"clientMutationId,omitempty"`
-}
-
-type FieldValue struct {
-	SingleSelectOptionId string `json:"singleSelectOptionId"`
-}
-
-type UpdateProjectV2ItemFieldValueInput struct {
-	ItemID    string     `json:"itemId"`
-	Value     FieldValue `json:"value"`
-	ProjectID string     `json:"projectId"`
-	FieldID   string     `json:"fieldId"`
-}
 
 func AddToProject() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
@@ -75,7 +50,7 @@ func addToProjectCode(e aladino.Env, args []aladino.Value) error {
 	}
 
 	if statusField.ID == "" {
-		return ErrProjectHasNoStatusField
+		return gh.ErrProjectHasNoStatusField
 	}
 
 	fieldOptionID := ""
@@ -88,7 +63,7 @@ func addToProjectCode(e aladino.Env, args []aladino.Value) error {
 	}
 
 	if fieldOptionID == "" {
-		return ErrProjectStatusNotFound
+		return gh.ErrProjectStatusNotFound
 	}
 
 	var addProjectV2ItemByIdMutation struct {
@@ -99,7 +74,7 @@ func addToProjectCode(e aladino.Env, args []aladino.Value) error {
 		} `graphql:"addProjectV2ItemById(input: $input)"`
 	}
 
-	input := AddProjectV2ItemByIdInput{
+	input := gh.AddProjectV2ItemByIdInput{
 		ProjectID: project.ID,
 		ContentID: target.GetNodeID(),
 	}
@@ -116,10 +91,10 @@ func addToProjectCode(e aladino.Env, args []aladino.Value) error {
 		} `graphql:"updateProjectV2ItemFieldValue(input: $input)"`
 	}
 
-	updateInput := UpdateProjectV2ItemFieldValueInput{
+	updateInput := gh.UpdateProjectV2ItemFieldValueInput{
 		ProjectID: project.ID,
 		ItemID:    addProjectV2ItemByIdMutation.AddProjectV2ItemById.Item.Id,
-		Value: FieldValue{
+		Value: gh.FieldValue{
 			SingleSelectOptionId: fieldOptionID,
 		},
 		FieldID: statusField.ID,

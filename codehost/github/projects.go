@@ -13,7 +13,11 @@ import (
 )
 
 var (
-	ErrProjectNotFound = errors.New("project not found")
+	ErrProjectNotFound            = errors.New("project not found")
+	ErrProjectHasNoSuchField      = errors.New("project field not found")
+	ErrProjectHasNoSuchFieldValue = errors.New("project field value not found")
+	ErrProjectHasNoStatusField    = errors.New("project has no status field")
+	ErrProjectStatusNotFound      = errors.New("project status not found")
 )
 
 type ProjectV2 struct {
@@ -25,6 +29,24 @@ type ProjectV2 struct {
 type PageInfo struct {
 	HasNextPage bool
 	EndCursor   string
+}
+
+type AddProjectV2ItemByIdInput struct {
+	ProjectID string `json:"projectId"`
+	ContentID string `json:"contentId"`
+	// A unique identifier for the client performing the mutation. (Optional.)
+	ClientMutationID *string `json:"clientMutationId,omitempty"`
+}
+
+type FieldValue struct {
+	SingleSelectOptionId string `json:"singleSelectOptionId"`
+}
+
+type UpdateProjectV2ItemFieldValueInput struct {
+	ItemID    string     `json:"itemId"`
+	Value     FieldValue `json:"value"`
+	ProjectID string     `json:"projectId"`
+	FieldID   string     `json:"fieldId"`
 }
 
 type Fields struct {

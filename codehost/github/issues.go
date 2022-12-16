@@ -17,6 +17,7 @@ var (
 )
 
 type GQLProjectV2Item struct {
+	ID      string
 	Project ProjectV2
 }
 

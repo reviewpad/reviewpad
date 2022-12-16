@@ -12,7 +12,6 @@ import (
 
 	host "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
-	plugins_aladino_actions "github.com/reviewpad/reviewpad/v3/plugins/aladino/actions"
 	"github.com/reviewpad/reviewpad/v3/utils"
 	"github.com/stretchr/testify/assert"
 )
@@ -87,7 +86,7 @@ func TestGetProjectV2ByName_WhenProjectNotFound(t *testing.T) {
 
 	project, err := mockedGithubClient.GetProjectV2ByName(context.Background(), mockOwner, mockRepo, mockProjectName)
 
-	assert.Equal(t, plugins_aladino_actions.ErrProjectNotFound, err)
+	assert.Equal(t, host.ErrProjectNotFound, err)
 
 	assert.Nil(t, project)
 }
@@ -228,7 +227,7 @@ func TestGetProjectFieldsByProjectNumber_WhenProjectNotFound(t *testing.T) {
 
 	project, err := mockedGithubClient.GetProjectFieldsByProjectNumber(context.Background(), mockOwner, mockRepo, uint64(mockProjectNumber), mockRetryCount)
 
-	assert.Equal(t, plugins_aladino_actions.ErrProjectNotFound, err)
+	assert.Equal(t, host.ErrProjectNotFound, err)
 
 	assert.Nil(t, project)
 

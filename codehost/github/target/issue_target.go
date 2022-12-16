@@ -6,6 +6,7 @@ package target
 
 import (
 	"context"
+	"strings"
 
 	"github.com/google/go-github/v48/github"
 	"github.com/reviewpad/reviewpad/v3/codehost"
@@ -162,4 +163,85 @@ func (t *IssueTarget) GetState() string {
 
 func (t *IssueTarget) GetTitle() string {
 	return t.issue.GetTitle()
+}
+
+func (t *IssueTarget) SetProjectFieldSingleSelect(projectTitle string, fieldName string, fieldValue string) error {
+	ctx := t.ctx
+	targetEntity := t.targetEntity
+	owner := targetEntity.Owner
+	repo := targetEntity.Repo
+	number := targetEntity.Number
+	totalRetries := 2
+
+	projectItems, err := t.githubClient.GetLinkedProjectsForIssue(ctx, owner, repo, number, totalRetries)
+	if err != nil {
+		return err
+	}
+
+	var projectItemID string
+	var projectID string
+	var projectNumber uint64
+	foundProject := false
+	totalRequestTries := 2
+
+	for _, projectItem := range projectItems {
+		if projectItem.Project.Title == projectTitle {
+			projectItemID = projectItem.ID
+			projectNumber = projectItem.Project.Number
+			projectID = projectItem.Project.ID
+			foundProject = true
+			break
+		}
+	}
+
+	if !foundProject {
+		return gh.ErrProjectNotFound
+	}
+
+	fields, err := t.githubClient.GetProjectFieldsByProjectNumber(ctx, owner, repo, projectNumber, totalRequestTries)
+	if err != nil {
+		return err
+	}
+
+	fieldDetails := gh.FieldDetails{}
+	fieldOptionID := ""
+
+	for _, field := range fields {
+		if strings.EqualFold(field.Details.Name, fieldName) {
+			fieldDetails = field.Details
+			break
+		}
+	}
+
+	if fieldDetails.ID == "" {
+		return gh.ErrProjectHasNoSuchField
+	}
+
+	for _, option := range fieldDetails.Options {
+		if strings.Contains(strings.ToLower(option.Name), fieldValue) {
+			fieldOptionID = option.ID
+			break
+		}
+	}
+
+	if fieldOptionID == "" {
+		return gh.ErrProjectHasNoSuchFieldValue
+	}
+
+	var updateProjectV2ItemFieldValueMutation struct {
+		UpdateProjetV2ItemFieldValue struct {
+			ClientMutationID string
+		} `graphql:"updateProjectV2ItemFieldValue(input: $input)"`
+	}
+
+	updateInput := gh.UpdateProjectV2ItemFieldValueInput{
+		ProjectID: projectID,
+		ItemID:    projectItemID,
+		Value: gh.FieldValue{
+			SingleSelectOptionId: fieldOptionID,
+		},
+		FieldID: fieldDetails.ID,
+	}
+
+	return t.githubClient.GetClientGraphQL().Mutate(ctx, &updateProjectV2ItemFieldValueMutation, updateInput, nil)
 }
