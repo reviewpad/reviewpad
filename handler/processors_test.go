@@ -619,16 +619,12 @@ func TestProcessEvent(t *testing.T) {
 			},
 			wantTargets: []*handler.TargetEntity{
 				{
-					Repo:   "testrepo",
-					Owner:  "testowner",
-					Kind:   "",
-					Number: 0,
+					Repo:  "testrepo",
+					Owner: "testowner",
 				},
 				{
-					Repo:   "testrepo2",
-					Owner:  "testowner2",
-					Kind:   "",
-					Number: 0,
+					Repo:  "testrepo2",
+					Owner: "testowner2",
 				},
 			},
 			wantEvents: []*handler.EventData{
@@ -639,6 +635,78 @@ func TestProcessEvent(t *testing.T) {
 				{
 					EventName:   "installation",
 					EventAction: "created",
+				},
+			},
+		},
+		"installation_repositories added": {
+			event: &handler.ActionEvent{
+				EventName: github.String("installation_repositories"),
+				EventPayload: buildPayload([]byte(`{
+					"action": "added",
+					"repositories_added": [
+						{
+							"full_name": "testowner/testrepo"
+						},
+						{
+							"full_name": "testowner2/testrepo2"
+						}
+					]
+				}`)),
+			},
+			wantTargets: []*handler.TargetEntity{
+				{
+					Repo:  "testrepo",
+					Owner: "testowner",
+				},
+				{
+					Repo:  "testrepo2",
+					Owner: "testowner2",
+				},
+			},
+			wantEvents: []*handler.EventData{
+				{
+					EventName:   "installation_repositories",
+					EventAction: "added",
+				},
+				{
+					EventName:   "installation_repositories",
+					EventAction: "added",
+				},
+			},
+		},
+		"installation_repositories removed": {
+			event: &handler.ActionEvent{
+				EventName: github.String("installation_repositories"),
+				EventPayload: buildPayload([]byte(`{
+					"action": "removed",
+					"repositories_removed": [
+						{
+							"full_name": "testowner/testrepo"
+						},
+						{
+							"full_name": "testowner2/testrepo2"
+						}
+					]
+				}`)),
+			},
+			wantTargets: []*handler.TargetEntity{
+				{
+					Repo:  "testrepo",
+					Owner: "testowner",
+				},
+				{
+					Repo:  "testrepo2",
+					Owner: "testowner2",
+				},
+			},
+			wantEvents: []*handler.EventData{
+				{
+					EventName:   "installation_repositories",
+					EventAction: "removed",
+				},
+				{
+					EventName:   "installation_repositories",
+					EventAction: "removed",
 				},
 			},
 		},

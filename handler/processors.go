@@ -342,43 +342,47 @@ func processPushEvent(token string, e *github.PushEvent) ([]*TargetEntity, []*Ev
 }
 
 func processInstallationEvent(event *github.InstallationEvent) ([]*TargetEntity, []*EventData, error) {
-	targetEntities := make([]*TargetEntity, 0)
-	events := make([]*EventData, 0)
-
-	for _, repo := range event.Repositories {
-		parts := strings.Split(repo.GetFullName(), "/")
-
-		targetEntities = append(targetEntities, &TargetEntity{
-			Owner: parts[0],
-			Repo:  parts[1],
-		})
-
-		events = append(events, &EventData{
-			EventName:   "installation",
-			EventAction: event.GetAction(),
-		})
-	}
+	targetEntities, events := transformSingleEventMultiRepos(event.Repositories, &EventData{
+		EventName:   "installation",
+		EventAction: event.GetAction(),
+	})
 
 	return targetEntities, events, nil
 }
 
 func processInstallationRepositoriesEvent(event *github.InstallationRepositoriesEvent) ([]*TargetEntity, []*EventData, error) {
+	if event.GetAction() == "added" {
+		targetEntities, events := transformSingleEventMultiRepos(event.RepositoriesAdded, &EventData{
+			EventName:   "installation_repositories",
+			EventAction: event.GetAction(),
+		})
+
+		return targetEntities, events, nil
+	}
+
+	targetEntities, events := transformSingleEventMultiRepos(event.RepositoriesRemoved, &EventData{
+		EventName:   "installation_repositories",
+		EventAction: event.GetAction(),
+	})
+
+	return targetEntities, events, nil
+}
+
+func transformSingleEventMultiRepos(repos []*github.Repository, eventData *EventData) ([]*TargetEntity, []*EventData) {
 	targetEntities := make([]*TargetEntity, 0)
 	events := make([]*EventData, 0)
 
-	for _, repo := range event.RepositoriesAdded {
+	for _, repo := range repos {
+		parts := strings.Split(repo.GetFullName(), "/")
 		targetEntities = append(targetEntities, &TargetEntity{
-			Owner: repo.GetOwner().GetLogin(),
-			Repo:  repo.GetName(),
+			Owner: parts[0],
+			Repo:  parts[1],
 		})
 
-		events = append(events, &EventData{
-			EventName:   "installation",
-			EventAction: event.GetAction(),
-		})
+		events = append(events, eventData)
 	}
 
-	return targetEntities, events, nil
+	return targetEntities, events
 }
 
 // reviewpad-an: critical
