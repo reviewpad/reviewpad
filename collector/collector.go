@@ -22,7 +22,7 @@ type collector struct {
 	// Token to authenticate the requests and identify the project.
 	Token string
 	// Runner environment where the event is being collected.
-	// (i.e. github app, github action, playground )
+	// (i.e. github app, github action, playground)
 	RunnerEnv string
 	// Unique identifier for the events' source.
 	RunnerId string
@@ -38,7 +38,9 @@ type collector struct {
 type OptionalProperties struct {
 	// The repository url where the events are being collected.
 	Url string
-	// Delivery ID of the event.
+	// A GUID to identify the delivery.
+	// It is used to identify the event within the runner environment.
+	// For instance, in the github action/app it maps to the event header "X-GitHub-Delivery".
 	DeliveryId string
 	// The name of the service running the collector.
 	Service string
