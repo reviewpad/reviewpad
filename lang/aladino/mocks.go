@@ -376,6 +376,10 @@ func MockDefaultGithubClient(ghApiClientOptions []mock.MockBackendOption, ghGrap
 	return gh.NewGithubClient(client, clientGQL)
 }
 
+func MockDefaultGithubAppClient(ghApiClientOptions []mock.MockBackendOption) *gh.GithubAppClient {
+	return &gh.GithubAppClient{Client: github.NewClient(mock.NewMockedHTTPClient(ghApiClientOptions...))}
+}
+
 // MockDefaultEnv mocks an Aladino Env with default values.
 func MockDefaultEnv(
 	t *testing.T,

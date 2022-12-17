@@ -6,15 +6,22 @@ package github
 
 import (
 	"context"
+	"net/http"
 
+	"github.com/bradleyfalzon/ghinstallation/v2"
 	"github.com/google/go-github/v48/github"
 	"github.com/shurcooL/githubv4"
+	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
 )
 
 type GithubClient struct {
 	clientREST *github.Client
 	clientGQL  *githubv4.Client
+}
+
+type GithubAppClient struct {
+	*github.Client
 }
 
 func NewGithubClient(clientREST *github.Client, clientGQL *githubv4.Client) *GithubClient {
@@ -46,4 +53,14 @@ func (c *GithubClient) GetClientREST() *github.Client {
 
 func (c *GithubClient) GetClientGraphQL() *githubv4.Client {
 	return c.clientGQL
+}
+
+func NewGithubAppClient(logger *logrus.Entry, gitHubAppID int64, gitHubAppPrivateKey []byte) (*GithubAppClient, error) {
+	transport, err := ghinstallation.NewAppsTransport(http.DefaultTransport, gitHubAppID, gitHubAppPrivateKey)
+	if err != nil {
+		logger.WithError(err).Errorln("failed to create GitHub App client")
+		return nil, err
+	}
+
+	return &GithubAppClient{github.NewClient(&http.Client{Transport: transport})}, nil
 }
