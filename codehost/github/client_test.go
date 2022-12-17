@@ -14,7 +14,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var privateKey = []byte(`-----BEGIN RSA PRIVATE KEY-----
+var dummyPrivateKey = []byte(`-----BEGIN RSA PRIVATE KEY-----
 MIIEpQIBAAKCAQEA0BUezcR7uycgZsfVLlAf4jXP7uFpVh4geSTY39RvYrAll0yh
 q7uiQypP2hjQJ1eQXZvkAZx0v9lBYJmX7e0HiJckBr8+/O2kARL+GTCJDJZECpjy
 97yylbzGBNl3s76fZ4CJ+4f11fCh7GJ3BJkMf9NFhe8g1TYS0BtSd/sauUQEuG/A
@@ -42,24 +42,40 @@ rezRkSNbJ8cqt9XQS+NNJ6Xwzl3EbuAt6r8f8VO1TIdRgFOgiUXRVNZ3ZyW8Hegd
 kGTL0A6/0yAu9qQZlFbaD5bWhQo7eyx63u4hZGppBhkTSPikOYUPCH8=
 -----END RSA PRIVATE KEY-----`)
 
-func TestNewGithubAppClient_WhenNewAppsTransportFails(t *testing.T) {
-	logger := logrus.New().WithFields(logrus.Fields{
-		"app": fmt.Sprintf("github_app_%d", *github.Int64(1)),
-	})
-
-	gotGithubClient, gotErr := host.NewGithubAppClient(logger, *github.Int64(1), nil)
-
-	assert.Nil(t, gotGithubClient)
-	assert.EqualError(t, gotErr, "could not parse private key: invalid key: Key must be a PEM encoded PKCS1 or PKCS8 key")
-}
-
 func TestNewGithubAppClient(t *testing.T) {
-	logger := logrus.New().WithFields(logrus.Fields{
-		"app": fmt.Sprintf("github_app_%d", *github.Int64(1)),
-	})
+	tests := map[string]struct {
+		appID      int64
+		privateKey []byte
+		wantType   interface{}
+		wantErr    string
+	}{
+		"fails when private key is invalid": {
+			appID:      *github.Int64(1),
+			privateKey: nil,
+			wantType:   nil,
+			wantErr:    "could not parse private key",
+		},
+		"succeeds when private key is valid": {
+			appID:      *github.Int64(1),
+			privateKey: dummyPrivateKey,
+			wantType:   &host.GithubAppClient{},
+			wantErr:    "",
+		},
+	}
 
-	gotGithubClient, gotErr := host.NewGithubAppClient(logger, *github.Int64(1), privateKey)
-
-	assert.NotNil(t, gotGithubClient)
-	assert.Nil(t, gotErr)
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			logger := logrus.New().WithFields(logrus.Fields{
+				"app": fmt.Sprintf("github_app_%d", *github.Int64(1)),
+			})
+			got, err := host.NewGithubAppClient(logger, tt.appID, tt.privateKey)
+			if tt.wantErr != "" {
+				assert.ErrorContains(t, err, tt.wantErr)
+				assert.Nil(t, got)
+			} else {
+				assert.Nil(t, err)
+				assert.IsType(t, tt.wantType, got)
+			}
+		})
+	}
 }

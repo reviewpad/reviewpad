@@ -10,6 +10,8 @@ import (
 	"github.com/google/go-github/v48/github"
 )
 
+// GetInstallations returns all installations for the github app.
+// For more details see https://docs.github.com/en/rest/apps/apps#list-installations-for-the-authenticated-app
 func (c *GithubAppClient) GetInstallations(ctx context.Context) ([]*github.Installation, error) {
 	installations, err := PaginatedRequest(
 		func() interface{} {
@@ -35,6 +37,8 @@ func (c *GithubAppClient) GetInstallations(ctx context.Context) ([]*github.Insta
 	return installations.([]*github.Installation), nil
 }
 
+// CreateInstallationToken creates a new installation token for the github app.
+// For more details see https://docs.github.com/en/rest/apps/apps#create-an-installation-access-token-for-an-app
 func (c *GithubAppClient) CreateInstallationToken(ctx context.Context, id int64, opts *github.InstallationTokenOptions) (*github.InstallationToken, error) {
 	token, _, err := c.Apps.CreateInstallationToken(ctx, id, opts)
 	if err != nil {

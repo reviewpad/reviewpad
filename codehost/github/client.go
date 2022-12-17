@@ -58,7 +58,7 @@ func (c *GithubClient) GetClientGraphQL() *githubv4.Client {
 func NewGithubAppClient(logger *logrus.Entry, gitHubAppID int64, gitHubAppPrivateKey []byte) (*GithubAppClient, error) {
 	transport, err := ghinstallation.NewAppsTransport(http.DefaultTransport, gitHubAppID, gitHubAppPrivateKey)
 	if err != nil {
-		logger.WithError(err).Errorln("failed to create GitHub Apps Transport")
+		logger.WithError(err).Errorln("failed to create GitHub App client")
 		return nil, err
 	}
 
