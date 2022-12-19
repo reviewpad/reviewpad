@@ -22,12 +22,15 @@ func TestFilesPath(t *testing.T) {
 	mockedPullRequestFileList := &[]*github.CommitFile{
 		{
 			Filename: github.String("go.mod"),
+			Patch:    nil,
 		},
 		{
 			Filename: github.String("go.sum"),
+			Patch:    nil,
 		},
 		{
 			Filename: github.String("cmd/main.go"),
+			Patch:    nil,
 		},
 	}
 	mockedEnv := aladino.MockDefaultEnv(
