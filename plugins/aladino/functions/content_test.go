@@ -5,6 +5,7 @@
 package plugins_aladino_functions_test
 
 import (
+	"encoding/json"
 	"net/http"
 	"testing"
 
@@ -18,6 +19,12 @@ import (
 var content = plugins_aladino.PluginBuiltIns().Functions["content"].Code
 
 func TestContent(t *testing.T) {
+	mockPRJSON, err := json.Marshal(aladino.GetDefaultMockPullRequestDetails())
+	assert.Nil(t, err)
+
+	mockIssueJSON, err := json.Marshal(aladino.GetDefaultMockIssueDetails())
+	assert.Nil(t, err)
+
 	tests := map[string]struct {
 		targetEntity *handler.TargetEntity
 		wantErr      error
@@ -25,7 +32,7 @@ func TestContent(t *testing.T) {
 	}{
 		"when pull request": {
 			targetEntity: aladino.DefaultMockTargetEntity,
-			wantRes:      aladino.BuildStringValue(`{"id":1234,"number":6,"title":"Amazing new feature","body":"Please pull these awesome changes in!","created_at":"2009-11-17T20:34:58.651387237Z","labels":[{"id":1,"name":"enhancement"}],"user":{"login":"john"},"merged":true,"comments":6,"commits":5,"url":"https://foo.bar","assignees":[{"login":"jane"}],"milestone":{"title":"v1.0"},"requested_reviewers":[{"login":"jane"}],"head":{"ref":"new-topic","repo":{"owner":{"login":"foobar"},"name":"default-mock-repo","url":"https://api.github.com/repos/foobar/default-mock-repo/pulls/6"}},"base":{"ref":"master","repo":{"owner":{"login":"foobar"},"name":"default-mock-repo","url":"https://api.github.com/repos/foobar/default-mock-repo/pulls/6"}}}`),
+			wantRes:      aladino.BuildStringValue(string(mockPRJSON)),
 		},
 		"when issue": {
 			targetEntity: &handler.TargetEntity{
@@ -34,7 +41,7 @@ func TestContent(t *testing.T) {
 				Repo:   "test",
 				Number: 1,
 			},
-			wantRes: aladino.BuildStringValue(`{"id":1234,"number":6,"title":"Found a bug","body":"I'm having a problem with this","user":{"login":"john"},"labels":[{"id":1,"name":"bug"}],"comments":6,"created_at":"2009-11-17T20:34:58.651387237Z","url":"https://foo.bar","milestone":{"title":"v1.0"},"assignees":[{"login":"jane"}]}`),
+			wantRes: aladino.BuildStringValue(string(mockIssueJSON)),
 		},
 	}
 
