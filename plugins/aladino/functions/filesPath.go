@@ -23,6 +23,14 @@ func filesPathCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
 	filesPath := make([]aladino.Value, 0)
 
 	for _, patchFile := range t.Patch {
+		if patchFile.Repr == nil {
+			continue
+		}
+
+		if patchFile.Repr.Filename == nil {
+			continue
+		}
+
 		filesPath = append(filesPath, aladino.BuildStringValue(*patchFile.Repr.Filename))
 	}
 
