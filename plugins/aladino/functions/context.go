@@ -9,19 +9,19 @@ import (
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 )
 
-func Content() *aladino.BuiltInFunction {
+func Context() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
 		Type:           aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildStringType()),
-		Code:           contentCode,
+		Code:           contextCode,
 		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest, handler.Issue},
 	}
 }
 
-func contentCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
-	content, err := e.GetTarget().JSON()
+func contextCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
+	context, err := e.GetTarget().JSON()
 	if err != nil {
 		return nil, err
 	}
 
-	return aladino.BuildStringValue(content), nil
+	return aladino.BuildStringValue(context), nil
 }

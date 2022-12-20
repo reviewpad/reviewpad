@@ -14,9 +14,9 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var content = plugins_aladino.PluginBuiltIns().Functions["content"].Code
+var context = plugins_aladino.PluginBuiltIns().Functions["context"].Code
 
-func TestContent(t *testing.T) {
+func TestContext(t *testing.T) {
 	mockPRJSON, err := json.Marshal(aladino.GetDefaultMockPullRequestDetails())
 	assert.Nil(t, err)
 
@@ -54,7 +54,7 @@ func TestContent(t *testing.T) {
 				test.targetEntity,
 			)
 
-			res, err := content(env, []aladino.Value{})
+			res, err := context(env, []aladino.Value{})
 
 			assert.Equal(t, test.wantErr, err)
 			assert.Equal(t, test.wantRes, res)
