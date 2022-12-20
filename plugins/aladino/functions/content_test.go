@@ -6,10 +6,8 @@ package plugins_aladino_functions_test
 
 import (
 	"encoding/json"
-	"net/http"
 	"testing"
 
-	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
@@ -49,13 +47,8 @@ func TestContent(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			env := aladino.MockDefaultEnvWithTargetEntity(
 				t,
-				[]mock.MockBackendOption{
-					mock.WithRequestMatch(
-						mock.GetReposIssuesByOwnerByRepoByIssueNumber,
-						aladino.GetDefaultMockIssueDetails(),
-					),
-				},
-				func(w http.ResponseWriter, r *http.Request) {},
+				nil,
+				nil,
 				aladino.MockBuiltIns(),
 				nil,
 				test.targetEntity,
