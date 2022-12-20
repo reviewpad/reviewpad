@@ -63,6 +63,7 @@ func PluginBuiltInsWithConfig(config *PluginConfig) *aladino.BuiltIns {
 			"comments":                  functions.Comments(),
 			"commitCount":               functions.CommitCount(),
 			"commits":                   functions.Commits(),
+			"content":                   functions.Content(),
 			"createdAt":                 functions.CreatedAt(),
 			"description":               functions.Description(),
 			"eventType":                 functions.EventType(),

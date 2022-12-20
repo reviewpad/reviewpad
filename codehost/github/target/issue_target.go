@@ -6,6 +6,7 @@ package target
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/google/go-github/v48/github"
 	"github.com/reviewpad/reviewpad/v3/codehost"
@@ -162,4 +163,13 @@ func (t *IssueTarget) GetState() string {
 
 func (t *IssueTarget) GetTitle() string {
 	return t.issue.GetTitle()
+}
+
+func (t *IssueTarget) JSON() (string, error) {
+	j, err := json.Marshal(t.issue)
+	if err != nil {
+		return "", err
+	}
+
+	return string(j), nil
 }

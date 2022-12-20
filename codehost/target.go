@@ -37,6 +37,7 @@ type Target interface {
 	GetTitle() string
 	IsLinkedToProject(title string) (bool, error)
 	RemoveLabel(labelName string) error
+	JSON() (string, error)
 }
 
 type User struct {
