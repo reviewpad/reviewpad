@@ -11,7 +11,7 @@ import (
 
 func SelectFromContext() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, aladino.BuildJSONType()),
+		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, aladino.BuildStringType()),
 		Code:           selectFromContext,
 		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest, handler.Issue},
 	}
@@ -25,5 +25,10 @@ func selectFromContext(e aladino.Env, args []aladino.Value) (aladino.Value, erro
 		return nil, err
 	}
 
-	return selectFromJSONCode(e, []aladino.Value{c, path})
+	j, err := toJSONCode(e, []aladino.Value{c})
+	if err != nil {
+		return nil, err
+	}
+
+	return selectFromJSONCode(e, []aladino.Value{j, path})
 }
