@@ -5,7 +5,6 @@
 package plugins_aladino_functions_test
 
 import (
-	"errors"
 	"testing"
 
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
@@ -40,35 +39,10 @@ func TestSelectFromJSON(t *testing.T) {
 		wantResult aladino.Value
 		wantErr    error
 	}{
-		"when nothing is found for null": {
-			json:    nil,
-			path:    "$.null",
-			wantErr: errors.New(`nothing found at path "$.null"`),
-		},
-		"when nothing is found for string": {
-			json:    "test",
-			path:    "$.string",
-			wantErr: errors.New(`nothing found at path "$.string"`),
-		},
-		"when nothing is found for int": {
-			json:    1,
-			path:    "$.number",
-			wantErr: errors.New(`nothing found at path "$.number"`),
-		},
-		"when nothing is found for bool": {
-			json:    true,
-			path:    "$.bool",
-			wantErr: errors.New(`nothing found at path "$.bool"`),
-		},
-		"when nothing is found for float": {
-			json:    1.0,
-			path:    "$.float",
-			wantErr: errors.New(`nothing found at path "$.float"`),
-		},
 		"when nothing is found in array": {
-			json:    []interface{}{"a", "b", "c", 1, 2, 3, true, false},
-			path:    "$[10]",
-			wantErr: errors.New(`nothing found at path "$[10]"`),
+			json:       []interface{}{"a", "b", "c", 1, 2, 3, true, false},
+			path:       "$[10]",
+			wantResult: aladino.BuildStringValue(""),
 		},
 		"when nothing is found in object": {
 			json: map[string]interface{}{
@@ -79,8 +53,8 @@ func TestSelectFromJSON(t *testing.T) {
 				"f": false,
 				"g": 1.0,
 			},
-			path:    "$.h",
-			wantErr: errors.New(`nothing found at path "$.h"`),
+			path:       "$.h",
+			wantResult: aladino.BuildStringValue(""),
 		},
 		"when string is found": {
 			json:       exampleJSON,

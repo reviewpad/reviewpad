@@ -6,7 +6,7 @@ package plugins_aladino_functions
 
 import (
 	"encoding/json"
-	"fmt"
+	"log"
 
 	"github.com/ohler55/ojg/jp"
 	"github.com/reviewpad/reviewpad/v3/handler"
@@ -33,7 +33,8 @@ func selectFromJSONCode(e aladino.Env, args []aladino.Value) (aladino.Value, err
 	results := parsedExpression.Get(jsonValue)
 
 	if len(results) == 0 {
-		return nil, fmt.Errorf(`nothing found at path "%s"`, expr)
+		log.Printf(`selectFromJSON: nothing found at path "%s"\n`, expr)
+		return aladino.BuildStringValue(""), nil
 	}
 
 	var result interface{} = results
