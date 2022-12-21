@@ -42,8 +42,8 @@ func selectFromJSONCode(e aladino.Env, args []aladino.Value) (aladino.Value, err
 		result = results[0]
 	}
 
-	switch res := result.(type) {
-	case string:
+	// marshaling a string into json will cause it to have quotation around it
+	if res, ok := result.(string); ok {
 		return aladino.BuildStringValue(res), nil
 	}
 
