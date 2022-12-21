@@ -111,6 +111,7 @@ func PluginBuiltInsWithConfig(config *PluginConfig) *aladino.BuiltIns {
 			"append":      functions.AppendString(),
 			"contains":    functions.Contains(),
 			"isElementOf": functions.IsElementOf(),
+			"join":        functions.Join(),
 			"length":      functions.Length(),
 			"sprintf":     functions.Sprintf(),
 			"startsWith":  functions.StartsWith(),

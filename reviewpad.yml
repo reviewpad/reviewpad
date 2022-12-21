@@ -45,7 +45,7 @@ groups:
 
   - name: rising-stars
     description: Rising stars in the team
-    spec: '["shay2025"]'
+    spec: '["shay2025", "zolamk"]'
 
   - name: official-contributors
     description: Reviewpad core contributors
@@ -250,6 +250,13 @@ workflows:
           - '$addLabel("external-contribution")'
           - '$assignReviewer($group("maintainers"), 1)'
           - '$assignAssignees(["marcelosousa"])'
+
+  - name: fail-if-should-not-be-merged
+    always-run: true
+    if:
+      - rule: '$isElementOf("do-not-merge", $labels())'
+    then:
+      - '$fail("merge blocked because of do-not-merge label")'
 
   - name: label-plugins
     always-run: true
