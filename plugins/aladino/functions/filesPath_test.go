@@ -19,43 +19,81 @@ import (
 var filesPath = plugins_aladino.PluginBuiltIns().Functions["filesPath"].Code
 
 func TestFilesPath(t *testing.T) {
-	mockedPullRequestFileList := &[]*github.CommitFile{
-		{
-			Filename: github.String("go.mod"),
-			Patch:    nil,
+	tests := map[string]struct {
+		files      *[]*github.CommitFile
+		wantResult aladino.Value
+		wantErr    error
+	}{
+		"when successful": {
+			files: &[]*github.CommitFile{
+				{
+					Filename: github.String("go.mod"),
+					Patch:    nil,
+				},
+				{
+					Filename: github.String("go.sum"),
+					Patch:    nil,
+				},
+				{
+					Filename: github.String("cmd/main.go"),
+					Patch:    nil,
+				},
+			},
+			wantResult: aladino.BuildArrayValue([]aladino.Value{
+				aladino.BuildStringValue("go.mod"),
+				aladino.BuildStringValue("go.sum"),
+				aladino.BuildStringValue("cmd/main.go"),
+			}),
 		},
-		{
-			Filename: github.String("go.sum"),
-			Patch:    nil,
+		"when successful with nil file": {
+			files: &[]*github.CommitFile{
+				{
+					Filename: github.String("go.mod"),
+					Patch:    nil,
+				},
+				nil,
+			},
+			wantResult: aladino.BuildArrayValue([]aladino.Value{
+				aladino.BuildStringValue("go.mod"),
+			}),
 		},
-		{
-			Filename: github.String("cmd/main.go"),
-			Patch:    nil,
+		"when successful with nil file name": {
+			files: &[]*github.CommitFile{
+				{
+					Filename: github.String("go.sum"),
+					Patch:    nil,
+				},
+				{
+					Filename: nil,
+				},
+			},
+			wantResult: aladino.BuildArrayValue([]aladino.Value{
+				aladino.BuildStringValue("go.sum"),
+			}),
 		},
 	}
-	mockedEnv := aladino.MockDefaultEnv(
-		t,
-		[]mock.MockBackendOption{
-			mock.WithRequestMatchHandler(
-				mock.GetReposPullsFilesByOwnerByRepoByPullNumber,
-				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					utils.MustWriteBytes(w, mock.MustMarshal(mockedPullRequestFileList))
-				}),
-			),
-		},
-		nil,
-		aladino.MockBuiltIns(),
-		nil,
-	)
 
-	wantFilesPath := aladino.BuildArrayValue([]aladino.Value{
-		aladino.BuildStringValue("go.mod"),
-		aladino.BuildStringValue("go.sum"),
-		aladino.BuildStringValue("cmd/main.go"),
-	})
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			mockedEnv := aladino.MockDefaultEnv(
+				t,
+				[]mock.MockBackendOption{
+					mock.WithRequestMatchHandler(
+						mock.GetReposPullsFilesByOwnerByRepoByPullNumber,
+						http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+							utils.MustWriteBytes(w, mock.MustMarshal(test.files))
+						}),
+					),
+				},
+				nil,
+				aladino.MockBuiltIns(),
+				nil,
+			)
 
-	gotFilesPath, err := filesPath(mockedEnv, []aladino.Value{})
+			res, err := filesPath(mockedEnv, []aladino.Value{})
 
-	assert.Nil(t, err)
-	assert.Equal(t, wantFilesPath, gotFilesPath)
+			assert.Equal(t, test.wantErr, err)
+			assert.Equal(t, test.wantResult, res)
+		})
+	}
 }
