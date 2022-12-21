@@ -9,6 +9,7 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
@@ -20,6 +21,11 @@ import (
 type LoadEnv struct {
 	Visited map[string]bool
 	Stack   map[string]bool
+}
+
+type OverridenElem struct {
+	PropertyType            string
+	overridenIntroducedFile string
 }
 
 func hash(data []byte) string {
@@ -51,9 +57,17 @@ func Load(ctx context.Context, githubClient *gh.GithubClient, data []byte) (*Rev
 		return nil, err
 	}
 
-	file, err = processExtends(ctx, githubClient, file, env)
+	overridenElems := make(map[string](map[string]*OverridenElem))
+	file, err = processExtends(ctx, githubClient, file, env, overridenElems)
 	if err != nil {
 		return nil, err
+	}
+
+	for _, overridenElem := range overridenElems {
+		for elemName, elemInfo := range overridenElem {
+			log.Println(overridenElem)
+			log.Printf("[WARN] the %s %s has been overriden after extending the configuration in %s", elemInfo.PropertyType, elemName, elemInfo.overridenIntroducedFile)
+		}
 	}
 
 	file, err = normalize(file, inlineRulesNormalizer())
@@ -256,7 +270,7 @@ func loadExtension(ctx context.Context, githubClient *gh.GithubClient, extension
 // processExtends inlines files into the current reviewpad file
 // precedence: current file > extends file
 // Post-condition: ReviewpadFile without extends statements
-func processExtends(ctx context.Context, githubClient *gh.GithubClient, file *ReviewpadFile, env *LoadEnv) (*ReviewpadFile, error) {
+func processExtends(ctx context.Context, githubClient *gh.GithubClient, file *ReviewpadFile, env *LoadEnv, overridenElems map[string](map[string]*OverridenElem)) (*ReviewpadFile, error) {
 	extendedFile := &ReviewpadFile{}
 	for _, extensionUri := range file.Extends {
 		eFile, eHash, err := loadExtension(ctx, githubClient, extensionUri)
@@ -264,13 +278,15 @@ func processExtends(ctx context.Context, githubClient *gh.GithubClient, file *Re
 			return nil, err
 		}
 
+		checkForOverridens(overridenElems, file, eFile, extensionUri)
+
 		if _, ok := env.Stack[eHash]; ok {
 			return nil, fmt.Errorf("loader: cyclic extends dependency")
 		}
 
 		env.Stack[eHash] = true
 
-		extensionFile, err := processExtends(ctx, githubClient, eFile, env)
+		extensionFile, err := processExtends(ctx, githubClient, eFile, env, overridenElems)
 		if err != nil {
 			return nil, err
 		}
@@ -287,4 +303,83 @@ func processExtends(ctx context.Context, githubClient *gh.GithubClient, file *Re
 	extendedFile.Extends = []string{}
 
 	return extendedFile, nil
+}
+
+func checkForOverridens(overridenElems map[string](map[string]*OverridenElem), file *ReviewpadFile, eFile *ReviewpadFile, eFileUri string) {
+	// Check for overriden labels
+	for _, label := range file.Labels {
+		for _, eLabel := range eFile.Labels {
+			if label.Name == eLabel.Name {
+				if _, found := overridenElems["labels"]; !found {
+					overridenElems["labels"] = make(map[string]*OverridenElem)
+				}
+				log.Printf("LABEL: %+v", label)
+				log.Printf("ELABEL: %+v", eLabel)
+				overridenElems["labels"][label.Name] = &OverridenElem{
+					PropertyType:            "label",
+					overridenIntroducedFile: eFileUri,
+				}
+			}
+		}
+	}
+
+	// Check for overriden groups
+	for _, group := range file.Groups {
+		for _, eGroup := range eFile.Groups {
+			if group.Name == eGroup.Name {
+				if _, found := overridenElems["groups"]; !found {
+					overridenElems["groups"] = make(map[string]*OverridenElem)
+				}
+				overridenElems["groups"][group.Name] = &OverridenElem{
+					PropertyType:            "group",
+					overridenIntroducedFile: eFileUri,
+				}
+			}
+		}
+	}
+
+	// Check for overriden rules
+	for _, rule := range file.Rules {
+		for _, eRule := range eFile.Rules {
+			if rule.Name == eRule.Name {
+				if _, found := overridenElems["rules"]; !found {
+					overridenElems["rules"] = make(map[string]*OverridenElem)
+				}
+				overridenElems["rules"][rule.Name] = &OverridenElem{
+					PropertyType:            "rule",
+					overridenIntroducedFile: eFileUri,
+				}
+			}
+		}
+	}
+
+	// Check for overriden workflows
+	for _, workflow := range file.Workflows {
+		for _, eWorkflow := range eFile.Workflows {
+			if workflow.Name == eWorkflow.Name {
+				if _, found := overridenElems["workflows"]; !found {
+					overridenElems["workflows"] = make(map[string]*OverridenElem)
+				}
+				overridenElems["workflows"][workflow.Name] = &OverridenElem{
+					PropertyType:            "workflow",
+					overridenIntroducedFile: eFileUri,
+				}
+			}
+		}
+	}
+
+	// Check for overriden pipelines
+	for _, pipeline := range file.Pipelines {
+		for _, ePipeline := range eFile.Pipelines {
+			if pipeline.Name == ePipeline.Name {
+				if _, found := overridenElems["pipelines"]; !found {
+					overridenElems["pipelines"] = make(map[string]*OverridenElem)
+				}
+				overridenElems["pipelines"][pipeline.Name] = &OverridenElem{
+					PropertyType:            "pipeline",
+					overridenIntroducedFile: eFileUri,
+				}
+			}
+		}
+	}
 }
