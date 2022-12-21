@@ -125,10 +125,10 @@ func getReviews(clientGQL *githubv4.Client, t *target.PullRequestTarget) ([]*cod
 	retryCount := 2
 
 	varGQLReviewThreads := map[string]interface{}{
-		"repositoryOwner":     githubv4.String(t.GetTargetEntity().Owner),
-		"repositoryName":      githubv4.String(t.GetTargetEntity().Repo),
-		"pullRequestNumber":   githubv4.Int(t.GetTargetEntity().Number),
-		"reviewThreadsCursor": (*githubv4.String)(nil),
+		"repositoryOwner":   githubv4.String(t.GetTargetEntity().Owner),
+		"repositoryName":    githubv4.String(t.GetTargetEntity().Repo),
+		"pullRequestNumber": githubv4.Int(t.GetTargetEntity().Number),
+		"reviewsCursor":     (*githubv4.String)(nil),
 	}
 
 	currentRequestRetry := 1
