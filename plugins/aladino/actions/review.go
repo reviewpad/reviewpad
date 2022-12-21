@@ -7,6 +7,7 @@ package plugins_aladino_actions
 import (
 	"context"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/reviewpad/reviewpad/v3/codehost"
@@ -59,7 +60,7 @@ func reviewCode(e aladino.Env, args []aladino.Value) error {
 
 	if codehost.HasReview(reviews, authenticatedUserLogin) {
 		lastReview := codehost.LastReview(reviews, authenticatedUserLogin)
-
+		log.Printf("LAST REVIEW: %+v", lastReview)
 		if lastReview.State == "APPROVED" {
 			return nil
 		}
@@ -68,6 +69,7 @@ func reviewCode(e aladino.Env, args []aladino.Value) error {
 		if err != nil {
 			return err
 		}
+		log.Printf("LAST PUSH DATE: %+v", lastPushDate)
 
 		if lastReview.SubmittedAt.After(lastPushDate) {
 			return nil
