@@ -16,7 +16,7 @@ import (
 func SelectFromJSON() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
 		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildJSONType(), aladino.BuildStringType()}, aladino.BuildStringType()),
-		Code:           selectFromContext,
+		Code:           selectFromJSONCode,
 		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest, handler.Issue},
 	}
 }
