@@ -94,7 +94,7 @@ func checkReviewBody(reviewEvent, reviewBody string) (string, error) {
 	return reviewBody, nil
 }
 
-type ReviewThreadsQuery struct {
+type ReviewsQuery struct {
 	Repository struct {
 		PullRequest struct {
 			Reviews struct {
@@ -119,7 +119,7 @@ type ReviewThreadsQuery struct {
 }
 
 func getReviews(clientGQL *githubv4.Client, t *target.PullRequestTarget) ([]*codehost.Review, error) {
-	var reviewThreadsQuery ReviewThreadsQuery
+	var reviewsQuery ReviewsQuery
 	reviews := make([]*codehost.Review, 0)
 	hasNextPage := true
 	retryCount := 2
@@ -134,7 +134,7 @@ func getReviews(clientGQL *githubv4.Client, t *target.PullRequestTarget) ([]*cod
 	currentRequestRetry := 1
 
 	for hasNextPage {
-		err := clientGQL.Query(context.Background(), &reviewThreadsQuery, varGQLReviewThreads)
+		err := clientGQL.Query(context.Background(), &reviewsQuery, varGQLReviewThreads)
 		if err != nil {
 			currentRequestRetry++
 			if currentRequestRetry <= retryCount {
@@ -145,7 +145,7 @@ func getReviews(clientGQL *githubv4.Client, t *target.PullRequestTarget) ([]*cod
 		} else {
 			currentRequestRetry = 0
 		}
-		nodes := reviewThreadsQuery.Repository.PullRequest.Reviews.Nodes
+		nodes := reviewsQuery.Repository.PullRequest.Reviews.Nodes
 		for _, node := range nodes {
 			review := &codehost.Review{
 				User: &codehost.User{
@@ -157,8 +157,8 @@ func getReviews(clientGQL *githubv4.Client, t *target.PullRequestTarget) ([]*cod
 			}
 			reviews = append(reviews, review)
 		}
-		hasNextPage = reviewThreadsQuery.Repository.PullRequest.Reviews.PageInfo.HasNextPage
-		varGQLReviewThreads["reviewThreadsCursor"] = githubv4.NewString(reviewThreadsQuery.Repository.PullRequest.Reviews.PageInfo.EndCursor)
+		hasNextPage = reviewsQuery.Repository.PullRequest.Reviews.PageInfo.HasNextPage
+		varGQLReviewThreads["reviewThreadsCursor"] = githubv4.NewString(reviewsQuery.Repository.PullRequest.Reviews.PageInfo.EndCursor)
 	}
 
 	return reviews, nil
