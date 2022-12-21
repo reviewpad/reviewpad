@@ -1,0 +1,32 @@
+// Copyright 2022 Explore.dev Unipessoal Lda. All Rights Reserved.
+// Use of this source code is governed by a license that can be
+// found in the LICENSE file.
+
+package plugins_aladino_functions
+
+import (
+	"regexp"
+
+	"github.com/reviewpad/reviewpad/v3/handler"
+	"github.com/reviewpad/reviewpad/v3/lang/aladino"
+)
+
+func MatchString() *aladino.BuiltInFunction {
+	return &aladino.BuiltInFunction{
+		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType(), aladino.BuildStringType()}, aladino.BuildBoolType()),
+		Code:           matchStringCode,
+		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest, handler.Issue},
+	}
+}
+
+func matchStringCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
+	pattern := args[0].(*aladino.StringValue).Val
+	str := args[1].(*aladino.StringValue).Val
+
+	reg, err := regexp.Compile(pattern)
+	if err != nil {
+		return nil, err
+	}
+
+	return aladino.BuildBoolValue(reg.MatchString(str)), nil
+}
