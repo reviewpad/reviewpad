@@ -159,10 +159,5 @@ func (thisTy *ArrayOfType) equals(thatTy Type) bool {
 }
 
 func (thisTy *JSONType) equals(thatTy Type) bool {
-	if thisTy.Kind() != thatTy.Kind() {
-		return false
-	}
-
-	// TODO: fix equals
-	return false
+	return thisTy.Kind() == thatTy.Kind()
 }
