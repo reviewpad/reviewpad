@@ -158,7 +158,7 @@ func getReviews(clientGQL *githubv4.Client, t *target.PullRequestTarget) ([]*cod
 			reviews = append(reviews, review)
 		}
 		hasNextPage = reviewsQuery.Repository.PullRequest.Reviews.PageInfo.HasNextPage
-		varGQLReviews["reviewThreadsCursor"] = githubv4.NewString(reviewsQuery.Repository.PullRequest.Reviews.PageInfo.EndCursor)
+		varGQLReviews["reviewsCursor"] = githubv4.NewString(reviewsQuery.Repository.PullRequest.Reviews.PageInfo.EndCursor)
 	}
 
 	return reviews, nil
