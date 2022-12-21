@@ -5,13 +5,22 @@
 package plugins_aladino_actions
 
 import (
+	"context"
 	"fmt"
+	"time"
 
 	"github.com/reviewpad/reviewpad/v3/codehost"
 	"github.com/reviewpad/reviewpad/v3/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
+	"github.com/shurcooL/githubv4"
 )
+
+type GetAuthenticatedUserDataQuery struct {
+	Viewer struct {
+		Login string
+	}
+}
 
 func Review() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
@@ -25,12 +34,13 @@ func reviewCode(e aladino.Env, args []aladino.Value) error {
 	t := e.GetTarget().(*target.PullRequestTarget)
 	entity := e.GetTarget().GetTargetEntity()
 
-	authenticatedUser, _, err := e.GetGithubClient().GetClientREST().Users.Get(e.GetCtx(), "")
-	if err != nil {
+	var authenticatedUserData GetAuthenticatedUserDataQuery
+
+	if err := e.GetGithubClient().GetClientGraphQL().Query(e.GetCtx(), &authenticatedUserData, nil); err != nil {
 		return err
 	}
 
-	authenticatedUserLogin := authenticatedUser.GetLogin()
+	authenticatedUserLogin := authenticatedUserData.Viewer.Login
 
 	reviewEvent, err := parseReviewEvent(args[0].(*aladino.StringValue).Val)
 	if err != nil {
@@ -42,7 +52,7 @@ func reviewCode(e aladino.Env, args []aladino.Value) error {
 		return err
 	}
 
-	reviews, err := t.GetReviews()
+	reviews, err := getReviews(e.GetGithubClient().GetClientGraphQL(), t)
 	if err != nil {
 		return err
 	}
@@ -82,4 +92,74 @@ func checkReviewBody(reviewEvent, reviewBody string) (string, error) {
 	}
 
 	return reviewBody, nil
+}
+
+type ReviewThreadsQuery struct {
+	Repository struct {
+		PullRequest struct {
+			Reviews struct {
+				Nodes []struct {
+					Author struct {
+						AvatarUrl    githubv4.URI
+						Login        githubv4.String
+						ResourcePath githubv4.URI
+						Url          githubv4.URI
+					}
+					Body        githubv4.String
+					State       githubv4.String
+					SubmittedAt *time.Time
+				}
+				PageInfo struct {
+					EndCursor   githubv4.String
+					HasNextPage bool
+				}
+			} `graphql:"reviews(first: 10, after: $reviewsCursor)"`
+		} `graphql:"pullRequest(number: $pullRequestNumber)"`
+	} `graphql:"repository(owner: $repositoryOwner, name: $repositoryName)"`
+}
+
+func getReviews(clientGQL *githubv4.Client, t *target.PullRequestTarget) ([]*codehost.Review, error) {
+	var reviewThreadsQuery ReviewThreadsQuery
+	reviews := make([]*codehost.Review, 0)
+	hasNextPage := true
+	retryCount := 2
+
+	varGQLReviewThreads := map[string]interface{}{
+		"repositoryOwner":     githubv4.String(t.GetTargetEntity().Owner),
+		"repositoryName":      githubv4.String(t.GetTargetEntity().Repo),
+		"pullRequestNumber":   githubv4.Int(t.GetTargetEntity().Number),
+		"reviewThreadsCursor": (*githubv4.String)(nil),
+	}
+
+	currentRequestRetry := 1
+
+	for hasNextPage {
+		err := clientGQL.Query(context.Background(), &reviewThreadsQuery, varGQLReviewThreads)
+		if err != nil {
+			currentRequestRetry++
+			if currentRequestRetry <= retryCount {
+				continue
+			} else {
+				return nil, err
+			}
+		} else {
+			currentRequestRetry = 0
+		}
+		nodes := reviewThreadsQuery.Repository.PullRequest.Reviews.Nodes
+		for _, node := range nodes {
+			review := &codehost.Review{
+				User: &codehost.User{
+					Login: string(node.Author.Login),
+				},
+				Body:        string(node.Body),
+				State:       string(node.State),
+				SubmittedAt: node.SubmittedAt,
+			}
+			reviews = append(reviews, review)
+		}
+		hasNextPage = reviewThreadsQuery.Repository.PullRequest.Reviews.PageInfo.HasNextPage
+		varGQLReviewThreads["reviewThreadsCursor"] = githubv4.NewString(reviewThreadsQuery.Repository.PullRequest.Reviews.PageInfo.EndCursor)
+	}
+
+	return reviews, nil
 }
