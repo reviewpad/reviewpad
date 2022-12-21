@@ -124,7 +124,7 @@ func getReviews(clientGQL *githubv4.Client, t *target.PullRequestTarget) ([]*cod
 	hasNextPage := true
 	retryCount := 2
 
-	varGQLReviewThreads := map[string]interface{}{
+	varGQLReviews := map[string]interface{}{
 		"repositoryOwner":   githubv4.String(t.GetTargetEntity().Owner),
 		"repositoryName":    githubv4.String(t.GetTargetEntity().Repo),
 		"pullRequestNumber": githubv4.Int(t.GetTargetEntity().Number),
@@ -134,7 +134,7 @@ func getReviews(clientGQL *githubv4.Client, t *target.PullRequestTarget) ([]*cod
 	currentRequestRetry := 1
 
 	for hasNextPage {
-		err := clientGQL.Query(context.Background(), &reviewsQuery, varGQLReviewThreads)
+		err := clientGQL.Query(context.Background(), &reviewsQuery, varGQLReviews)
 		if err != nil {
 			currentRequestRetry++
 			if currentRequestRetry <= retryCount {
@@ -158,7 +158,7 @@ func getReviews(clientGQL *githubv4.Client, t *target.PullRequestTarget) ([]*cod
 			reviews = append(reviews, review)
 		}
 		hasNextPage = reviewsQuery.Repository.PullRequest.Reviews.PageInfo.HasNextPage
-		varGQLReviewThreads["reviewThreadsCursor"] = githubv4.NewString(reviewsQuery.Repository.PullRequest.Reviews.PageInfo.EndCursor)
+		varGQLReviews["reviewThreadsCursor"] = githubv4.NewString(reviewsQuery.Repository.PullRequest.Reviews.PageInfo.EndCursor)
 	}
 
 	return reviews, nil
