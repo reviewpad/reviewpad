@@ -96,6 +96,7 @@ func PluginBuiltInsWithConfig(config *PluginConfig) *aladino.BuiltIns {
 			"size":                      functions.Size(),
 			"state":                     functions.State(),
 			"title":                     functions.Title(),
+			"toJSON":                    functions.ToJSON(),
 			"workflowStatus":            functions.WorkflowStatus(),
 			// Organization
 			"organization": functions.Organization(),

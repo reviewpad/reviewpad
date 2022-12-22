@@ -4,6 +4,8 @@
 
 package aladino
 
+import "reflect"
+
 type Value interface {
 	HasKindOf(string) bool
 	Kind() string
@@ -17,6 +19,7 @@ const (
 	TIME_VALUE     string = "TimeValue"
 	ARRAY_VALUE    string = "ArrayValue"
 	FUNCTION_VALUE string = "FunctionValue"
+	JSON_VALUE     string = "JSONValue"
 )
 
 // IntValue represents an integer value
@@ -185,4 +188,29 @@ func (thisVal *FunctionValue) Equals(other Value) bool {
 
 func (fVal *FunctionValue) HasKindOf(ty string) bool {
 	return fVal.Kind() == ty
+}
+
+// JSONValue represents a json value
+type JSONValue struct {
+	Val interface{}
+}
+
+func BuildJSONValue(value interface{}) *JSONValue {
+	return &JSONValue{value}
+}
+
+func (jVal *JSONValue) Kind() string {
+	return JSON_VALUE
+}
+
+func (jVal *JSONValue) HasKindOf(ty string) bool {
+	return jVal.Kind() == ty
+}
+
+func (jVal *JSONValue) Equals(other Value) bool {
+	if jVal.Kind() != other.Kind() {
+		return false
+	}
+
+	return reflect.DeepEqual(jVal.Val, other.(*JSONValue).Val)
 }
