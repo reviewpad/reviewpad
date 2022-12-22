@@ -28,7 +28,7 @@ type ReviewEvent struct {
 
 func TestReview_WhenAuthenticatedUserLoginRequestFails(t *testing.T) {
 	failMessage := "GetAuthenticatedUserLoginRequestFail"
-	mockedAuthenticatedUserLoginGQLQuery := fmt.Sprintf(`{"query":"{viewer{login}}"}`)
+	mockedAuthenticatedUserLoginGQLQuery := `{"query":"{viewer{login}}"}`
 	mockedEnv := aladino.MockDefaultEnv(
 		t,
 		nil,
@@ -50,14 +50,14 @@ func TestReview_WhenAuthenticatedUserLoginRequestFails(t *testing.T) {
 
 func TestReview_WhenLatestReviewRequestFails(t *testing.T) {
 	failMessage := "GetLatestReviewRequestFail"
-	mockedAuthenticatedUserLoginGQLQuery := fmt.Sprintf(`{"query":"{viewer{login}}"}`)
-	mockedAuthenticatedUserLoginGQLQueryBody := fmt.Sprintf(`{
+	mockedAuthenticatedUserLoginGQLQuery := `{"query":"{viewer{login}}"}`
+	mockedAuthenticatedUserLoginGQLQueryBody := `{
 		"data": {
 			"viewer": {
 				"login": "test"
 			}
 		}
-	}`)
+	}`
 
 	mockedEnv := aladino.MockDefaultEnv(
 		t,
@@ -131,15 +131,15 @@ func TestReview_WhenPostReviewRequestFail(t *testing.T) {
 		}
 	}`
 
-	mockedAuthenticatedUserLoginGQLQuery := fmt.Sprintf(`{"query":"{viewer{login}}"}`)
+	mockedAuthenticatedUserLoginGQLQuery := `{"query":"{viewer{login}}"}`
 
-	mockedAuthenticatedUserLoginGQLQueryBody := fmt.Sprintf(`{
+	mockedAuthenticatedUserLoginGQLQueryBody := `{
 		"data": {
 			"viewer": {
 				"login": "test"
 			}
 		}
-	}`)
+	}`
 
 	mockedEnv := aladino.MockDefaultEnv(
 		t,
@@ -204,15 +204,15 @@ func TestReview(t *testing.T) {
 		}
 	}`, mockedPullRequestNumber, mockRepo, mockOwner)
 
-	mockedAuthenticatedUserLoginGQLQuery := fmt.Sprintf(`{"query":"{viewer{login}}"}`)
+	mockedAuthenticatedUserLoginGQLQuery := `{"query":"{viewer{login}}"}`
 
-	mockedAuthenticatedUserLoginGQLQueryBody := fmt.Sprintf(`{
+	mockedAuthenticatedUserLoginGQLQueryBody := `{
 		"data": {
 			"viewer": {
 				"login": "test"
 			}
 		}
-	}`)
+	}`
 
 	tests := map[string]struct {
 		mockedLatestReviewFromReviewerGQLQueryBody string
