@@ -430,6 +430,17 @@ func (t *PullRequestTarget) GetLastCommit() (string, error) {
 	return t.githubClient.GetLastCommitSHA(ctx, owner, repo, number)
 }
 
+func (t *PullRequestTarget) GetLinkedProjects() ([]gh.GQLProjectV2Item, error) {
+	ctx := t.ctx
+	targetEntity := t.targetEntity
+	owner := targetEntity.Owner
+	repo := targetEntity.Repo
+	number := targetEntity.Number
+	totalRetries := 2
+
+	return t.githubClient.GetLinkedProjectsForPullRequest(ctx, owner, repo, number, totalRetries)
+}
+
 func (t *PullRequestTarget) GetApprovalsCount() (int, error) {
 	ctx := t.ctx
 	targetEntity := t.targetEntity

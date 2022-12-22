@@ -43,6 +43,7 @@ func TestGetLinkedProjects_WhenProjectItemsNotFound(t *testing.T) {
                 issue(number: $issueNumber) {
                     projectItems(first: 10, after: $projectItemsCursor) {
                         nodes {
+                            id,
                             project {id,number,title}
                         },
                         pageInfo {endCursor,hasNextPage}
@@ -99,6 +100,7 @@ func TestGetLinkedProjects_WhenProjectFound(t *testing.T) {
                 issue(number: $issueNumber) {
                     projectItems(first: 10, after: $projectItemsCursor) {
                         nodes {
+                            id,
                             project {id,number,title}
                         },
                         pageInfo {endCursor,hasNextPage}
@@ -120,6 +122,7 @@ func TestGetLinkedProjects_WhenProjectFound(t *testing.T) {
                     "projectItems":{
                         "nodes":[
                             {
+                                "id": "1",
                                 "project":{
                                     "id": "1",
                                     "number": 1,
@@ -156,6 +159,7 @@ func TestGetLinkedProjects_WhenProjectFound(t *testing.T) {
 
 	wantProjects := []host.GQLProjectV2Item{
 		{
+			ID: "1",
 			Project: host.ProjectV2{
 				ID:     "1",
 				Number: 1,

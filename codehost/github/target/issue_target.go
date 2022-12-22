@@ -149,6 +149,17 @@ func (t *IssueTarget) GetCreatedAt() (string, error) {
 	return t.issue.GetCreatedAt().String(), nil
 }
 
+func (t *IssueTarget) GetLinkedProjects() ([]gh.GQLProjectV2Item, error) {
+	ctx := t.ctx
+	targetEntity := t.targetEntity
+	owner := targetEntity.Owner
+	repo := targetEntity.Repo
+	number := targetEntity.Number
+	totalRetries := 2
+
+	return t.githubClient.GetLinkedProjectsForIssue(ctx, owner, repo, number, totalRetries)
+}
+
 func (t *IssueTarget) GetUpdatedAt() (string, error) {
 	return t.issue.GetUpdatedAt().String(), nil
 }

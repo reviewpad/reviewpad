@@ -13,7 +13,6 @@ import (
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
-	plugins_aladino_actions "github.com/reviewpad/reviewpad/v3/plugins/aladino/actions"
 	"github.com/reviewpad/reviewpad/v3/utils"
 	"github.com/stretchr/testify/assert"
 )
@@ -69,6 +68,7 @@ func TestAddToProject(t *testing.T) {
                             endCursor
                         },
                         nodes {
+                            __typename,
                             ... on ProjectV2SingleSelectField {
                                 id,
                                 name,
@@ -76,6 +76,11 @@ func TestAddToProject(t *testing.T) {
                                     id,
                                     name
                                 }
+                            },
+                            ... on ProjectV2Field {
+                                id,
+                                name,
+                                dataType
                             }
                         }
                     }
@@ -155,7 +160,7 @@ func TestAddToProject(t *testing.T) {
 			getProjectQueryBody:   `{"data": {"repository":{"projectsV2":{"nodes":[{"id": "1", "number": 1, "title": "reviewpad"}]}}}}`,
 			getProjectFieldsQuery: mockedGetProjectFieldsQuery,
 			getProjectFieldsBody:  `{"data": {"repository":{"projectV2": {"fields": {"pageInfo": {"hasNextPage": false, "endCursor": null}, "nodes": []}}}}}`,
-			expectedError:         plugins_aladino_actions.ErrProjectHasNoStatusField,
+			expectedError:         gh.ErrProjectHasNoStatusField,
 		},
 		{
 			name:                  "when project status option is not found",
@@ -163,7 +168,7 @@ func TestAddToProject(t *testing.T) {
 			getProjectQueryBody:   `{"data": {"repository":{"projectsV2":{"nodes":[{"id": "1", "number": 1, "title": "reviewpad"}]}}}}`,
 			getProjectFieldsQuery: mockedGetProjectFieldsQuery,
 			getProjectFieldsBody:  `{"data": {"repository":{"projectV2": {"fields": {"pageInfo": {"hasNextPage": false, "endCursor": null}, "nodes": [{"id": "1", "name": "status", "options": []}]}}}}}`,
-			expectedError:         plugins_aladino_actions.ErrProjectStatusNotFound,
+			expectedError:         gh.ErrProjectStatusNotFound,
 		},
 		{
 			name:                         "add project item error",
