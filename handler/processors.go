@@ -341,6 +341,73 @@ func processPushEvent(token string, e *github.PushEvent) ([]*TargetEntity, []*Ev
 	return targets, events, nil
 }
 
+func processInstallationEvent(event *github.InstallationEvent) ([]*TargetEntity, []*EventData, error) {
+	targetEntities, err := extractTargetEntitiesFromRepositories(event.Repositories)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	eventsData := duplicateEventDataForMultipleRepositories(event.Repositories, &EventData{
+		EventName:   "installation",
+		EventAction: event.GetAction(),
+	})
+
+	return targetEntities, eventsData, nil
+}
+
+func processInstallationRepositoriesEvent(event *github.InstallationRepositoriesEvent) ([]*TargetEntity, []*EventData, error) {
+	repositories := make([]*github.Repository, 0)
+
+	if event.GetAction() == "added" {
+		repositories = event.RepositoriesAdded
+	}
+
+	if event.GetAction() == "removed" {
+		repositories = event.RepositoriesRemoved
+	}
+
+	targetEntities, err := extractTargetEntitiesFromRepositories(repositories)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	eventsData := duplicateEventDataForMultipleRepositories(repositories, &EventData{
+		EventName:   "installation_repositories",
+		EventAction: event.GetAction(),
+	})
+
+	return targetEntities, eventsData, nil
+}
+
+func extractTargetEntitiesFromRepositories(repos []*github.Repository) ([]*TargetEntity, error) {
+	targetEntities := make([]*TargetEntity, 0)
+
+	for _, repo := range repos {
+		parts := strings.Split(repo.GetFullName(), "/")
+
+		if len(parts) != 2 {
+			return nil, fmt.Errorf("invalid full repository name: %v", repo.GetFullName())
+		}
+
+		targetEntities = append(targetEntities, &TargetEntity{
+			Owner: parts[0],
+			Repo:  parts[1],
+		})
+	}
+
+	return targetEntities, nil
+}
+
+func duplicateEventDataForMultipleRepositories(repos []*github.Repository, eventData *EventData) []*EventData {
+	eventsData := make([]*EventData, 0)
+
+	for range repos {
+		eventsData = append(eventsData, eventData)
+	}
+
+	return eventsData
+}
+
 // reviewpad-an: critical
 // output: the list of pull requests/issues that are affected by the event.
 func ProcessEvent(event *ActionEvent) ([]*TargetEntity, []*EventData, error) {
@@ -390,9 +457,9 @@ func ProcessEvent(event *ActionEvent) ([]*TargetEntity, []*EventData, error) {
 	case *github.GollumEvent:
 		return processUnsupportedEvent(payload)
 	case *github.InstallationEvent:
-		return processUnsupportedEvent(payload)
+		return processInstallationEvent(payload)
 	case *github.InstallationRepositoriesEvent:
-		return processUnsupportedEvent(payload)
+		return processInstallationRepositoriesEvent(payload)
 	case *github.IssueCommentEvent:
 		return processIssueCommentEvent(payload)
 	case *github.IssuesEvent:

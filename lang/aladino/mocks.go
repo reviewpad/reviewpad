@@ -30,7 +30,7 @@ const DefaultMockEventAction = "opened"
 
 var DefaultMockPrDate = time.Date(2009, 11, 17, 20, 34, 58, 651387237, time.UTC)
 var DefaultMockContext = context.Background()
-var DefaultMockCollector, _ = collector.NewCollector("", "", "pull_request", "", "dev-test")
+var DefaultMockCollector, _ = collector.NewCollector("", "distinctId", "pull_request", "runnerName", nil)
 var DefaultMockTargetEntity = &handler.TargetEntity{
 	Owner:  DefaultMockPrOwner,
 	Repo:   DefaultMockPrRepoName,
@@ -70,6 +70,10 @@ func GetDefaultMockPullRequestDetails() *github.PullRequest {
 			{
 				ID:   github.Int64(1),
 				Name: github.String("enhancement"),
+			},
+			{
+				ID:   github.Int64(2),
+				Name: github.String("large"),
 			},
 		},
 		Head: &github.PullRequestBranch{
@@ -374,6 +378,10 @@ func MockDefaultGithubClient(ghApiClientOptions []mock.MockBackendOption, ghGrap
 	}
 
 	return gh.NewGithubClient(client, clientGQL)
+}
+
+func MockDefaultGithubAppClient(ghApiClientOptions []mock.MockBackendOption) *gh.GithubAppClient {
+	return &gh.GithubAppClient{Client: github.NewClient(mock.NewMockedHTTPClient(ghApiClientOptions...))}
 }
 
 // MockDefaultEnv mocks an Aladino Env with default values.
