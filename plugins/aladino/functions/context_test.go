@@ -27,7 +27,11 @@ func TestContext(t *testing.T) {
             {
                 "id": 1,
                 "name": "enhancement"
-            }
+            },
+			{
+				"id": 2,
+				"name": "large"
+			}
         ],
         "user": {
             "login": "john"
@@ -55,7 +59,7 @@ func TestContext(t *testing.T) {
                 "owner": {
                     "login": "foobar"
                 },
-                "name": "default-mock-repo", 
+                "name": "default-mock-repo",
                 "url": "https://api.github.com/repos/foobar/default-mock-repo/pulls/6"
             }
         },
