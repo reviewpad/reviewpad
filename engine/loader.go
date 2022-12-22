@@ -86,10 +86,8 @@ func Load(ctx context.Context, collector collector.Collector, githubClient *gh.G
 		return nil, err
 	}
 
-	propertiesUsedInConfig := getPropertiesUsedInConfig(file)
-
 	collectedData := map[string]interface{}{
-		"reviewpadConfigProps": propertiesUsedInConfig,
+		"reviewpadConfigProps": getPropertiesUsedInConfig(file),
 	}
 
 	if err = collector.Collect("Reviewpad Configuration Loading", collectedData); err != nil {
