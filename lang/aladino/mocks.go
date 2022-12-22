@@ -71,6 +71,10 @@ func GetDefaultMockPullRequestDetails() *github.PullRequest {
 				ID:   github.Int64(1),
 				Name: github.String("enhancement"),
 			},
+			{
+				ID:   github.Int64(2),
+				Name: github.String("large"),
+			},
 		},
 		Head: &github.PullRequestBranch{
 			Repo: &github.Repository{
