@@ -17,12 +17,6 @@ import (
 	"github.com/shurcooL/githubv4"
 )
 
-type GetAuthenticatedUserDataQuery struct {
-	Viewer struct {
-		Login string
-	}
-}
-
 func Review() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
 		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType(), aladino.BuildStringType()}, nil),
@@ -34,47 +28,42 @@ func Review() *aladino.BuiltInAction {
 func reviewCode(e aladino.Env, args []aladino.Value) error {
 	t := e.GetTarget().(*target.PullRequestTarget)
 	entity := e.GetTarget().GetTargetEntity()
-
-	var authenticatedUserData GetAuthenticatedUserDataQuery
-
-	if err := e.GetGithubClient().GetClientGraphQL().Query(e.GetCtx(), &authenticatedUserData, nil); err != nil {
-		return err
-	}
-
-	authenticatedUserLogin := authenticatedUserData.Viewer.Login
+	clientGraphQL := e.GetGithubClient().GetClientGraphQL()
 
 	reviewEvent, err := parseReviewEvent(args[0].(*aladino.StringValue).Val)
 	if err != nil {
 		return err
 	}
 
-	reviewBody, err := checkReviewBody(reviewEvent, args[1].(*aladino.StringValue).Val)
+	reviewBody, err := parseReviewBody(reviewEvent, args[1].(*aladino.StringValue).Val)
 	if err != nil {
 		return err
 	}
 
-	reviews, err := getReviews(e.GetGithubClient().GetClientGraphQL(), t)
+	authenticatedUserLogin, err := getAuthenticatedUserLogin(clientGraphQL)
 	if err != nil {
 		return err
 	}
 
-	if codehost.HasReview(reviews, authenticatedUserLogin) {
-		lastReview := codehost.LastReview(reviews, authenticatedUserLogin)
-		log.Printf("LAST REVIEW: %+v", lastReview)
-		if lastReview.State == "APPROVED" {
-			return nil
-		}
+	latestReview, err := getLatestReviewFromReviewer(clientGraphQL, entity, authenticatedUserLogin)
+	if err != nil {
+		return err
+	}
 
-		lastPushDate, err := e.GetGithubClient().GetPullRequestLastPushDate(e.GetCtx(), entity.Owner, entity.Repo, entity.Number)
+	if latestReview != nil {
+		latestReviewEvent, err := mapReviewStateToEvent(latestReview.State)
 		if err != nil {
 			return err
 		}
-		log.Printf("LAST PUSH DATE: %+v", lastPushDate)
 
-		if lastReview.SubmittedAt.After(lastPushDate) {
+		log.Printf("review: latest review from %v is %v with body %v", authenticatedUserLogin, latestReviewEvent, latestReview.Body)
+
+		if latestReviewEvent == reviewEvent && latestReview.Body == reviewBody {
+			log.Printf("review: skipping review since it's the same as the latest review")
 			return nil
 		}
 	}
+	log.Printf("review: creating review %v with body %v", reviewEvent, reviewBody)
 
 	return t.Review(reviewEvent, reviewBody)
 }
@@ -84,84 +73,87 @@ func parseReviewEvent(reviewEvent string) (string, error) {
 	case "COMMENT", "REQUEST_CHANGES", "APPROVE":
 		return reviewEvent, nil
 	default:
-		return "", fmt.Errorf("review: unsupported review event %v", reviewEvent)
+		return "", fmt.Errorf("review: unsupported review state %v", reviewEvent)
 	}
 }
 
-func checkReviewBody(reviewEvent, reviewBody string) (string, error) {
+func parseReviewBody(reviewEvent, reviewBody string) (string, error) {
 	if reviewEvent != "APPROVE" && reviewBody == "" {
-		return "", fmt.Errorf("review: comment required in %v event", reviewEvent)
+		return "", fmt.Errorf("review: comment required in %v state", reviewEvent)
 	}
 
 	return reviewBody, nil
 }
 
-type ReviewsQuery struct {
-	Repository struct {
-		PullRequest struct {
-			Reviews struct {
-				Nodes []struct {
-					Author struct {
-						AvatarUrl    githubv4.URI
-						Login        githubv4.String
-						ResourcePath githubv4.URI
-						Url          githubv4.URI
-					}
-					Body        githubv4.String
-					State       githubv4.String
-					SubmittedAt *time.Time
-				}
-				PageInfo struct {
-					EndCursor   githubv4.String
-					HasNextPage bool
-				}
-			} `graphql:"reviews(first: 10, after: $reviewsCursor)"`
-		} `graphql:"pullRequest(number: $pullRequestNumber)"`
-	} `graphql:"repository(owner: $repositoryOwner, name: $repositoryName)"`
+func mapReviewStateToEvent(reviewState string) (string, error) {
+	switch reviewState {
+	case "COMMENTED":
+		return "COMMENT", nil
+	case "CHANGES_REQUESTED":
+		return "REQUEST_CHANGES", nil
+	case "APPROVED":
+		return "APPROVE", nil
+	default:
+		return "", fmt.Errorf("review: unsupported review state %v", reviewState)
+	}
 }
 
-func getReviews(clientGQL *githubv4.Client, t *target.PullRequestTarget) ([]*codehost.Review, error) {
-	var reviewsQuery ReviewsQuery
-	reviews := make([]*codehost.Review, 0)
-	hasNextPage := true
-	retryCount := 2
+func getAuthenticatedUserLogin(clientGQL *githubv4.Client) (string, error) {
+	var userLogin struct {
+		Viewer struct {
+			Login string
+		}
+	}
 
+	err := clientGQL.Query(context.Background(), &userLogin, nil)
+	if err != nil {
+		return "", err
+	}
+
+	return userLogin.Viewer.Login, nil
+}
+
+func getLatestReviewFromReviewer(clientGQL *githubv4.Client, target *handler.TargetEntity, author string) (*codehost.Review, error) {
+	var reviewsQuery struct {
+		Repository struct {
+			PullRequest struct {
+				Reviews struct {
+					Nodes []struct {
+						Author struct {
+							Login githubv4.String
+						}
+						Body        githubv4.String
+						State       githubv4.String
+						SubmittedAt *time.Time
+					}
+				} `graphql:"reviews(last: 1, author: $author)"`
+			} `graphql:"pullRequest(number: $pullRequestNumber)"`
+		} `graphql:"repository(owner: $repositoryOwner, name: $repositoryName)"`
+	}
 	varGQLReviews := map[string]interface{}{
-		"repositoryOwner":   githubv4.String(t.GetTargetEntity().Owner),
-		"repositoryName":    githubv4.String(t.GetTargetEntity().Repo),
-		"pullRequestNumber": githubv4.Int(t.GetTargetEntity().Number),
-		"reviewsCursor":     (*githubv4.String)(nil),
+		"repositoryOwner":   githubv4.String(target.Owner),
+		"repositoryName":    githubv4.String(target.Repo),
+		"pullRequestNumber": githubv4.Int(target.Number),
+		"author":            githubv4.String(author),
 	}
 
-	currentRequestRetry := 1
-
-	for hasNextPage {
-		err := clientGQL.Query(context.Background(), &reviewsQuery, varGQLReviews)
-		if err != nil {
-			currentRequestRetry++
-			if currentRequestRetry <= retryCount {
-				continue
-			} else {
-				return nil, err
-			}
-		} else {
-			currentRequestRetry = 0
-		}
-		nodes := reviewsQuery.Repository.PullRequest.Reviews.Nodes
-		for _, node := range nodes {
-			review := &codehost.Review{
-				User: &codehost.User{
-					Login: string(node.Author.Login),
-				},
-				Body:        string(node.Body),
-				State:       string(node.State),
-				SubmittedAt: node.SubmittedAt,
-			}
-			reviews = append(reviews, review)
-		}
-		hasNextPage = reviewsQuery.Repository.PullRequest.Reviews.PageInfo.HasNextPage
-		varGQLReviews["reviewsCursor"] = githubv4.NewString(reviewsQuery.Repository.PullRequest.Reviews.PageInfo.EndCursor)
+	err := clientGQL.Query(context.Background(), &reviewsQuery, varGQLReviews)
+	if err != nil {
+		return nil, err
 	}
 
-	return reviews, nil
+	reviews := reviewsQuery.Repository.PullRequest.Reviews.Nodes
+	if len(reviews) == 0 {
+		return nil, nil
+	}
+
+	latestReview := reviews[0]
+	return &codehost.Review{
+		User: &codehost.User{
+			Login: string(latestReview.Author.Login),
+		},
+		Body:        string(latestReview.Body),
+		State:       string(latestReview.State),
+		SubmittedAt: latestReview.SubmittedAt,
+	}, nil
 }
