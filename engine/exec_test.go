@@ -79,6 +79,7 @@ func TestEval_WhenGitHubRequestsFail(t *testing.T) {
 	}
 
 	for name, test := range tests {
+		collector := aladino.DefaultMockCollector
 		t.Run(name, func(t *testing.T) {
 			mockedClient := engine.MockGithubClient(test.clientOptions)
 
@@ -97,7 +98,7 @@ func TestEval_WhenGitHubRequestsFail(t *testing.T) {
 				assert.FailNow(t, fmt.Sprintf("Error reading reviewpad file: %v", err))
 			}
 
-			reviewpadFile, err := engine.Load(test.inputContext, test.inputGitHubClient, reviewpadFileData)
+			reviewpadFile, err := engine.Load(test.inputContext, collector, test.inputGitHubClient, reviewpadFileData)
 			if err != nil {
 				assert.FailNow(t, "Error parsing reviewpad file: %v", err)
 			}
@@ -366,6 +367,7 @@ func TestEval(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
+			collector := aladino.DefaultMockCollector
 			mockedClient := engine.MockGithubClient(test.clientOptions)
 
 			mockedAladinoInterpreter, err := mockAladinoInterpreter(mockedClient)
@@ -383,7 +385,7 @@ func TestEval(t *testing.T) {
 				assert.FailNow(t, fmt.Sprintf("Error reading reviewpad file: %v", err))
 			}
 
-			reviewpadFile, err := engine.Load(test.inputContext, test.inputGitHubClient, reviewpadFileData)
+			reviewpadFile, err := engine.Load(test.inputContext, collector, test.inputGitHubClient, reviewpadFileData)
 			if err != nil {
 				assert.FailNow(t, fmt.Sprintf("Error parsing reviewpad file: %v", err))
 			}

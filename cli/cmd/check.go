@@ -7,10 +7,13 @@ package cmd
 import (
 	"bytes"
 	"context"
+	"log"
 	"os"
+	"regexp"
 
 	"github.com/reviewpad/reviewpad/v3"
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
+	"github.com/reviewpad/reviewpad/v3/collector"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	"github.com/spf13/cobra"
 )
@@ -26,13 +29,27 @@ var checkCmd = &cobra.Command{
 		ctx := context.Background()
 		githubClient := gh.NewGithubClientFromToken(ctx, gitHubToken)
 
+		githubDetailsRegex := regexp.MustCompile(`github\.com\/(.+)\/(.+)\/(\w+)\/(\d+)`)
+		githubEntityDetails := githubDetailsRegex.FindSubmatch([]byte(githubUrl))
+
+		repositoryOwner := string(githubEntityDetails[1][:])
+		entityKind, err := toTargetEntityKind(string(githubEntityDetails[3][:]))
+		if err != nil {
+			log.Fatalf("Error converting entity kind. Details %+q", err.Error())
+		}
+
+		collectorClient, err := collector.NewCollector(mixpanelToken, repositoryOwner, string(entityKind), "local-cli", nil)
+		if err != nil {
+			log.Printf("error creating new collector: %v", err)
+		}
+
 		data, err := os.ReadFile(reviewpadFile)
 		if err != nil {
 			return err
 		}
 
 		buf := bytes.NewBuffer(data)
-		reviewpadFile, err := reviewpad.Load(ctx, githubClient, buf)
+		reviewpadFile, err := reviewpad.Load(ctx, collectorClient, githubClient, buf)
 		if err != nil {
 			return err
 		}

@@ -20,8 +20,8 @@ import (
 	"github.com/reviewpad/reviewpad/v3/utils/fmtio"
 )
 
-func Load(ctx context.Context, githubClient *gh.GithubClient, buf *bytes.Buffer) (*engine.ReviewpadFile, error) {
-	file, err := engine.Load(ctx, githubClient, buf.Bytes())
+func Load(ctx context.Context, collector collector.Collector, githubClient *gh.GithubClient, buf *bytes.Buffer) (*engine.ReviewpadFile, error) {
+	file, err := engine.Load(ctx, collector, githubClient, buf.Bytes())
 	if err != nil {
 		return nil, err
 	}

@@ -29,6 +29,7 @@ type httpMockResponder struct {
 
 func TestLoadWithAST(t *testing.T) {
 	inputContext := context.Background()
+	collector := aladino.DefaultMockCollector
 	inputGitHubClient := aladino.MockDefaultGithubClient(
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
@@ -72,7 +73,7 @@ func TestLoadWithAST(t *testing.T) {
 		assert.FailNow(t, "Error reading reviewpad file: %v", err)
 	}
 
-	gotReviewpadFile, err := engine.Load(inputContext, inputGitHubClient, reviewpadFileData)
+	gotReviewpadFile, err := engine.Load(inputContext, collector, inputGitHubClient, reviewpadFileData)
 	if err != nil {
 		assert.FailNow(t, "Error parsing reviewpad file: %v", err)
 	}
@@ -397,6 +398,7 @@ func TestLoad(t *testing.T) {
 	}
 
 	for name, test := range tests {
+		collector := aladino.DefaultMockCollector
 		t.Run(name, func(t *testing.T) {
 			if test.httpMockResponders != nil {
 				httpmock.Activate()
@@ -412,7 +414,7 @@ func TestLoad(t *testing.T) {
 					assert.FailNow(t, "Error reading reviewpad file: %v", err)
 				}
 
-				wantReviewpadFile, err = engine.Load(test.inputContext, test.inputGitHubClient, wantReviewpadFileData)
+				wantReviewpadFile, err = engine.Load(test.inputContext, collector, test.inputGitHubClient, wantReviewpadFileData)
 				if err != nil {
 					assert.FailNow(t, "Error parsing reviewpad file: %v", err)
 				}
@@ -423,7 +425,7 @@ func TestLoad(t *testing.T) {
 				assert.FailNow(t, "Error reading reviewpad file: %v", err)
 			}
 
-			gotReviewpadFile, gotErr := engine.Load(test.inputContext, test.inputGitHubClient, reviewpadFileData)
+			gotReviewpadFile, gotErr := engine.Load(test.inputContext, collector, test.inputGitHubClient, reviewpadFileData)
 
 			if gotErr != nil {
 				githubError := &github.ErrorResponse{}

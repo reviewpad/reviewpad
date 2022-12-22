@@ -9,9 +9,11 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
+	"github.com/reviewpad/reviewpad/v3/collector"
 	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/utils"
 	"gopkg.in/yaml.v3"
@@ -28,10 +30,70 @@ func hash(data []byte) string {
 	return dHash
 }
 
-func Load(ctx context.Context, githubClient *gh.GithubClient, data []byte) (*ReviewpadFile, error) {
+func getPropertiesUsedInConfig(file *ReviewpadFile) []string {
+	properties := []string{}
+
+	if file.Mode != "" {
+		properties = append(properties, "mode")
+	}
+
+	if file.IgnoreErrors != nil {
+		properties = append(properties, "ignore-errors")
+	}
+
+	if file.MetricsOnMerge != nil {
+		properties = append(properties, "metrics-on-merge")
+	}
+
+	if len(file.Imports) != 0 {
+		properties = append(properties, "imports")
+	}
+
+	if len(file.Extends) != 0 {
+		properties = append(properties, "extends")
+	}
+
+	if len(file.Extends) != 0 {
+		properties = append(properties, "extends")
+	}
+
+	if len(file.Groups) != 0 {
+		properties = append(properties, "groups")
+	}
+
+	if len(file.Rules) != 0 {
+		properties = append(properties, "rules")
+	}
+
+	if len(file.Workflows) != 0 {
+		properties = append(properties, "workflows")
+	}
+
+	if len(file.Pipelines) != 0 {
+		properties = append(properties, "pipelines")
+	}
+
+	if len(file.Labels) != 0 {
+		properties = append(properties, "labels")
+	}
+
+	return properties
+}
+
+func Load(ctx context.Context, collector collector.Collector, githubClient *gh.GithubClient, data []byte) (*ReviewpadFile, error) {
 	file, err := parse(data)
 	if err != nil {
 		return nil, err
+	}
+
+	propertiesUsedInConfig := getPropertiesUsedInConfig(file)
+
+	collectedData := map[string]interface{}{
+		"properties": propertiesUsedInConfig,
+	}
+
+	if err = collector.Collect("Properties used in Reviewpad Configuration", collectedData); err != nil {
+		log.Printf("error collecting properties used in Reviewpad configuration: %v\n", err)
 	}
 
 	dHash := hash(data)
