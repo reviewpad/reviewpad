@@ -5,6 +5,7 @@
 package plugins_aladino_functions_test
 
 import (
+	"fmt"
 	"regexp/syntax"
 	"testing"
 
@@ -25,10 +26,10 @@ func TestMatchString(t *testing.T) {
 		"when pattern is invalid": {
 			pattern: "a(b",
 			str:     "abc",
-			wantErr: &syntax.Error{
+			wantErr: fmt.Errorf("failed to parse regex a(b %w", &syntax.Error{
 				Code: syntax.ErrorCode("missing closing )"),
 				Expr: "a(b",
-			},
+			}),
 		},
 		"when pattern is empty and string is empty": {
 			pattern:    "",

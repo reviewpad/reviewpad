@@ -5,6 +5,7 @@
 package plugins_aladino_functions
 
 import (
+	"fmt"
 	"regexp"
 
 	"github.com/reviewpad/reviewpad/v3/handler"
@@ -25,7 +26,7 @@ func matchStringCode(e aladino.Env, args []aladino.Value) (aladino.Value, error)
 
 	reg, err := regexp.Compile(pattern)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to parse regex %s %w", pattern, err)
 	}
 
 	return aladino.BuildBoolValue(reg.MatchString(str)), nil
