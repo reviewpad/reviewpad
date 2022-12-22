@@ -165,7 +165,7 @@ workflows:
     description: Pull requests without linked issues are added to the project
     always-run: true
     if:
-      - rule: '!$hasLinkedIssues()'
+      - rule: '!$hasLinkedIssues() && !$isLinkedToProject("Reviewpad")'
     then:
       - '$addToProject("Reviewpad", "In Review")'
 
@@ -175,7 +175,7 @@ workflows:
     description: Automatically add issues to project in the backlog state
     always-run: true
     if:
-      - 'true'
+      - rule: '!$isLinkedToProject("Reviewpad")'
     then:
       - '$addToProject("Reviewpad", "Backlog")'
 
