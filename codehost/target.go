@@ -39,7 +39,7 @@ type Target interface {
 	GetTitle() string
 	IsLinkedToProject(title string) (bool, error)
 	RemoveLabel(labelName string) error
-	SetProjectFieldSingleSelect(projectItems []gh.GQLProjectV2Item, projectTitle, fieldName, fieldValue string) error
+	SetProjectField(projectItems []gh.GQLProjectV2Item, projectTitle, fieldName, fieldValue string) error
 }
 
 type User struct {

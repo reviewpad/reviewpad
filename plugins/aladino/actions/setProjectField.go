@@ -28,5 +28,5 @@ func setProjectField(e aladino.Env, args []aladino.Value) error {
 		return err
 	}
 
-	return target.SetProjectFieldSingleSelect(projectItems, projectTitle, fieldName, fieldValue)
+	return target.SetProjectField(projectItems, projectTitle, fieldName, fieldValue)
 }

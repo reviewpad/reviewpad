@@ -68,6 +68,7 @@ func TestAddToProject(t *testing.T) {
                             endCursor
                         },
                         nodes {
+                            __typename,
                             ... on ProjectV2SingleSelectField {
                                 id,
                                 name,
@@ -75,6 +76,11 @@ func TestAddToProject(t *testing.T) {
                                     id,
                                     name
                                 }
+                            },
+                            ... on ProjectV2Field {
+                                id,
+                                name,
+                                dataType
                             }
                         }
                     }

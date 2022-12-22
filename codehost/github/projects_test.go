@@ -178,6 +178,7 @@ func TestGetProjectFieldsByProjectNumber_WhenProjectNotFound(t *testing.T) {
                             endCursor
                         },
                         nodes{
+                            __typename,
                             ... on ProjectV2SingleSelectField {
                                 id,
                                 name,
@@ -185,6 +186,11 @@ func TestGetProjectFieldsByProjectNumber_WhenProjectNotFound(t *testing.T) {
                                     id,
                                     name
                                 }
+                            },
+                            ... on ProjectV2Field {
+                                id,
+                                name,
+                                dataType
                             }
                         }
                     }
@@ -209,8 +215,9 @@ func TestGetProjectFieldsByProjectNumber_WhenProjectNotFound(t *testing.T) {
 		nil,
 		func(res http.ResponseWriter, req *http.Request) {
 			query := utils.MinifyQuery(utils.MustRead(req.Body))
+			wantedQuery := utils.MinifyQuery(mockedGetProjectByNameQuery)
 			switch query {
-			case utils.MinifyQuery(mockedGetProjectByNameQuery):
+			case wantedQuery:
 				utils.MustWrite(
 					res,
 					mockedGetProjectByNameQueryBody,
@@ -244,6 +251,7 @@ func TestGetProjectFieldsByProjectNumber_WhenRetrySuccessful(t *testing.T) {
                             endCursor
                         },
                         nodes{
+                            __typename,
                             ... on ProjectV2SingleSelectField {
                                 id,
                                 name,
@@ -251,6 +259,11 @@ func TestGetProjectFieldsByProjectNumber_WhenRetrySuccessful(t *testing.T) {
                                     id,
                                     name
                                 }
+                            },
+                            ... on ProjectV2Field {
+                                id,
+                                name,
+                                dataType
                             }
                         }
                     }

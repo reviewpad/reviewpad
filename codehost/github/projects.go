@@ -39,8 +39,18 @@ type AddProjectV2ItemByIdInput struct {
 	ClientMutationID *string `json:"clientMutationId,omitempty"`
 }
 
-type FieldValue struct {
+type FieldValue interface{}
+
+type SingleSelectFieldValue struct {
 	SingleSelectOptionId string `json:"singleSelectOptionId"`
+}
+
+type TextFieldValue struct {
+	Text string `json:"text"`
+}
+
+type NumberFieldValue struct {
+	Number githubv4.Float `json:"number"`
 }
 
 type UpdateProjectV2ItemFieldValueInput struct {
@@ -56,7 +66,9 @@ type Fields struct {
 }
 
 type FieldNode struct {
+	TypeName                 string                   `graphql:"__typename"`
 	SingleSelectFieldDetails SingleSelectFieldDetails `graphql:"... on ProjectV2SingleSelectField"`
+	FieldDetails             FieldDetails             `graphql:"... on ProjectV2Field"`
 }
 
 type SingleSelectFieldDetails struct {
@@ -66,6 +78,12 @@ type SingleSelectFieldDetails struct {
 		ID   string
 		Name string
 	}
+}
+
+type FieldDetails struct {
+	ID       string
+	Name     string
+	DataType string
 }
 
 func (c *GithubClient) GetProjectV2ByName(ctx context.Context, owner, repo, name string) (*ProjectV2, error) {

@@ -94,7 +94,7 @@ func addToProjectCode(e aladino.Env, args []aladino.Value) error {
 	updateInput := gh.UpdateProjectV2ItemFieldValueInput{
 		ProjectID: project.ID,
 		ItemID:    addProjectV2ItemByIdMutation.AddProjectV2ItemById.Item.Id,
-		Value: gh.FieldValue{
+		Value: gh.SingleSelectFieldValue{
 			SingleSelectOptionId: fieldOptionID,
 		},
 		FieldID: statusField.ID,
