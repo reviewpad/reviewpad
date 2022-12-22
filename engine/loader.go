@@ -23,13 +23,6 @@ type LoadEnv struct {
 	Stack   map[string]bool
 }
 
-type OverridenElem struct {
-	// The property type can be 'labels', 'groups', 'rules', 'workflows' and 'pipelines.
-	PropertyType string
-	// The file path that introduces the override.
-	overridenIntroducedFile string
-}
-
 func hash(data []byte) string {
 	dataHash := sha256.Sum256(data)
 	dHash := fmt.Sprintf("%x", dataHash)
@@ -59,15 +52,15 @@ func Load(ctx context.Context, githubClient *gh.GithubClient, data []byte) (*Rev
 		return nil, err
 	}
 
-	overridenElemsByProperty := make(map[string](map[string]*OverridenElem))
+	overridenElemsByProperty := make(map[string](map[string]string))
 	file, err = processExtends(ctx, githubClient, file, env, overridenElemsByProperty)
 	if err != nil {
 		return nil, err
 	}
 
-	for _, overridenElem := range overridenElemsByProperty {
-		for elemName, elemInfo := range overridenElem {
-			log.Printf("[WARN] the %s %s has been overriden after extending the configuration in %s", elemInfo.PropertyType, elemName, elemInfo.overridenIntroducedFile)
+	for property, overridenElem := range overridenElemsByProperty {
+		for elemName, triggerOverrideFile := range overridenElem {
+			log.Printf("[WARN] the %s %s has been overriden after extending the configuration in %s", property, elemName, triggerOverrideFile)
 		}
 	}
 
@@ -271,7 +264,7 @@ func loadExtension(ctx context.Context, githubClient *gh.GithubClient, extension
 // processExtends inlines files into the current reviewpad file
 // precedence: current file > extends file
 // Post-condition: ReviewpadFile without extends statements
-func processExtends(ctx context.Context, githubClient *gh.GithubClient, file *ReviewpadFile, env *LoadEnv, overridenElemsByProperty map[string](map[string]*OverridenElem)) (*ReviewpadFile, error) {
+func processExtends(ctx context.Context, githubClient *gh.GithubClient, file *ReviewpadFile, env *LoadEnv, overridenElemsByProperty map[string](map[string]string)) (*ReviewpadFile, error) {
 	extendedFile := &ReviewpadFile{}
 	for _, extensionUri := range file.Extends {
 		eFile, eHash, err := loadExtension(ctx, githubClient, extensionUri)
@@ -306,78 +299,63 @@ func processExtends(ctx context.Context, githubClient *gh.GithubClient, file *Re
 	return extendedFile, nil
 }
 
-func checkForOverridens(overridenElemsByProperty map[string](map[string]*OverridenElem), file *ReviewpadFile, eFile *ReviewpadFile, eFileUri string) {
+func checkForOverridens(overridenElemsByProperty map[string](map[string]string), file *ReviewpadFile, triggerOverrideFile *ReviewpadFile, triggerOverrideFileUri string) {
 	// Check for overriden labels
 	for labelKeyName := range file.Labels {
-		for eLabelKeyName := range eFile.Labels {
+		for eLabelKeyName := range triggerOverrideFile.Labels {
 			if labelKeyName == eLabelKeyName {
-				if _, found := overridenElemsByProperty["labels"]; !found {
-					overridenElemsByProperty["labels"] = make(map[string]*OverridenElem)
+				if _, found := overridenElemsByProperty["label"]; !found {
+					overridenElemsByProperty["label"] = make(map[string]string)
 				}
-				overridenElemsByProperty["labels"][eLabelKeyName] = &OverridenElem{
-					PropertyType:            "label",
-					overridenIntroducedFile: eFileUri,
-				}
+				overridenElemsByProperty["label"][eLabelKeyName] = triggerOverrideFileUri
 			}
 		}
 	}
 
 	// Check for overriden groups
 	for _, group := range file.Groups {
-		for _, eGroup := range eFile.Groups {
+		for _, eGroup := range triggerOverrideFile.Groups {
 			if group.Name == eGroup.Name {
-				if _, found := overridenElemsByProperty["groups"]; !found {
-					overridenElemsByProperty["groups"] = make(map[string]*OverridenElem)
+				if _, found := overridenElemsByProperty["group"]; !found {
+					overridenElemsByProperty["group"] = make(map[string]string)
 				}
-				overridenElemsByProperty["groups"][group.Name] = &OverridenElem{
-					PropertyType:            "group",
-					overridenIntroducedFile: eFileUri,
-				}
+				overridenElemsByProperty["group"][group.Name] = triggerOverrideFileUri
 			}
 		}
 	}
 
 	// Check for overriden rules
 	for _, rule := range file.Rules {
-		for _, eRule := range eFile.Rules {
+		for _, eRule := range triggerOverrideFile.Rules {
 			if rule.Name == eRule.Name {
-				if _, found := overridenElemsByProperty["rules"]; !found {
-					overridenElemsByProperty["rules"] = make(map[string]*OverridenElem)
+				if _, found := overridenElemsByProperty["rule"]; !found {
+					overridenElemsByProperty["rule"] = make(map[string]string)
 				}
-				overridenElemsByProperty["rules"][rule.Name] = &OverridenElem{
-					PropertyType:            "rule",
-					overridenIntroducedFile: eFileUri,
-				}
+				overridenElemsByProperty["rule"][rule.Name] = triggerOverrideFileUri
 			}
 		}
 	}
 
 	// Check for overriden workflows
 	for _, workflow := range file.Workflows {
-		for _, eWorkflow := range eFile.Workflows {
+		for _, eWorkflow := range triggerOverrideFile.Workflows {
 			if workflow.Name == eWorkflow.Name {
-				if _, found := overridenElemsByProperty["workflows"]; !found {
-					overridenElemsByProperty["workflows"] = make(map[string]*OverridenElem)
+				if _, found := overridenElemsByProperty["workflow"]; !found {
+					overridenElemsByProperty["workflow"] = make(map[string]string)
 				}
-				overridenElemsByProperty["workflows"][workflow.Name] = &OverridenElem{
-					PropertyType:            "workflow",
-					overridenIntroducedFile: eFileUri,
-				}
+				overridenElemsByProperty["workflow"][workflow.Name] = triggerOverrideFileUri
 			}
 		}
 	}
 
 	// Check for overriden pipelines
 	for _, pipeline := range file.Pipelines {
-		for _, ePipeline := range eFile.Pipelines {
+		for _, ePipeline := range triggerOverrideFile.Pipelines {
 			if pipeline.Name == ePipeline.Name {
-				if _, found := overridenElemsByProperty["pipelines"]; !found {
-					overridenElemsByProperty["pipelines"] = make(map[string]*OverridenElem)
+				if _, found := overridenElemsByProperty["pipeline"]; !found {
+					overridenElemsByProperty["pipeline"] = make(map[string]string)
 				}
-				overridenElemsByProperty["pipelines"][pipeline.Name] = &OverridenElem{
-					PropertyType:            "pipeline",
-					overridenIntroducedFile: eFileUri,
-				}
+				overridenElemsByProperty["pipeline"][pipeline.Name] = triggerOverrideFileUri
 			}
 		}
 	}
