@@ -114,6 +114,7 @@ func PluginBuiltInsWithConfig(config *PluginConfig) *aladino.BuiltIns {
 			"isElementOf":       functions.IsElementOf(),
 			"join":              functions.Join(),
 			"length":            functions.Length(),
+			"matchString":       functions.MatchString(),
 			"selectFromContext": functions.SelectFromContext(),
 			"selectFromJSON":    functions.SelectFromJSON(),
 			"sprintf":           functions.Sprintf(),
