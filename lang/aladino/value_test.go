@@ -337,39 +337,39 @@ func TestFunctionValueEquals_WhenFalse(t *testing.T) {
 
 func TestJSONValueEquals(t *testing.T) {
 	tests := map[string]struct {
-		x      *aladino.JSONValue
-		y      *aladino.JSONValue
-		equals bool
+		firstVal  *aladino.JSONValue
+		secondVal *aladino.JSONValue
+		equals    bool
 	}{
 		"when types are the same but values differ": {
-			x:      aladino.BuildJSONValue(1),
-			y:      aladino.BuildJSONValue(10),
-			equals: false,
+			firstVal:  aladino.BuildJSONValue(1),
+			secondVal: aladino.BuildJSONValue(10),
+			equals:    false,
 		},
 		"when types are the same and values are the same": {
-			x:      aladino.BuildJSONValue(true),
-			y:      aladino.BuildJSONValue(true),
-			equals: true,
+			firstVal:  aladino.BuildJSONValue(true),
+			secondVal: aladino.BuildJSONValue(true),
+			equals:    true,
 		},
 		"when arrays have same values": {
-			x:      aladino.BuildJSONValue([]interface{}{1, 2, 3, "text", true, false}),
-			y:      aladino.BuildJSONValue([]interface{}{1, 2, 3, "text", true, false}),
-			equals: true,
+			firstVal:  aladino.BuildJSONValue([]interface{}{1, 2, 3, "text", true, false}),
+			secondVal: aladino.BuildJSONValue([]interface{}{1, 2, 3, "text", true, false}),
+			equals:    true,
 		},
 		"when arrays have out of order values": {
-			x:      aladino.BuildJSONValue([]interface{}{1, 2, 3}),
-			y:      aladino.BuildJSONValue([]interface{}{1, 3, 2}),
-			equals: false,
+			firstVal:  aladino.BuildJSONValue([]interface{}{1, 2, 3}),
+			secondVal: aladino.BuildJSONValue([]interface{}{1, 3, 2}),
+			equals:    false,
 		},
 		"when map has same keys and same values but out of order": {
-			x: aladino.BuildJSONValue(map[string]interface{}{
+			firstVal: aladino.BuildJSONValue(map[string]interface{}{
 				"a": "b",
 				"c": 1,
 				"d": true,
 				"e": false,
 				"g": []interface{}{1},
 			}),
-			y: aladino.BuildJSONValue(map[string]interface{}{
+			secondVal: aladino.BuildJSONValue(map[string]interface{}{
 				"a": "b",
 				"d": true,
 				"c": 1,
@@ -379,14 +379,14 @@ func TestJSONValueEquals(t *testing.T) {
 			equals: true,
 		},
 		"when map has same keys and different values": {
-			x: aladino.BuildJSONValue(map[string]interface{}{
+			firstVal: aladino.BuildJSONValue(map[string]interface{}{
 				"a": "b",
 				"c": 1,
 				"d": true,
 				"e": false,
 				"g": []interface{}{1},
 			}),
-			y: aladino.BuildJSONValue(map[string]interface{}{
+			secondVal: aladino.BuildJSONValue(map[string]interface{}{
 				"a": "b",
 				"c": 1.0,
 				"d": false,
@@ -399,9 +399,9 @@ func TestJSONValueEquals(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			e := test.x.Equals(test.y)
+			env := test.firstVal.Equals(test.secondVal)
 
-			assert.Equal(t, test.equals, e)
+			assert.Equal(t, test.equals, env)
 		})
 	}
 }
