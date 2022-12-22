@@ -5,6 +5,7 @@
 package utils
 
 import (
+	"bytes"
 	"encoding/json"
 	"io"
 )
@@ -36,4 +37,14 @@ func MustUnmarshal(data []byte, v interface{}) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func CompactJSONString(data string) (string, error) {
+	dst := &bytes.Buffer{}
+	err := json.Compact(dst, []byte(data))
+	if err != nil {
+		return "", err
+	}
+
+	return dst.String(), nil
 }
