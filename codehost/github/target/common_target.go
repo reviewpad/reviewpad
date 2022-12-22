@@ -5,6 +5,7 @@ package target
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -189,15 +190,18 @@ func (t *CommonTarget) setProjectSingleSelectField(projectID, projectItemID stri
 	return t.githubClient.GetClientGraphQL().Mutate(ctx, &updateProjectV2ItemFieldValueMutation, updateInput, nil)
 }
 
-func toValue(dataType string, fieldValue string) gh.FieldValue {
+func toValue(dataType string, fieldValue string) (gh.FieldValue, error) {
 	switch dataType {
 	case "TEXT":
-		return gh.TextFieldValue{Text: fieldValue}
+		return gh.TextFieldValue{Text: fieldValue}, nil
 	case "NUMBER":
-		f, _ := strconv.ParseFloat(fieldValue, 64)
-		return gh.NumberFieldValue{Number: githubv4.Float(f)}
+		f, err := strconv.ParseFloat(fieldValue, 64)
+		if err != nil {
+			return nil, err
+		}
+		return gh.NumberFieldValue{Number: githubv4.Float(f)}, nil
 	default:
-		return nil
+		return nil, fmt.Errorf("unsupported data type: %s", dataType)
 	}
 }
 
@@ -210,10 +214,15 @@ func (t *CommonTarget) setProjectV2Field(projectID, projectItemID string, fieldD
 		} `graphql:"updateProjectV2ItemFieldValue(input: $input)"`
 	}
 
+	val, err := toValue(fieldDetails.DataType, fieldValue)
+	if err != nil {
+		return err
+	}
+
 	updateInput := gh.UpdateProjectV2ItemFieldValueInput{
 		ProjectID: projectID,
 		ItemID:    projectItemID,
-		Value:     toValue(fieldDetails.DataType, fieldValue),
+		Value:     val,
 		FieldID:   fieldDetails.ID,
 	}
 
