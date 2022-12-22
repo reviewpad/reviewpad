@@ -4,6 +4,8 @@
 
 package aladino
 
+import "reflect"
+
 type Value interface {
 	HasKindOf(string) bool
 	Kind() string
@@ -206,6 +208,9 @@ func (jVal *JSONValue) HasKindOf(ty string) bool {
 }
 
 func (jVal *JSONValue) Equals(other Value) bool {
-	// TODO: fix equals
-	return jVal.Kind() == other.Kind()
+	if jVal.Kind() != other.Kind() {
+		return false
+	}
+
+	return reflect.DeepEqual(jVal.Val, other.(*JSONValue).Val)
 }
