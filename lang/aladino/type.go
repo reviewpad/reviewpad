@@ -16,6 +16,7 @@ const (
 	FUNCTION_TYPE string = "FunctionType"
 	ARRAY_TYPE    string = "ArrayType"
 	ARRAY_OF_TYPE string = "ArrayOfType"
+	JSON_TYPE     string = "JSONType"
 )
 
 type StringType struct{}
@@ -38,6 +39,8 @@ type ArrayType struct {
 	elemsType []Type
 }
 
+type JSONType struct{}
+
 func BuildStringType() *StringType { return &StringType{} }
 func BuildIntType() *IntType       { return &IntType{} }
 func BuildBoolType() *BoolType     { return &BoolType{} }
@@ -53,6 +56,8 @@ func BuildArrayOfType(elemType Type) *ArrayOfType {
 func BuildArrayType(elemsTypes []Type) *ArrayType {
 	return &ArrayType{elemsTypes}
 }
+
+func BuildJSONType() *JSONType { return &JSONType{} }
 
 func (bTy *BoolType) Kind() string {
 	return BOOL_TYPE
@@ -76,6 +81,10 @@ func (aTy *ArrayType) Kind() string {
 
 func (aTy *ArrayOfType) Kind() string {
 	return ARRAY_OF_TYPE
+}
+
+func (jTy *JSONType) Kind() string {
+	return JSON_TYPE
 }
 
 // Equals
@@ -145,4 +154,8 @@ func (thisTy *ArrayOfType) equals(thatTy Type) bool {
 		return thisTy.elemType.equals(thatTyArrayOf.elemType)
 	}
 	return false
+}
+
+func (thisTy *JSONType) equals(thatTy Type) bool {
+	return thisTy.Kind() == thatTy.Kind()
 }

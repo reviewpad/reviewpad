@@ -6,6 +6,7 @@ package target
 
 import (
 	"context"
+	"encoding/json"
 	"time"
 
 	"github.com/google/go-github/v48/github"
@@ -449,4 +450,13 @@ func (t *PullRequestTarget) TriggerWorkflowByFileName(workflowFileName string) e
 	_, err := t.githubClient.TriggerWorkflowByFileName(ctx, owner, repo, head, workflowFileName)
 
 	return err
+}
+
+func (t *PullRequestTarget) JSON() (string, error) {
+	j, err := json.Marshal(t.PullRequest)
+	if err != nil {
+		return "", err
+	}
+
+	return string(j), nil
 }
