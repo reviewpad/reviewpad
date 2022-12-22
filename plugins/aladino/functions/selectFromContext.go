@@ -20,15 +20,15 @@ func SelectFromContext() *aladino.BuiltInFunction {
 func selectFromContext(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
 	path := args[0].(*aladino.StringValue)
 
-	c, err := contextCode(e, []aladino.Value{})
+	targetContext, err := contextCode(e, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	j, err := toJSONCode(e, []aladino.Value{c})
+	contextJSON, err := toJSONCode(e, []aladino.Value{targetContext})
 	if err != nil {
 		return nil, err
 	}
 
-	return selectFromJSONCode(e, []aladino.Value{j, path})
+	return selectFromJSONCode(e, []aladino.Value{contextJSON, path})
 }
