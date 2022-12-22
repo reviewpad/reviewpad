@@ -17,7 +17,7 @@ func Context() *aladino.BuiltInFunction {
 	}
 }
 
-func contextCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
+func contextCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
 	context, err := e.GetTarget().JSON()
 	if err != nil {
 		return nil, err
