@@ -57,9 +57,7 @@ func BuildArrayType(elemsTypes []Type) *ArrayType {
 	return &ArrayType{elemsTypes}
 }
 
-func BuildJSONType() *JSONType {
-	return &JSONType{}
-}
+func BuildJSONType() *JSONType { return &JSONType{} }
 
 func (bTy *BoolType) Kind() string {
 	return BOOL_TYPE
