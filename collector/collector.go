@@ -105,16 +105,23 @@ func (c *collector) Collect(eventName string, properties map[string]interface{})
 	properties["eventType"] = c.EventType
 
 	if c.Optional != nil {
-		properties["url"] = c.Optional.Url
 		properties["deliveryId"] = c.Optional.DeliveryId
 		properties["service"] = c.Optional.Service
-		properties["repo"] = map[string]interface{}{
-			"url":        c.Optional.Repo.Url,
-			"visibility": c.Optional.Repo.Visibility,
-			"owner": map[string]interface{}{
-				"username": c.Optional.Repo.Owner.Username,
-				"type":     c.Optional.Repo.Owner.UserType,
-			},
+
+		// Checks if the fields have a value set so it does not appear with no value in the mixpanel
+		if c.Optional.Url != "" {
+			properties["url"] = c.Optional.Url
+		}
+
+		if c.Optional.Repo.Url != "" || c.Optional.Repo.Visibility != "" || c.Optional.Repo.Owner.Username != "" || c.Optional.Repo.Owner.UserType != "" {
+			properties["repo"] = map[string]interface{}{
+				"url":        c.Optional.Repo.Url,
+				"visibility": c.Optional.Repo.Visibility,
+				"owner": map[string]interface{}{
+					"username": c.Optional.Repo.Owner.Username,
+					"type":     c.Optional.Repo.Owner.UserType,
+				},
+			}
 		}
 	}
 
