@@ -22,6 +22,7 @@ type UserInfo struct {
 type RepoInfo struct {
 	Url        string
 	Visibility string
+	Owner      UserInfo
 }
 
 type collector struct {
@@ -54,7 +55,6 @@ type OptionalProperties struct {
 	DeliveryId string
 	// The name of the service running the collector.
 	Service string
-	User    UserInfo
 	Repo    RepoInfo
 }
 
@@ -108,13 +108,13 @@ func (c *collector) Collect(eventName string, properties map[string]interface{})
 		properties["url"] = c.Optional.Url
 		properties["deliveryId"] = c.Optional.DeliveryId
 		properties["service"] = c.Optional.Service
-		properties["user"] = map[string]interface{}{
-			"username": c.Optional.User.Username,
-			"type":     c.Optional.User.UserType,
-		}
 		properties["repo"] = map[string]interface{}{
 			"url":        c.Optional.Repo.Url,
 			"visibility": c.Optional.Repo.Visibility,
+			"owner": map[string]interface{}{
+				"username": c.Optional.Repo.Owner.Username,
+				"type":     c.Optional.Repo.Owner.UserType,
+			},
 		}
 	}
 
