@@ -14,6 +14,16 @@ type Collector interface {
 	CollectError(err error) error
 }
 
+type UserInfo struct {
+	Username string
+	UserType string
+}
+
+type RepoInfo struct {
+	Url        string
+	Visibility string
+}
+
 type collector struct {
 	Client mixpanel.Mixpanel
 	// Unique identifier that is connected to every event.
@@ -36,7 +46,7 @@ type collector struct {
 }
 
 type OptionalProperties struct {
-	// The repository url where the events are being collected.
+	// The issue url where the events are being collected.
 	Url string
 	// A GUID to identify the delivery.
 	// It is used to identify the event within the runner environment.
@@ -44,6 +54,8 @@ type OptionalProperties struct {
 	DeliveryId string
 	// The name of the service running the collector.
 	Service string
+	User    UserInfo
+	Repo    RepoInfo
 }
 
 // NewCollector creates a collector instance.
@@ -96,6 +108,14 @@ func (c *collector) Collect(eventName string, properties map[string]interface{})
 		properties["url"] = c.Optional.Url
 		properties["deliveryId"] = c.Optional.DeliveryId
 		properties["service"] = c.Optional.Service
+		properties["user"] = map[string]interface{}{
+			"username": c.Optional.User.Username,
+			"type":     c.Optional.User.UserType,
+		}
+		properties["repo"] = map[string]interface{}{
+			"url":        c.Optional.Repo.Url,
+			"visibility": c.Optional.Repo.Visibility,
+		}
 	}
 
 	c.Order = c.Order + 1
