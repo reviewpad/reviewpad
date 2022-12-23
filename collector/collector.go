@@ -20,7 +20,7 @@ type UserInfo struct {
 }
 
 type RepoInfo struct {
-	Url        string
+	FullName   string
 	Visibility string
 	Owner      UserInfo
 }
@@ -114,8 +114,8 @@ func (c *collector) Collect(eventName string, properties map[string]interface{})
 		}
 
 		if c.Optional.Repo.Url != "" || c.Optional.Repo.Visibility != "" || c.Optional.Repo.Owner.Username != "" || c.Optional.Repo.Owner.UserType != "" {
-			properties["repo"] = map[string]interface{}{
-				"url":        c.Optional.Repo.Url,
+			properties["repository"] = map[string]interface{}{
+				"fullName":   c.Optional.Repo.FullName,
 				"visibility": c.Optional.Repo.Visibility,
 				"owner": map[string]interface{}{
 					"username": c.Optional.Repo.Owner.Username,
