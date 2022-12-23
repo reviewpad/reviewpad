@@ -113,7 +113,7 @@ func (c *collector) Collect(eventName string, properties map[string]interface{})
 			properties["url"] = c.Optional.Url
 		}
 
-		if c.Optional.Repo.Url != "" || c.Optional.Repo.Visibility != "" || c.Optional.Repo.Owner.Username != "" || c.Optional.Repo.Owner.UserType != "" {
+		if c.Optional.Repo.FullName != "" || c.Optional.Repo.Visibility != "" || c.Optional.Repo.Owner.Username != "" || c.Optional.Repo.Owner.UserType != "" {
 			properties["repository"] = map[string]interface{}{
 				"fullName":   c.Optional.Repo.FullName,
 				"visibility": c.Optional.Repo.Visibility,
