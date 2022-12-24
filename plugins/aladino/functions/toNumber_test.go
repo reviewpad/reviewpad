@@ -51,6 +51,22 @@ func TestToNumber(t *testing.T) {
 			str:     "1",
 			wantRes: aladino.BuildIntValue(1),
 		},
+		"when positive overflows": {
+			str: "100000000000000000000000000000000000",
+			wantErr: fmt.Errorf(`error converting "100000000000000000000000000000000000" to number: %w`, &strconv.NumError{
+				Func: "Atoi",
+				Num:  "100000000000000000000000000000000000",
+				Err:  errors.New("value out of range"),
+			}),
+		},
+		"when negative overflows": {
+			str: "-100000000000000000000000000000000000",
+			wantErr: fmt.Errorf(`error converting "-100000000000000000000000000000000000" to number: %w`, &strconv.NumError{
+				Func: "Atoi",
+				Num:  "-100000000000000000000000000000000000",
+				Err:  errors.New("value out of range"),
+			}),
+		},
 	}
 
 	for name, test := range tests {
