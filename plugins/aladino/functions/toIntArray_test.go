@@ -25,7 +25,7 @@ func TestToIntArray(t *testing.T) {
 			str:     ``,
 			wantErr: errors.New(`error converting "" to int array: unexpected end of JSON input`),
 		},
-		"when array of non string values": {
+		"when array of non int values": {
 			str:     `["a", "b", true]`,
 			wantErr: errors.New(`error converting "["a", "b", true]" to int array: json: cannot unmarshal string into Go value of type int`),
 		},
