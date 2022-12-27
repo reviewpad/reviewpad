@@ -155,9 +155,13 @@ func TestTransformAladinoExpression(t *testing.T) {
 			arg:     `$join($assignees(), ", ")`,
 			wantVal: `$join($assignees(), ", ")`,
 		},
-		"nested join with empty separators ": {
-			arg:     `$join([$join(["a","b"]), "c"])`,
-			wantVal: `$join([$join(["a","b"], " "), "c"], " ")`,
+		"join in sprintf with no separator": {
+			arg:     `$sprintf("hello: %s", [$join(["test", "test2"])])`,
+			wantVal: `$sprintf("hello: %s", [$join(["test", "test2"], " ")])`,
+		},
+		"join in sprintf with separator": {
+			arg:     `$sprintf("hello: %s", [$join(["test", "test2"], " - ")])`,
+			wantVal: `$sprintf("hello: %s", [$join(["test", "test2"], " - ")])`,
 		},
 		// TODO: test addDefaultTotalRequestedReviewers
 	}
