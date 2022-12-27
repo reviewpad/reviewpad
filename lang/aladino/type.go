@@ -174,5 +174,5 @@ func (thisTy *JSONType) equals(thatTy Type) bool {
 }
 
 func (thisTy *DynamicArrayType) equals(thatTy Type) bool {
-	return thisTy.Kind() == thatTy.Kind() || thatTy.Kind() == ARRAY_OF_TYPE || thatTy.Kind() == ARRAY_TYPE
+	return thisTy.Kind() == thatTy.Kind()
 }
