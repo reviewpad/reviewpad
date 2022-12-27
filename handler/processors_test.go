@@ -738,6 +738,8 @@ func TestProcessEvent(t *testing.T) {
 				EventPayload: buildPayload([]byte(`{
 					"action": "rerequested",
 					"check_run": {
+						"id": 1,
+						"head_sha": "4bf24cc72f3a62423927a0ac8d70febad7c78e0g",
 						"pull_requests": [
 							{
 								"number": 1
@@ -764,6 +766,15 @@ func TestProcessEvent(t *testing.T) {
 				{
 					EventName:   "check_run",
 					EventAction: "rerequested",
+					CheckRun: &github.CheckRun{
+						ID:      github.Int64(1),
+						HeadSHA: github.String("4bf24cc72f3a62423927a0ac8d70febad7c78e0g"),
+						PullRequests: []*github.PullRequest{
+							{
+								Number: github.Int(1),
+							},
+						},
+					},
 				},
 			},
 		},
@@ -774,6 +785,7 @@ func TestProcessEvent(t *testing.T) {
 				EventPayload: buildPayload([]byte(`{
 					"action": "created",
 					"check_run": {
+						"id": 1,
 						"head_sha": "4bf24cc72f3a62423927a0ac8d70febad7c78e0g",
 						"pull_requests": []
 					},
@@ -798,6 +810,11 @@ func TestProcessEvent(t *testing.T) {
 				{
 					EventName:   "check_run",
 					EventAction: "created",
+					CheckRun: &github.CheckRun{
+						ID:           github.Int64(1),
+						HeadSHA:      github.String("4bf24cc72f3a62423927a0ac8d70febad7c78e0g"),
+						PullRequests: []*github.PullRequest{},
+					},
 				},
 			},
 		},
