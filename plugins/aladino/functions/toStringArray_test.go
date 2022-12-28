@@ -37,6 +37,10 @@ func TestToStringArray(t *testing.T) {
 			str:     `[]`,
 			wantRes: aladino.BuildArrayValue([]aladino.Value{}),
 		},
+		"when nested array": {
+			str:     `[["a", "b", "c"]]`,
+			wantErr: errors.New(`error converting "[["a", "b", "c"]]" to string array: json: cannot unmarshal array into Go value of type string`),
+		},
 	}
 
 	for name, test := range tests {
