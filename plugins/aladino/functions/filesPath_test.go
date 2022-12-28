@@ -30,19 +30,9 @@ func TestFilesPath(t *testing.T) {
 					Filename: github.String("go.mod"),
 					Patch:    nil,
 				},
-				{
-					Filename: github.String("go.sum"),
-					Patch:    nil,
-				},
-				{
-					Filename: github.String("cmd/main.go"),
-					Patch:    nil,
-				},
 			},
 			wantResult: aladino.BuildArrayValue([]aladino.Value{
 				aladino.BuildStringValue("go.mod"),
-				aladino.BuildStringValue("go.sum"),
-				aladino.BuildStringValue("cmd/main.go"),
 			}),
 		},
 		"when successful with nil file": {

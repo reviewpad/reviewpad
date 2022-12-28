@@ -120,6 +120,7 @@ func PluginBuiltInsWithConfig(config *PluginConfig) *aladino.BuiltIns {
 			"sprintf":           functions.Sprintf(),
 			"startsWith":        functions.StartsWith(),
 			"toBool":            functions.ToBool(),
+			"toNumber":          functions.ToNumber(),
 			// Engine
 			"group": functions.Group(),
 			"rule":  functions.Rule(),
