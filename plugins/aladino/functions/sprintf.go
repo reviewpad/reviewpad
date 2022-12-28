@@ -19,7 +19,7 @@ var (
 
 func Sprintf() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType(), aladino.BuildArrayOfType(aladino.BuildStringType())}, aladino.BuildStringType()),
+		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType(), aladino.BuildDynamicArrayType()}, aladino.BuildStringType()),
 		Code:           sprintfCode,
 		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest, handler.Issue},
 	}
@@ -39,6 +39,10 @@ func sprintfCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
 	for _, val := range vals {
 		switch v := val.(type) {
 		case *aladino.StringValue:
+			clearVals = append(clearVals, v.Val)
+		case *aladino.IntValue:
+			clearVals = append(clearVals, v.Val)
+		case *aladino.BoolValue:
 			clearVals = append(clearVals, v.Val)
 		}
 	}
