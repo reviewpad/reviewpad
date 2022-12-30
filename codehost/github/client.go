@@ -18,6 +18,7 @@ import (
 type GithubClient struct {
 	clientREST *github.Client
 	clientGQL  *githubv4.Client
+	logger     *logrus.Entry
 }
 
 type GithubAppClient struct {
@@ -31,7 +32,7 @@ func NewGithubClient(clientREST *github.Client, clientGQL *githubv4.Client) *Git
 	}
 }
 
-func NewGithubClientFromToken(ctx context.Context, token string) *GithubClient {
+func NewGithubClientFromToken(ctx context.Context, logger *logrus.Entry, token string) *GithubClient {
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: token},
 	)
@@ -43,6 +44,7 @@ func NewGithubClientFromToken(ctx context.Context, token string) *GithubClient {
 	return &GithubClient{
 		clientREST: clientREST,
 		clientGQL:  clientGQL,
+		logger:     logger,
 	}
 }
 

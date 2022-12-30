@@ -254,6 +254,7 @@ func (i *Interpreter) ReportMetrics() error {
 
 func NewInterpreter(
 	ctx context.Context,
+	logger *logrus.Entry,
 	dryRun bool,
 	githubClient *gh.GithubClient,
 	collector collector.Collector,
@@ -261,7 +262,9 @@ func NewInterpreter(
 	eventPayload interface{},
 	builtIns *BuiltIns,
 ) (engine.Interpreter, error) {
-	evalEnv, err := NewEvalEnv(ctx, dryRun, githubClient, collector, targetEntity, eventPayload, builtIns)
+	log := logger.WithField("prefix", "[aladino]")
+
+	evalEnv, err := NewEvalEnv(ctx, log, dryRun, githubClient, collector, targetEntity, eventPayload, builtIns)
 	if err != nil {
 		return nil, err
 	}

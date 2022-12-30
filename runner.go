@@ -8,7 +8,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"log"
 
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/collector"
@@ -18,17 +17,18 @@ import (
 	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
 	"github.com/reviewpad/reviewpad/v3/utils"
 	"github.com/reviewpad/reviewpad/v3/utils/fmtio"
+	"github.com/sirupsen/logrus"
 )
 
-func Load(ctx context.Context, githubClient *gh.GithubClient, buf *bytes.Buffer) (*engine.ReviewpadFile, error) {
+func Load(ctx context.Context, log *logrus.Entry, githubClient *gh.GithubClient, buf *bytes.Buffer) (*engine.ReviewpadFile, error) {
 	file, err := engine.Load(ctx, githubClient, buf.Bytes())
 	if err != nil {
 		return nil, err
 	}
 
-	log.Println(fmtio.Sprintf("load", "input file:\n%+v\n", file))
+	log.Debugln(fmtio.Sprintf("load", "input file:\n%+v", file))
 
-	err = engine.Lint(file)
+	err = engine.Lint(file, log)
 	if err != nil {
 		return nil, err
 	}
@@ -38,6 +38,7 @@ func Load(ctx context.Context, githubClient *gh.GithubClient, buf *bytes.Buffer)
 
 func Run(
 	ctx context.Context,
+	log *logrus.Entry,
 	githubClient *gh.GithubClient,
 	collector collector.Collector,
 	targetEntity *handler.TargetEntity,
@@ -58,12 +59,12 @@ func Run(
 
 	defer config.CleanupPluginConfig()
 
-	aladinoInterpreter, err := aladino.NewInterpreter(ctx, dryRun, githubClient, collector, targetEntity, eventPayload, plugins_aladino.PluginBuiltInsWithConfig(config))
+	aladinoInterpreter, err := aladino.NewInterpreter(ctx, log, dryRun, githubClient, collector, targetEntity, eventPayload, plugins_aladino.PluginBuiltInsWithConfig(config))
 	if err != nil {
 		return engine.ExitStatusFailure, nil, err
 	}
 
-	evalEnv, err := engine.NewEvalEnv(ctx, dryRun, githubClient, collector, targetEntity, aladinoInterpreter, eventData)
+	evalEnv, err := engine.NewEvalEnv(ctx, log, dryRun, githubClient, collector, targetEntity, aladinoInterpreter, eventData)
 	if err != nil {
 		return engine.ExitStatusFailure, nil, err
 	}
@@ -102,7 +103,7 @@ func Run(
 	err = evalEnv.Collector.Collect("Completed Analysis", collectedData)
 
 	if err != nil {
-		log.Printf("error on collector due to %v", err.Error())
+		log.Infof("error on collector due to %v", err.Error())
 	}
 
 	return exitStatus, program, nil
