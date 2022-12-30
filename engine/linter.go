@@ -9,14 +9,11 @@ import (
 
 	"github.com/reviewpad/reviewpad/v3/utils"
 	"github.com/reviewpad/reviewpad/v3/utils/fmtio"
+	"github.com/sirupsen/logrus"
 )
 
 func lintError(format string, a ...interface{}) error {
 	return fmtio.Errorf("lint", format, a...)
-}
-
-func lintLog(format string, a ...interface{}) {
-	fmtio.LogPrintln("lint", format, a...)
 }
 
 func getAllMatches(pattern string, groups []PadGroup, rules []PadRule, workflows []PadWorkflow) []string {
@@ -96,11 +93,11 @@ func lintRules(padRules []PadRule) error {
 
 // Validations:
 // - Group has unique name
-func lintGroups(padGroups []PadGroup) error {
+func lintGroups(log *logrus.Entry, padGroups []PadGroup) error {
 	groupsName := make([]string, 0)
 
 	for _, group := range padGroups {
-		lintLog("analyzing group %v", group.Name)
+		log.Infof("analyzing group %v", group.Name)
 
 		if group.Name == "" {
 			return lintError("group %v has invalid name", group)
@@ -123,12 +120,12 @@ func lintGroups(padGroups []PadGroup) error {
 // - Workflow has rules
 // - Workflow has non empty rules
 // - Workflow has only known rules
-func lintWorkflows(rules []PadRule, padWorkflows []PadWorkflow) error {
+func lintWorkflows(log *logrus.Entry, rules []PadRule, padWorkflows []PadWorkflow) error {
 	workflowsName := make([]string, 0)
 	workflowHasExtraActions := false
 
 	for _, workflow := range padWorkflows {
-		lintLog("analyzing workflow %v", workflow.Name)
+		log.Infof("analyzing workflow %v", workflow.Name)
 
 		workflowHasActions := len(workflow.Actions) > 0
 
@@ -155,12 +152,12 @@ func lintWorkflows(rules []PadRule, padWorkflows []PadWorkflow) error {
 
 			workflowHasExtraActions = len(rule.ExtraActions) > 0
 			if !workflowHasExtraActions && !workflowHasActions {
-				lintLog("warning: rule %v will be ignored since it has no actions", ruleName)
+				log.Warnf("warning: rule %v will be ignored since it has no actions", ruleName)
 			}
 		}
 
 		if !workflowHasActions && !workflowHasExtraActions {
-			lintLog("warning: workflow has no actions")
+			log.Warnf("warning: workflow has no actions")
 		}
 
 		workflowsName = append(workflowsName, workflow.Name)
@@ -172,7 +169,7 @@ func lintWorkflows(rules []PadRule, padWorkflows []PadWorkflow) error {
 // Validations
 // - Check that all rules are being used
 // - Check that all referenced rules exist
-func lintRulesMentions(rules []PadRule, groups []PadGroup, workflows []PadWorkflow) error {
+func lintRulesMentions(log *logrus.Entry, rules []PadRule, groups []PadGroup, workflows []PadWorkflow) error {
 	totalUsesByRule := make(map[string]int, len(rules))
 
 	for _, rule := range rules {
@@ -200,7 +197,7 @@ func lintRulesMentions(rules []PadRule, groups []PadGroup, workflows []PadWorkfl
 
 	for ruleName, totalUses := range totalUsesByRule {
 		if totalUses == 0 {
-			lintLog("unused rule %v", ruleName)
+			log.Warnf("unused rule %v", ruleName)
 		}
 	}
 
@@ -245,8 +242,10 @@ func lintGroupsMentions(groups []PadGroup, rules []PadRule, workflows []PadWorkf
 	return nil
 }
 
-func Lint(file *ReviewpadFile) error {
-	err := lintGroups(file.Groups)
+func Lint(file *ReviewpadFile, logger *logrus.Entry) error {
+	log := logger.WithField("prefix", "[lint]")
+
+	err := lintGroups(log, file.Groups)
 	if err != nil {
 		return err
 	}
@@ -256,12 +255,12 @@ func Lint(file *ReviewpadFile) error {
 		return err
 	}
 
-	err = lintWorkflows(file.Rules, file.Workflows)
+	err = lintWorkflows(log, file.Rules, file.Workflows)
 	if err != nil {
 		return err
 	}
 
-	err = lintRulesMentions(file.Rules, file.Groups, file.Workflows)
+	err = lintRulesMentions(log, file.Rules, file.Groups, file.Workflows)
 	if err != nil {
 		return err
 	}

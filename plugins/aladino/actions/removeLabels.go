@@ -6,7 +6,6 @@ package plugins_aladino_actions
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
@@ -38,7 +37,7 @@ func removeLabelsCode(e aladino.Env, args []aladino.Value) error {
 			labelName = val.(*aladino.StringValue).Val
 		} else {
 			labelName = labelID
-			log.Printf("[warn]: the \"%v\" label was not found in the environment", labelID)
+			e.GetLogger().Warnf("[warn]: the \"%v\" label was not found in the environment", labelID)
 		}
 
 		err := t.RemoveLabel(labelName)

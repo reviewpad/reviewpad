@@ -36,7 +36,7 @@ func rebaseCode(e aladino.Env, args []aladino.Value) error {
 	headRef := pr.Head.GetRef()
 	baseRef := pr.Base.GetRef()
 
-	repo, dir, err := gh.CloneRepository(headHTMLUrl, githubToken, "", &git.CloneOptions{
+	repo, dir, err := gh.CloneRepository(e.GetLogger(), headHTMLUrl, githubToken, "", &git.CloneOptions{
 		CheckoutBranch: baseRef,
 	})
 	if err != nil {
@@ -44,17 +44,17 @@ func rebaseCode(e aladino.Env, args []aladino.Value) error {
 	}
 	defer os.RemoveAll(dir)
 
-	err = gh.CheckoutBranch(repo, headRef)
+	err = gh.CheckoutBranch(e.GetLogger(), repo, headRef)
 	if err != nil {
 		return err
 	}
 
-	err = gh.RebaseOnto(repo, baseRef, nil)
+	err = gh.RebaseOnto(e.GetLogger(), repo, baseRef, nil)
 	if err != nil {
 		return err
 	}
 
-	err = gh.Push(repo, "origin", headRef, true)
+	err = gh.Push(e.GetLogger(), repo, "origin", headRef, true)
 	if err != nil {
 		return err
 	}

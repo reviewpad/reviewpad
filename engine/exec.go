@@ -7,7 +7,6 @@ package engine
 import (
 	"bytes"
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/google/go-github/v48/github"
@@ -19,14 +18,6 @@ import (
 
 func execError(format string, a ...interface{}) error {
 	return fmtio.Errorf("reviewpad", format, a...)
-}
-
-func execLogf(format string, a ...interface{}) {
-	log.Println(fmtio.Sprintf("reviewpad", format, a...))
-}
-
-func execLog(val string) {
-	log.Println(fmtio.Sprint("reviewpad", val))
 }
 
 func CollectError(env *Env, err error) {
@@ -44,14 +35,16 @@ func CollectError(env *Env, err error) {
 	}
 
 	if err = env.Collector.Collect("Error", collectedData); err != nil {
-		_ = execError(err.Error())
+		env.Logger.WithField("prefix", "[reviewpad]").Error(err.Error())
 	}
 }
 
 // Eval: main function that generates the program to be executed
 // Pre-condition Lint(file) == nil
 func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
-	execLogf("file to evaluate:\n%+v", file)
+	log := env.Logger.WithField("prefix", "[reviewpad]")
+
+	log.Debugf("file to evaluate:\n%+v", file)
 
 	interpreter := env.Interpreter
 
@@ -68,15 +61,15 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 	}
 
 	if err := env.Collector.Collect("Trigger Analysis", collectedData); err != nil {
-		_ = execError("error collecting trigger analysis: %v\n", err)
+		log.Errorf("error collecting trigger analysis: %v\n", err)
 	}
 
 	rules := make(map[string]PadRule)
 
-	execLogf("detected %v groups", len(file.Groups))
-	execLogf("detected %v labels", len(file.Labels))
-	execLogf("detected %v rules", len(file.Rules))
-	execLogf("detected %v workflows", len(file.Workflows))
+	log.Infof("detected %v groups", len(file.Groups))
+	log.Infof("detected %v labels", len(file.Labels))
+	log.Infof("detected %v rules", len(file.Rules))
+	log.Infof("detected %v workflows", len(file.Workflows))
 
 	// process labels
 	for labelKeyName, label := range file.Labels {
@@ -168,10 +161,10 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 	triggeredExclusiveWorkflow := false
 
 	for _, workflow := range file.Workflows {
-		execLogf("evaluating workflow %v:", workflow.Name)
+		log.Infof("evaluating workflow %v:", workflow.Name)
 
 		if !workflow.AlwaysRun && triggeredExclusiveWorkflow {
-			execLog("\tskipping workflow")
+			log.Info("\tskipping workflow")
 			continue
 		}
 
@@ -187,7 +180,7 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 		}
 
 		if !shouldRun {
-			execLogf("\tskipping workflow because event kind is %v and workflow is on %v", env.TargetEntity.Kind, workflow.On)
+			log.Infof("\tskipping workflow because event kind is %v and workflow is on %v", env.TargetEntity.Kind, workflow.On)
 			continue
 		}
 
@@ -205,7 +198,7 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 				ruleActivatedQueue = append(ruleActivatedQueue, rule)
 				ruleDefinitionQueue[ruleName] = ruleDefinition
 
-				execLogf("\trule %v activated", ruleName)
+				log.Infof("\trule %v activated", ruleName)
 			}
 		}
 
@@ -220,12 +213,12 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 				triggeredExclusiveWorkflow = true
 			}
 		} else {
-			execLog("\tno rules activated")
+			log.Infof("\tno rules activated")
 		}
 	}
 
 	for _, pipeline := range file.Pipelines {
-		execLogf("evaluating pipeline %v:", pipeline.Name)
+		log.Infof("evaluating pipeline %v:", pipeline.Name)
 
 		var err error
 		activated := pipeline.Trigger == ""
@@ -239,7 +232,7 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 
 		if activated {
 			for num, stage := range pipeline.Stages {
-				execLogf("evaluating pipeline stage %v", num)
+				log.Infof("evaluating pipeline stage %v", num)
 				if stage.Until == "" {
 					program.append(stage.Actions)
 					break

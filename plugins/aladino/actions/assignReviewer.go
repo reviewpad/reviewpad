@@ -6,7 +6,6 @@ package plugins_aladino_actions
 
 import (
 	"fmt"
-	"log"
 	"sort"
 
 	"github.com/reviewpad/reviewpad/v3/codehost"
@@ -60,7 +59,7 @@ func assignReviewerCode(e aladino.Env, args []aladino.Value) error {
 
 	totalAvailableReviewers := len(availableReviewers)
 	if totalRequiredReviewers > totalAvailableReviewers {
-		log.Printf("assignReviewer: total required reviewers %v exceeds the total available reviewers %v", totalRequiredReviewers, totalAvailableReviewers)
+		e.GetLogger().Infof("assignReviewer: total required reviewers %v exceeds the total available reviewers %v", totalRequiredReviewers, totalAvailableReviewers)
 		totalRequiredReviewers = totalAvailableReviewers
 	}
 
@@ -84,7 +83,7 @@ func assignReviewerCode(e aladino.Env, args []aladino.Value) error {
 			if lastReview.State != "APPROVED" && lastReview.SubmittedAt.Before(lastPushDate) {
 				reviewers = append(reviewers, userLogin)
 			} else {
-				log.Printf("assignReviewer: reviewer %v has already approved the pull request", userLogin)
+				e.GetLogger().Infof("assignReviewer: reviewer %v has already approved the pull request", userLogin)
 			}
 			totalRequiredReviewers--
 			availableReviewers = filterReviewerFromReviewers(availableReviewers, userLogin)
@@ -121,7 +120,7 @@ func assignReviewerCode(e aladino.Env, args []aladino.Value) error {
 	}
 
 	if len(reviewers) == 0 {
-		log.Printf("assignReviewer: no reviewers were assigned")
+		e.GetLogger().Infof("assignReviewer: no reviewers were assigned")
 		return nil
 	}
 

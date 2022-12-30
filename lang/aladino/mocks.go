@@ -19,6 +19,7 @@ import (
 	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/utils"
 	"github.com/shurcooL/githubv4"
+	"github.com/sirupsen/logrus"
 )
 
 const DefaultMockPrID = 1234
@@ -30,6 +31,7 @@ const DefaultMockEventAction = "opened"
 
 var DefaultMockPrDate = time.Date(2009, 11, 17, 20, 34, 58, 651387237, time.UTC)
 var DefaultMockContext = context.Background()
+var DefaultMockLogger = logrus.NewEntry(logrus.New()).WithField("prefix", "[aladino]")
 var DefaultMockCollector, _ = collector.NewCollector("", "distinctId", "pull_request", "runnerName", nil)
 var DefaultMockTargetEntity = &handler.TargetEntity{
 	Owner:  DefaultMockPrOwner,
@@ -305,6 +307,7 @@ func mockEnvWith(prOwner string, prRepoName string, prNum int, githubClient *gh.
 
 	env, err := NewEvalEnv(
 		ctx,
+		DefaultMockLogger,
 		false,
 		githubClient,
 		DefaultMockCollector,

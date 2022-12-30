@@ -7,7 +7,6 @@ package aladino
 import (
 	"context"
 	"fmt"
-	"log"
 	"strings"
 
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
@@ -16,19 +15,11 @@ import (
 	"github.com/reviewpad/reviewpad/v3/engine"
 	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/utils"
-	"github.com/reviewpad/reviewpad/v3/utils/fmtio"
+	"github.com/sirupsen/logrus"
 )
 
 type Interpreter struct {
 	Env Env
-}
-
-func execLog(val string) {
-	log.Println(fmtio.Sprint("aladino", val))
-}
-
-func execLogf(format string, a ...interface{}) {
-	log.Println(fmtio.Sprintf("aladino", format, a...))
 }
 
 func buildGroupAST(typeOf engine.GroupType, expr, paramExpr, whereExpr string) (Expr, error) {
@@ -117,7 +108,7 @@ func (i *Interpreter) EvalExpr(kind, expr string) (bool, error) {
 }
 
 func (i *Interpreter) ExecProgram(program *engine.Program) (engine.ExitStatus, error) {
-	execLog("executing program")
+	i.Env.GetLogger().Info("executing program")
 
 	for _, statement := range program.GetProgramStatements() {
 		err := i.ExecStatement(statement)
@@ -127,12 +118,12 @@ func (i *Interpreter) ExecProgram(program *engine.Program) (engine.ExitStatus, e
 
 		hasFatalError := len(i.Env.GetBuiltInsReportedMessages()[SEVERITY_FATAL]) > 0
 		if hasFatalError {
-			execLog("execution stopped")
+			i.Env.GetLogger().Info("execution stopped")
 			return engine.ExitStatusFailure, nil
 		}
 	}
 
-	execLog("execution done")
+	i.Env.GetLogger().Info("execution done")
 
 	return engine.ExitStatusSuccess, nil
 }
@@ -158,12 +149,12 @@ func (i *Interpreter) ExecStatement(statement *engine.Statement) error {
 
 	i.Env.GetReport().addToReport(statement)
 
-	execLogf("\taction %v executed", statRaw)
+	i.Env.GetLogger().Infof("\taction %v executed", statRaw)
 	return nil
 }
 
 func (i *Interpreter) Report(mode string, safeMode bool) error {
-	execLog("generating report")
+	i.Env.GetLogger().Info("generating report")
 
 	if mode == "" {
 		// By default mode is silent

@@ -717,6 +717,7 @@ func TestNewInterpreter_WhenNewEvalEnvFails(t *testing.T) {
 	// TODO: Ideally, we should not have nil arguments in the call to NewInterpreter
 	gotInterpreter, err := NewInterpreter(
 		ctx,
+		DefaultMockLogger,
 		false,
 		gh.NewGithubClient(clientREST, nil),
 		nil,
@@ -738,6 +739,7 @@ func TestNewInterpreter(t *testing.T) {
 
 	gotInterpreter, err := NewInterpreter(
 		mockedEnv.GetCtx(),
+		DefaultMockLogger,
 		mockedEnv.GetDryRun(),
 		mockedEnv.GetGithubClient(),
 		mockedEnv.GetCollector(),
@@ -981,6 +983,7 @@ func TestReportMetric(t *testing.T) {
 			env := MockDefaultEnv(t, test.clientOptions, test.graphQLHandler, nil, nil)
 			interpreter, err := NewInterpreter(
 				env.GetCtx(),
+				env.GetLogger(),
 				env.GetDryRun(),
 				env.GetGithubClient(),
 				env.GetCollector(),

@@ -79,9 +79,9 @@ func run() error {
 	if eventFilePath == "" {
 		log.Warn("[WARN] No event payload provided. Assuming empty event.")
 	} else {
-		content, err := os.ReadFile(eventFilePath)
-		if err != nil {
-			return err
+		content, readFileErr := os.ReadFile(eventFilePath)
+		if readFileErr != nil {
+			return readFileErr
 		}
 
 		rawEvent := string(content)
