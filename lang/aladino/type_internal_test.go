@@ -240,3 +240,17 @@ func TestEquals_WhenArrayOfTypeComparedToStringType(t *testing.T) {
 
 	assert.False(t, arrayOfType.equals(otherType))
 }
+
+func TestEquals_WhenArrayTypeComparedToDynamicArrayType(t *testing.T) {
+	arrayType := BuildArrayType([]Type{BuildStringType(), BuildIntType()})
+	dynamicArrayType := BuildDynamicArrayType()
+
+	assert.True(t, arrayType.equals(dynamicArrayType))
+}
+
+func TestEquals_WhenArrayOfTypeComparedToDynamicArrayType(t *testing.T) {
+	arrayOfType := BuildArrayOfType(BuildStringType())
+	dynamicArrayType := BuildDynamicArrayType()
+
+	assert.True(t, arrayOfType.equals(dynamicArrayType))
+}

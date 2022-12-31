@@ -68,6 +68,23 @@ func TestSprintf(t *testing.T) {
 			}),
 			wantString: aladino.BuildStringValue("Hello world"),
 		},
+		"when formatting with numbers": {
+			format: "Hello %s, You've added %d comments",
+			args: aladino.BuildArrayValue([]aladino.Value{
+				aladino.BuildStringValue("test"),
+				aladino.BuildIntValue(10),
+			}),
+			wantString: aladino.BuildStringValue("Hello test, You've added 10 comments"),
+		},
+		"when formatting with numbers and booleans": {
+			format: "hello %s, You've added %d comments, profile is locked: %t",
+			args: aladino.BuildArrayValue([]aladino.Value{
+				aladino.BuildStringValue("test"),
+				aladino.BuildIntValue(10),
+				aladino.BuildBoolValue(true),
+			}),
+			wantString: aladino.BuildStringValue("hello test, You've added 10 comments, profile is locked: true"),
+		},
 	}
 
 	for name, test := range tests {

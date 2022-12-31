@@ -74,18 +74,10 @@ func addDefaultHaveAllChecksRunCompleted(str string) string {
 }
 
 func addDefaultJoinSeparator(str string) string {
-	r := regexp.MustCompile(`\$join\((\[.*\]|([^,]*))(,\s*"([^"]*)")?\)`)
-	match := r.FindStringSubmatch(str)
-	if len(match) == 0 {
-		return str
-	}
-
-	toJoin := match[1]
-	separator := match[4]
-	if separator == "" {
-		separator = " "
-	}
-	return strings.Replace(str, match[0], "$join("+addDefaultJoinSeparator(toJoin)+", \""+separator+"\")", 1)
+	r := regexp.MustCompile(`\$join\((\[[^\(\)]+\]|(?:[^,]+))(?:,\s*("([^"]*)"))?\)`)
+	str = r.ReplaceAllString(str, `$$join($1, $2)`)
+	r = regexp.MustCompile(`\$join\((\[.*\]|(?:[^,]*)), \)`)
+	return r.ReplaceAllString(str, `$$join($1, " ")`)
 }
 
 func transformAladinoExpression(str string) string {
