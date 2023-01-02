@@ -83,10 +83,21 @@ func TestIsReviewPadCommand(t *testing.T) {
 				},
 			},
 		},
+		"when event action is not created": {
+			wantVal: false,
+			eventData: &handler.EventData{
+				EventName:   "issue_comment",
+				EventAction: "updated",
+				Comment: &github.IssueComment{
+					Body: github.String("some comment"),
+				},
+			},
+		},
 		"when event name is issue comment and body has /reviewpad prefix": {
 			wantVal: true,
 			eventData: &handler.EventData{
-				EventName: "issue_comment",
+				EventName:   "issue_comment",
+				EventAction: "created",
 				Comment: &github.IssueComment{
 					Body: github.String("/reviewpad"),
 				},

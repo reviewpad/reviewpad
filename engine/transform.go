@@ -73,6 +73,13 @@ func addDefaultHaveAllChecksRunCompleted(str string) string {
 	return r.ReplaceAllString(str, `$$haveAllChecksRunCompleted([], "")`)
 }
 
+func addDefaultJoinSeparator(str string) string {
+	r := regexp.MustCompile(`\$join\((\[[^\(\)]+\]|(?:[^,]+))(?:,\s*("([^"]*)"))?\)`)
+	str = r.ReplaceAllString(str, `$$join($1, $2)`)
+	r = regexp.MustCompile(`\$join\((\[.*\]|(?:[^,]*)), \)`)
+	return r.ReplaceAllString(str, `$$join($1, " ")`)
+}
+
 func transformAladinoExpression(str string) string {
 	transformedActionStr := str
 
@@ -85,6 +92,7 @@ func transformAladinoExpression(str string) string {
 		addEmptyCloseComment,
 		addDefaultCloseReason,
 		addDefaultHaveAllChecksRunCompleted,
+		addDefaultJoinSeparator,
 	}
 
 	for i := range transformations {

@@ -9,6 +9,7 @@ import (
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
+	"github.com/reviewpad/reviewpad/v3/utils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -33,7 +34,7 @@ func TestHaveAllChecksRunCompleted(t *testing.T) {
 		"when there are no github commits": {
 			mockBackendOptions: []mock.MockBackendOption{},
 			graphQLHandler: func(w http.ResponseWriter, r *http.Request) {
-				aladino.MustWrite(w, `{
+				utils.MustWrite(w, `{
 					"data": {
 						"repository": {
 							"pullRequest": {
@@ -55,12 +56,12 @@ func TestHaveAllChecksRunCompleted(t *testing.T) {
 					mock.GetReposCommitsCheckRunsByOwnerByRepoByRef,
 					http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 						w.WriteHeader(http.StatusUnprocessableEntity)
-						aladino.MustWrite(w, `{"message": "mock error"}`)
+						utils.MustWrite(w, `{"message": "mock error"}`)
 					}),
 				),
 			},
 			graphQLHandler: func(w http.ResponseWriter, r *http.Request) {
-				aladino.MustWrite(w, `{
+				utils.MustWrite(w, `{
 					"data": {
 						"repository": {
 							"pullRequest": {
@@ -95,7 +96,7 @@ func TestHaveAllChecksRunCompleted(t *testing.T) {
 				),
 			},
 			graphQLHandler: func(w http.ResponseWriter, r *http.Request) {
-				aladino.MustWrite(w, `{
+				utils.MustWrite(w, `{
 					"data": {
 						"repository": {
 							"pullRequest": {
@@ -139,7 +140,7 @@ func TestHaveAllChecksRunCompleted(t *testing.T) {
 				),
 			},
 			graphQLHandler: func(w http.ResponseWriter, r *http.Request) {
-				aladino.MustWrite(w, `{
+				utils.MustWrite(w, `{
 					"data": {
 						"repository": {
 							"pullRequest": {
@@ -183,7 +184,7 @@ func TestHaveAllChecksRunCompleted(t *testing.T) {
 				),
 			},
 			graphQLHandler: func(w http.ResponseWriter, r *http.Request) {
-				aladino.MustWrite(w, `{
+				utils.MustWrite(w, `{
 					"data": {
 						"repository": {
 							"pullRequest": {
@@ -227,7 +228,7 @@ func TestHaveAllChecksRunCompleted(t *testing.T) {
 				),
 			},
 			graphQLHandler: func(w http.ResponseWriter, r *http.Request) {
-				aladino.MustWrite(w, `{
+				utils.MustWrite(w, `{
 					"data": {
 						"repository": {
 							"pullRequest": {
@@ -270,7 +271,7 @@ func TestHaveAllChecksRunCompleted(t *testing.T) {
 				),
 			},
 			graphQLHandler: func(w http.ResponseWriter, r *http.Request) {
-				aladino.MustWrite(w, `{
+				utils.MustWrite(w, `{
 					"data": {
 						"repository": {
 							"pullRequest": {
@@ -319,7 +320,7 @@ func TestHaveAllChecksRunCompleted(t *testing.T) {
 				),
 			},
 			graphQLHandler: func(w http.ResponseWriter, r *http.Request) {
-				aladino.MustWrite(w, `{
+				utils.MustWrite(w, `{
 					"data": {
 						"repository": {
 							"pullRequest": {
@@ -368,7 +369,7 @@ func TestHaveAllChecksRunCompleted(t *testing.T) {
 				),
 			},
 			graphQLHandler: func(w http.ResponseWriter, r *http.Request) {
-				aladino.MustWrite(w, `{
+				utils.MustWrite(w, `{
 					"data": {
 						"repository": {
 							"pullRequest": {

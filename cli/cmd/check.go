@@ -6,9 +6,11 @@ package cmd
 
 import (
 	"bytes"
+	"context"
 	"os"
 
 	"github.com/reviewpad/reviewpad/v3"
+	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	"github.com/spf13/cobra"
 )
@@ -21,13 +23,16 @@ var checkCmd = &cobra.Command{
 	Use:   "check",
 	Short: "Check if input reviewpad file is valid",
 	RunE: func(cmd *cobra.Command, args []string) error {
+		ctx := context.Background()
+		githubClient := gh.NewGithubClientFromToken(ctx, gitHubToken)
+
 		data, err := os.ReadFile(reviewpadFile)
 		if err != nil {
 			return err
 		}
 
 		buf := bytes.NewBuffer(data)
-		reviewpadFile, err := reviewpad.Load(buf)
+		reviewpadFile, err := reviewpad.Load(ctx, githubClient, buf)
 		if err != nil {
 			return err
 		}

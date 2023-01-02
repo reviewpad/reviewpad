@@ -5,11 +5,15 @@ package target
 
 import (
 	"context"
+	"fmt"
+	"strconv"
+	"strings"
 
 	"github.com/google/go-github/v48/github"
 	"github.com/reviewpad/reviewpad/v3/codehost"
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/handler"
+	"github.com/shurcooL/githubv4"
 )
 
 type CommonTarget struct {
@@ -121,9 +125,9 @@ func (t *CommonTarget) GetProjectFieldsByProjectNumber(projectNumber uint64) ([]
 	fields := make([]*codehost.ProjectField, len(ghFields))
 	for i, field := range ghFields {
 		fields[i] = &codehost.ProjectField{
-			ID:      field.Details.ID,
-			Name:    field.Details.Name,
-			Options: field.Details.Options,
+			ID:      field.SingleSelectFieldDetails.ID,
+			Name:    field.SingleSelectFieldDetails.Name,
+			Options: field.SingleSelectFieldDetails.Options,
 		}
 	}
 
@@ -132,28 +136,6 @@ func (t *CommonTarget) GetProjectFieldsByProjectNumber(projectNumber uint64) ([]
 
 func (t *CommonTarget) GetTargetEntity() *handler.TargetEntity {
 	return t.targetEntity
-}
-
-func (t *CommonTarget) IsLinkedToProject(title string) (bool, error) {
-	ctx := t.ctx
-	targetEntity := t.targetEntity
-	owner := targetEntity.Owner
-	repo := targetEntity.Repo
-	number := targetEntity.Number
-	totalRetries := 2
-
-	projects, err := t.githubClient.GetLinkedProjects(ctx, owner, repo, number, totalRetries)
-	if err != nil {
-		return false, err
-	}
-
-	for _, project := range projects {
-		if project.Project.Title == title {
-			return true, nil
-		}
-	}
-
-	return false, nil
 }
 
 func (t *CommonTarget) RemoveLabel(labelName string) error {
@@ -172,4 +154,124 @@ func (t *CommonTarget) RemoveLabel(labelName string) error {
 	}
 
 	return err
+}
+
+func (t *CommonTarget) setProjectSingleSelectField(projectID, projectItemID string, fieldDetails gh.SingleSelectFieldDetails, fieldValue string) error {
+	ctx := t.ctx
+
+	fieldOptionID := ""
+
+	var updateProjectV2ItemFieldValueMutation struct {
+		UpdateProjetV2ItemFieldValue struct {
+			ClientMutationID string
+		} `graphql:"updateProjectV2ItemFieldValue(input: $input)"`
+	}
+
+	for _, option := range fieldDetails.Options {
+		if option.Name == fieldValue {
+			fieldOptionID = option.ID
+			break
+		}
+	}
+
+	if fieldOptionID == "" {
+		return gh.ErrProjectHasNoSuchFieldValue
+	}
+
+	updateInput := gh.UpdateProjectV2ItemFieldValueInput{
+		ProjectID: projectID,
+		ItemID:    projectItemID,
+		Value: gh.SingleSelectFieldValue{
+			SingleSelectOptionId: fieldOptionID,
+		},
+		FieldID: fieldDetails.ID,
+	}
+
+	return t.githubClient.GetClientGraphQL().Mutate(ctx, &updateProjectV2ItemFieldValueMutation, updateInput, nil)
+}
+
+func toValue(dataType string, fieldValue string) (gh.FieldValue, error) {
+	switch dataType {
+	case "TEXT":
+		return gh.TextFieldValue{Text: fieldValue}, nil
+	case "NUMBER":
+		f, err := strconv.ParseFloat(fieldValue, 64)
+		if err != nil {
+			return nil, err
+		}
+		return gh.NumberFieldValue{Number: githubv4.Float(f)}, nil
+	default:
+		return nil, fmt.Errorf("unsupported data type: %s", dataType)
+	}
+}
+
+func (t *CommonTarget) setProjectV2Field(projectID, projectItemID string, fieldDetails gh.FieldDetails, fieldValue string) error {
+	ctx := t.ctx
+
+	var updateProjectV2ItemFieldValueMutation struct {
+		UpdateProjetV2ItemFieldValue struct {
+			ClientMutationID string
+		} `graphql:"updateProjectV2ItemFieldValue(input: $input)"`
+	}
+
+	val, err := toValue(fieldDetails.DataType, fieldValue)
+	if err != nil {
+		return err
+	}
+
+	updateInput := gh.UpdateProjectV2ItemFieldValueInput{
+		ProjectID: projectID,
+		ItemID:    projectItemID,
+		Value:     val,
+		FieldID:   fieldDetails.ID,
+	}
+
+	return t.githubClient.GetClientGraphQL().Mutate(ctx, &updateProjectV2ItemFieldValueMutation, updateInput, nil)
+}
+
+func (t *CommonTarget) SetProjectField(projectItems []gh.GQLProjectV2Item, projectTitle, fieldName, fieldValue string) error {
+	ctx := t.ctx
+	targetEntity := t.targetEntity
+	owner := targetEntity.Owner
+	repo := targetEntity.Repo
+
+	var projectItemID string
+	var projectID string
+	var projectNumber uint64
+	foundProject := false
+	totalRequestTries := 2
+
+	for _, projectItem := range projectItems {
+		if projectItem.Project.Title == projectTitle {
+			projectItemID = projectItem.ID
+			projectNumber = projectItem.Project.Number
+			projectID = projectItem.Project.ID
+			foundProject = true
+			break
+		}
+	}
+
+	if !foundProject {
+		return gh.ErrProjectNotFound
+	}
+
+	fields, err := t.githubClient.GetProjectFieldsByProjectNumber(ctx, owner, repo, projectNumber, totalRequestTries)
+	if err != nil {
+		return err
+	}
+
+	for _, field := range fields {
+		switch field.TypeName {
+		case "ProjectV2Field":
+			if strings.EqualFold(field.FieldDetails.Name, fieldName) {
+				return t.setProjectV2Field(projectID, projectItemID, field.FieldDetails, fieldValue)
+			}
+		case "ProjectV2SingleSelectField":
+			if strings.EqualFold(field.SingleSelectFieldDetails.Name, fieldName) {
+				return t.setProjectSingleSelectField(projectID, projectItemID, field.SingleSelectFieldDetails, fieldValue)
+			}
+		}
+	}
+
+	return gh.ErrProjectHasNoSuchField
 }

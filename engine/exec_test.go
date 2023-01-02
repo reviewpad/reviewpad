@@ -5,6 +5,7 @@
 package engine_test
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"testing"
@@ -13,7 +14,6 @@ import (
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/engine"
-	"github.com/reviewpad/reviewpad/v3/engine/testutils"
 	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	"github.com/reviewpad/reviewpad/v3/utils"
@@ -23,6 +23,8 @@ import (
 func TestEval_WhenGitHubRequestsFail(t *testing.T) {
 	tests := map[string]struct {
 		inputReviewpadFilePath string
+		inputContext           context.Context
+		inputGitHubClient      *gh.GithubClient
 		clientOptions          []mock.MockBackendOption
 		wantErr                string
 	}{
@@ -33,7 +35,7 @@ func TestEval_WhenGitHubRequestsFail(t *testing.T) {
 					mock.GetReposLabelsByOwnerByRepoByName,
 					http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 						w.WriteHeader(http.StatusInternalServerError)
-						w.Write(mock.MustMarshal(github.ErrorResponse{
+						engine.MustWriteBytes(w, mock.MustMarshal(github.ErrorResponse{
 							// An error response may also consist of a 404 status code.
 							// However, in this context, such response means a label does not exist.
 							Response: &http.Response{
@@ -53,7 +55,7 @@ func TestEval_WhenGitHubRequestsFail(t *testing.T) {
 					mock.GetReposLabelsByOwnerByRepoByName,
 					http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 						w.WriteHeader(http.StatusInternalServerError)
-						w.Write(mock.MustMarshal(github.ErrorResponse{
+						engine.MustWriteBytes(w, mock.MustMarshal(github.ErrorResponse{
 							Response: &http.Response{
 								StatusCode: 404,
 							},
@@ -90,12 +92,12 @@ func TestEval_WhenGitHubRequestsFail(t *testing.T) {
 				assert.FailNow(t, fmt.Sprintf("engine MockEnvWith: %v", err))
 			}
 
-			reviewpadFileData, err := utils.LoadFile(test.inputReviewpadFilePath)
+			reviewpadFileData, err := utils.ReadFile(test.inputReviewpadFilePath)
 			if err != nil {
 				assert.FailNow(t, fmt.Sprintf("Error reading reviewpad file: %v", err))
 			}
 
-			reviewpadFile, err := testutils.ParseReviewpadFile(reviewpadFileData)
+			reviewpadFile, err := engine.Load(test.inputContext, test.inputGitHubClient, reviewpadFileData)
 			if err != nil {
 				assert.FailNow(t, "Error parsing reviewpad file: %v", err)
 			}
@@ -111,6 +113,8 @@ func TestEval_WhenGitHubRequestsFail(t *testing.T) {
 func TestEval(t *testing.T) {
 	tests := map[string]struct {
 		inputReviewpadFilePath string
+		inputContext           context.Context
+		inputGitHubClient      *gh.GithubClient
 		clientOptions          []mock.MockBackendOption
 		targetEntity           *handler.TargetEntity
 		eventData              *handler.EventData
@@ -119,7 +123,10 @@ func TestEval(t *testing.T) {
 	}{
 		"when label has no name": {
 			inputReviewpadFilePath: "testdata/exec/reviewpad_with_unnamed_label.yml",
-			clientOptions:          []mock.MockBackendOption{mockGetReposLabelsByOwnerByRepoByName("bug", "")},
+			clientOptions: []mock.MockBackendOption{
+				mockGetReposLabelsByOwnerByRepoByName("bug", ""),
+				mockPatchReposLabelsByOwnerByRepo("bug", ""),
+			},
 			wantProgram: engine.BuildProgram(
 				[]*engine.Statement{
 					engine.BuildStatement(`$addLabel("test-unnamed-label")`),
@@ -266,7 +273,7 @@ func TestEval(t *testing.T) {
 			},
 			clientOptions: []mock.MockBackendOption{
 				mock.WithRequestMatch(
-					mock.PatchReposIssuesCommentsByOwnerByRepoByCommentId,
+					mock.PostReposIssuesCommentsByOwnerByRepoByIssueNumber,
 					&github.IssueComment{},
 				),
 			},
@@ -296,7 +303,7 @@ func TestEval(t *testing.T) {
 			},
 			clientOptions: []mock.MockBackendOption{
 				mock.WithRequestMatch(
-					mock.PatchReposIssuesCommentsByOwnerByRepoByCommentId,
+					mock.PostReposIssuesCommentsByOwnerByRepoByIssueNumber,
 					&github.IssueComment{},
 				),
 			},
@@ -386,12 +393,12 @@ func TestEval(t *testing.T) {
 				assert.FailNow(t, fmt.Sprintf("engine MockEnvWith: %v", err))
 			}
 
-			reviewpadFileData, err := utils.LoadFile(test.inputReviewpadFilePath)
+			reviewpadFileData, err := utils.ReadFile(test.inputReviewpadFilePath)
 			if err != nil {
 				assert.FailNow(t, fmt.Sprintf("Error reading reviewpad file: %v", err))
 			}
 
-			reviewpadFile, err := testutils.ParseReviewpadFile(reviewpadFileData)
+			reviewpadFile, err := engine.Load(test.inputContext, test.inputGitHubClient, reviewpadFileData)
 			if err != nil {
 				assert.FailNow(t, fmt.Sprintf("Error parsing reviewpad file: %v", err))
 			}

@@ -16,6 +16,7 @@ api-version: reviewpad.com/v3.x
 
 mode: silent
 edition: professional
+metrics-on-merge: true
 
 pipelines:
   - name: assign-reviewers
@@ -30,10 +31,12 @@ pipelines:
 `
 	gotFile, err := parse([]byte(contents))
 
+	metricsOnMerge := true
 	wantFile := &ReviewpadFile{
-		Version: "reviewpad.com/v3.x",
-		Edition: "professional",
-		Mode:    "silent",
+		Version:        "reviewpad.com/v3.x",
+		Edition:        "professional",
+		Mode:           "silent",
+		MetricsOnMerge: &metricsOnMerge,
 		Pipelines: []PadPipeline{
 			{
 				Name:        "assign-reviewers",

@@ -6,6 +6,7 @@ package target
 
 import (
 	"context"
+	"encoding/json"
 	"time"
 
 	"github.com/google/go-github/v48/github"
@@ -210,6 +211,28 @@ func (t *PullRequestTarget) GetReviews() ([]*codehost.Review, error) {
 	return reviews, nil
 }
 
+func (t *PullRequestTarget) IsLinkedToProject(title string) (bool, error) {
+	ctx := t.ctx
+	targetEntity := t.targetEntity
+	owner := targetEntity.Owner
+	repo := targetEntity.Repo
+	number := targetEntity.Number
+	totalRetries := 2
+
+	projects, err := t.githubClient.GetLinkedProjectsForPullRequest(ctx, owner, repo, number, totalRetries)
+	if err != nil {
+		return false, err
+	}
+
+	for _, project := range projects {
+		if project.Project.Title == title {
+			return true, nil
+		}
+	}
+
+	return false, nil
+}
+
 func (t *PullRequestTarget) Merge(mergeMethod string) error {
 	ctx := t.ctx
 	targetEntity := t.targetEntity
@@ -405,4 +428,46 @@ func (t *PullRequestTarget) GetLastCommit() (string, error) {
 	number := targetEntity.Number
 
 	return t.githubClient.GetLastCommitSHA(ctx, owner, repo, number)
+}
+
+func (t *PullRequestTarget) GetLinkedProjects() ([]gh.GQLProjectV2Item, error) {
+	ctx := t.ctx
+	targetEntity := t.targetEntity
+	owner := targetEntity.Owner
+	repo := targetEntity.Repo
+	number := targetEntity.Number
+	totalRetries := 2
+
+	return t.githubClient.GetLinkedProjectsForPullRequest(ctx, owner, repo, number, totalRetries)
+}
+
+func (t *PullRequestTarget) GetApprovalsCount() (int, error) {
+	ctx := t.ctx
+	targetEntity := t.targetEntity
+	owner := targetEntity.Owner
+	repo := targetEntity.Repo
+	number := targetEntity.Number
+
+	return t.githubClient.GetApprovalsCount(ctx, owner, repo, number)
+}
+
+func (t *PullRequestTarget) TriggerWorkflowByFileName(workflowFileName string) error {
+	ctx := t.ctx
+	targetEntity := t.targetEntity
+	owner := targetEntity.Owner
+	repo := targetEntity.Repo
+	head := t.PullRequest.GetHead().GetRef()
+
+	_, err := t.githubClient.TriggerWorkflowByFileName(ctx, owner, repo, head, workflowFileName)
+
+	return err
+}
+
+func (t *PullRequestTarget) JSON() (string, error) {
+	j, err := json.Marshal(t.PullRequest)
+	if err != nil {
+		return "", err
+	}
+
+	return string(j), nil
 }

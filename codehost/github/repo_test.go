@@ -6,7 +6,6 @@ package github_test
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"runtime"
 	"testing"
@@ -57,7 +56,7 @@ func TestCloneRepository_WhenPathProvided(t *testing.T) {
 	ref, err := repo.References.Lookup("refs/heads/main")
 	checkFatal(t, err)
 
-	path, err := ioutil.TempDir("", TestRepo)
+	path, err := os.MkdirTemp("", TestRepo)
 	checkFatal(t, err)
 
 	repo2, _, err := gh.CloneRepository(repo.Path(), "", path, &git.CloneOptions{
@@ -77,7 +76,7 @@ func TestCloneRepository_WhenPathProvided(t *testing.T) {
 }
 
 func TestCloneRepository_WithExternalHTTPUrl(t *testing.T) {
-	path, err := ioutil.TempDir("", TestRepo)
+	path, err := os.MkdirTemp("", TestRepo)
 	defer os.RemoveAll(path)
 	checkFatal(t, err)
 
@@ -351,14 +350,14 @@ func TestPush(t *testing.T) {
 }
 
 func createTestRepo(t *testing.T, isBare bool) *git.Repository {
-	path, err := ioutil.TempDir("", TestRepo)
+	path, err := os.MkdirTemp("", TestRepo)
 	checkFatal(t, err)
 
 	repo, err := git.InitRepository(path, isBare)
 	checkFatal(t, err)
 
 	tmpfile := "README"
-	err = ioutil.WriteFile(path+"/"+tmpfile, []byte("foo\n"), 0644)
+	err = os.WriteFile(path+"/"+tmpfile, []byte("foo\n"), 0644)
 
 	checkFatal(t, err)
 

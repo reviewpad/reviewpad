@@ -29,7 +29,7 @@ func TestGetLinkedProjects_WhenRequestFails(t *testing.T) {
 	mockRepo := host.GetPullRequestBaseRepoName(mockedPullRequest)
 	mockIssuerNumber := 10
 
-	projects, err := mockedGithubClient.GetLinkedProjects(context.Background(), mockOwner, mockRepo, mockIssuerNumber, 3)
+	projects, err := mockedGithubClient.GetLinkedProjectsForIssue(context.Background(), mockOwner, mockRepo, mockIssuerNumber, 3)
 
 	assert.NotNil(t, err)
 
@@ -43,6 +43,7 @@ func TestGetLinkedProjects_WhenProjectItemsNotFound(t *testing.T) {
                 issue(number: $issueNumber) {
                     projectItems(first: 10, after: $projectItemsCursor) {
                         nodes {
+                            id,
                             project {id,number,title}
                         },
                         pageInfo {endCursor,hasNextPage}
@@ -68,11 +69,11 @@ func TestGetLinkedProjects_WhenProjectItemsNotFound(t *testing.T) {
 	mockedGithubClient := aladino.MockDefaultGithubClient(
 		nil,
 		func(res http.ResponseWriter, req *http.Request) {
-			query := utils.MinifyQuery(aladino.MustRead(req.Body))
+			query := utils.MinifyQuery(utils.MustRead(req.Body))
 			mockedQuery := utils.MinifyQuery(mockedGetLinkedProjectsQuery)
 			switch query {
 			case mockedQuery:
-				aladino.MustWrite(
+				utils.MustWrite(
 					res,
 					mockedGetProjectByNameQueryBody,
 				)
@@ -85,7 +86,7 @@ func TestGetLinkedProjects_WhenProjectItemsNotFound(t *testing.T) {
 	mockRepo := host.GetPullRequestBaseRepoName(mockedPullRequest)
 	mockIssuerNumber := 10
 
-	projects, err := mockedGithubClient.GetLinkedProjects(context.Background(), mockOwner, mockRepo, mockIssuerNumber, 3)
+	projects, err := mockedGithubClient.GetLinkedProjectsForIssue(context.Background(), mockOwner, mockRepo, mockIssuerNumber, 3)
 
 	assert.NotNil(t, err)
 
@@ -99,6 +100,7 @@ func TestGetLinkedProjects_WhenProjectFound(t *testing.T) {
                 issue(number: $issueNumber) {
                     projectItems(first: 10, after: $projectItemsCursor) {
                         nodes {
+                            id,
                             project {id,number,title}
                         },
                         pageInfo {endCursor,hasNextPage}
@@ -120,6 +122,7 @@ func TestGetLinkedProjects_WhenProjectFound(t *testing.T) {
                     "projectItems":{
                         "nodes":[
                             {
+                                "id": "1",
                                 "project":{
                                     "id": "1",
                                     "number": 1,
@@ -135,11 +138,11 @@ func TestGetLinkedProjects_WhenProjectFound(t *testing.T) {
 	mockedGithubClient := aladino.MockDefaultGithubClient(
 		nil,
 		func(res http.ResponseWriter, req *http.Request) {
-			query := utils.MinifyQuery(aladino.MustRead(req.Body))
+			query := utils.MinifyQuery(utils.MustRead(req.Body))
 			mockedQuery := utils.MinifyQuery(mockedGetLinkedProjectsQuery)
 			switch query {
 			case mockedQuery:
-				aladino.MustWrite(
+				utils.MustWrite(
 					res,
 					mockedGetProjectByNameQueryBody,
 				)
@@ -152,10 +155,11 @@ func TestGetLinkedProjects_WhenProjectFound(t *testing.T) {
 	mockRepo := host.GetPullRequestBaseRepoName(mockedPullRequest)
 	mockIssuerNumber := 10
 
-	gotProjects, err := mockedGithubClient.GetLinkedProjects(context.Background(), mockOwner, mockRepo, mockIssuerNumber, 3)
+	gotProjects, err := mockedGithubClient.GetLinkedProjectsForIssue(context.Background(), mockOwner, mockRepo, mockIssuerNumber, 3)
 
 	wantProjects := []host.GQLProjectV2Item{
 		{
+			ID: "1",
 			Project: host.ProjectV2{
 				ID:     "1",
 				Number: 1,

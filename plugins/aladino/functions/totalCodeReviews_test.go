@@ -70,10 +70,10 @@ func TestTotalCodeReviews(t *testing.T) {
 		t,
 		nil,
 		func(res http.ResponseWriter, req *http.Request) {
-			query := utils.MinifyQuery(aladino.MustRead(req.Body))
+			query := utils.MinifyQuery(utils.MustRead(req.Body))
 			switch query {
 			case utils.MinifyQuery(mockedTotalPullRequestReviewContributionsQuery):
-				aladino.MustWrite(res, mockedTotalPullRequestReviewContributionsQueryBody)
+				utils.MustWrite(res, mockedTotalPullRequestReviewContributionsQueryBody)
 			}
 		},
 		aladino.MockBuiltIns(),

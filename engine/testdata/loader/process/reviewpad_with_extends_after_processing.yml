@@ -1,0 +1,55 @@
+# Copyright 2022 Explore.dev Unipessoal Lda. All Rights Reserved.
+# Use of this source code is governed by a license that can be
+# found in the LICENSE file.
+
+api-version: reviewpad.com/v3.x
+mode: verbose
+edition: enterprise
+ignore-errors: true
+metrics-on-merge: true
+
+labels:
+  small:
+    color: '#aa12ab'
+  medium:
+    color: '#a8c3f7'
+
+groups:
+  - name: owners
+    kind: developers
+    spec: '["anonymous"]'
+
+rules:
+  - name: is-medium
+    kind: patch
+    spec: $size() > 30 && $size() <= 100
+
+  - name: is-small
+    kind: patch
+    spec: $size() < 30
+
+workflows:
+  - name: add-label-with-medium-size
+    alwaysRun: false
+    if:
+      - rule: is-medium
+    then:
+      - $addLabel("medium")
+
+  - name: info-owners
+    if:
+      - rule: $isElementOf($author(), $group("owners"))
+    then:
+      - $info("bob has authored a PR")
+
+  - name: check-title
+    if:
+      - 'true'
+    then:
+      - $titleLint()
+
+  - name: add-label-with-small-size
+    if:
+      - rule: is-small
+    then:
+      - $addLabel("small")

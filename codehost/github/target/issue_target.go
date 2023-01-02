@@ -6,6 +6,7 @@ package target
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/google/go-github/v48/github"
 	"github.com/reviewpad/reviewpad/v3/codehost"
@@ -118,12 +119,45 @@ func (t *IssueTarget) GetAssignees() ([]*codehost.User, error) {
 	return assignees, nil
 }
 
+func (t *IssueTarget) IsLinkedToProject(title string) (bool, error) {
+	ctx := t.ctx
+	targetEntity := t.targetEntity
+	owner := targetEntity.Owner
+	repo := targetEntity.Repo
+	number := targetEntity.Number
+	totalRetries := 2
+
+	projects, err := t.githubClient.GetLinkedProjectsForIssue(ctx, owner, repo, number, totalRetries)
+	if err != nil {
+		return false, err
+	}
+
+	for _, project := range projects {
+		if project.Project.Title == title {
+			return true, nil
+		}
+	}
+
+	return false, nil
+}
+
 func (t *IssueTarget) GetCommentCount() (int, error) {
 	return t.issue.GetComments(), nil
 }
 
 func (t *IssueTarget) GetCreatedAt() (string, error) {
 	return t.issue.GetCreatedAt().String(), nil
+}
+
+func (t *IssueTarget) GetLinkedProjects() ([]gh.GQLProjectV2Item, error) {
+	ctx := t.ctx
+	targetEntity := t.targetEntity
+	owner := targetEntity.Owner
+	repo := targetEntity.Repo
+	number := targetEntity.Number
+	totalRetries := 2
+
+	return t.githubClient.GetLinkedProjectsForIssue(ctx, owner, repo, number, totalRetries)
 }
 
 func (t *IssueTarget) GetUpdatedAt() (string, error) {
@@ -140,4 +174,13 @@ func (t *IssueTarget) GetState() string {
 
 func (t *IssueTarget) GetTitle() string {
 	return t.issue.GetTitle()
+}
+
+func (t *IssueTarget) JSON() (string, error) {
+	j, err := json.Marshal(t.issue)
+	if err != nil {
+		return "", err
+	}
+
+	return string(j), nil
 }

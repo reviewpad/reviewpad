@@ -12,6 +12,7 @@ import (
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
+	"github.com/reviewpad/reviewpad/v3/utils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -36,10 +37,10 @@ func TestIsLinkedToProject(t *testing.T) {
 			args:       []aladino.Value{aladino.BuildStringValue("project title")},
 			wantResult: (aladino.Value)(nil),
 			graphqlHandler: func(w http.ResponseWriter, r *http.Request) {
-				aladino.MustWrite(w, `{
+				utils.MustWrite(w, `{
 					"data": {
 						"repository":{
-							"issue":{
+							"pullRequest":{
 							}
 						}
 					}
@@ -51,10 +52,10 @@ func TestIsLinkedToProject(t *testing.T) {
 			args:       []aladino.Value{aladino.BuildStringValue("project title")},
 			wantResult: aladino.BuildBoolValue(false),
 			graphqlHandler: func(w http.ResponseWriter, r *http.Request) {
-				aladino.MustWrite(w, `{
+				utils.MustWrite(w, `{
 					"data": {
 						"repository":{
-							"issue":{
+							"pullRequest":{
 								"projectItems":{
 									"nodes":[
 										{
@@ -76,10 +77,10 @@ func TestIsLinkedToProject(t *testing.T) {
 			args:       []aladino.Value{aladino.BuildStringValue("project title")},
 			wantResult: aladino.BuildBoolValue(true),
 			graphqlHandler: func(w http.ResponseWriter, r *http.Request) {
-				aladino.MustWrite(w, `{
+				utils.MustWrite(w, `{
 					"data": {
 						"repository":{
-							"issue":{
+							"pullRequest":{
 								"projectItems":{
 									"nodes":[
 										{

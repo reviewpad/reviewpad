@@ -6,10 +6,9 @@ package aladino
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"testing"
 
@@ -18,6 +17,7 @@ import (
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/engine"
 	"github.com/reviewpad/reviewpad/v3/handler"
+	"github.com/reviewpad/reviewpad/v3/utils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -531,7 +531,7 @@ func TestReport_WhenFindReportCommentFails(t *testing.T) {
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsByOwnerByRepoByPullNumber,
 				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					w.Write(mock.MustMarshal(mockedPullRequest))
+					utils.MustWriteBytes(w, mock.MustMarshal(mockedPullRequest))
 				}),
 			),
 		},
@@ -631,10 +631,10 @@ func TestReport_OnVerboseMode_WhenNoReviewpadCommentIsFound(t *testing.T) {
 			mock.WithRequestMatchHandler(
 				mock.PostReposIssuesCommentsByOwnerByRepoByIssueNumber,
 				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					rawBody, _ := ioutil.ReadAll(r.Body)
+					rawBody, _ := io.ReadAll(r.Body)
 					body := github.IssueComment{}
 
-					json.Unmarshal(rawBody, &body)
+					utils.MustUnmarshal(rawBody, &body)
 
 					addedComment = *body.Body
 				}),
@@ -673,10 +673,10 @@ func TestReport_OnVerboseMode_WhenThereIsAlreadyAReviewpadComment(t *testing.T) 
 			mock.WithRequestMatchHandler(
 				mock.PatchReposIssuesCommentsByOwnerByRepoByCommentId,
 				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					rawBody, _ := ioutil.ReadAll(r.Body)
+					rawBody, _ := io.ReadAll(r.Body)
 					body := github.IssueComment{}
 
-					json.Unmarshal(rawBody, &body)
+					utils.MustUnmarshal(rawBody, &body)
 
 					updatedComment = *body.Body
 				}),
@@ -760,19 +760,17 @@ func TestReportMetric(t *testing.T) {
 		graphQLHandler         func(res http.ResponseWriter, req *http.Request)
 		commentShouldBeCreated bool
 		commentShouldBeUpdated bool
-		mode                   string
 		err                    error
 	}{
 		"when getting first commit and review date failed": {
 			graphQLHandler: func(res http.ResponseWriter, req *http.Request) {
 				res.WriteHeader(http.StatusBadRequest)
 			},
-			err:  errors.New("non-200 OK status code: 400 Bad Request body: \"\""),
-			mode: "verbose",
+			err: errors.New("non-200 OK status code: 400 Bad Request body: \"\""),
 		},
 		"when find report comment failed": {
 			graphQLHandler: func(res http.ResponseWriter, req *http.Request) {
-				MustWrite(
+				utils.MustWrite(
 					res,
 					`{
 						"data": {
@@ -804,12 +802,11 @@ func TestReportMetric(t *testing.T) {
 					}),
 				),
 			},
-			err:  errors.New("[report] error getting issues "),
-			mode: "verbose",
+			err: errors.New("[report] error getting issues "),
 		},
 		"when create comment failed": {
 			graphQLHandler: func(res http.ResponseWriter, req *http.Request) {
-				MustWrite(
+				utils.MustWrite(
 					res,
 					`{
 						"data": {
@@ -845,12 +842,11 @@ func TestReportMetric(t *testing.T) {
 					[]*github.IssueComment{},
 				),
 			},
-			err:  errors.New("[report] error on creating report comment "),
-			mode: "verbose",
+			err: errors.New("[report] error on creating report comment "),
 		},
 		"when update comment failed": {
 			graphQLHandler: func(res http.ResponseWriter, req *http.Request) {
-				MustWrite(
+				utils.MustWrite(
 					res,
 					`{
 						"data": {
@@ -891,12 +887,11 @@ func TestReportMetric(t *testing.T) {
 					},
 				),
 			},
-			err:  errors.New("[report] error on updating report comment "),
-			mode: "verbose",
+			err: errors.New("[report] error on updating report comment "),
 		},
 		"when successfully created report comment": {
 			graphQLHandler: func(res http.ResponseWriter, req *http.Request) {
-				MustWrite(
+				utils.MustWrite(
 					res,
 					`{
 						"data": {
@@ -934,11 +929,10 @@ func TestReportMetric(t *testing.T) {
 			},
 			commentShouldBeCreated: true,
 			err:                    nil,
-			mode:                   "verbose",
 		},
 		"when successfully updated report comment": {
 			graphQLHandler: func(res http.ResponseWriter, req *http.Request) {
-				MustWrite(
+				utils.MustWrite(
 					res,
 					`{
 						"data": {
@@ -981,12 +975,6 @@ func TestReportMetric(t *testing.T) {
 			},
 			commentShouldBeUpdated: true,
 			err:                    nil,
-			mode:                   "verbose",
-		},
-		"when mode is silent": {
-			commentShouldBeUpdated: false,
-			err:                    nil,
-			mode:                   "silent",
 		},
 	}
 
@@ -1006,7 +994,7 @@ func TestReportMetric(t *testing.T) {
 
 			assert.Nil(t, err)
 
-			err = interpreter.ReportMetrics(test.mode)
+			err = interpreter.ReportMetrics()
 
 			assert.Equal(t, test.err, err)
 			assert.Equal(t, test.commentShouldBeCreated, commentCreated)

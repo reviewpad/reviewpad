@@ -6,7 +6,7 @@ package github
 
 import (
 	"context"
-	"io/ioutil"
+	"io"
 
 	"github.com/google/go-github/v48/github"
 )
@@ -37,5 +37,5 @@ func (c *GithubClient) DownloadContents(ctx context.Context, filePath string, br
 		return nil, err
 	}
 
-	return ioutil.ReadAll(ioReader)
+	return io.ReadAll(ioReader)
 }

@@ -6,7 +6,7 @@ package utils
 
 import "os"
 
-func LoadFile(filepath string) ([]byte, error) {
+func ReadFile(filepath string) ([]byte, error) {
 	fileData, err := os.ReadFile(filepath)
 	if err != nil {
 		return nil, err

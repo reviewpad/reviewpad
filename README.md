@@ -10,9 +10,9 @@ For **questions**, check out the [discussions](https://github.com/reviewpad/revi
 
 For **documentation**, check out this document and the [official documentation](https://docs.reviewpad.com).
 
-**If you think Reviewpad is or could be useful for you, come say hi on [Discord](https://reviewpad.com/discord).**
+**Join our Community on [Discord](https://reviewpad.com/discord)!**
 
-To start using Reviewpad, check out the [Reviewpad GitHub Action](https://github.com/reviewpad/action).
+To start using Reviewpad, check out our [website](https://reviewpad.com).
 
 ## What is Reviewpad?
 
@@ -35,7 +35,7 @@ api-version: reviewpad.com/v3.x
 labels:
     ship:
         description: Ship mode
-        color: '#76dbbe'
+        color: "#76dbbe"
 
 workflows:
     - name: ship
@@ -178,12 +178,7 @@ Paste the following configuration:
 {
     "licenser.license": "Custom",
     "licenser.author": "Explore.dev, Unipessoal Lda",
-    "licenser.customHeader": "Copyright (C) @YEAR@ @AUTHOR@ - All Rights Reserved\nUse of this source code is governed by a license that can be\nfound in the LICENSE file.",
-    "yaml.schemas": {
-        "https://raw.githubusercontent.com/reviewpad/schemas/main/latest/schema.json": [
-            "reviewpad.yml"
-        ]
-    }
+    "licenser.customHeader": "Copyright (C) @YEAR@ @AUTHOR@ - All Rights Reserved\nUse of this source code is governed by a license that can be\nfound in the LICENSE file."
 }
 ```
 

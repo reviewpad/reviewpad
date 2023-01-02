@@ -5,8 +5,7 @@
 package plugins_aladino_actions_test
 
 import (
-	"encoding/json"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"testing"
 
@@ -14,6 +13,7 @@ import (
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
+	"github.com/reviewpad/reviewpad/v3/utils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -128,7 +128,7 @@ func TestAssignRandomReviewer_ShouldFilterPullRequestAuthor(t *testing.T) {
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsByOwnerByRepoByPullNumber,
 				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					w.Write(mock.MustMarshal(mockedPullRequest))
+					utils.MustWriteBytes(w, mock.MustMarshal(mockedPullRequest))
 				}),
 			),
 			mock.WithRequestMatch(
@@ -145,10 +145,10 @@ func TestAssignRandomReviewer_ShouldFilterPullRequestAuthor(t *testing.T) {
 			mock.WithRequestMatchHandler(
 				mock.PostReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
 				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					rawBody, _ := ioutil.ReadAll(r.Body)
+					rawBody, _ := io.ReadAll(r.Body)
 					body := ReviewersRequestPostBody{}
 
-					json.Unmarshal(rawBody, &body)
+					utils.MustUnmarshal(rawBody, &body)
 
 					selectedReviewers = body.Reviewers
 				}),
@@ -177,7 +177,7 @@ func TestAssignRandomReviewer_WhenThereIsNoUsers(t *testing.T) {
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsByOwnerByRepoByPullNumber,
 				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					w.Write(mock.MustMarshal(mockedPullRequest))
+					utils.MustWriteBytes(w, mock.MustMarshal(mockedPullRequest))
 				}),
 			),
 			mock.WithRequestMatch(

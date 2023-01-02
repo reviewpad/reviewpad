@@ -5,8 +5,7 @@
 package plugins_aladino_actions_test
 
 import (
-	"encoding/json"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"testing"
 
@@ -14,6 +13,7 @@ import (
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
+	"github.com/reviewpad/reviewpad/v3/utils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -69,10 +69,10 @@ func TestAddLabel_WhenLabelIsInEnvironment(t *testing.T) {
 			mock.WithRequestMatchHandler(
 				mock.PostReposIssuesLabelsByOwnerByRepoByIssueNumber,
 				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					rawBody, _ := ioutil.ReadAll(r.Body)
+					rawBody, _ := io.ReadAll(r.Body)
 					body := []string{}
 
-					json.Unmarshal(rawBody, &body)
+					utils.MustUnmarshal(rawBody, &body)
 
 					gotLabels = body
 				}),
@@ -108,10 +108,10 @@ func TestAddLabel_WhenLabelIsNotInEnvironment(t *testing.T) {
 			mock.WithRequestMatchHandler(
 				mock.PostReposIssuesLabelsByOwnerByRepoByIssueNumber,
 				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					rawBody, _ := ioutil.ReadAll(r.Body)
+					rawBody, _ := io.ReadAll(r.Body)
 					body := []string{}
 
-					json.Unmarshal(rawBody, &body)
+					utils.MustUnmarshal(rawBody, &body)
 
 					gotLabels = body
 				}),

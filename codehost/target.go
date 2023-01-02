@@ -8,6 +8,7 @@ import (
 	"errors"
 	"time"
 
+	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/handler"
 )
 
@@ -29,6 +30,7 @@ type Target interface {
 	GetUpdatedAt() (string, error)
 	GetDescription() (string, error)
 	GetLabels() []*Label
+	GetLinkedProjects() ([]gh.GQLProjectV2Item, error)
 	GetNodeID() string
 	GetProjectByName(name string) (*Project, error)
 	GetProjectFieldsByProjectNumber(projectNumber uint64) ([]*ProjectField, error)
@@ -37,6 +39,8 @@ type Target interface {
 	GetTitle() string
 	IsLinkedToProject(title string) (bool, error)
 	RemoveLabel(labelName string) error
+	SetProjectField(projectItems []gh.GQLProjectV2Item, projectTitle, fieldName, fieldValue string) error
+	JSON() (string, error)
 }
 
 type User struct {

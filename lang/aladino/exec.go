@@ -6,6 +6,7 @@ package aladino
 
 import (
 	"fmt"
+	"log"
 )
 
 type ExecExpr interface {
@@ -52,7 +53,9 @@ func (fc *FunctionCall) exec(env Env) error {
 		"builtin": fc.name.ident,
 	}
 
-	env.GetCollector().Collect("Ran Builtin", collectedData)
+	if err := env.GetCollector().Collect("Ran Builtin", collectedData); err != nil {
+		log.Printf("error collection built-in run: %v\n", err)
+	}
 
 	entityKind := env.GetTarget().GetTargetEntity().Kind
 

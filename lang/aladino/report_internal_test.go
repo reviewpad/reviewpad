@@ -5,9 +5,8 @@
 package aladino
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strconv"
 	"testing"
@@ -16,6 +15,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v3/engine"
+	"github.com/reviewpad/reviewpad/v3/utils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -207,10 +207,10 @@ func TestUpdateReportComment_WhenCommentCanBeEdited(t *testing.T) {
 			mock.WithRequestMatchHandler(
 				mock.PatchReposIssuesCommentsByOwnerByRepoByCommentId,
 				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					rawBody, _ := ioutil.ReadAll(r.Body)
+					rawBody, _ := io.ReadAll(r.Body)
 					body := EditCommentRequestPostBody{}
 
-					json.Unmarshal(rawBody, &body)
+					utils.MustUnmarshal(rawBody, &body)
 
 					gotUpdatedComment = body.Body
 				}),
@@ -268,10 +268,10 @@ func TestAddReportComment_WhenCommentCanBeCreated(t *testing.T) {
 			mock.WithRequestMatchHandler(
 				mock.PostReposIssuesCommentsByOwnerByRepoByIssueNumber,
 				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					rawBody, _ := ioutil.ReadAll(r.Body)
+					rawBody, _ := io.ReadAll(r.Body)
 					body := EditCommentRequestPostBody{}
 
-					json.Unmarshal(rawBody, &body)
+					utils.MustUnmarshal(rawBody, &body)
 
 					createdComment = body.Body
 				}),

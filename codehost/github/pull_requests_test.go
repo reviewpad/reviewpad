@@ -8,7 +8,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"testing"
 	"time"
@@ -132,7 +132,7 @@ func TestPaginatedRequest(t *testing.T) {
 
 				defer resp.Body.Close()
 
-				data, err := ioutil.ReadAll(resp.Body)
+				data, err := io.ReadAll(resp.Body)
 				if err != nil {
 					return nil, &github.Response{Response: resp}, err
 				}
@@ -321,7 +321,7 @@ func TestGetPullRequestFiles(t *testing.T) {
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsFilesByOwnerByRepoByPullNumber,
 				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					w.Write(mock.MustMarshal(wantFiles))
+					utils.MustWrite(w, string(mock.MustMarshal(wantFiles)))
 				}),
 			),
 		},
@@ -868,10 +868,10 @@ func TestGetPullRequestLastPushDate(t *testing.T) {
 			mockedGithubClient := aladino.MockDefaultGithubClient(
 				nil,
 				func(w http.ResponseWriter, req *http.Request) {
-					query := utils.MinifyQuery(aladino.MustRead(req.Body))
+					query := utils.MinifyQuery(utils.MustRead(req.Body))
 					switch query {
 					case utils.MinifyQuery(mockedGQLQuery):
-						aladino.MustWrite(w, test.mockedGQLQueryBody)
+						utils.MustWrite(w, test.mockedGQLQueryBody)
 					}
 				},
 			)
@@ -922,10 +922,10 @@ func TestGetReviewThreads(t *testing.T) {
 	mockedGithubClient := aladino.MockDefaultGithubClient(
 		nil,
 		func(w http.ResponseWriter, req *http.Request) {
-			query := aladino.MustRead(req.Body)
+			query := utils.MustRead(req.Body)
 			switch query {
 			case mockedGraphQLQuery:
-				aladino.MustWrite(
+				utils.MustWrite(
 					w,
 					`{"data": {
                         "repository": {
