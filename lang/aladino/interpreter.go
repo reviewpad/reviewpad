@@ -262,7 +262,7 @@ func (i *Interpreter) ReportMetrics() error {
 
 func commentCommandError(env Env, commandErr error) error {
 	targetEntity := env.GetTarget().GetTargetEntity()
-	eventData := env.GetEventData()
+	eventData := env.GetEventPayload().(*github.IssueComment)
 	owner := targetEntity.Owner
 	repo := targetEntity.Repo
 	number := targetEntity.Number
@@ -271,8 +271,8 @@ func commentCommandError(env Env, commandErr error) error {
 	body := new(strings.Builder)
 	githubError := &github.ErrorResponse{}
 
-	body.WriteString(fmt.Sprintf("> %s\n\n", *eventData.Comment.Body))
-	body.WriteString(fmt.Sprintf("@%s an error occured running your command\n", *eventData.Comment.User.Login))
+	body.WriteString(fmt.Sprintf("> %s\n\n", eventData.GetBody()))
+	body.WriteString(fmt.Sprintf("@%s an error occured running your command\n", eventData.GetUser().GetLogin()))
 
 	if errors.As(commandErr, &githubError) {
 		for _, e := range githubError.Errors {
@@ -297,9 +297,8 @@ func NewInterpreter(
 	targetEntity *handler.TargetEntity,
 	eventPayload interface{},
 	builtIns *BuiltIns,
-	eventData *handler.EventData,
 ) (engine.Interpreter, error) {
-	evalEnv, err := NewEvalEnv(ctx, dryRun, githubClient, collector, targetEntity, eventPayload, builtIns, eventData)
+	evalEnv, err := NewEvalEnv(ctx, dryRun, githubClient, collector, targetEntity, eventPayload, builtIns)
 	if err != nil {
 		return nil, err
 	}

@@ -66,7 +66,6 @@ func Run(
 		targetEntity,
 		eventPayload,
 		plugins_aladino.PluginBuiltInsWithConfig(config),
-		eventData,
 	)
 	if err != nil {
 		return engine.ExitStatusFailure, nil, err

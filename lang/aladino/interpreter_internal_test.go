@@ -723,7 +723,6 @@ func TestNewInterpreter_WhenNewEvalEnvFails(t *testing.T) {
 		DefaultMockTargetEntity,
 		GetDefaultMockPullRequestDetails(),
 		nil,
-		nil,
 	)
 
 	assert.Nil(t, gotInterpreter)
@@ -745,7 +744,6 @@ func TestNewInterpreter(t *testing.T) {
 		DefaultMockTargetEntity,
 		mockedEnv.GetEventPayload(),
 		mockedEnv.GetBuiltIns(),
-		mockedEnv.GetEventData(),
 	)
 
 	assert.Nil(t, err)
@@ -989,7 +987,6 @@ func TestReportMetric(t *testing.T) {
 				env.GetTarget().GetTargetEntity(),
 				nil,
 				nil,
-				nil,
 			)
 
 			assert.Nil(t, err)
@@ -1010,7 +1007,7 @@ func TestCommandErrorComment(t *testing.T) {
 	successfullyCommented := false
 	tests := map[string]struct {
 		clientOptions             []mock.MockBackendOption
-		eventData                 *handler.EventData
+		eventPayload              *github.IssueComment
 		commandError              error
 		wantError                 error
 		wantSuccessfullyCommented bool
@@ -1021,18 +1018,14 @@ func TestCommandErrorComment(t *testing.T) {
 					mock.PostReposIssuesCommentsByOwnerByRepoByIssueNumber,
 					http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 						w.WriteHeader(http.StatusInternalServerError)
-						MustWrite(w, `{"message": "internal error"}`)
+						utils.MustWrite(w, `{"message": "internal error"}`)
 					}),
 				),
 			},
-			eventData: &handler.EventData{
-				EventName:   "issue_comment",
-				EventAction: "created",
-				Comment: &github.IssueComment{
-					Body: github.String("/reviewpad assign-reviewers testuser"),
-					User: &github.User{
-						Login: github.String("test"),
-					},
+			eventPayload: &github.IssueComment{
+				Body: github.String("/reviewpad assign-reviewers testuser"),
+				User: &github.User{
+					Login: github.String("test"),
 				},
 			},
 			commandError: errors.New("unexpected error happened running command"),
@@ -1049,14 +1042,10 @@ func TestCommandErrorComment(t *testing.T) {
 					}),
 				),
 			},
-			eventData: &handler.EventData{
-				EventName:   "issue_comment",
-				EventAction: "created",
-				Comment: &github.IssueComment{
-					Body: github.String("/reviewpad assign-reviewers testuser"),
-					User: &github.User{
-						Login: github.String("test"),
-					},
+			eventPayload: &github.IssueComment{
+				Body: github.String("/reviewpad assign-reviewers testuser"),
+				User: &github.User{
+					Login: github.String("test"),
 				},
 			},
 			commandError: &github.ErrorResponse{
@@ -1072,7 +1061,7 @@ func TestCommandErrorComment(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			env := MockDefaultEnvWithTargetEntityAndEventData(t, test.clientOptions, nil, nil, nil, DefaultMockTargetEntity, test.eventData)
+			env := MockDefaultEnvWithTargetEntity(t, test.clientOptions, nil, nil, test.eventPayload, DefaultMockTargetEntity)
 
 			err := commentCommandError(env, test.commandError)
 
