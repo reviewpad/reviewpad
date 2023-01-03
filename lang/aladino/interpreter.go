@@ -149,7 +149,7 @@ func (i *Interpreter) ExecStatement(statement *engine.Statement) error {
 
 	i.Env.GetReport().addToReport(statement)
 
-	i.Env.GetLogger().Infof("\taction %v executed", statRaw)
+	i.Env.GetLogger().Infof("action %v executed", statRaw)
 	return nil
 }
 
@@ -253,7 +253,7 @@ func NewInterpreter(
 	eventPayload interface{},
 	builtIns *BuiltIns,
 ) (engine.Interpreter, error) {
-	log := logger.WithField("prefix", "[aladino]")
+	log := logger.WithField("prefix", "aladino")
 
 	evalEnv, err := NewEvalEnv(ctx, log, dryRun, githubClient, collector, targetEntity, eventPayload, builtIns)
 	if err != nil {

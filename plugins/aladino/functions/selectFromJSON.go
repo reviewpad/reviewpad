@@ -23,6 +23,7 @@ func SelectFromJSON() *aladino.BuiltInFunction {
 func selectFromJSONCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
 	jsonValue := args[0].(*aladino.JSONValue).Val
 	expr := args[1].(*aladino.StringValue).Val
+	log := e.GetLogger().WithField("builtin", "selectFromJSON")
 
 	parsedExpression, err := jp.ParseString(expr)
 	if err != nil {
@@ -32,7 +33,7 @@ func selectFromJSONCode(e aladino.Env, args []aladino.Value) (aladino.Value, err
 	results := parsedExpression.Get(jsonValue)
 
 	if len(results) == 0 {
-		e.GetLogger().Infof(`selectFromJSON: nothing found at path "%s"\n`, expr)
+		log.Infof(`nothing found at path "%s"\n`, expr)
 		return aladino.BuildStringValue(""), nil
 	}
 

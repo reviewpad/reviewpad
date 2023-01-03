@@ -16,7 +16,6 @@ import (
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
 	"github.com/reviewpad/reviewpad/v3/utils"
-	"github.com/reviewpad/reviewpad/v3/utils/fmtio"
 	"github.com/sirupsen/logrus"
 )
 
@@ -26,7 +25,7 @@ func Load(ctx context.Context, log *logrus.Entry, githubClient *gh.GithubClient,
 		return nil, err
 	}
 
-	log.Debugln(fmtio.Sprintf("load", "input file:\n%+v", file))
+	log.Debugf("load input file:\n%+v", file)
 
 	err = engine.Lint(file, log)
 	if err != nil {
@@ -98,10 +97,7 @@ func Run(
 		}
 	}
 
-	collectedData := map[string]interface{}{}
-
-	err = evalEnv.Collector.Collect("Completed Analysis", collectedData)
-
+	err = evalEnv.Collector.Collect("Completed Analysis", map[string]interface{}{})
 	if err != nil {
 		log.Infof("error on collector due to %v", err.Error())
 	}

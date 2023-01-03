@@ -22,7 +22,7 @@ func CloneRepository(log *logrus.Entry, url string, token string, path string, o
 	if dir == "" {
 		tempDir, err := os.MkdirTemp("", "repository")
 		if err != nil {
-			log.Error("[error] failed to create temporary folder")
+			log.Error("failed to create temporary folder")
 			return nil, "", err
 		}
 		dir = tempDir
@@ -50,7 +50,7 @@ func CheckoutBranch(log *logrus.Entry, repo *git.Repository, branchName string) 
 	// Lookup for remote branch
 	remoteBranch, err := repo.LookupBranch("origin/"+branchName, git.BranchRemote)
 	if err != nil {
-		log.Error("[error] failed to find remote branch: " + branchName)
+		log.Errorf("failed to find remote branch: %v", branchName)
 		return err
 	}
 	defer remoteBranch.Free()
@@ -58,7 +58,7 @@ func CheckoutBranch(log *logrus.Entry, repo *git.Repository, branchName string) 
 	// Lookup for remote branch commit
 	remoteCommit, err := repo.LookupCommit(remoteBranch.Target())
 	if err != nil {
-		log.Error("[error] failed to find remote branch commit: " + branchName)
+		log.Errorf("failed to find remote branch commit: %v", branchName)
 		return err
 	}
 	defer remoteCommit.Free()
@@ -69,26 +69,26 @@ func CheckoutBranch(log *logrus.Entry, repo *git.Repository, branchName string) 
 		// Create local branch
 		localBranch, err = repo.CreateBranch(branchName, remoteCommit, false)
 		if err != nil {
-			log.Error("[error] failed to create local branch: " + branchName)
+			log.Errorf("failed to create local branch: %v", branchName)
 			return err
 		}
 
 		// Setting upstream to origin branch
 		err = localBranch.SetUpstream("origin/" + branchName)
 		if err != nil {
-			log.Error("[error] failed to create upstream to origin/" + branchName)
+			log.Errorf("failed to create upstream to origin/%v", branchName)
 			return err
 		}
 	}
 	if localBranch == nil {
-		return errors.New("failed to locate/create local branch: " + branchName)
+		return fmt.Errorf("failed to locate/create local branch: %v", branchName)
 	}
 	defer localBranch.Free()
 
 	// Lookup for local branch commit
 	localCommit, err := repo.LookupCommit(localBranch.Target())
 	if err != nil {
-		log.Error("[error] failed to lookup for commit in local branch: " + branchName)
+		log.Errorf("failed to lookup for commit in local branch: %v", branchName)
 		return err
 	}
 	defer localCommit.Free()
@@ -96,7 +96,7 @@ func CheckoutBranch(log *logrus.Entry, repo *git.Repository, branchName string) 
 	// Lookup for local branch tree
 	tree, err := repo.LookupTree(localCommit.TreeId())
 	if err != nil {
-		log.Error("[error] failed to lookup for local tree: " + branchName)
+		log.Errorf("failed to lookup for local tree: %v", branchName)
 		return err
 	}
 	defer tree.Free()
@@ -104,14 +104,14 @@ func CheckoutBranch(log *logrus.Entry, repo *git.Repository, branchName string) 
 	// Checkout the tree
 	err = repo.CheckoutTree(tree, checkoutOpts)
 	if err != nil {
-		log.Error("[error] failed to checkout tree: " + branchName)
+		log.Errorf("failed to checkout tree: %v", branchName)
 		return err
 	}
 
 	// Set current Head to the checkout branch
 	err = repo.SetHead("refs/heads/" + branchName)
 	if err != nil {
-		log.Error("[error] failed to set head: " + branchName)
+		log.Errorf("failed to set head: %v", branchName)
 		return err
 	}
 
@@ -123,14 +123,14 @@ func CheckoutBranch(log *logrus.Entry, repo *git.Repository, branchName string) 
 func RebaseOnto(log *logrus.Entry, repo *git.Repository, branchName string, rebaseOptions *git.RebaseOptions) error {
 	ontoBranch, err := repo.LookupBranch(branchName, git.BranchLocal)
 	if err != nil {
-		log.Error("[error] failed to lookup for onto branch: " + branchName)
+		log.Errorf("failed to lookup for onto branch: %v", branchName)
 		return err
 	}
 	defer ontoBranch.Free()
 
 	onto, err := repo.AnnotatedCommitFromRef(ontoBranch.Reference)
 	if err != nil {
-		log.Error("[error] failed to extract annotated commit from ref of branch: " + branchName)
+		log.Errorf("failed to extract annotated commit from ref of branch: %v", branchName)
 		return err
 	}
 	defer onto.Free()
@@ -138,14 +138,14 @@ func RebaseOnto(log *logrus.Entry, repo *git.Repository, branchName string, reba
 	// Start rebase operation
 	rebase, err := repo.InitRebase(nil, nil, onto, rebaseOptions)
 	if err != nil {
-		log.Error("[error] failed to init rebase")
+		log.Error("failed to init rebase")
 		return err
 	}
 
 	// Verify that no operations are already in progress
 	rebaseOperationIndex, err := rebase.CurrentOperationIndex()
 	if rebaseOperationIndex != git.RebaseNoOperation && err != git.ErrRebaseNoOperation {
-		return errors.New("[error] rebase operation already in progress")
+		return errors.New("rebase operation already in progress")
 	}
 
 	// Iterate over rebase operations based on operation count
@@ -163,11 +163,11 @@ func RebaseOnto(log *logrus.Entry, repo *git.Repository, branchName string, reba
 		}
 
 		if int(rebaseOperationIndex) != op {
-			return errors.New("[error] bad operation index on rebase")
+			return errors.New("bad operation index on rebase")
 		}
 
 		if !operationsAreEqual(rebase.OperationAt(uint(op)), operation) {
-			return errors.New("[error] rebase operations should be equal")
+			return errors.New("rebase operations should be equal")
 		}
 
 		// Get current rebase operation created commit
@@ -198,7 +198,7 @@ func RebaseOnto(log *logrus.Entry, repo *git.Repository, branchName string, reba
 func Push(log *logrus.Entry, repo *git.Repository, remoteName string, branchName string, force bool) error {
 	remote, err := repo.Remotes.Lookup(remoteName)
 	if err != nil {
-		log.Error("[error] failed to find remote: " + remoteName)
+		log.Errorf("failed to find remote: %v", remoteName)
 		return err
 	}
 
@@ -209,7 +209,7 @@ func Push(log *logrus.Entry, repo *git.Repository, remoteName string, branchName
 
 	err = remote.Push([]string{refspec}, nil)
 	if err != nil {
-		log.Error("[error] failed to push to: " + branchName)
+		log.Errorf("failed to push to: %v", branchName)
 		return err
 	}
 

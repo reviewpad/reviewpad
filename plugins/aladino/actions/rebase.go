@@ -25,6 +25,7 @@ func Rebase() *aladino.BuiltInAction {
 
 func rebaseCode(e aladino.Env, args []aladino.Value) error {
 	githubToken := os.Getenv("INPUT_TOKEN")
+	log := e.GetLogger().WithField("builtin", "rebase")
 	t := e.GetTarget().(*target.PullRequestTarget)
 	pr := t.PullRequest
 
@@ -36,7 +37,7 @@ func rebaseCode(e aladino.Env, args []aladino.Value) error {
 	headRef := pr.Head.GetRef()
 	baseRef := pr.Base.GetRef()
 
-	repo, dir, err := gh.CloneRepository(e.GetLogger(), headHTMLUrl, githubToken, "", &git.CloneOptions{
+	repo, dir, err := gh.CloneRepository(log, headHTMLUrl, githubToken, "", &git.CloneOptions{
 		CheckoutBranch: baseRef,
 	})
 	if err != nil {
@@ -44,17 +45,17 @@ func rebaseCode(e aladino.Env, args []aladino.Value) error {
 	}
 	defer os.RemoveAll(dir)
 
-	err = gh.CheckoutBranch(e.GetLogger(), repo, headRef)
+	err = gh.CheckoutBranch(log, repo, headRef)
 	if err != nil {
 		return err
 	}
 
-	err = gh.RebaseOnto(e.GetLogger(), repo, baseRef, nil)
+	err = gh.RebaseOnto(log, repo, baseRef, nil)
 	if err != nil {
 		return err
 	}
 
-	err = gh.Push(e.GetLogger(), repo, "origin", headRef, true)
+	err = gh.Push(log, repo, "origin", headRef, true)
 	if err != nil {
 		return err
 	}

@@ -152,12 +152,12 @@ func lintWorkflows(log *logrus.Entry, rules []PadRule, padWorkflows []PadWorkflo
 
 			workflowHasExtraActions = len(rule.ExtraActions) > 0
 			if !workflowHasExtraActions && !workflowHasActions {
-				log.Warnf("warning: rule %v will be ignored since it has no actions", ruleName)
+				log.Warnf("rule %v will be ignored since it has no actions", ruleName)
 			}
 		}
 
 		if !workflowHasActions && !workflowHasExtraActions {
-			log.Warnf("warning: workflow has no actions")
+			log.Warn("workflow has no actions")
 		}
 
 		workflowsName = append(workflowsName, workflow.Name)

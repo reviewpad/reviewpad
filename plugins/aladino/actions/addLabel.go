@@ -21,13 +21,15 @@ func addLabelCode(e aladino.Env, args []aladino.Value) error {
 	t := e.GetTarget()
 	labelID := args[0].(*aladino.StringValue).Val
 	internalLabelID := aladino.BuildInternalLabelID(labelID)
+	log := e.GetLogger().WithField("builtin", "addLabel")
+
 	var labelName string
 
 	if val, ok := e.GetRegisterMap()[internalLabelID]; ok {
 		labelName = val.(*aladino.StringValue).Val
 	} else {
 		labelName = labelID
-		e.GetLogger().Warnf("[warn]: the %v label was not found in the environment", labelID)
+		log.Warnf("the %v label was not found in the environment", labelID)
 	}
 
 	return t.AddLabels([]string{labelName})

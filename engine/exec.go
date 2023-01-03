@@ -35,14 +35,14 @@ func CollectError(env *Env, err error) {
 	}
 
 	if err = env.Collector.Collect("Error", collectedData); err != nil {
-		env.Logger.WithField("prefix", "[reviewpad]").Error(err.Error())
+		env.Logger.WithField("prefix", "reviewpad").Error(err.Error())
 	}
 }
 
 // Eval: main function that generates the program to be executed
 // Pre-condition Lint(file) == nil
 func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
-	log := env.Logger.WithField("prefix", "[reviewpad]")
+	log := env.Logger.WithField("prefix", "reviewpad")
 
 	log.Debugf("file to evaluate:\n%+v", file)
 
@@ -70,6 +70,14 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 
 	rules := make(map[string]PadRule)
 
+	log.Infof("project: %v", fmt.Sprintf(env.TargetEntity.Owner+"/"+env.TargetEntity.Repo))
+	log.Infof("version: %v", file.Version)
+	log.Infof("edition: %v", file.Edition)
+	log.Infof("mode: %v", file.Mode)
+	log.Infof("ignoreErrors: %v", file.IgnoreErrors)
+	log.Infof("metricsOnMerge: %v", file.MetricsOnMerge)
+	log.Infof("detected %v imports", len(file.Imports))
+	log.Infof("detected %v extends", len(file.Extends))
 	log.Infof("detected %v groups", len(file.Groups))
 	log.Infof("detected %v labels", len(file.Labels))
 	log.Infof("detected %v rules", len(file.Rules))

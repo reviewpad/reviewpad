@@ -24,6 +24,7 @@ func isWaitingForReviewCode(e aladino.Env, _ []aladino.Value) (aladino.Value, er
 	pullRequest := e.GetTarget().(*target.PullRequestTarget).PullRequest
 	requestedUsers := pullRequest.RequestedReviewers
 	requestedTeams := pullRequest.RequestedTeams
+	log := e.GetLogger().WithField("builtin", "isWaitingForReview")
 
 	if len(requestedUsers) > 0 || len(requestedTeams) > 0 {
 		return aladino.BuildBoolValue(true), nil
@@ -40,7 +41,7 @@ func isWaitingForReviewCode(e aladino.Env, _ []aladino.Value) (aladino.Value, er
 	}
 
 	if len(commits) == 0 {
-		e.GetLogger().Warnf("[WARN] No commits found for pull request %s/%s#%d.", owner, repo, prNum)
+		log.Warnf("no commits found for pull request %s/%s#%d", owner, repo, prNum)
 		return aladino.BuildBoolValue(false), nil
 	}
 
