@@ -32,18 +32,7 @@ type collector struct {
 	// For more details see https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows
 	EventType string
 	// Optional properties that are added to every event.
-	Optional *OptionalProperties
-}
-
-type OptionalProperties struct {
-	// The repository url where the events are being collected.
-	Url string
-	// A GUID to identify the delivery.
-	// It is used to identify the event within the runner environment.
-	// For instance, in the github action/app it maps to the event header "X-GitHub-Delivery".
-	DeliveryId string
-	// The name of the service running the collector.
-	Service string
+	Optional *map[string]string
 }
 
 // NewCollector creates a collector instance.
@@ -52,7 +41,7 @@ type OptionalProperties struct {
 // The eventType identifies the type of the event.
 // The runnerName identifies the runner environment where the event is being collected (e.g. github app, github action, playground).
 // The options are optional properties that are added to every event.
-func NewCollector(mixpanelToken, distinctId, eventType, runnerName string, options *OptionalProperties) (Collector, error) {
+func NewCollector(mixpanelToken, distinctId, eventType, runnerName string, options *map[string]string) (Collector, error) {
 	c := collector{
 		Client:     mixpanel.New(mixpanelToken, ""),
 		DistinctId: distinctId,
@@ -93,9 +82,9 @@ func (c *collector) Collect(eventName string, properties map[string]interface{})
 	properties["eventType"] = c.EventType
 
 	if c.Optional != nil {
-		properties["url"] = c.Optional.Url
-		properties["deliveryId"] = c.Optional.DeliveryId
-		properties["service"] = c.Optional.Service
+		for key, value := range *c.Optional {
+			properties[key] = value
+		}
 	}
 
 	c.Order = c.Order + 1
