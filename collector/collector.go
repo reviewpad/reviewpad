@@ -14,17 +14,6 @@ type Collector interface {
 	CollectError(err error) error
 }
 
-type UserInfo struct {
-	Username string
-	UserType string
-}
-
-type RepoInfo struct {
-	FullName   string
-	Visibility string
-	Owner      UserInfo
-}
-
 type collector struct {
 	Client mixpanel.Mixpanel
 	// Unique identifier that is connected to every event.
@@ -43,19 +32,7 @@ type collector struct {
 	// For more details see https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows
 	EventType string
 	// Optional properties that are added to every event.
-	Optional *OptionalProperties
-}
-
-type OptionalProperties struct {
-	// The issue url where the events are being collected.
-	Url string
-	// A GUID to identify the delivery.
-	// It is used to identify the event within the runner environment.
-	// For instance, in the github action/app it maps to the event header "X-GitHub-Delivery".
-	DeliveryId string
-	// The name of the service running the collector.
-	Service string
-	Repo    RepoInfo
+	Optional *map[string]string
 }
 
 // NewCollector creates a collector instance.
@@ -64,7 +41,7 @@ type OptionalProperties struct {
 // The eventType identifies the type of the event.
 // The runnerName identifies the runner environment where the event is being collected (e.g. github app, github action, playground).
 // The options are optional properties that are added to every event.
-func NewCollector(mixpanelToken, distinctId, eventType, runnerName string, options *OptionalProperties) (Collector, error) {
+func NewCollector(mixpanelToken, distinctId, eventType, runnerName string, options *map[string]string) (Collector, error) {
 	c := collector{
 		Client:     mixpanel.New(mixpanelToken, ""),
 		DistinctId: distinctId,
@@ -105,23 +82,8 @@ func (c *collector) Collect(eventName string, properties map[string]interface{})
 	properties["eventType"] = c.EventType
 
 	if c.Optional != nil {
-		properties["deliveryId"] = c.Optional.DeliveryId
-		properties["service"] = c.Optional.Service
-
-		// Checks if the fields have a value set so it does not appear with no value in the mixpanel
-		if c.Optional.Url != "" {
-			properties["url"] = c.Optional.Url
-		}
-
-		if c.Optional.Repo.FullName != "" || c.Optional.Repo.Visibility != "" || c.Optional.Repo.Owner.Username != "" || c.Optional.Repo.Owner.UserType != "" {
-			properties["repository"] = map[string]interface{}{
-				"fullName":   c.Optional.Repo.FullName,
-				"visibility": c.Optional.Repo.Visibility,
-				"owner": map[string]interface{}{
-					"username": c.Optional.Repo.Owner.Username,
-					"type":     c.Optional.Repo.Owner.UserType,
-				},
-			}
+		for key, value := range *c.Optional {
+			properties[key] = value
 		}
 	}
 
