@@ -136,10 +136,10 @@ func TestProcessEvent_Failure(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			gotTargets, gotEvents, gotErr := handler.ProcessEvent(test.event)
+			gotTargets, gotEventDetails, gotErr := handler.ProcessEvent(test.event)
 
 			assert.Nil(t, gotTargets)
-			assert.Nil(t, gotEvents)
+			assert.Nil(t, gotEventDetails)
 			assert.NotNil(t, gotErr)
 		})
 	}
@@ -222,10 +222,11 @@ func TestProcessEvent(t *testing.T) {
 	)
 
 	tests := map[string]struct {
-		event       *handler.ActionEvent
-		wantTargets []*handler.TargetEntity
-		wantEvents  []*handler.EventData
-		wantErr     error
+		event            *handler.ActionEvent
+		wantTargets      []*handler.TargetEntity
+		wantEventDetails *handler.EventDetails
+		wantPayload      interface{}
+		wantErr          error
 	}{
 		"pull_request": {
 			event: &handler.ActionEvent{
@@ -254,10 +255,22 @@ func TestProcessEvent(t *testing.T) {
 					Repo:   repo,
 				},
 			},
-			wantEvents: []*handler.EventData{
-				{
-					EventName:   "pull_request",
-					EventAction: "opened",
+			wantEventDetails: &handler.EventDetails{
+				EventName:   "pull_request",
+				EventAction: "opened",
+				Payload: &github.PullRequestEvent{
+					Action: github.String("opened"),
+					Number: github.Int(130),
+					Repo: &github.Repository{
+						Name: github.String("reviewpad"),
+						Owner: &github.User{
+							Login: github.String("reviewpad"),
+						},
+					},
+					PullRequest: &github.PullRequest{
+						Body:   github.String("## Description"),
+						Number: github.Int(130),
+					},
 				},
 			},
 		},
@@ -288,10 +301,22 @@ func TestProcessEvent(t *testing.T) {
 					Repo:   repo,
 				},
 			},
-			wantEvents: []*handler.EventData{
-				{
-					EventName:   "pull_request_target",
-					EventAction: "opened",
+			wantEventDetails: &handler.EventDetails{
+				EventName:   "pull_request_target",
+				EventAction: "opened",
+				Payload: &github.PullRequestTargetEvent{
+					Action: github.String("opened"),
+					Number: github.Int(130),
+					Repo: &github.Repository{
+						Name: github.String("reviewpad"),
+						Owner: &github.User{
+							Login: github.String("reviewpad"),
+						},
+					},
+					PullRequest: &github.PullRequest{
+						Body:   github.String("## Description"),
+						Number: github.Int(130),
+					},
 				},
 			},
 		},
@@ -322,10 +347,21 @@ func TestProcessEvent(t *testing.T) {
 					Repo:   repo,
 				},
 			},
-			wantEvents: []*handler.EventData{
-				{
-					EventName:   "pull_request_review",
-					EventAction: "opened",
+			wantEventDetails: &handler.EventDetails{
+				EventName:   "pull_request_review",
+				EventAction: "opened",
+				Payload: &github.PullRequestReviewEvent{
+					Action: github.String("opened"),
+					Repo: &github.Repository{
+						Name: github.String("reviewpad"),
+						Owner: &github.User{
+							Login: github.String("reviewpad"),
+						},
+					},
+					PullRequest: &github.PullRequest{
+						Body:   github.String("## Description"),
+						Number: github.Int(130),
+					},
 				},
 			},
 		},
@@ -355,10 +391,21 @@ func TestProcessEvent(t *testing.T) {
 					Repo:   repo,
 				},
 			},
-			wantEvents: []*handler.EventData{
-				{
-					EventName:   "pull_request_review_comment",
-					EventAction: "created",
+			wantEventDetails: &handler.EventDetails{
+				EventName:   "pull_request_review_comment",
+				EventAction: "created",
+				Payload: &github.PullRequestReviewCommentEvent{
+					Action: github.String("created"),
+					Repo: &github.Repository{
+						Name: github.String("reviewpad"),
+						Owner: &github.User{
+							Login: github.String("reviewpad"),
+						},
+					},
+					PullRequest: &github.PullRequest{
+						Body:   github.String("## Description"),
+						Number: github.Int(130),
+					},
 				},
 			},
 		},
@@ -382,13 +429,8 @@ func TestProcessEvent(t *testing.T) {
 					Repo:   repo,
 				},
 			},
-			wantEvents: []*handler.EventData{
-				{
-					EventName: "schedule",
-				},
-				{
-					EventName: "schedule",
-				},
+			wantEventDetails: &handler.EventDetails{
+				EventName: "schedule",
 			},
 		},
 		"workflow_run_match": {
@@ -416,10 +458,20 @@ func TestProcessEvent(t *testing.T) {
 					Repo:   repo,
 				},
 			},
-			wantEvents: []*handler.EventData{
-				{
-					EventName:   "workflow_run",
-					EventAction: "completed",
+			wantEventDetails: &handler.EventDetails{
+				EventName:   "workflow_run",
+				EventAction: "completed",
+				Payload: &github.WorkflowRunEvent{
+					Action: github.String("completed"),
+					Repo: &github.Repository{
+						Name: github.String("reviewpad"),
+						Owner: &github.User{
+							Login: github.String("reviewpad"),
+						},
+					},
+					WorkflowRun: &github.WorkflowRun{
+						HeadSHA: github.String("4bf24cc72f3a62423927a0ac8d70febad7c78e0g"),
+					},
 				},
 			},
 		},
@@ -441,7 +493,22 @@ func TestProcessEvent(t *testing.T) {
 				}`)),
 			},
 			wantTargets: []*handler.TargetEntity{},
-			wantEvents:  []*handler.EventData{},
+			wantEventDetails: &handler.EventDetails{
+				EventName:   "workflow_run",
+				EventAction: "completed",
+				Payload: &github.WorkflowRunEvent{
+					Action: github.String("completed"),
+					Repo: &github.Repository{
+						Name: github.String("reviewpad"),
+						Owner: &github.User{
+							Login: github.String("reviewpad"),
+						},
+					},
+					WorkflowRun: &github.WorkflowRun{
+						HeadSHA: github.String("4bf24cc72f3a62423927a0ac8d70febad7c78e0a"),
+					},
+				},
+			},
 		},
 		"issues": {
 			event: &handler.ActionEvent{
@@ -470,10 +537,21 @@ func TestProcessEvent(t *testing.T) {
 					Repo:   owner,
 				},
 			},
-			wantEvents: []*handler.EventData{
-				{
-					EventName:   "issues",
-					EventAction: "opened",
+			wantEventDetails: &handler.EventDetails{
+				EventName:   "issues",
+				EventAction: "opened",
+				Payload: &github.IssuesEvent{
+					Action: github.String("opened"),
+					Repo: &github.Repository{
+						Name: github.String("reviewpad"),
+						Owner: &github.User{
+							Login: github.String("reviewpad"),
+						},
+					},
+					Issue: &github.Issue{
+						Body:   github.String("## Description"),
+						Number: github.Int(130),
+					},
 				},
 			},
 		},
@@ -507,10 +585,21 @@ func TestProcessEvent(t *testing.T) {
 					Repo:   repo,
 				},
 			},
-			wantEvents: []*handler.EventData{
-				{
-					EventName:   "issue_comment",
-					EventAction: "opened",
+			wantEventDetails: &handler.EventDetails{
+				EventName:   "issue_comment",
+				EventAction: "opened",
+				Payload: &github.IssueCommentEvent{
+					Action: github.String("opened"),
+					Repo: &github.Repository{
+						Name: github.String("reviewpad"),
+						Owner: &github.User{
+							Login: github.String("reviewpad"),
+						},
+					},
+					Issue: &github.Issue{
+						Body:   github.String("## Description"),
+						Number: github.Int(130),
+					},
 					Comment: &github.IssueComment{
 						Body: github.String("comment"),
 					},
@@ -542,9 +631,16 @@ func TestProcessEvent(t *testing.T) {
 					Repo:   repo,
 				},
 			},
-			wantEvents: []*handler.EventData{
-				{
-					EventName: "status",
+			wantEventDetails: &handler.EventDetails{
+				EventName: "status",
+				Payload: &github.StatusEvent{
+					Repo: &github.Repository{
+						Name: github.String("reviewpad"),
+						Owner: &github.User{
+							Login: github.String("reviewpad"),
+						},
+					},
+					SHA: github.String("4bf24cc72f3a62423927a0ac8d70febad7c78e0g"),
 				},
 			},
 		},
@@ -563,7 +659,18 @@ func TestProcessEvent(t *testing.T) {
 				}`)),
 			},
 			wantTargets: []*handler.TargetEntity{},
-			wantEvents:  []*handler.EventData{},
+			wantEventDetails: &handler.EventDetails{
+				EventName: "status",
+				Payload: &github.StatusEvent{
+					Repo: &github.Repository{
+						Name: github.String("reviewpad"),
+						Owner: &github.User{
+							Login: github.String("reviewpad"),
+						},
+					},
+					SHA: github.String("4bf24cc72f3a62423927a0ac8d70febad7c78e0a"),
+				},
+			},
 		},
 		"push": {
 			event: &handler.ActionEvent{
@@ -584,9 +691,13 @@ func TestProcessEvent(t *testing.T) {
 					Repo:   repo,
 				},
 			},
-			wantEvents: []*handler.EventData{
-				{
-					EventName: "push",
+			wantEventDetails: &handler.EventDetails{
+				EventName: "push",
+				Payload: &github.PushEvent{
+					Repo: &github.PushEventRepository{
+						FullName: github.String("reviewpad/reviewpad"),
+					},
+					Ref: github.String("refs/heads/main"),
 				},
 			},
 		},
@@ -602,7 +713,15 @@ func TestProcessEvent(t *testing.T) {
 				}`)),
 			},
 			wantTargets: []*handler.TargetEntity{},
-			wantEvents:  []*handler.EventData{},
+			wantEventDetails: &handler.EventDetails{
+				EventName: "push",
+				Payload: &github.PushEvent{
+					Repo: &github.PushEventRepository{
+						FullName: github.String("reviewpad/reviewpad"),
+					},
+					Ref: github.String("refs/heads/master"),
+				},
+			},
 		},
 		"installation": {
 			event: &handler.ActionEvent{
@@ -629,14 +748,19 @@ func TestProcessEvent(t *testing.T) {
 					Owner: "testowner2",
 				},
 			},
-			wantEvents: []*handler.EventData{
-				{
-					EventName:   "installation",
-					EventAction: "created",
-				},
-				{
-					EventName:   "installation",
-					EventAction: "created",
+			wantEventDetails: &handler.EventDetails{
+				EventName:   "installation",
+				EventAction: "created",
+				Payload: &github.InstallationEvent{
+					Action: github.String("created"),
+					Repositories: []*github.Repository{
+						{
+							FullName: github.String("testowner/testrepo"),
+						},
+						{
+							FullName: github.String("testowner2/testrepo2"),
+						},
+					},
 				},
 			},
 		},
@@ -655,9 +779,9 @@ func TestProcessEvent(t *testing.T) {
 					]
 				}`)),
 			},
-			wantTargets: nil,
-			wantEvents:  nil,
-			wantErr:     errors.New("invalid full repository name: testowner2"),
+			wantTargets:      nil,
+			wantEventDetails: nil,
+			wantErr:          errors.New("invalid full repository name: testowner2"),
 		},
 		"installation_repositories added": {
 			event: &handler.ActionEvent{
@@ -684,14 +808,19 @@ func TestProcessEvent(t *testing.T) {
 					Owner: "testowner2",
 				},
 			},
-			wantEvents: []*handler.EventData{
-				{
-					EventName:   "installation_repositories",
-					EventAction: "added",
-				},
-				{
-					EventName:   "installation_repositories",
-					EventAction: "added",
+			wantEventDetails: &handler.EventDetails{
+				EventName:   "installation_repositories",
+				EventAction: "added",
+				Payload: &github.InstallationRepositoriesEvent{
+					Action: github.String("added"),
+					RepositoriesAdded: []*github.Repository{
+						{
+							FullName: github.String("testowner/testrepo"),
+						},
+						{
+							FullName: github.String("testowner2/testrepo2"),
+						},
+					},
 				},
 			},
 		},
@@ -720,14 +849,19 @@ func TestProcessEvent(t *testing.T) {
 					Owner: "testowner2",
 				},
 			},
-			wantEvents: []*handler.EventData{
-				{
-					EventName:   "installation_repositories",
-					EventAction: "removed",
-				},
-				{
-					EventName:   "installation_repositories",
-					EventAction: "removed",
+			wantEventDetails: &handler.EventDetails{
+				EventName:   "installation_repositories",
+				EventAction: "removed",
+				Payload: &github.InstallationRepositoriesEvent{
+					Action: github.String("removed"),
+					RepositoriesRemoved: []*github.Repository{
+						{
+							FullName: github.String("testowner/testrepo"),
+						},
+						{
+							FullName: github.String("testowner2/testrepo2"),
+						},
+					},
 				},
 			},
 		},
@@ -762,10 +896,26 @@ func TestProcessEvent(t *testing.T) {
 					Number: 1,
 				},
 			},
-			wantEvents: []*handler.EventData{
-				{
-					EventName:   "check_run",
-					EventAction: "rerequested",
+			wantEventDetails: &handler.EventDetails{
+				EventName:   "check_run",
+				EventAction: "rerequested",
+				Payload: &github.CheckRunEvent{
+					Action: github.String("rerequested"),
+					CheckRun: &github.CheckRun{
+						ID:      github.Int64(1),
+						HeadSHA: github.String("4bf24cc72f3a62423927a0ac8d70febad7c78e0g"),
+						PullRequests: []*github.PullRequest{
+							{
+								Number: github.Int(1),
+							},
+						},
+					},
+					Repo: &github.Repository{
+						Name: github.String("reviewpad"),
+						Owner: &github.User{
+							Login: github.String("reviewpad"),
+						},
+					},
 				},
 			},
 		},
@@ -797,10 +947,23 @@ func TestProcessEvent(t *testing.T) {
 					Number: 6,
 				},
 			},
-			wantEvents: []*handler.EventData{
-				{
-					EventName:   "check_run",
-					EventAction: "created",
+			wantEventDetails: &handler.EventDetails{
+				EventName:   "check_run",
+				EventAction: "created",
+				Payload: &github.CheckRunEvent{
+					Action: github.String("created"),
+					CheckRun: &github.CheckRun{
+						ID:           github.Int64(1),
+						HeadSHA:      github.String("4bf24cc72f3a62423927a0ac8d70febad7c78e0g"),
+						PullRequests: []*github.PullRequest{},
+					},
+					Repo: &github.Repository{
+						Name:     github.String("reviewpad"),
+						FullName: github.String("reviewpad/reviewpad"),
+						Owner: &github.User{
+							Login: github.String("reviewpad"),
+						},
+					},
 				},
 			},
 		},
@@ -808,10 +971,10 @@ func TestProcessEvent(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			gotTargets, gotEvents, err := handler.ProcessEvent(test.event)
+			gotTargets, gotEventDetails, err := handler.ProcessEvent(test.event)
 
 			assert.Equal(t, test.wantErr, err)
-			assert.ElementsMatch(t, test.wantEvents, gotEvents)
+			assert.Equal(t, test.wantEventDetails, gotEventDetails)
 			assert.ElementsMatch(t, test.wantTargets, gotTargets)
 		})
 	}

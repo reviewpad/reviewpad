@@ -131,7 +131,7 @@ func TestCreateLabel(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			mockedClient := MockGithubClient(test.clientOptions)
 
-			mockedEnv, err := MockEnvWith(mockedClient, nil, DefaultMockTargetEntity, DefaultMockEventData)
+			mockedEnv, err := MockEnvWith(mockedClient, nil, DefaultMockTargetEntity, DefaultMockEventDetails)
 			if err != nil {
 				assert.FailNow(t, "engine MockEnvWith: %v", err)
 			}
@@ -175,7 +175,7 @@ func TestCheckLabelExists_WhenGetLabelFails(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			mockedClient := MockGithubClient(test.clientOptions)
 
-			mockedEnv, err := MockEnvWith(mockedClient, nil, DefaultMockTargetEntity, DefaultMockEventData)
+			mockedEnv, err := MockEnvWith(mockedClient, nil, DefaultMockTargetEntity, DefaultMockEventDetails)
 			if err != nil {
 				assert.FailNow(t, "MockEnvWith: %v", err)
 			}
@@ -238,7 +238,7 @@ func TestCheckLabelExists(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			mockedClient := MockGithubClient(test.clientOptions)
 
-			mockedEnv, err := MockEnvWith(mockedClient, nil, DefaultMockTargetEntity, DefaultMockEventData)
+			mockedEnv, err := MockEnvWith(mockedClient, nil, DefaultMockTargetEntity, DefaultMockEventDetails)
 			if err != nil {
 				assert.FailNow(t, "MockEnvWith: %v", err)
 			}
@@ -309,7 +309,7 @@ func TestCheckLabelHasUpdates(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			mockedClient := MockGithubClient(nil)
 
-			mockedEnv, err := MockEnvWith(mockedClient, nil, DefaultMockTargetEntity, DefaultMockEventData)
+			mockedEnv, err := MockEnvWith(mockedClient, nil, DefaultMockTargetEntity, DefaultMockEventDetails)
 			if err != nil {
 				assert.FailNow(t, "MockEnvWith: %v", err)
 			}
@@ -358,7 +358,7 @@ func TestUpdateLabel_WhenEditLabelRequestFails(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			mockedClient := MockGithubClient(test.clientOptions)
 
-			mockedEnv, err := MockEnvWith(mockedClient, nil, DefaultMockTargetEntity, DefaultMockEventData)
+			mockedEnv, err := MockEnvWith(mockedClient, nil, DefaultMockTargetEntity, DefaultMockEventDetails)
 			if err != nil {
 				assert.FailNow(t, "engine MockEnvWith: %v", err)
 			}
@@ -406,7 +406,7 @@ func TestUpdateLabel(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			mockedClient := MockGithubClient(test.clientOptions)
 
-			mockedEnv, err := MockEnvWith(mockedClient, nil, DefaultMockTargetEntity, DefaultMockEventData)
+			mockedEnv, err := MockEnvWith(mockedClient, nil, DefaultMockTargetEntity, DefaultMockEventDetails)
 			if err != nil {
 				assert.FailNow(t, "engine MockEnvWith: %v", err)
 			}
