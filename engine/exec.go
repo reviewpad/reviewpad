@@ -35,14 +35,14 @@ func CollectError(env *Env, err error) {
 	}
 
 	if err = env.Collector.Collect("Error", collectedData); err != nil {
-		env.Logger.WithField("prefix", "reviewpad").Error(err.Error())
+		env.Logger.WithField("prefix", "[reviewpad]").Error(err.Error())
 	}
 }
 
 // Eval: main function that generates the program to be executed
 // Pre-condition Lint(file) == nil
 func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
-	log := env.Logger.WithField("prefix", "reviewpad")
+	log := env.Logger.WithField("prefix", "[reviewpad]")
 
 	log.Debugf("file to evaluate:\n%+v", file)
 

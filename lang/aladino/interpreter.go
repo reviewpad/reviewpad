@@ -253,7 +253,7 @@ func NewInterpreter(
 	eventPayload interface{},
 	builtIns *BuiltIns,
 ) (engine.Interpreter, error) {
-	log := logger.WithField("prefix", "aladino")
+	log := logger.WithField("prefix", "[aladino]")
 
 	evalEnv, err := NewEvalEnv(ctx, log, dryRun, githubClient, collector, targetEntity, eventPayload, builtIns)
 	if err != nil {

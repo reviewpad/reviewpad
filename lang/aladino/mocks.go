@@ -31,7 +31,7 @@ const DefaultMockEventAction = "opened"
 
 var DefaultMockPrDate = time.Date(2009, 11, 17, 20, 34, 58, 651387237, time.UTC)
 var DefaultMockContext = context.Background()
-var DefaultMockLogger = logrus.NewEntry(logrus.New()).WithField("prefix", "aladino")
+var DefaultMockLogger = logrus.NewEntry(logrus.New()).WithField("prefix", "[aladino]")
 var DefaultMockCollector, _ = collector.NewCollector("", "distinctId", "pull_request", "runnerName", nil)
 var DefaultMockTargetEntity = &handler.TargetEntity{
 	Owner:  DefaultMockPrOwner,
