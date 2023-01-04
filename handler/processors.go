@@ -41,7 +41,6 @@ type EventData struct {
 	EventName   string
 	EventAction string
 	Comment     *github.IssueComment
-	CheckRun    *github.CheckRun
 }
 
 func ParseEvent(rawEvent string) (*ActionEvent, error) {
@@ -409,7 +408,6 @@ func processCheckRunEvent(token string, event *github.CheckRunEvent) ([]*TargetE
 						{
 							EventName:   "check_run",
 							EventAction: event.GetAction(),
-							CheckRun:    event.CheckRun,
 						},
 					}, nil
 			}
@@ -431,7 +429,6 @@ func processCheckRunEvent(token string, event *github.CheckRunEvent) ([]*TargetE
 		eventsData = append(eventsData, &EventData{
 			EventName:   "check_run",
 			EventAction: event.GetAction(),
-			CheckRun:    event.CheckRun,
 		})
 	}
 

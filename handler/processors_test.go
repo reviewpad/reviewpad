@@ -766,15 +766,6 @@ func TestProcessEvent(t *testing.T) {
 				{
 					EventName:   "check_run",
 					EventAction: "rerequested",
-					CheckRun: &github.CheckRun{
-						ID:      github.Int64(1),
-						HeadSHA: github.String("4bf24cc72f3a62423927a0ac8d70febad7c78e0g"),
-						PullRequests: []*github.PullRequest{
-							{
-								Number: github.Int(1),
-							},
-						},
-					},
 				},
 			},
 		},
@@ -810,11 +801,6 @@ func TestProcessEvent(t *testing.T) {
 				{
 					EventName:   "check_run",
 					EventAction: "created",
-					CheckRun: &github.CheckRun{
-						ID:           github.Int64(1),
-						HeadSHA:      github.String("4bf24cc72f3a62423927a0ac8d70febad7c78e0g"),
-						PullRequests: []*github.PullRequest{},
-					},
 				},
 			},
 		},
