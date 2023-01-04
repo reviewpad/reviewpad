@@ -379,6 +379,81 @@ func processInstallationRepositoriesEvent(event *github.InstallationRepositories
 	return targetEntities, eventsData, nil
 }
 
+func processCheckRunEvent(token string, event *github.CheckRunEvent) ([]*TargetEntity, []*EventData, error) {
+	Log("processing 'check_run' event")
+
+	targetEntities := []*TargetEntity{}
+	eventsData := []*EventData{}
+
+	//  if the head is from a forked repository the pull_requests array will be empty on check run events
+	if len(event.CheckRun.PullRequests) == 0 {
+		prs, err := getPullRequests(token, event.GetRepo().GetFullName())
+		if err != nil {
+			return nil, nil, err
+		}
+
+		Log("fetched %d pull requests", len(prs))
+
+		for _, pr := range prs {
+			if pr.GetHead().GetSHA() == event.CheckRun.GetHeadSHA() {
+				Log("found pr %v", pr.GetNumber())
+				return []*TargetEntity{
+						{
+							Kind:   PullRequest,
+							Number: pr.GetNumber(),
+							Owner:  event.GetRepo().GetOwner().GetLogin(),
+							Repo:   event.GetRepo().GetName(),
+						},
+					}, []*EventData{
+						{
+							EventName:   "check_run",
+							EventAction: event.GetAction(),
+						},
+					}, nil
+			}
+		}
+
+		Log("no pr found with the head sha %v", event.CheckRun.GetHeadSHA())
+
+		return []*TargetEntity{}, []*EventData{}, nil
+	}
+
+	for _, pr := range event.CheckRun.PullRequests {
+		targetEntities = append(targetEntities, &TargetEntity{
+			Kind:   PullRequest,
+			Owner:  event.GetRepo().GetOwner().GetLogin(),
+			Repo:   event.GetRepo().GetName(),
+			Number: pr.GetNumber(),
+		})
+
+		eventsData = append(eventsData, &EventData{
+			EventName:   "check_run",
+			EventAction: event.GetAction(),
+		})
+	}
+
+	return targetEntities, eventsData, nil
+}
+
+func getPullRequests(token, fullName string) ([]*github.PullRequest, error) {
+	ctx, canc := context.WithTimeout(context.Background(), time.Minute*10)
+	defer canc()
+
+	ghClient := reviewpad_gh.NewGithubClientFromToken(ctx, token)
+
+	repoParts := strings.SplitN(fullName, "/", 2)
+
+	owner := repoParts[0]
+	repo := repoParts[1]
+
+	prs, err := ghClient.GetPullRequests(ctx, owner, repo)
+	if err != nil {
+		return nil, fmt.Errorf("get pull requests: %w", err)
+	}
+
+	return prs, nil
+}
+
 func extractTargetEntitiesFromRepositories(repos []*github.Repository) ([]*TargetEntity, error) {
 	targetEntities := make([]*TargetEntity, 0)
 
@@ -431,7 +506,7 @@ func ProcessEvent(event *ActionEvent) ([]*TargetEntity, []*EventData, error) {
 	case *github.BranchProtectionRuleEvent:
 		return processUnsupportedEvent(payload)
 	case *github.CheckRunEvent:
-		return processUnsupportedEvent(payload)
+		return processCheckRunEvent(*event.Token, payload)
 	case *github.CheckSuiteEvent:
 		return processUnsupportedEvent(payload)
 	case *github.CommitCommentEvent:
