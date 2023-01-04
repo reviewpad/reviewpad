@@ -41,7 +41,7 @@ func Run(
 	githubClient *gh.GithubClient,
 	collector collector.Collector,
 	targetEntity *handler.TargetEntity,
-	eventData *handler.EventData,
+	eventDetails *handler.EventDetails,
 	eventPayload interface{},
 	reviewpadFile *engine.ReviewpadFile,
 	dryRun bool,
@@ -63,7 +63,7 @@ func Run(
 		return engine.ExitStatusFailure, nil, err
 	}
 
-	evalEnv, err := engine.NewEvalEnv(ctx, dryRun, githubClient, collector, targetEntity, aladinoInterpreter, eventData)
+	evalEnv, err := engine.NewEvalEnv(ctx, dryRun, githubClient, collector, targetEntity, aladinoInterpreter, eventDetails)
 	if err != nil {
 		return engine.ExitStatusFailure, nil, err
 	}
@@ -87,7 +87,7 @@ func Run(
 		}
 	}
 
-	if utils.IsPullRequestReadyForReportMetrics(eventData) {
+	if utils.IsPullRequestReadyForReportMetrics(eventDetails) {
 		if reviewpadFile.MetricsOnMerge != nil && *reviewpadFile.MetricsOnMerge {
 			err = aladinoInterpreter.ReportMetrics()
 			if err != nil {

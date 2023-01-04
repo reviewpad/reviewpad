@@ -42,7 +42,7 @@ type Env struct {
 	Collector    collector.Collector
 	Interpreter  Interpreter
 	TargetEntity *handler.TargetEntity
-	EventData    *handler.EventData
+	EventDetails *handler.EventDetails
 }
 
 func NewEvalEnv(
@@ -52,7 +52,7 @@ func NewEvalEnv(
 	collector collector.Collector,
 	targetEntity *handler.TargetEntity,
 	interpreter Interpreter,
-	eventData *handler.EventData,
+	eventDetails *handler.EventDetails,
 ) (*Env, error) {
 	input := &Env{
 		Ctx:          ctx,
@@ -61,7 +61,7 @@ func NewEvalEnv(
 		Collector:    collector,
 		Interpreter:  interpreter,
 		TargetEntity: targetEntity,
-		EventData:    eventData,
+		EventDetails: eventDetails,
 	}
 
 	return input, nil

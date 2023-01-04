@@ -125,9 +125,9 @@ func run() error {
 		Kind:   entityKind,
 	}
 
-	eventData := &handler.EventData{}
+	eventDetails := &handler.EventDetails{}
 
-	_, _, err = reviewpad.Run(ctx, githubClient, collectorClient, targetEntity, eventData, ev, file, dryRun, safeModeRun)
+	_, _, err = reviewpad.Run(ctx, githubClient, collectorClient, targetEntity, eventDetails, ev, file, dryRun, safeModeRun)
 	if err != nil {
 		return fmt.Errorf("error running reviewpad team edition. Details %v", err.Error())
 	}
