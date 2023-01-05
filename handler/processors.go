@@ -483,6 +483,14 @@ func duplicateEventDataForMultipleRepositories(repos []*github.Repository, event
 	return eventsData
 }
 
+func ProcessEventv2(eventType string, eventPayload *json.RawMessage, token string) ([]*TargetEntity, []*EventData, error) {
+	return ProcessEvent(&ActionEvent{
+		EventName:    &eventType,
+		EventPayload: eventPayload,
+		Token:        &token,
+	})
+}
+
 // reviewpad-an: critical
 // output: the list of pull requests/issues that are affected by the event.
 func ProcessEvent(event *ActionEvent) ([]*TargetEntity, []*EventData, error) {
