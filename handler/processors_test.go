@@ -742,6 +742,79 @@ func TestProcessEvent(t *testing.T) {
 				},
 			},
 		},
+		"check_run when pr is from same repo": {
+			event: &handler.ActionEvent{
+				EventName: github.String("check_run"),
+				Token:     github.String("test-token"),
+				EventPayload: buildPayload([]byte(`{
+					"action": "rerequested",
+					"check_run": {
+						"id": 1,
+						"head_sha": "4bf24cc72f3a62423927a0ac8d70febad7c78e0g",
+						"pull_requests": [
+							{
+								"number": 1
+							}
+						]
+					},
+					"repository": {
+						"name": "reviewpad",
+						"owner": {
+							"login": "reviewpad"
+						}
+					}
+				}`)),
+			},
+			wantTargets: []*handler.TargetEntity{
+				{
+					Kind:   handler.PullRequest,
+					Owner:  "reviewpad",
+					Repo:   "reviewpad",
+					Number: 1,
+				},
+			},
+			wantEvents: []*handler.EventData{
+				{
+					EventName:   "check_run",
+					EventAction: "rerequested",
+				},
+			},
+		},
+		"check_run when pr is from a forked repo": {
+			event: &handler.ActionEvent{
+				EventName: github.String("check_run"),
+				Token:     github.String("test-token"),
+				EventPayload: buildPayload([]byte(`{
+					"action": "created",
+					"check_run": {
+						"id": 1,
+						"head_sha": "4bf24cc72f3a62423927a0ac8d70febad7c78e0g",
+						"pull_requests": []
+					},
+					"repository": {
+						"name": "reviewpad",
+						"full_name": "reviewpad/reviewpad",
+						"owner": {
+							"login": "reviewpad"
+						}
+					}
+				}`)),
+			},
+			wantTargets: []*handler.TargetEntity{
+				{
+					Kind:   handler.PullRequest,
+					Owner:  "reviewpad",
+					Repo:   "reviewpad",
+					Number: 6,
+				},
+			},
+			wantEvents: []*handler.EventData{
+				{
+					EventName:   "check_run",
+					EventAction: "created",
+				},
+			},
+		},
 	}
 
 	for name, test := range tests {
