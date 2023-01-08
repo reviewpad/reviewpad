@@ -67,7 +67,7 @@ func processCronEvent(log *logrus.Entry, token string, e *ActionEvent) ([]*Targe
 	ctx, canc := context.WithTimeout(context.Background(), time.Minute*10)
 	defer canc()
 
-	ghClient := reviewpad_gh.NewGithubClientFromToken(ctx, log, token)
+	ghClient := reviewpad_gh.NewGithubClientFromToken(ctx, token)
 
 	repoParts := strings.SplitN(*e.Repository, "/", 2)
 
@@ -231,7 +231,7 @@ func processStatusEvent(log *logrus.Entry, token string, e *github.StatusEvent) 
 	ctx, canc := context.WithTimeout(context.Background(), time.Minute*10)
 	defer canc()
 
-	ghClient := reviewpad_gh.NewGithubClientFromToken(ctx, log, token)
+	ghClient := reviewpad_gh.NewGithubClientFromToken(ctx, token)
 
 	prs, err := ghClient.GetPullRequests(ctx, *e.Repo.Owner.Login, *e.Repo.Name)
 	if err != nil {
@@ -268,7 +268,7 @@ func processWorkflowRunEvent(log *logrus.Entry, token string, e *github.Workflow
 
 	ctx, canc := context.WithTimeout(context.Background(), time.Minute*10)
 	defer canc()
-	ghClient := reviewpad_gh.NewGithubClientFromToken(ctx, log, token)
+	ghClient := reviewpad_gh.NewGithubClientFromToken(ctx, token)
 
 	prs, err := ghClient.GetPullRequests(ctx, *e.Repo.Owner.Login, *e.Repo.Name)
 	if err != nil {
@@ -307,7 +307,7 @@ func processPushEvent(log *logrus.Entry, token string, e *github.PushEvent) ([]*
 	ctx, canc := context.WithTimeout(context.Background(), time.Minute*10)
 	defer canc()
 
-	ghClient := reviewpad_gh.NewGithubClientFromToken(ctx, log, token)
+	ghClient := reviewpad_gh.NewGithubClientFromToken(ctx, token)
 
 	repoParts := strings.SplitN(*e.GetRepo().FullName, "/", 2)
 
