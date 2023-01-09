@@ -72,17 +72,39 @@ func (t *PullRequestTarget) GetNodeID() string {
 	return t.PullRequest.GetNodeID()
 }
 
+type ClosePullRequestInput struct {
+	PullRequest *github.PullRequest `json:"pullRequest"`
+	ContentID   string              `json:"contentId"`
+	// A unique identifier for the client performing the mutation. (Optional.)
+	ClientMutationID *string `json:"clientMutationId,omitempty"`
+}
+
 func (t *PullRequestTarget) Close(comment string, _ string) error {
 	ctx := t.ctx
-	targetEntity := t.targetEntity
-	owner := targetEntity.Owner
-	repo := targetEntity.Repo
-	number := targetEntity.Number
 	pr := t.PullRequest
 
-	pr.State = github.String("closed")
+	// pr.State = github.String("closed")
 
-	_, _, err := t.githubClient.EditPullRequest(ctx, owner, repo, number, pr)
+	// _, _, err := t.githubClient.EditPullRequest(ctx, owner, repo, number, pr)
+	// if err != nil {
+	// 	return err
+	// }
+
+	var closePullRequestMutation struct {
+		ClosePullRequest struct {
+			PullRequest struct {
+				Id string
+			}
+		} `graphql:"closePullRequest(input: $input)"`
+	}
+
+	input := ClosePullRequestInput{
+		PullRequest: pr,
+		ContentID:   t.GetNodeID(),
+	}
+
+	// FIXME: move mutate to a separate function in the codehost.github package
+	err := t.githubClient.GetClientGraphQL().Mutate(ctx, &closePullRequestMutation, input, nil)
 	if err != nil {
 		return err
 	}
