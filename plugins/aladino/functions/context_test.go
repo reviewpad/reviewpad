@@ -29,12 +29,12 @@ func TestContext(t *testing.T) {
                 "name": "enhancement"
             },
 			{
-				"id": 2,
+                "id": 2,
 				"name": "large"
 			}
-        ],
-        "user": {
-            "login": "john"
+            ],
+            "user": {
+                "login": "john"
         },
         "merged": true,
         "comments": 6,
@@ -48,6 +48,7 @@ func TestContext(t *testing.T) {
         "milestone": {
             "title":"v1.0"
         },
+        "node_id": "test",
         "requested_reviewers": [
             {
                 "login": "jane"
