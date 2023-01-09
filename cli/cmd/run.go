@@ -19,6 +19,7 @@ import (
 	"github.com/reviewpad/reviewpad/v3/collector"
 	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/utils"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -69,10 +70,12 @@ func toTargetEntityKind(entityType string) (handler.TargetEntityKind, error) {
 }
 
 func run() error {
-	log, err := utils.NewLogger(logLevel)
+	logLevel, err := logrus.ParseLevel(logLevel)
 	if err != nil {
-		log.Fatalln(err)
+		return err
 	}
+
+	log := utils.NewLogger(logLevel)
 
 	var ev interface{}
 

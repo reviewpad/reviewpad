@@ -13,6 +13,7 @@ import (
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	"github.com/reviewpad/reviewpad/v3/utils"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -24,11 +25,12 @@ var checkCmd = &cobra.Command{
 	Use:   "check",
 	Short: "Check if input reviewpad file is valid",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		log, err := utils.NewLogger(logLevel)
+		logLevel, err := logrus.ParseLevel(logLevel)
 		if err != nil {
 			return err
 		}
 
+		log := utils.NewLogger(logLevel)
 		ctx := context.Background()
 		githubClient := gh.NewGithubClientFromToken(ctx, gitHubToken)
 

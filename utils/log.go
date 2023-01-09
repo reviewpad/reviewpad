@@ -11,16 +11,11 @@ import (
 // NewLogger creates a new logger with the given log level
 // The log levels cab be: trace, debug, info, warning, error, fatal and panic.
 // The logger is configured to output JSON logs
-func NewLogger(logLevel string) (*logrus.Entry, error) {
-	level, err := logrus.ParseLevel(logLevel)
-	if err != nil {
-		return nil, err
-	}
-
+func NewLogger(logLevel logrus.Level) *logrus.Entry {
 	logger := logrus.New()
 	logger.SetFormatter(&logrus.JSONFormatter{})
 	logger.SetReportCaller(true)
-	logger.SetLevel(level)
+	logger.SetLevel(logLevel)
 
-	return logrus.NewEntry(logger), nil
+	return logrus.NewEntry(logger)
 }

@@ -14,6 +14,7 @@ import (
 	git "github.com/libgit2/git2go/v31"
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/utils"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -22,8 +23,8 @@ const (
 )
 
 func TestCloneRepository_WhenNoPathProvided(t *testing.T) {
-	log, err := utils.NewLogger("info")
-	assert.Nil(t, err)
+	log := utils.NewLogger(logrus.DebugLevel)
+
 	t.Parallel()
 	repo := createTestRepo(t, false)
 	defer cleanupTestRepo(t, repo)
@@ -50,8 +51,8 @@ func TestCloneRepository_WhenNoPathProvided(t *testing.T) {
 }
 
 func TestCloneRepository_WhenPathProvided(t *testing.T) {
-	log, err := utils.NewLogger("info")
-	assert.Nil(t, err)
+	log := utils.NewLogger(logrus.DebugLevel)
+
 	t.Parallel()
 	repo := createTestRepo(t, false)
 	defer cleanupTestRepo(t, repo)
@@ -81,8 +82,8 @@ func TestCloneRepository_WhenPathProvided(t *testing.T) {
 }
 
 func TestCloneRepository_WithExternalHTTPUrl(t *testing.T) {
-	log, err := utils.NewLogger("info")
-	assert.Nil(t, err)
+	log := utils.NewLogger(logrus.DebugLevel)
+
 	path, err := os.MkdirTemp("", TestRepo)
 	defer os.RemoveAll(path)
 	checkFatal(t, err)
@@ -95,22 +96,22 @@ func TestCloneRepository_WithExternalHTTPUrl(t *testing.T) {
 }
 
 func TestCheckoutBranch_BranchDoesNotExists(t *testing.T) {
-	log, err := utils.NewLogger("info")
-	assert.Nil(t, err)
+	log := utils.NewLogger(logrus.DebugLevel)
+
 	t.Parallel()
 	repo := createTestRepo(t, false)
 	defer cleanupTestRepo(t, repo)
 
 	seedTestRepo(t, repo, "main")
 
-	err = gh.CheckoutBranch(log, repo, "test")
+	err := gh.CheckoutBranch(log, repo, "test")
 
 	assert.ErrorContains(t, err, "cannot locate remote-tracking branch 'origin/test'")
 }
 
 func TestCheckoutBranch_BranchExists(t *testing.T) {
-	log, err := utils.NewLogger("info")
-	assert.Nil(t, err)
+	log := utils.NewLogger(logrus.DebugLevel)
+
 	t.Parallel()
 	remoteRepo := createTestRepo(t, false)
 	defer cleanupTestRepo(t, remoteRepo)
@@ -149,8 +150,8 @@ func TestCheckoutBranch_BranchExists(t *testing.T) {
 }
 
 func TestRebaseOnto_WhenOntoBranchDoesNotExist(t *testing.T) {
-	log, err := utils.NewLogger("info")
-	assert.Nil(t, err)
+	log := utils.NewLogger(logrus.DebugLevel)
+
 	repo := createTestRepo(t, false)
 	defer cleanupTestRepo(t, repo)
 
@@ -167,8 +168,7 @@ func TestRebaseOnto_WhenInitRebaseFails(t *testing.T) {
 	repo := createTestRepo(t, true)
 	defer cleanupTestRepo(t, repo)
 
-	log, err := utils.NewLogger("info")
-	assert.Nil(t, err)
+	log := utils.NewLogger(logrus.DebugLevel)
 
 	remoteUrl := fmt.Sprintf("file://%s", repo.Path())
 	remote, err := repo.Remotes.Create("origin", remoteUrl)
@@ -214,8 +214,7 @@ func TestRebaseOnto_WhenRebaseCommitFails(t *testing.T) {
 	repo := createTestRepo(t, false)
 	defer cleanupTestRepo(t, repo)
 
-	log, err := utils.NewLogger("info")
-	assert.Nil(t, err)
+	log := utils.NewLogger(logrus.DebugLevel)
 
 	remoteUrl := fmt.Sprintf("file://%s", repo.Workdir())
 	remote, err := repo.Remotes.Create("origin", remoteUrl)
@@ -262,8 +261,8 @@ func TestRebaseOnto_WhenRebaseCommitFails(t *testing.T) {
 }
 
 func TestRebaseOnto(t *testing.T) {
-	log, err := utils.NewLogger("info")
-	assert.Nil(t, err)
+	log := utils.NewLogger(logrus.DebugLevel)
+
 	repo := createTestRepo(t, false)
 	defer cleanupTestRepo(t, repo)
 
@@ -288,8 +287,7 @@ func TestPush(t *testing.T) {
 	repo := createTestRepo(t, true)
 
 	defer cleanupTestRepo(t, repo)
-	log, err := utils.NewLogger("info")
-	assert.Nil(t, err)
+	log := utils.NewLogger(logrus.DebugLevel)
 
 	remoteUrl := fmt.Sprintf("file://%s", repo.Path())
 	remote, err := repo.Remotes.Create("origin", remoteUrl)

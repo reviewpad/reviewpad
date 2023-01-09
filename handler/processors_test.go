@@ -16,6 +16,7 @@ import (
 	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	"github.com/reviewpad/reviewpad/v3/utils"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -25,8 +26,7 @@ func buildPayload(payload []byte) *json.RawMessage {
 }
 
 func TestParseEvent_Failure(t *testing.T) {
-	log, err := utils.NewLogger("info")
-	assert.Nil(t, err)
+	log := utils.NewLogger(logrus.DebugLevel)
 
 	event := `{"type": "ping",}`
 	gotEvent, err := handler.ParseEvent(log, event)
@@ -36,8 +36,7 @@ func TestParseEvent_Failure(t *testing.T) {
 }
 
 func TestParseEvent(t *testing.T) {
-	log, err := utils.NewLogger("info")
-	assert.Nil(t, err)
+	log := utils.NewLogger(logrus.DebugLevel)
 
 	event := `{"action": "ping"}`
 	wantEvent := &handler.ActionEvent{
@@ -53,8 +52,7 @@ func TestParseEvent(t *testing.T) {
 func TestProcessEvent_Failure(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
-	log, err := utils.NewLogger("info")
-	assert.Nil(t, err)
+	log := utils.NewLogger(logrus.DebugLevel)
 
 	owner := "reviewpad"
 	repo := "reviewpad"
@@ -157,8 +155,7 @@ func TestProcessEvent_Failure(t *testing.T) {
 func TestProcessEvent(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
-	log, err := utils.NewLogger("info")
-	assert.Nil(t, err)
+	log := utils.NewLogger(logrus.DebugLevel)
 
 	owner := "reviewpad"
 	repo := "reviewpad"
