@@ -55,8 +55,16 @@ func (t *IssueTarget) Close(comment string, stateReason string) error {
 		} `graphql:"closeIssue(input: $input)"`
 	}
 
+	var GQLStateReason githubv4.IssueClosedStateReason
+	if stateReason == "completed" {
+		GQLStateReason = githubv4.IssueClosedStateReasonCompleted
+	} else {
+		GQLStateReason = githubv4.IssueClosedStateReasonNotPlanned
+	}
+
 	input := githubv4.CloseIssueInput{
-		IssueID: githubv4.ID(issue.GetNodeID()),
+		IssueID:     githubv4.ID(issue.GetNodeID()),
+		StateReason: &GQLStateReason,
 	}
 
 	if err := t.githubClient.GetClientGraphQL().Mutate(ctx, &closeIssueMutation, input, nil); err != nil {
