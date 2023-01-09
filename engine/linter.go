@@ -121,18 +121,18 @@ func lintWorkflows(log *logrus.Entry, rules []PadRule, padWorkflows []PadWorkflo
 	workflowHasExtraActions := false
 
 	for _, workflow := range padWorkflows {
-		log.Infof("analyzing workflow %v", workflow.Name)
+		log.Infof("analyzing workflow '%v'", workflow.Name)
 
 		workflowHasActions := len(workflow.Actions) > 0
 
 		for _, workflowName := range workflowsName {
 			if workflowName == workflow.Name {
-				return fmt.Errorf("workflow with the name %v already exists", workflow.Name)
+				return fmt.Errorf("workflow with the name '%v' already exists", workflow.Name)
 			}
 		}
 
 		if len(workflow.Rules) == 0 {
-			return fmt.Errorf("workflow %v does not have rules", workflow.Name)
+			return fmt.Errorf("workflow '%v 'does not have rules", workflow.Name)
 		}
 
 		for _, rule := range workflow.Rules {
@@ -143,12 +143,12 @@ func lintWorkflows(log *logrus.Entry, rules []PadRule, padWorkflows []PadWorkflo
 
 			_, exists := findRule(rules, ruleName)
 			if !exists {
-				return fmt.Errorf("rule %v is unknown", ruleName)
+				return fmt.Errorf("rule '%v' is unknown", ruleName)
 			}
 
 			workflowHasExtraActions = len(rule.ExtraActions) > 0
 			if !workflowHasExtraActions && !workflowHasActions {
-				log.Warnf("rule %v will be ignored since it has no actions", ruleName)
+				log.Warnf("rule '%v' will be ignored since it has no actions", ruleName)
 			}
 		}
 
