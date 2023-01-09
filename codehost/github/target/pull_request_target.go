@@ -73,8 +73,7 @@ func (t *PullRequestTarget) GetNodeID() string {
 }
 
 type ClosePullRequestInput struct {
-	PullRequest *github.PullRequest `json:"pullRequest"`
-	ContentID   string              `json:"contentId"`
+	PullRequest int64 `json:"pullRequestId"`
 	// A unique identifier for the client performing the mutation. (Optional.)
 	ClientMutationID *string `json:"clientMutationId,omitempty"`
 }
@@ -99,8 +98,7 @@ func (t *PullRequestTarget) Close(comment string, _ string) error {
 	}
 
 	input := ClosePullRequestInput{
-		PullRequest: pr,
-		ContentID:   t.GetNodeID(),
+		PullRequest: pr.GetID(),
 	}
 
 	// FIXME: move mutate to a separate function in the codehost.github package
