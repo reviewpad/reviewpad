@@ -7,13 +7,13 @@ package target
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"time"
 
 	"github.com/google/go-github/v48/github"
 	"github.com/reviewpad/reviewpad/v3/codehost"
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/handler"
+	"github.com/shurcooL/githubv4"
 )
 
 type Patch map[string]*codehost.File
@@ -73,12 +73,6 @@ func (t *PullRequestTarget) GetNodeID() string {
 	return t.PullRequest.GetNodeID()
 }
 
-type ClosePullRequestInput struct {
-	PullRequest string `json:"pullRequestId"`
-	// A unique identifier for the client performing the mutation. (Optional.)
-	ClientMutationID *string `json:"clientMutationId,omitempty"`
-}
-
 func (t *PullRequestTarget) Close(comment string, _ string) error {
 	ctx := t.ctx
 	pr := t.PullRequest
@@ -92,19 +86,15 @@ func (t *PullRequestTarget) Close(comment string, _ string) error {
 
 	var closePullRequestMutation struct {
 		ClosePullRequest struct {
-			PullRequest struct {
-				Id string
-			}
+			ClientMutationID string
 		} `graphql:"closePullRequest(input: $input)"`
 	}
 
-	input := ClosePullRequestInput{
-		PullRequest: fmt.Sprintf("%v", pr.GetID()),
+	input := githubv4.ClosePullRequestInput{
+		PullRequestID: githubv4.ID(pr.GetID()),
 	}
 
-	// FIXME: move mutate to a separate function in the codehost.github package
-	err := t.githubClient.GetClientGraphQL().Mutate(ctx, &closePullRequestMutation, input, nil)
-	if err != nil {
+	if err := t.githubClient.GetClientGraphQL().Mutate(ctx, &closePullRequestMutation, input, nil); err != nil {
 		return err
 	}
 
@@ -114,7 +104,7 @@ func (t *PullRequestTarget) Close(comment string, _ string) error {
 		}
 	}
 
-	return err
+	return nil
 }
 
 func (t *PullRequestTarget) GetAuthor() (*codehost.User, error) {
