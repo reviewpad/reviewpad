@@ -30,7 +30,7 @@ func init() {
 	runCmd.Flags().StringVarP(&gitHubToken, "github-token", "t", "", "GitHub personal access token")
 	runCmd.Flags().StringVarP(&eventFilePath, "event-payload", "e", "", "File path to github action event in JSON format")
 	runCmd.Flags().StringVarP(&mixpanelToken, "mixpanel-token", "m", "", "Mixpanel token")
-	runCmd.Flags().StringVarP(&logLevel, "log-level", "l", "error", "Log level")
+	runCmd.Flags().StringVarP(&logLevel, "log-level", "l", "debug", "Log level")
 
 	if err := runCmd.MarkFlagRequired("github-url"); err != nil {
 		panic(err)

@@ -34,7 +34,7 @@ func CloneRepository(log *logrus.Entry, url string, token string, path string, o
 		url = fmt.Sprintf("https://%v@%v", token, splitted[1])
 	}
 
-	log.Infof("[info] cloning %s to %s", url, dir)
+	log.Infof("cloning %s to %s", url, dir)
 
 	repo, err := git.Clone(url, dir, options)
 

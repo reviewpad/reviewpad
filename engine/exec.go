@@ -13,12 +13,7 @@ import (
 	"github.com/mattn/go-shellwords"
 	"github.com/reviewpad/reviewpad/v3/engine/commands"
 	"github.com/reviewpad/reviewpad/v3/utils"
-	"github.com/reviewpad/reviewpad/v3/utils/fmtio"
 )
-
-func execError(format string, a ...interface{}) error {
-	return fmtio.Errorf("reviewpad", format, a...)
-}
 
 func CollectError(env *Env, err error) {
 	var errMsg string
@@ -44,7 +39,7 @@ func CollectError(env *Env, err error) {
 func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 	log := env.Logger.WithField("prefix", "[reviewpad]")
 
-	log.Debugf("file to evaluate:\n%+v", file)
+	env.Logger.Debugf("file to evaluate:\n%+v", file)
 
 	interpreter := env.Interpreter
 

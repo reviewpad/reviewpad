@@ -5,24 +5,12 @@
 package utils
 
 import (
-	"fmt"
-
 	"github.com/sirupsen/logrus"
 )
 
-type PrefixFormatter struct {
-	logrus.TextFormatter
-}
-
-func (p *PrefixFormatter) Format(entry *logrus.Entry) ([]byte, error) {
-	if prefix, ok := entry.Data["prefix"].(string); ok {
-		entry.Message = fmt.Sprintf("%s %s", prefix, entry.Message)
-		delete(entry.Data, "prefix")
-	}
-
-	return p.TextFormatter.Format(entry)
-}
-
+// NewLogger creates a new logger with the given log level
+// The log levels cab be: trace, debug, info, warning, error, fatal and panic.
+// The logger is configured to output JSON logs
 func NewLogger(logLevel string) (*logrus.Entry, error) {
 	level, err := logrus.ParseLevel(logLevel)
 	if err != nil {
@@ -30,12 +18,9 @@ func NewLogger(logLevel string) (*logrus.Entry, error) {
 	}
 
 	logger := logrus.New()
-	logger.Formatter = &PrefixFormatter{
-		TextFormatter: logrus.TextFormatter{
-			ForceColors: true,
-		},
-	}
-	logger.Level = level
+	logger.SetFormatter(&logrus.JSONFormatter{})
+	logger.SetReportCaller(true)
+	logger.SetLevel(level)
 
 	return logrus.NewEntry(logger), nil
 }
