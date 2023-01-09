@@ -15,6 +15,8 @@ import (
 	"github.com/jarcoal/httpmock"
 	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
+	"github.com/reviewpad/reviewpad/v3/utils"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -24,20 +26,24 @@ func buildPayload(payload []byte) *json.RawMessage {
 }
 
 func TestParseEvent_Failure(t *testing.T) {
+	log := utils.NewLogger(logrus.DebugLevel)
+
 	event := `{"type": "ping",}`
-	gotEvent, err := handler.ParseEvent(event)
+	gotEvent, err := handler.ParseEvent(log, event)
 
 	assert.NotNil(t, err)
 	assert.Nil(t, gotEvent)
 }
 
 func TestParseEvent(t *testing.T) {
+	log := utils.NewLogger(logrus.DebugLevel)
+
 	event := `{"action": "ping"}`
 	wantEvent := &handler.ActionEvent{
 		ActionName: github.String("ping"),
 	}
 
-	gotEvent, err := handler.ParseEvent(event)
+	gotEvent, err := handler.ParseEvent(log, event)
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantEvent, gotEvent)
@@ -46,6 +52,7 @@ func TestParseEvent(t *testing.T) {
 func TestProcessEvent_Failure(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
+	log := utils.NewLogger(logrus.DebugLevel)
 
 	owner := "reviewpad"
 	repo := "reviewpad"
@@ -136,7 +143,7 @@ func TestProcessEvent_Failure(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			gotTargets, gotEvents, gotErr := handler.ProcessEvent(test.event)
+			gotTargets, gotEvents, gotErr := handler.ProcessEvent(log, test.event)
 
 			assert.Nil(t, gotTargets)
 			assert.Nil(t, gotEvents)
@@ -148,6 +155,7 @@ func TestProcessEvent_Failure(t *testing.T) {
 func TestProcessEvent(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
+	log := utils.NewLogger(logrus.DebugLevel)
 
 	owner := "reviewpad"
 	repo := "reviewpad"
@@ -808,7 +816,7 @@ func TestProcessEvent(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			gotTargets, gotEvents, err := handler.ProcessEvent(test.event)
+			gotTargets, gotEvents, err := handler.ProcessEvent(log, test.event)
 
 			assert.Equal(t, test.wantErr, err)
 			assert.ElementsMatch(t, test.wantEvents, gotEvents)

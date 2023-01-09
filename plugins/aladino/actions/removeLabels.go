@@ -6,7 +6,6 @@ package plugins_aladino_actions
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
@@ -22,6 +21,7 @@ func RemoveLabels() *aladino.BuiltInAction {
 
 func removeLabelsCode(e aladino.Env, args []aladino.Value) error {
 	t := e.GetTarget()
+	log := e.GetLogger().WithField("builtin", "removeLabels")
 
 	labelsToRemove := args[0].(*aladino.ArrayValue).Vals
 	if len(labelsToRemove) == 0 {
@@ -38,7 +38,7 @@ func removeLabelsCode(e aladino.Env, args []aladino.Value) error {
 			labelName = val.(*aladino.StringValue).Val
 		} else {
 			labelName = labelID
-			log.Printf("[warn]: the \"%v\" label was not found in the environment", labelID)
+			log.Warnf("the \"%v\" label was not found in the environment", labelID)
 		}
 
 		err := t.RemoveLabel(labelName)

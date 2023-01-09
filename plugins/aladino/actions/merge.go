@@ -6,7 +6,6 @@ package plugins_aladino_actions
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/reviewpad/reviewpad/v3/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v3/handler"
@@ -23,9 +22,10 @@ func Merge() *aladino.BuiltInAction {
 
 func mergeCode(e aladino.Env, args []aladino.Value) error {
 	t := e.GetTarget().(*target.PullRequestTarget)
+	log := e.GetLogger().WithField("builtin", "merge")
 
 	if t.PullRequest.GetState() != "open" || t.PullRequest.GetDraft() {
-		log.Println("merge: skipping action because pull request is not open or is a draft")
+		log.Infof("skipping action because pull request is not open or is a draft")
 		return nil
 	}
 

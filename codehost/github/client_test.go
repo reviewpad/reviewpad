@@ -5,12 +5,10 @@
 package github_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/google/go-github/v48/github"
 	host "github.com/reviewpad/reviewpad/v3/codehost/github"
-	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -65,10 +63,7 @@ func TestNewGithubAppClient(t *testing.T) {
 
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			logger := logrus.New().WithFields(logrus.Fields{
-				"app": fmt.Sprintf("github_app_%d", *github.Int64(1)),
-			})
-			got, err := host.NewGithubAppClient(logger, tt.appID, tt.privateKey)
+			got, err := host.NewGithubAppClient(tt.appID, tt.privateKey)
 			if tt.wantErr != "" {
 				assert.ErrorContains(t, err, tt.wantErr)
 				assert.Nil(t, got)

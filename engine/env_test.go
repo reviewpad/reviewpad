@@ -9,11 +9,13 @@ import (
 
 	"github.com/reviewpad/reviewpad/v3/engine"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestNewEvalEnv(t *testing.T) {
 	ctx := engine.DefaultMockCtx
+	logger := logrus.NewEntry(logrus.New())
 	githubClient := engine.MockGithubClient(nil)
 	collector := engine.DefaultMockCollector
 
@@ -36,10 +38,12 @@ func TestNewEvalEnv(t *testing.T) {
 		Interpreter:  mockedAladinoInterpreter,
 		TargetEntity: aladino.DefaultMockTargetEntity,
 		EventData:    aladino.DefaultMockEventData,
+		Logger:       logger,
 	}
 
 	gotEnv, err := engine.NewEvalEnv(
 		ctx,
+		logger,
 		false,
 		githubClient,
 		collector,

@@ -12,4 +12,5 @@ var (
 	githubUrl     string
 	reviewpadFile string
 	safeModeRun   bool
+	logLevel      string
 )
