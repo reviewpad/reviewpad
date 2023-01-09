@@ -38,9 +38,6 @@ func CollectError(env *Env, err error) {
 // Pre-condition Lint(file) == nil
 func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 	log := env.Logger
-
-	env.Logger.Debugf("file to evaluate:\n%+v", file)
-
 	interpreter := env.Interpreter
 
 	collectedData := map[string]interface{}{
@@ -171,10 +168,11 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 	triggeredExclusiveWorkflow := false
 
 	for _, workflow := range file.Workflows {
-		log.Infof("evaluating workflow %v:", workflow.Name)
+		log.Infof("evaluating workflow %v", workflow.Name)
+		workflowLog := log.WithField("workflow", workflow.Name)
 
 		if !workflow.AlwaysRun && triggeredExclusiveWorkflow {
-			log.Info("\tskipping workflow")
+			workflowLog.Infof("skipping workflow because it is not always run and another workflow has been triggered")
 			continue
 		}
 
@@ -190,7 +188,7 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 		}
 
 		if !shouldRun {
-			log.Infof("\tskipping workflow because event kind is %v and workflow is on %v", env.TargetEntity.Kind, workflow.On)
+			workflowLog.Infof("skipping workflow because event kind is %v and workflow is on %v", env.TargetEntity.Kind, workflow.On)
 			continue
 		}
 
@@ -208,7 +206,7 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 				ruleActivatedQueue = append(ruleActivatedQueue, rule)
 				ruleDefinitionQueue[ruleName] = ruleDefinition
 
-				log.Infof("\trule %v activated", ruleName)
+				workflowLog.Infof("rule %v activated", ruleName)
 			}
 		}
 
@@ -223,12 +221,13 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 				triggeredExclusiveWorkflow = true
 			}
 		} else {
-			log.Infof("\tno rules activated")
+			workflowLog.Infof("no rules activated")
 		}
 	}
 
 	for _, pipeline := range file.Pipelines {
 		log.Infof("evaluating pipeline %v:", pipeline.Name)
+		pipelineLog := log.WithField("pipeline", pipeline.Name)
 
 		var err error
 		activated := pipeline.Trigger == ""
@@ -242,7 +241,7 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 
 		if activated {
 			for num, stage := range pipeline.Stages {
-				log.Infof("evaluating pipeline stage %v", num)
+				pipelineLog.Infof("evaluating pipeline stage %v", num)
 				if stage.Until == "" {
 					program.append(stage.Actions)
 					break

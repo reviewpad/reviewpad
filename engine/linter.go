@@ -5,16 +5,12 @@
 package engine
 
 import (
+	"fmt"
 	"regexp"
 
 	"github.com/reviewpad/reviewpad/v3/utils"
-	"github.com/reviewpad/reviewpad/v3/utils/fmtio"
 	"github.com/sirupsen/logrus"
 )
-
-func lintError(format string, a ...interface{}) error {
-	return fmtio.Errorf("lint", format, a...)
-}
 
 func getAllMatches(pattern string, groups []PadGroup, rules []PadRule, workflows []PadWorkflow) []string {
 	rePatternFnCall := regexp.MustCompile(pattern)
@@ -67,22 +63,22 @@ func lintRules(padRules []PadRule) error {
 
 	for _, rule := range padRules {
 		if rule.Name == "" {
-			return lintError("rule %v has invalid name", rule)
+			return fmt.Errorf("rule %v has invalid name", rule)
 		}
 
 		for _, ruleName := range rulesName {
 			if ruleName == rule.Name {
-				return lintError("rule with the name %v already exists", rule.Name)
+				return fmt.Errorf("rule with the name %v already exists", rule.Name)
 			}
 		}
 
 		ruleKind := rule.Kind
 		if !utils.ElementOf(kinds, ruleKind) {
-			return lintError("rule %v has invalid kind %v", rule.Name, ruleKind)
+			return fmt.Errorf("rule %v has invalid kind %v", rule.Name, ruleKind)
 		}
 
 		if rule.Spec == "" {
-			return lintError("rule %v has empty spec", rule.Name)
+			return fmt.Errorf("rule %v has empty spec", rule.Name)
 		}
 
 		rulesName = append(rulesName, rule.Name)
@@ -100,12 +96,12 @@ func lintGroups(log *logrus.Entry, padGroups []PadGroup) error {
 		log.Infof("analyzing group %v", group.Name)
 
 		if group.Name == "" {
-			return lintError("group %v has invalid name", group)
+			return fmt.Errorf("group %v has invalid name", group)
 		}
 
 		for _, groupName := range groupsName {
 			if groupName == group.Name {
-				return lintError("group with the name %v already exists", group.Name)
+				return fmt.Errorf("group with the name %v already exists", group.Name)
 			}
 		}
 
@@ -131,23 +127,23 @@ func lintWorkflows(log *logrus.Entry, rules []PadRule, padWorkflows []PadWorkflo
 
 		for _, workflowName := range workflowsName {
 			if workflowName == workflow.Name {
-				return lintError("workflow with the name %v already exists", workflow.Name)
+				return fmt.Errorf("workflow with the name %v already exists", workflow.Name)
 			}
 		}
 
 		if len(workflow.Rules) == 0 {
-			return lintError("workflow %v does not have rules", workflow.Name)
+			return fmt.Errorf("workflow %v does not have rules", workflow.Name)
 		}
 
 		for _, rule := range workflow.Rules {
 			ruleName := rule.Rule
 			if ruleName == "" {
-				return lintError("workflow has an empty rule")
+				return fmt.Errorf("workflow has an empty rule")
 			}
 
 			_, exists := findRule(rules, ruleName)
 			if !exists {
-				return lintError("rule %v is unknown", ruleName)
+				return fmt.Errorf("rule %v is unknown", ruleName)
 			}
 
 			workflowHasExtraActions = len(rule.ExtraActions) > 0
@@ -190,7 +186,7 @@ func lintRulesMentions(log *logrus.Entry, rules []PadRule, groups []PadGroup, wo
 	for _, ruleName := range getCallsToRuleBuiltIn(groups, rules, workflows) {
 		_, ok := findRule(rules, ruleName)
 		if !ok {
-			return lintError("the rule %v isn't defined", ruleName)
+			return fmt.Errorf("the rule %v isn't defined", ruleName)
 		}
 		totalUsesByRule[ruleName]++
 	}
@@ -235,7 +231,7 @@ func lintGroupsMentions(groups []PadGroup, rules []PadRule, workflows []PadWorkf
 
 		_, ok := findGroup(groups, groupMention)
 		if !ok {
-			return lintError("the group %v isn't defined", groupMention)
+			return fmt.Errorf("the group %v isn't defined", groupMention)
 		}
 	}
 
@@ -243,9 +239,7 @@ func lintGroupsMentions(groups []PadGroup, rules []PadRule, workflows []PadWorkf
 }
 
 func Lint(file *ReviewpadFile, logger *logrus.Entry) error {
-	log := logger.WithField("prefix", "[lint]")
-
-	err := lintGroups(log, file.Groups)
+	err := lintGroups(logger, file.Groups)
 	if err != nil {
 		return err
 	}
@@ -255,12 +249,12 @@ func Lint(file *ReviewpadFile, logger *logrus.Entry) error {
 		return err
 	}
 
-	err = lintWorkflows(log, file.Rules, file.Workflows)
+	err = lintWorkflows(logger, file.Rules, file.Workflows)
 	if err != nil {
 		return err
 	}
 
-	err = lintRulesMentions(log, file.Rules, file.Groups, file.Workflows)
+	err = lintRulesMentions(logger, file.Rules, file.Groups, file.Workflows)
 	if err != nil {
 		return err
 	}
