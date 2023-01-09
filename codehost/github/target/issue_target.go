@@ -45,6 +45,10 @@ func (t *IssueTarget) Close(comment string, stateReason string) error {
 	ctx := t.ctx
 	issue := t.issue
 
+	if issue.GetState() == "closed" {
+		return nil
+	}
+
 	var closeIssueMutation struct {
 		CloseIssue struct {
 			ClientMutationID string

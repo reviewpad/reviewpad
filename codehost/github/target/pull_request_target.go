@@ -77,6 +77,10 @@ func (t *PullRequestTarget) Close(comment string, _ string) error {
 	ctx := t.ctx
 	pr := t.PullRequest
 
+	if pr.GetState() == "closed" {
+		return nil
+	}
+
 	var closePullRequestMutation struct {
 		ClosePullRequest struct {
 			ClientMutationID string
