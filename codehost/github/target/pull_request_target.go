@@ -7,7 +7,6 @@ package target
 import (
 	"context"
 	"encoding/json"
-	"log"
 	"time"
 
 	"github.com/google/go-github/v48/github"
@@ -78,21 +77,12 @@ func (t *PullRequestTarget) Close(comment string, _ string) error {
 	ctx := t.ctx
 	pr := t.PullRequest
 
-	// pr.State = github.String("closed")
-
-	// _, _, err := t.githubClient.EditPullRequest(ctx, owner, repo, number, pr)
-	// if err != nil {
-	// 	return err
-	// }
-
 	var closePullRequestMutation struct {
 		ClosePullRequest struct {
 			ClientMutationID string
 		} `graphql:"closePullRequest(input: $input)"`
 	}
-	log.Printf("ID: %v", pr.GetID())
-	log.Printf("NODE ID: %v", pr.GetNodeID())
-	log.Printf("ID2: %v", githubv4.ID(pr.GetID()))
+
 	input := githubv4.ClosePullRequestInput{
 		PullRequestID: githubv4.ID(pr.GetNodeID()),
 	}
