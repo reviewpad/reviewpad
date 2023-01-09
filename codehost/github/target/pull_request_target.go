@@ -7,6 +7,7 @@ package target
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/google/go-github/v48/github"
@@ -73,7 +74,7 @@ func (t *PullRequestTarget) GetNodeID() string {
 }
 
 type ClosePullRequestInput struct {
-	PullRequest int64 `json:"pullRequestId"`
+	PullRequest string `json:"pullRequestId"`
 	// A unique identifier for the client performing the mutation. (Optional.)
 	ClientMutationID *string `json:"clientMutationId,omitempty"`
 }
@@ -98,7 +99,7 @@ func (t *PullRequestTarget) Close(comment string, _ string) error {
 	}
 
 	input := ClosePullRequestInput{
-		PullRequest: pr.GetID(),
+		PullRequest: fmt.Sprintf("%v", pr.GetID()),
 	}
 
 	// FIXME: move mutate to a separate function in the codehost.github package
