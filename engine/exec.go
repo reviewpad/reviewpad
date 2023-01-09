@@ -30,7 +30,7 @@ func CollectError(env *Env, err error) {
 	}
 
 	if err = env.Collector.Collect("Error", collectedData); err != nil {
-		env.Logger.WithField("prefix", "[reviewpad]").Error(err.Error())
+		env.Logger.Error(err.Error())
 	}
 }
 
