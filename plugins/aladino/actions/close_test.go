@@ -22,7 +22,7 @@ import (
 var close = plugins_aladino.PluginBuiltIns().Actions["close"].Code
 
 func TestClose_WhenCloseRequestFails(t *testing.T) {
-	entityNodeID := aladino.GetDefaultMockPullRequestDetails().GetNodeID()
+	entityNodeID := aladino.DefaultMockEntityNodeID
 	mockedClosePullRequestMutation := fmt.Sprintf(`{
 	    "query": "mutation($input:ClosePullRequestInput!) {
 	        closePullRequest(input: $input) {
@@ -120,7 +120,7 @@ func TestClose_WhenCloseRequestFails(t *testing.T) {
 }
 
 func TestClose_WhenCommenteRequestFails(t *testing.T) {
-	entityNodeID := aladino.GetDefaultMockPullRequestDetails().GetNodeID()
+	entityNodeID := aladino.DefaultMockEntityNodeID
 	mockedClosePullRequestMutation := fmt.Sprintf(`{
 	    "query": "mutation($input:ClosePullRequestInput!) {
 	        closePullRequest(input: $input) {
