@@ -20,6 +20,7 @@ func TestContext(t *testing.T) {
 	mockPRJSON, err := utils.CompactJSONString(`{
         "id": 1234,
         "number": 6,
+        "state": "open",
         "title": "Amazing new feature",
         "body": "Please pull these awesome changes in!",
         "created_at": "2009-11-17T20:34:58.651387237Z",
