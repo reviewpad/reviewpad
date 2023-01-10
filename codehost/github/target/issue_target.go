@@ -7,6 +7,7 @@ package target
 import (
 	"context"
 	"encoding/json"
+	"log"
 
 	"github.com/google/go-github/v48/github"
 	"github.com/reviewpad/reviewpad/v3/codehost"
@@ -68,11 +69,14 @@ func (t *IssueTarget) Close(comment string, stateReason string) error {
 	}
 
 	if err := t.githubClient.GetClientGraphQL().Mutate(ctx, &closeIssueMutation, input, nil); err != nil {
+		log.Printf("ENTREI")
 		return err
 	}
 
 	if comment != "" {
+		log.Printf("ENTREIIII")
 		if errComment := t.Comment(comment); errComment != nil {
+			log.Printf("ENTREIX")
 			return errComment
 		}
 	}
