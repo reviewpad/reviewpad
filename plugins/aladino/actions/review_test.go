@@ -374,6 +374,7 @@ func TestReview(t *testing.T) {
 	}`, mockedPullRequestNumber, mockRepo, mockOwner)
 
 	tests := map[string]struct {
+		clientOptions                              []mock.MockBackendOption
 		mockedLatestReviewFromReviewerGQLQueryBody string
 		mockedLastPullRequestPushDateGQLQueryBody  string
 		inputReviewEvent                           string
@@ -381,16 +382,34 @@ func TestReview(t *testing.T) {
 		wantReview                                 *github.PullRequestReview
 		wantErr                                    error
 	}{
+		"when pull request is closed": {
+			clientOptions: []mock.MockBackendOption{
+				mock.WithRequestMatchHandler(
+					mock.GetReposPullsByOwnerByRepoByPullNumber,
+					http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+						utils.MustWriteBytes(w, mock.MustMarshal(aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
+							State: github.String("closed"),
+						})))
+					}),
+				),
+			},
+			inputReviewEvent: "COMMENT",
+			inputReviewBody:  "test",
+			wantErr:          nil,
+		},
 		"when review event is not supported": {
+			clientOptions:    []mock.MockBackendOption{},
 			inputReviewEvent: "NOT_SUPPORTED_EVENT",
 			inputReviewBody:  "test",
 			wantErr:          fmt.Errorf("review: unsupported review state NOT_SUPPORTED_EVENT"),
 		},
 		"when review event is not an APPROVE and its body is empty": {
+			clientOptions:    []mock.MockBackendOption{},
 			inputReviewEvent: "COMMENT",
 			wantErr:          fmt.Errorf("review: comment required in COMMENT state"),
 		},
 		"when authenticated user has not made any review": {
+			clientOptions: []mock.MockBackendOption{},
 			mockedLatestReviewFromReviewerGQLQueryBody: `{
 				"data": {
 					"repository": {
@@ -430,6 +449,7 @@ func TestReview(t *testing.T) {
 			},
 		},
 		"when there has been no pull request pushes since authenticated user's last review": {
+			clientOptions: []mock.MockBackendOption{},
 			mockedLatestReviewFromReviewerGQLQueryBody: `{
 				"data": {
 					"repository": {
@@ -476,6 +496,7 @@ func TestReview(t *testing.T) {
 			},
 		},
 		"when authenticated user has made a review whose state is the same as their last review but has a different body": {
+			clientOptions: []mock.MockBackendOption{},
 			mockedLatestReviewFromReviewerGQLQueryBody: `{
 				"data": {
 					"repository": {
@@ -522,6 +543,7 @@ func TestReview(t *testing.T) {
 			},
 		},
 		"when authenticated user has made a review whose state is the same as their last review but has the same body": {
+			clientOptions: []mock.MockBackendOption{},
 			mockedLatestReviewFromReviewerGQLQueryBody: `{
 				"data": {
 					"repository": {
@@ -561,6 +583,7 @@ func TestReview(t *testing.T) {
 			inputReviewBody:  "test",
 		},
 		"when authenticated user has made a review whose state is not valid": {
+			clientOptions: []mock.MockBackendOption{},
 			mockedLatestReviewFromReviewerGQLQueryBody: `{
 				"data": {
 					"repository": {
@@ -606,28 +629,31 @@ func TestReview(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			mockedEnv := aladino.MockDefaultEnv(
 				t,
-				[]mock.MockBackendOption{
-					mock.WithRequestMatchHandler(
-						mock.PostReposPullsReviewsByOwnerByRepoByPullNumber,
-						http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-							var gotReview ReviewEvent
-							rawBody, _ := io.ReadAll(r.Body)
-							utils.MustUnmarshal(rawBody, &gotReview)
+				append(
+					[]mock.MockBackendOption{
+						mock.WithRequestMatchHandler(
+							mock.PostReposPullsReviewsByOwnerByRepoByPullNumber,
+							http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+								var gotReview ReviewEvent
+								rawBody, _ := io.ReadAll(r.Body)
+								utils.MustUnmarshal(rawBody, &gotReview)
 
-							assert.Equal(t, *test.wantReview.Body, gotReview.Body)
-							switch gotReview.Event {
-							case "REQUEST_CHANGES":
-								assert.Equal(t, *test.wantReview.State, "CHANGES_REQUESTED")
-							case "COMMENT":
-								assert.Equal(t, *test.wantReview.State, "COMMENTED")
-							case "APPROVE":
-								assert.Equal(t, *test.wantReview.State, "APPROVED")
-							}
+								assert.Equal(t, *test.wantReview.Body, gotReview.Body)
+								switch gotReview.Event {
+								case "REQUEST_CHANGES":
+									assert.Equal(t, *test.wantReview.State, "CHANGES_REQUESTED")
+								case "COMMENT":
+									assert.Equal(t, *test.wantReview.State, "COMMENTED")
+								case "APPROVE":
+									assert.Equal(t, *test.wantReview.State, "APPROVED")
+								}
 
-							w.WriteHeader(http.StatusOK)
-						}),
-					),
-				},
+								w.WriteHeader(http.StatusOK)
+							}),
+						),
+					},
+					test.clientOptions...,
+				),
 				func(w http.ResponseWriter, req *http.Request) {
 					query := utils.MinifyQuery(utils.MustRead(req.Body))
 					switch query {

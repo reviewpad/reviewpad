@@ -57,6 +57,7 @@ func GetDefaultMockPullRequestDetails() *github.PullRequest {
 		ID:     &prId,
 		NodeID: github.String(DefaultMockEntityNodeID),
 		User:   &github.User{Login: github.String("john")},
+		State:  github.String("open"),
 		Assignees: []*github.User{
 			{Login: github.String("jane")},
 		},

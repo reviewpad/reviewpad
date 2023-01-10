@@ -30,7 +30,7 @@ func reviewCode(e aladino.Env, args []aladino.Value) error {
 	clientGraphQL := e.GetGithubClient().GetClientGraphQL()
 	log := e.GetLogger().WithField("builtin", "review")
 
-	if t.GetState() == "closed" {
+	if *t.PullRequest.State == "closed" {
 		log.Infof("skipping review because the pull request is closed")
 		return nil
 	}
