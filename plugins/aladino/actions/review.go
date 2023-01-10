@@ -50,7 +50,18 @@ func reviewCode(e aladino.Env, args []aladino.Value) error {
 		return err
 	}
 
+	lastPushDate, err := t.GetPullRequestLastPushDate()
+	if err != nil {
+		return err
+	}
+
 	if latestReview != nil {
+		// The last push was made before the last review so a new review is not needed
+		if lastPushDate.Before(*latestReview.SubmittedAt) {
+			log.Infof("skipping review because there were no updates since the last review")
+			return nil
+		}
+
 		latestReviewEvent, err := mapReviewStateToEvent(latestReview.State)
 		if err != nil {
 			return err
