@@ -22,38 +22,101 @@ import (
 var close = plugins_aladino.PluginBuiltIns().Actions["close"].Code
 
 func TestClose_WhenCloseRequestFails(t *testing.T) {
-	failMessage := "ClosePullRequestRequestFail"
-	mockedPullRequest := aladino.GetDefaultMockPullRequestDetails()
+	entityNodeID := aladino.GetDefaultMockPullRequestDetails().GetNodeID()
 	mockedClosePullRequestMutation := fmt.Sprintf(`{
-        "query": "mutation($input:ClosePullRequestInput!) {
-            closePullRequest(input: $input) {
+	    "query": "mutation($input:ClosePullRequestInput!) {
+	        closePullRequest(input: $input) {
+	            clientMutationId
+	        }
+	    }",
+	    "variables":{
+	        "input":{
+	            "pullRequestId": "%v"
+	        }
+	    }
+	}`, entityNodeID)
+
+	mockedCloseIssueMutation := fmt.Sprintf(`{
+        "query": "mutation($input:CloseIssueInput!) {
+            closeIssue(input: $input) {
                 clientMutationId
             }
         }",
         "variables":{
             "input":{
-                "pullRequestId": "%v"
+                "issueId": "%v",
+				"stateReason": "COMPLETED"
             }
         }
-    }`, mockedPullRequest.GetNodeID())
+    }`, entityNodeID)
 
-	mockedEnv := aladino.MockDefaultEnv(
-		t,
-		nil,
-		func(w http.ResponseWriter, req *http.Request) {
-			query := utils.MinifyQuery(utils.MustRead(req.Body))
-			if query == utils.MinifyQuery(mockedClosePullRequestMutation) {
-				http.Error(w, failMessage, http.StatusNotFound)
-			}
+	tests := map[string]struct {
+		mockedEnv        aladino.Env
+		inputStateReason string
+		wantErr          string
+	}{
+		"when close request is made against a pull request": {
+			mockedEnv: aladino.MockDefaultEnv(
+				t,
+				nil,
+				func(w http.ResponseWriter, req *http.Request) {
+					query := utils.MinifyQuery(utils.MustRead(req.Body))
+					if query == utils.MinifyQuery(mockedClosePullRequestMutation) {
+						http.Error(w, "ClosePullRequestRequestFail", http.StatusNotFound)
+					}
+				},
+				aladino.MockBuiltIns(),
+				nil,
+			),
+			inputStateReason: "",
+			wantErr:          "non-200 OK status code: 404 Not Found body: \"ClosePullRequestRequestFail\\n\"",
 		},
-		aladino.MockBuiltIns(),
-		nil,
-	)
+		"when close request is made against an issue": {
+			mockedEnv: aladino.MockDefaultEnvWithTargetEntity(
+				t,
+				[]mock.MockBackendOption{
+					mock.WithRequestMatch(
+						mock.GetReposIssuesByOwnerByRepoByIssueNumber,
+						&github.Issue{
+							Number: github.Int(aladino.DefaultMockPrNum),
+							NodeID: github.String(entityNodeID),
+							Repository: &github.Repository{
+								Name: github.String(aladino.DefaultMockPrRepoName),
+							},
+							User: &github.User{
+								Login: github.String(aladino.DefaultMockPrOwner),
+							},
+						},
+					),
+				},
+				func(w http.ResponseWriter, req *http.Request) {
+					query := utils.MinifyQuery(utils.MustRead(req.Body))
+					if query == utils.MinifyQuery(mockedCloseIssueMutation) {
+						http.Error(w, "CloseIssueRequestFail", http.StatusNotFound)
+					}
+				},
+				aladino.MockBuiltIns(),
+				nil,
+				&handler.TargetEntity{
+					Owner:  aladino.DefaultMockPrOwner,
+					Repo:   aladino.DefaultMockPrRepoName,
+					Number: aladino.DefaultMockPrNum,
+					Kind:   handler.Issue,
+				},
+			),
+			inputStateReason: "completed",
+			wantErr:          "non-200 OK status code: 404 Not Found body: \"CloseIssueRequestFail\\n\"",
+		},
+	}
 
-	args := []aladino.Value{aladino.BuildStringValue(""), aladino.BuildStringValue("")}
-	gotErr := close(mockedEnv, args)
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			args := []aladino.Value{aladino.BuildStringValue(""), aladino.BuildStringValue(test.inputStateReason)}
+			gotErr := close(test.mockedEnv, args)
 
-	assert.EqualError(t, gotErr, fmt.Sprintf("non-200 OK status code: 404 Not Found body: \"%s\\n\"", failMessage))
+			assert.EqualError(t, gotErr, test.wantErr)
+		})
+	}
 }
 
 func TestClose_WhenCommenteRequestFails(t *testing.T) {
