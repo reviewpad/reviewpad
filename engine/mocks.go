@@ -17,6 +17,7 @@ import (
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/collector"
 	"github.com/reviewpad/reviewpad/v3/handler"
+	"github.com/sirupsen/logrus"
 )
 
 // Use only for tests
@@ -29,6 +30,7 @@ const DefaultMockEventAction = "opened"
 
 // Use only for tests
 var DefaultMockCtx = context.Background()
+var DefaultMockLogger = logrus.NewEntry(logrus.New())
 var DefaultMockCollector, _ = collector.NewCollector("", "distinctId", "pull_request", "runnerName", nil)
 var DefaultMockEventPayload = &github.CheckRunEvent{}
 var DefaultMockTargetEntity = &handler.TargetEntity{
@@ -124,6 +126,7 @@ func MockEnvWith(githubClient *gh.GithubClient, interpreter Interpreter, targetE
 	dryRun := false
 	mockedEnv, err := NewEvalEnv(
 		DefaultMockCtx,
+		DefaultMockLogger,
 		dryRun,
 		githubClient,
 		DefaultMockCollector,

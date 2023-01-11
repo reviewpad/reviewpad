@@ -5,6 +5,7 @@
 package engine
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -31,23 +32,23 @@ func TestValidateLabelColor(t *testing.T) {
 		},
 		"invalid hex value with #": {
 			arg:     &PadLabel{Color: "#91cg60"},
-			wantErr: execError("evalLabel: color code not valid"),
+			wantErr: errors.New("evalLabel: color code not valid"),
 		},
 		"invalid hex value without #": {
 			arg:     &PadLabel{Color: "91cg60"},
-			wantErr: execError("evalLabel: color code not valid"),
+			wantErr: errors.New("evalLabel: color code not valid"),
 		},
 		"invalid hex value because of size with #": {
 			arg:     &PadLabel{Color: "#91cg6"},
-			wantErr: execError("evalLabel: color code not valid"),
+			wantErr: errors.New("evalLabel: color code not valid"),
 		},
 		"invalid hex value because of size without #": {
 			arg:     &PadLabel{Color: "91cg6"},
-			wantErr: execError("evalLabel: color code not valid"),
+			wantErr: errors.New("evalLabel: color code not valid"),
 		},
 		"english color": {
 			arg:     &PadLabel{Color: "red"},
-			wantErr: execError("evalLabel: color code not valid"),
+			wantErr: errors.New("evalLabel: color code not valid"),
 		},
 	}
 
@@ -75,7 +76,7 @@ func TestCreateLabel(t *testing.T) {
 				Description: "test",
 			},
 			clientOptions: []mock.MockBackendOption{},
-			wantErr:       execError("evalLabel: color code not valid"),
+			wantErr:       errors.New("evalLabel: color code not valid"),
 		},
 		"when label color has leading #": {
 			labelName: "test-name",

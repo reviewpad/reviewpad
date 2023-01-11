@@ -7,7 +7,6 @@ package plugins_aladino_actions
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/reviewpad/reviewpad/v3/codehost"
@@ -29,6 +28,7 @@ func reviewCode(e aladino.Env, args []aladino.Value) error {
 	t := e.GetTarget().(*target.PullRequestTarget)
 	entity := e.GetTarget().GetTargetEntity()
 	clientGraphQL := e.GetGithubClient().GetClientGraphQL()
+	log := e.GetLogger().WithField("builtin", "review")
 
 	reviewEvent, err := parseReviewEvent(args[0].(*aladino.StringValue).Val)
 	if err != nil {
@@ -56,14 +56,14 @@ func reviewCode(e aladino.Env, args []aladino.Value) error {
 			return err
 		}
 
-		log.Printf("review: latest review from %v is %v with body %v", authenticatedUserLogin, latestReviewEvent, latestReview.Body)
+		log.Infof("latest review from %v is %v with body %v", authenticatedUserLogin, latestReviewEvent, latestReview.Body)
 
 		if latestReviewEvent == reviewEvent && latestReview.Body == reviewBody {
-			log.Printf("review: skipping review since it's the same as the latest review")
+			log.Infof("skipping review since it's the same as the latest review")
 			return nil
 		}
 	}
-	log.Printf("review: creating review %v with body %v", reviewEvent, reviewBody)
+	log.Infof("creating review %v with body %v", reviewEvent, reviewBody)
 
 	return t.Review(reviewEvent, reviewBody)
 }

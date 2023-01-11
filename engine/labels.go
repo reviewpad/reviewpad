@@ -5,6 +5,7 @@
 package engine
 
 import (
+	"errors"
 	"fmt"
 	"regexp"
 	"strings"
@@ -16,7 +17,7 @@ func validateLabelColor(label *PadLabel) error {
 	if label.Color != "" {
 		matched, _ := regexp.MatchString(`(?i)^#?([0-9A-F]{6}){1,2}$`, label.Color)
 		if !matched {
-			return execError("evalLabel: color code not valid")
+			return errors.New("evalLabel: color code not valid")
 		}
 	}
 

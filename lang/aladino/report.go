@@ -11,7 +11,6 @@ import (
 
 	"github.com/google/go-github/v48/github"
 	"github.com/reviewpad/reviewpad/v3/engine"
-	"github.com/reviewpad/reviewpad/v3/utils/fmtio"
 )
 
 type Report struct {
@@ -20,10 +19,6 @@ type Report struct {
 
 const ReviewpadReportCommentAnnotation = "<!--@annotation-reviewpad-report-->"
 const ReviewpadMetricReportCommentAnnotation = "<!--@annotation-reviewpad-metric-report-->"
-
-func reportError(format string, a ...interface{}) error {
-	return fmtio.Errorf("report", format, a...)
-}
 
 func (report *Report) addToReport(statement *engine.Statement) {
 	report.Actions = append(report.Actions, statement.GetStatementCode())
@@ -110,7 +105,7 @@ func DeleteReportComment(env Env, commentId int64) error {
 
 	_, err := env.GetGithubClient().DeleteComment(env.GetCtx(), owner, repo, commentId)
 	if err != nil {
-		return reportError("error on deleting report comment %v", err.(*github.ErrorResponse).Message)
+		return fmt.Errorf("error on deleting report comment %v", err.(*github.ErrorResponse).Message)
 	}
 
 	return nil
@@ -128,7 +123,7 @@ func UpdateReportComment(env Env, commentId int64, report string) error {
 	_, _, err := env.GetGithubClient().EditComment(env.GetCtx(), owner, repo, commentId, &gitHubComment)
 
 	if err != nil {
-		return reportError("error on updating report comment %v", err.(*github.ErrorResponse).Message)
+		return fmt.Errorf("error on updating report comment %v", err.(*github.ErrorResponse).Message)
 	}
 
 	return nil
@@ -147,7 +142,7 @@ func AddReportComment(env Env, report string) error {
 	_, _, err := env.GetGithubClient().CreateComment(env.GetCtx(), owner, repo, number, &gitHubComment)
 
 	if err != nil {
-		return reportError("error on creating report comment %v", err.(*github.ErrorResponse).Message)
+		return fmt.Errorf("error on creating report comment %v", err.(*github.ErrorResponse).Message)
 	}
 
 	return nil
@@ -164,7 +159,7 @@ func FindReportCommentByAnnotation(env Env, annotation string) (*github.IssueCom
 		Direction: github.String("asc"),
 	})
 	if err != nil {
-		return nil, reportError("error getting issues %v", err.(*github.ErrorResponse).Message)
+		return nil, fmt.Errorf("error getting issues %v", err.(*github.ErrorResponse).Message)
 	}
 
 	reviewpadCommentAnnotationRegex := regexp.MustCompile(fmt.Sprintf("^%v", annotation))

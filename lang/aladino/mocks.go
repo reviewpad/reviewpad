@@ -19,6 +19,7 @@ import (
 	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/utils"
 	"github.com/shurcooL/githubv4"
+	"github.com/sirupsen/logrus"
 )
 
 const DefaultMockPrID = 1234
@@ -27,9 +28,11 @@ const DefaultMockPrOwner = "foobar"
 const DefaultMockPrRepoName = "default-mock-repo"
 const DefaultMockEventName = "pull_request"
 const DefaultMockEventAction = "opened"
+const DefaultMockEntityNodeID = "test"
 
 var DefaultMockPrDate = time.Date(2009, 11, 17, 20, 34, 58, 651387237, time.UTC)
 var DefaultMockContext = context.Background()
+var DefaultMockLogger = logrus.NewEntry(logrus.New()).WithField("prefix", "[aladino]")
 var DefaultMockCollector, _ = collector.NewCollector("", "distinctId", "pull_request", "runnerName", nil)
 var DefaultMockTargetEntity = &handler.TargetEntity{
 	Owner:  DefaultMockPrOwner,
@@ -51,8 +54,9 @@ func GetDefaultMockPullRequestDetails() *github.PullRequest {
 	prDate := DefaultMockPrDate
 
 	return &github.PullRequest{
-		ID:   &prId,
-		User: &github.User{Login: github.String("john")},
+		ID:     &prId,
+		NodeID: github.String(DefaultMockEntityNodeID),
+		User:   &github.User{Login: github.String("john")},
 		Assignees: []*github.User{
 			{Login: github.String("jane")},
 		},
@@ -305,6 +309,7 @@ func mockEnvWith(prOwner string, prRepoName string, prNum int, githubClient *gh.
 
 	env, err := NewEvalEnv(
 		ctx,
+		DefaultMockLogger,
 		false,
 		githubClient,
 		DefaultMockCollector,

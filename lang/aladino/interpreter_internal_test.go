@@ -546,7 +546,7 @@ func TestReport_WhenFindReportCommentFails(t *testing.T) {
 
 	err := mockedInterpreter.Report(engine.SILENT_MODE, false)
 
-	assert.EqualError(t, err, "[report] error getting issues mock response not found for /repos/foobar/default-mock-repo/issues/6/comments")
+	assert.EqualError(t, err, "error getting issues mock response not found for /repos/foobar/default-mock-repo/issues/6/comments")
 }
 
 func TestReport_OnSilentMode_WhenThereIsAlreadyAReviewpadComment(t *testing.T) {
@@ -717,6 +717,7 @@ func TestNewInterpreter_WhenNewEvalEnvFails(t *testing.T) {
 	// TODO: Ideally, we should not have nil arguments in the call to NewInterpreter
 	gotInterpreter, err := NewInterpreter(
 		ctx,
+		DefaultMockLogger,
 		false,
 		gh.NewGithubClient(clientREST, nil),
 		nil,
@@ -738,6 +739,7 @@ func TestNewInterpreter(t *testing.T) {
 
 	gotInterpreter, err := NewInterpreter(
 		mockedEnv.GetCtx(),
+		DefaultMockLogger,
 		mockedEnv.GetDryRun(),
 		mockedEnv.GetGithubClient(),
 		mockedEnv.GetCollector(),
@@ -800,7 +802,7 @@ func TestReportMetric(t *testing.T) {
 					}),
 				),
 			},
-			err: errors.New("[report] error getting issues "),
+			err: errors.New("error getting issues "),
 		},
 		"when create comment failed": {
 			graphQLHandler: func(res http.ResponseWriter, req *http.Request) {
@@ -840,7 +842,7 @@ func TestReportMetric(t *testing.T) {
 					[]*github.IssueComment{},
 				),
 			},
-			err: errors.New("[report] error on creating report comment "),
+			err: errors.New("error on creating report comment "),
 		},
 		"when update comment failed": {
 			graphQLHandler: func(res http.ResponseWriter, req *http.Request) {
@@ -885,7 +887,7 @@ func TestReportMetric(t *testing.T) {
 					},
 				),
 			},
-			err: errors.New("[report] error on updating report comment "),
+			err: errors.New("error on updating report comment "),
 		},
 		"when successfully created report comment": {
 			graphQLHandler: func(res http.ResponseWriter, req *http.Request) {
@@ -981,6 +983,7 @@ func TestReportMetric(t *testing.T) {
 			env := MockDefaultEnv(t, test.clientOptions, test.graphQLHandler, nil, nil)
 			interpreter, err := NewInterpreter(
 				env.GetCtx(),
+				env.GetLogger(),
 				env.GetDryRun(),
 				env.GetGithubClient(),
 				env.GetCollector(),

@@ -6,7 +6,6 @@ package aladino
 
 import (
 	"fmt"
-	"log"
 )
 
 type ExecExpr interface {
@@ -45,7 +44,7 @@ func (fc *FunctionCall) exec(env Env) error {
 	}
 
 	if action.Disabled {
-		execLogf("action %v is disabled - skipping", fc.name.ident)
+		env.GetLogger().Infof("action %v is disabled - skipping", fc.name.ident)
 		return nil
 	}
 
@@ -54,7 +53,7 @@ func (fc *FunctionCall) exec(env Env) error {
 	}
 
 	if err := env.GetCollector().Collect("Ran Builtin", collectedData); err != nil {
-		log.Printf("error collection built-in run: %v\n", err)
+		env.GetLogger().Errorf("error collection built-in run: %v\n", err)
 	}
 
 	entityKind := env.GetTarget().GetTargetEntity().Kind

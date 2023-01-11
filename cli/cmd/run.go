@@ -9,7 +9,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"os"
 	"regexp"
 	"strconv"
@@ -19,6 +18,8 @@ import (
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/collector"
 	"github.com/reviewpad/reviewpad/v3/handler"
+	"github.com/reviewpad/reviewpad/v3/utils"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -30,6 +31,7 @@ func init() {
 	runCmd.Flags().StringVarP(&gitHubToken, "github-token", "t", "", "GitHub personal access token")
 	runCmd.Flags().StringVarP(&eventFilePath, "event-payload", "e", "", "File path to github action event in JSON format")
 	runCmd.Flags().StringVarP(&mixpanelToken, "mixpanel-token", "m", "", "Mixpanel token")
+	runCmd.Flags().StringVarP(&logLevel, "log-level", "l", "debug", "Log level")
 
 	if err := runCmd.MarkFlagRequired("github-url"); err != nil {
 		panic(err)
@@ -68,14 +70,21 @@ func toTargetEntityKind(entityType string) (handler.TargetEntityKind, error) {
 }
 
 func run() error {
+	logLevel, err := logrus.ParseLevel(logLevel)
+	if err != nil {
+		return err
+	}
+
+	log := utils.NewLogger(logLevel)
+
 	var ev interface{}
 
 	if eventFilePath == "" {
-		log.Print("[WARN] No event payload provided. Assuming empty event.")
+		log.Warn("[WARN] No event payload provided. Assuming empty event.")
 	} else {
-		content, err := os.ReadFile(eventFilePath)
-		if err != nil {
-			return err
+		content, readFileErr := os.ReadFile(eventFilePath)
+		if readFileErr != nil {
+			return readFileErr
 		}
 
 		rawEvent := string(content)
@@ -104,7 +113,7 @@ func run() error {
 	githubClient := gh.NewGithubClientFromToken(ctx, gitHubToken)
 	collectorClient, err := collector.NewCollector(mixpanelToken, repositoryOwner, string(entityKind), "local-cli", nil)
 	if err != nil {
-		log.Printf("error creating new collector: %v", err)
+		log.Errorf("error creating new collector: %v", err)
 	}
 
 	data, err := os.ReadFile(reviewpadFile)
@@ -113,7 +122,7 @@ func run() error {
 	}
 
 	buf := bytes.NewBuffer(data)
-	file, err := reviewpad.Load(ctx, githubClient, buf)
+	file, err := reviewpad.Load(ctx, log, githubClient, buf)
 	if err != nil {
 		return fmt.Errorf("error running reviewpad team edition. Details %v", err.Error())
 	}
@@ -127,7 +136,7 @@ func run() error {
 
 	eventDetails := &handler.EventDetails{}
 
-	_, _, err = reviewpad.Run(ctx, githubClient, collectorClient, targetEntity, eventDetails, ev, file, dryRun, safeModeRun)
+	_, _, err = reviewpad.Run(ctx, log, githubClient, collectorClient, targetEntity, eventDetails, ev, file, dryRun, safeModeRun)
 	if err != nil {
 		return fmt.Errorf("error running reviewpad team edition. Details %v", err.Error())
 	}
