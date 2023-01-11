@@ -28,10 +28,10 @@ func TestContext(t *testing.T) {
                 "id": 1,
                 "name": "enhancement"
             },
-			{
+            {
                 "id": 2,
-				"name": "large"
-			}
+                "name": "large"
+            }
         ],
         "user": {
             "login": "john"
