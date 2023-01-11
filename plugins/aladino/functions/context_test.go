@@ -28,10 +28,10 @@ func TestContext(t *testing.T) {
                 "id": 1,
                 "name": "enhancement"
             },
-			{
-				"id": 2,
-				"name": "large"
-			}
+            {
+                "id": 2,
+                "name": "large"
+            }
         ],
         "user": {
             "login": "john"
@@ -48,6 +48,7 @@ func TestContext(t *testing.T) {
         "milestone": {
             "title":"v1.0"
         },
+        "node_id": "test",
         "requested_reviewers": [
             {
                 "login": "jane"

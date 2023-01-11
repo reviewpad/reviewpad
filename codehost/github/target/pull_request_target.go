@@ -13,6 +13,7 @@ import (
 	"github.com/reviewpad/reviewpad/v3/codehost"
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/handler"
+	"github.com/shurcooL/githubv4"
 )
 
 type Patch map[string]*codehost.File
@@ -74,16 +75,23 @@ func (t *PullRequestTarget) GetNodeID() string {
 
 func (t *PullRequestTarget) Close(comment string, _ string) error {
 	ctx := t.ctx
-	targetEntity := t.targetEntity
-	owner := targetEntity.Owner
-	repo := targetEntity.Repo
-	number := targetEntity.Number
 	pr := t.PullRequest
 
-	pr.State = github.String("closed")
+	if pr.GetState() == "closed" {
+		return nil
+	}
 
-	_, _, err := t.githubClient.EditPullRequest(ctx, owner, repo, number, pr)
-	if err != nil {
+	var closePullRequestMutation struct {
+		ClosePullRequest struct {
+			ClientMutationID string
+		} `graphql:"closePullRequest(input: $input)"`
+	}
+
+	input := githubv4.ClosePullRequestInput{
+		PullRequestID: githubv4.ID(pr.GetNodeID()),
+	}
+
+	if err := t.githubClient.GetClientGraphQL().Mutate(ctx, &closePullRequestMutation, input, nil); err != nil {
 		return err
 	}
 
@@ -93,7 +101,7 @@ func (t *PullRequestTarget) Close(comment string, _ string) error {
 		}
 	}
 
-	return err
+	return nil
 }
 
 func (t *PullRequestTarget) GetAuthor() (*codehost.User, error) {
