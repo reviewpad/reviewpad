@@ -119,7 +119,7 @@ func TestClose_WhenCloseRequestFails(t *testing.T) {
 	}
 }
 
-func TestClose_WhenCommenteRequestFails(t *testing.T) {
+func TestClose_WhenCommentRequestFails(t *testing.T) {
 	entityNodeID := aladino.DefaultMockEntityNodeID
 	mockedClosePullRequestMutation := fmt.Sprintf(`{
 	    "query": "mutation($input:ClosePullRequestInput!) {

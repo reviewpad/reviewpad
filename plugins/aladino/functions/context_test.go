@@ -32,9 +32,9 @@ func TestContext(t *testing.T) {
                 "id": 2,
 				"name": "large"
 			}
-            ],
-            "user": {
-                "login": "john"
+        ],
+        "user": {
+            "login": "john"
         },
         "merged": true,
         "comments": 6,
