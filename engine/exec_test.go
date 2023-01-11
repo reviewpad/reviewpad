@@ -88,7 +88,7 @@ func TestEval_WhenGitHubRequestsFail(t *testing.T) {
 				assert.FailNow(t, fmt.Sprintf("mockAladinoInterpreter: %v", err))
 			}
 
-			mockedEnv, err := engine.MockEnvWith(mockedClient, mockedAladinoInterpreter, engine.DefaultMockTargetEntity, engine.DefaultMockEventData)
+			mockedEnv, err := engine.MockEnvWith(mockedClient, mockedAladinoInterpreter, engine.DefaultMockTargetEntity, engine.DefaultMockEventDetails)
 			if err != nil {
 				assert.FailNow(t, fmt.Sprintf("engine MockEnvWith: %v", err))
 			}
@@ -118,7 +118,7 @@ func TestEval(t *testing.T) {
 		inputGitHubClient      *gh.GithubClient
 		clientOptions          []mock.MockBackendOption
 		targetEntity           *handler.TargetEntity
-		eventData              *handler.EventData
+		eventDetails           *handler.EventDetails
 		wantProgram            *engine.Program
 		wantErr                string
 	}{
@@ -253,12 +253,14 @@ func TestEval(t *testing.T) {
 				Owner:  engine.DefaultMockTargetEntity.Owner,
 				Repo:   engine.DefaultMockTargetEntity.Repo,
 			},
-			eventData: &handler.EventData{
+			eventDetails: &handler.EventDetails{
 				EventName:   "issue_comment",
 				EventAction: "created",
-				Comment: &github.IssueComment{
-					ID:   github.Int64(1),
-					Body: github.String("/reviewpad assign-reviewers john, jane, 1 random"),
+				Payload: &github.IssueCommentEvent{
+					Comment: &github.IssueComment{
+						ID:   github.Int64(1),
+						Body: github.String("/reviewpad assign-reviewers john, jane, 1 random"),
+					},
 				},
 			},
 			clientOptions: []mock.MockBackendOption{
@@ -282,12 +284,14 @@ func TestEval(t *testing.T) {
 				Owner:  engine.DefaultMockTargetEntity.Owner,
 				Repo:   engine.DefaultMockTargetEntity.Repo,
 			},
-			eventData: &handler.EventData{
+			eventDetails: &handler.EventDetails{
 				EventName:   "issue_comment",
 				EventAction: "created",
-				Comment: &github.IssueComment{
-					ID:   github.Int64(1),
-					Body: github.String("/reviewpad assign-reviewers john -t 1"),
+				Payload: &github.IssueCommentEvent{
+					Comment: &github.IssueComment{
+						ID:   github.Int64(1),
+						Body: github.String("/reviewpad assign-reviewers john -t 1"),
+					},
 				},
 			},
 			clientOptions: []mock.MockBackendOption{
@@ -310,12 +314,14 @@ func TestEval(t *testing.T) {
 				Owner:  engine.DefaultMockTargetEntity.Owner,
 				Repo:   engine.DefaultMockTargetEntity.Repo,
 			},
-			eventData: &handler.EventData{
+			eventDetails: &handler.EventDetails{
 				EventName:   "issue_comment",
 				EventAction: "created",
-				Comment: &github.IssueComment{
-					ID:   github.Int64(1),
-					Body: github.String("/reviewpad assign-reviewers jane-12,john01 --total-reviewers 1 -p random"),
+				Payload: &github.IssueCommentEvent{
+					Comment: &github.IssueComment{
+						ID:   github.Int64(1),
+						Body: github.String("/reviewpad assign-reviewers jane-12,john01 --total-reviewers 1 -p random"),
+					},
 				},
 			},
 		},
@@ -332,12 +338,14 @@ func TestEval(t *testing.T) {
 				Owner:  engine.DefaultMockTargetEntity.Owner,
 				Repo:   engine.DefaultMockTargetEntity.Repo,
 			},
-			eventData: &handler.EventData{
+			eventDetails: &handler.EventDetails{
 				EventName:   "issue_comment",
 				EventAction: "created",
-				Comment: &github.IssueComment{
-					ID:   github.Int64(1),
-					Body: github.String("/reviewpad assign-reviewers john,jane -t 1 --review-policy reviewpad"),
+				Payload: &github.IssueCommentEvent{
+					Comment: &github.IssueComment{
+						ID:   github.Int64(1),
+						Body: github.String("/reviewpad assign-reviewers john,jane -t 1 --review-policy reviewpad"),
+					},
 				},
 			},
 		},
@@ -354,12 +362,14 @@ func TestEval(t *testing.T) {
 				Owner:  engine.DefaultMockTargetEntity.Owner,
 				Repo:   engine.DefaultMockTargetEntity.Repo,
 			},
-			eventData: &handler.EventData{
+			eventDetails: &handler.EventDetails{
 				EventName:   "issue_comment",
 				EventAction: "created",
-				Comment: &github.IssueComment{
-					ID:   github.Int64(1),
-					Body: github.String("/reviewpad assign-reviewers john,johnny -t 1 -p round-robin"),
+				Payload: &github.IssueCommentEvent{
+					Comment: &github.IssueComment{
+						ID:   github.Int64(1),
+						Body: github.String("/reviewpad assign-reviewers john,johnny -t 1 -p round-robin"),
+					},
 				},
 			},
 		},
@@ -374,7 +384,7 @@ func TestEval(t *testing.T) {
 				assert.FailNow(t, fmt.Sprintf("mockAladinoInterpreter: %v", err))
 			}
 
-			mockedEnv, err := engine.MockEnvWith(mockedClient, mockedAladinoInterpreter, test.targetEntity, test.eventData)
+			mockedEnv, err := engine.MockEnvWith(mockedClient, mockedAladinoInterpreter, test.targetEntity, test.eventDetails)
 			if err != nil {
 				assert.FailNow(t, fmt.Sprintf("engine MockEnvWith: %v", err))
 			}

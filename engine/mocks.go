@@ -39,7 +39,7 @@ var DefaultMockTargetEntity = &handler.TargetEntity{
 	Number: DefaultMockPrNum,
 	Kind:   handler.PullRequest,
 }
-var DefaultMockEventData = &handler.EventData{
+var DefaultMockEventDetails = &handler.EventDetails{
 	EventName:   DefaultMockEventName,
 	EventAction: DefaultMockEventAction,
 }
@@ -122,7 +122,7 @@ func MockGithubClient(clientOptions []mock.MockBackendOption) *gh.GithubClient {
 	return gh.NewGithubClient(githubClientREST, nil)
 }
 
-func MockEnvWith(githubClient *gh.GithubClient, interpreter Interpreter, targetEntity *handler.TargetEntity, eventData *handler.EventData) (*Env, error) {
+func MockEnvWith(githubClient *gh.GithubClient, interpreter Interpreter, targetEntity *handler.TargetEntity, eventDetails *handler.EventDetails) (*Env, error) {
 	dryRun := false
 	mockedEnv, err := NewEvalEnv(
 		DefaultMockCtx,
@@ -132,7 +132,7 @@ func MockEnvWith(githubClient *gh.GithubClient, interpreter Interpreter, targetE
 		DefaultMockCollector,
 		targetEntity,
 		interpreter,
-		eventData,
+		eventDetails,
 	)
 
 	if err != nil {

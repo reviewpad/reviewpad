@@ -40,7 +40,7 @@ var DefaultMockTargetEntity = &handler.TargetEntity{
 	Number: DefaultMockPrNum,
 	Kind:   handler.PullRequest,
 }
-var DefaultMockEventData = &handler.EventData{
+var DefaultMockEventDetails = &handler.EventDetails{
 	EventName:   DefaultMockEventName,
 	EventAction: DefaultMockEventAction,
 }

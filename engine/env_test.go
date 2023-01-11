@@ -37,7 +37,7 @@ func TestNewEvalEnv(t *testing.T) {
 		Collector:    collector,
 		Interpreter:  mockedAladinoInterpreter,
 		TargetEntity: aladino.DefaultMockTargetEntity,
-		EventData:    aladino.DefaultMockEventData,
+		EventDetails: aladino.DefaultMockEventDetails,
 		Logger:       logger,
 	}
 
@@ -49,7 +49,7 @@ func TestNewEvalEnv(t *testing.T) {
 		collector,
 		aladino.DefaultMockTargetEntity,
 		mockedAladinoInterpreter,
-		aladino.DefaultMockEventData,
+		aladino.DefaultMockEventDetails,
 	)
 
 	assert.Nil(t, err)
