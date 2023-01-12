@@ -5,6 +5,7 @@
 package plugins_aladino_actions_test
 
 import (
+	"fmt"
 	"io"
 	"net/http"
 	"testing"
@@ -20,56 +21,289 @@ import (
 
 var close = plugins_aladino.PluginBuiltIns().Actions["close"].Code
 
+func TestClose_WhenCloseRequestFails(t *testing.T) {
+	entityNodeID := aladino.DefaultMockEntityNodeID
+	mockedClosePullRequestMutation := fmt.Sprintf(`{
+	    "query": "mutation($input:ClosePullRequestInput!) {
+	        closePullRequest(input: $input) {
+	            clientMutationId
+	        }
+	    }",
+	    "variables":{
+	        "input":{
+	            "pullRequestId": "%v"
+	        }
+	    }
+	}`, entityNodeID)
+
+	mockedCloseIssueMutation := fmt.Sprintf(`{
+        "query": "mutation($input:CloseIssueInput!) {
+            closeIssue(input: $input) {
+                clientMutationId
+            }
+        }",
+        "variables":{
+            "input":{
+                "issueId": "%v",
+				"stateReason": "COMPLETED"
+            }
+        }
+    }`, entityNodeID)
+
+	tests := map[string]struct {
+		mockedEnv        aladino.Env
+		inputStateReason string
+		wantErr          string
+	}{
+		"when close request is made against a pull request": {
+			mockedEnv: aladino.MockDefaultEnv(
+				t,
+				nil,
+				func(w http.ResponseWriter, req *http.Request) {
+					query := utils.MinifyQuery(utils.MustRead(req.Body))
+					if query == utils.MinifyQuery(mockedClosePullRequestMutation) {
+						http.Error(w, "ClosePullRequestRequestFail", http.StatusNotFound)
+					}
+				},
+				aladino.MockBuiltIns(),
+				nil,
+			),
+			inputStateReason: "",
+			wantErr:          "non-200 OK status code: 404 Not Found body: \"ClosePullRequestRequestFail\\n\"",
+		},
+		"when close request is made against an issue": {
+			mockedEnv: aladino.MockDefaultEnvWithTargetEntity(
+				t,
+				[]mock.MockBackendOption{
+					mock.WithRequestMatch(
+						mock.GetReposIssuesByOwnerByRepoByIssueNumber,
+						&github.Issue{
+							Number: github.Int(aladino.DefaultMockPrNum),
+							NodeID: github.String(entityNodeID),
+							Repository: &github.Repository{
+								Name: github.String(aladino.DefaultMockPrRepoName),
+							},
+							User: &github.User{
+								Login: github.String(aladino.DefaultMockPrOwner),
+							},
+						},
+					),
+				},
+				func(w http.ResponseWriter, req *http.Request) {
+					query := utils.MinifyQuery(utils.MustRead(req.Body))
+					if query == utils.MinifyQuery(mockedCloseIssueMutation) {
+						http.Error(w, "CloseIssueRequestFail", http.StatusNotFound)
+					}
+				},
+				aladino.MockBuiltIns(),
+				nil,
+				&handler.TargetEntity{
+					Owner:  aladino.DefaultMockPrOwner,
+					Repo:   aladino.DefaultMockPrRepoName,
+					Number: aladino.DefaultMockPrNum,
+					Kind:   handler.Issue,
+				},
+			),
+			inputStateReason: "completed",
+			wantErr:          "non-200 OK status code: 404 Not Found body: \"CloseIssueRequestFail\\n\"",
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			args := []aladino.Value{aladino.BuildStringValue(""), aladino.BuildStringValue(test.inputStateReason)}
+			gotErr := close(test.mockedEnv, args)
+
+			assert.EqualError(t, gotErr, test.wantErr)
+		})
+	}
+}
+
+func TestClose_WhenCommentRequestFails(t *testing.T) {
+	entityNodeID := aladino.DefaultMockEntityNodeID
+	mockedClosePullRequestMutation := fmt.Sprintf(`{
+	    "query": "mutation($input:ClosePullRequestInput!) {
+	        closePullRequest(input: $input) {
+	            clientMutationId
+	        }
+	    }",
+	    "variables":{
+	        "input":{
+	            "pullRequestId": "%v"
+	        }
+	    }
+	}`, entityNodeID)
+
+	mockedClosePullRequestBody := `{"data": {"closePullRequest": {"clientMutationId": "client_mutation_id"}}}}`
+
+	mockedCloseIssueMutation := fmt.Sprintf(`{
+        "query": "mutation($input:CloseIssueInput!) {
+            closeIssue(input: $input) {
+                clientMutationId
+            }
+        }",
+        "variables":{
+            "input":{
+                "issueId": "%v",
+				"stateReason": "COMPLETED"
+            }
+        }
+    }`, entityNodeID)
+
+	mockedCloseIssueBody := `{"data": {"closeIssue": {"clientMutationId": "client_mutation_id"}}}}`
+
+	tests := map[string]struct {
+		mockedEnv    aladino.Env
+		inputComment string
+		wantErr      string
+	}{
+		"when pull request is closed": {
+			mockedEnv: aladino.MockDefaultEnv(
+				t,
+				[]mock.MockBackendOption{
+					mock.WithRequestMatchHandler(
+						mock.PostReposIssuesCommentsByOwnerByRepoByIssueNumber,
+						http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+							mock.WriteError(
+								w,
+								http.StatusInternalServerError,
+								"failed to comment on pull request",
+							)
+						}),
+					),
+				},
+				func(w http.ResponseWriter, req *http.Request) {
+					query := utils.MinifyQuery(utils.MustRead(req.Body))
+					if query == utils.MinifyQuery(mockedClosePullRequestMutation) {
+						utils.MustWrite(w, mockedClosePullRequestBody)
+					}
+				},
+				aladino.MockBuiltIns(),
+				nil,
+			),
+			inputComment: "test",
+			wantErr:      "failed to comment on pull request",
+		},
+		"when issue is closed": {
+			mockedEnv: aladino.MockDefaultEnvWithTargetEntity(
+				t,
+				[]mock.MockBackendOption{
+					mock.WithRequestMatch(
+						mock.GetReposIssuesByOwnerByRepoByIssueNumber,
+						&github.Issue{
+							Number: github.Int(aladino.DefaultMockPrNum),
+							NodeID: github.String(entityNodeID),
+							Repository: &github.Repository{
+								Name: github.String(aladino.DefaultMockPrRepoName),
+							},
+							User: &github.User{
+								Login: github.String(aladino.DefaultMockPrOwner),
+							},
+						},
+					),
+					mock.WithRequestMatchHandler(
+						mock.PostReposIssuesCommentsByOwnerByRepoByIssueNumber,
+						http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+							mock.WriteError(
+								w,
+								http.StatusInternalServerError,
+								"failed to comment on issue",
+							)
+						}),
+					),
+				},
+				func(w http.ResponseWriter, req *http.Request) {
+					query := utils.MinifyQuery(utils.MustRead(req.Body))
+					if query == utils.MinifyQuery(mockedCloseIssueMutation) {
+						utils.MustWrite(w, mockedCloseIssueBody)
+					}
+				},
+				aladino.MockBuiltIns(),
+				nil,
+				&handler.TargetEntity{
+					Owner:  aladino.DefaultMockPrOwner,
+					Repo:   aladino.DefaultMockPrRepoName,
+					Number: aladino.DefaultMockPrNum,
+					Kind:   handler.Issue,
+				},
+			),
+			inputComment: "test",
+			wantErr:      "failed to comment on issue",
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			args := []aladino.Value{aladino.BuildStringValue(test.inputComment), aladino.BuildStringValue("completed")}
+			gotErr := close(test.mockedEnv, args)
+
+			assert.Equal(t, test.wantErr, gotErr.(*github.ErrorResponse).Message)
+		})
+	}
+}
+
 func TestClose(t *testing.T) {
-	failMessage := "EditRequestFail"
-	var gotState, closeComment, gotStateReason string
+	var closeComment string
 	var commentCreated bool
+
+	entityNodeID := aladino.DefaultMockEntityNodeID
+
+	mockedClosePullRequestMutation := fmt.Sprintf(`{
+	    "query": "mutation($input:ClosePullRequestInput!) {
+	        closePullRequest(input: $input) {
+	            clientMutationId
+	        }
+	    }",
+	    "variables":{
+	        "input":{
+	            "pullRequestId": "%v"
+	        }
+	    }
+	}`, entityNodeID)
+
+	mockedClosePullRequestBody := `{"data": {"closePullRequest": {"clientMutationId": "client_mutation_id"}}}}`
+
+	mockedCloseIssueAsCompletedMutation := fmt.Sprintf(`{
+	    "query": "mutation($input:CloseIssueInput!) {
+	        closeIssue(input: $input) {
+	            clientMutationId
+	        }
+	    }",
+	    "variables":{
+	        "input":{
+	            "issueId": "%v",
+				"stateReason": "COMPLETED"
+	        }
+	    }
+	}`, entityNodeID)
+
+	mockedCloseIssueAsNotPlannedMutation := fmt.Sprintf(`{
+	    "query": "mutation($input:CloseIssueInput!) {
+	        closeIssue(input: $input) {
+	            clientMutationId
+	        }
+	    }",
+	    "variables":{
+	        "input":{
+	            "issueId": "%v",
+				"stateReason": "NOT_PLANNED"
+	        }
+	    }
+	}`, entityNodeID)
+
+	mockedCloseIssueBody := `{"data": {"closeIssue": {"clientMutationId": "client_mutation_id"}}}}`
 
 	tests := map[string]struct {
 		mockedEnv        aladino.Env
 		inputComment     string
 		inputStateReason string
-		wantState        string
-		wantStateReason  string
 		wantComment      bool
-		wantErr          string
+		wantErr          error
 	}{
-		"when edit request fails": {
+		"when pull request is closed with comment": {
 			mockedEnv: aladino.MockDefaultEnv(
 				t,
 				[]mock.MockBackendOption{
-					mock.WithRequestMatchHandler(
-						mock.PatchReposPullsByOwnerByRepoByPullNumber,
-						http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-							mock.WriteError(
-								w,
-								http.StatusInternalServerError,
-								failMessage,
-							)
-						}),
-					),
-				},
-				nil,
-				aladino.MockBuiltIns(),
-				nil,
-			),
-			wantErr: failMessage,
-		},
-		"when entity is closed with comment": {
-			mockedEnv: aladino.MockDefaultEnv(
-				t,
-				[]mock.MockBackendOption{
-					mock.WithRequestMatchHandler(
-						mock.PatchReposPullsByOwnerByRepoByPullNumber,
-						http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-							rawBody, _ := io.ReadAll(r.Body)
-							body := github.PullRequest{}
-
-							utils.MustUnmarshal(rawBody, &body)
-
-							gotState = body.GetState()
-						}),
-					),
 					mock.WithRequestMatchHandler(
 						mock.PostReposIssuesCommentsByOwnerByRepoByIssueNumber,
 						http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -83,29 +317,23 @@ func TestClose(t *testing.T) {
 						}),
 					),
 				},
-				nil,
+				func(w http.ResponseWriter, req *http.Request) {
+					query := utils.MinifyQuery(utils.MustRead(req.Body))
+					if query == utils.MinifyQuery(mockedClosePullRequestMutation) {
+						utils.MustWrite(w, mockedClosePullRequestBody)
+					}
+				},
 				aladino.MockBuiltIns(),
 				nil,
 			),
 			inputComment: "Lorem Ipsum",
 			wantComment:  true,
-			wantState:    "closed",
+			wantErr:      nil,
 		},
-		"when entity is close without comment": {
+		"when pull request is close without comment": {
 			mockedEnv: aladino.MockDefaultEnv(
 				t,
 				[]mock.MockBackendOption{
-					mock.WithRequestMatchHandler(
-						mock.PatchReposPullsByOwnerByRepoByPullNumber,
-						http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-							rawBody, _ := io.ReadAll(r.Body)
-							body := github.PullRequest{}
-
-							utils.MustUnmarshal(rawBody, &body)
-
-							gotState = body.GetState()
-						}),
-					),
 					mock.WithRequestMatchHandler(
 						mock.PostReposIssuesCommentsByOwnerByRepoByIssueNumber,
 						http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -114,30 +342,33 @@ func TestClose(t *testing.T) {
 						}),
 					),
 				},
-				nil,
+				func(w http.ResponseWriter, req *http.Request) {
+					query := utils.MinifyQuery(utils.MustRead(req.Body))
+					if query == utils.MinifyQuery(mockedClosePullRequestMutation) {
+						utils.MustWrite(w, mockedClosePullRequestBody)
+					}
+				},
 				aladino.MockBuiltIns(),
 				nil,
 			),
-			wantState: "closed",
+			wantErr: nil,
 		},
 		"when issue is closed with comment and with reason completed": {
 			mockedEnv: aladino.MockDefaultEnvWithTargetEntity(
 				t,
 				[]mock.MockBackendOption{
-					mock.WithRequestMatchHandler(
-						mock.PatchReposIssuesByOwnerByRepoByIssueNumber,
-						http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-							rawBody, _ := io.ReadAll(r.Body)
-							body := struct {
-								State       string `json:"state"`
-								StateReason string `json:"state_reason"`
-							}{}
-
-							utils.MustUnmarshal(rawBody, &body)
-
-							gotState = body.State
-							gotStateReason = body.StateReason
-						}),
+					mock.WithRequestMatch(
+						mock.GetReposIssuesByOwnerByRepoByIssueNumber,
+						&github.Issue{
+							Number: github.Int(aladino.DefaultMockPrNum),
+							NodeID: github.String(entityNodeID),
+							Repository: &github.Repository{
+								Name: github.String(aladino.DefaultMockPrRepoName),
+							},
+							User: &github.User{
+								Login: github.String(aladino.DefaultMockPrOwner),
+							},
+						},
 					),
 					mock.WithRequestMatchHandler(
 						mock.PostReposIssuesCommentsByOwnerByRepoByIssueNumber,
@@ -152,7 +383,12 @@ func TestClose(t *testing.T) {
 						}),
 					),
 				},
-				nil,
+				func(w http.ResponseWriter, req *http.Request) {
+					query := utils.MinifyQuery(utils.MustRead(req.Body))
+					if query == utils.MinifyQuery(mockedCloseIssueAsCompletedMutation) {
+						utils.MustWrite(w, mockedCloseIssueBody)
+					}
+				},
 				aladino.MockBuiltIns(),
 				nil,
 				&handler.TargetEntity{
@@ -164,28 +400,25 @@ func TestClose(t *testing.T) {
 			),
 			inputComment:     "done",
 			inputStateReason: "completed",
-			wantState:        "closed",
-			wantStateReason:  "completed",
 			wantComment:      true,
+			wantErr:          nil,
 		},
 		"when issue is closed with comment and with reason not_planned": {
 			mockedEnv: aladino.MockDefaultEnvWithTargetEntity(
 				t,
 				[]mock.MockBackendOption{
-					mock.WithRequestMatchHandler(
-						mock.PatchReposIssuesByOwnerByRepoByIssueNumber,
-						http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-							rawBody, _ := io.ReadAll(r.Body)
-							body := struct {
-								State       string `json:"state"`
-								StateReason string `json:"state_reason"`
-							}{}
-
-							utils.MustUnmarshal(rawBody, &body)
-
-							gotState = body.State
-							gotStateReason = body.StateReason
-						}),
+					mock.WithRequestMatch(
+						mock.GetReposIssuesByOwnerByRepoByIssueNumber,
+						&github.Issue{
+							Number: github.Int(aladino.DefaultMockPrNum),
+							NodeID: github.String(entityNodeID),
+							Repository: &github.Repository{
+								Name: github.String(aladino.DefaultMockPrRepoName),
+							},
+							User: &github.User{
+								Login: github.String(aladino.DefaultMockPrOwner),
+							},
+						},
 					),
 					mock.WithRequestMatchHandler(
 						mock.PostReposIssuesCommentsByOwnerByRepoByIssueNumber,
@@ -200,7 +433,12 @@ func TestClose(t *testing.T) {
 						}),
 					),
 				},
-				nil,
+				func(w http.ResponseWriter, req *http.Request) {
+					query := utils.MinifyQuery(utils.MustRead(req.Body))
+					if query == utils.MinifyQuery(mockedCloseIssueAsNotPlannedMutation) {
+						utils.MustWrite(w, mockedCloseIssueBody)
+					}
+				},
 				aladino.MockBuiltIns(),
 				nil,
 				&handler.TargetEntity{
@@ -212,31 +450,33 @@ func TestClose(t *testing.T) {
 			),
 			inputComment:     "wont do",
 			inputStateReason: "not_planned",
-			wantState:        "closed",
-			wantStateReason:  "not_planned",
 			wantComment:      true,
+			wantErr:          nil,
 		},
 		"when issue is closed with no comment and with reason completed": {
 			mockedEnv: aladino.MockDefaultEnvWithTargetEntity(
 				t,
 				[]mock.MockBackendOption{
-					mock.WithRequestMatchHandler(
-						mock.PatchReposIssuesByOwnerByRepoByIssueNumber,
-						http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-							rawBody, _ := io.ReadAll(r.Body)
-							body := struct {
-								State       string `json:"state"`
-								StateReason string `json:"state_reason"`
-							}{}
-
-							utils.MustUnmarshal(rawBody, &body)
-
-							gotState = body.State
-							gotStateReason = body.StateReason
-						}),
+					mock.WithRequestMatch(
+						mock.GetReposIssuesByOwnerByRepoByIssueNumber,
+						&github.Issue{
+							Number: github.Int(aladino.DefaultMockPrNum),
+							NodeID: github.String(entityNodeID),
+							Repository: &github.Repository{
+								Name: github.String(aladino.DefaultMockPrRepoName),
+							},
+							User: &github.User{
+								Login: github.String(aladino.DefaultMockPrOwner),
+							},
+						},
 					),
 				},
-				nil,
+				func(w http.ResponseWriter, req *http.Request) {
+					query := utils.MinifyQuery(utils.MustRead(req.Body))
+					if query == utils.MinifyQuery(mockedCloseIssueAsCompletedMutation) {
+						utils.MustWrite(w, mockedCloseIssueBody)
+					}
+				},
 				aladino.MockBuiltIns(),
 				nil,
 				&handler.TargetEntity{
@@ -247,31 +487,33 @@ func TestClose(t *testing.T) {
 				},
 			),
 			inputStateReason: "completed",
-			wantState:        "closed",
-			wantStateReason:  "completed",
 			wantComment:      false,
+			wantErr:          nil,
 		},
 		"when issue is closed with no comment and with reason not_planned": {
 			mockedEnv: aladino.MockDefaultEnvWithTargetEntity(
 				t,
 				[]mock.MockBackendOption{
-					mock.WithRequestMatchHandler(
-						mock.PatchReposIssuesByOwnerByRepoByIssueNumber,
-						http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-							rawBody, _ := io.ReadAll(r.Body)
-							body := struct {
-								State       string `json:"state"`
-								StateReason string `json:"state_reason"`
-							}{}
-
-							utils.MustUnmarshal(rawBody, &body)
-
-							gotState = body.State
-							gotStateReason = body.StateReason
-						}),
+					mock.WithRequestMatch(
+						mock.GetReposIssuesByOwnerByRepoByIssueNumber,
+						&github.Issue{
+							Number: github.Int(aladino.DefaultMockPrNum),
+							NodeID: github.String(entityNodeID),
+							Repository: &github.Repository{
+								Name: github.String(aladino.DefaultMockPrRepoName),
+							},
+							User: &github.User{
+								Login: github.String(aladino.DefaultMockPrOwner),
+							},
+						},
 					),
 				},
-				nil,
+				func(w http.ResponseWriter, req *http.Request) {
+					query := utils.MinifyQuery(utils.MustRead(req.Body))
+					if query == utils.MinifyQuery(mockedCloseIssueAsNotPlannedMutation) {
+						utils.MustWrite(w, mockedCloseIssueBody)
+					}
+				},
 				aladino.MockBuiltIns(),
 				nil,
 				&handler.TargetEntity{
@@ -282,9 +524,8 @@ func TestClose(t *testing.T) {
 				},
 			),
 			inputStateReason: "not_planned",
-			wantState:        "closed",
-			wantStateReason:  "not_planned",
 			wantComment:      false,
+			wantErr:          nil,
 		},
 	}
 
@@ -293,20 +534,13 @@ func TestClose(t *testing.T) {
 			args := []aladino.Value{aladino.BuildStringValue(test.inputComment), aladino.BuildStringValue(test.inputStateReason)}
 			gotErr := close(test.mockedEnv, args)
 
-			if gotErr != nil && gotErr.(*github.ErrorResponse).Message != test.wantErr {
-				assert.FailNow(t, "Close() error = %v, wantErr %v", gotErr, test.wantErr)
-			}
-
-			assert.Equal(t, test.wantState, gotState)
+			assert.Equal(t, test.wantErr, gotErr)
 			assert.Equal(t, test.inputComment, closeComment)
 			assert.Equal(t, test.wantComment, commentCreated)
-			assert.Equal(t, test.wantStateReason, gotStateReason)
 
 			// Since these are variables common to all tests we need to reset their values at the end of each test
-			gotState = ""
 			closeComment = ""
 			commentCreated = false
-			gotStateReason = ""
 		})
 	}
 }

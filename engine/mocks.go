@@ -17,6 +17,7 @@ import (
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/collector"
 	"github.com/reviewpad/reviewpad/v3/handler"
+	"github.com/sirupsen/logrus"
 )
 
 // Use only for tests
@@ -29,6 +30,7 @@ const DefaultMockEventAction = "opened"
 
 // Use only for tests
 var DefaultMockCtx = context.Background()
+var DefaultMockLogger = logrus.NewEntry(logrus.New())
 var DefaultMockCollector, _ = collector.NewCollector("", "distinctId", "pull_request", "runnerName", nil)
 var DefaultMockEventPayload = &github.CheckRunEvent{}
 var DefaultMockTargetEntity = &handler.TargetEntity{
@@ -37,7 +39,7 @@ var DefaultMockTargetEntity = &handler.TargetEntity{
 	Number: DefaultMockPrNum,
 	Kind:   handler.PullRequest,
 }
-var DefaultMockEventData = &handler.EventData{
+var DefaultMockEventDetails = &handler.EventDetails{
 	EventName:   DefaultMockEventName,
 	EventAction: DefaultMockEventAction,
 }
@@ -120,16 +122,17 @@ func MockGithubClient(clientOptions []mock.MockBackendOption) *gh.GithubClient {
 	return gh.NewGithubClient(githubClientREST, nil)
 }
 
-func MockEnvWith(githubClient *gh.GithubClient, interpreter Interpreter, targetEntity *handler.TargetEntity, eventData *handler.EventData) (*Env, error) {
+func MockEnvWith(githubClient *gh.GithubClient, interpreter Interpreter, targetEntity *handler.TargetEntity, eventDetails *handler.EventDetails) (*Env, error) {
 	dryRun := false
 	mockedEnv, err := NewEvalEnv(
 		DefaultMockCtx,
+		DefaultMockLogger,
 		dryRun,
 		githubClient,
 		DefaultMockCollector,
 		targetEntity,
 		interpreter,
-		eventData,
+		eventDetails,
 	)
 
 	if err != nil {

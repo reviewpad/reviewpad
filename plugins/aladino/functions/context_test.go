@@ -20,6 +20,7 @@ func TestContext(t *testing.T) {
 	mockPRJSON, err := utils.CompactJSONString(`{
         "id": 1234,
         "number": 6,
+        "state": "open",
         "title": "Amazing new feature",
         "body": "Please pull these awesome changes in!",
         "created_at": "2009-11-17T20:34:58.651387237Z",
@@ -28,10 +29,10 @@ func TestContext(t *testing.T) {
                 "id": 1,
                 "name": "enhancement"
             },
-			{
-				"id": 2,
-				"name": "large"
-			}
+            {
+                "id": 2,
+                "name": "large"
+            }
         ],
         "user": {
             "login": "john"
@@ -48,6 +49,7 @@ func TestContext(t *testing.T) {
         "milestone": {
             "title":"v1.0"
         },
+        "node_id": "test",
         "requested_reviewers": [
             {
                 "login": "jane"

@@ -10,6 +10,7 @@ import (
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/collector"
 	"github.com/reviewpad/reviewpad/v3/handler"
+	"github.com/sirupsen/logrus"
 )
 
 type GroupKind string
@@ -42,17 +43,19 @@ type Env struct {
 	Collector    collector.Collector
 	Interpreter  Interpreter
 	TargetEntity *handler.TargetEntity
-	EventData    *handler.EventData
+	EventDetails *handler.EventDetails
+	Logger       *logrus.Entry
 }
 
 func NewEvalEnv(
 	ctx context.Context,
+	logger *logrus.Entry,
 	dryRun bool,
 	githubClient *gh.GithubClient,
 	collector collector.Collector,
 	targetEntity *handler.TargetEntity,
 	interpreter Interpreter,
-	eventData *handler.EventData,
+	eventDetails *handler.EventDetails,
 ) (*Env, error) {
 	input := &Env{
 		Ctx:          ctx,
@@ -61,7 +64,8 @@ func NewEvalEnv(
 		Collector:    collector,
 		Interpreter:  interpreter,
 		TargetEntity: targetEntity,
-		EventData:    eventData,
+		EventDetails: eventDetails,
+		Logger:       logger,
 	}
 
 	return input, nil
