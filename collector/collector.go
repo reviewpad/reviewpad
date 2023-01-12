@@ -130,7 +130,7 @@ func getMixpanelUser(distinctId, mixpanelAPISecret, mixpanelPassword string) (*Q
 
 	req.Header.Add("accept", "application/json")
 	req.Header.Add("content-type", "application/x-www-form-urlencoded")
-	req.Header.Add("authorization", fmt.Sprintf("Basic %v", base64.StdEncoding.EncodeToString([]byte(mixpanelAPISecret+mixpanelPassword))))
+	req.Header.Add("authorization", fmt.Sprintf("Basic %v", base64.StdEncoding.EncodeToString([]byte(mixpanelAPISecret+":"+mixpanelPassword))))
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
