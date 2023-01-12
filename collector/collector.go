@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"strings"
 
@@ -156,6 +157,8 @@ func IsFirstTimeUser(distinctId, mixpanelAPISecret, mixpanelPassword string) (bo
 	if err != nil {
 		return false, err
 	}
+
+	log.Printf("USER: %v", user)
 
 	return user.Total == 0, nil
 }
