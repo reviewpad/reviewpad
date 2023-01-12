@@ -103,7 +103,7 @@ func TestEval_WhenGitHubRequestsFail(t *testing.T) {
 				assert.FailNow(t, "Error parsing reviewpad file: %v", err)
 			}
 
-			gotProgram, err := engine.Eval(reviewpadFile, mockedEnv)
+			gotProgram, err := engine.EvalConfigurationFile(reviewpadFile, mockedEnv)
 
 			assert.Nil(t, gotProgram)
 			assert.Equal(t, test.wantErr, err.(*github.ErrorResponse).Message)
@@ -111,7 +111,170 @@ func TestEval_WhenGitHubRequestsFail(t *testing.T) {
 	}
 }
 
-func TestEval(t *testing.T) {
+func TestEvalCommand(t *testing.T) {
+	tests := map[string]struct {
+		inputContext      context.Context
+		inputGitHubClient *gh.GithubClient
+		clientOptions     []mock.MockBackendOption
+		targetEntity      *handler.TargetEntity
+		eventDetails      *handler.EventDetails
+		wantProgram       *engine.Program
+		wantErr           string
+	}{
+		"when invalid assign reviewer command": {
+			targetEntity: &handler.TargetEntity{
+				Kind:   engine.DefaultMockTargetEntity.Kind,
+				Number: engine.DefaultMockTargetEntity.Number,
+				Owner:  engine.DefaultMockTargetEntity.Owner,
+				Repo:   engine.DefaultMockTargetEntity.Repo,
+			},
+			eventDetails: &handler.EventDetails{
+				EventName:   "issue_comment",
+				EventAction: "created",
+				Payload: &github.IssueCommentEvent{
+					Comment: &github.IssueComment{
+						ID:   github.Int64(1),
+						Body: github.String("/reviewpad assign-reviewers john, jane, 1 random"),
+					},
+				},
+			},
+			clientOptions: []mock.MockBackendOption{
+				mock.WithRequestMatch(
+					mock.PostReposIssuesCommentsByOwnerByRepoByIssueNumber,
+					&github.IssueComment{},
+				),
+			},
+			wantErr: "accepts 1 arg(s), received 4",
+		},
+		"when missing policy in assign reviewer command args": {
+			wantProgram: engine.BuildProgram(
+				[]*engine.Statement{
+					engine.BuildStatement(`$assignReviewer(["john"], 1, "reviewpad")`),
+				},
+				true,
+			),
+			targetEntity: &handler.TargetEntity{
+				Kind:   engine.DefaultMockTargetEntity.Kind,
+				Number: engine.DefaultMockTargetEntity.Number,
+				Owner:  engine.DefaultMockTargetEntity.Owner,
+				Repo:   engine.DefaultMockTargetEntity.Repo,
+			},
+			eventDetails: &handler.EventDetails{
+				EventName:   "issue_comment",
+				EventAction: "created",
+				Payload: &github.IssueCommentEvent{
+					Comment: &github.IssueComment{
+						ID:   github.Int64(1),
+						Body: github.String("/reviewpad assign-reviewers john -t 1"),
+					},
+				},
+			},
+			clientOptions: []mock.MockBackendOption{
+				mock.WithRequestMatch(
+					mock.PostReposIssuesCommentsByOwnerByRepoByIssueNumber,
+					&github.IssueComment{},
+				),
+			},
+		},
+		"when assign reviewer has random policy": {
+			wantProgram: engine.BuildProgram(
+				[]*engine.Statement{
+					engine.BuildStatement(`$assignReviewer(["jane-12","john01"], 1, "random")`),
+				},
+				true,
+			),
+			targetEntity: &handler.TargetEntity{
+				Kind:   engine.DefaultMockTargetEntity.Kind,
+				Number: engine.DefaultMockTargetEntity.Number,
+				Owner:  engine.DefaultMockTargetEntity.Owner,
+				Repo:   engine.DefaultMockTargetEntity.Repo,
+			},
+			eventDetails: &handler.EventDetails{
+				EventName:   "issue_comment",
+				EventAction: "created",
+				Payload: &github.IssueCommentEvent{
+					Comment: &github.IssueComment{
+						ID:   github.Int64(1),
+						Body: github.String("/reviewpad assign-reviewers jane-12,john01 --total-reviewers 1 -p random"),
+					},
+				},
+			},
+		},
+		"when assign reviewer has reviewpad policy": {
+			wantProgram: engine.BuildProgram(
+				[]*engine.Statement{
+					engine.BuildStatement(`$assignReviewer(["john","jane"], 1, "reviewpad")`),
+				},
+				true,
+			),
+			targetEntity: &handler.TargetEntity{
+				Kind:   engine.DefaultMockTargetEntity.Kind,
+				Number: engine.DefaultMockTargetEntity.Number,
+				Owner:  engine.DefaultMockTargetEntity.Owner,
+				Repo:   engine.DefaultMockTargetEntity.Repo,
+			},
+			eventDetails: &handler.EventDetails{
+				EventName:   "issue_comment",
+				EventAction: "created",
+				Payload: &github.IssueCommentEvent{
+					Comment: &github.IssueComment{
+						ID:   github.Int64(1),
+						Body: github.String("/reviewpad assign-reviewers john,jane -t 1 --review-policy reviewpad"),
+					},
+				},
+			},
+		},
+		"when assign reviewer has round-robin policy": {
+			wantProgram: engine.BuildProgram(
+				[]*engine.Statement{
+					engine.BuildStatement(`$assignReviewer(["john","johnny"], 1, "round-robin")`),
+				},
+				true,
+			),
+			targetEntity: &handler.TargetEntity{
+				Kind:   engine.DefaultMockTargetEntity.Kind,
+				Number: engine.DefaultMockTargetEntity.Number,
+				Owner:  engine.DefaultMockTargetEntity.Owner,
+				Repo:   engine.DefaultMockTargetEntity.Repo,
+			},
+			eventDetails: &handler.EventDetails{
+				EventName:   "issue_comment",
+				EventAction: "created",
+				Payload: &github.IssueCommentEvent{
+					Comment: &github.IssueComment{
+						ID:   github.Int64(1),
+						Body: github.String("/reviewpad assign-reviewers john,johnny -t 1 -p round-robin"),
+					},
+				},
+			},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			mockedClient := engine.MockGithubClient(test.clientOptions)
+
+			mockedAladinoInterpreter, err := mockAladinoInterpreter(mockedClient)
+			if err != nil {
+				assert.FailNow(t, fmt.Sprintf("mockAladinoInterpreter: %v", err))
+			}
+
+			mockedEnv, err := engine.MockEnvWith(mockedClient, mockedAladinoInterpreter, test.targetEntity, test.eventDetails)
+			if err != nil {
+				assert.FailNow(t, fmt.Sprintf("engine MockEnvWith: %v", err))
+			}
+
+			gotProgram, gotErr := engine.EvalCommand(test.eventDetails.Payload.(*github.IssueCommentEvent).GetComment().GetBody(), mockedEnv)
+
+			if gotErr != nil && gotErr.Error() != test.wantErr {
+				assert.FailNow(t, fmt.Sprintf("Eval() error = %v, wantErr %v", gotErr, test.wantErr))
+			}
+			assert.Equal(t, test.wantProgram, gotProgram)
+		})
+	}
+}
+
+func TestEvalConfigurationFile(t *testing.T) {
 	tests := map[string]struct {
 		inputReviewpadFilePath string
 		inputContext           context.Context
@@ -256,138 +419,6 @@ func TestEval(t *testing.T) {
 			),
 			targetEntity: engine.DefaultMockTargetEntity,
 		},
-		"when invalid assign reviewer command": {
-			inputReviewpadFilePath: "testdata/exec/reviewpad_with_valid_group.yml",
-			targetEntity: &handler.TargetEntity{
-				Kind:   engine.DefaultMockTargetEntity.Kind,
-				Number: engine.DefaultMockTargetEntity.Number,
-				Owner:  engine.DefaultMockTargetEntity.Owner,
-				Repo:   engine.DefaultMockTargetEntity.Repo,
-			},
-			eventDetails: &handler.EventDetails{
-				EventName:   "issue_comment",
-				EventAction: "created",
-				Payload: &github.IssueCommentEvent{
-					Comment: &github.IssueComment{
-						ID:   github.Int64(1),
-						Body: github.String("/reviewpad assign-reviewers john, jane, 1 random"),
-					},
-				},
-			},
-			clientOptions: []mock.MockBackendOption{
-				mock.WithRequestMatch(
-					mock.PostReposIssuesCommentsByOwnerByRepoByIssueNumber,
-					&github.IssueComment{},
-				),
-			},
-			wantErr: "accepts 1 arg(s), received 4",
-		},
-		"when missing policy in assign reviewer command args": {
-			inputReviewpadFilePath: "testdata/exec/reviewpad_with_valid_group.yml",
-			wantProgram: engine.BuildProgram(
-				[]*engine.Statement{
-					engine.BuildStatement(`$assignReviewer(["john"], 1, "reviewpad")`),
-				},
-				true,
-			),
-			targetEntity: &handler.TargetEntity{
-				Kind:   engine.DefaultMockTargetEntity.Kind,
-				Number: engine.DefaultMockTargetEntity.Number,
-				Owner:  engine.DefaultMockTargetEntity.Owner,
-				Repo:   engine.DefaultMockTargetEntity.Repo,
-			},
-			eventDetails: &handler.EventDetails{
-				EventName:   "issue_comment",
-				EventAction: "created",
-				Payload: &github.IssueCommentEvent{
-					Comment: &github.IssueComment{
-						ID:   github.Int64(1),
-						Body: github.String("/reviewpad assign-reviewers john -t 1"),
-					},
-				},
-			},
-			clientOptions: []mock.MockBackendOption{
-				mock.WithRequestMatch(
-					mock.PostReposIssuesCommentsByOwnerByRepoByIssueNumber,
-					&github.IssueComment{},
-				),
-			},
-		},
-		"when assign reviewer has random policy": {
-			inputReviewpadFilePath: "testdata/exec/reviewpad_with_valid_group.yml",
-			wantProgram: engine.BuildProgram(
-				[]*engine.Statement{
-					engine.BuildStatement(`$assignReviewer(["jane-12","john01"], 1, "random")`),
-				},
-				true,
-			),
-			targetEntity: &handler.TargetEntity{
-				Kind:   engine.DefaultMockTargetEntity.Kind,
-				Number: engine.DefaultMockTargetEntity.Number,
-				Owner:  engine.DefaultMockTargetEntity.Owner,
-				Repo:   engine.DefaultMockTargetEntity.Repo,
-			},
-			eventDetails: &handler.EventDetails{
-				EventName:   "issue_comment",
-				EventAction: "created",
-				Payload: &github.IssueCommentEvent{
-					Comment: &github.IssueComment{
-						ID:   github.Int64(1),
-						Body: github.String("/reviewpad assign-reviewers jane-12,john01 --total-reviewers 1 -p random"),
-					},
-				},
-			},
-		},
-		"when assign reviewer has reviewpad policy": {
-			inputReviewpadFilePath: "testdata/exec/reviewpad_with_valid_group.yml",
-			wantProgram: engine.BuildProgram(
-				[]*engine.Statement{
-					engine.BuildStatement(`$assignReviewer(["john","jane"], 1, "reviewpad")`),
-				},
-				true,
-			),
-			targetEntity: &handler.TargetEntity{
-				Kind:   engine.DefaultMockTargetEntity.Kind,
-				Number: engine.DefaultMockTargetEntity.Number,
-				Owner:  engine.DefaultMockTargetEntity.Owner,
-				Repo:   engine.DefaultMockTargetEntity.Repo,
-			},
-			eventDetails: &handler.EventDetails{
-				EventName:   "issue_comment",
-				EventAction: "created",
-				Payload: &github.IssueCommentEvent{
-					Comment: &github.IssueComment{
-						ID:   github.Int64(1),
-						Body: github.String("/reviewpad assign-reviewers john,jane -t 1 --review-policy reviewpad"),
-					},
-				},
-			},
-		},
-		"when assign reviewer has round-robin policy": {
-			inputReviewpadFilePath: "testdata/exec/reviewpad_with_valid_group.yml",
-			wantProgram: engine.BuildProgram(
-				[]*engine.Statement{
-					engine.BuildStatement(`$assignReviewer(["john","johnny"], 1, "round-robin")`),
-				},
-				true,
-			),
-			targetEntity: &handler.TargetEntity{
-				Kind:   engine.DefaultMockTargetEntity.Kind,
-				Number: engine.DefaultMockTargetEntity.Number,
-				Owner:  engine.DefaultMockTargetEntity.Owner,
-				Repo:   engine.DefaultMockTargetEntity.Repo,
-			},
-			eventDetails: &handler.EventDetails{
-				EventName:   "issue_comment",
-				EventAction: "created",
-				Payload: &github.IssueCommentEvent{
-					Comment: &github.IssueComment{
-						ID:   github.Int64(1),
-						Body: github.String("/reviewpad assign-reviewers john,johnny -t 1 -p round-robin"),
-					},
-				},
-			},
-		},
 	}
 
 	for name, test := range tests {
@@ -414,7 +445,7 @@ func TestEval(t *testing.T) {
 				assert.FailNow(t, fmt.Sprintf("Error parsing reviewpad file: %v", err))
 			}
 
-			gotProgram, gotErr := engine.Eval(reviewpadFile, mockedEnv)
+			gotProgram, gotErr := engine.EvalConfigurationFile(reviewpadFile, mockedEnv)
 
 			if gotErr != nil && gotErr.Error() != test.wantErr {
 				assert.FailNow(t, fmt.Sprintf("Eval() error = %v, wantErr %v", gotErr, test.wantErr))

@@ -9,6 +9,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/google/go-github/v48/github"
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/collector"
 	"github.com/reviewpad/reviewpad/v3/engine"
@@ -68,9 +69,19 @@ func Run(
 		return engine.ExitStatusFailure, nil, err
 	}
 
-	program, err := engine.Eval(reviewpadFile, evalEnv)
-	if err != nil {
-		return engine.ExitStatusFailure, nil, err
+	var program *engine.Program
+
+	if utils.IsReviewpadCommand(evalEnv.EventDetails) {
+		program, err = engine.EvalCommand(evalEnv.EventDetails.Payload.(*github.IssueCommentEvent).GetComment().GetBody(), evalEnv)
+		if err != nil {
+			engine.CollectError(evalEnv, err)
+			return engine.ExitStatusFailure, nil, err
+		}
+	} else {
+		program, err = engine.EvalConfigurationFile(reviewpadFile, evalEnv)
+		if err != nil {
+			return engine.ExitStatusFailure, nil, err
+		}
 	}
 
 	exitStatus, err := aladinoInterpreter.ExecProgram(program)
