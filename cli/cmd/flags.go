@@ -9,7 +9,7 @@ var (
 	eventFilePath string
 	gitHubToken   string
 	mixpanelToken string
-	githubUrl     string
+	gitHubUrl     string
 	reviewpadFile string
 	safeModeRun   bool
 	logLevel      string

@@ -26,3 +26,7 @@ vendor/
 .vscode
 .idea
 .DS_Store
+
+# Debug
+debugdata/
+__debug_bin
