@@ -24,13 +24,13 @@ func TestAppend(t *testing.T) {
 
 	initialStat := BuildStatement("$actionB()")
 
-	programUnderTest := BuildProgram([]*Statement{initialStat})
+	programUnderTest := BuildProgram([]*Statement{initialStat}, false)
 
 	addedStat := BuildStatement(action)
 	wantProgram := BuildProgram([]*Statement{
 		initialStat,
 		addedStat,
-	})
+	}, false)
 
 	programUnderTest.append(workflow.Actions)
 

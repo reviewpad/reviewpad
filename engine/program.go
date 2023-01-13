@@ -9,7 +9,8 @@ type Statement struct {
 }
 
 type Program struct {
-	statements []*Statement
+	IsFromCommand bool
+	statements    []*Statement
 }
 
 func BuildStatement(code string) *Statement {
@@ -18,8 +19,9 @@ func BuildStatement(code string) *Statement {
 	}
 }
 
-func BuildProgram(statements []*Statement) *Program {
+func BuildProgram(statements []*Statement, isFromCommand bool) *Program {
 	return &Program{
+		isFromCommand,
 		statements,
 	}
 }

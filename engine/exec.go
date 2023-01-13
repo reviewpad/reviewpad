@@ -12,7 +12,6 @@ import (
 	"github.com/google/go-github/v48/github"
 	"github.com/mattn/go-shellwords"
 	"github.com/reviewpad/reviewpad/v3/engine/commands"
-	"github.com/reviewpad/reviewpad/v3/utils"
 )
 
 func CollectError(env *Env, err error) {
@@ -34,9 +33,23 @@ func CollectError(env *Env, err error) {
 	}
 }
 
-// Eval: main function that generates the program to be executed
+// EvalCommand generates the program to be executed when a command is received
+func EvalCommand(command string, env *Env) (*Program, error) {
+	program := BuildProgram(make([]*Statement, 0), true)
+
+	action, err := processCommand(env, command)
+	if err != nil {
+		return nil, err
+	}
+
+	program.append([]string{action})
+
+	return program, nil
+}
+
+// EvalConfigurationFile: main function that generates the program to be executed
 // Pre-condition Lint(file) == nil
-func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
+func EvalConfigurationFile(file *ReviewpadFile, env *Env) (*Program, error) {
 	log := env.Logger
 	interpreter := env.Interpreter
 
@@ -140,19 +153,7 @@ func Eval(file *ReviewpadFile, env *Env) (*Program, error) {
 	}
 
 	// a program is a list of statements to be executed based on the command, workflow rules and actions.
-	program := BuildProgram(make([]*Statement, 0))
-
-	// process commands
-	if utils.IsReviewpadCommand(env.EventDetails) {
-		action, err := processCommand(env, env.EventDetails.Payload.(*github.IssueCommentEvent).GetComment().GetBody())
-		if err != nil {
-			return nil, err
-		}
-
-		program.append([]string{action})
-
-		return program, nil
-	}
+	program := BuildProgram(make([]*Statement, 0), false)
 
 	// process rules
 	for _, rule := range file.Rules {

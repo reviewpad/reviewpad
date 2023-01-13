@@ -103,7 +103,7 @@ func TestEval_WhenGitHubRequestsFail(t *testing.T) {
 				assert.FailNow(t, "Error parsing reviewpad file: %v", err)
 			}
 
-			gotProgram, err := engine.Eval(reviewpadFile, mockedEnv)
+			gotProgram, err := engine.EvalConfigurationFile(reviewpadFile, mockedEnv)
 
 			assert.Nil(t, gotProgram)
 			assert.Equal(t, test.wantErr, err.(*github.ErrorResponse).Message)
@@ -111,142 +111,17 @@ func TestEval_WhenGitHubRequestsFail(t *testing.T) {
 	}
 }
 
-func TestEval(t *testing.T) {
+func TestEvalCommand(t *testing.T) {
 	tests := map[string]struct {
-		inputReviewpadFilePath string
-		inputContext           context.Context
-		inputGitHubClient      *gh.GithubClient
-		clientOptions          []mock.MockBackendOption
-		targetEntity           *handler.TargetEntity
-		eventDetails           *handler.EventDetails
-		wantProgram            *engine.Program
-		wantErr                string
+		inputContext      context.Context
+		inputGitHubClient *gh.GithubClient
+		clientOptions     []mock.MockBackendOption
+		targetEntity      *handler.TargetEntity
+		eventDetails      *handler.EventDetails
+		wantProgram       *engine.Program
+		wantErr           string
 	}{
-		"when label has no name": {
-			inputReviewpadFilePath: "testdata/exec/reviewpad_with_unnamed_label.yml",
-			clientOptions: []mock.MockBackendOption{
-				mockGetReposLabelsByOwnerByRepoByName("bug", ""),
-				mockPatchReposLabelsByOwnerByRepo("bug", ""),
-			},
-			wantProgram: engine.BuildProgram(
-				[]*engine.Statement{
-					engine.BuildStatement(`$addLabel("test-unnamed-label")`),
-				},
-			),
-			targetEntity: engine.DefaultMockTargetEntity,
-		},
-		"when label exists": {
-			inputReviewpadFilePath: "testdata/exec/reviewpad_with_label_without_description.yml",
-			clientOptions:          []mock.MockBackendOption{mockGetReposLabelsByOwnerByRepoByName("bug", "")},
-			wantProgram: engine.BuildProgram(
-				[]*engine.Statement{
-					engine.BuildStatement(`$addLabel("test-label-without-description")`),
-				},
-			),
-			targetEntity: engine.DefaultMockTargetEntity,
-		},
-		"when label does not exist": {
-			inputReviewpadFilePath: "testdata/exec/reviewpad_with_label_without_description.yml",
-			clientOptions: []mock.MockBackendOption{
-				mockGetReposLabelsByOwnerByRepoByName("bug", ""),
-				mockPostReposLabelsByOwnerByRepo("bug", ""),
-			},
-			wantProgram: engine.BuildProgram(
-				[]*engine.Statement{
-					engine.BuildStatement(`$addLabel("test-label-without-description")`),
-				},
-			),
-			targetEntity: engine.DefaultMockTargetEntity,
-		},
-		"when label has updates": {
-			inputReviewpadFilePath: "testdata/exec/reviewpad_with_label_with_diff_repo_description.yml",
-			clientOptions: []mock.MockBackendOption{
-				mockGetReposLabelsByOwnerByRepoByName("bug", "Something is wrong"),
-				mockPatchReposLabelsByOwnerByRepo("bug", "Something is definitely wrong"),
-			},
-			wantProgram: engine.BuildProgram(
-				[]*engine.Statement{
-					engine.BuildStatement(`$addLabel("test-label-update")`),
-				},
-			),
-			targetEntity: engine.DefaultMockTargetEntity,
-		},
-		"when label has no updates": {
-			inputReviewpadFilePath: "testdata/exec/reviewpad_with_label_with_repo_description.yml",
-			clientOptions:          []mock.MockBackendOption{mockGetReposLabelsByOwnerByRepoByName("bug", "Something is wrong")},
-			wantProgram: engine.BuildProgram(
-				[]*engine.Statement{
-					engine.BuildStatement(`$addLabel("test-label-with-no-updates")`),
-				},
-			),
-			targetEntity: engine.DefaultMockTargetEntity,
-		},
-		"when group is valid": {
-			inputReviewpadFilePath: "testdata/exec/reviewpad_with_valid_group.yml",
-			wantProgram: engine.BuildProgram(
-				[]*engine.Statement{
-					engine.BuildStatement(`$addLabel("test-valid-group")`),
-				},
-			),
-			targetEntity: engine.DefaultMockTargetEntity,
-		},
-		"when group is invalid": {
-			inputReviewpadFilePath: "testdata/exec/reviewpad_with_invalid_group.yml",
-			wantErr:                "ProcessGroup:evalGroup expression is not a valid group",
-			targetEntity:           engine.DefaultMockTargetEntity,
-		},
-		"when workflow is invalid": {
-			inputReviewpadFilePath: "testdata/exec/reviewpad_with_invalid_workflow.yml",
-			wantErr:                "expression 1 is not a condition",
-			targetEntity:           engine.DefaultMockTargetEntity,
-		},
-		"when no workflow is activated": {
-			inputReviewpadFilePath: "testdata/exec/reviewpad_with_no_activated_workflows.yml",
-			wantProgram: engine.BuildProgram(
-				[]*engine.Statement{},
-			),
-			targetEntity: engine.DefaultMockTargetEntity,
-		},
-		"when one workflow is activated": {
-			inputReviewpadFilePath: "testdata/exec/reviewpad_with_one_activated_workflow.yml",
-			wantProgram: engine.BuildProgram(
-				[]*engine.Statement{
-					engine.BuildStatement(`$addLabel("activate-one-workflow")`),
-				},
-			),
-			targetEntity: engine.DefaultMockTargetEntity,
-		},
-		"when multiple workflows are activated": {
-			inputReviewpadFilePath: "testdata/exec/reviewpad_with_multiple_activated_workflows.yml",
-			wantProgram: engine.BuildProgram(
-				[]*engine.Statement{
-					engine.BuildStatement(`$addLabel("activated-workflow-a")`),
-					engine.BuildStatement(`$addLabel("activated-workflow-b")`),
-				},
-			),
-			targetEntity: engine.DefaultMockTargetEntity,
-		},
-		"when workflow is activated and has extra actions": {
-			inputReviewpadFilePath: "testdata/exec/reviewpad_with_activated_workflow_with_extra_actions.yml",
-			wantProgram: engine.BuildProgram(
-				[]*engine.Statement{
-					engine.BuildStatement(`$addLabel("activated-workflow")`),
-					engine.BuildStatement(`$addLabel("workflow-with-extra-actions")`),
-				},
-			),
-			targetEntity: engine.DefaultMockTargetEntity,
-		},
-		"when workflow is skipped": {
-			inputReviewpadFilePath: "testdata/exec/reviewpad_with_skipped_workflow.yml",
-			wantProgram: engine.BuildProgram(
-				[]*engine.Statement{
-					engine.BuildStatement(`$addLabel("activated-workflow")`),
-				},
-			),
-			targetEntity: engine.DefaultMockTargetEntity,
-		},
 		"when invalid assign reviewer command": {
-			inputReviewpadFilePath: "testdata/exec/reviewpad_with_valid_group.yml",
 			targetEntity: &handler.TargetEntity{
 				Kind:   engine.DefaultMockTargetEntity.Kind,
 				Number: engine.DefaultMockTargetEntity.Number,
@@ -272,11 +147,11 @@ func TestEval(t *testing.T) {
 			wantErr: "accepts 1 arg(s), received 4",
 		},
 		"when missing policy in assign reviewer command args": {
-			inputReviewpadFilePath: "testdata/exec/reviewpad_with_valid_group.yml",
 			wantProgram: engine.BuildProgram(
 				[]*engine.Statement{
 					engine.BuildStatement(`$assignReviewer(["john"], 1, "reviewpad")`),
 				},
+				true,
 			),
 			targetEntity: &handler.TargetEntity{
 				Kind:   engine.DefaultMockTargetEntity.Kind,
@@ -302,11 +177,11 @@ func TestEval(t *testing.T) {
 			},
 		},
 		"when assign reviewer has random policy": {
-			inputReviewpadFilePath: "testdata/exec/reviewpad_with_valid_group.yml",
 			wantProgram: engine.BuildProgram(
 				[]*engine.Statement{
 					engine.BuildStatement(`$assignReviewer(["jane-12","john01"], 1, "random")`),
 				},
+				true,
 			),
 			targetEntity: &handler.TargetEntity{
 				Kind:   engine.DefaultMockTargetEntity.Kind,
@@ -326,11 +201,11 @@ func TestEval(t *testing.T) {
 			},
 		},
 		"when assign reviewer has reviewpad policy": {
-			inputReviewpadFilePath: "testdata/exec/reviewpad_with_valid_group.yml",
 			wantProgram: engine.BuildProgram(
 				[]*engine.Statement{
 					engine.BuildStatement(`$assignReviewer(["john","jane"], 1, "reviewpad")`),
 				},
+				true,
 			),
 			targetEntity: &handler.TargetEntity{
 				Kind:   engine.DefaultMockTargetEntity.Kind,
@@ -350,11 +225,11 @@ func TestEval(t *testing.T) {
 			},
 		},
 		"when assign reviewer has round-robin policy": {
-			inputReviewpadFilePath: "testdata/exec/reviewpad_with_valid_group.yml",
 			wantProgram: engine.BuildProgram(
 				[]*engine.Statement{
 					engine.BuildStatement(`$assignReviewer(["john","johnny"], 1, "round-robin")`),
 				},
+				true,
 			),
 			targetEntity: &handler.TargetEntity{
 				Kind:   engine.DefaultMockTargetEntity.Kind,
@@ -389,6 +264,177 @@ func TestEval(t *testing.T) {
 				assert.FailNow(t, fmt.Sprintf("engine MockEnvWith: %v", err))
 			}
 
+			gotProgram, gotErr := engine.EvalCommand(test.eventDetails.Payload.(*github.IssueCommentEvent).GetComment().GetBody(), mockedEnv)
+
+			if gotErr != nil && gotErr.Error() != test.wantErr {
+				assert.FailNow(t, fmt.Sprintf("Eval() error = %v, wantErr %v", gotErr, test.wantErr))
+			}
+			assert.Equal(t, test.wantProgram, gotProgram)
+		})
+	}
+}
+
+func TestEvalConfigurationFile(t *testing.T) {
+	tests := map[string]struct {
+		inputReviewpadFilePath string
+		inputContext           context.Context
+		inputGitHubClient      *gh.GithubClient
+		clientOptions          []mock.MockBackendOption
+		targetEntity           *handler.TargetEntity
+		eventDetails           *handler.EventDetails
+		wantProgram            *engine.Program
+		wantErr                string
+	}{
+		"when label has no name": {
+			inputReviewpadFilePath: "testdata/exec/reviewpad_with_unnamed_label.yml",
+			clientOptions: []mock.MockBackendOption{
+				mockGetReposLabelsByOwnerByRepoByName("bug", ""),
+				mockPatchReposLabelsByOwnerByRepo("bug", ""),
+			},
+			wantProgram: engine.BuildProgram(
+				[]*engine.Statement{
+					engine.BuildStatement(`$addLabel("test-unnamed-label")`),
+				},
+				false,
+			),
+			targetEntity: engine.DefaultMockTargetEntity,
+		},
+		"when label exists": {
+			inputReviewpadFilePath: "testdata/exec/reviewpad_with_label_without_description.yml",
+			clientOptions:          []mock.MockBackendOption{mockGetReposLabelsByOwnerByRepoByName("bug", "")},
+			wantProgram: engine.BuildProgram(
+				[]*engine.Statement{
+					engine.BuildStatement(`$addLabel("test-label-without-description")`),
+				},
+				false,
+			),
+			targetEntity: engine.DefaultMockTargetEntity,
+		},
+		"when label does not exist": {
+			inputReviewpadFilePath: "testdata/exec/reviewpad_with_label_without_description.yml",
+			clientOptions: []mock.MockBackendOption{
+				mockGetReposLabelsByOwnerByRepoByName("bug", ""),
+				mockPostReposLabelsByOwnerByRepo("bug", ""),
+			},
+			wantProgram: engine.BuildProgram(
+				[]*engine.Statement{
+					engine.BuildStatement(`$addLabel("test-label-without-description")`),
+				},
+				false,
+			),
+			targetEntity: engine.DefaultMockTargetEntity,
+		},
+		"when label has updates": {
+			inputReviewpadFilePath: "testdata/exec/reviewpad_with_label_with_diff_repo_description.yml",
+			clientOptions: []mock.MockBackendOption{
+				mockGetReposLabelsByOwnerByRepoByName("bug", "Something is wrong"),
+				mockPatchReposLabelsByOwnerByRepo("bug", "Something is definitely wrong"),
+			},
+			wantProgram: engine.BuildProgram(
+				[]*engine.Statement{
+					engine.BuildStatement(`$addLabel("test-label-update")`),
+				},
+				false,
+			),
+			targetEntity: engine.DefaultMockTargetEntity,
+		},
+		"when label has no updates": {
+			inputReviewpadFilePath: "testdata/exec/reviewpad_with_label_with_repo_description.yml",
+			clientOptions:          []mock.MockBackendOption{mockGetReposLabelsByOwnerByRepoByName("bug", "Something is wrong")},
+			wantProgram: engine.BuildProgram(
+				[]*engine.Statement{
+					engine.BuildStatement(`$addLabel("test-label-with-no-updates")`),
+				},
+				false,
+			),
+			targetEntity: engine.DefaultMockTargetEntity,
+		},
+		"when group is valid": {
+			inputReviewpadFilePath: "testdata/exec/reviewpad_with_valid_group.yml",
+			wantProgram: engine.BuildProgram(
+				[]*engine.Statement{
+					engine.BuildStatement(`$addLabel("test-valid-group")`),
+				},
+				false,
+			),
+			targetEntity: engine.DefaultMockTargetEntity,
+		},
+		"when group is invalid": {
+			inputReviewpadFilePath: "testdata/exec/reviewpad_with_invalid_group.yml",
+			wantErr:                "ProcessGroup:evalGroup expression is not a valid group",
+			targetEntity:           engine.DefaultMockTargetEntity,
+		},
+		"when workflow is invalid": {
+			inputReviewpadFilePath: "testdata/exec/reviewpad_with_invalid_workflow.yml",
+			wantErr:                "expression 1 is not a condition",
+			targetEntity:           engine.DefaultMockTargetEntity,
+		},
+		"when no workflow is activated": {
+			inputReviewpadFilePath: "testdata/exec/reviewpad_with_no_activated_workflows.yml",
+			wantProgram: engine.BuildProgram(
+				[]*engine.Statement{},
+				false,
+			),
+			targetEntity: engine.DefaultMockTargetEntity,
+		},
+		"when one workflow is activated": {
+			inputReviewpadFilePath: "testdata/exec/reviewpad_with_one_activated_workflow.yml",
+			wantProgram: engine.BuildProgram(
+				[]*engine.Statement{
+					engine.BuildStatement(`$addLabel("activate-one-workflow")`),
+				},
+				false,
+			),
+			targetEntity: engine.DefaultMockTargetEntity,
+		},
+		"when multiple workflows are activated": {
+			inputReviewpadFilePath: "testdata/exec/reviewpad_with_multiple_activated_workflows.yml",
+			wantProgram: engine.BuildProgram(
+				[]*engine.Statement{
+					engine.BuildStatement(`$addLabel("activated-workflow-a")`),
+					engine.BuildStatement(`$addLabel("activated-workflow-b")`),
+				},
+				false,
+			),
+			targetEntity: engine.DefaultMockTargetEntity,
+		},
+		"when workflow is activated and has extra actions": {
+			inputReviewpadFilePath: "testdata/exec/reviewpad_with_activated_workflow_with_extra_actions.yml",
+			wantProgram: engine.BuildProgram(
+				[]*engine.Statement{
+					engine.BuildStatement(`$addLabel("activated-workflow")`),
+					engine.BuildStatement(`$addLabel("workflow-with-extra-actions")`),
+				},
+				false,
+			),
+			targetEntity: engine.DefaultMockTargetEntity,
+		},
+		"when workflow is skipped": {
+			inputReviewpadFilePath: "testdata/exec/reviewpad_with_skipped_workflow.yml",
+			wantProgram: engine.BuildProgram(
+				[]*engine.Statement{
+					engine.BuildStatement(`$addLabel("activated-workflow")`),
+				},
+				false,
+			),
+			targetEntity: engine.DefaultMockTargetEntity,
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			mockedClient := engine.MockGithubClient(test.clientOptions)
+
+			mockedAladinoInterpreter, err := mockAladinoInterpreter(mockedClient)
+			if err != nil {
+				assert.FailNow(t, fmt.Sprintf("mockAladinoInterpreter: %v", err))
+			}
+
+			mockedEnv, err := engine.MockEnvWith(mockedClient, mockedAladinoInterpreter, test.targetEntity, test.eventDetails)
+			if err != nil {
+				assert.FailNow(t, fmt.Sprintf("engine MockEnvWith: %v", err))
+			}
+
 			reviewpadFileData, err := utils.ReadFile(test.inputReviewpadFilePath)
 			if err != nil {
 				assert.FailNow(t, fmt.Sprintf("Error reading reviewpad file: %v", err))
@@ -399,7 +445,7 @@ func TestEval(t *testing.T) {
 				assert.FailNow(t, fmt.Sprintf("Error parsing reviewpad file: %v", err))
 			}
 
-			gotProgram, gotErr := engine.Eval(reviewpadFile, mockedEnv)
+			gotProgram, gotErr := engine.EvalConfigurationFile(reviewpadFile, mockedEnv)
 
 			if gotErr != nil && gotErr.Error() != test.wantErr {
 				assert.FailNow(t, fmt.Sprintf("Eval() error = %v, wantErr %v", gotErr, test.wantErr))
