@@ -1007,7 +1007,7 @@ func TestReportMetric(t *testing.T) {
 }
 
 func TestCommandErrorComment(t *testing.T) {
-	successfullyCommented := false
+	var successfullyCommented bool
 	tests := map[string]struct {
 		clientOptions             []mock.MockBackendOption
 		eventPayload              *github.IssueComment
@@ -1065,8 +1065,8 @@ func TestCommandErrorComment(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
+			successfullyCommented = false
 			env := MockDefaultEnvWithTargetEntity(t, test.clientOptions, nil, nil, test.eventPayload, DefaultMockTargetEntity)
-
 			err := commentCommandError(env, test.commandError)
 
 			githubError := &github.ErrorResponse{}
