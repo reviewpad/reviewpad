@@ -1010,7 +1010,7 @@ func TestCommandErrorComment(t *testing.T) {
 	var successfullyCommented bool
 	tests := map[string]struct {
 		clientOptions             []mock.MockBackendOption
-		eventPayload              *github.IssueComment
+		eventPayload              *github.IssueCommentEvent
 		commandError              error
 		wantError                 error
 		wantSuccessfullyCommented bool
@@ -1025,9 +1025,11 @@ func TestCommandErrorComment(t *testing.T) {
 					}),
 				),
 			},
-			eventPayload: &github.IssueComment{
-				Body: github.String("/reviewpad assign-reviewers testuser"),
-				User: &github.User{
+			eventPayload: &github.IssueCommentEvent{
+				Comment: &github.IssueComment{
+					Body: github.String("/reviewpad assign-reviewers testuser"),
+				},
+				Sender: &github.User{
 					Login: github.String("test"),
 				},
 			},
@@ -1046,9 +1048,11 @@ func TestCommandErrorComment(t *testing.T) {
 					}),
 				),
 			},
-			eventPayload: &github.IssueComment{
-				Body: github.String("/reviewpad assign-reviewers testuser"),
-				User: &github.User{
+			eventPayload: &github.IssueCommentEvent{
+				Comment: &github.IssueComment{
+					Body: github.String("/reviewpad assign-reviewers testuser"),
+				},
+				Sender: &github.User{
 					Login: github.String("test"),
 				},
 			},
