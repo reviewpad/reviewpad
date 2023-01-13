@@ -260,14 +260,19 @@ func commentCommandError(env Env, commandErr error) error {
 	ctx := env.GetCtx()
 
 	body := new(strings.Builder)
-	githubError := &github.ErrorResponse{}
+	gitHubError := &github.ErrorResponse{}
 
 	body.WriteString(fmt.Sprintf("> %s\n\n", eventDetails.GetComment().GetBody()))
-	body.WriteString(fmt.Sprintf("@%s an error occured running your command\n", eventDetails.GetSender().GetLogin()))
+	body.WriteString(fmt.Sprintf("@%s an error occurred running your command\n", eventDetails.GetSender().GetLogin()))
+	body.WriteString("\n*Errors:*\n")
 
-	if errors.As(commandErr, &githubError) {
-		for _, e := range githubError.Errors {
-			body.WriteString(fmt.Sprintf("- %s\n", e.Message))
+	if errors.As(commandErr, &gitHubError) {
+		if len(gitHubError.Errors) > 0 {
+			for _, e := range gitHubError.Errors {
+				body.WriteString(fmt.Sprintf("- %s\n", e.Message))
+			}
+		} else {
+			body.WriteString(fmt.Sprintf("- %s\n", commandErr.Error()))
 		}
 	} else {
 		body.WriteString(fmt.Sprintf("- %s\n", commandErr.Error()))
