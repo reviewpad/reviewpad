@@ -1035,6 +1035,7 @@ func TestCommandErrorComment(t *testing.T) {
 			wantError: &github.ErrorResponse{
 				Message: "internal error",
 			},
+			wantSuccessfullyCommented: false,
 		},
 		"when comment is created successfully": {
 			clientOptions: []mock.MockBackendOption{
