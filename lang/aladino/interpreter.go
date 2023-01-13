@@ -253,7 +253,7 @@ func (i *Interpreter) ReportMetrics() error {
 
 func commentCommandError(env Env, commandErr error) error {
 	targetEntity := env.GetTarget().GetTargetEntity()
-	eventData := env.GetEventPayload().(*github.IssueComment)
+	eventDetails := env.GetEventPayload().(*github.IssueCommentEvent)
 	owner := targetEntity.Owner
 	repo := targetEntity.Repo
 	number := targetEntity.Number
@@ -262,8 +262,8 @@ func commentCommandError(env Env, commandErr error) error {
 	body := new(strings.Builder)
 	githubError := &github.ErrorResponse{}
 
-	body.WriteString(fmt.Sprintf("> %s\n\n", eventData.GetBody()))
-	body.WriteString(fmt.Sprintf("@%s an error occured running your command\n", eventData.GetUser().GetLogin()))
+	body.WriteString(fmt.Sprintf("> %s\n\n", eventDetails.GetComment().GetBody()))
+	body.WriteString(fmt.Sprintf("@%s an error occured running your command\n", eventDetails.GetSender().GetLogin()))
 
 	if errors.As(commandErr, &githubError) {
 		for _, e := range githubError.Errors {
