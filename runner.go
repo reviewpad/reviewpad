@@ -73,15 +73,13 @@ func Run(
 
 	if utils.IsReviewpadCommand(evalEnv.EventDetails) {
 		program, err = engine.EvalCommand(evalEnv.EventDetails.Payload.(*github.IssueCommentEvent).GetComment().GetBody(), evalEnv)
-		if err != nil {
-			engine.CollectError(evalEnv, err)
-			return engine.ExitStatusFailure, nil, err
-		}
 	} else {
 		program, err = engine.EvalConfigurationFile(reviewpadFile, evalEnv)
-		if err != nil {
-			return engine.ExitStatusFailure, nil, err
-		}
+	}
+
+	if err != nil {
+		engine.CollectError(evalEnv, err)
+		return engine.ExitStatusFailure, nil, err
 	}
 
 	exitStatus, err := aladinoInterpreter.ExecProgram(program)
