@@ -272,7 +272,7 @@ func commentCommandError(env Env, commandErr error) error {
 				body.WriteString(fmt.Sprintf("- %s\n", e.Message))
 			}
 		} else {
-			body.WriteString(fmt.Sprintf("- %s\n", commandErr.Error()))
+			body.WriteString(fmt.Sprintf("- %s\n", gitHubError.Message))
 		}
 	} else {
 		body.WriteString(fmt.Sprintf("- %s\n", commandErr.Error()))
