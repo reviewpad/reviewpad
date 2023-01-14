@@ -13,7 +13,12 @@ import (
 )
 
 var (
-	ErrProjectNotFound = errors.New("project not found")
+	ErrProjectHasNoStatusField    = errors.New("project has no status field")
+	ErrProjectHasNoSuchField      = errors.New("project field not found")
+	ErrProjectHasNoSuchFieldValue = errors.New("project field value not found")
+	ErrProjectItemsNotFound       = errors.New("project items not found")
+	ErrProjectNotFound            = errors.New("project not found")
+	ErrProjectStatusNotFound      = errors.New("project status not found")
 )
 
 type ProjectV2 struct {
@@ -27,22 +32,58 @@ type PageInfo struct {
 	EndCursor   string
 }
 
+type AddProjectV2ItemByIdInput struct {
+	ProjectID string `json:"projectId"`
+	ContentID string `json:"contentId"`
+	// A unique identifier for the client performing the mutation. (Optional.)
+	ClientMutationID *string `json:"clientMutationId,omitempty"`
+}
+
+type FieldValue interface{}
+
+type SingleSelectFieldValue struct {
+	SingleSelectOptionId string `json:"singleSelectOptionId"`
+}
+
+type TextFieldValue struct {
+	Text string `json:"text"`
+}
+
+type NumberFieldValue struct {
+	Number githubv4.Float `json:"number"`
+}
+
+type UpdateProjectV2ItemFieldValueInput struct {
+	ItemID    string     `json:"itemId"`
+	Value     FieldValue `json:"value"`
+	ProjectID string     `json:"projectId"`
+	FieldID   string     `json:"fieldId"`
+}
+
 type Fields struct {
 	PageInfo PageInfo
 	Nodes    []FieldNode
 }
 
 type FieldNode struct {
-	Details FieldDetails `graphql:"... on ProjectV2SingleSelectField"`
+	TypeName                 string                   `graphql:"__typename"`
+	SingleSelectFieldDetails SingleSelectFieldDetails `graphql:"... on ProjectV2SingleSelectField"`
+	FieldDetails             FieldDetails             `graphql:"... on ProjectV2Field"`
 }
 
-type FieldDetails struct {
+type SingleSelectFieldDetails struct {
 	ID      string
 	Name    string
 	Options []struct {
 		ID   string
 		Name string
 	}
+}
+
+type FieldDetails struct {
+	ID       string
+	Name     string
+	DataType string
 }
 
 func (c *GithubClient) GetProjectV2ByName(ctx context.Context, owner, repo, name string) (*ProjectV2, error) {

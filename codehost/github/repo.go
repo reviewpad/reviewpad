@@ -7,22 +7,22 @@ package github
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
-	"log"
+	"os"
 	"strings"
 
 	git "github.com/libgit2/git2go/v31"
+	"github.com/sirupsen/logrus"
 )
 
 // CloneRepository clones a repository from a given URL to the provided path.
 // url needs to be an HTTPS uri (e.g. https://github.com/libgit2/TestGitRepository)
 // path can be empty. In this case, the repository will be cloned to a temporary location and the location is returned.
-func CloneRepository(url string, token string, path string, options *git.CloneOptions) (*git.Repository, string, error) {
+func CloneRepository(log *logrus.Entry, url string, token string, path string, options *git.CloneOptions) (*git.Repository, string, error) {
 	dir := path
 	if dir == "" {
-		tempDir, err := ioutil.TempDir("", "repository")
+		tempDir, err := os.MkdirTemp("", "repository")
 		if err != nil {
-			log.Print("[error] failed to create temporary folder")
+			log.Error("failed to create temporary folder")
 			return nil, "", err
 		}
 		dir = tempDir
@@ -34,7 +34,7 @@ func CloneRepository(url string, token string, path string, options *git.CloneOp
 		url = fmt.Sprintf("https://%v@%v", token, splitted[1])
 	}
 
-	log.Printf("[info] cloning %s to %s", url, dir)
+	log.Infof("cloning %s to %s", url, dir)
 
 	repo, err := git.Clone(url, dir, options)
 
@@ -42,7 +42,7 @@ func CloneRepository(url string, token string, path string, options *git.CloneOp
 }
 
 // CheckoutBranch checks out a given branch in the given repository.
-func CheckoutBranch(repo *git.Repository, branchName string) error {
+func CheckoutBranch(log *logrus.Entry, repo *git.Repository, branchName string) error {
 	checkoutOpts := &git.CheckoutOptions{
 		Strategy: git.CheckoutSafe | git.CheckoutRecreateMissing | git.CheckoutAllowConflicts | git.CheckoutUseTheirs,
 	}
@@ -50,7 +50,7 @@ func CheckoutBranch(repo *git.Repository, branchName string) error {
 	// Lookup for remote branch
 	remoteBranch, err := repo.LookupBranch("origin/"+branchName, git.BranchRemote)
 	if err != nil {
-		log.Print("[error] failed to find remote branch: " + branchName)
+		log.Errorf("failed to find remote branch: %v", branchName)
 		return err
 	}
 	defer remoteBranch.Free()
@@ -58,7 +58,7 @@ func CheckoutBranch(repo *git.Repository, branchName string) error {
 	// Lookup for remote branch commit
 	remoteCommit, err := repo.LookupCommit(remoteBranch.Target())
 	if err != nil {
-		log.Print("[error] failed to find remote branch commit: " + branchName)
+		log.Errorf("failed to find remote branch commit: %v", branchName)
 		return err
 	}
 	defer remoteCommit.Free()
@@ -69,26 +69,26 @@ func CheckoutBranch(repo *git.Repository, branchName string) error {
 		// Create local branch
 		localBranch, err = repo.CreateBranch(branchName, remoteCommit, false)
 		if err != nil {
-			log.Print("[error] failed to create local branch: " + branchName)
+			log.Errorf("failed to create local branch: %v", branchName)
 			return err
 		}
 
 		// Setting upstream to origin branch
 		err = localBranch.SetUpstream("origin/" + branchName)
 		if err != nil {
-			log.Print("[error] failed to create upstream to origin/" + branchName)
+			log.Errorf("failed to create upstream to origin/%v", branchName)
 			return err
 		}
 	}
 	if localBranch == nil {
-		return errors.New("failed to locate/create local branch: " + branchName)
+		return fmt.Errorf("failed to locate/create local branch: %v", branchName)
 	}
 	defer localBranch.Free()
 
 	// Lookup for local branch commit
 	localCommit, err := repo.LookupCommit(localBranch.Target())
 	if err != nil {
-		log.Print("[error] failed to lookup for commit in local branch: " + branchName)
+		log.Errorf("failed to lookup for commit in local branch: %v", branchName)
 		return err
 	}
 	defer localCommit.Free()
@@ -96,7 +96,7 @@ func CheckoutBranch(repo *git.Repository, branchName string) error {
 	// Lookup for local branch tree
 	tree, err := repo.LookupTree(localCommit.TreeId())
 	if err != nil {
-		log.Print("[error] failed to lookup for local tree: " + branchName)
+		log.Errorf("failed to lookup for local tree: %v", branchName)
 		return err
 	}
 	defer tree.Free()
@@ -104,29 +104,33 @@ func CheckoutBranch(repo *git.Repository, branchName string) error {
 	// Checkout the tree
 	err = repo.CheckoutTree(tree, checkoutOpts)
 	if err != nil {
-		log.Print("[error] failed to checkout tree: " + branchName)
+		log.Errorf("failed to checkout tree: %v", branchName)
 		return err
 	}
 
 	// Set current Head to the checkout branch
-	repo.SetHead("refs/heads/" + branchName)
+	err = repo.SetHead("refs/heads/" + branchName)
+	if err != nil {
+		log.Errorf("failed to set head: %v", branchName)
+		return err
+	}
 
 	return nil
 }
 
 // RebaseOnto performs a rebase of the current repository Head onto the given branch.
 // Inspired by https://github.com/libgit2/git2go/blob/main/rebase_test.go#L359
-func RebaseOnto(repo *git.Repository, branchName string, rebaseOptions *git.RebaseOptions) error {
+func RebaseOnto(log *logrus.Entry, repo *git.Repository, branchName string, rebaseOptions *git.RebaseOptions) error {
 	ontoBranch, err := repo.LookupBranch(branchName, git.BranchLocal)
 	if err != nil {
-		log.Print("[error] failed to lookup for onto branch: " + branchName)
+		log.Errorf("failed to lookup for onto branch: %v", branchName)
 		return err
 	}
 	defer ontoBranch.Free()
 
 	onto, err := repo.AnnotatedCommitFromRef(ontoBranch.Reference)
 	if err != nil {
-		log.Print("[error] failed to extract annotated commit from ref of branch: " + branchName)
+		log.Errorf("failed to extract annotated commit from ref of branch: %v", branchName)
 		return err
 	}
 	defer onto.Free()
@@ -134,22 +138,22 @@ func RebaseOnto(repo *git.Repository, branchName string, rebaseOptions *git.Reba
 	// Start rebase operation
 	rebase, err := repo.InitRebase(nil, nil, onto, rebaseOptions)
 	if err != nil {
-		log.Print("[error] failed to init rebase")
+		log.Error("failed to init rebase")
 		return err
 	}
 
 	// Verify that no operations are already in progress
 	rebaseOperationIndex, err := rebase.CurrentOperationIndex()
 	if rebaseOperationIndex != git.RebaseNoOperation && err != git.ErrRebaseNoOperation {
-		return errors.New("[error] rebase operation already in progress")
+		return errors.New("rebase operation already in progress")
 	}
 
 	// Iterate over rebase operations based on operation count
 	opCount := int(rebase.OperationCount())
 	for op := 0; op < opCount; op++ {
-		operation, err := rebase.Next()
-		if err != nil {
-			return err
+		operation, errRebaseNext := rebase.Next()
+		if errRebaseNext != nil {
+			return errRebaseNext
 		}
 
 		// Verify that operation index is correct
@@ -159,17 +163,17 @@ func RebaseOnto(repo *git.Repository, branchName string, rebaseOptions *git.Reba
 		}
 
 		if int(rebaseOperationIndex) != op {
-			return errors.New("[error] bad operation index on rebase")
+			return errors.New("bad operation index on rebase")
 		}
 
 		if !operationsAreEqual(rebase.OperationAt(uint(op)), operation) {
-			return errors.New("[error] rebase operations should be equal")
+			return errors.New("rebase operations should be equal")
 		}
 
 		// Get current rebase operation created commit
-		commit, err := repo.LookupCommit(operation.Id)
-		if err != nil {
-			return err
+		commit, errCommitLookup := repo.LookupCommit(operation.Id)
+		if errCommitLookup != nil {
+			return errCommitLookup
 		}
 		defer commit.Free()
 
@@ -191,10 +195,10 @@ func RebaseOnto(repo *git.Repository, branchName string, rebaseOptions *git.Reba
 }
 
 // Push performs a push of the provided remote/branch.
-func Push(repo *git.Repository, remoteName string, branchName string, force bool) error {
+func Push(log *logrus.Entry, repo *git.Repository, remoteName string, branchName string, force bool) error {
 	remote, err := repo.Remotes.Lookup(remoteName)
 	if err != nil {
-		log.Print("[error] failed to find remote: " + remoteName)
+		log.Errorf("failed to find remote: %v", remoteName)
 		return err
 	}
 
@@ -205,7 +209,7 @@ func Push(repo *git.Repository, remoteName string, branchName string, force bool
 
 	err = remote.Push([]string{refspec}, nil)
 	if err != nil {
-		log.Print("[error] failed to push to: " + branchName)
+		log.Errorf("failed to push to: %v", branchName)
 		return err
 	}
 

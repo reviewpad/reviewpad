@@ -13,6 +13,7 @@ import (
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
+	"github.com/reviewpad/reviewpad/v3/utils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -63,15 +64,15 @@ func TestHasLinkedIssues_WhenHasLinkedIssues(t *testing.T) {
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsByOwnerByRepoByPullNumber,
 				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					w.Write(mock.MustMarshal(mockedPullRequest))
+					utils.MustWriteBytes(w, mock.MustMarshal(mockedPullRequest))
 				}),
 			),
 		},
 		func(w http.ResponseWriter, req *http.Request) {
-			query := aladino.MustRead(req.Body)
+			query := utils.MustRead(req.Body)
 			switch query {
 			case mockedGraphQLQuery:
-				aladino.MustWrite(
+				utils.MustWrite(
 					w,
 					`{"data": {
 						"repository": {
@@ -125,15 +126,15 @@ func TestHasLinkedIssues_WhenNoLinkedIssues(t *testing.T) {
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsByOwnerByRepoByPullNumber,
 				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					w.Write(mock.MustMarshal(mockedPullRequest))
+					utils.MustWriteBytes(w, mock.MustMarshal(mockedPullRequest))
 				}),
 			),
 		},
 		func(w http.ResponseWriter, req *http.Request) {
-			query := aladino.MustRead(req.Body)
+			query := utils.MustRead(req.Body)
 			switch query {
 			case mockedGraphQLQuery:
-				aladino.MustWrite(
+				utils.MustWrite(
 					w,
 					`{"data": {
 						"repository": {

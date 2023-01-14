@@ -6,10 +6,9 @@ package aladino
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"testing"
 
@@ -18,6 +17,7 @@ import (
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/engine"
 	"github.com/reviewpad/reviewpad/v3/handler"
+	"github.com/reviewpad/reviewpad/v3/utils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -331,7 +331,7 @@ func TestExecProgram_WhenExecStatementFails(t *testing.T) {
 
 	statement := engine.BuildStatement("$action()")
 	statements := []*engine.Statement{statement}
-	program := engine.BuildProgram(statements)
+	program := engine.BuildProgram(statements, false)
 
 	exitStatus, err := mockedInterpreter.ExecProgram(program)
 
@@ -378,7 +378,7 @@ func TestExecProgram(t *testing.T) {
 	statCode := "$addLabel(\"test\")"
 
 	statement := engine.BuildStatement(statCode)
-	program := engine.BuildProgram([]*engine.Statement{statement})
+	program := engine.BuildProgram([]*engine.Statement{statement}, false)
 
 	exitStatus, err := mockedInterpreter.ExecProgram(program)
 
@@ -531,7 +531,7 @@ func TestReport_WhenFindReportCommentFails(t *testing.T) {
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsByOwnerByRepoByPullNumber,
 				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					w.Write(mock.MustMarshal(mockedPullRequest))
+					utils.MustWriteBytes(w, mock.MustMarshal(mockedPullRequest))
 				}),
 			),
 		},
@@ -546,7 +546,7 @@ func TestReport_WhenFindReportCommentFails(t *testing.T) {
 
 	err := mockedInterpreter.Report(engine.SILENT_MODE, false)
 
-	assert.EqualError(t, err, "[report] error getting issues mock response not found for /repos/foobar/default-mock-repo/issues/6/comments")
+	assert.EqualError(t, err, "error getting issues mock response not found for /repos/foobar/default-mock-repo/issues/6/comments")
 }
 
 func TestReport_OnSilentMode_WhenThereIsAlreadyAReviewpadComment(t *testing.T) {
@@ -631,10 +631,10 @@ func TestReport_OnVerboseMode_WhenNoReviewpadCommentIsFound(t *testing.T) {
 			mock.WithRequestMatchHandler(
 				mock.PostReposIssuesCommentsByOwnerByRepoByIssueNumber,
 				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					rawBody, _ := ioutil.ReadAll(r.Body)
+					rawBody, _ := io.ReadAll(r.Body)
 					body := github.IssueComment{}
 
-					json.Unmarshal(rawBody, &body)
+					utils.MustUnmarshal(rawBody, &body)
 
 					addedComment = *body.Body
 				}),
@@ -673,10 +673,10 @@ func TestReport_OnVerboseMode_WhenThereIsAlreadyAReviewpadComment(t *testing.T) 
 			mock.WithRequestMatchHandler(
 				mock.PatchReposIssuesCommentsByOwnerByRepoByCommentId,
 				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					rawBody, _ := ioutil.ReadAll(r.Body)
+					rawBody, _ := io.ReadAll(r.Body)
 					body := github.IssueComment{}
 
-					json.Unmarshal(rawBody, &body)
+					utils.MustUnmarshal(rawBody, &body)
 
 					updatedComment = *body.Body
 				}),
@@ -717,6 +717,7 @@ func TestNewInterpreter_WhenNewEvalEnvFails(t *testing.T) {
 	// TODO: Ideally, we should not have nil arguments in the call to NewInterpreter
 	gotInterpreter, err := NewInterpreter(
 		ctx,
+		DefaultMockLogger,
 		false,
 		gh.NewGithubClient(clientREST, nil),
 		nil,
@@ -738,6 +739,7 @@ func TestNewInterpreter(t *testing.T) {
 
 	gotInterpreter, err := NewInterpreter(
 		mockedEnv.GetCtx(),
+		DefaultMockLogger,
 		mockedEnv.GetDryRun(),
 		mockedEnv.GetGithubClient(),
 		mockedEnv.GetCollector(),
@@ -758,19 +760,17 @@ func TestReportMetric(t *testing.T) {
 		graphQLHandler         func(res http.ResponseWriter, req *http.Request)
 		commentShouldBeCreated bool
 		commentShouldBeUpdated bool
-		mode                   string
 		err                    error
 	}{
 		"when getting first commit and review date failed": {
 			graphQLHandler: func(res http.ResponseWriter, req *http.Request) {
 				res.WriteHeader(http.StatusBadRequest)
 			},
-			err:  errors.New("non-200 OK status code: 400 Bad Request body: \"\""),
-			mode: "verbose",
+			err: errors.New("non-200 OK status code: 400 Bad Request body: \"\""),
 		},
 		"when find report comment failed": {
 			graphQLHandler: func(res http.ResponseWriter, req *http.Request) {
-				MustWrite(
+				utils.MustWrite(
 					res,
 					`{
 						"data": {
@@ -802,12 +802,11 @@ func TestReportMetric(t *testing.T) {
 					}),
 				),
 			},
-			err:  errors.New("[report] error getting issues "),
-			mode: "verbose",
+			err: errors.New("error getting issues "),
 		},
 		"when create comment failed": {
 			graphQLHandler: func(res http.ResponseWriter, req *http.Request) {
-				MustWrite(
+				utils.MustWrite(
 					res,
 					`{
 						"data": {
@@ -843,12 +842,11 @@ func TestReportMetric(t *testing.T) {
 					[]*github.IssueComment{},
 				),
 			},
-			err:  errors.New("[report] error on creating report comment "),
-			mode: "verbose",
+			err: errors.New("error on creating report comment "),
 		},
 		"when update comment failed": {
 			graphQLHandler: func(res http.ResponseWriter, req *http.Request) {
-				MustWrite(
+				utils.MustWrite(
 					res,
 					`{
 						"data": {
@@ -889,12 +887,11 @@ func TestReportMetric(t *testing.T) {
 					},
 				),
 			},
-			err:  errors.New("[report] error on updating report comment "),
-			mode: "verbose",
+			err: errors.New("error on updating report comment "),
 		},
 		"when successfully created report comment": {
 			graphQLHandler: func(res http.ResponseWriter, req *http.Request) {
-				MustWrite(
+				utils.MustWrite(
 					res,
 					`{
 						"data": {
@@ -932,11 +929,10 @@ func TestReportMetric(t *testing.T) {
 			},
 			commentShouldBeCreated: true,
 			err:                    nil,
-			mode:                   "verbose",
 		},
 		"when successfully updated report comment": {
 			graphQLHandler: func(res http.ResponseWriter, req *http.Request) {
-				MustWrite(
+				utils.MustWrite(
 					res,
 					`{
 						"data": {
@@ -979,12 +975,6 @@ func TestReportMetric(t *testing.T) {
 			},
 			commentShouldBeUpdated: true,
 			err:                    nil,
-			mode:                   "verbose",
-		},
-		"when mode is silent": {
-			commentShouldBeUpdated: false,
-			err:                    nil,
-			mode:                   "silent",
 		},
 	}
 
@@ -993,6 +983,7 @@ func TestReportMetric(t *testing.T) {
 			env := MockDefaultEnv(t, test.clientOptions, test.graphQLHandler, nil, nil)
 			interpreter, err := NewInterpreter(
 				env.GetCtx(),
+				env.GetLogger(),
 				env.GetDryRun(),
 				env.GetGithubClient(),
 				env.GetCollector(),
@@ -1003,7 +994,7 @@ func TestReportMetric(t *testing.T) {
 
 			assert.Nil(t, err)
 
-			err = interpreter.ReportMetrics(test.mode)
+			err = interpreter.ReportMetrics()
 
 			assert.Equal(t, test.err, err)
 			assert.Equal(t, test.commentShouldBeCreated, commentCreated)
@@ -1011,6 +1002,84 @@ func TestReportMetric(t *testing.T) {
 
 			commentCreated = false
 			commentUpdated = false
+		})
+	}
+}
+
+func TestCommandErrorComment(t *testing.T) {
+	var successfullyCommented bool
+	tests := map[string]struct {
+		clientOptions             []mock.MockBackendOption
+		eventPayload              *github.IssueCommentEvent
+		commandError              error
+		wantError                 error
+		wantSuccessfullyCommented bool
+	}{
+		"when create comment fails": {
+			clientOptions: []mock.MockBackendOption{
+				mock.WithRequestMatchHandler(
+					mock.PostReposIssuesCommentsByOwnerByRepoByIssueNumber,
+					http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+						w.WriteHeader(http.StatusInternalServerError)
+						utils.MustWrite(w, `{"message": "internal error"}`)
+					}),
+				),
+			},
+			eventPayload: &github.IssueCommentEvent{
+				Comment: &github.IssueComment{
+					Body: github.String("/reviewpad assign-reviewers testuser"),
+				},
+				Sender: &github.User{
+					Login: github.String("test"),
+				},
+			},
+			commandError: errors.New("unexpected error happened running command"),
+			wantError: &github.ErrorResponse{
+				Message: "internal error",
+			},
+			wantSuccessfullyCommented: false,
+		},
+		"when comment is created successfully": {
+			clientOptions: []mock.MockBackendOption{
+				mock.WithRequestMatchHandler(
+					mock.PostReposIssuesCommentsByOwnerByRepoByIssueNumber,
+					http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+						successfullyCommented = true
+					}),
+				),
+			},
+			eventPayload: &github.IssueCommentEvent{
+				Comment: &github.IssueComment{
+					Body: github.String("/reviewpad assign-reviewers testuser"),
+				},
+				Sender: &github.User{
+					Login: github.String("test"),
+				},
+			},
+			commandError: &github.ErrorResponse{
+				Errors: []github.Error{
+					{
+						Message: "github user not found",
+					},
+				},
+			},
+			wantSuccessfullyCommented: true,
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			successfullyCommented = false
+			env := MockDefaultEnvWithTargetEntity(t, test.clientOptions, nil, nil, test.eventPayload, DefaultMockTargetEntity)
+			err := commentCommandError(env, test.commandError)
+
+			githubError := &github.ErrorResponse{}
+			if errors.As(err, &githubError) {
+				githubError.Response = nil
+			}
+
+			assert.Equal(t, test.wantError, err)
+			assert.Equal(t, test.wantSuccessfullyCommented, successfullyCommented)
 		})
 	}
 }

@@ -83,10 +83,10 @@ func TestHasGitConflicts(t *testing.T) {
 				t,
 				nil,
 				func(res http.ResponseWriter, req *http.Request) {
-					query := utils.MinifyQuery(aladino.MustRead(req.Body))
+					query := utils.MinifyQuery(utils.MustRead(req.Body))
 					switch query {
 					case utils.MinifyQuery(mockedPullRequestQuery):
-						aladino.MustWrite(res, test.mockedPullRequestQueryBody)
+						utils.MustWrite(res, test.mockedPullRequestQueryBody)
 					}
 				},
 				aladino.MockBuiltIns(),

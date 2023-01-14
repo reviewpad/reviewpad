@@ -6,29 +6,22 @@ package aladino
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"log"
 	"strings"
 
+	"github.com/google/go-github/v48/github"
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v3/collector"
 	"github.com/reviewpad/reviewpad/v3/engine"
 	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/utils"
-	"github.com/reviewpad/reviewpad/v3/utils/fmtio"
+	"github.com/sirupsen/logrus"
 )
 
 type Interpreter struct {
 	Env Env
-}
-
-func execLog(val string) {
-	log.Println(fmtio.Sprint("aladino", val))
-}
-
-func execLogf(format string, a ...interface{}) {
-	log.Println(fmtio.Sprintf("aladino", format, a...))
 }
 
 func buildGroupAST(typeOf engine.GroupType, expr, paramExpr, whereExpr string) (Expr, error) {
@@ -117,22 +110,28 @@ func (i *Interpreter) EvalExpr(kind, expr string) (bool, error) {
 }
 
 func (i *Interpreter) ExecProgram(program *engine.Program) (engine.ExitStatus, error) {
-	execLog("executing program")
+	i.Env.GetLogger().Info("executing program")
 
 	for _, statement := range program.GetProgramStatements() {
 		err := i.ExecStatement(statement)
 		if err != nil {
+			if program.IsFromCommand {
+				if commentErr := commentCommandError(i.Env, err); commentErr != nil {
+					return engine.ExitStatusFailure, commentErr
+				}
+				return engine.ExitStatusSuccess, nil
+			}
 			return engine.ExitStatusFailure, err
 		}
 
 		hasFatalError := len(i.Env.GetBuiltInsReportedMessages()[SEVERITY_FATAL]) > 0
 		if hasFatalError {
-			execLog("execution stopped")
+			i.Env.GetLogger().Info("execution stopped")
 			return engine.ExitStatusFailure, nil
 		}
 	}
 
-	execLog("execution done")
+	i.Env.GetLogger().Info("execution done")
 
 	return engine.ExitStatusSuccess, nil
 }
@@ -158,12 +157,12 @@ func (i *Interpreter) ExecStatement(statement *engine.Statement) error {
 
 	i.Env.GetReport().addToReport(statement)
 
-	execLogf("\taction %v executed", statRaw)
+	i.Env.GetLogger().Infof("action %v executed", statRaw)
 	return nil
 }
 
 func (i *Interpreter) Report(mode string, safeMode bool) error {
-	execLog("generating report")
+	i.Env.GetLogger().Info("generating report")
 
 	if mode == "" {
 		// By default mode is silent
@@ -198,7 +197,7 @@ func (i *Interpreter) Report(mode string, safeMode bool) error {
 
 }
 
-func (i *Interpreter) ReportMetrics(mode string) error {
+func (i *Interpreter) ReportMetrics() error {
 	targetEntity := i.Env.GetTarget().GetTargetEntity()
 	owner := targetEntity.Owner
 	prNum := targetEntity.Number
@@ -206,7 +205,7 @@ func (i *Interpreter) ReportMetrics(mode string) error {
 	ctx := i.Env.GetCtx()
 	pr := i.Env.GetTarget().(*target.PullRequestTarget).PullRequest
 
-	if mode != engine.VERBOSE_MODE || !*pr.Merged {
+	if !*pr.Merged {
 		return nil
 	}
 
@@ -252,8 +251,43 @@ func (i *Interpreter) ReportMetrics(mode string) error {
 	return nil
 }
 
+func commentCommandError(env Env, commandErr error) error {
+	targetEntity := env.GetTarget().GetTargetEntity()
+	eventDetails := env.GetEventPayload().(*github.IssueCommentEvent)
+	owner := targetEntity.Owner
+	repo := targetEntity.Repo
+	number := targetEntity.Number
+	ctx := env.GetCtx()
+
+	body := new(strings.Builder)
+	gitHubError := &github.ErrorResponse{}
+
+	body.WriteString(fmt.Sprintf("> %s\n\n", eventDetails.GetComment().GetBody()))
+	body.WriteString(fmt.Sprintf("@%s an error occurred running your command\n", eventDetails.GetSender().GetLogin()))
+	body.WriteString("\n*Errors:*\n")
+
+	if errors.As(commandErr, &gitHubError) {
+		if len(gitHubError.Errors) > 0 {
+			for _, e := range gitHubError.Errors {
+				body.WriteString(fmt.Sprintf("- %s\n", e.Message))
+			}
+		} else {
+			body.WriteString(fmt.Sprintf("- %s\n", gitHubError.Message))
+		}
+	} else {
+		body.WriteString(fmt.Sprintf("- %s\n", commandErr.Error()))
+	}
+
+	_, _, createCommentErr := env.GetGithubClient().CreateComment(ctx, owner, repo, number, &github.IssueComment{
+		Body: github.String(body.String()),
+	})
+
+	return createCommentErr
+}
+
 func NewInterpreter(
 	ctx context.Context,
+	logger *logrus.Entry,
 	dryRun bool,
 	githubClient *gh.GithubClient,
 	collector collector.Collector,
@@ -261,7 +295,7 @@ func NewInterpreter(
 	eventPayload interface{},
 	builtIns *BuiltIns,
 ) (engine.Interpreter, error) {
-	evalEnv, err := NewEvalEnv(ctx, dryRun, githubClient, collector, targetEntity, eventPayload, builtIns)
+	evalEnv, err := NewEvalEnv(ctx, logger, dryRun, githubClient, collector, targetEntity, eventPayload, builtIns)
 	if err != nil {
 		return nil, err
 	}

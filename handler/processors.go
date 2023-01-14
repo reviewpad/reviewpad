@@ -13,6 +13,7 @@ import (
 
 	"github.com/google/go-github/v48/github"
 	reviewpad_gh "github.com/reviewpad/reviewpad/v3/codehost/github"
+	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -37,16 +38,16 @@ type TargetEntity struct {
 	Repo   string
 }
 
-type EventData struct {
+type EventDetails struct {
 	EventName   string
 	EventAction string
-	Comment     *github.IssueComment
+	Payload     interface{}
 }
 
-func ParseEvent(rawEvent string) (*ActionEvent, error) {
+func ParseEvent(log *logrus.Entry, rawEvent string) (*ActionEvent, error) {
 	event := &ActionEvent{}
 
-	Log("parsing event %v", rawEvent)
+	log.Infof("parsing event %v", rawEvent)
 
 	err := json.Unmarshal([]byte(rawEvent), &event)
 	if err != nil {
@@ -56,12 +57,12 @@ func ParseEvent(rawEvent string) (*ActionEvent, error) {
 	return event, nil
 }
 
-func processUnsupportedEvent(eventPayload interface{}) ([]*TargetEntity, []*EventData, error) {
+func processUnsupportedEvent(eventPayload interface{}) ([]*TargetEntity, *EventDetails, error) {
 	return nil, nil, fmt.Errorf("unsupported event payload type: %T", eventPayload)
 }
 
-func processCronEvent(token string, e *ActionEvent) ([]*TargetEntity, []*EventData, error) {
-	Log("processing 'schedule' event")
+func processCronEvent(log *logrus.Entry, token string, e *ActionEvent) ([]*TargetEntity, *EventDetails, error) {
+	log.Info("processing schedule event")
 
 	ctx, canc := context.WithTimeout(context.Background(), time.Minute*10)
 	defer canc()
@@ -78,10 +79,9 @@ func processCronEvent(token string, e *ActionEvent) ([]*TargetEntity, []*EventDa
 		return nil, nil, fmt.Errorf("get pull requests: %w", err)
 	}
 
-	Log("fetched %d issues", len(issues))
+	log.Infof("fetched %d issues", len(issues))
 
 	targets := make([]*TargetEntity, 0)
-	events := make([]*EventData, 0)
 	for _, issue := range issues {
 		kind := Issue
 		if issue.IsPullRequest() {
@@ -93,20 +93,18 @@ func processCronEvent(token string, e *ActionEvent) ([]*TargetEntity, []*EventDa
 			Owner:  owner,
 			Repo:   repo,
 		})
-
-		events = append(events, &EventData{
-			EventName: *e.EventName,
-		})
 	}
 
-	Log("found events %v", targets)
+	log.Infof("found events %v", targets)
 
-	return targets, events, nil
+	return targets, &EventDetails{
+		EventName: *e.EventName,
+	}, nil
 }
 
-func processIssuesEvent(e *github.IssuesEvent) ([]*TargetEntity, []*EventData, error) {
-	Log("processing 'issues' event")
-	Log("found issue %v", *e.Issue.Number)
+func processIssuesEvent(log *logrus.Entry, e *github.IssuesEvent) ([]*TargetEntity, *EventDetails, error) {
+	log.Info("processing issues event")
+	log.Infof("found issue %v", *e.Issue.Number)
 
 	return []*TargetEntity{
 			{
@@ -115,17 +113,16 @@ func processIssuesEvent(e *github.IssuesEvent) ([]*TargetEntity, []*EventData, e
 				Owner:  *e.Repo.Owner.Login,
 				Repo:   *e.Repo.Name,
 			},
-		}, []*EventData{
-			{
-				EventName:   "issues",
-				EventAction: *e.Action,
-			},
+		}, &EventDetails{
+			EventName:   "issues",
+			EventAction: *e.Action,
+			Payload:     e,
 		}, nil
 }
 
-func processIssueCommentEvent(e *github.IssueCommentEvent) ([]*TargetEntity, []*EventData, error) {
-	Log("processing 'issue_comment' event")
-	Log("found issue %v", *e.Issue.Number)
+func processIssueCommentEvent(log *logrus.Entry, e *github.IssueCommentEvent) ([]*TargetEntity, *EventDetails, error) {
+	log.Info("processing issue_comment event")
+	log.Infof("found issue %v", *e.Issue.Number)
 
 	kind := Issue
 	if e.Issue.IsPullRequest() {
@@ -139,18 +136,16 @@ func processIssueCommentEvent(e *github.IssueCommentEvent) ([]*TargetEntity, []*
 				Owner:  *e.Repo.Owner.Login,
 				Repo:   *e.Repo.Name,
 			},
-		}, []*EventData{
-			{
-				EventName:   "issue_comment",
-				Comment:     e.Comment,
-				EventAction: *e.Action,
-			},
+		}, &EventDetails{
+			EventName:   "issue_comment",
+			EventAction: *e.Action,
+			Payload:     e,
 		}, nil
 }
 
-func processPullRequestEvent(e *github.PullRequestEvent) ([]*TargetEntity, []*EventData, error) {
-	Log("processing 'pull_request' event")
-	Log("found pr %v", *e.PullRequest.Number)
+func processPullRequestEvent(log *logrus.Entry, e *github.PullRequestEvent) ([]*TargetEntity, *EventDetails, error) {
+	log.Info("processing pull_request event")
+	log.Infof("found pull request %v", *e.PullRequest.Number)
 
 	return []*TargetEntity{
 			{
@@ -159,17 +154,16 @@ func processPullRequestEvent(e *github.PullRequestEvent) ([]*TargetEntity, []*Ev
 				Owner:  *e.Repo.Owner.Login,
 				Repo:   *e.Repo.Name,
 			},
-		}, []*EventData{
-			{
-				EventName:   "pull_request",
-				EventAction: *e.Action,
-			},
+		}, &EventDetails{
+			EventName:   "pull_request",
+			EventAction: *e.Action,
+			Payload:     e,
 		}, nil
 }
 
-func processPullRequestReviewEvent(e *github.PullRequestReviewEvent) ([]*TargetEntity, []*EventData, error) {
-	Log("processing 'pull_request_review' event")
-	Log("found pr %v", *e.PullRequest.Number)
+func processPullRequestReviewEvent(log *logrus.Entry, e *github.PullRequestReviewEvent) ([]*TargetEntity, *EventDetails, error) {
+	log.Info("processing pull_request_review event")
+	log.Infof("found pull request %v", *e.PullRequest.Number)
 
 	return []*TargetEntity{
 			{
@@ -178,17 +172,16 @@ func processPullRequestReviewEvent(e *github.PullRequestReviewEvent) ([]*TargetE
 				Owner:  *e.Repo.Owner.Login,
 				Repo:   *e.Repo.Name,
 			},
-		}, []*EventData{
-			{
-				EventName:   "pull_request_review",
-				EventAction: *e.Action,
-			},
+		}, &EventDetails{
+			EventName:   "pull_request_review",
+			EventAction: *e.Action,
+			Payload:     e,
 		}, nil
 }
 
-func processPullRequestReviewCommentEvent(e *github.PullRequestReviewCommentEvent) ([]*TargetEntity, []*EventData, error) {
-	Log("processing 'pull_request_review_comment' event")
-	Log("found pr %v", *e.PullRequest.Number)
+func processPullRequestReviewCommentEvent(log *logrus.Entry, e *github.PullRequestReviewCommentEvent) ([]*TargetEntity, *EventDetails, error) {
+	log.Info("processing pull_request_review_comment event")
+	log.Infof("found pull request %v", *e.PullRequest.Number)
 
 	return []*TargetEntity{
 			{
@@ -197,17 +190,16 @@ func processPullRequestReviewCommentEvent(e *github.PullRequestReviewCommentEven
 				Owner:  *e.Repo.Owner.Login,
 				Repo:   *e.Repo.Name,
 			},
-		}, []*EventData{
-			{
-				EventName:   "pull_request_review_comment",
-				EventAction: *e.Action,
-			},
+		}, &EventDetails{
+			EventName:   "pull_request_review_comment",
+			EventAction: *e.Action,
+			Payload:     e,
 		}, nil
 }
 
-func processPullRequestTargetEvent(e *github.PullRequestTargetEvent) ([]*TargetEntity, []*EventData, error) {
-	Log("processing 'pull_request_target' event")
-	Log("found pr %v", *e.PullRequest.Number)
+func processPullRequestTargetEvent(log *logrus.Entry, e *github.PullRequestTargetEvent) ([]*TargetEntity, *EventDetails, error) {
+	log.Infof(`processing "pull_request_target" event`)
+	log.Infof("found pull request %v", *e.PullRequest.Number)
 
 	return []*TargetEntity{
 			{
@@ -216,16 +208,15 @@ func processPullRequestTargetEvent(e *github.PullRequestTargetEvent) ([]*TargetE
 				Owner:  *e.Repo.Owner.Login,
 				Repo:   *e.Repo.Name,
 			},
-		}, []*EventData{
-			{
-				EventName:   "pull_request_target",
-				EventAction: *e.Action,
-			},
+		}, &EventDetails{
+			EventName:   "pull_request_target",
+			EventAction: *e.Action,
+			Payload:     e,
 		}, nil
 }
 
-func processStatusEvent(token string, e *github.StatusEvent) ([]*TargetEntity, []*EventData, error) {
-	Log("processing 'status' event")
+func processStatusEvent(log *logrus.Entry, token string, e *github.StatusEvent) ([]*TargetEntity, *EventDetails, error) {
+	log.Info("processing status event")
 
 	ctx, canc := context.WithTimeout(context.Background(), time.Minute*10)
 	defer canc()
@@ -237,33 +228,34 @@ func processStatusEvent(token string, e *github.StatusEvent) ([]*TargetEntity, [
 		return nil, nil, fmt.Errorf("get pull requests: %w", err)
 	}
 
-	Log("fetched %v prs", len(prs))
+	log.Infof("fetched %v pull requests", len(prs))
+
+	eventDetails := &EventDetails{
+		EventName: "status",
+		Payload:   e,
+	}
 
 	for _, pr := range prs {
 		if *pr.Head.SHA == *e.SHA {
-			Log("found pr %v", *pr.Number)
+			log.Infof("found pull request %v", *pr.Number)
 			return []*TargetEntity{
-					{
-						Kind:   PullRequest,
-						Number: *pr.Number,
-						Owner:  *pr.Base.Repo.Owner.Login,
-						Repo:   *pr.Base.Repo.Name,
-					},
-				}, []*EventData{
-					{
-						EventName: "status",
-					},
-				}, nil
+				{
+					Kind:   PullRequest,
+					Number: *pr.Number,
+					Owner:  *pr.Base.Repo.Owner.Login,
+					Repo:   *pr.Base.Repo.Name,
+				},
+			}, eventDetails, nil
 		}
 	}
 
-	Log("no pr found with the head sha %v", *e.SHA)
+	log.Infof("no pr found with the head sha %v", *e.SHA)
 
-	return []*TargetEntity{}, []*EventData{}, nil
+	return []*TargetEntity{}, eventDetails, nil
 }
 
-func processWorkflowRunEvent(token string, e *github.WorkflowRunEvent) ([]*TargetEntity, []*EventData, error) {
-	Log("processing 'workflow_run' event")
+func processWorkflowRunEvent(log *logrus.Entry, token string, e *github.WorkflowRunEvent) ([]*TargetEntity, *EventDetails, error) {
+	log.Info("processing workflow_run event")
 
 	ctx, canc := context.WithTimeout(context.Background(), time.Minute*10)
 	defer canc()
@@ -274,34 +266,35 @@ func processWorkflowRunEvent(token string, e *github.WorkflowRunEvent) ([]*Targe
 		return nil, nil, fmt.Errorf("get pull requests: %w", err)
 	}
 
-	Log("fetched %v prs", len(prs))
+	eventDetail := &EventDetails{
+		EventName:   "workflow_run",
+		EventAction: e.GetAction(),
+		Payload:     e,
+	}
+
+	log.Infof("fetched %v prs", len(prs))
 
 	for _, pr := range prs {
 		if *pr.Head.SHA == *e.WorkflowRun.HeadSHA {
-			Log("found pr %v", *pr.Number)
+			log.Infof("found pull request %v", *pr.Number)
 			return []*TargetEntity{
-					{
-						Kind:   PullRequest,
-						Number: *pr.Number,
-						Owner:  *pr.Base.Repo.Owner.Login,
-						Repo:   *pr.Base.Repo.Name,
-					},
-				}, []*EventData{
-					{
-						EventName:   "workflow_run",
-						EventAction: *e.Action,
-					},
-				}, nil
+				{
+					Kind:   PullRequest,
+					Number: *pr.Number,
+					Owner:  *pr.Base.Repo.Owner.Login,
+					Repo:   *pr.Base.Repo.Name,
+				},
+			}, eventDetail, nil
 		}
 	}
 
-	Log("no pr found with the head sha %v", *e.WorkflowRun.HeadSHA)
+	log.Infof("no pr found with the head sha %v", *e.WorkflowRun.HeadSHA)
 
-	return []*TargetEntity{}, []*EventData{}, nil
+	return []*TargetEntity{}, eventDetail, nil
 }
 
-func processPushEvent(token string, e *github.PushEvent) ([]*TargetEntity, []*EventData, error) {
-	Log("processing 'push' event")
+func processPushEvent(log *logrus.Entry, token string, e *github.PushEvent) ([]*TargetEntity, *EventDetails, error) {
+	log.Info("processing push event")
 
 	ctx, canc := context.WithTimeout(context.Background(), time.Minute*10)
 	defer canc()
@@ -318,10 +311,9 @@ func processPushEvent(token string, e *github.PushEvent) ([]*TargetEntity, []*Ev
 		return nil, nil, fmt.Errorf("get pull requests: %w", err)
 	}
 
-	Log("fetched %d pull requests", len(prs))
+	log.Infof("fetched %d pull requests", len(prs))
 
 	targets := make([]*TargetEntity, 0)
-	events := make([]*EventData, 0)
 	for _, pr := range prs {
 		if pr.Base.GetRef() == e.GetRef() {
 			targets = append(targets, &TargetEntity{
@@ -330,27 +322,154 @@ func processPushEvent(token string, e *github.PushEvent) ([]*TargetEntity, []*Ev
 				Owner:  owner,
 				Repo:   repo,
 			})
-			events = append(events, &EventData{
-				EventName: "push",
-			})
 		}
 	}
 
-	Log("found events %v", targets)
+	log.Infof("found events %v", targets)
 
-	return targets, events, nil
+	return targets, &EventDetails{
+		EventName: "push",
+		Payload:   e,
+	}, nil
+}
+
+func processInstallationEvent(log *logrus.Entry, event *github.InstallationEvent) ([]*TargetEntity, *EventDetails, error) {
+	log.Info("processing installation event")
+
+	targetEntities, err := extractTargetEntitiesFromRepositories(event.Repositories)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return targetEntities, &EventDetails{
+		EventName:   "installation",
+		EventAction: event.GetAction(),
+		Payload:     event,
+	}, nil
+}
+
+func processInstallationRepositoriesEvent(event *github.InstallationRepositoriesEvent) ([]*TargetEntity, *EventDetails, error) {
+	repositories := make([]*github.Repository, 0)
+
+	if event.GetAction() == "added" {
+		repositories = event.RepositoriesAdded
+	}
+
+	if event.GetAction() == "removed" {
+		repositories = event.RepositoriesRemoved
+	}
+
+	targetEntities, err := extractTargetEntitiesFromRepositories(repositories)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return targetEntities, &EventDetails{
+		EventName:   "installation_repositories",
+		EventAction: event.GetAction(),
+		Payload:     event,
+	}, nil
+}
+
+func processCheckRunEvent(log *logrus.Entry, token string, event *github.CheckRunEvent) ([]*TargetEntity, *EventDetails, error) {
+	log.Info("processing check_run event")
+
+	targetEntities := []*TargetEntity{}
+
+	eventDetails := &EventDetails{
+		EventName:   "check_run",
+		EventAction: event.GetAction(),
+		Payload:     event,
+	}
+
+	//  if the head is from a forked repository the pull_requests array will be empty on check run events
+	if len(event.CheckRun.PullRequests) == 0 {
+		prs, err := getPullRequests(token, event.GetRepo().GetFullName())
+		if err != nil {
+			return nil, nil, err
+		}
+
+		log.Infof("fetched %d pull requests", len(prs))
+
+		for _, pr := range prs {
+			if pr.GetHead().GetSHA() == event.CheckRun.GetHeadSHA() {
+				log.Infof("found pull request %v", pr.GetNumber())
+				return []*TargetEntity{
+					{
+						Kind:   PullRequest,
+						Number: pr.GetNumber(),
+						Owner:  event.GetRepo().GetOwner().GetLogin(),
+						Repo:   event.GetRepo().GetName(),
+					},
+				}, eventDetails, nil
+			}
+		}
+
+		log.Infof("no pr found with the head sha %v", event.CheckRun.GetHeadSHA())
+
+		return []*TargetEntity{}, eventDetails, nil
+	}
+
+	for _, pr := range event.CheckRun.PullRequests {
+		targetEntities = append(targetEntities, &TargetEntity{
+			Kind:   PullRequest,
+			Owner:  event.GetRepo().GetOwner().GetLogin(),
+			Repo:   event.GetRepo().GetName(),
+			Number: pr.GetNumber(),
+		})
+	}
+
+	return targetEntities, eventDetails, nil
+}
+
+func getPullRequests(token, fullName string) ([]*github.PullRequest, error) {
+	ctx, canc := context.WithTimeout(context.Background(), time.Minute*10)
+	defer canc()
+
+	ghClient := reviewpad_gh.NewGithubClientFromToken(ctx, token)
+
+	repoParts := strings.SplitN(fullName, "/", 2)
+
+	owner := repoParts[0]
+	repo := repoParts[1]
+
+	prs, err := ghClient.GetPullRequests(ctx, owner, repo)
+	if err != nil {
+		return nil, fmt.Errorf("get pull requests: %w", err)
+	}
+
+	return prs, nil
+}
+
+func extractTargetEntitiesFromRepositories(repos []*github.Repository) ([]*TargetEntity, error) {
+	targetEntities := make([]*TargetEntity, 0)
+
+	for _, repo := range repos {
+		parts := strings.Split(repo.GetFullName(), "/")
+
+		if len(parts) != 2 {
+			return nil, fmt.Errorf("invalid full repository name: %v", repo.GetFullName())
+		}
+
+		targetEntities = append(targetEntities, &TargetEntity{
+			Owner: parts[0],
+			Repo:  parts[1],
+		})
+	}
+
+	return targetEntities, nil
 }
 
 // reviewpad-an: critical
 // output: the list of pull requests/issues that are affected by the event.
-func ProcessEvent(event *ActionEvent) ([]*TargetEntity, []*EventData, error) {
+func ProcessEvent(log *logrus.Entry, event *ActionEvent) ([]*TargetEntity, *EventDetails, error) {
 	// These events do not have an equivalent in the GitHub webhooks, thus
 	// parsing them with github.ParseWebhook would return an error.
 	// These are the webhook events: https://docs.github.com/en/developers/webhooks-and-events/webhooks/webhook-events-and-payloads
 	// And these are the "workflow events": https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows
 	switch *event.EventName {
 	case "schedule":
-		return processCronEvent(*event.Token, event)
+		return processCronEvent(log, *event.Token, event)
 	}
 
 	eventPayload, err := github.ParseWebHook(*event.EventName, *event.EventPayload)
@@ -364,7 +483,7 @@ func ProcessEvent(event *ActionEvent) ([]*TargetEntity, []*EventData, error) {
 	case *github.BranchProtectionRuleEvent:
 		return processUnsupportedEvent(payload)
 	case *github.CheckRunEvent:
-		return processUnsupportedEvent(payload)
+		return processCheckRunEvent(log, *event.Token, payload)
 	case *github.CheckSuiteEvent:
 		return processUnsupportedEvent(payload)
 	case *github.CommitCommentEvent:
@@ -390,13 +509,13 @@ func ProcessEvent(event *ActionEvent) ([]*TargetEntity, []*EventData, error) {
 	case *github.GollumEvent:
 		return processUnsupportedEvent(payload)
 	case *github.InstallationEvent:
-		return processUnsupportedEvent(payload)
+		return processInstallationEvent(log, payload)
 	case *github.InstallationRepositoriesEvent:
-		return processUnsupportedEvent(payload)
+		return processInstallationRepositoriesEvent(payload)
 	case *github.IssueCommentEvent:
-		return processIssueCommentEvent(payload)
+		return processIssueCommentEvent(log, payload)
 	case *github.IssuesEvent:
-		return processIssuesEvent(payload)
+		return processIssuesEvent(log, payload)
 	case *github.LabelEvent:
 		return processUnsupportedEvent(payload)
 	case *github.MarketplacePurchaseEvent:
@@ -428,17 +547,17 @@ func ProcessEvent(event *ActionEvent) ([]*TargetEntity, []*EventData, error) {
 	case *github.PublicEvent:
 		return processUnsupportedEvent(payload)
 	case *github.PullRequestEvent:
-		return processPullRequestEvent(payload)
+		return processPullRequestEvent(log, payload)
 	case *github.PullRequestReviewEvent:
-		return processPullRequestReviewEvent(payload)
+		return processPullRequestReviewEvent(log, payload)
 	case *github.PullRequestReviewCommentEvent:
-		return processPullRequestReviewCommentEvent(payload)
+		return processPullRequestReviewCommentEvent(log, payload)
 	case *github.PullRequestReviewThreadEvent:
 		return processUnsupportedEvent(payload)
 	case *github.PullRequestTargetEvent:
-		return processPullRequestTargetEvent(payload)
+		return processPullRequestTargetEvent(log, payload)
 	case *github.PushEvent:
-		return processPushEvent(*event.Token, payload)
+		return processPushEvent(log, *event.Token, payload)
 	case *github.ReleaseEvent:
 		return processUnsupportedEvent(payload)
 	case *github.RepositoryEvent:
@@ -454,7 +573,7 @@ func ProcessEvent(event *ActionEvent) ([]*TargetEntity, []*EventData, error) {
 	case *github.StarEvent:
 		return processUnsupportedEvent(payload)
 	case *github.StatusEvent:
-		return processStatusEvent(*event.Token, payload)
+		return processStatusEvent(log, *event.Token, payload)
 	case *github.TeamEvent:
 		return processUnsupportedEvent(payload)
 	case *github.TeamAddEvent:
@@ -468,7 +587,7 @@ func ProcessEvent(event *ActionEvent) ([]*TargetEntity, []*EventData, error) {
 	case *github.WorkflowJobEvent:
 		return processUnsupportedEvent(payload)
 	case *github.WorkflowRunEvent:
-		return processWorkflowRunEvent(*event.Token, payload)
+		return processWorkflowRunEvent(log, *event.Token, payload)
 	}
 
 	return processUnsupportedEvent(eventPayload)

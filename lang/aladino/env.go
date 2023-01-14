@@ -12,6 +12,7 @@ import (
 	"github.com/reviewpad/reviewpad/v3/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v3/collector"
 	"github.com/reviewpad/reviewpad/v3/handler"
+	"github.com/sirupsen/logrus"
 )
 
 type Severity int
@@ -38,6 +39,7 @@ type Env interface {
 	GetRegisterMap() RegisterMap
 	GetReport() *Report
 	GetTarget() codehost.Target
+	GetLogger() *logrus.Entry
 }
 
 type BaseEnv struct {
@@ -51,6 +53,7 @@ type BaseEnv struct {
 	RegisterMap              RegisterMap
 	Report                   *Report
 	Target                   codehost.Target
+	Logger                   *logrus.Entry
 }
 
 func (e *BaseEnv) GetBuiltIns() *BuiltIns {
@@ -93,6 +96,10 @@ func (e *BaseEnv) GetTarget() codehost.Target {
 	return e.Target
 }
 
+func (e *BaseEnv) GetLogger() *logrus.Entry {
+	return e.Logger
+}
+
 func NewTypeEnv(e Env) TypeEnv {
 	builtInsType := make(map[string]Type)
 	for builtInName, builtInFunction := range e.GetBuiltIns().Functions {
@@ -108,6 +115,7 @@ func NewTypeEnv(e Env) TypeEnv {
 
 func NewEvalEnv(
 	ctx context.Context,
+	logger *logrus.Entry,
 	dryRun bool,
 	githubClient *gh.GithubClient,
 	collector collector.Collector,
@@ -128,6 +136,7 @@ func NewEvalEnv(
 		EventPayload:             eventPayload,
 		RegisterMap:              registerMap,
 		Report:                   report,
+		Logger:                   logger,
 	}
 
 	switch targetEntity.Kind {

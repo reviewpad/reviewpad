@@ -95,6 +95,74 @@ func TestTransformAladinoExpression(t *testing.T) {
 			arg:     `$close("", "not_planned")`,
 			wantVal: `$close("", "not_planned")`,
 		},
+		"multiple $haveAllChecksRunCompleted with one empty": {
+			arg:     `$haveAllChecksRunCompleted() && true && $haveAllChecksRunCompleted(["build"])`,
+			wantVal: `$haveAllChecksRunCompleted([], "") && true && $haveAllChecksRunCompleted(["build"], "")`,
+		},
+		"one $haveAllChecksRunCompleted with arg provided": {
+			arg:     `$haveAllChecksRunCompleted(["build", "test"], "")`,
+			wantVal: `$haveAllChecksRunCompleted(["build", "test"], "")`,
+		},
+		"one $haveAllChecksRunCompleted with no arg provided": {
+			arg:     `$haveAllChecksRunCompleted()`,
+			wantVal: `$haveAllChecksRunCompleted([], "")`,
+		},
+		"one $haveAllChecksRunCompleted with no empty arg provided": {
+			arg:     `$haveAllChecksRunCompleted([], "success")`,
+			wantVal: `$haveAllChecksRunCompleted([], "success")`,
+		},
+		"multiple $haveAllChecksRunCompleted": {
+			arg:     `$haveAllChecksRunCompleted() && true && $haveAllChecksRunCompleted(["build"]) && $haveAllChecksRunCompleted(["build", "run"], "completed") && $haveAllChecksRunCompleted([]) && $haveAllChecksRunCompleted([], "")`,
+			wantVal: `$haveAllChecksRunCompleted([], "") && true && $haveAllChecksRunCompleted(["build"], "") && $haveAllChecksRunCompleted(["build", "run"], "completed") && $haveAllChecksRunCompleted([], "") && $haveAllChecksRunCompleted([], "")`,
+		},
+		"join empty array with empty separator": {
+			arg:     `$join([])`,
+			wantVal: `$join([], " ")`,
+		},
+		"join empty array with non-empty separator": {
+			arg:     `$join([], ", ")`,
+			wantVal: `$join([], ", ")`,
+		},
+		"join non-empty array with empty separator": {
+			arg:     `$join(["a", "b"])`,
+			wantVal: `$join(["a", "b"], " ")`,
+		},
+		"join non-empty array with non-empty separator": {
+			arg:     `$join(["a", "b"], ", ")`,
+			wantVal: `$join(["a", "b"], ", ")`,
+		},
+		"join group with empty separator": {
+			arg:     `$join($group("a"))`,
+			wantVal: `$join($group("a"), " ")`,
+		},
+		"join group with non-empty separator": {
+			arg:     `$join($group("a"), ", ")`,
+			wantVal: `$join($group("a"), ", ")`,
+		},
+		"join team with empty separator": {
+			arg:     `$join($team("a"))`,
+			wantVal: `$join($team("a"), " ")`,
+		},
+		"join team with non-empty separator": {
+			arg:     `$$join($team("a"), ", ")`,
+			wantVal: `$$join($team("a"), ", ")`,
+		},
+		"join assignees with empty separator": {
+			arg:     `$join($assignees())`,
+			wantVal: `$join($assignees(), " ")`,
+		},
+		"join assignees with non-empty separator": {
+			arg:     `$join($assignees(), ", ")`,
+			wantVal: `$join($assignees(), ", ")`,
+		},
+		"join in sprintf with no separator": {
+			arg:     `$sprintf("hello: %s", [$join(["test", "test2"])])`,
+			wantVal: `$sprintf("hello: %s", [$join(["test", "test2"], " ")])`,
+		},
+		"join in sprintf with separator": {
+			arg:     `$sprintf("hello: %s", [$join(["test", "test2"], " - ")])`,
+			wantVal: `$sprintf("hello: %s", [$join(["test", "test2"], " - ")])`,
+		},
 		// TODO: test addDefaultTotalRequestedReviewers
 	}
 

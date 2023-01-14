@@ -6,7 +6,6 @@ package github_test
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"runtime"
 	"testing"
@@ -14,6 +13,8 @@ import (
 
 	git "github.com/libgit2/git2go/v31"
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
+	"github.com/reviewpad/reviewpad/v3/utils"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -22,6 +23,8 @@ const (
 )
 
 func TestCloneRepository_WhenNoPathProvided(t *testing.T) {
+	log := utils.NewLogger(logrus.DebugLevel)
+
 	t.Parallel()
 	repo := createTestRepo(t, false)
 	defer cleanupTestRepo(t, repo)
@@ -31,7 +34,7 @@ func TestCloneRepository_WhenNoPathProvided(t *testing.T) {
 	ref, err := repo.References.Lookup("refs/heads/main")
 	checkFatal(t, err)
 
-	repo2, _, err := gh.CloneRepository(repo.Path(), "", "", &git.CloneOptions{
+	repo2, _, err := gh.CloneRepository(log, repo.Path(), "", "", &git.CloneOptions{
 		Bare:           true,
 		CheckoutBranch: "main",
 	})
@@ -48,6 +51,8 @@ func TestCloneRepository_WhenNoPathProvided(t *testing.T) {
 }
 
 func TestCloneRepository_WhenPathProvided(t *testing.T) {
+	log := utils.NewLogger(logrus.DebugLevel)
+
 	t.Parallel()
 	repo := createTestRepo(t, false)
 	defer cleanupTestRepo(t, repo)
@@ -57,10 +62,10 @@ func TestCloneRepository_WhenPathProvided(t *testing.T) {
 	ref, err := repo.References.Lookup("refs/heads/main")
 	checkFatal(t, err)
 
-	path, err := ioutil.TempDir("", TestRepo)
+	path, err := os.MkdirTemp("", TestRepo)
 	checkFatal(t, err)
 
-	repo2, _, err := gh.CloneRepository(repo.Path(), "", path, &git.CloneOptions{
+	repo2, _, err := gh.CloneRepository(log, repo.Path(), "", path, &git.CloneOptions{
 		Bare:           true,
 		CheckoutBranch: "main",
 	})
@@ -77,30 +82,36 @@ func TestCloneRepository_WhenPathProvided(t *testing.T) {
 }
 
 func TestCloneRepository_WithExternalHTTPUrl(t *testing.T) {
-	path, err := ioutil.TempDir("", TestRepo)
+	log := utils.NewLogger(logrus.DebugLevel)
+
+	path, err := os.MkdirTemp("", TestRepo)
 	defer os.RemoveAll(path)
 	checkFatal(t, err)
 
 	url := "https://github.com/reviewpad/TestGitRepository"
 	token := "TOKEN"
-	_, _, err = gh.CloneRepository(url, token, path, &git.CloneOptions{})
+	_, _, err = gh.CloneRepository(log, url, token, path, &git.CloneOptions{})
 
 	assert.Nil(t, err, "cannot clone remote repo via https")
 }
 
 func TestCheckoutBranch_BranchDoesNotExists(t *testing.T) {
+	log := utils.NewLogger(logrus.DebugLevel)
+
 	t.Parallel()
 	repo := createTestRepo(t, false)
 	defer cleanupTestRepo(t, repo)
 
 	seedTestRepo(t, repo, "main")
 
-	err := gh.CheckoutBranch(repo, "test")
+	err := gh.CheckoutBranch(log, repo, "test")
 
 	assert.ErrorContains(t, err, "cannot locate remote-tracking branch 'origin/test'")
 }
 
 func TestCheckoutBranch_BranchExists(t *testing.T) {
+	log := utils.NewLogger(logrus.DebugLevel)
+
 	t.Parallel()
 	remoteRepo := createTestRepo(t, false)
 	defer cleanupTestRepo(t, remoteRepo)
@@ -131,7 +142,7 @@ func TestCheckoutBranch_BranchExists(t *testing.T) {
 	err = remote.Fetch([]string{branchName}, nil, "")
 	checkFatal(t, err)
 
-	err = gh.CheckoutBranch(repo, branchName)
+	err = gh.CheckoutBranch(log, repo, branchName)
 	currentHead, _ := repo.Head()
 
 	assert.Nil(t, err)
@@ -139,12 +150,14 @@ func TestCheckoutBranch_BranchExists(t *testing.T) {
 }
 
 func TestRebaseOnto_WhenOntoBranchDoesNotExist(t *testing.T) {
+	log := utils.NewLogger(logrus.DebugLevel)
+
 	repo := createTestRepo(t, false)
 	defer cleanupTestRepo(t, repo)
 
 	branchName := "test"
 
-	gotErr := gh.RebaseOnto(repo, branchName, &git.RebaseOptions{})
+	gotErr := gh.RebaseOnto(log, repo, branchName, &git.RebaseOptions{})
 
 	assert.EqualError(t, gotErr, "cannot locate local branch 'test'")
 }
@@ -154,6 +167,8 @@ func TestRebaseOnto_WhenInitRebaseFails(t *testing.T) {
 	t.SkipNow()
 	repo := createTestRepo(t, true)
 	defer cleanupTestRepo(t, repo)
+
+	log := utils.NewLogger(logrus.DebugLevel)
 
 	remoteUrl := fmt.Sprintf("file://%s", repo.Path())
 	remote, err := repo.Remotes.Create("origin", remoteUrl)
@@ -188,7 +203,7 @@ func TestRebaseOnto_WhenInitRebaseFails(t *testing.T) {
 	_, err = repo.CreateBranch(branchName, commit, false)
 	checkFatal(t, err)
 
-	gotErr := gh.RebaseOnto(repo, branchName, &git.RebaseOptions{})
+	gotErr := gh.RebaseOnto(log, repo, branchName, &git.RebaseOptions{})
 
 	assert.EqualError(t, gotErr, "cannot rebase. This operation is not allowed against bare repositories.")
 }
@@ -198,6 +213,8 @@ func TestRebaseOnto_WhenRebaseCommitFails(t *testing.T) {
 	t.SkipNow()
 	repo := createTestRepo(t, false)
 	defer cleanupTestRepo(t, repo)
+
+	log := utils.NewLogger(logrus.DebugLevel)
 
 	remoteUrl := fmt.Sprintf("file://%s", repo.Workdir())
 	remote, err := repo.Remotes.Create("origin", remoteUrl)
@@ -238,12 +255,14 @@ func TestRebaseOnto_WhenRebaseCommitFails(t *testing.T) {
 	defaultRebaseOptions, err := git.DefaultRebaseOptions()
 	checkFatal(t, err)
 
-	gotErr := gh.RebaseOnto(repo, branchName, &defaultRebaseOptions)
+	gotErr := gh.RebaseOnto(log, repo, branchName, &defaultRebaseOptions)
 
 	assert.EqualError(t, gotErr, "this patch has already been applied")
 }
 
 func TestRebaseOnto(t *testing.T) {
+	log := utils.NewLogger(logrus.DebugLevel)
+
 	repo := createTestRepo(t, false)
 	defer cleanupTestRepo(t, repo)
 
@@ -256,7 +275,7 @@ func TestRebaseOnto(t *testing.T) {
 
 	seedTestRepo(t, repo, branchName)
 
-	gotErr := gh.RebaseOnto(repo, branchName, &git.RebaseOptions{})
+	gotErr := gh.RebaseOnto(log, repo, branchName, &git.RebaseOptions{})
 
 	assert.Nil(t, gotErr)
 }
@@ -266,7 +285,9 @@ func TestPush(t *testing.T) {
 	t.SkipNow()
 	// Local push doesn't (yet) support pushing to non-bare repos so we need to work with bare repos.
 	repo := createTestRepo(t, true)
+
 	defer cleanupTestRepo(t, repo)
+	log := utils.NewLogger(logrus.DebugLevel)
 
 	remoteUrl := fmt.Sprintf("file://%s", repo.Path())
 	remote, err := repo.Remotes.Create("origin", remoteUrl)
@@ -341,7 +362,7 @@ func TestPush(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			gotErr := gh.Push(repo, test.inputRemote, test.inputBranchName, test.isForcePush)
+			gotErr := gh.Push(log, repo, test.inputRemote, test.inputBranchName, test.isForcePush)
 
 			if gotErr != nil && gotErr.Error() != test.wantErr {
 				assert.FailNow(t, "Push() error = %v, wantErr %v", gotErr, test.wantErr)
@@ -351,14 +372,14 @@ func TestPush(t *testing.T) {
 }
 
 func createTestRepo(t *testing.T, isBare bool) *git.Repository {
-	path, err := ioutil.TempDir("", TestRepo)
+	path, err := os.MkdirTemp("", TestRepo)
 	checkFatal(t, err)
 
 	repo, err := git.InitRepository(path, isBare)
 	checkFatal(t, err)
 
 	tmpfile := "README"
-	err = ioutil.WriteFile(path+"/"+tmpfile, []byte("foo\n"), 0644)
+	err = os.WriteFile(path+"/"+tmpfile, []byte("foo\n"), 0644)
 
 	checkFatal(t, err)
 

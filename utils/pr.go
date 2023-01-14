@@ -7,16 +7,17 @@ package utils
 import (
 	"strings"
 
+	"github.com/google/go-github/v48/github"
 	"github.com/reviewpad/reviewpad/v3/handler"
 )
 
-func IsPullRequestReadyForReportMetrics(eventData *handler.EventData) bool {
-	return eventData != nil && eventData.EventName == "pull_request" && eventData.EventAction == "closed"
+func IsPullRequestReadyForReportMetrics(eventDetails *handler.EventDetails) bool {
+	return eventDetails != nil && eventDetails.EventName == "pull_request" && eventDetails.EventAction == "closed"
 }
 
-func IsReviewpadCommand(eventData *handler.EventData) bool {
-	return eventData != nil &&
-		eventData.EventName == "issue_comment" &&
-		eventData.Comment.Body != nil &&
-		strings.HasPrefix(*eventData.Comment.Body, "/reviewpad")
+func IsReviewpadCommand(eventDetails *handler.EventDetails) bool {
+	return eventDetails != nil &&
+		eventDetails.EventName == "issue_comment" &&
+		eventDetails.EventAction == "created" &&
+		strings.HasPrefix(eventDetails.Payload.(*github.IssueCommentEvent).GetComment().GetBody(), "/reviewpad")
 }

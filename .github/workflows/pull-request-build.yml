@@ -2,14 +2,14 @@ name: Pull Request Build
 
 on:
   pull_request:
-    types: [ labeled, synchronize ]
+#    types: [ labeled, synchronize ]
 
 env:
   LD_LIBRARY_PATH: /usr/local/lib
 
 jobs:
   pr-build:
-    if: ${{ (github.event.action == 'synchronize' && contains(github.event.pull_request.labels.*.name, 'run-build')) || (github.event.action == 'labeled' && github.event.label.name == 'run-build') }}
+ #   if: ${{ (github.event.action == 'synchronize' && contains(github.event.pull_request.labels.*.name, 'run-build')) || (github.event.action == 'labeled' && github.event.label.name == 'run-build') }}
     runs-on: ubuntu-latest
     container:
       image: reviewpad/ci:latest
@@ -22,6 +22,12 @@ jobs:
           go install gotest.tools/gotestsum@latest
           go install github.com/jandelgado/gcov2lcov@latest
           go install github.com/go-task/task/v3/cmd/task@latest
+          go install golang.org/x/tools/go/analysis/passes/shadow/cmd/shadow@latest
+
+      - name: Check
+        run: |
+          task format
+          task shadow
 
       - name: Build
         run: task build
@@ -33,7 +39,7 @@ jobs:
         run: gcov2lcov -infile=coverage.out -outfile=coverage.lcov
 
       - name: Verify that minimum coverage is covered
-        uses: VeryGoodOpenSource/very_good_coverage@v1
+        uses: VeryGoodOpenSource/very_good_coverage@v2
         with:
           path: "coverage.lcov"
           min_coverage: 80

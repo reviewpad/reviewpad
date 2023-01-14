@@ -8,8 +8,8 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"log"
 
+	"github.com/google/go-github/v48/github"
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/collector"
 	"github.com/reviewpad/reviewpad/v3/engine"
@@ -17,18 +17,18 @@ import (
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
 	"github.com/reviewpad/reviewpad/v3/utils"
-	"github.com/reviewpad/reviewpad/v3/utils/fmtio"
+	"github.com/sirupsen/logrus"
 )
 
-func Load(buf *bytes.Buffer) (*engine.ReviewpadFile, error) {
-	file, err := engine.Load(buf.Bytes())
+func Load(ctx context.Context, log *logrus.Entry, githubClient *gh.GithubClient, buf *bytes.Buffer) (*engine.ReviewpadFile, error) {
+	file, err := engine.Load(ctx, githubClient, buf.Bytes())
 	if err != nil {
 		return nil, err
 	}
 
-	log.Println(fmtio.Sprintf("load", "input file:\n%+v\n", file))
+	log.WithField("reviewpad_file", file).Debug("loaded reviewpad file")
 
-	err = engine.Lint(file)
+	err = engine.Lint(file, log)
 	if err != nil {
 		return nil, err
 	}
@@ -38,70 +38,78 @@ func Load(buf *bytes.Buffer) (*engine.ReviewpadFile, error) {
 
 func Run(
 	ctx context.Context,
+	log *logrus.Entry,
 	githubClient *gh.GithubClient,
 	collector collector.Collector,
 	targetEntity *handler.TargetEntity,
-	eventData *handler.EventData,
+	eventDetails *handler.EventDetails,
 	eventPayload interface{},
 	reviewpadFile *engine.ReviewpadFile,
 	dryRun bool,
 	safeMode bool,
-) (engine.ExitStatus, error) {
+) (engine.ExitStatus, *engine.Program, error) {
 	if safeMode && !dryRun {
-		return engine.ExitStatusFailure, fmt.Errorf("when reviewpad is running in safe mode, it must also run in dry-run")
+		return engine.ExitStatusFailure, nil, fmt.Errorf("when reviewpad is running in safe mode, it must also run in dry-run")
 	}
 
 	config, err := plugins_aladino.DefaultPluginConfig()
 	if err != nil {
-		return engine.ExitStatusFailure, err
+		return engine.ExitStatusFailure, nil, err
 	}
 
 	defer config.CleanupPluginConfig()
 
-	aladinoInterpreter, err := aladino.NewInterpreter(ctx, dryRun, githubClient, collector, targetEntity, eventPayload, plugins_aladino.PluginBuiltInsWithConfig(config))
+	aladinoInterpreter, err := aladino.NewInterpreter(ctx, log, dryRun, githubClient, collector, targetEntity, eventPayload, plugins_aladino.PluginBuiltInsWithConfig(config))
 	if err != nil {
-		return engine.ExitStatusFailure, err
+		return engine.ExitStatusFailure, nil, err
 	}
 
-	evalEnv, err := engine.NewEvalEnv(ctx, dryRun, githubClient, collector, targetEntity, aladinoInterpreter, eventData)
+	evalEnv, err := engine.NewEvalEnv(ctx, log, dryRun, githubClient, collector, targetEntity, aladinoInterpreter, eventDetails)
 	if err != nil {
-		return engine.ExitStatusFailure, err
+		return engine.ExitStatusFailure, nil, err
 	}
 
-	program, err := engine.Eval(reviewpadFile, evalEnv)
+	var program *engine.Program
+
+	if utils.IsReviewpadCommand(evalEnv.EventDetails) {
+		program, err = engine.EvalCommand(evalEnv.EventDetails.Payload.(*github.IssueCommentEvent).GetComment().GetBody(), evalEnv)
+	} else {
+		program, err = engine.EvalConfigurationFile(reviewpadFile, evalEnv)
+	}
+
 	if err != nil {
-		return engine.ExitStatusFailure, err
+		engine.CollectError(evalEnv, err)
+		return engine.ExitStatusFailure, nil, err
 	}
 
 	exitStatus, err := aladinoInterpreter.ExecProgram(program)
 	if err != nil {
 		engine.CollectError(evalEnv, err)
-		return engine.ExitStatusFailure, err
+		return engine.ExitStatusFailure, nil, err
 	}
 
 	if safeMode || !dryRun {
 		err = aladinoInterpreter.Report(reviewpadFile.Mode, safeMode)
 		if err != nil {
 			engine.CollectError(evalEnv, err)
-			return engine.ExitStatusFailure, err
+			return engine.ExitStatusFailure, nil, err
 		}
 	}
 
-	if utils.IsPullRequestReadyForReportMetrics(eventData) {
-		err = aladinoInterpreter.ReportMetrics(reviewpadFile.Mode)
-		if err != nil {
-			engine.CollectError(evalEnv, err)
-			return engine.ExitStatusFailure, err
+	if utils.IsPullRequestReadyForReportMetrics(eventDetails) {
+		if reviewpadFile.MetricsOnMerge != nil && *reviewpadFile.MetricsOnMerge {
+			err = aladinoInterpreter.ReportMetrics()
+			if err != nil {
+				engine.CollectError(evalEnv, err)
+				return engine.ExitStatusFailure, nil, err
+			}
 		}
 	}
 
-	collectedData := map[string]interface{}{}
-
-	err = evalEnv.Collector.Collect("Completed Analysis", collectedData)
-
+	err = evalEnv.Collector.Collect("Completed Analysis", map[string]interface{}{})
 	if err != nil {
-		log.Printf("error on collector due to %v", err.Error())
+		log.Warnf("error on collector due to %v", err.Error())
 	}
 
-	return exitStatus, nil
+	return exitStatus, program, nil
 }

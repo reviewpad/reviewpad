@@ -260,6 +260,22 @@ func TestEval_OnFunctionCall_WhenFunctionIsABuiltIn(t *testing.T) {
 	assert.Equal(t, wantVal, gotVal)
 }
 
+func TestEval_OnRecursiveFunctionCall_WhenFunctionIsABuiltIn(t *testing.T) {
+	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
+
+	fc, err := aladino.Parse("$returnStr($returnStr(\"hello\"))")
+	if err != nil {
+		assert.FailNow(t, "parse failed", err)
+	}
+
+	gotVal, err := fc.Eval(mockedEnv)
+
+	wantVal := aladino.BuildStringValue("hello")
+
+	assert.Nil(t, err)
+	assert.Equal(t, wantVal, gotVal)
+}
+
 func TestEval_OnLambda_WhenLambdaBodyEvalFails(t *testing.T) {
 	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
 

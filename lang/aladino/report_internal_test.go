@@ -5,9 +5,8 @@
 package aladino
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strconv"
 	"testing"
@@ -16,6 +15,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v3/engine"
+	"github.com/reviewpad/reviewpad/v3/utils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -26,8 +26,8 @@ type EditCommentRequestPostBody struct {
 func TestReportError(t *testing.T) {
 	errorMsg := "Testing Error"
 
-	wantErr := fmt.Sprintf("[report] %v", errorMsg)
-	gotErr := reportError(errorMsg)
+	wantErr := errorMsg
+	gotErr := fmt.Errorf(errorMsg)
 
 	assert.EqualError(t, gotErr, wantErr)
 }
@@ -137,7 +137,7 @@ func TestDeleteReportComment_WhenCommentCannotBeDeleted(t *testing.T) {
 
 	err := DeleteReportComment(mockedEnv, testCommentId)
 
-	assert.EqualError(t, err, fmt.Sprintf("[report] error on deleting report comment %v", failMessage))
+	assert.EqualError(t, err, fmt.Sprintf("error on deleting report comment %v", failMessage))
 }
 
 func TestDeleteReportComment_WhenCommentCanBeDeleted(t *testing.T) {
@@ -196,7 +196,7 @@ func TestUpdateReportComment_WhenCommentCannotBeEdited(t *testing.T) {
 
 	err := UpdateReportComment(mockedEnv, testCommentId, wantUpdatedComment)
 
-	assert.EqualError(t, err, fmt.Sprintf("[report] error on updating report comment %v", failMessage))
+	assert.EqualError(t, err, fmt.Sprintf("error on updating report comment %v", failMessage))
 }
 
 func TestUpdateReportComment_WhenCommentCanBeEdited(t *testing.T) {
@@ -207,10 +207,10 @@ func TestUpdateReportComment_WhenCommentCanBeEdited(t *testing.T) {
 			mock.WithRequestMatchHandler(
 				mock.PatchReposIssuesCommentsByOwnerByRepoByCommentId,
 				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					rawBody, _ := ioutil.ReadAll(r.Body)
+					rawBody, _ := io.ReadAll(r.Body)
 					body := EditCommentRequestPostBody{}
 
-					json.Unmarshal(rawBody, &body)
+					utils.MustUnmarshal(rawBody, &body)
 
 					gotUpdatedComment = body.Body
 				}),
@@ -255,7 +255,7 @@ func TestAddReportComment_WhenCommentCannotBeCreated(t *testing.T) {
 
 	err := AddReportComment(mockedEnv, comment)
 
-	assert.EqualError(t, err, fmt.Sprintf("[report] error on creating report comment %v", failMessage))
+	assert.EqualError(t, err, fmt.Sprintf("error on creating report comment %v", failMessage))
 }
 
 func TestAddReportComment_WhenCommentCanBeCreated(t *testing.T) {
@@ -268,10 +268,10 @@ func TestAddReportComment_WhenCommentCanBeCreated(t *testing.T) {
 			mock.WithRequestMatchHandler(
 				mock.PostReposIssuesCommentsByOwnerByRepoByIssueNumber,
 				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					rawBody, _ := ioutil.ReadAll(r.Body)
+					rawBody, _ := io.ReadAll(r.Body)
 					body := EditCommentRequestPostBody{}
 
-					json.Unmarshal(rawBody, &body)
+					utils.MustUnmarshal(rawBody, &body)
 
 					createdComment = body.Body
 				}),
@@ -312,7 +312,7 @@ func TestFindReportComment_WhenPullRequestCommentsListingFails(t *testing.T) {
 	gotComment, err := FindReportCommentByAnnotation(mockedEnv, ReviewpadReportCommentAnnotation)
 
 	assert.Nil(t, gotComment)
-	assert.EqualError(t, err, fmt.Sprintf("[report] error getting issues %v", failMessage))
+	assert.EqualError(t, err, fmt.Sprintf("error getting issues %v", failMessage))
 }
 
 func TestFindReportComment_WhenThereIsReviewpadComment(t *testing.T) {

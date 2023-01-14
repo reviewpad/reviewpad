@@ -20,9 +20,13 @@ reviewpad-cli
 .task
 
 # Dependency directories (remove the comment below to include it)
-# vendor/
+vendor/
 
 # Remove VSCode, IntelliJ IDEA and macos index files
 .vscode
 .idea
 .DS_Store
+
+# Debug
+debugdata/
+__debug_bin

@@ -10,12 +10,14 @@ type Type interface {
 }
 
 const (
-	BOOL_TYPE     string = "BoolType"
-	INT_TYPE      string = "IntType"
-	STRING_TYPE   string = "StringType"
-	FUNCTION_TYPE string = "FunctionType"
-	ARRAY_TYPE    string = "ArrayType"
-	ARRAY_OF_TYPE string = "ArrayOfType"
+	BOOL_TYPE          string = "BoolType"
+	INT_TYPE           string = "IntType"
+	STRING_TYPE        string = "StringType"
+	FUNCTION_TYPE      string = "FunctionType"
+	ARRAY_TYPE         string = "ArrayType"
+	ARRAY_OF_TYPE      string = "ArrayOfType"
+	JSON_TYPE          string = "JSONType"
+	DYNAMIC_ARRAY_TYPE string = "DynamicArrayType"
 )
 
 type StringType struct{}
@@ -38,6 +40,10 @@ type ArrayType struct {
 	elemsType []Type
 }
 
+type DynamicArrayType struct{}
+
+type JSONType struct{}
+
 func BuildStringType() *StringType { return &StringType{} }
 func BuildIntType() *IntType       { return &IntType{} }
 func BuildBoolType() *BoolType     { return &BoolType{} }
@@ -53,6 +59,10 @@ func BuildArrayOfType(elemType Type) *ArrayOfType {
 func BuildArrayType(elemsTypes []Type) *ArrayType {
 	return &ArrayType{elemsTypes}
 }
+
+func BuildJSONType() *JSONType { return &JSONType{} }
+
+func BuildDynamicArrayType() *DynamicArrayType { return &DynamicArrayType{} }
 
 func (bTy *BoolType) Kind() string {
 	return BOOL_TYPE
@@ -76,6 +86,14 @@ func (aTy *ArrayType) Kind() string {
 
 func (aTy *ArrayOfType) Kind() string {
 	return ARRAY_OF_TYPE
+}
+
+func (jTy *JSONType) Kind() string {
+	return JSON_TYPE
+}
+
+func (dATy *DynamicArrayType) Kind() string {
+	return DYNAMIC_ARRAY_TYPE
 }
 
 // Equals
@@ -132,6 +150,8 @@ func (thisTy *ArrayType) equals(thatTy Type) bool {
 			elems[i] = thatTyArrayOf.elemType
 		}
 		return equals(elems, thisTy.elemsType)
+	case DYNAMIC_ARRAY_TYPE:
+		return true
 	}
 	return false
 }
@@ -143,6 +163,16 @@ func (thisTy *ArrayOfType) equals(thatTy Type) bool {
 	case ARRAY_OF_TYPE:
 		thatTyArrayOf := thatTy.(*ArrayOfType)
 		return thisTy.elemType.equals(thatTyArrayOf.elemType)
+	case DYNAMIC_ARRAY_TYPE:
+		return true
 	}
 	return false
+}
+
+func (thisTy *JSONType) equals(thatTy Type) bool {
+	return thisTy.Kind() == thatTy.Kind()
+}
+
+func (thisTy *DynamicArrayType) equals(thatTy Type) bool {
+	return thisTy.Kind() == thatTy.Kind()
 }

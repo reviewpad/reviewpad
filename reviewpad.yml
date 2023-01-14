@@ -1,10 +1,7 @@
 api-version: reviewpad.com/v3.x
 
-imports: 
-  - url: https://raw.githubusercontent.com/reviewpad/.github/main/reviewpad-models/common.yml
-
-mode: silent
-edition: professional
+extends: 
+  - https://github.com/reviewpad/.github/blob/main/reviewpad-models/common.yml
 
 labels:
   external-contribution:
@@ -48,7 +45,7 @@ groups:
 
   - name: rising-stars
     description: Rising stars in the team
-    spec: '["shay2025"]'
+    spec: '["shay2025", "zolamk"]'
 
   - name: official-contributors
     description: Reviewpad core contributors
@@ -168,7 +165,7 @@ workflows:
     description: Pull requests without linked issues are added to the project
     always-run: true
     if:
-      - rule: '!$hasLinkedIssues()'
+      - rule: '!$hasLinkedIssues() && !$isLinkedToProject("Reviewpad")'
     then:
       - '$addToProject("Reviewpad", "In Review")'
 
@@ -178,7 +175,7 @@ workflows:
     description: Automatically add issues to project in the backlog state
     always-run: true
     if:
-      - 'true'
+      - rule: '!$isLinkedToProject("Reviewpad")'
     then:
       - '$addToProject("Reviewpad", "Backlog")'
 
@@ -253,6 +250,13 @@ workflows:
           - '$addLabel("external-contribution")'
           - '$assignReviewer($group("maintainers"), 1)'
           - '$assignAssignees(["marcelosousa"])'
+
+  - name: fail-if-should-not-be-merged
+    always-run: true
+    if:
+      - rule: '$isElementOf("do-not-merge", $labels())'
+    then:
+      - '$fail("merge blocked because of do-not-merge label")'
 
   - name: label-plugins
     always-run: true

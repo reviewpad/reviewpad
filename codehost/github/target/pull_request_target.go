@@ -6,12 +6,14 @@ package target
 
 import (
 	"context"
+	"encoding/json"
 	"time"
 
 	"github.com/google/go-github/v48/github"
 	"github.com/reviewpad/reviewpad/v3/codehost"
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/handler"
+	"github.com/shurcooL/githubv4"
 )
 
 type Patch map[string]*codehost.File
@@ -73,26 +75,33 @@ func (t *PullRequestTarget) GetNodeID() string {
 
 func (t *PullRequestTarget) Close(comment string, _ string) error {
 	ctx := t.ctx
-	targetEntity := t.targetEntity
-	owner := targetEntity.Owner
-	repo := targetEntity.Repo
-	number := targetEntity.Number
 	pr := t.PullRequest
 
-	pr.State = github.String("closed")
+	if pr.GetState() == "closed" {
+		return nil
+	}
 
-	_, _, err := t.githubClient.EditPullRequest(ctx, owner, repo, number, pr)
-	if err != nil {
+	var closePullRequestMutation struct {
+		ClosePullRequest struct {
+			ClientMutationID string
+		} `graphql:"closePullRequest(input: $input)"`
+	}
+
+	input := githubv4.ClosePullRequestInput{
+		PullRequestID: githubv4.ID(pr.GetNodeID()),
+	}
+
+	if err := t.githubClient.GetClientGraphQL().Mutate(ctx, &closePullRequestMutation, input, nil); err != nil {
 		return err
 	}
 
 	if comment != "" {
-		if err := t.Comment(comment); err != nil {
-			return err
+		if errComment := t.Comment(comment); errComment != nil {
+			return errComment
 		}
 	}
 
-	return err
+	return nil
 }
 
 func (t *PullRequestTarget) GetAuthor() (*codehost.User, error) {
@@ -208,6 +217,28 @@ func (t *PullRequestTarget) GetReviews() ([]*codehost.Review, error) {
 	}
 
 	return reviews, nil
+}
+
+func (t *PullRequestTarget) IsLinkedToProject(title string) (bool, error) {
+	ctx := t.ctx
+	targetEntity := t.targetEntity
+	owner := targetEntity.Owner
+	repo := targetEntity.Repo
+	number := targetEntity.Number
+	totalRetries := 2
+
+	projects, err := t.githubClient.GetLinkedProjectsForPullRequest(ctx, owner, repo, number, totalRetries)
+	if err != nil {
+		return false, err
+	}
+
+	for _, project := range projects {
+		if project.Project.Title == title {
+			return true, nil
+		}
+	}
+
+	return false, nil
 }
 
 func (t *PullRequestTarget) Merge(mergeMethod string) error {
@@ -370,6 +401,10 @@ func (t *PullRequestTarget) IsDraft() (bool, error) {
 	return t.PullRequest.GetDraft(), nil
 }
 
+func (t *PullRequestTarget) GetState() string {
+	return t.PullRequest.GetState()
+}
+
 func (t *PullRequestTarget) GetTitle() string {
 	return t.PullRequest.GetTitle()
 }
@@ -382,4 +417,65 @@ func (t *PullRequestTarget) GetPullRequestLastPushDate() (time.Time, error) {
 	number := targetEntity.Number
 
 	return t.githubClient.GetPullRequestLastPushDate(ctx, owner, repo, number)
+}
+
+func (t *PullRequestTarget) IsFileBinary(branch, file string) (bool, error) {
+	ctx := t.ctx
+	targetEntity := t.targetEntity
+	owner := targetEntity.Owner
+	repo := targetEntity.Repo
+
+	return t.githubClient.IsFileBinary(ctx, owner, repo, branch, file)
+}
+
+func (t *PullRequestTarget) GetLastCommit() (string, error) {
+	ctx := t.ctx
+	targetEntity := t.targetEntity
+	owner := targetEntity.Owner
+	repo := targetEntity.Repo
+	number := targetEntity.Number
+
+	return t.githubClient.GetLastCommitSHA(ctx, owner, repo, number)
+}
+
+func (t *PullRequestTarget) GetLinkedProjects() ([]gh.GQLProjectV2Item, error) {
+	ctx := t.ctx
+	targetEntity := t.targetEntity
+	owner := targetEntity.Owner
+	repo := targetEntity.Repo
+	number := targetEntity.Number
+	totalRetries := 2
+
+	return t.githubClient.GetLinkedProjectsForPullRequest(ctx, owner, repo, number, totalRetries)
+}
+
+func (t *PullRequestTarget) GetApprovalsCount() (int, error) {
+	ctx := t.ctx
+	targetEntity := t.targetEntity
+	owner := targetEntity.Owner
+	repo := targetEntity.Repo
+	number := targetEntity.Number
+
+	return t.githubClient.GetApprovalsCount(ctx, owner, repo, number)
+}
+
+func (t *PullRequestTarget) TriggerWorkflowByFileName(workflowFileName string) error {
+	ctx := t.ctx
+	targetEntity := t.targetEntity
+	owner := targetEntity.Owner
+	repo := targetEntity.Repo
+	head := t.PullRequest.GetHead().GetRef()
+
+	_, err := t.githubClient.TriggerWorkflowByFileName(ctx, owner, repo, head, workflowFileName)
+
+	return err
+}
+
+func (t *PullRequestTarget) JSON() (string, error) {
+	j, err := json.Marshal(t.PullRequest)
+	if err != nil {
+		return "", err
+	}
+
+	return string(j), nil
 }

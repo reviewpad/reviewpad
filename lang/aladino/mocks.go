@@ -7,8 +7,6 @@ package aladino
 import (
 	"context"
 	"fmt"
-	"io"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -19,7 +17,9 @@ import (
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/collector"
 	"github.com/reviewpad/reviewpad/v3/handler"
+	"github.com/reviewpad/reviewpad/v3/utils"
 	"github.com/shurcooL/githubv4"
+	"github.com/sirupsen/logrus"
 )
 
 const DefaultMockPrID = 1234
@@ -28,17 +28,19 @@ const DefaultMockPrOwner = "foobar"
 const DefaultMockPrRepoName = "default-mock-repo"
 const DefaultMockEventName = "pull_request"
 const DefaultMockEventAction = "opened"
+const DefaultMockEntityNodeID = "test"
 
 var DefaultMockPrDate = time.Date(2009, 11, 17, 20, 34, 58, 651387237, time.UTC)
 var DefaultMockContext = context.Background()
-var DefaultMockCollector = collector.NewCollector("", "", "pull_request", "", "dev-test")
+var DefaultMockLogger = logrus.NewEntry(logrus.New()).WithField("prefix", "[aladino]")
+var DefaultMockCollector, _ = collector.NewCollector("", "distinctId", "pull_request", "runnerName", nil)
 var DefaultMockTargetEntity = &handler.TargetEntity{
 	Owner:  DefaultMockPrOwner,
 	Repo:   DefaultMockPrRepoName,
 	Number: DefaultMockPrNum,
 	Kind:   handler.PullRequest,
 }
-var DefaultMockEventData = &handler.EventData{
+var DefaultMockEventDetails = &handler.EventDetails{
 	EventName:   DefaultMockEventName,
 	EventAction: DefaultMockEventAction,
 }
@@ -52,8 +54,10 @@ func GetDefaultMockPullRequestDetails() *github.PullRequest {
 	prDate := DefaultMockPrDate
 
 	return &github.PullRequest{
-		ID:   &prId,
-		User: &github.User{Login: github.String("john")},
+		ID:     &prId,
+		NodeID: github.String(DefaultMockEntityNodeID),
+		User:   &github.User{Login: github.String("john")},
+		State:  github.String("open"),
 		Assignees: []*github.User{
 			{Login: github.String("jane")},
 		},
@@ -71,6 +75,10 @@ func GetDefaultMockPullRequestDetails() *github.PullRequest {
 			{
 				ID:   github.Int64(1),
 				Name: github.String("enhancement"),
+			},
+			{
+				ID:   github.Int64(2),
+				Name: github.String("large"),
 			},
 		},
 		Head: &github.PullRequestBranch{
@@ -212,6 +220,10 @@ func GetDefaultMockPullRequestDetailsWith(pr *github.PullRequest) *github.PullRe
 		defaultPullRequest.ClosedAt = pr.ClosedAt
 	}
 
+	if pr.State != nil {
+		defaultPullRequest.State = pr.State
+	}
+
 	return defaultPullRequest
 }
 
@@ -298,6 +310,7 @@ func mockEnvWith(prOwner string, prRepoName string, prNum int, githubClient *gh.
 
 	env, err := NewEvalEnv(
 		ctx,
+		DefaultMockLogger,
 		false,
 		githubClient,
 		DefaultMockCollector,
@@ -323,21 +336,21 @@ func mockDefaultHttpClient(clientOptions []mock.MockBackendOption) *http.Client 
 			// Mock request to get pull request details
 			mock.GetReposPullsByOwnerByRepoByPullNumber,
 			http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-				w.Write(mock.MustMarshal(GetDefaultMockPullRequestDetails()))
+				utils.MustWriteBytes(w, mock.MustMarshal(GetDefaultMockPullRequestDetails()))
 			}),
 		),
 		mock.WithRequestMatchHandler(
 			// Mock request to get pull request changed files
 			mock.GetReposPullsFilesByOwnerByRepoByPullNumber,
 			http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-				w.Write(mock.MustMarshal(getDefaultMockPullRequestFileList()))
+				utils.MustWriteBytes(w, mock.MustMarshal(getDefaultMockPullRequestFileList()))
 			}),
 		),
 		mock.WithRequestMatchHandler(
 			// Mock request to get issue details
 			mock.GetReposIssuesByOwnerByRepoByIssueNumber,
 			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				w.Write(mock.MustMarshal(GetDefaultMockIssueDetails()))
+				utils.MustWriteBytes(w, mock.MustMarshal(GetDefaultMockIssueDetails()))
 			}),
 		),
 	}
@@ -371,6 +384,10 @@ func MockDefaultGithubClient(ghApiClientOptions []mock.MockBackendOption, ghGrap
 	}
 
 	return gh.NewGithubClient(client, clientGQL)
+}
+
+func MockDefaultGithubAppClient(ghApiClientOptions []mock.MockBackendOption) *gh.GithubAppClient {
+	return &gh.GithubAppClient{Client: github.NewClient(mock.NewMockedHTTPClient(ghApiClientOptions...))}
 }
 
 // MockDefaultEnv mocks an Aladino Env with default values.
@@ -414,19 +431,4 @@ func MockDefaultEnvWithTargetEntity(
 	}
 
 	return mockedEnv
-}
-
-func MustRead(r io.Reader) string {
-	b, err := ioutil.ReadAll(r)
-	if err != nil {
-		panic(err)
-	}
-	return string(b)
-}
-
-func MustWrite(w io.Writer, s string) {
-	_, err := io.WriteString(w, s)
-	if err != nil {
-		panic(err)
-	}
 }

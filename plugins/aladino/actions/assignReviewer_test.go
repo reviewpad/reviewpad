@@ -5,9 +5,8 @@
 package plugins_aladino_actions_test
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"testing"
 	"time"
@@ -16,6 +15,7 @@ import (
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
+	"github.com/reviewpad/reviewpad/v3/utils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -92,7 +92,7 @@ func TestAssignReviewer_WhenAuthorIsInListOfReviewers(t *testing.T) {
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsByOwnerByRepoByPullNumber,
 				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					w.Write(mock.MustMarshal(mockedPullRequest))
+					utils.MustWriteBytes(w, mock.MustMarshal(mockedPullRequest))
 				}),
 			),
 			mock.WithRequestMatch(
@@ -102,17 +102,17 @@ func TestAssignReviewer_WhenAuthorIsInListOfReviewers(t *testing.T) {
 			mock.WithRequestMatchHandler(
 				mock.PostReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
 				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					rawBody, _ := ioutil.ReadAll(r.Body)
+					rawBody, _ := io.ReadAll(r.Body)
 					body := ReviewersRequestPostBody{}
 
-					json.Unmarshal(rawBody, &body)
+					utils.MustUnmarshal(rawBody, &body)
 
 					gotReviewers = body.Reviewers
 				}),
 			),
 		},
 		func(w http.ResponseWriter, r *http.Request) {
-			aladino.MustWrite(w, `
+			utils.MustWrite(w, `
 			{
 				"data": {
 				  "repository": {
@@ -172,7 +172,7 @@ func TestAssignReviewer_WhenTotalRequiredReviewersIsMoreThanTotalAvailableReview
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsByOwnerByRepoByPullNumber,
 				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					w.Write(mock.MustMarshal(mockedPullRequest))
+					utils.MustWriteBytes(w, mock.MustMarshal(mockedPullRequest))
 				}),
 			),
 			mock.WithRequestMatch(
@@ -182,17 +182,17 @@ func TestAssignReviewer_WhenTotalRequiredReviewersIsMoreThanTotalAvailableReview
 			mock.WithRequestMatchHandler(
 				mock.PostReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
 				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					rawBody, _ := ioutil.ReadAll(r.Body)
+					rawBody, _ := io.ReadAll(r.Body)
 					body := ReviewersRequestPostBody{}
 
-					json.Unmarshal(rawBody, &body)
+					utils.MustUnmarshal(rawBody, &body)
 
 					gotReviewers = body.Reviewers
 				}),
 			),
 		},
 		func(w http.ResponseWriter, r *http.Request) {
-			aladino.MustWrite(w, `
+			utils.MustWrite(w, `
 			{
 				"data": {
 				  "repository": {
@@ -286,7 +286,7 @@ func TestAssignReviewer_WhenPullRequestAlreadyHasReviews(t *testing.T) {
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsByOwnerByRepoByPullNumber,
 				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					w.Write(mock.MustMarshal(mockedPullRequest))
+					utils.MustWriteBytes(w, mock.MustMarshal(mockedPullRequest))
 				}),
 			),
 			mock.WithRequestMatch(
@@ -306,17 +306,17 @@ func TestAssignReviewer_WhenPullRequestAlreadyHasReviews(t *testing.T) {
 			mock.WithRequestMatchHandler(
 				mock.PostReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
 				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					rawBody, _ := ioutil.ReadAll(r.Body)
+					rawBody, _ := io.ReadAll(r.Body)
 					body := ReviewersRequestPostBody{}
 
-					json.Unmarshal(rawBody, &body)
+					utils.MustUnmarshal(rawBody, &body)
 
 					gotReviewers = body.Reviewers
 				}),
 			),
 		},
 		func(w http.ResponseWriter, r *http.Request) {
-			aladino.MustWrite(w, `
+			utils.MustWrite(w, `
 			{
 				"data": {
 				  "repository": {
@@ -374,7 +374,7 @@ func TestAssignReviewer_WhenPullRequestAlreadyHasApproval(t *testing.T) {
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsByOwnerByRepoByPullNumber,
 				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					w.Write(mock.MustMarshal(mockedPullRequest))
+					utils.MustWriteBytes(w, mock.MustMarshal(mockedPullRequest))
 				}),
 			),
 			mock.WithRequestMatch(
@@ -394,17 +394,17 @@ func TestAssignReviewer_WhenPullRequestAlreadyHasApproval(t *testing.T) {
 			mock.WithRequestMatchHandler(
 				mock.PostReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
 				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					rawBody, _ := ioutil.ReadAll(r.Body)
+					rawBody, _ := io.ReadAll(r.Body)
 					body := ReviewersRequestPostBody{}
 
-					json.Unmarshal(rawBody, &body)
+					utils.MustUnmarshal(rawBody, &body)
 
 					gotReviewers = body.Reviewers
 				}),
 			),
 		},
 		func(w http.ResponseWriter, r *http.Request) {
-			aladino.MustWrite(w, `
+			utils.MustWrite(w, `
 			{
 				"data": {
 				  "repository": {
@@ -465,7 +465,7 @@ func TestAssignReviewer_WhenPullRequestAlreadyHasRequestedReviewers(t *testing.T
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsByOwnerByRepoByPullNumber,
 				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					w.Write(mock.MustMarshal(mockedPullRequest))
+					utils.MustWriteBytes(w, mock.MustMarshal(mockedPullRequest))
 				}),
 			),
 			mock.WithRequestMatch(
@@ -475,17 +475,17 @@ func TestAssignReviewer_WhenPullRequestAlreadyHasRequestedReviewers(t *testing.T
 			mock.WithRequestMatchHandler(
 				mock.PostReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
 				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					rawBody, _ := ioutil.ReadAll(r.Body)
+					rawBody, _ := io.ReadAll(r.Body)
 					body := ReviewersRequestPostBody{}
 
-					json.Unmarshal(rawBody, &body)
+					utils.MustUnmarshal(rawBody, &body)
 
 					gotReviewers = body.Reviewers
 				}),
 			),
 		},
 		func(w http.ResponseWriter, r *http.Request) {
-			aladino.MustWrite(w, `
+			utils.MustWrite(w, `
 			{
 				"data": {
 				  "repository": {
@@ -548,7 +548,7 @@ func TestAssignReviewer_HasNoAvailableReviewers(t *testing.T) {
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsByOwnerByRepoByPullNumber,
 				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					w.Write(mock.MustMarshal(mockedPullRequest))
+					utils.MustWriteBytes(w, mock.MustMarshal(mockedPullRequest))
 				}),
 			),
 			mock.WithRequestMatch(
@@ -564,7 +564,7 @@ func TestAssignReviewer_HasNoAvailableReviewers(t *testing.T) {
 			),
 		},
 		func(w http.ResponseWriter, r *http.Request) {
-			aladino.MustWrite(w, `
+			utils.MustWrite(w, `
 			{
 				"data": {
 				  "repository": {
@@ -633,7 +633,7 @@ func TestAssignReviewer_WhenPullRequestAlreadyApproved(t *testing.T) {
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsByOwnerByRepoByPullNumber,
 				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					w.Write(mock.MustMarshal(mockedPullRequest))
+					utils.MustWriteBytes(w, mock.MustMarshal(mockedPullRequest))
 				}),
 			),
 			mock.WithRequestMatch(
@@ -649,7 +649,7 @@ func TestAssignReviewer_WhenPullRequestAlreadyApproved(t *testing.T) {
 			),
 		},
 		func(w http.ResponseWriter, r *http.Request) {
-			aladino.MustWrite(w, `
+			utils.MustWrite(w, `
 			{
 				"data": {
 				  "repository": {
@@ -976,7 +976,7 @@ func TestAssignReviewer_ReRequest(t *testing.T) {
 					mock.WithRequestMatchHandler(
 						mock.GetReposPullsByOwnerByRepoByPullNumber,
 						http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-							w.Write(mock.MustMarshal(mockedPullRequest))
+							utils.MustWriteBytes(w, mock.MustMarshal(mockedPullRequest))
 						}),
 					),
 					mock.WithRequestMatch(
@@ -992,7 +992,7 @@ func TestAssignReviewer_ReRequest(t *testing.T) {
 					),
 				},
 				func(w http.ResponseWriter, r *http.Request) {
-					aladino.MustWrite(w, test.lastPushDateResponse)
+					utils.MustWrite(w, test.lastPushDateResponse)
 				},
 				aladino.MockBuiltIns(),
 				nil,
@@ -1083,7 +1083,7 @@ func TestAssignReviewer_WithPolicy(t *testing.T) {
 						mock.WithRequestMatchHandler(
 							mock.GetReposPullsByOwnerByRepoByPullNumber,
 							http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-								w.Write(mock.MustMarshal(mockedPullRequest))
+								utils.MustWriteBytes(w, mock.MustMarshal(mockedPullRequest))
 							}),
 						),
 						mock.WithRequestMatch(
@@ -1093,10 +1093,10 @@ func TestAssignReviewer_WithPolicy(t *testing.T) {
 						mock.WithRequestMatchHandler(
 							mock.PostReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
 							http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-								rawBody, _ := ioutil.ReadAll(r.Body)
+								rawBody, _ := io.ReadAll(r.Body)
 								body := reviewers{}
 
-								json.Unmarshal(rawBody, &body)
+								utils.MustUnmarshal(rawBody, &body)
 
 								requestedReviewers = body.Reviewers
 							}),
@@ -1105,7 +1105,7 @@ func TestAssignReviewer_WithPolicy(t *testing.T) {
 					test.clientOptions...,
 				),
 				func(w http.ResponseWriter, r *http.Request) {
-					aladino.MustWrite(w, `
+					utils.MustWrite(w, `
 					{
 						"data": {
 						  "repository": {
@@ -1185,7 +1185,7 @@ func TestAssignReviewer_WhenPullRequestAlreadyApprovedBy2Reviewers(t *testing.T)
 			mock.WithRequestMatchHandler(
 				mock.GetReposPullsByOwnerByRepoByPullNumber,
 				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					w.Write(mock.MustMarshal(mockedPullRequest))
+					utils.MustWriteBytes(w, mock.MustMarshal(mockedPullRequest))
 				}),
 			),
 			mock.WithRequestMatch(
@@ -1201,7 +1201,7 @@ func TestAssignReviewer_WhenPullRequestAlreadyApprovedBy2Reviewers(t *testing.T)
 			),
 		},
 		func(w http.ResponseWriter, r *http.Request) {
-			aladino.MustWrite(w, `
+			utils.MustWrite(w, `
 			{
 				"data": {
 				  "repository": {

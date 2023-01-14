@@ -44,7 +44,7 @@ func (fc *FunctionCall) exec(env Env) error {
 	}
 
 	if action.Disabled {
-		execLogf("action %v is disabled - skipping", fc.name.ident)
+		env.GetLogger().Infof("action %v is disabled - skipping", fc.name.ident)
 		return nil
 	}
 
@@ -52,7 +52,9 @@ func (fc *FunctionCall) exec(env Env) error {
 		"builtin": fc.name.ident,
 	}
 
-	env.GetCollector().Collect("Ran Builtin", collectedData)
+	if err := env.GetCollector().Collect("Ran Builtin", collectedData); err != nil {
+		env.GetLogger().Errorf("error collection built-in run: %v\n", err)
+	}
 
 	entityKind := env.GetTarget().GetTargetEntity().Kind
 

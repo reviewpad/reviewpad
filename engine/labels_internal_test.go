@@ -5,13 +5,15 @@
 package engine
 
 import (
-	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"testing"
 
 	"github.com/google/go-github/v48/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
+	"github.com/reviewpad/reviewpad/v3/utils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -30,23 +32,23 @@ func TestValidateLabelColor(t *testing.T) {
 		},
 		"invalid hex value with #": {
 			arg:     &PadLabel{Color: "#91cg60"},
-			wantErr: execError("evalLabel: color code not valid"),
+			wantErr: errors.New("evalLabel: color code not valid"),
 		},
 		"invalid hex value without #": {
 			arg:     &PadLabel{Color: "91cg60"},
-			wantErr: execError("evalLabel: color code not valid"),
+			wantErr: errors.New("evalLabel: color code not valid"),
 		},
 		"invalid hex value because of size with #": {
 			arg:     &PadLabel{Color: "#91cg6"},
-			wantErr: execError("evalLabel: color code not valid"),
+			wantErr: errors.New("evalLabel: color code not valid"),
 		},
 		"invalid hex value because of size without #": {
 			arg:     &PadLabel{Color: "91cg6"},
-			wantErr: execError("evalLabel: color code not valid"),
+			wantErr: errors.New("evalLabel: color code not valid"),
 		},
 		"english color": {
 			arg:     &PadLabel{Color: "red"},
-			wantErr: execError("evalLabel: color code not valid"),
+			wantErr: errors.New("evalLabel: color code not valid"),
 		},
 	}
 
@@ -74,7 +76,7 @@ func TestCreateLabel(t *testing.T) {
 				Description: "test",
 			},
 			clientOptions: []mock.MockBackendOption{},
-			wantErr:       execError("evalLabel: color code not valid"),
+			wantErr:       errors.New("evalLabel: color code not valid"),
 		},
 		"when label color has leading #": {
 			labelName: "test-name",
@@ -87,7 +89,8 @@ func TestCreateLabel(t *testing.T) {
 					mock.PostReposLabelsByOwnerByRepo,
 					http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 						var gotLabel github.Label
-						json.NewDecoder(r.Body).Decode(&gotLabel)
+						rawBody, _ := io.ReadAll(r.Body)
+						utils.MustUnmarshal(rawBody, &gotLabel)
 
 						assert.Equal(t, "test-name", gotLabel.GetName())
 						assert.Equal(t, "91cf60", gotLabel.GetColor())
@@ -110,7 +113,8 @@ func TestCreateLabel(t *testing.T) {
 					mock.PostReposLabelsByOwnerByRepo,
 					http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 						var gotLabel github.Label
-						json.NewDecoder(r.Body).Decode(&gotLabel)
+						rawBody, _ := io.ReadAll(r.Body)
+						utils.MustUnmarshal(rawBody, &gotLabel)
 
 						assert.Equal(t, "test-name", gotLabel.GetName())
 						assert.Equal(t, "91cf60", gotLabel.GetColor())
@@ -128,7 +132,7 @@ func TestCreateLabel(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			mockedClient := MockGithubClient(test.clientOptions)
 
-			mockedEnv, err := MockEnvWith(mockedClient, nil, DefaultMockTargetEntity, DefaultMockEventData)
+			mockedEnv, err := MockEnvWith(mockedClient, nil, DefaultMockTargetEntity, DefaultMockEventDetails)
 			if err != nil {
 				assert.FailNow(t, "engine MockEnvWith: %v", err)
 			}
@@ -154,7 +158,7 @@ func TestCheckLabelExists_WhenGetLabelFails(t *testing.T) {
 					mock.GetReposLabelsByOwnerByRepoByName,
 					http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 						w.WriteHeader(http.StatusInternalServerError)
-						w.Write(mock.MustMarshal(github.ErrorResponse{
+						MustWriteBytes(w, mock.MustMarshal(github.ErrorResponse{
 							Response: &http.Response{
 								StatusCode: 500,
 							},
@@ -172,7 +176,7 @@ func TestCheckLabelExists_WhenGetLabelFails(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			mockedClient := MockGithubClient(test.clientOptions)
 
-			mockedEnv, err := MockEnvWith(mockedClient, nil, DefaultMockTargetEntity, DefaultMockEventData)
+			mockedEnv, err := MockEnvWith(mockedClient, nil, DefaultMockTargetEntity, DefaultMockEventDetails)
 			if err != nil {
 				assert.FailNow(t, "MockEnvWith: %v", err)
 			}
@@ -204,7 +208,7 @@ func TestCheckLabelExists(t *testing.T) {
 					mock.GetReposLabelsByOwnerByRepoByName,
 					http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 						w.WriteHeader(http.StatusInternalServerError)
-						w.Write(mock.MustMarshal(github.ErrorResponse{
+						MustWriteBytes(w, mock.MustMarshal(github.ErrorResponse{
 							Response: &http.Response{
 								StatusCode: 404,
 							},
@@ -222,7 +226,7 @@ func TestCheckLabelExists(t *testing.T) {
 					mock.GetReposLabelsByOwnerByRepoByName,
 					http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 						w.WriteHeader(http.StatusOK)
-						w.Write(mock.MustMarshal(label))
+						MustWriteBytes(w, mock.MustMarshal(label))
 					}),
 				),
 			},
@@ -235,7 +239,7 @@ func TestCheckLabelExists(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			mockedClient := MockGithubClient(test.clientOptions)
 
-			mockedEnv, err := MockEnvWith(mockedClient, nil, DefaultMockTargetEntity, DefaultMockEventData)
+			mockedEnv, err := MockEnvWith(mockedClient, nil, DefaultMockTargetEntity, DefaultMockEventDetails)
 			if err != nil {
 				assert.FailNow(t, "MockEnvWith: %v", err)
 			}
@@ -306,7 +310,7 @@ func TestCheckLabelHasUpdates(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			mockedClient := MockGithubClient(nil)
 
-			mockedEnv, err := MockEnvWith(mockedClient, nil, DefaultMockTargetEntity, DefaultMockEventData)
+			mockedEnv, err := MockEnvWith(mockedClient, nil, DefaultMockTargetEntity, DefaultMockEventDetails)
 			if err != nil {
 				assert.FailNow(t, "MockEnvWith: %v", err)
 			}
@@ -338,7 +342,7 @@ func TestUpdateLabel_WhenEditLabelRequestFails(t *testing.T) {
 					mock.PatchReposLabelsByOwnerByRepoByName,
 					http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 						w.WriteHeader(http.StatusInternalServerError)
-						w.Write(mock.MustMarshal(github.ErrorResponse{
+						MustWriteBytes(w, mock.MustMarshal(github.ErrorResponse{
 							Response: &http.Response{
 								StatusCode: 500,
 							},
@@ -355,7 +359,7 @@ func TestUpdateLabel_WhenEditLabelRequestFails(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			mockedClient := MockGithubClient(test.clientOptions)
 
-			mockedEnv, err := MockEnvWith(mockedClient, nil, DefaultMockTargetEntity, DefaultMockEventData)
+			mockedEnv, err := MockEnvWith(mockedClient, nil, DefaultMockTargetEntity, DefaultMockEventDetails)
 			if err != nil {
 				assert.FailNow(t, "engine MockEnvWith: %v", err)
 			}
@@ -386,7 +390,8 @@ func TestUpdateLabel(t *testing.T) {
 					mock.PatchReposLabelsByOwnerByRepoByName,
 					http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 						var gotLabel github.Label
-						json.NewDecoder(r.Body).Decode(&gotLabel)
+						rawBody, _ := io.ReadAll(r.Body)
+						utils.MustUnmarshal(rawBody, &gotLabel)
 
 						assert.Equal(t, "test description", gotLabel.GetDescription())
 
@@ -402,7 +407,7 @@ func TestUpdateLabel(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			mockedClient := MockGithubClient(test.clientOptions)
 
-			mockedEnv, err := MockEnvWith(mockedClient, nil, DefaultMockTargetEntity, DefaultMockEventData)
+			mockedEnv, err := MockEnvWith(mockedClient, nil, DefaultMockTargetEntity, DefaultMockEventDetails)
 			if err != nil {
 				assert.FailNow(t, "engine MockEnvWith: %v", err)
 			}

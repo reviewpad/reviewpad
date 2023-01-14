@@ -5,6 +5,12 @@
 version: "3"
 
 tasks:
+  deps:
+    summary: Install dependencies
+    cmds:
+      - go mod download
+      - go mod tidy
+
   format:
     summary: |
       Formats Go files.
@@ -24,9 +30,7 @@ tasks:
 
       Run with --watch or -w to watch for changes on Go files.
     cmds:
-      # We are using -buildmode=pie to avoid the following error on MacOS:
-      # ld: warning: -no_pie is deprecated when targeting new OS versions
-      - go build -buildmode=pie
+      - go build
     sources:
       - ./**/*.go
 
@@ -36,7 +40,7 @@ tasks:
 
       Run with --watch or -w to watch for changes on yacc file.
     cmds:
-      # For debug purposes, remove the -l argumment enabling the line directives in parser.go.
+      # For debug purposes, remove the -l argument enabling the line directives in parser.go.
       - goyacc -l -o lang/aladino/parser.go -p Aladino lang/aladino/parser.y
     sources:
       - lang/aladino/parser.y
@@ -49,7 +53,7 @@ tasks:
 
       Run with --watch or -w to watch for changes on Go files.
     cmds:
-      - go build -buildmode=pie -o reviewpad-cli ./cli/main.go
+      - go build -o reviewpad-cli ./cli/main.go
     sources:
       - ./cli/**/*.go
 
@@ -59,7 +63,7 @@ tasks:
 
       Run with --watch or -w to watch for changes on _test.go files.
     cmds:
-      - gotestsum -- -buildmode=pie -coverprofile=coverage.out ./...
+      - gotestsum -- -coverprofile=coverage.out ./...
       - . scripts/exclude-from-code-coverage.sh
     sources:
       - ./**/*_test.go
@@ -100,9 +104,28 @@ tasks:
         fi
     silent: true
 
+  lint:
+    summary: |
+      Runs the linter
+      If error try `brew install golangci-lint`
+    cmds:
+      - golangci-lint run
+
+  shadow:
+    summary: |
+      Detect shadowed variables
+      If error try `go install golang.org/x/tools/go/analysis/passes/shadow/cmd/shadow@latest`
+    cmds:
+      - shadow ./...
+
   check:
     deps:
       - format
+      - shadow
+      - lint
       - build
       - test
 
+  default:
+    deps:
+      - build

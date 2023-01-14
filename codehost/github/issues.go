@@ -8,7 +8,27 @@ import (
 	"context"
 
 	"github.com/google/go-github/v48/github"
+	"github.com/shurcooL/githubv4"
 )
+
+type GQLProjectV2Item struct {
+	ID      string
+	Project ProjectV2
+}
+
+type IssueLinkedProjectsQuery struct {
+	Repository struct {
+		Issue struct {
+			ProjectItems *struct {
+				Nodes    []GQLProjectV2Item
+				PageInfo struct {
+					EndCursor   githubv4.String
+					HasNextPage bool
+				}
+			} `graphql:"projectItems(first: 10, after: $projectItemsCursor)"`
+		} `graphql:"issue(number: $issueNumber)"`
+	} `graphql:"repository(owner: $repositoryOwner, name: $repositoryName)"`
+}
 
 func (c *GithubClient) GetIssue(ctx context.Context, owner, repo string, number int) (*github.Issue, *github.Response, error) {
 	return c.clientREST.Issues.Get(ctx, owner, repo, number)
@@ -104,4 +124,42 @@ func (c *GithubClient) GetComments(ctx context.Context, owner string, repo strin
 	}
 
 	return fs.([]*github.IssueComment), nil
+}
+
+func (c *GithubClient) GetLinkedProjectsForIssue(ctx context.Context, owner, repo string, number int, retryCount int) ([]GQLProjectV2Item, error) {
+	projectItems := []GQLProjectV2Item{}
+	hasNextPage := true
+	currentRequestRetry := 1
+
+	varGQLGetProjectFieldsQuery := map[string]interface{}{
+		"repositoryOwner":    githubv4.String(owner),
+		"repositoryName":     githubv4.String(repo),
+		"issueNumber":        githubv4.Int(number),
+		"projectItemsCursor": githubv4.String(""),
+	}
+
+	var getLinkedProjects IssueLinkedProjectsQuery
+
+	for hasNextPage {
+		if err := c.clientGQL.Query(ctx, &getLinkedProjects, varGQLGetProjectFieldsQuery); err != nil {
+			currentRequestRetry++
+			if currentRequestRetry <= retryCount {
+				continue
+			}
+			return nil, err
+		}
+
+		items := getLinkedProjects.Repository.Issue.ProjectItems
+		if items == nil {
+			return nil, ErrProjectItemsNotFound
+		}
+
+		projectItems = append(projectItems, items.Nodes...)
+
+		hasNextPage = items.PageInfo.HasNextPage
+
+		varGQLGetProjectFieldsQuery["projectItemsCursor"] = githubv4.String(items.PageInfo.EndCursor)
+	}
+
+	return projectItems, nil
 }

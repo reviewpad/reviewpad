@@ -5,12 +5,15 @@
 package engine
 
 import (
+	"context"
 	"crypto/sha256"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 
+	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/handler"
+	"github.com/reviewpad/reviewpad/v3/utils"
 	"gopkg.in/yaml.v3"
 )
 
@@ -25,7 +28,7 @@ func hash(data []byte) string {
 	return dHash
 }
 
-func Load(data []byte) (*ReviewpadFile, error) {
+func Load(ctx context.Context, githubClient *gh.GithubClient, data []byte) (*ReviewpadFile, error) {
 	file, err := parse(data)
 	if err != nil {
 		return nil, err
@@ -44,6 +47,11 @@ func Load(data []byte) (*ReviewpadFile, error) {
 	}
 
 	file, err = processImports(file, env)
+	if err != nil {
+		return nil, err
+	}
+
+	file, err = processExtends(ctx, githubClient, file, env)
 	if err != nil {
 		return nil, err
 	}
@@ -142,17 +150,19 @@ func transform(file *ReviewpadFile) *ReviewpadFile {
 	}
 
 	return &ReviewpadFile{
-		Version:      file.Version,
-		Edition:      file.Edition,
-		Mode:         file.Mode,
-		IgnoreErrors: file.IgnoreErrors,
-		Imports:      file.Imports,
-		Groups:       file.Groups,
-		Rules:        transformedRules,
-		Labels:       file.Labels,
-		Workflows:    transformedWorkflows,
-		Pipelines:    transformedPipelines,
-		Recipes:      file.Recipes,
+		Version:        file.Version,
+		Edition:        file.Edition,
+		Mode:           file.Mode,
+		IgnoreErrors:   file.IgnoreErrors,
+		MetricsOnMerge: file.MetricsOnMerge,
+		Imports:        file.Imports,
+		Extends:        file.Extends,
+		Groups:         file.Groups,
+		Rules:          transformedRules,
+		Labels:         file.Labels,
+		Workflows:      transformedWorkflows,
+		Pipelines:      transformedPipelines,
+		Recipes:        file.Recipes,
 	}
 }
 
@@ -164,7 +174,7 @@ func loadImport(reviewpadImport PadImport) (*ReviewpadFile, string, error) {
 
 	defer resp.Body.Close()
 
-	content, err := ioutil.ReadAll(resp.Body)
+	content, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, "", err
 	}
@@ -214,6 +224,7 @@ func processImports(file *ReviewpadFile, env *LoadEnv) (*ReviewpadFile, error) {
 		file.appendGroups(subTreeFile)
 		file.appendRules(subTreeFile)
 		file.appendWorkflows(subTreeFile)
+		file.appendPipelines(subTreeFile)
 		file.appendRecipes(subTreeFile)
 	}
 
@@ -221,4 +232,59 @@ func processImports(file *ReviewpadFile, env *LoadEnv) (*ReviewpadFile, error) {
 	file.Imports = []PadImport{}
 
 	return file, nil
+}
+
+func loadExtension(ctx context.Context, githubClient *gh.GithubClient, extension string) (*ReviewpadFile, string, error) {
+	branch, filePath, err := utils.ValidateUrl(extension)
+	if err != nil {
+		return nil, "", err
+	}
+
+	content, err := githubClient.DownloadContents(ctx, filePath, branch)
+	if err != nil {
+		return nil, "", err
+	}
+
+	file, err := parse(content)
+	if err != nil {
+		return nil, "", err
+	}
+
+	return file, hash(content), nil
+}
+
+// processExtends inlines files into the current reviewpad file
+// precedence: current file > extends file
+// Post-condition: ReviewpadFile without extends statements
+func processExtends(ctx context.Context, githubClient *gh.GithubClient, file *ReviewpadFile, env *LoadEnv) (*ReviewpadFile, error) {
+	extendedFile := &ReviewpadFile{}
+	for _, extensionUri := range file.Extends {
+		eFile, eHash, err := loadExtension(ctx, githubClient, extensionUri)
+		if err != nil {
+			return nil, err
+		}
+
+		if _, ok := env.Stack[eHash]; ok {
+			return nil, fmt.Errorf("loader: cyclic extends dependency")
+		}
+
+		env.Stack[eHash] = true
+
+		extensionFile, err := processExtends(ctx, githubClient, eFile, env)
+		if err != nil {
+			return nil, err
+		}
+
+		// remove from the stack
+		delete(env.Stack, eHash)
+
+		extendedFile.extend(extensionFile)
+	}
+
+	extendedFile.extend(file)
+
+	// reset all extends
+	extendedFile.Extends = []string{}
+
+	return extendedFile, nil
 }

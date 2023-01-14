@@ -22,6 +22,12 @@ func Merge() *aladino.BuiltInAction {
 
 func mergeCode(e aladino.Env, args []aladino.Value) error {
 	t := e.GetTarget().(*target.PullRequestTarget)
+	log := e.GetLogger().WithField("builtin", "merge")
+
+	if t.PullRequest.GetState() != "open" || t.PullRequest.GetDraft() {
+		log.Infof("skipping action because pull request is not open or is a draft")
+		return nil
+	}
 
 	mergeMethod, err := parseMergeMethod(args)
 	if err != nil {

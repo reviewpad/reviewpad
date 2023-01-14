@@ -18,17 +18,19 @@ func inlineRulesNormalizer() *NormalizeRule {
 
 func inlineRulesModificator(file *ReviewpadFile) (*ReviewpadFile, error) {
 	reviewpadFile := &ReviewpadFile{
-		Version:      file.Version,
-		Edition:      file.Edition,
-		Mode:         file.Mode,
-		IgnoreErrors: file.IgnoreErrors,
-		Imports:      file.Imports,
-		Groups:       file.Groups,
-		Rules:        file.Rules,
-		Labels:       file.Labels,
-		Workflows:    file.Workflows,
-		Pipelines:    file.Pipelines,
-		Recipes:      file.Recipes,
+		Version:        file.Version,
+		Edition:        file.Edition,
+		Mode:           file.Mode,
+		IgnoreErrors:   file.IgnoreErrors,
+		MetricsOnMerge: file.MetricsOnMerge,
+		Extends:        file.Extends,
+		Imports:        file.Imports,
+		Groups:         file.Groups,
+		Rules:          file.Rules,
+		Labels:         file.Labels,
+		Workflows:      file.Workflows,
+		Pipelines:      file.Pipelines,
+		Recipes:        file.Recipes,
 	}
 
 	for i, workflow := range reviewpadFile.Workflows {

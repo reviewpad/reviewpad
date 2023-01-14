@@ -5,16 +5,13 @@
 package plugins_aladino_actions_test
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"testing"
-	"time"
 
 	"github.com/google/go-github/v48/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
-
 	host "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
@@ -24,480 +21,210 @@ import (
 
 var review = plugins_aladino.PluginBuiltIns().Actions["review"].Code
 
-type ReviewRequestPostBody struct {
-	Event string `json:"event"`
-	Body  string `json:"body"`
+type ReviewEvent struct {
+	Body  string
+	Event string
 }
 
-func TestReview_WhenGetAuthenticatedUserRequestFails(t *testing.T) {
-	failMessage := "GetAuthenticatedUserRequestFail"
+func TestReview_WhenAuthenticatedUserLoginRequestFails(t *testing.T) {
+	failMessage := "GetAuthenticatedUserLoginRequestFail"
+	mockedAuthenticatedUserLoginGQLQuery := `{"query":"{viewer{login}}"}`
 	mockedEnv := aladino.MockDefaultEnv(
 		t,
-		[]mock.MockBackendOption{
-			mock.WithRequestMatchHandler(
-				mock.GetUser,
-				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					mock.WriteError(
-						w,
-						http.StatusInternalServerError,
-						failMessage,
-					)
-				}),
-			),
-		},
 		nil,
-		aladino.MockBuiltIns(),
-		nil,
-	)
-
-	args := []aladino.Value{aladino.BuildStringValue("APPROVE"), aladino.BuildStringValue("some comment")}
-	err := review(mockedEnv, args)
-
-	assert.Equal(t, failMessage, err.(*github.ErrorResponse).Message)
-}
-
-func TestReview_WhenReviewMethodIsUnsupported(t *testing.T) {
-	mockedEnv := aladino.MockDefaultEnv(t,
-		[]mock.MockBackendOption{
-			mock.WithRequestMatch(
-				mock.GetUser,
-				&github.User{
-					Login: github.String("bot-account"),
-				},
-			),
-		},
-		nil,
-		aladino.MockBuiltIns(),
-		nil,
-	)
-
-	args := []aladino.Value{aladino.BuildStringValue("INVALID"), aladino.BuildStringValue("some comment")}
-	err := review(mockedEnv, args)
-
-	assert.EqualError(t, err, "review: unsupported review event INVALID")
-}
-
-func TestReview_WhenListReviewsRequestFails(t *testing.T) {
-	failMessage := "ListReviewsRequestFail"
-	mockedEnv := aladino.MockDefaultEnv(
-		t,
-		[]mock.MockBackendOption{
-			mock.WithRequestMatch(
-				mock.GetUser,
-				&github.User{
-					Login: github.String("bot-account"),
-				},
-			),
-			mock.WithRequestMatchHandler(
-				mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
-				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					mock.WriteError(
-						w,
-						http.StatusInternalServerError,
-						failMessage,
-					)
-				}),
-			),
-		},
-		nil,
-		aladino.MockBuiltIns(),
-		nil,
-	)
-
-	args := []aladino.Value{aladino.BuildStringValue("APPROVE"), aladino.BuildStringValue("some comment")}
-	err := review(mockedEnv, args)
-
-	assert.Equal(t, failMessage, err.(*github.ErrorResponse).Message)
-}
-
-func TestReview_WhenGetPullRequestLastPushDateRequestFails(t *testing.T) {
-	failMessage := "GetPullRequestLastPushDateRequestFail"
-
-	pullRequestSubmittedAt := time.Now()
-
-	mockedEnv := aladino.MockDefaultEnv(
-		t,
-		[]mock.MockBackendOption{
-			mock.WithRequestMatch(
-				mock.GetUser,
-				&github.User{
-					Login: github.String("bot-account"),
-				},
-			),
-			mock.WithRequestMatch(
-				mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
-				[]*github.PullRequestReview{
-					{
-						ID:   github.Int64(1),
-						Body: github.String(""),
-						User: &github.User{
-							Login: github.String("bot-account"),
-						},
-						State:       github.String("COMMENTED"),
-						SubmittedAt: &pullRequestSubmittedAt,
-					},
-				},
-			),
-		},
 		func(w http.ResponseWriter, req *http.Request) {
-			http.Error(w, failMessage, http.StatusNotFound)
+			query := utils.MinifyQuery(utils.MustRead(req.Body))
+			if query == utils.MinifyQuery(mockedAuthenticatedUserLoginGQLQuery) {
+				http.Error(w, failMessage, http.StatusNotFound)
+			}
 		},
 		aladino.MockBuiltIns(),
 		nil,
 	)
 
-	args := []aladino.Value{aladino.BuildStringValue("APPROVE"), aladino.BuildStringValue("some comment")}
-	err := review(mockedEnv, args)
+	args := []aladino.Value{aladino.BuildStringValue("APPROVE"), aladino.BuildStringValue("test")}
+	gotErr := review(mockedEnv, args)
 
-	assert.EqualError(t, err, fmt.Sprintf("non-200 OK status code: 404 Not Found body: \"%s\\n\"", failMessage))
+	assert.EqualError(t, gotErr, fmt.Sprintf("non-200 OK status code: 404 Not Found body: \"%s\\n\"", failMessage))
 }
 
-func TestReview_WhenBodyIsNotEmpty(t *testing.T) {
-	reviewBody := "test comment"
-
-	mockedLastCommitDate := time.Now()
-
-	mockedPullRequest := aladino.GetDefaultMockPullRequestDetails()
-
-	mockedPullRequestLastPushDateGQLQuery := getMockedPullRequestLastPushDateGQLQuery(mockedPullRequest)
-	mockedPullRequestLastPushDateGQLQueryBody := getMockedPullRequestLastPushDateGQLQueryBody(mockedLastCommitDate)
-
-	tests := map[string]struct {
-		inputReviewEvent string
-	}{
-		"when review event is APPROVE": {
-			inputReviewEvent: "APPROVE",
-		},
-		"when review event is REQUEST_CHANGES": {
-			inputReviewEvent: "REQUEST_CHANGES",
-		},
-		"when review event is COMMENT": {
-			inputReviewEvent: "COMMENT",
-		},
-	}
-
-	for _, test := range tests {
-		var gotReviewEvent, gotReviewBody string
-
-		mockedEnv := aladino.MockDefaultEnv(
-			t,
-			[]mock.MockBackendOption{
-				mock.WithRequestMatch(
-					mock.GetUser,
-					&github.User{
-						Login: github.String("bot-account"),
-					},
-				),
-				mock.WithRequestMatch(
-					mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
-					[]*github.PullRequestReview{},
-				),
-				mock.WithRequestMatchHandler(
-					mock.PostReposPullsReviewsByOwnerByRepoByPullNumber,
-					http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-						rawBody, _ := ioutil.ReadAll(r.Body)
-
-						body := ReviewRequestPostBody{}
-
-						json.Unmarshal(rawBody, &body)
-
-						gotReviewEvent = body.Event
-						gotReviewBody = body.Body
-					}),
-				),
-			},
-			func(w http.ResponseWriter, req *http.Request) {
-				query := utils.MinifyQuery(aladino.MustRead(req.Body))
-				switch query {
-				case utils.MinifyQuery(mockedPullRequestLastPushDateGQLQuery):
-					aladino.MustWrite(w, mockedPullRequestLastPushDateGQLQueryBody)
-				}
-			},
-			aladino.MockBuiltIns(),
-			nil,
-		)
-
-		args := []aladino.Value{aladino.BuildStringValue(test.inputReviewEvent), aladino.BuildStringValue(reviewBody)}
-
-		err := review(mockedEnv, args)
-
-		assert.Nil(t, err)
-		assert.Equal(t, test.inputReviewEvent, gotReviewEvent)
-		assert.Equal(t, reviewBody, gotReviewBody)
-	}
-}
-
-func TestReview_WhenBodyIsEmpty(t *testing.T) {
-	mockedLastCommitDate := time.Now()
-
-	mockedPullRequest := aladino.GetDefaultMockPullRequestDetails()
-
-	mockedPullRequestLastPushDateGQLQuery := getMockedPullRequestLastPushDateGQLQuery(mockedPullRequest)
-	mockedPullRequestLastPushDateGQLQueryBody := getMockedPullRequestLastPushDateGQLQueryBody(mockedLastCommitDate)
-
-	tests := map[string]struct {
-		inputReviewEvent string
-		wantErr          string
-	}{
-		"when review event is APPROVE": {
-			inputReviewEvent: "APPROVE",
-			wantErr:          "",
-		},
-		"when review event is REQUEST_CHANGES": {
-			inputReviewEvent: "REQUEST_CHANGES",
-			wantErr:          "review: comment required in REQUEST_CHANGES event",
-		},
-		"when review event is COMMENT": {
-			inputReviewEvent: "COMMENT",
-			wantErr:          "review: comment required in COMMENT event",
-		},
-	}
-
-	for name, test := range tests {
-		t.Run(name, func(t *testing.T) {
-			mockedEnv := aladino.MockDefaultEnv(
-				t,
-				[]mock.MockBackendOption{
-					mock.WithRequestMatch(
-						mock.GetUser,
-						&github.User{
-							Login: github.String("bot-account"),
-						},
-					),
-					mock.WithRequestMatch(
-						mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
-						[]*github.PullRequestReview{},
-					),
-					mock.WithRequestMatch(
-						mock.PostReposPullsReviewsByOwnerByRepoByPullNumber,
-						&ReviewRequestPostBody{},
-					),
-				},
-				func(w http.ResponseWriter, req *http.Request) {
-					query := utils.MinifyQuery(aladino.MustRead(req.Body))
-					switch query {
-					case utils.MinifyQuery(mockedPullRequestLastPushDateGQLQuery):
-						aladino.MustWrite(w, mockedPullRequestLastPushDateGQLQueryBody)
-					}
-				},
-				aladino.MockBuiltIns(),
-				nil,
-			)
-
-			args := []aladino.Value{aladino.BuildStringValue(test.inputReviewEvent), aladino.BuildStringValue("")}
-
-			gotErr := review(mockedEnv, args)
-
-			if gotErr != nil && gotErr.Error() != test.wantErr {
-				assert.FailNow(t, "review() error = %v, wantErr %v", gotErr, test.wantErr)
+func TestReview_WhenLatestReviewRequestFails(t *testing.T) {
+	failMessage := "GetLatestReviewRequestFail"
+	mockedAuthenticatedUserLoginGQLQuery := `{"query":"{viewer{login}}"}`
+	mockedAuthenticatedUserLoginGQLQueryBody := `{
+		"data": {
+			"viewer": {
+				"login": "test"
 			}
-		})
-	}
+		}
+	}`
+
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
+		nil,
+		func(w http.ResponseWriter, req *http.Request) {
+			query := utils.MinifyQuery(utils.MustRead(req.Body))
+			switch query {
+			case utils.MinifyQuery(mockedAuthenticatedUserLoginGQLQuery):
+				utils.MustWrite(w, mockedAuthenticatedUserLoginGQLQueryBody)
+			default:
+				http.Error(w, failMessage, http.StatusNotFound)
+			}
+		},
+		aladino.MockBuiltIns(),
+		nil,
+	)
+
+	args := []aladino.Value{aladino.BuildStringValue("APPROVE"), aladino.BuildStringValue("test")}
+	gotErr := review(mockedEnv, args)
+
+	assert.EqualError(t, gotErr, fmt.Sprintf("non-200 OK status code: 404 Not Found body: \"%s\\n\"", failMessage))
 }
 
-func TestReview_WhenPreviousAutomaticReviewWasMade(t *testing.T) {
-	reviewBody := "test comment"
-	reviewerLogin := "bot-account"
-
-	mockedLastCommitDate := time.Now()
-	mockedCreateDateAfterLastCommitDate := mockedLastCommitDate.Add(time.Hour)
-	mockedCreateDateBeforeLastCommitDate := mockedLastCommitDate.Add(time.Hour * -1)
-
+func TestReview_WhenLastPushDateRequestFails(t *testing.T) {
+	failMessage := "GetPullRequestLastPushDate"
 	mockedPullRequest := aladino.GetDefaultMockPullRequestDetails()
 
-	mockedPullRequestLastPushDateGQLQuery := getMockedPullRequestLastPushDateGQLQuery(mockedPullRequest)
-	mockedPullRequestLastPushDateGQLQueryBody := getMockedPullRequestLastPushDateGQLQueryBody(mockedLastCommitDate)
-
-	tests := map[string]struct {
-		inputReviewEvent   string
-		clientOptions      []mock.MockBackendOption
-		shouldReviewBeDone bool
-	}{
-		"when last review event was APPROVE": {
-			inputReviewEvent: "APPROVE",
-			clientOptions: []mock.MockBackendOption{
-				mock.WithRequestMatch(
-					mock.GetUser,
-					&github.User{
-						Login: github.String("bot-account"),
-					},
-				),
-				mock.WithRequestMatch(
-					mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
-					[]*github.PullRequestReview{
-						{
-							ID:   github.Int64(1),
-							Body: github.String(""),
-							User: &github.User{
-								Login: github.String(reviewerLogin),
-							},
-							State:       github.String("APPROVED"),
-							SubmittedAt: &mockedCreateDateAfterLastCommitDate,
-						},
-					},
-				),
-			},
-			shouldReviewBeDone: false,
-		},
-		"when last review event was REQUEST_CHANGES and the pull request has updates since then": {
-			inputReviewEvent: "APPROVE",
-			clientOptions: []mock.MockBackendOption{
-				mock.WithRequestMatch(
-					mock.GetUser,
-					&github.User{
-						Login: github.String("bot-account"),
-					},
-				),
-				mock.WithRequestMatch(
-					mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
-					[]*github.PullRequestReview{
-						{
-							ID:   github.Int64(1),
-							Body: github.String(""),
-							User: &github.User{
-								Login: github.String(reviewerLogin),
-							},
-							State:       github.String("REQUEST_CHANGES"),
-							SubmittedAt: &mockedCreateDateBeforeLastCommitDate,
-						},
-					},
-				),
-			},
-			shouldReviewBeDone: true,
-		},
-		"when last review event was REQUEST_CHANGES and the pull request has no updates since then": {
-			inputReviewEvent: "APPROVE",
-			clientOptions: []mock.MockBackendOption{
-				mock.WithRequestMatch(
-					mock.GetUser,
-					&github.User{
-						Login: github.String("bot-account"),
-					},
-				),
-				mock.WithRequestMatch(
-					mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
-					[]*github.PullRequestReview{
-						{
-							ID:   github.Int64(1),
-							Body: github.String(""),
-							User: &github.User{
-								Login: github.String(reviewerLogin),
-							},
-							State:       github.String("REQUEST_CHANGES"),
-							SubmittedAt: &mockedCreateDateAfterLastCommitDate,
-						},
-					},
-				),
-			},
-			shouldReviewBeDone: false,
-		},
-		"when last review event was COMMENT and the pull request has updates since then": {
-			inputReviewEvent: "APPROVE",
-			clientOptions: []mock.MockBackendOption{
-				mock.WithRequestMatch(
-					mock.GetUser,
-					&github.User{
-						Login: github.String("bot-account"),
-					},
-				),
-				mock.WithRequestMatch(
-					mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
-					[]*github.PullRequestReview{
-						{
-							ID:   github.Int64(1),
-							Body: github.String(""),
-							User: &github.User{
-								Login: github.String(reviewerLogin),
-							},
-							State:       github.String("COMMENTED"),
-							SubmittedAt: &mockedCreateDateBeforeLastCommitDate,
-						},
-					},
-				),
-			},
-			shouldReviewBeDone: true,
-		},
-		"when last review event was COMMENT and the pull request has no updates since then": {
-			inputReviewEvent: "APPROVE",
-			clientOptions: []mock.MockBackendOption{
-				mock.WithRequestMatch(
-					mock.GetUser,
-					&github.User{
-						Login: github.String("bot-account"),
-					},
-				),
-				mock.WithRequestMatch(
-					mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
-					[]*github.PullRequestReview{
-						{
-							ID:   github.Int64(1),
-							Body: github.String(""),
-							User: &github.User{
-								Login: github.String(reviewerLogin),
-							},
-							State:       github.String("COMMENTED"),
-							SubmittedAt: &mockedCreateDateAfterLastCommitDate,
-						},
-					},
-				),
-			},
-			shouldReviewBeDone: false,
-		},
-	}
-
-	for _, test := range tests {
-		var isPostReviewRequestPerformed bool
-		mockedEnv := aladino.MockDefaultEnv(
-			t,
-			append(
-				[]mock.MockBackendOption{
-					mock.WithRequestMatch(
-						mock.GetUser,
-						&github.User{
-							Login: github.String("bot-account"),
-						},
-					),
-					mock.WithRequestMatchHandler(
-						mock.GetReposPullsByOwnerByRepoByPullNumber,
-						http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-							w.Write(mock.MustMarshal(mockedPullRequest))
-						}),
-					),
-					mock.WithRequestMatchHandler(
-						mock.PostReposPullsReviewsByOwnerByRepoByPullNumber,
-						http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-							isPostReviewRequestPerformed = true
-						}),
-					),
-				},
-				test.clientOptions...,
-			),
-			func(w http.ResponseWriter, req *http.Request) {
-				query := utils.MinifyQuery(aladino.MustRead(req.Body))
-				switch query {
-				case utils.MinifyQuery(mockedPullRequestLastPushDateGQLQuery):
-					aladino.MustWrite(w, mockedPullRequestLastPushDateGQLQueryBody)
-				}
-			},
-			aladino.MockBuiltIns(),
-			nil,
-		)
-
-		args := []aladino.Value{aladino.BuildStringValue(test.inputReviewEvent), aladino.BuildStringValue(reviewBody)}
-
-		err := review(mockedEnv, args)
-
-		assert.Nil(t, err)
-		assert.Equal(t, test.shouldReviewBeDone, isPostReviewRequestPerformed)
-	}
-}
-
-func getMockedPullRequestLastPushDateGQLQuery(mockedPullRequest *github.PullRequest) string {
 	mockedPullRequestNumber := host.GetPullRequestNumber(mockedPullRequest)
 	mockOwner := host.GetPullRequestBaseOwnerName(mockedPullRequest)
 	mockRepo := host.GetPullRequestBaseRepoName(mockedPullRequest)
 
-	return fmt.Sprintf(`{
+	mockedAuthenticatedUserLoginGQLQuery := `{"query":"{viewer{login}}"}`
+	mockedAuthenticatedUserLoginGQLQueryBody := `{
+		"data": {
+			"viewer": {
+				"login": "test"
+			}
+		}
+	}`
+
+	mockedLatestReviewFromReviewerGQLQuery := fmt.Sprintf(`{
+		"query":"query($author:String!$pullRequestNumber:Int!$repositoryName:String!$repositoryOwner:String!){
+			repository(owner:$repositoryOwner,name:$repositoryName){
+				pullRequest(number:$pullRequestNumber){
+					reviews(last:1,author:$author){
+						nodes{
+							author{login},
+							body,
+							state,
+							submittedAt
+						}
+					}
+				}
+			}
+		}",
+		"variables":{
+			"author":"test",
+			"pullRequestNumber":%d,
+			"repositoryName":"%s",
+			"repositoryOwner":"%s"
+		}
+	}`, mockedPullRequestNumber, mockRepo, mockOwner)
+
+	mockedLatestReviewFromReviewerGQLQueryBody := `{
+		"data": {
+			"repository": {
+				"pullRequest": {
+					"reviews": {
+						"nodes": [{
+							"author": {
+								"login": "test"
+							},
+							"body": "test",
+							"state": "COMMENTED",
+							"submittedAt": "2011-01-26T19:01:12Z"
+						}]
+					}
+				}
+			}
+		}
+	}`
+
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
+		nil,
+		func(w http.ResponseWriter, req *http.Request) {
+			query := utils.MinifyQuery(utils.MustRead(req.Body))
+			switch query {
+			case utils.MinifyQuery(mockedAuthenticatedUserLoginGQLQuery):
+				utils.MustWrite(w, mockedAuthenticatedUserLoginGQLQueryBody)
+			case utils.MinifyQuery(mockedLatestReviewFromReviewerGQLQuery):
+				utils.MustWrite(w, mockedLatestReviewFromReviewerGQLQueryBody)
+			default:
+				http.Error(w, failMessage, http.StatusNotFound)
+			}
+		},
+		aladino.MockBuiltIns(),
+		nil,
+	)
+
+	args := []aladino.Value{aladino.BuildStringValue("APPROVE"), aladino.BuildStringValue("test")}
+	gotErr := review(mockedEnv, args)
+
+	assert.EqualError(t, gotErr, fmt.Sprintf("non-200 OK status code: 404 Not Found body: \"%s\\n\"", failMessage))
+}
+
+func TestReview_WhenPostReviewRequestFail(t *testing.T) {
+	failMessage := "PostReviewRequestFail"
+	mockedPullRequest := aladino.GetDefaultMockPullRequestDetails()
+
+	mockedPullRequestNumber := host.GetPullRequestNumber(mockedPullRequest)
+	mockOwner := host.GetPullRequestBaseOwnerName(mockedPullRequest)
+	mockRepo := host.GetPullRequestBaseRepoName(mockedPullRequest)
+
+	mockedLatestReviewFromReviewerGQLQuery := fmt.Sprintf(`{
+		"query":"query($author:String!$pullRequestNumber:Int!$repositoryName:String!$repositoryOwner:String!){
+			repository(owner:$repositoryOwner,name:$repositoryName){
+				pullRequest(number:$pullRequestNumber){
+					reviews(last:1,author:$author){
+						nodes{
+							author{login},
+							body,
+							state,
+							submittedAt
+						}
+					}
+				}
+			}
+		}",
+		"variables":{
+			"author":"test",
+			"pullRequestNumber":%d,
+			"repositoryName":"%s",
+			"repositoryOwner":"%s"
+		}
+	}`, mockedPullRequestNumber, mockRepo, mockOwner)
+
+	mockedLatestReviewFromReviewerGQLQueryBody := `{
+		"data": {
+			"repository": {
+				"pullRequest": {
+					"reviews": {
+						"nodes": [{
+							"author": {
+								"login": "test"
+							},
+							"body": "test",
+							"state": "COMMENTED",
+							"submittedAt": "2011-01-26T19:01:12Z"
+						}]
+					}
+				}
+			}
+		}
+	}`
+
+	mockedAuthenticatedUserLoginGQLQuery := `{"query":"{viewer{login}}"}`
+
+	mockedAuthenticatedUserLoginGQLQueryBody := `{
+		"data": {
+			"viewer": {
+				"login": "test"
+			}
+		}
+	}`
+
+	mockedLastPullRequestPushDateGQLQuery := fmt.Sprintf(`{
 		"query":"query($pullRequestNumber:Int! $repositoryName:String! $repositoryOwner:String!){
 			repository(owner: $repositoryOwner, name: $repositoryName){
 				pullRequest(number: $pullRequestNumber){
@@ -524,10 +251,8 @@ func getMockedPullRequestLastPushDateGQLQuery(mockedPullRequest *github.PullRequ
 			"repositoryOwner": "%s"
 		}
 	}`, mockedPullRequestNumber, mockRepo, mockOwner)
-}
 
-func getMockedPullRequestLastPushDateGQLQueryBody(mockedLastCommitDate time.Time) string {
-	return fmt.Sprintf(`{
+	mockedLastPullRequestPushDateGQLQueryBody := `{
 		"data": {
 			"repository": {
 				"pullRequest": {
@@ -535,12 +260,419 @@ func getMockedPullRequestLastPushDateGQLQueryBody(mockedLastCommitDate time.Time
 						"nodes": [{
 							"__typename": "PullRequestCommit",
 							"commit": {
-								"pushedDate": "%s"
+								"pushedDate": "2022-11-11T13:36:05Z",
+								"committedDate": "2022-11-11T13:36:05Z"
 							}
 						}]
 					}
 				}
 			}
 		}
-	}`, mockedLastCommitDate.Format("2006-01-02T15:04:05Z07:00"))
+	}`
+
+	mockedEnv := aladino.MockDefaultEnv(
+		t,
+		[]mock.MockBackendOption{
+			mock.WithRequestMatchHandler(
+				mock.PostReposPullsReviewsByOwnerByRepoByPullNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					mock.WriteError(
+						w,
+						http.StatusInternalServerError,
+						failMessage,
+					)
+				}),
+			),
+		},
+		func(w http.ResponseWriter, req *http.Request) {
+			query := utils.MinifyQuery(utils.MustRead(req.Body))
+			switch query {
+			case utils.MinifyQuery(mockedAuthenticatedUserLoginGQLQuery):
+				utils.MustWrite(w, mockedAuthenticatedUserLoginGQLQueryBody)
+			case utils.MinifyQuery(mockedLatestReviewFromReviewerGQLQuery):
+				utils.MustWrite(w, mockedLatestReviewFromReviewerGQLQueryBody)
+			case utils.MinifyQuery(mockedLastPullRequestPushDateGQLQuery):
+				utils.MustWrite(w, mockedLastPullRequestPushDateGQLQueryBody)
+			}
+		},
+		aladino.MockBuiltIns(),
+		nil,
+	)
+
+	args := []aladino.Value{aladino.BuildStringValue("APPROVE"), aladino.BuildStringValue("test-2")}
+	gotErr := review(mockedEnv, args)
+
+	assert.Equal(t, gotErr.(*github.ErrorResponse).Message, failMessage)
+}
+
+func TestReview(t *testing.T) {
+	mockedPullRequest := aladino.GetDefaultMockPullRequestDetails()
+
+	mockedPullRequestNumber := host.GetPullRequestNumber(mockedPullRequest)
+	mockOwner := host.GetPullRequestBaseOwnerName(mockedPullRequest)
+	mockRepo := host.GetPullRequestBaseRepoName(mockedPullRequest)
+
+	mockedLatestReviewFromReviewerGQLQuery := fmt.Sprintf(`{
+		"query":"query($author:String!$pullRequestNumber:Int!$repositoryName:String!$repositoryOwner:String!){
+			repository(owner:$repositoryOwner,name:$repositoryName){
+				pullRequest(number:$pullRequestNumber){
+					reviews(last:1,author:$author){
+						nodes{
+							author{login},
+							body,
+							state,
+							submittedAt
+						}
+					}
+				}
+			}
+		}",
+		"variables":{
+			"author":"test",
+			"pullRequestNumber":%d,
+			"repositoryName":"%s",
+			"repositoryOwner":"%s"
+		}
+	}`, mockedPullRequestNumber, mockRepo, mockOwner)
+
+	mockedAuthenticatedUserLoginGQLQuery := `{"query":"{viewer{login}}"}`
+
+	mockedAuthenticatedUserLoginGQLQueryBody := `{
+		"data": {
+			"viewer": {
+				"login": "test"
+			}
+		}
+	}`
+
+	mockedLastPullRequestPushDateGQLQuery := fmt.Sprintf(`{
+		"query":"query($pullRequestNumber:Int! $repositoryName:String! $repositoryOwner:String!){
+			repository(owner: $repositoryOwner, name: $repositoryName){
+				pullRequest(number: $pullRequestNumber){
+					timelineItems(last: 1, itemTypes: [HEAD_REF_FORCE_PUSHED_EVENT, PULL_REQUEST_COMMIT]){
+						nodes{
+							__typename,
+							...on HeadRefForcePushedEvent {
+								createdAt
+							},
+							...on PullRequestCommit {
+								commit {
+									pushedDate,
+									committedDate
+								}
+							}
+						}
+					}
+				}
+			}
+		}",
+		"variables":{
+			"pullRequestNumber": %d,
+			"repositoryName": "%s",
+			"repositoryOwner": "%s"
+		}
+	}`, mockedPullRequestNumber, mockRepo, mockOwner)
+
+	tests := map[string]struct {
+		clientOptions                              []mock.MockBackendOption
+		mockedLatestReviewFromReviewerGQLQueryBody string
+		mockedLastPullRequestPushDateGQLQueryBody  string
+		inputReviewEvent                           string
+		inputReviewBody                            string
+		wantReview                                 *github.PullRequestReview
+		wantErr                                    error
+	}{
+		"when pull request is closed": {
+			clientOptions: []mock.MockBackendOption{
+				mock.WithRequestMatchHandler(
+					mock.GetReposPullsByOwnerByRepoByPullNumber,
+					http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+						utils.MustWriteBytes(w, mock.MustMarshal(aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
+							State: github.String("closed"),
+						})))
+					}),
+				),
+			},
+			inputReviewEvent: "COMMENT",
+			inputReviewBody:  "test",
+			wantErr:          nil,
+		},
+		"when review event is not supported": {
+			clientOptions:    []mock.MockBackendOption{},
+			inputReviewEvent: "NOT_SUPPORTED_EVENT",
+			inputReviewBody:  "test",
+			wantErr:          fmt.Errorf("review: unsupported review state NOT_SUPPORTED_EVENT"),
+		},
+		"when review event is not an APPROVE and its body is empty": {
+			clientOptions:    []mock.MockBackendOption{},
+			inputReviewEvent: "COMMENT",
+			wantErr:          fmt.Errorf("review: comment required in COMMENT state"),
+		},
+		"when authenticated user has not made any review": {
+			clientOptions: []mock.MockBackendOption{},
+			mockedLatestReviewFromReviewerGQLQueryBody: `{
+				"data": {
+					"repository": {
+						"pullRequest": {
+							"reviews": {
+								"nodes": []
+							}
+						}
+					}
+				}
+			}`,
+			mockedLastPullRequestPushDateGQLQueryBody: `{
+				"data": {
+					"repository": {
+						"pullRequest": {
+							"timelineItems": {
+								"nodes": [{
+									"__typename": "PullRequestCommit",
+									"commit": {
+										"pushedDate": "2022-11-11T13:36:05Z",
+										"committedDate": "2022-11-11T13:36:05Z"
+									}
+								}]
+							}
+						}
+					}
+				}
+			}`,
+			inputReviewEvent: "COMMENT",
+			inputReviewBody:  "test",
+			wantReview: &github.PullRequestReview{
+				User: &github.User{
+					Login: github.String("test"),
+				},
+				State: github.String("COMMENTED"),
+				Body:  github.String("test"),
+			},
+		},
+		"when there has been no pull request pushes since authenticated user's last review": {
+			clientOptions: []mock.MockBackendOption{},
+			mockedLatestReviewFromReviewerGQLQueryBody: `{
+				"data": {
+					"repository": {
+						"pullRequest": {
+							"reviews": {
+								"nodes": [{
+									"author": {
+										"login": "test"
+									},
+									"body": "test",
+									"state": "CHANGES_REQUESTED",
+									"submittedAt": "2022-11-26T19:01:12Z"
+								}]
+							}
+						}
+					}
+				}
+			}`,
+			mockedLastPullRequestPushDateGQLQueryBody: `{
+				"data": {
+					"repository": {
+						"pullRequest": {
+							"timelineItems": {
+								"nodes": [{
+									"__typename": "PullRequestCommit",
+									"commit": {
+										"pushedDate": "2022-11-11T13:36:05Z",
+										"committedDate": "2022-11-11T13:36:05Z"
+									}
+								}]
+							}
+						}
+					}
+				}
+			}`,
+			inputReviewEvent: "REQUEST_CHANGES",
+			inputReviewBody:  "test-2",
+			wantReview: &github.PullRequestReview{
+				User: &github.User{
+					Login: github.String("test"),
+				},
+				State: github.String("CHANGES_REQUESTED"),
+				Body:  github.String("test-2"),
+			},
+		},
+		"when authenticated user has made a review whose state is the same as their last review but has a different body": {
+			clientOptions: []mock.MockBackendOption{},
+			mockedLatestReviewFromReviewerGQLQueryBody: `{
+				"data": {
+					"repository": {
+						"pullRequest": {
+							"reviews": {
+								"nodes": [{
+									"author": {
+										"login": "test"
+									},
+									"body": "test",
+									"state": "CHANGES_REQUESTED",
+									"submittedAt": "2022-10-26T19:01:12Z"
+								}]
+							}
+						}
+					}
+				}
+			}`,
+			mockedLastPullRequestPushDateGQLQueryBody: `{
+				"data": {
+					"repository": {
+						"pullRequest": {
+							"timelineItems": {
+								"nodes": [{
+									"__typename": "PullRequestCommit",
+									"commit": {
+										"pushedDate": "2022-11-11T13:36:05Z",
+										"committedDate": "2022-11-11T13:36:05Z"
+									}
+								}]
+							}
+						}
+					}
+				}
+			}`,
+			inputReviewEvent: "REQUEST_CHANGES",
+			inputReviewBody:  "test-2",
+			wantReview: &github.PullRequestReview{
+				User: &github.User{
+					Login: github.String("test"),
+				},
+				State: github.String("CHANGES_REQUESTED"),
+				Body:  github.String("test-2"),
+			},
+		},
+		"when authenticated user has made a review whose state is the same as their last review but has the same body": {
+			clientOptions: []mock.MockBackendOption{},
+			mockedLatestReviewFromReviewerGQLQueryBody: `{
+				"data": {
+					"repository": {
+						"pullRequest": {
+							"reviews": {
+								"nodes": [{
+									"author": {
+										"login": "test"
+									},
+									"body": "test",
+									"state": "APPROVED",
+									"submittedAt": "2022-10-26T19:01:12Z"
+								}]
+							}
+						}
+					}
+				}
+			}`,
+			mockedLastPullRequestPushDateGQLQueryBody: `{
+				"data": {
+					"repository": {
+						"pullRequest": {
+							"timelineItems": {
+								"nodes": [{
+									"__typename": "PullRequestCommit",
+									"commit": {
+										"pushedDate": "2022-11-11T13:36:05Z",
+										"committedDate": "2022-11-11T13:36:05Z"
+									}
+								}]
+							}
+						}
+					}
+				}
+			}`,
+			inputReviewEvent: "APPROVE",
+			inputReviewBody:  "test",
+		},
+		"when authenticated user has made a review whose state is not valid": {
+			clientOptions: []mock.MockBackendOption{},
+			mockedLatestReviewFromReviewerGQLQueryBody: `{
+				"data": {
+					"repository": {
+						"pullRequest": {
+							"reviews": {
+								"nodes": [{
+									"author": {
+										"login": "test"
+									},
+									"body": "test",
+									"state": "NOT_SUPPORTED",
+									"submittedAt": "2022-10-26T19:01:12Z"
+								}]
+							}
+						}
+					}
+				}
+			}`,
+			mockedLastPullRequestPushDateGQLQueryBody: `{
+				"data": {
+					"repository": {
+						"pullRequest": {
+							"timelineItems": {
+								"nodes": [{
+									"__typename": "PullRequestCommit",
+									"commit": {
+										"pushedDate": "2022-11-11T13:36:05Z",
+										"committedDate": "2022-11-11T13:36:05Z"
+									}
+								}]
+							}
+						}
+					}
+				}
+			}`,
+			inputReviewEvent: "APPROVE",
+			inputReviewBody:  "test",
+			wantErr:          fmt.Errorf("review: unsupported review state NOT_SUPPORTED"),
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			mockedEnv := aladino.MockDefaultEnv(
+				t,
+				append(
+					[]mock.MockBackendOption{
+						mock.WithRequestMatchHandler(
+							mock.PostReposPullsReviewsByOwnerByRepoByPullNumber,
+							http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+								var gotReview ReviewEvent
+								rawBody, _ := io.ReadAll(r.Body)
+								utils.MustUnmarshal(rawBody, &gotReview)
+
+								assert.Equal(t, *test.wantReview.Body, gotReview.Body)
+								switch gotReview.Event {
+								case "REQUEST_CHANGES":
+									assert.Equal(t, *test.wantReview.State, "CHANGES_REQUESTED")
+								case "COMMENT":
+									assert.Equal(t, *test.wantReview.State, "COMMENTED")
+								case "APPROVE":
+									assert.Equal(t, *test.wantReview.State, "APPROVED")
+								}
+
+								w.WriteHeader(http.StatusOK)
+							}),
+						),
+					},
+					test.clientOptions...,
+				),
+				func(w http.ResponseWriter, req *http.Request) {
+					query := utils.MinifyQuery(utils.MustRead(req.Body))
+					switch query {
+					case utils.MinifyQuery(mockedAuthenticatedUserLoginGQLQuery):
+						utils.MustWrite(w, mockedAuthenticatedUserLoginGQLQueryBody)
+					case utils.MinifyQuery(mockedLatestReviewFromReviewerGQLQuery):
+						utils.MustWrite(w, test.mockedLatestReviewFromReviewerGQLQueryBody)
+					case utils.MinifyQuery(mockedLastPullRequestPushDateGQLQuery):
+						utils.MustWrite(w, test.mockedLastPullRequestPushDateGQLQueryBody)
+					}
+				},
+				aladino.MockBuiltIns(),
+				nil,
+			)
+
+			args := []aladino.Value{aladino.BuildStringValue(test.inputReviewEvent), aladino.BuildStringValue(test.inputReviewBody)}
+			gotErr := review(mockedEnv, args)
+
+			assert.Equal(t, test.wantErr, gotErr)
+		})
+	}
 }

@@ -12,6 +12,7 @@ import (
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
+	"github.com/reviewpad/reviewpad/v3/utils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -115,7 +116,7 @@ func TestWorkflowStatus_WhenCheckRunNotFoundDueToEmptyCheckRuns(t *testing.T) {
 			mock.WithRequestMatchHandler(
 				mock.GetReposCommitsCheckRunsByOwnerByRepoByRef,
 				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					w.Write(mock.MustMarshal(emptyCheckRuns))
+					utils.MustWriteBytes(w, mock.MustMarshal(emptyCheckRuns))
 				}),
 			),
 		},
@@ -156,7 +157,7 @@ func TestWorkflowStatus_WhenCheckRunIsMissingInNonEmptyCheckRuns(t *testing.T) {
 			mock.WithRequestMatchHandler(
 				mock.GetReposCommitsCheckRunsByOwnerByRepoByRef,
 				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					w.Write(mock.MustMarshal(emptyCheckRuns))
+					utils.MustWriteBytes(w, mock.MustMarshal(emptyCheckRuns))
 				}),
 			),
 		},
@@ -204,7 +205,7 @@ func TestWorkflowStatus_WhenEventIsCompleted(t *testing.T) {
 			mock.WithRequestMatchHandler(
 				mock.GetReposCommitsCheckRunsByOwnerByRepoByRef,
 				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					w.Write(mock.MustMarshal(checkRuns))
+					utils.MustWriteBytes(w, mock.MustMarshal(checkRuns))
 				}),
 			),
 		},
@@ -250,7 +251,7 @@ func TestWorkflowStatus_WhenEventIsNotCompleted(t *testing.T) {
 			mock.WithRequestMatchHandler(
 				mock.GetReposCommitsCheckRunsByOwnerByRepoByRef,
 				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					w.Write(mock.MustMarshal(checkRuns))
+					utils.MustWriteBytes(w, mock.MustMarshal(checkRuns))
 				}),
 			),
 		},

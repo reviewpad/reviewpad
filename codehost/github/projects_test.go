@@ -12,7 +12,6 @@ import (
 
 	host "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
-	plugins_aladino_actions "github.com/reviewpad/reviewpad/v3/plugins/aladino/actions"
 	"github.com/reviewpad/reviewpad/v3/utils"
 	"github.com/stretchr/testify/assert"
 )
@@ -69,10 +68,10 @@ func TestGetProjectV2ByName_WhenProjectNotFound(t *testing.T) {
 	mockedGithubClient := aladino.MockDefaultGithubClient(
 		nil,
 		func(res http.ResponseWriter, req *http.Request) {
-			query := utils.MinifyQuery(aladino.MustRead(req.Body))
+			query := utils.MinifyQuery(utils.MustRead(req.Body))
 			switch query {
 			case utils.MinifyQuery(mockedGetProjectByNameQuery):
-				aladino.MustWrite(
+				utils.MustWrite(
 					res,
 					mockedGetProjectByNameQueryBody,
 				)
@@ -87,7 +86,7 @@ func TestGetProjectV2ByName_WhenProjectNotFound(t *testing.T) {
 
 	project, err := mockedGithubClient.GetProjectV2ByName(context.Background(), mockOwner, mockRepo, mockProjectName)
 
-	assert.Equal(t, plugins_aladino_actions.ErrProjectNotFound, err)
+	assert.Equal(t, host.ErrProjectNotFound, err)
 
 	assert.Nil(t, project)
 }
@@ -124,10 +123,10 @@ func TestGetProjectV2ByName_WhenProjectFound(t *testing.T) {
 	mockedGithubClient := aladino.MockDefaultGithubClient(
 		nil,
 		func(res http.ResponseWriter, req *http.Request) {
-			query := utils.MinifyQuery(aladino.MustRead(req.Body))
+			query := utils.MinifyQuery(utils.MustRead(req.Body))
 			switch query {
 			case utils.MinifyQuery(mockedGetProjectByNameQuery):
-				aladino.MustWrite(
+				utils.MustWrite(
 					res,
 					mockedGetProjectByNameQueryBody,
 				)
@@ -179,6 +178,7 @@ func TestGetProjectFieldsByProjectNumber_WhenProjectNotFound(t *testing.T) {
                             endCursor
                         },
                         nodes{
+                            __typename,
                             ... on ProjectV2SingleSelectField {
                                 id,
                                 name,
@@ -186,6 +186,11 @@ func TestGetProjectFieldsByProjectNumber_WhenProjectNotFound(t *testing.T) {
                                     id,
                                     name
                                 }
+                            },
+                            ... on ProjectV2Field {
+                                id,
+                                name,
+                                dataType
                             }
                         }
                     }
@@ -209,10 +214,11 @@ func TestGetProjectFieldsByProjectNumber_WhenProjectNotFound(t *testing.T) {
 	mockedGithubClient := aladino.MockDefaultGithubClient(
 		nil,
 		func(res http.ResponseWriter, req *http.Request) {
-			query := utils.MinifyQuery(aladino.MustRead(req.Body))
+			query := utils.MinifyQuery(utils.MustRead(req.Body))
+			wantedQuery := utils.MinifyQuery(mockedGetProjectByNameQuery)
 			switch query {
-			case utils.MinifyQuery(mockedGetProjectByNameQuery):
-				aladino.MustWrite(
+			case wantedQuery:
+				utils.MustWrite(
 					res,
 					mockedGetProjectByNameQueryBody,
 				)
@@ -228,7 +234,7 @@ func TestGetProjectFieldsByProjectNumber_WhenProjectNotFound(t *testing.T) {
 
 	project, err := mockedGithubClient.GetProjectFieldsByProjectNumber(context.Background(), mockOwner, mockRepo, uint64(mockProjectNumber), mockRetryCount)
 
-	assert.Equal(t, plugins_aladino_actions.ErrProjectNotFound, err)
+	assert.Equal(t, host.ErrProjectNotFound, err)
 
 	assert.Nil(t, project)
 
@@ -245,6 +251,7 @@ func TestGetProjectFieldsByProjectNumber_WhenRetrySuccessful(t *testing.T) {
                             endCursor
                         },
                         nodes{
+                            __typename,
                             ... on ProjectV2SingleSelectField {
                                 id,
                                 name,
@@ -252,6 +259,11 @@ func TestGetProjectFieldsByProjectNumber_WhenRetrySuccessful(t *testing.T) {
                                     id,
                                     name
                                 }
+                            },
+                            ... on ProjectV2Field {
+                                id,
+                                name,
+                                dataType
                             }
                         }
                     }
@@ -291,18 +303,18 @@ func TestGetProjectFieldsByProjectNumber_WhenRetrySuccessful(t *testing.T) {
 	mockedGithubClient := aladino.MockDefaultGithubClient(
 		nil,
 		func(res http.ResponseWriter, req *http.Request) {
-			query := utils.MinifyQuery(aladino.MustRead(req.Body))
+			query := utils.MinifyQuery(utils.MustRead(req.Body))
 			switch query {
 			case utils.MinifyQuery(mockedGetProjectByNameQuery):
 				if currentTry == 2 {
-					aladino.MustWrite(
+					utils.MustWrite(
 						res,
 						mockedGetProjectFieldsQueryBody,
 					)
 					return
 				}
 				currentTry++
-				aladino.MustWrite(res, "")
+				utils.MustWrite(res, "")
 			}
 		},
 	)
@@ -361,10 +373,10 @@ func TestGetProjectV2ByName_WhenSeveralProjectsFound(t *testing.T) {
 	mockedGithubClient := aladino.MockDefaultGithubClient(
 		nil,
 		func(res http.ResponseWriter, req *http.Request) {
-			query := utils.MinifyQuery(aladino.MustRead(req.Body))
+			query := utils.MinifyQuery(utils.MustRead(req.Body))
 			switch query {
 			case utils.MinifyQuery(mockedGetProjectByNameQuery):
-				aladino.MustWrite(
+				utils.MustWrite(
 					res,
 					mockedGetProjectByNameQueryBody,
 				)
