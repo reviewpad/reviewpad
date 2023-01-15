@@ -403,6 +403,7 @@ func (r *ReviewpadFile) extend(o *ReviewpadFile) {
 	r.appendRules(o)
 	r.appendWorkflows(o)
 	r.appendPipelines(o)
+	r.appendRecipes(o)
 }
 
 func findGroup(groups []PadGroup, name string) (*PadGroup, bool) {
