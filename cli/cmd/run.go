@@ -109,7 +109,7 @@ func run() error {
 	}
 
 	buf := bytes.NewBuffer(data)
-	file, err := reviewpad.LoadReviewpadFile(ctx, log, gitHubClient, buf)
+	file, err := reviewpad.Load(ctx, log, gitHubClient, buf)
 	if err != nil {
 		return fmt.Errorf("error running reviewpad team edition. Details %v", err.Error())
 	}

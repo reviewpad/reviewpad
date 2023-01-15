@@ -36,7 +36,7 @@ func logErrorAndCollect(logger *logrus.Entry, collector collector.Collector, mes
 	}
 }
 
-func LoadReviewpadFile(ctx context.Context, log *logrus.Entry, githubClient *gh.GithubClient, buf *bytes.Buffer) (*engine.ReviewpadFile, error) {
+func Load(ctx context.Context, log *logrus.Entry, githubClient *gh.GithubClient, buf *bytes.Buffer) (*engine.ReviewpadFile, error) {
 	file, err := engine.Load(ctx, githubClient, buf.Bytes())
 	if err != nil {
 		return nil, err
