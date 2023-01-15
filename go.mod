@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/aws/aws-secretsmanager-caching-go v1.1.0
-	github.com/bmatcuk/doublestar/v4 v4.4.0
+	github.com/bmatcuk/doublestar/v4 v4.6.0
 	github.com/bradleyfalzon/ghinstallation/v2 v2.1.0
 	github.com/dukex/mixpanel v1.0.1
 	github.com/golang/mock v1.6.0
