@@ -209,7 +209,7 @@ type ReviewpadFile struct {
 	Labels         map[string]PadLabel `yaml:"labels"`
 	Workflows      []PadWorkflow       `yaml:"workflows"`
 	Pipelines      []PadPipeline       `yaml:"pipelines"`
-	Recipes        map[string]bool     `yaml:"recipes"`
+	Recipes        map[string]*bool    `yaml:"recipes"`
 }
 
 type PadPipeline struct {
@@ -369,7 +369,7 @@ func (r *ReviewpadFile) appendPipelines(o *ReviewpadFile) {
 
 func (r *ReviewpadFile) appendRecipes(o *ReviewpadFile) {
 	if r.Recipes == nil {
-		r.Recipes = make(map[string]bool)
+		r.Recipes = make(map[string]*bool)
 	}
 
 	for name, active := range o.Recipes {

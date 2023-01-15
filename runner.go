@@ -194,7 +194,7 @@ func RunReviewpadFile(
 	// TODO: this should be done in the interpreter
 	cookbook := cookbook.NewCookbook(logger, gitHubClient)
 	for name, active := range reviewpadFile.Recipes {
-		if active {
+		if *active {
 			recipe, errRecipe := cookbook.GetRecipe(name)
 			if errRecipe != nil {
 				logErrorAndCollect(logger, collector, "error getting recipe", err)
