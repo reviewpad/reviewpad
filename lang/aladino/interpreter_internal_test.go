@@ -331,7 +331,7 @@ func TestExecProgram_WhenExecStatementFails(t *testing.T) {
 
 	statement := engine.BuildStatement("$action()")
 	statements := []*engine.Statement{statement}
-	program := engine.BuildProgram(statements, false)
+	program := engine.BuildProgram(statements)
 
 	exitStatus, err := mockedInterpreter.ExecProgram(program)
 
@@ -378,7 +378,7 @@ func TestExecProgram(t *testing.T) {
 	statCode := "$addLabel(\"test\")"
 
 	statement := engine.BuildStatement(statCode)
-	program := engine.BuildProgram([]*engine.Statement{statement}, false)
+	program := engine.BuildProgram([]*engine.Statement{statement})
 
 	exitStatus, err := mockedInterpreter.ExecProgram(program)
 
@@ -1002,84 +1002,6 @@ func TestReportMetric(t *testing.T) {
 
 			commentCreated = false
 			commentUpdated = false
-		})
-	}
-}
-
-func TestCommandErrorComment(t *testing.T) {
-	var successfullyCommented bool
-	tests := map[string]struct {
-		clientOptions             []mock.MockBackendOption
-		eventPayload              *github.IssueCommentEvent
-		commandError              error
-		wantError                 error
-		wantSuccessfullyCommented bool
-	}{
-		"when create comment fails": {
-			clientOptions: []mock.MockBackendOption{
-				mock.WithRequestMatchHandler(
-					mock.PostReposIssuesCommentsByOwnerByRepoByIssueNumber,
-					http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-						w.WriteHeader(http.StatusInternalServerError)
-						utils.MustWrite(w, `{"message": "internal error"}`)
-					}),
-				),
-			},
-			eventPayload: &github.IssueCommentEvent{
-				Comment: &github.IssueComment{
-					Body: github.String("/reviewpad assign-reviewers testuser"),
-				},
-				Sender: &github.User{
-					Login: github.String("test"),
-				},
-			},
-			commandError: errors.New("unexpected error happened running command"),
-			wantError: &github.ErrorResponse{
-				Message: "internal error",
-			},
-			wantSuccessfullyCommented: false,
-		},
-		"when comment is created successfully": {
-			clientOptions: []mock.MockBackendOption{
-				mock.WithRequestMatchHandler(
-					mock.PostReposIssuesCommentsByOwnerByRepoByIssueNumber,
-					http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-						successfullyCommented = true
-					}),
-				),
-			},
-			eventPayload: &github.IssueCommentEvent{
-				Comment: &github.IssueComment{
-					Body: github.String("/reviewpad assign-reviewers testuser"),
-				},
-				Sender: &github.User{
-					Login: github.String("test"),
-				},
-			},
-			commandError: &github.ErrorResponse{
-				Errors: []github.Error{
-					{
-						Message: "github user not found",
-					},
-				},
-			},
-			wantSuccessfullyCommented: true,
-		},
-	}
-
-	for name, test := range tests {
-		t.Run(name, func(t *testing.T) {
-			successfullyCommented = false
-			env := MockDefaultEnvWithTargetEntity(t, test.clientOptions, nil, nil, test.eventPayload, DefaultMockTargetEntity)
-			err := commentCommandError(env, test.commandError)
-
-			githubError := &github.ErrorResponse{}
-			if errors.As(err, &githubError) {
-				githubError.Response = nil
-			}
-
-			assert.Equal(t, test.wantError, err)
-			assert.Equal(t, test.wantSuccessfullyCommented, successfullyCommented)
 		})
 	}
 }

@@ -9,91 +9,62 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/google/go-github/v48/github"
 	"github.com/mattn/go-shellwords"
-	"github.com/reviewpad/cookbook"
-	cookbookGithubCodehost "github.com/reviewpad/cookbook/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/engine/commands"
+	"github.com/sirupsen/logrus"
 )
-
-func CollectError(env *Env, err error) {
-	var errMsg string
-	ghError, isGitHubError := err.(*github.ErrorResponse)
-
-	if isGitHubError {
-		errMsg = ghError.Message
-	} else {
-		errMsg = err.Error()
-	}
-
-	collectedData := map[string]interface{}{
-		"details": errMsg,
-	}
-
-	if err = env.Collector.Collect("Error", collectedData); err != nil {
-		env.Logger.Error(err.Error())
-	}
-}
 
 // EvalCommand generates the program to be executed when a command is received
 func EvalCommand(command string, env *Env) (*Program, error) {
-	program := BuildProgram(make([]*Statement, 0), true)
+	program := BuildProgram(make([]*Statement, 0))
 
-	action, err := processCommand(env, command)
+	out := new(bytes.Buffer)
+	command = strings.TrimPrefix(command, "/reviewpad")
+
+	args, err := shellwords.Parse(command)
 	if err != nil {
 		return nil, err
 	}
 
-	program.append([]string{action})
+	root := commands.NewCommands(out, args)
+
+	err = root.Execute()
+	if err != nil {
+		return nil, err
+	}
+
+	program.append([]string{out.String()})
 
 	return program, nil
 }
 
-// EvalConfigurationFile: main function that generates the program to be executed
+// EvalConfigurationFile generates the program to be executed
 // Pre-condition Lint(file) == nil
 func EvalConfigurationFile(file *ReviewpadFile, env *Env) (*Program, error) {
 	log := env.Logger
 	interpreter := env.Interpreter
 
-	collectedData := map[string]interface{}{
-		"project":        fmt.Sprintf(env.TargetEntity.Owner + "/" + env.TargetEntity.Repo),
-		"version":        file.Version,
-		"edition":        file.Edition,
-		"mode":           file.Mode,
-		"ignoreErrors":   file.IgnoreErrors,
-		"metricsOnMerge": file.MetricsOnMerge,
-		"totalImports":   len(file.Imports),
-		"totalExtends":   len(file.Extends),
-		"totalGroups":    len(file.Groups),
-		"totalLabels":    len(file.Labels),
-		"totalRules":     len(file.Rules),
-		"totalWorkflows": len(file.Workflows),
-		"totalPipelines": len(file.Pipelines),
-		"totalRecipes":   len(file.Recipes),
-	}
-
-	if err := env.Collector.Collect("Trigger Analysis", collectedData); err != nil {
-		log.Errorf("error collecting trigger analysis: %v\n", err)
-	}
-
 	rules := make(map[string]PadRule)
 
-	log.WithField("reviewpad_details", map[string]interface{}{
-		"project":        fmt.Sprintf(env.TargetEntity.Owner + "/" + env.TargetEntity.Repo),
-		"version":        file.Version,
-		"edition":        file.Edition,
-		"mode":           file.Mode,
-		"ignoreErrors":   file.IgnoreErrors,
-		"metricsOnMerge": file.MetricsOnMerge,
-		"totalImports":   len(file.Imports),
-		"totalExtends":   len(file.Extends),
-		"totalGroups":    len(file.Groups),
-		"totalLabels":    len(file.Labels),
-		"totalRules":     len(file.Rules),
-		"totalWorkflows": len(file.Workflows),
-		"totalPipelines": len(file.Pipelines),
-		"totalRecipes":   len(file.Recipes),
-	}).WithField("reviewpad_file", file).Debugln("reviewpad file")
+	log.WithFields(logrus.Fields{
+		"reviewpad_file": file,
+		"reviewpad_details": map[string]interface{}{
+			"project":        fmt.Sprintf(env.TargetEntity.Owner + "/" + env.TargetEntity.Repo),
+			"version":        file.Version,
+			"edition":        file.Edition,
+			"mode":           file.Mode,
+			"ignoreErrors":   file.IgnoreErrors,
+			"metricsOnMerge": file.MetricsOnMerge,
+			"totalImports":   len(file.Imports),
+			"totalExtends":   len(file.Extends),
+			"totalGroups":    len(file.Groups),
+			"totalLabels":    len(file.Labels),
+			"totalRules":     len(file.Rules),
+			"totalWorkflows": len(file.Workflows),
+			"totalPipelines": len(file.Pipelines),
+			"totalRecipes":   len(file.Recipes),
+		},
+	}).Debugln("reviewpad file")
 
 	// process labels
 	for labelKeyName, label := range file.Labels {
@@ -114,21 +85,18 @@ func EvalConfigurationFile(file *ReviewpadFile, env *Env) (*Program, error) {
 			if ghLabel != nil {
 				labelHasUpdates, errCheckUpdates := checkLabelHasUpdates(env, &label, ghLabel)
 				if errCheckUpdates != nil {
-					CollectError(env, errCheckUpdates)
 					return nil, errCheckUpdates
 				}
 
 				if labelHasUpdates {
 					err = updateLabel(env, &labelName, &label)
 					if err != nil {
-						CollectError(env, err)
 						return nil, err
 					}
 				}
 			} else {
 				err = createLabel(env, &labelName, &label)
 				if err != nil {
-					CollectError(env, err)
 					return nil, err
 				}
 			}
@@ -151,19 +119,17 @@ func EvalConfigurationFile(file *ReviewpadFile, env *Env) (*Program, error) {
 			transformAladinoExpression(group.Where),
 		)
 		if err != nil {
-			CollectError(env, err)
 			return nil, err
 		}
 	}
 
 	// a program is a list of statements to be executed based on the command, workflow rules and actions.
-	program := BuildProgram(make([]*Statement, 0), false)
+	program := BuildProgram(make([]*Statement, 0))
 
 	// process rules
 	for _, rule := range file.Rules {
 		err := interpreter.ProcessRule(rule.Name, rule.Spec)
 		if err != nil {
-			CollectError(env, err)
 			return nil, err
 		}
 		rules[rule.Name] = rule
@@ -172,6 +138,7 @@ func EvalConfigurationFile(file *ReviewpadFile, env *Env) (*Program, error) {
 	// triggeredExclusiveWorkflow is a control variable to denote if a workflow `always-run: false` has been triggered.
 	triggeredExclusiveWorkflow := false
 
+	// process workflows
 	for _, workflow := range file.Workflows {
 		log.Infof("evaluating workflow '%v'", workflow.Name)
 		workflowLog := log.WithField("workflow", workflow.Name)
@@ -203,7 +170,6 @@ func EvalConfigurationFile(file *ReviewpadFile, env *Env) (*Program, error) {
 
 			activated, err := interpreter.EvalExpr(ruleDefinition.Kind, ruleDefinition.Spec)
 			if err != nil {
-				CollectError(env, err)
 				return nil, err
 			}
 
@@ -230,6 +196,7 @@ func EvalConfigurationFile(file *ReviewpadFile, env *Env) (*Program, error) {
 		}
 	}
 
+	// process pipelines
 	for _, pipeline := range file.Pipelines {
 		log.Infof("evaluating pipeline '%v':", pipeline.Name)
 		pipelineLog := log.WithField("pipeline", pipeline.Name)
@@ -239,7 +206,6 @@ func EvalConfigurationFile(file *ReviewpadFile, env *Env) (*Program, error) {
 		if !activated {
 			activated, err = interpreter.EvalExpr("patch", pipeline.Trigger)
 			if err != nil {
-				CollectError(env, err)
 				return nil, err
 			}
 		}
@@ -254,7 +220,6 @@ func EvalConfigurationFile(file *ReviewpadFile, env *Env) (*Program, error) {
 
 				isDone, err := interpreter.EvalExpr("patch", stage.Until)
 				if err != nil {
-					CollectError(env, err)
 					return nil, err
 				}
 
@@ -266,49 +231,5 @@ func EvalConfigurationFile(file *ReviewpadFile, env *Env) (*Program, error) {
 		}
 	}
 
-	for name, active := range file.Recipes {
-		if active {
-			cookbookCodehost := cookbookGithubCodehost.New(env.GithubClient.GetClientREST(), env.GithubClient.GetClientGraphQL())
-
-			recipe, err := cookbook.GetRecipeByName(name, *env.TargetEntity, cookbookCodehost, env.Collector)
-			if err != nil {
-				CollectError(env, err)
-				return nil, err
-			}
-
-			if err := recipe.Run(env.Ctx); err != nil {
-				CollectError(env, err)
-				return nil, err
-			}
-		}
-	}
-
 	return program, nil
-}
-
-func processCommand(env *Env, comment string) (string, error) {
-	out := new(bytes.Buffer)
-	comment = strings.TrimPrefix(comment, "/reviewpad")
-
-	args, err := shellwords.Parse(comment)
-	if err != nil {
-		return "", err
-	}
-
-	root := commands.NewCommands(out, args)
-
-	err = root.Execute()
-	if err != nil {
-		comment := fmt.Sprintf("```\n🚫 error\n\n%s```", err.Error())
-
-		if _, _, errCreateComment := env.GithubClient.CreateComment(env.Ctx, env.TargetEntity.Owner, env.TargetEntity.Repo, env.TargetEntity.Number, &github.IssueComment{
-			Body: github.String(comment),
-		}); errCreateComment != nil {
-			return "", errCreateComment
-		}
-
-		return "", err
-	}
-
-	return out.String(), nil
 }

@@ -367,6 +367,16 @@ func (r *ReviewpadFile) appendPipelines(o *ReviewpadFile) {
 	r.Pipelines = append(updatedPipelines, o.Pipelines...)
 }
 
+func (r *ReviewpadFile) appendRecipes(o *ReviewpadFile) {
+	if r.Recipes == nil {
+		r.Recipes = make(map[string]bool)
+	}
+
+	for name, active := range o.Recipes {
+		r.Recipes[name] = active
+	}
+}
+
 func (r *ReviewpadFile) extend(o *ReviewpadFile) {
 	if o.Version != "" {
 		r.Version = o.Version
@@ -393,16 +403,6 @@ func (r *ReviewpadFile) extend(o *ReviewpadFile) {
 	r.appendRules(o)
 	r.appendWorkflows(o)
 	r.appendPipelines(o)
-}
-
-func (r *ReviewpadFile) appendRecipes(o *ReviewpadFile) {
-	if r.Recipes == nil {
-		r.Recipes = make(map[string]bool)
-	}
-
-	for name, active := range o.Recipes {
-		r.Recipes[name] = active
-	}
 }
 
 func findGroup(groups []PadGroup, name string) (*PadGroup, bool) {

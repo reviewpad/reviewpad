@@ -19,6 +19,7 @@ require (
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/ohler55/ojg v1.15.0
 	github.com/reviewpad/api/go v0.0.0-20220830170955-4342a58c9339
+	github.com/reviewpad/cookbook v0.0.0-20230115100923-db30d829dca1
 	github.com/reviewpad/go-conventionalcommits v0.10.0
 	github.com/shurcooL/githubv4 v0.0.0-20221203213311-70889c5dac07
 	github.com/sirupsen/logrus v1.9.0
@@ -42,16 +43,15 @@ require (
 	github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/reviewpad/cookbook v0.0.0-20221127102634-fca2c5764209 // indirect
 	github.com/rogpeppe/go-internal v1.9.0 // indirect
 	github.com/shurcooL/graphql v0.0.0-20220606043923-3cf50f8a0a29 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
-	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5 // indirect
-	golang.org/x/exp v0.0.0-20221114191408-850992195362 // indirect
+	golang.org/x/crypto v0.3.0 // indirect
+	golang.org/x/exp v0.0.0-20230113213754-f9f960f08ad4 // indirect
 	golang.org/x/net v0.3.0 // indirect
 	golang.org/x/sys v0.3.0 // indirect
 	golang.org/x/text v0.5.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
-	google.golang.org/genproto v0.0.0-20220815135757-37a418bb8959 // indirect
+	google.golang.org/genproto v0.0.0-20221118155620-16455021b5e6 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
 )

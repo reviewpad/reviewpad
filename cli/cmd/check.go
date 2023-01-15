@@ -40,7 +40,7 @@ var checkCmd = &cobra.Command{
 		}
 
 		buf := bytes.NewBuffer(data)
-		reviewpadFile, err := reviewpad.Load(ctx, log, githubClient, buf)
+		reviewpadFile, err := reviewpad.LoadReviewpadFile(ctx, log, githubClient, buf)
 		if err != nil {
 			return err
 		}
