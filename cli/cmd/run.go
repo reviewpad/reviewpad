@@ -27,7 +27,7 @@ func init() {
 	runCmd.Flags().BoolVarP(&safeModeRun, "safe-mode-run", "s", false, "Safe mode")
 	runCmd.Flags().StringVarP(&gitHubUrl, "github-url", "u", "", "GitHub pull request or issue url")
 	runCmd.Flags().StringVarP(&gitHubToken, "github-token", "t", "", "GitHub personal access token")
-	runCmd.Flags().StringVarP(&eventFilePath, "event-payload", "e", "", "File path to github action event in JSON format")
+	runCmd.Flags().StringVarP(&eventFilePath, "event-payload", "e", "", "File path to github event in JSON format")
 	runCmd.Flags().StringVarP(&mixpanelToken, "mixpanel-token", "m", "", "Mixpanel token")
 	runCmd.Flags().StringVarP(&logLevel, "log-level", "l", "debug", "Log level")
 
@@ -36,6 +36,10 @@ func init() {
 	}
 
 	if err := runCmd.MarkFlagRequired("github-token"); err != nil {
+		panic(err)
+	}
+
+	if err := runCmd.MarkFlagRequired("event-payload"); err != nil {
 		panic(err)
 	}
 }

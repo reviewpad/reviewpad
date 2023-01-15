@@ -6,11 +6,9 @@ package aladino
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"strings"
 
-	"github.com/google/go-github/v48/github"
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v3/collector"
@@ -115,12 +113,6 @@ func (i *Interpreter) ExecProgram(program *engine.Program) (engine.ExitStatus, e
 	for _, statement := range program.GetProgramStatements() {
 		err := i.ExecStatement(statement)
 		if err != nil {
-			if program.IsFromCommand {
-				if commentErr := commentCommandError(i.Env, err); commentErr != nil {
-					return engine.ExitStatusFailure, commentErr
-				}
-				return engine.ExitStatusSuccess, nil
-			}
 			return engine.ExitStatusFailure, err
 		}
 
@@ -249,40 +241,6 @@ func (i *Interpreter) ReportMetrics() error {
 	}
 
 	return nil
-}
-
-func commentCommandError(env Env, commandErr error) error {
-	targetEntity := env.GetTarget().GetTargetEntity()
-	eventDetails := env.GetEventPayload().(*github.IssueCommentEvent)
-	owner := targetEntity.Owner
-	repo := targetEntity.Repo
-	number := targetEntity.Number
-	ctx := env.GetCtx()
-
-	body := new(strings.Builder)
-	gitHubError := &github.ErrorResponse{}
-
-	body.WriteString(fmt.Sprintf("> %s\n\n", eventDetails.GetComment().GetBody()))
-	body.WriteString(fmt.Sprintf("@%s an error occurred running your command\n", eventDetails.GetSender().GetLogin()))
-	body.WriteString("\n*Errors:*\n")
-
-	if errors.As(commandErr, &gitHubError) {
-		if len(gitHubError.Errors) > 0 {
-			for _, e := range gitHubError.Errors {
-				body.WriteString(fmt.Sprintf("- %s\n", e.Message))
-			}
-		} else {
-			body.WriteString(fmt.Sprintf("- %s\n", gitHubError.Message))
-		}
-	} else {
-		body.WriteString(fmt.Sprintf("- %s\n", commandErr.Error()))
-	}
-
-	_, _, createCommentErr := env.GetGithubClient().CreateComment(ctx, owner, repo, number, &github.IssueComment{
-		Body: github.String(body.String()),
-	})
-
-	return createCommentErr
 }
 
 func NewInterpreter(

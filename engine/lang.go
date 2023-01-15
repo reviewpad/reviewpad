@@ -4,7 +4,11 @@
 
 package engine
 
-import "github.com/reviewpad/reviewpad/v3/handler"
+import (
+	"reflect"
+
+	"github.com/reviewpad/reviewpad/v3/handler"
+)
 
 const (
 	PROFESSIONAL_EDITION string = "professional"
@@ -205,6 +209,7 @@ type ReviewpadFile struct {
 	Labels         map[string]PadLabel `yaml:"labels"`
 	Workflows      []PadWorkflow       `yaml:"workflows"`
 	Pipelines      []PadPipeline       `yaml:"pipelines"`
+	Recipes        map[string]*bool    `yaml:"recipes"`
 }
 
 type PadPipeline struct {
@@ -301,7 +306,7 @@ func (r *ReviewpadFile) equals(o *ReviewpadFile) bool {
 		}
 	}
 
-	return true
+	return reflect.DeepEqual(r.Recipes, o.Recipes)
 }
 
 func (r *ReviewpadFile) appendLabels(o *ReviewpadFile) {
@@ -362,6 +367,16 @@ func (r *ReviewpadFile) appendPipelines(o *ReviewpadFile) {
 	r.Pipelines = append(updatedPipelines, o.Pipelines...)
 }
 
+func (r *ReviewpadFile) appendRecipes(o *ReviewpadFile) {
+	if r.Recipes == nil {
+		r.Recipes = make(map[string]*bool)
+	}
+
+	for name, active := range o.Recipes {
+		r.Recipes[name] = active
+	}
+}
+
 func (r *ReviewpadFile) extend(o *ReviewpadFile) {
 	if o.Version != "" {
 		r.Version = o.Version
@@ -388,6 +403,7 @@ func (r *ReviewpadFile) extend(o *ReviewpadFile) {
 	r.appendRules(o)
 	r.appendWorkflows(o)
 	r.appendPipelines(o)
+	r.appendRecipes(o)
 }
 
 func findGroup(groups []PadGroup, name string) (*PadGroup, bool) {

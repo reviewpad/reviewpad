@@ -83,6 +83,7 @@ func TestLoadWithAST(t *testing.T) {
 		Version:        "reviewpad.com/v3.x",
 		Edition:        "enterprise",
 		Mode:           "verbose",
+		Recipes:        map[string]*bool{},
 		IgnoreErrors:   &noIgnoreErrors,
 		MetricsOnMerge: &noMetricsOnMerge,
 		Extends:        []string{},

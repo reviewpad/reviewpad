@@ -7,6 +7,7 @@ package engine
 import (
 	"testing"
 
+	"github.com/google/go-github/v48/github"
 	"github.com/jinzhu/copier"
 	"github.com/stretchr/testify/assert"
 )
@@ -57,6 +58,11 @@ var mockedReviewpadFile = &ReviewpadFile{
 				"$action()",
 			},
 		},
+	},
+	Recipes: map[string]*bool{
+		"size":                 github.Bool(true),
+		"conventional-commits": github.Bool(true),
+		"has-description":      github.Bool(false),
 	},
 }
 
@@ -1356,4 +1362,18 @@ func TestFindRule_WhenRuleDoesNotExists(t *testing.T) {
 
 	assert.False(t, found)
 	assert.Nil(t, gotRule)
+}
+
+func TestEquals_WhenReviewpadFilesHaveDiffRecipes(t *testing.T) {
+	otherReviewpadFile := &ReviewpadFile{}
+	err := copier.Copy(otherReviewpadFile, mockedReviewpadFile)
+
+	otherReviewpadFile.Recipes = map[string]*bool{
+		"size":                 github.Bool(false),
+		"conventional-commits": github.Bool(true),
+		"has-description":      github.Bool(false),
+	}
+
+	assert.Nil(t, err)
+	assert.False(t, mockedReviewpadFile.equals(otherReviewpadFile))
 }

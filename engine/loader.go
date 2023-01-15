@@ -162,6 +162,7 @@ func transform(file *ReviewpadFile) *ReviewpadFile {
 		Labels:         file.Labels,
 		Workflows:      transformedWorkflows,
 		Pipelines:      transformedPipelines,
+		Recipes:        file.Recipes,
 	}
 }
 
@@ -224,6 +225,7 @@ func processImports(file *ReviewpadFile, env *LoadEnv) (*ReviewpadFile, error) {
 		file.appendRules(subTreeFile)
 		file.appendWorkflows(subTreeFile)
 		file.appendPipelines(subTreeFile)
+		file.appendRecipes(subTreeFile)
 	}
 
 	// reset all imports

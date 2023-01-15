@@ -48,3 +48,8 @@ workflows:
       - rule: auto-merge-authored-by-owners
     then:
       - '$merge("merge")'
+
+recipes:
+  size: true
+  reviewers: false
+  assign: true

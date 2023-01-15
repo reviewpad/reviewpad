@@ -20,3 +20,6 @@ workflows:
       - rule: is-medium
     then:
       - '$addLabel("medium")'
+
+recipes:
+  size: true
