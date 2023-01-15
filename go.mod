@@ -21,7 +21,7 @@ require (
 	github.com/reviewpad/api/go v0.0.0-20220830170955-4342a58c9339
 	github.com/reviewpad/cookbook v0.0.0-20230115152126-b91adb1a8e4c
 	github.com/reviewpad/go-conventionalcommits v0.10.0
-	github.com/shurcooL/githubv4 v0.0.0-20221203213311-70889c5dac07
+	github.com/shurcooL/githubv4 v0.0.0-20221229060216-a8d4a561cc93
 	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/cobra v1.6.1
 	github.com/stretchr/testify v1.8.1
