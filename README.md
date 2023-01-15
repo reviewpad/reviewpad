@@ -208,7 +208,7 @@ Add the following to your `.vscode/launch.json`.
                 // GiHub personal access token
                 // https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token
                 "-t=<GIT_HUB_TOKEN>",
-                // Absolute path to JSON file with GitHub event payload (optional)
+                // Absolute path to JSON file with GitHub event
                 "-e=<PATH_TO_EVENT_JSON>"
             ],
             "program": "${workspaceFolder}/cli/main.go"
@@ -216,6 +216,26 @@ Add the following to your `.vscode/launch.json`.
     ]
 }
 ```
+
+For the argument `-e` you case use either a github event from the reviewpad github action run or a github event from the reviewpad github app run.
+
+#### Using the github event from reviewpad github action run
+
+1. Navigate to the logs of the reviewpad github action job run where you wish to copy the event from. [Here's an example](https://github.com/reviewpad/action-stage-test/actions/runs/3915601092/jobs/6693933277).
+2. Once of the logs expand the step `Running reviewpad action`.
+3. Inside that step expand the inner step `Run reviewpad/action@<VERSION>`.
+4. Copy the content inside the property `event`.
+5. Paste the content inside a file (e.g. `my_event.json`) and save it under `cli > debugdata`.
+6. Update the argument `-e` to point to the full path of the file you just created.
+
+#### Using the github event from reviewpad github app run
+
+1. Navigate to the logs of the reviewpad github app run where you wish to copy the event from.
+2. Copy the content inside the property `body`.
+3. This content is an escape JSON string. You need to unescape it using [freeformatter](https://www.freeformatter.com/json-escape.html).
+4. Copy the escaped content and paste it inside a file (e.g. `my_event.json`) and save it under `cli > debugdata`.
+5. In the created file rename the properties `type` to `event_name` and `payload` to `event`.
+6. Update the argument `-e` to point to the full path of the file you just created.
 
 You can then run the debugger by pressing F5.
 
