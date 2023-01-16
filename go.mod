@@ -8,7 +8,8 @@ require (
 	github.com/bradleyfalzon/ghinstallation/v2 v2.1.0
 	github.com/dukex/mixpanel v1.0.1
 	github.com/golang/mock v1.6.0
-	github.com/google/go-github/v48 v48.2.0
+	github.com/google/go-github/v48 v48.1.0
+	github.com/google/go-github/v49 v49.1.0
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/mux v1.8.0
 	github.com/jarcoal/httpmock v1.2.0
