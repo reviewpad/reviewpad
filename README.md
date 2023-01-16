@@ -81,6 +81,7 @@ Before you begin, ensure you have met the following requirements:
 -   [Go](https://golang.org/doc/install) with the minimum version of 1.16.
 -   [goyacc](https://pkg.go.dev/golang.org/x/tools/cmd/goyacc) used to generate Reviewpad Aladino parser (`go install golang.org/x/tools/cmd/goyacc@master`).
 -   [libgit2](https://github.com/libgit2/libgit2) with version v1.2.
+-   To run the tests, Reviewpad requires the environment variable `INPUT_SEMANTIC_SERVICE` to be set. You can do this by running the following command in your terminal: `export INPUT_SEMANTIC_SERVICE="0.0.0.0:3006"`.
 
 ### Compilation
 
