@@ -66,6 +66,8 @@ github.com/mitchellh/mapstructure v1.5.0 h1:jeMsZIYE/09sWLaz43PL7Gy6RuMjD2eJVyua
 github.com/mitchellh/mapstructure v1.5.0/go.mod h1:bFUtVrKA4DC2yAKiSyO/QUcy7e+RRV2QTWOzhPopBRo=
 github.com/ohler55/ojg v1.15.0 h1:Z95FvBiMsMOOGP9Nzv5OVV4ND2KnEMxk0GOS8Kvcahg=
 github.com/ohler55/ojg v1.15.0/go.mod h1:7Ghirupn8NC8hSSDpI0gcjorPxj+vSVIONDWfliHR1k=
+github.com/ohler55/ojg v1.17.2 h1:e8vUJa6l9v9li0T5xqQIDhVFnialk21LA1biXJlu0Rs=
+github.com/ohler55/ojg v1.17.2/go.mod h1:7Ghirupn8NC8hSSDpI0gcjorPxj+vSVIONDWfliHR1k=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/reviewpad/api/go v0.0.0-20220830170955-4342a58c9339 h1:EfrAupkANrNWAEAHUJIitthMlMTBzL3n9/5W/JuZeYw=
