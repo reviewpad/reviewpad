@@ -7,7 +7,7 @@ package github_test
 import (
 	"testing"
 
-	"github.com/google/go-github/v48/github"
+	"github.com/google/go-github/v49/github"
 	host "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/stretchr/testify/assert"
 )

@@ -10,7 +10,7 @@ import (
 	"net/http"
 
 	"github.com/bradleyfalzon/ghinstallation/v2"
-	"github.com/google/go-github/v48/github"
+	"github.com/google/go-github/v49/github"
 	"github.com/shurcooL/githubv4"
 	"golang.org/x/oauth2"
 )
