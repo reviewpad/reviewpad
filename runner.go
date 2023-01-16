@@ -11,10 +11,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/google/go-github/v48/github"
-	"github.com/reviewpad/cookbook"
+	"github.com/google/go-github/v49/github"
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/collector"
+	"github.com/reviewpad/reviewpad/v3/cookbook"
 	"github.com/reviewpad/reviewpad/v3/engine"
 	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"

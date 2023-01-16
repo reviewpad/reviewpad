@@ -7,7 +7,7 @@ package engine
 import (
 	"testing"
 
-	"github.com/google/go-github/v48/github"
+	"github.com/google/go-github/v49/github"
 	"github.com/jinzhu/copier"
 	"github.com/stretchr/testify/assert"
 )

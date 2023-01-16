@@ -4,7 +4,7 @@ import (
 	"errors"
 	"regexp"
 
-	"github.com/google/go-github/v48/github"
+	"github.com/google/go-github/v49/github"
 )
 
 func ValidateUrl(fileUrl string) (*github.PullRequestBranch, string, error) {

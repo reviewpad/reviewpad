@@ -8,7 +8,7 @@ require (
 	github.com/bradleyfalzon/ghinstallation/v2 v2.1.0
 	github.com/dukex/mixpanel v1.0.1
 	github.com/golang/mock v1.6.0
-	github.com/google/go-github/v48 v48.2.0
+	github.com/google/go-github/v49 v49.1.0
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/mux v1.8.0
 	github.com/jarcoal/httpmock v1.2.0
@@ -19,13 +19,13 @@ require (
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/ohler55/ojg v1.17.2
 	github.com/reviewpad/api/go v0.0.0-20220830170955-4342a58c9339
-	github.com/reviewpad/cookbook v0.0.0-20230115152126-b91adb1a8e4c
 	github.com/reviewpad/go-conventionalcommits v0.10.0
 	github.com/shurcooL/githubv4 v0.0.0-20221229060216-a8d4a561cc93
 	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/cobra v1.6.1
 	github.com/stretchr/testify v1.8.1
 	github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80
+	golang.org/x/exp v0.0.0-20230116083435-1de6713980de
 	golang.org/x/oauth2 v0.4.0
 	google.golang.org/grpc v1.51.0
 	gopkg.in/yaml.v3 v3.0.1
@@ -47,7 +47,6 @@ require (
 	github.com/shurcooL/graphql v0.0.0-20220606043923-3cf50f8a0a29 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	golang.org/x/crypto v0.5.0 // indirect
-	golang.org/x/exp v0.0.0-20230116083435-1de6713980de // indirect
 	golang.org/x/net v0.5.0 // indirect
 	golang.org/x/sys v0.4.0 // indirect
 	golang.org/x/text v0.6.0 // indirect

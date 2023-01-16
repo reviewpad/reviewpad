@@ -8,7 +8,7 @@ import (
 	"context"
 	"io"
 
-	"github.com/google/go-github/v48/github"
+	"github.com/google/go-github/v49/github"
 )
 
 func (c *GithubClient) GetRepositoryBranch(ctx context.Context, owner string, repo string, branch string, followRedirects bool) (*github.Branch, *github.Response, error) {
