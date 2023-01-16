@@ -31,7 +31,7 @@ func AssignRandomReviewerCmd() *cobra.Command {
 }
 
 func AssignRandomReviewer(cmd *cobra.Command, args []string) error {
-	action := "$assignReviewer()"
+	action := "$assignRandomReviewer()"
 
 	cmd.Print(action)
 
