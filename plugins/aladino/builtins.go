@@ -141,6 +141,7 @@ func PluginBuiltInsWithConfig(config *PluginConfig) *aladino.BuiltIns {
 			"commitLint":           actions.CommitLint(),
 			"deleteHeadBranch":     actions.DeleteHeadBranch(),
 			"disableActions":       actions.DisableActions(),
+			"dryRun":               actions.DryRun(),
 			"error":                actions.ErrorMsg(),
 			"fail":                 actions.Fail(),
 			"info":                 actions.Info(),
