@@ -119,6 +119,7 @@ func TestIntegration(t *testing.T) {
 		createPullRequestInput githubv4.CreatePullRequestInput
 		updatePullRequestInput githubv4.UpdatePullRequestInput
 		reviewpadFile          *engine.ReviewpadFile
+		wantErr                error
 	}{
 		"kitchen-sink": {
 			createPullRequestInput: githubv4.CreatePullRequestInput{
@@ -203,7 +204,7 @@ func TestIntegration(t *testing.T) {
 			}
 
 			_, _, err := reviewpad.Run(ctx, logger, githubClient, collector, targetEntity, eventDetails, nil, test.reviewpadFile, false, false)
-			assert.Nil(err)
+			assert.Equal(test.wantErr, err)
 		})
 	}
 }

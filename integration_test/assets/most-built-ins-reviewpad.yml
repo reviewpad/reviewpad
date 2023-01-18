@@ -138,19 +138,19 @@ workflows:
     then:
       - $addLabel("is-binary")
 
-  - name: is-draft
-    always-run: true
-    if:
-      - $isDraft()
-    then:
-      - $addLabel("is-draft")
-
   - name: is-linked-to-project
     always-run: true
     if:
       - '!$isLinkedToProject("integration test project")'
     then:
       - $addToProject("integration test project", "todo")
+
+  - name: is-draft
+    always-run: true
+    if:
+      - $isDraft()
+    then:
+      - $setProjectField("integration test project", "status", "In Progress")
 
   - name: review
     always-run: true
