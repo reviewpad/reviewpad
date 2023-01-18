@@ -1,0 +1,218 @@
+api-version: reviewpad.com/v3.x
+
+labels:
+  small:
+    color: "#294b69"
+  medium:
+    color: "#a8c3f7"
+  large:
+    color: "#8a2138"
+
+workflows:
+  - name: add-label-with-size
+    always-run: true
+    if:
+      - rule: $size() <= 30
+        extra-actions:
+          - '$addLabel("small")'
+      - rule: $size() > 30 && $size() <= 100
+        extra-actions:
+          - '$addLabel("medium")'
+      - rule: $size() > 100
+        extra-actions:
+          - '$addLabel("large")'
+
+  - name: lint-commits
+    always-run: true
+    if:
+      - rule: '!$hasLinearHistory()'
+        extra-actions:
+          - '$warn("The pull request does not have a linear history")'
+      - rule: 'true'
+        extra-actions:
+          - '$commitLint()'
+          - '$titleLint()'
+
+  - name: label-requires-approval
+    always-run: true
+    if:
+      - $approvalsCount() == 0
+    then:
+      - $addLabel("requires-approval")
+
+  - name: assign-assignees
+    always-run: true
+    if:
+      - $length($assignees()) == 0
+    then:
+      - $assignAssignees([$author()])
+
+  - name: check-base
+    always-run: true
+    if:
+      - $base() != "development"
+    then:
+      - $warn("please open all pull requests again the development branch first")
+
+  - name: check-unit-tests
+    always-run: true
+    if:
+      - $changed("utils/@1.go", "utils/@1_test.go") == false
+    then:
+      - $error("please include unit tests for your changes")
+
+  - name: check-has-some-comment
+    always-run: true
+    if:
+      - '$any($comments(), ($comment: String => $contains($comment, "some comment")))'
+    then:
+      - $info("has some comment")
+
+  - name: dont-mix-fixes-and-features
+    always-run: true
+    if:
+      - '$any($commits(), ($commit: String => $startsWith($commit, "fix:"))) && $any($commits(), ($commit: String => $startsWith($commit, "feat: ")))'
+    then:
+      - $warn("please don't mix features and bug fixes in the same pull request")
+
+  - name: check-description
+    always-run: true
+    if:
+      - $description() == ""
+    then:
+      - $error("please add description")
+
+  - name: has-binary-file
+    always-run: true
+    if:
+      - $hasBinaryFile()
+    then:
+      - $addLabel("binary")
+
+  - name: has-code-pattern
+    always-run: true
+    if:
+      - $hasCodePattern("necessary")
+    then:
+      - $addLabel("necessary")
+
+  - name: has-file-extensions
+    always-run: true
+    if:
+      - $hasFileExtensions([".md", "", ".go"])
+    then:
+      - $addLabel("markdown")
+
+  - name: has-file-name
+    always-run: true
+    if:
+      - $hasFileName("README.md")
+    then:
+      - $addLabel("readme")
+
+  - name: has-file-pattern
+    always-run: true
+    if:
+      - $hasFilePattern("*_test.go")
+    then:
+      - $addLabel("test")
+
+  - name: has-linked-issues
+    always-run: true
+    if:
+      - '!$hasLinkedIssues()'
+    then:
+      - $warn("please link issue to pull request")
+
+  - name: has-required-approvals
+    always-run: true
+    if:
+      - '!$hasRequiredApprovals(2, $organization())'
+    then:
+      - $review("COMMENT", "we will do this instead")
+
+  - name: is-binary
+    always-run: true
+    if:
+      - $isBinary("hello-world")
+    then:
+      - $addLabel("is-binary")
+
+  - name: is-draft
+    always-run: true
+    if:
+      - $isDraft()
+    then:
+      - $addLabel("is-draft")
+
+  - name: is-linked-to-project
+    always-run: true
+    if:
+      - '!$isLinkedToProject("integration test project")'
+    then:
+      - $addToProject("integration test project", "todo")
+
+  - name: review
+    always-run: true
+    if:
+      - $length($requestedReviewers()) == 0
+    then:
+      - $assignRandomReviewer()
+      - $assignReviewer($organization(), 1, "random")
+      - $assignTeamReviewer(["integration-test"])
+
+  - name: is-waiting-for-review
+    always-run: true
+    if:
+      - $isWaitingForReview()
+    then:
+      - $addLabel("waiting-for-review")
+
+  - name: all-integration-test-team-members-are-organization-members
+    always-run: true
+    if:
+      - '$all($team("integration-test"), ($member: String => $isElementOf($member, $organization())))'
+    then:
+      - $comment("all integration test team members are members of the organization")
+
+  - name: remove-labels
+    always-run: true
+    if:
+      - $isElementOf("bug", $labels())
+    then:
+      - $removeLabels(["bug", "duplicate"])
+      - $removeLabel("documentation")
+
+  - name: pull-request-count-by
+    always-run: true
+    if:
+      - $pullRequestCountBy($author(), "all") > 0
+    then:
+      - '$commentOnce($sprintf("Thank you so much for pull request %d", [$pullRequestCountBy($author(), "all")]))'
+
+  - name: has-git-conflicts
+    always-run: true
+    if:
+      - $hasGitConflicts()
+    then:
+      - $addLabel("has-conflicts")
+
+  - name: pull-request-info
+    always-run: true
+    if:
+      - 'true'
+    then:
+      - $info($sprintf("%d comments", [$commentCount()]))
+      - $info($sprintf("%d commits", [$commitCount()]))
+      - $info($sprintf("%d changed files", [$fileCount()]))
+      - $info($sprintf("created at -> %d", [$createdAt()]))
+      - $info($sprintf("%s -> %s", [$head(), $base()]))
+      - $info($join($labels(), ", "))
+      - $info($sprintf("last event at -> %d", [$lastEventAt()]))
+      - $info($sprintf("milestone -> %s", [$milestone()]))
+      - $info($sprintf("reviewers -> %s", [$join($reviewers(), " - ")]))
+      - $info($sprintf("state -> %s", [$state()]))
+      - $info($sprintf("title -> %s", [$title()]))
+      - $info($sprintf("organization members -> %s", [$join($organization(), ", ")]))
+      - $info($sprintf("log event check run conclusion -> %s", [$checkRunConclusion("log event")]))
+      - $comment($sprintf("```%s```", [$selectFromJSON($toJSON($context()), "$.user")]))
