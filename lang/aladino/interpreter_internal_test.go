@@ -724,6 +724,7 @@ func TestNewInterpreter_WhenNewEvalEnvFails(t *testing.T) {
 		DefaultMockTargetEntity,
 		GetDefaultMockPullRequestDetails(),
 		nil,
+		nil,
 	)
 
 	assert.Nil(t, gotInterpreter)
@@ -746,6 +747,7 @@ func TestNewInterpreter(t *testing.T) {
 		DefaultMockTargetEntity,
 		mockedEnv.GetEventPayload(),
 		mockedEnv.GetBuiltIns(),
+		nil,
 	)
 
 	assert.Nil(t, err)
@@ -988,6 +990,7 @@ func TestReportMetric(t *testing.T) {
 				env.GetGithubClient(),
 				env.GetCollector(),
 				env.GetTarget().GetTargetEntity(),
+				nil,
 				nil,
 				nil,
 			)

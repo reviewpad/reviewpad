@@ -252,8 +252,9 @@ func NewInterpreter(
 	targetEntity *handler.TargetEntity,
 	eventPayload interface{},
 	builtIns *BuiltIns,
+	configFile *engine.ReviewpadFile,
 ) (engine.Interpreter, error) {
-	evalEnv, err := NewEvalEnv(ctx, logger, dryRun, githubClient, collector, targetEntity, eventPayload, builtIns)
+	evalEnv, err := NewEvalEnv(ctx, logger, dryRun, githubClient, collector, targetEntity, eventPayload, builtIns, configFile)
 	if err != nil {
 		return nil, err
 	}

@@ -11,6 +11,7 @@ import (
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v3/collector"
+	"github.com/reviewpad/reviewpad/v3/engine"
 	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/sirupsen/logrus"
 )
@@ -33,6 +34,7 @@ type Env interface {
 	GetBuiltInsReportedMessages() map[Severity][]string
 	GetGithubClient() *gh.GithubClient
 	GetCollector() collector.Collector
+	GetConfigFile() *engine.ReviewpadFile
 	GetCtx() context.Context
 	GetDryRun() bool
 	GetEventPayload() interface{}
@@ -47,6 +49,7 @@ type BaseEnv struct {
 	BuiltInsReportedMessages map[Severity][]string
 	GithubClient             *gh.GithubClient
 	Collector                collector.Collector
+	ConfigFile               *engine.ReviewpadFile
 	Ctx                      context.Context
 	DryRun                   bool
 	EventPayload             interface{}
@@ -70,6 +73,10 @@ func (e *BaseEnv) GetGithubClient() *gh.GithubClient {
 
 func (e *BaseEnv) GetCollector() collector.Collector {
 	return e.Collector
+}
+
+func (e *BaseEnv) GetConfigFile() *engine.ReviewpadFile {
+	return e.ConfigFile
 }
 
 func (e *BaseEnv) GetCtx() context.Context {
@@ -122,6 +129,7 @@ func NewEvalEnv(
 	targetEntity *handler.TargetEntity,
 	eventPayload interface{},
 	builtIns *BuiltIns,
+	configFile *engine.ReviewpadFile,
 ) (Env, error) {
 	registerMap := RegisterMap(make(map[string]Value))
 	report := &Report{Actions: make([]string, 0)}
@@ -131,6 +139,7 @@ func NewEvalEnv(
 		BuiltInsReportedMessages: make(map[Severity][]string),
 		GithubClient:             githubClient,
 		Collector:                collector,
+		ConfigFile:               configFile,
 		Ctx:                      ctx,
 		DryRun:                   dryRun,
 		EventPayload:             eventPayload,

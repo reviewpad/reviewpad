@@ -261,7 +261,7 @@ func Run(
 
 	defer config.CleanupPluginConfig()
 
-	aladinoInterpreter, err := aladino.NewInterpreter(ctx, log, dryRun, gitHubClient, collector, targetEntity, eventPayload, plugins_aladino.PluginBuiltInsWithConfig(config))
+	aladinoInterpreter, err := aladino.NewInterpreter(ctx, log, dryRun, gitHubClient, collector, targetEntity, eventPayload, plugins_aladino.PluginBuiltInsWithConfig(config), reviewpadFile)
 	if err != nil {
 		return engine.ExitStatusFailure, nil, err
 	}
