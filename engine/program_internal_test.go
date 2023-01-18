@@ -32,7 +32,7 @@ func TestAppend(t *testing.T) {
 		addedStat,
 	})
 
-	programUnderTest.append(workflow.Actions)
+	programUnderTest.Append(workflow.Actions)
 
 	assert.Equal(t, wantProgram, programUnderTest)
 }

@@ -33,7 +33,7 @@ func EvalCommand(command string, env *Env) (*Program, error) {
 		return nil, err
 	}
 
-	program.append([]string{out.String()})
+	program.Append([]string{out.String()})
 
 	return program, nil
 }
@@ -182,10 +182,10 @@ func EvalConfigurationFile(file *ReviewpadFile, env *Env) (*Program, error) {
 		}
 
 		if len(ruleActivatedQueue) > 0 {
-			program.append(workflow.Actions)
+			program.Append(workflow.Actions)
 
 			for _, activatedRule := range ruleActivatedQueue {
-				program.append(activatedRule.ExtraActions)
+				program.Append(activatedRule.ExtraActions)
 			}
 
 			if !workflow.AlwaysRun {
@@ -214,7 +214,7 @@ func EvalConfigurationFile(file *ReviewpadFile, env *Env) (*Program, error) {
 			for num, stage := range pipeline.Stages {
 				pipelineLog.Infof("evaluating pipeline stage '%v'", num)
 				if stage.Until == "" {
-					program.append(stage.Actions)
+					program.Append(stage.Actions)
 					break
 				}
 
@@ -224,7 +224,7 @@ func EvalConfigurationFile(file *ReviewpadFile, env *Env) (*Program, error) {
 				}
 
 				if !isDone {
-					program.append(stage.Actions)
+					program.Append(stage.Actions)
 					break
 				}
 			}

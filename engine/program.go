@@ -32,7 +32,7 @@ func (p *Program) GetProgramStatements() []*Statement {
 	return p.statements
 }
 
-func (program *Program) append(workflowActions []string) {
+func (program *Program) Append(workflowActions []string) {
 	for _, workflowAction := range workflowActions {
 		statement := BuildStatement(workflowAction)
 
