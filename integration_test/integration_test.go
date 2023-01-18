@@ -58,7 +58,10 @@ type IDNode struct {
 
 type IntegrationTestQuery struct {
 	Repository struct {
-		ID         githubv4.ID
+		ID               githubv4.ID
+		DefaultBranchRef struct {
+			Name string
+		}
 		Milestones struct {
 			Nodes []IDNode
 		} `graphql:"milestones(first: 1)"`
@@ -120,7 +123,7 @@ func TestIntegration(t *testing.T) {
 		"kitchen-sink": {
 			createPullRequestInput: githubv4.CreatePullRequestInput{
 				RepositoryID: integrationTestQuery.Repository.ID,
-				BaseRefName:  githubv4.String("main"),
+				BaseRefName:  githubv4.String(integrationTestQuery.Repository.DefaultBranchRef.Name),
 				HeadRefName:  githubv4.String(fmt.Sprintf("refs/heads/%s", branchName)),
 				Title:        githubv4.String(branchName),
 				Body:         githubv4.NewString(githubv4.String("")),
@@ -196,7 +199,7 @@ func TestIntegration(t *testing.T) {
 
 			eventDetails := &handler.EventDetails{
 				EventName:   "pull_request",
-				EventAction: "created",
+				EventAction: "opened",
 			}
 
 			_, _, err := reviewpad.Run(ctx, logger, githubClient, collector, targetEntity, eventDetails, nil, test.reviewpadFile, false, false)
