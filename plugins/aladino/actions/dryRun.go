@@ -153,7 +153,7 @@ func buildReport(e aladino.Env, program *engine.Program) (string, error) {
 	}
 
 	// Annotation
-	report.WriteString("<!--@annotation-reviewpad-report-triggered-by-dry-run-command-->")
+	report.WriteString("<!--@annotation-reviewpad-report-triggered-by-dry-run-command-->\n")
 	// Header
 	report.WriteString("**Reviewpad Report** (Reviewpad ran in dry-run mode because the `$dryRun() action was triggered`)\n\n")
 
