@@ -142,6 +142,22 @@ You can solve with:
 ulimit -Sn 500
 ```
 
+### Running integration tests
+
+The integration tests run reviewpad on an actual repository and pull request.
+
+#### Required Environment Variables
+
+- GITHUB_INTEGRATION_TEST_TOKEN : GitHub access token used to setup tests and run reviewpad
+- GITHUB_INTEGRATION_TEST_REPO_OWNER : The owner of the repository used to run integration tests on
+- GITHUB_INTEGRATION_TEST_REPO_NAME : The name of the repository used to run integration tests on
+
+After setting those variables, you can run the integration tests with:
+
+```
+task integration-test
+```
+
 #### Coverage
 
 To generate the coverage report run:
