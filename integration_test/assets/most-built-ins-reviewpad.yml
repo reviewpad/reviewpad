@@ -119,14 +119,14 @@ workflows:
     if:
       - '!$isLinkedToProject("integration test project")'
     then:
-      - $addToProject("integration test project", "todo")
+      - $addToProject("[INTEGRATION TESTS] Reviewpad", "todo")
 
   - name: is-draft
     always-run: true
     if:
       - $isDraft()
     then:
-      - $setProjectField("integration test project", "status", "In Progress")
+      - $setProjectField("[INTEGRATION TESTS] Reviewpad", "status", "In Progress")
 
   - name: review
     always-run: true

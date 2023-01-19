@@ -144,7 +144,12 @@ ulimit -Sn 500
 
 ### Running integration tests
 
-The integration tests run reviewpad on an actual repository and pull request.
+The integration tests run reviewpad on an actual repository and pull request. The repository that the integration tests are running on needs to have the following
+
+- at least one milestone
+- at least 3 labels named `bug`, `documentation`, `duplicate` (Github adds this labels to every new repository by default)
+- a team called `integration-test` with at least 3 members
+- a project called `[INTEGRATION TESTS] Reviewpad` with `Todo` and `In Progress` status.
 
 #### Required Environment Variables
 
