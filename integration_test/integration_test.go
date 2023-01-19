@@ -134,6 +134,8 @@ func TestIntegration(t *testing.T) {
 	closeReviewpadFile, err := engine.Load(ctx, githubClient, rawCloseReviewpadFile)
 	require.Nil(err)
 
+	// contains a graphql query that fetches the necessary data
+	// to run the integration tests
 	var integrationTestQuery IntegrationTestQuery
 	integrationTestQueryData := map[string]interface{}{
 		"owner":       githubv4.String(repoOwner),
@@ -142,6 +144,9 @@ func TestIntegration(t *testing.T) {
 	}
 
 	err = githubClient.GetClientGraphQL().Query(ctx, &integrationTestQuery, integrationTestQueryData)
+	// ensure the required things are present on the repo which are
+	// at least one milestone
+	// at least 3 pre configured labels named bug, documentation and duplicate.
 	require.Nil(err)
 	require.NotEmpty(integrationTestQuery.Repository.ID)
 	require.Len(integrationTestQuery.Repository.Milestones.Nodes, 1)
@@ -203,7 +208,7 @@ func TestIntegration(t *testing.T) {
 			fileChanges: &githubv4.FileChanges{
 				Additions: &[]githubv4.FileAddition{
 					{
-						Path:     githubv4.String(fmt.Sprintf("ids/%s", uuid.NewString())),
+						Path:     githubv4.String(fmt.Sprintf("ids/%s", testID)),
 						Contents: githubv4.Base64String(base64.StdEncoding.EncodeToString([]byte(testID))),
 					},
 				},
@@ -265,10 +270,14 @@ func TestIntegration(t *testing.T) {
 				"createPullRequestInput": test.createPullRequestInput,
 			}
 
+			// create the pull request the reviewpad file will run against
+			// and ensure it's successfully created
 			var integrationTestMutation IntegrationTestMutation
 			err = githubClient.GetClientGraphQL().Mutate(ctx, &integrationTestMutation, createRefInput, onBoardMutationData)
 			require.Nil(err)
 
+			// if any updates are required to the pull request after creation
+			// perform the updates and ensure the update is performed successfully
 			if test.updatePullRequestInput != nil {
 				test.updatePullRequestInput.PullRequestID = integrationTestMutation.CreatePullRequest.PullRequest.ID
 
@@ -289,6 +298,8 @@ func TestIntegration(t *testing.T) {
 				EventAction: "opened",
 			}
 
+			// execute the reviewpad files one by one and
+			// ensure there are no errors and exit statuses match
 			for i, file := range test.reviewpadFiles {
 				exitStatus, _, err := reviewpad.Run(ctx, logger, githubClient, collector, targetEntity, eventDetails, nil, file, false, false)
 				assert.Equal(test.wantErr, err)
