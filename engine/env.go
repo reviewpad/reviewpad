@@ -26,7 +26,6 @@ const ExitStatusSuccess ExitStatus = 0
 const ExitStatusFailure ExitStatus = 1
 
 type Interpreter interface {
-	CleanReport()
 	ProcessGroup(name string, kind GroupKind, typeOf GroupType, expr, paramExpr, whereExpr string) error
 	ProcessLabel(id, name string) error
 	ProcessRule(name, spec string) error
@@ -35,6 +34,7 @@ type Interpreter interface {
 	ExecStatement(statement *Statement) error
 	Report(mode string, safeMode bool) error
 	ReportMetrics() error
+	ReportReviewpadCommandOutput(command string) error
 }
 
 type Env struct {

@@ -33,6 +33,7 @@ type Env interface {
 	GetBuiltInsReportedMessages() map[Severity][]string
 	GetGithubClient() *gh.GithubClient
 	GetCollector() collector.Collector
+	GetCommandOutput() string
 	GetCtx() context.Context
 	GetDryRun() bool
 	GetEventPayload() interface{}
@@ -47,6 +48,7 @@ type BaseEnv struct {
 	BuiltInsReportedMessages map[Severity][]string
 	GithubClient             *gh.GithubClient
 	Collector                collector.Collector
+	CommandOutput            string
 	Ctx                      context.Context
 	DryRun                   bool
 	EventPayload             interface{}
@@ -70,6 +72,10 @@ func (e *BaseEnv) GetGithubClient() *gh.GithubClient {
 
 func (e *BaseEnv) GetCollector() collector.Collector {
 	return e.Collector
+}
+
+func (e *BaseEnv) GetCommandOutput() string {
+	return e.CommandOutput
 }
 
 func (e *BaseEnv) GetCtx() context.Context {

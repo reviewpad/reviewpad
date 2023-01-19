@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/google/go-github/v49/github"
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v3/collector"
@@ -153,13 +154,6 @@ func (i *Interpreter) ExecStatement(statement *engine.Statement) error {
 	return nil
 }
 
-func (i *Interpreter) CleanReport() {
-	i.Env.GetReport().cleanReport()
-	for severity := range i.Env.GetBuiltInsReportedMessages() {
-		i.Env.GetBuiltInsReportedMessages()[severity] = []string{}
-	}
-}
-
 func (i *Interpreter) Report(mode string, safeMode bool) error {
 	i.Env.GetLogger().Info("generating report")
 
@@ -248,6 +242,18 @@ func (i *Interpreter) ReportMetrics() error {
 	}
 
 	return nil
+}
+
+func (i *Interpreter) ReportReviewpadCommandOutput(command string) error {
+	commentBody := new(strings.Builder)
+	commentBody.WriteString(fmt.Sprintf("**Reviewpad Report** (%s output)\n\n", command))
+	commentBody.WriteString(fmt.Sprintf("%v\n", i.Env.GetCommandOutput()))
+
+	_, _, err := i.Env.GetGithubClient().CreateComment(i.Env.GetCtx(), i.Env.GetTarget().GetTargetEntity().Owner, i.Env.GetTarget().GetTargetEntity().Repo, i.Env.GetTarget().GetTargetEntity().Number, &github.IssueComment{
+		Body: github.String(commentBody.String()),
+	})
+
+	return err
 }
 
 func NewInterpreter(
