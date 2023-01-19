@@ -137,7 +137,7 @@ func RunReviewpadCommand(
 
 	err = env.Interpreter.ReportReviewpadCommandOutput(strings.TrimPrefix(command, "/reviewpad "))
 	if err != nil {
-		logger.WithError(err).Errorf("error generating the report")
+		logger.WithError(err).Errorf("error generating the command output")
 	}
 
 	err = collector.Collect("Completed Command Execution", map[string]interface{}{})
