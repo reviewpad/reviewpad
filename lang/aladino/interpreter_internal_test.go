@@ -732,7 +732,7 @@ func TestNewInterpreter_WhenNewEvalEnvFails(t *testing.T) {
 }
 
 func TestNewInterpreter(t *testing.T) {
-	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), nil)
+	mockedEnv := MockDefaultEnvWithReviewpadFile(t, nil, nil, MockBuiltIns(), nil, &engine.ReviewpadFile{})
 
 	wantInterpreter := &Interpreter{
 		Env: mockedEnv,
@@ -747,7 +747,7 @@ func TestNewInterpreter(t *testing.T) {
 		DefaultMockTargetEntity,
 		mockedEnv.GetEventPayload(),
 		mockedEnv.GetBuiltIns(),
-		nil,
+		&engine.ReviewpadFile{},
 	)
 
 	assert.Nil(t, err)

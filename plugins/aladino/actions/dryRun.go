@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/reviewpad/reviewpad/v3/engine"
 	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
@@ -23,7 +24,7 @@ func DryRun() *aladino.BuiltInAction {
 
 func dryRunCode(e aladino.Env, args []aladino.Value) error {
 	configFile := e.GetConfigFile()
-	if configFile == nil {
+	if cmp.Equal(configFile, &engine.ReviewpadFile{}) {
 		return nil
 	}
 
@@ -161,8 +162,12 @@ func buildReport(e aladino.Env, program *engine.Program) (string, error) {
 	report.WriteString("```yaml\n")
 
 	// Report
-	for _, action := range executedActions {
-		report.WriteString(fmt.Sprintf("%v\n", action))
+	if len(executedActions) == 0 {
+		report.WriteString("No action triggered")
+	} else {
+		for _, action := range executedActions {
+			report.WriteString(fmt.Sprintf("%v\n", action))
+		}
 	}
 
 	report.WriteString("```\n")
