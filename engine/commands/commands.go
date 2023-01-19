@@ -6,7 +6,6 @@ package commands
 
 import (
 	"errors"
-	"fmt"
 	"io"
 
 	"github.com/spf13/cobra"
@@ -31,8 +30,6 @@ func NewCommands(out io.Writer, args []string) *cobra.Command {
 	root.SetHelpCommand(&cobra.Command{Hidden: true})
 
 	root.SetOut(out)
-
-	fmt.Printf("OUT: %v", out)
 
 	root.SetArgs(args)
 

@@ -135,6 +135,8 @@ func RunReviewpadCommand(
 		return engine.ExitStatusFailure, nil, err
 	}
 
+	env.Interpreter.Report(engine.VERBOSE_MODE, false)
+
 	err = collector.Collect("Completed Command Execution", map[string]interface{}{})
 	if err != nil {
 		logger.WithError(err).Errorf("error collecting completed command execution")
