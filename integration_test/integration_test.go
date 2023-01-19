@@ -27,7 +27,9 @@ import (
 )
 
 const (
-	conflictCommitHead = "3e78768332b8f0c841bfaa9ed774d7c4b882c5b3"
+	// opening a pull request from this commit
+	// will guarantee it to have a conflict
+	conflictCommitHead = "f4973722e25d7e8bea265dffc496859c079ac2cb"
 )
 
 type IntegrationTestMutation struct {
@@ -119,6 +121,8 @@ func TestIntegration(t *testing.T) {
 		createPullRequestInput githubv4.CreatePullRequestInput
 		updatePullRequestInput githubv4.UpdatePullRequestInput
 		reviewpadFile          *engine.ReviewpadFile
+		fileChanges            *githubv4.FileChanges
+		commitMessage          string
 		wantErr                error
 	}{
 		"kitchen-sink": {
@@ -136,6 +140,27 @@ func TestIntegration(t *testing.T) {
 					return node.ID
 				}),
 			},
+			fileChanges: &githubv4.FileChanges{
+				Additions: &[]githubv4.FileAddition{
+					{
+						Path:     githubv4.String("utils/add.go"),
+						Contents: githubv4.Base64String(base64.StdEncoding.EncodeToString(addFile)),
+					},
+					{
+						Path:     githubv4.String("utils/sub.go"),
+						Contents: githubv4.Base64String(base64.StdEncoding.EncodeToString(subFile)),
+					},
+					{
+						Path:     githubv4.String("hello-world"),
+						Contents: githubv4.Base64String(base64.StdEncoding.EncodeToString(binaryFile)),
+					},
+					{
+						Path:     githubv4.String("README.md"),
+						Contents: githubv4.Base64String(base64.StdEncoding.EncodeToString(readmeFile)),
+					},
+				},
+			},
+			commitMessage: "unconventional commit message",
 			reviewpadFile: mostBuiltInsReviewpadFile,
 		},
 	}
@@ -153,28 +178,9 @@ func TestIntegration(t *testing.T) {
 						RepositoryNameWithOwner: githubv4.NewString(githubv4.String(repoFullName)),
 						BranchName:              githubv4.NewString(githubv4.String(branchName)),
 					},
-					FileChanges: &githubv4.FileChanges{
-						Additions: &[]githubv4.FileAddition{
-							{
-								Path:     githubv4.String("utils/add.go"),
-								Contents: githubv4.Base64String(base64.StdEncoding.EncodeToString(addFile)),
-							},
-							{
-								Path:     githubv4.String("utils/sub.go"),
-								Contents: githubv4.Base64String(base64.StdEncoding.EncodeToString(subFile)),
-							},
-							{
-								Path:     githubv4.String("hello-world"),
-								Contents: githubv4.Base64String(base64.StdEncoding.EncodeToString(binaryFile)),
-							},
-							{
-								Path:     githubv4.String("README.md"),
-								Contents: githubv4.Base64String(base64.StdEncoding.EncodeToString(readmeFile)),
-							},
-						},
-					},
+					FileChanges: test.fileChanges,
 					Message: githubv4.CommitMessage{
-						Headline: githubv4.String("unconventional commit"),
+						Headline: githubv4.String(test.commitMessage),
 					},
 					ExpectedHeadOid: githubv4.GitObjectID(conflictCommitHead),
 				},

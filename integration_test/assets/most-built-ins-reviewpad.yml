@@ -25,9 +25,6 @@ workflows:
   - name: lint-commits
     always-run: true
     if:
-      - rule: '!$hasLinearHistory()'
-        extra-actions:
-          - '$warn("The pull request does not have a linear history")'
       - rule: 'true'
         extra-actions:
           - '$commitLint()'
@@ -54,6 +51,13 @@ workflows:
     then:
       - $warn("please open all pull requests again the development branch first")
 
+  - name: check-head
+    always-run: true
+    if:
+      - '!$any(["feat", "fix"], ($prefix: String => $startsWith($head(), $prefix)))'
+    then:
+      - $error("please user proper branch naming")
+
   - name: check-unit-tests
     always-run: true
     if:
@@ -67,13 +71,6 @@ workflows:
       - '$any($comments(), ($comment: String => $contains($comment, "some comment")))'
     then:
       - $info("has some comment")
-
-  - name: dont-mix-fixes-and-features
-    always-run: true
-    if:
-      - '$any($commits(), ($commit: String => $startsWith($commit, "fix:"))) && $any($commits(), ($commit: String => $startsWith($commit, "feat: ")))'
-    then:
-      - $warn("please don't mix features and bug fixes in the same pull request")
 
   - name: check-description
     always-run: true
@@ -188,7 +185,7 @@ workflows:
     if:
       - $pullRequestCountBy($author(), "all") > 0
     then:
-      - '$commentOnce($sprintf("Thank you so much for pull request %d", [$pullRequestCountBy($author(), "all")]))'
+      - '$commentOnce($sprintf("Thank you so much for pull request %d", [$totalCreatedPullRequests($author())]))'
 
   - name: has-git-conflicts
     always-run: true
@@ -196,6 +193,20 @@ workflows:
       - $hasGitConflicts()
     then:
       - $addLabel("has-conflicts")
+
+  - name: has-linear-history-trigger-workflow
+    always-run: true
+    if:
+      - $hasLinearHistory()
+    then:
+      - $triggerWorkflow("log.yaml")
+
+  - name: reviewer-status
+    always-run: true
+    if:
+      - '!$any($reviewers(), ($r: String => $reviewerStatus($r) == "APPROVED"))'
+    then:
+      - '$warn("pull request hasnt been approved by anybody")'
 
   - name: pull-request-info
     always-run: true
@@ -206,13 +217,10 @@ workflows:
       - $info($sprintf("%d commits", [$commitCount()]))
       - $info($sprintf("%d changed files", [$fileCount()]))
       - $info($sprintf("created at -> %d", [$createdAt()]))
-      - $info($sprintf("%s -> %s", [$head(), $base()]))
-      - $info($join($labels(), ", "))
       - $info($sprintf("last event at -> %d", [$lastEventAt()]))
       - $info($sprintf("milestone -> %s", [$milestone()]))
-      - $info($sprintf("reviewers -> %s", [$join($reviewers(), " - ")]))
       - $info($sprintf("state -> %s", [$state()]))
       - $info($sprintf("title -> %s", [$title()]))
-      - $info($sprintf("organization members -> %s", [$join($organization(), ", ")]))
       - $info($sprintf("log event check run conclusion -> %s", [$checkRunConclusion("log event")]))
       - $comment($sprintf("```%s```", [$selectFromJSON($toJSON($context()), "$.user")]))
+      - $comment($sprintf("```%s```", [$selectFromContext("$.milestone")]))

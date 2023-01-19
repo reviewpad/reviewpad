@@ -1,3 +1,3 @@
 # Reviewpad Integration Test
 
-Integration testing is a necessary part of the software development process and should not be overlooked. It helps to ensure that the software is of the highest quality and that all components are working together as expected. Without integration testing, it would be difficult to identify and address any issues that may arise.
+Integration tests are conducted on a complete system to verify that its components interact as expected. They are commonly used to check communication between components, such as an API and its related services, as well as to test the system as a whole. Unit tests, on the other hand, are used to evaluate the basic features of a single component, like a single function or class. Unit tests are usually used to make sure individual components are functioning correctly, while integration tests are used to make sure the system works properly as a whole.
