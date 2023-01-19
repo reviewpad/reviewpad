@@ -89,9 +89,9 @@ workflows:
   - name: has-file-pattern
     always-run: true
     if:
-      - $hasFilePattern("*_test.go")
+      - $hasFilePattern("utils/*.go")
     then:
-      - $addLabel("test")
+      - $addLabel("modifies-utilities")
 
   - name: has-linked-issues
     always-run: true

@@ -4,6 +4,6 @@ workflows:
   - name: merge
     always-run: true
     if:
-      - '!$isMerged()'
+      - '!$isMerged() && $haveAllChecksRunCompleted([], "success")'
     then:
       - $merge()
