@@ -246,8 +246,7 @@ func (i *Interpreter) ReportMetrics() error {
 
 func (i *Interpreter) ReportReviewpadCommandOutput(command string) error {
 	report := new(strings.Builder)
-	report.WriteString(fmt.Sprintf("### Reviewpad Report (`%s` command output)\n", command))
-	report.WriteString("---\n")
+	report.WriteString(fmt.Sprintf("### `%s` Output:\n", command))
 	report.WriteString(fmt.Sprintf("%v\n", i.Env.GetCommandOutput().Output))
 
 	_, _, err := i.Env.GetGithubClient().CreateComment(i.Env.GetCtx(), i.Env.GetTarget().GetTargetEntity().Owner, i.Env.GetTarget().GetTargetEntity().Repo, i.Env.GetTarget().GetTargetEntity().Number, &github.IssueComment{
