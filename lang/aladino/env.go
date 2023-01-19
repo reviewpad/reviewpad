@@ -132,12 +132,14 @@ func NewEvalEnv(
 ) (Env, error) {
 	registerMap := RegisterMap(make(map[string]Value))
 	report := &Report{Actions: make([]string, 0)}
+	commandOutput := &commands.CommandOutput{Output: ""}
 
 	input := &BaseEnv{
 		BuiltIns:                 builtIns,
 		BuiltInsReportedMessages: make(map[Severity][]string),
 		GithubClient:             githubClient,
 		Collector:                collector,
+		CommandOutput:            commandOutput,
 		Ctx:                      ctx,
 		DryRun:                   dryRun,
 		EventPayload:             eventPayload,
