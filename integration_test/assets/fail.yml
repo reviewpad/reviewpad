@@ -1,0 +1,10 @@
+api-version: reviewpad.com/v3.x
+
+workflows:
+  - name: fail
+    always-run: true
+    if:
+      - $changed("utils/@1.go", "utils/@1_test.go") == false
+    then:
+      - $fail("please include unit tests for your changes")
+  

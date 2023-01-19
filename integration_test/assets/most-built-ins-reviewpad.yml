@@ -58,33 +58,12 @@ workflows:
     then:
       - $error("please user proper branch naming")
 
-  - name: check-unit-tests
-    always-run: true
-    if:
-      - $changed("utils/@1.go", "utils/@1_test.go") == false
-    then:
-      - $error("please include unit tests for your changes")
-
-  - name: check-has-some-comment
-    always-run: true
-    if:
-      - '$any($comments(), ($comment: String => $contains($comment, "some comment")))'
-    then:
-      - $info("has some comment")
-
   - name: check-description
     always-run: true
     if:
       - $description() == ""
     then:
       - $error("please add description")
-
-  - name: has-binary-file
-    always-run: true
-    if:
-      - $hasBinaryFile()
-    then:
-      - $addLabel("binary")
 
   - name: has-code-pattern
     always-run: true
@@ -207,6 +186,14 @@ workflows:
       - '!$any($reviewers(), ($r: String => $reviewerStatus($r) == "APPROVED"))'
     then:
       - '$warn("pull request hasnt been approved by anybody")'
+
+  - name: has-binary-file
+    always-run: true
+    if:
+      - $hasBinaryFile()
+    then:
+      - $close()
+      - $error("Please don't add any binary file into the repository")
 
   - name: pull-request-info
     always-run: true

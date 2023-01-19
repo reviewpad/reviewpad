@@ -89,19 +89,49 @@ func TestIntegration(t *testing.T) {
 
 	githubClient := github.NewGithubClientFromToken(ctx, githubToken)
 
+	testID := uuid.NewString()
 	repoFullName := fmt.Sprintf("%s/%s", repoOwner, repoName)
-	branchName := fmt.Sprintf("integration-test-%s", uuid.NewString())
+
 	addFile, err := utils.ReadFile("./assets/utils/add.go")
 	require.Nil(err)
+
 	subFile, err := utils.ReadFile("./assets/utils/sub.go")
 	require.Nil(err)
+
 	readmeFile, err := utils.ReadFile("./assets/README.md")
 	require.Nil(err)
+
 	binaryFile, err := utils.ReadFile("./assets/hello-world")
 	require.Nil(err)
+
 	rawMostBuiltInsReviewpadFile, err := utils.ReadFile("./assets/most-built-ins-reviewpad.yml")
 	require.Nil(err)
+
+	rawMergeReviewpadFile, err := utils.ReadFile("./assets/merge.yml")
+	require.Nil(err)
+
+	rawDeleteHeadBranchReviewpadFile, err := utils.ReadFile("./assets/delete-head-branch.yml")
+	require.Nil(err)
+
+	rawFailReviewpadFile, err := utils.ReadFile("./assets/fail.yml")
+	require.Nil(err)
+
+	rawCloseReviewpadFile, err := utils.ReadFile("./assets/close.yml")
+	require.Nil(err)
+
 	mostBuiltInsReviewpadFile, err := engine.Load(ctx, githubClient, rawMostBuiltInsReviewpadFile)
+	require.Nil(err)
+
+	mergeReviewpadFile, err := engine.Load(ctx, githubClient, rawMergeReviewpadFile)
+	require.Nil(err)
+
+	deleteHeadBranchReviewpadFile, err := engine.Load(ctx, githubClient, rawDeleteHeadBranchReviewpadFile)
+	require.Nil(err)
+
+	failReviewpadFile, err := engine.Load(ctx, githubClient, rawFailReviewpadFile)
+	require.Nil(err)
+
+	closeReviewpadFile, err := engine.Load(ctx, githubClient, rawCloseReviewpadFile)
 	require.Nil(err)
 
 	var integrationTestQuery IntegrationTestQuery
@@ -119,22 +149,21 @@ func TestIntegration(t *testing.T) {
 
 	tests := map[string]struct {
 		createPullRequestInput githubv4.CreatePullRequestInput
-		updatePullRequestInput githubv4.UpdatePullRequestInput
-		reviewpadFile          *engine.ReviewpadFile
+		updatePullRequestInput *githubv4.UpdatePullRequestInput
+		reviewpadFiles         []*engine.ReviewpadFile
 		fileChanges            *githubv4.FileChanges
 		commitMessage          string
 		wantErr                error
+		exitStatus             []engine.ExitStatus
 	}{
 		"kitchen-sink": {
 			createPullRequestInput: githubv4.CreatePullRequestInput{
 				RepositoryID: integrationTestQuery.Repository.ID,
 				BaseRefName:  githubv4.String(integrationTestQuery.Repository.DefaultBranchRef.Name),
-				HeadRefName:  githubv4.String(fmt.Sprintf("refs/heads/%s", branchName)),
-				Title:        githubv4.String(branchName),
 				Body:         githubv4.NewString(githubv4.String("")),
 				Draft:        githubv4.NewBoolean(githubv4.Boolean(true)),
 			},
-			updatePullRequestInput: githubv4.UpdatePullRequestInput{
+			updatePullRequestInput: &githubv4.UpdatePullRequestInput{
 				MilestoneID: &integrationTestQuery.Repository.Milestones.Nodes[0].ID,
 				LabelIDs: mapSlice(integrationTestQuery.Repository.Labels.Nodes, func(node IDNode) githubv4.ID {
 					return node.ID
@@ -160,13 +189,62 @@ func TestIntegration(t *testing.T) {
 					},
 				},
 			},
-			commitMessage: "unconventional commit message",
-			reviewpadFile: mostBuiltInsReviewpadFile,
+			commitMessage:  "kitchen sink test",
+			reviewpadFiles: []*engine.ReviewpadFile{mostBuiltInsReviewpadFile, deleteHeadBranchReviewpadFile},
+			exitStatus:     []engine.ExitStatus{engine.ExitStatusSuccess, engine.ExitStatusSuccess},
+		},
+		"merge-and-delete": {
+			createPullRequestInput: githubv4.CreatePullRequestInput{
+				RepositoryID: integrationTestQuery.Repository.ID,
+				BaseRefName:  githubv4.String(integrationTestQuery.Repository.DefaultBranchRef.Name),
+				Body:         githubv4.NewString(githubv4.String("merge and delete head integration test")),
+				Draft:        githubv4.NewBoolean(githubv4.Boolean(false)),
+			},
+			fileChanges: &githubv4.FileChanges{
+				Additions: &[]githubv4.FileAddition{
+					{
+						Path:     githubv4.String(fmt.Sprintf("ids/%s", uuid.NewString())),
+						Contents: githubv4.Base64String(base64.StdEncoding.EncodeToString([]byte(testID))),
+					},
+				},
+			},
+			commitMessage:  "test: merge and delete",
+			reviewpadFiles: []*engine.ReviewpadFile{mergeReviewpadFile, deleteHeadBranchReviewpadFile},
+			exitStatus:     []engine.ExitStatus{engine.ExitStatusSuccess, engine.ExitStatusSuccess},
+		},
+		"fail": {
+			createPullRequestInput: githubv4.CreatePullRequestInput{
+				RepositoryID: integrationTestQuery.Repository.ID,
+				BaseRefName:  githubv4.String(integrationTestQuery.Repository.DefaultBranchRef.Name),
+				Body:         githubv4.NewString(githubv4.String("fail")),
+				Draft:        githubv4.NewBoolean(githubv4.Boolean(false)),
+			},
+			fileChanges: &githubv4.FileChanges{
+				Additions: &[]githubv4.FileAddition{
+					{
+						Path:     githubv4.String("utils/add.go"),
+						Contents: githubv4.Base64String(base64.StdEncoding.EncodeToString(addFile)),
+					},
+					{
+						Path:     githubv4.String("utils/sub.go"),
+						Contents: githubv4.Base64String(base64.StdEncoding.EncodeToString(subFile)),
+					},
+				},
+			},
+			commitMessage:  "test: fail",
+			reviewpadFiles: []*engine.ReviewpadFile{failReviewpadFile, closeReviewpadFile, deleteHeadBranchReviewpadFile},
+			exitStatus:     []engine.ExitStatus{engine.ExitStatusFailure, engine.ExitStatusSuccess, engine.ExitStatusSuccess},
 		},
 	}
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
+			testID := uuid.NewString()
+			branchName := fmt.Sprintf("%s-integration-test-%s", name, testID)
+
+			test.createPullRequestInput.HeadRefName = githubv4.String(branchName)
+			test.createPullRequestInput.Title = githubv4.String(branchName)
+
 			createRefInput := githubv4.CreateRefInput{
 				RepositoryID: githubv4.ID(integrationTestQuery.Repository.ID),
 				Name:         githubv4.String(fmt.Sprintf("refs/heads/%s", branchName)),
@@ -189,13 +267,15 @@ func TestIntegration(t *testing.T) {
 
 			var integrationTestMutation IntegrationTestMutation
 			err = githubClient.GetClientGraphQL().Mutate(ctx, &integrationTestMutation, createRefInput, onBoardMutationData)
-			assert.Nil(err)
+			require.Nil(err)
 
-			test.updatePullRequestInput.PullRequestID = integrationTestMutation.CreatePullRequest.PullRequest.ID
+			if test.updatePullRequestInput != nil {
+				test.updatePullRequestInput.PullRequestID = integrationTestMutation.CreatePullRequest.PullRequest.ID
 
-			var updateIntegrationRequestMutation UpdateIntegrationTestMutation
-			err = githubClient.GetClientGraphQL().Mutate(ctx, &updateIntegrationRequestMutation, test.updatePullRequestInput, nil)
-			assert.Nil(err)
+				var updateIntegrationRequestMutation UpdateIntegrationTestMutation
+				err = githubClient.GetClientGraphQL().Mutate(ctx, &updateIntegrationRequestMutation, *test.updatePullRequestInput, nil)
+				require.Nil(err)
+			}
 
 			targetEntity := &handler.TargetEntity{
 				Kind:   handler.PullRequest,
@@ -209,8 +289,11 @@ func TestIntegration(t *testing.T) {
 				EventAction: "opened",
 			}
 
-			_, _, err := reviewpad.Run(ctx, logger, githubClient, collector, targetEntity, eventDetails, nil, test.reviewpadFile, false, false)
-			assert.Equal(test.wantErr, err)
+			for i, file := range test.reviewpadFiles {
+				exitStatus, _, err := reviewpad.Run(ctx, logger, githubClient, collector, targetEntity, eventDetails, nil, file, false, false)
+				assert.Equal(test.wantErr, err)
+				assert.Equal(test.exitStatus[i], exitStatus)
+			}
 		})
 	}
 }
