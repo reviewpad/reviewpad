@@ -135,7 +135,7 @@ func RunReviewpadCommand(
 		return engine.ExitStatusFailure, nil, err
 	}
 
-	err = env.Interpreter.ReportReviewpadCommandOutput(command)
+	err = env.Interpreter.ReportReviewpadCommandOutput(strings.TrimPrefix(command, "/reviewpad"))
 	if err != nil {
 		logger.WithError(err).Errorf("error generating the report")
 	}

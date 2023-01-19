@@ -11,6 +11,7 @@ import (
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v3/collector"
+	"github.com/reviewpad/reviewpad/v3/engine/commands"
 	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/sirupsen/logrus"
 )
@@ -33,7 +34,7 @@ type Env interface {
 	GetBuiltInsReportedMessages() map[Severity][]string
 	GetGithubClient() *gh.GithubClient
 	GetCollector() collector.Collector
-	GetCommandOutput() string
+	GetCommandOutput() *commands.CommandOutput
 	GetCtx() context.Context
 	GetDryRun() bool
 	GetEventPayload() interface{}
@@ -48,7 +49,7 @@ type BaseEnv struct {
 	BuiltInsReportedMessages map[Severity][]string
 	GithubClient             *gh.GithubClient
 	Collector                collector.Collector
-	CommandOutput            string
+	CommandOutput            *commands.CommandOutput
 	Ctx                      context.Context
 	DryRun                   bool
 	EventPayload             interface{}
@@ -74,7 +75,7 @@ func (e *BaseEnv) GetCollector() collector.Collector {
 	return e.Collector
 }
 
-func (e *BaseEnv) GetCommandOutput() string {
+func (e *BaseEnv) GetCommandOutput() *commands.CommandOutput {
 	return e.CommandOutput
 }
 

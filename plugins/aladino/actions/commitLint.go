@@ -6,6 +6,7 @@ package plugins_aladino_actions
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/reviewpad/go-conventionalcommits"
 	"github.com/reviewpad/go-conventionalcommits/parser"
@@ -23,6 +24,7 @@ func CommitLint() *aladino.BuiltInAction {
 
 func commitLintCode(e aladino.Env, _ []aladino.Value) error {
 	entity := e.GetTarget().GetTargetEntity()
+	output := new(strings.Builder)
 
 	prNum := entity.Number
 	owner := entity.Owner
@@ -41,8 +43,11 @@ func commitLintCode(e aladino.Env, _ []aladino.Value) error {
 			body := fmt.Sprintf("**Unconventional commit detected**: '%v' (%v)", commitMsg, ghCommit.GetSHA())
 			reportedMessages := e.GetBuiltInsReportedMessages()
 			reportedMessages[aladino.SEVERITY_ERROR] = append(reportedMessages[aladino.SEVERITY_ERROR], body)
+			output.WriteString(fmt.Sprintf("%s\n", body))
 		}
 	}
+
+	e.GetCommandOutput().Output = output.String()
 
 	return nil
 }

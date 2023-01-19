@@ -11,6 +11,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
+type CommandOutput struct {
+	Output string
+}
+
 func NewCommands(out io.Writer, args []string) *cobra.Command {
 	root := &cobra.Command{
 		Use:    "/reviewpad",
