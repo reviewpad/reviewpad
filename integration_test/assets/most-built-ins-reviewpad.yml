@@ -156,7 +156,7 @@ workflows:
     if:
       - $isElementOf("bug", $labels())
     then:
-      - $removeLabels(["bug", "duplicate"])
+      - $removeLabels(["bug", "wontfix"])
       - $removeLabel("documentation")
 
   - name: pull-request-count-by

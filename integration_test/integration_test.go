@@ -140,7 +140,7 @@ func TestIntegration(t *testing.T) {
 	integrationTestQueryData := map[string]interface{}{
 		"owner":       githubv4.String(repoOwner),
 		"name":        githubv4.String(repoName),
-		"labelsQuery": githubv4.String("bug | documentation | duplicate"),
+		"labelsQuery": githubv4.String("bug | documentation | wontfix"),
 	}
 
 	err = githubClient.GetClientGraphQL().Query(ctx, &integrationTestQuery, integrationTestQueryData)
