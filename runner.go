@@ -100,6 +100,8 @@ func RunReviewpadCommand(
 	env *engine.Env,
 	aladinoInterpreter engine.Interpreter,
 ) (engine.ExitStatus, *engine.Program, error) {
+	env.Interpreter.CleanReport()
+
 	command := eventDetails.Payload.(*github.IssueCommentEvent).GetComment().GetBody()
 
 	program, err := engine.EvalCommand(command, env)
@@ -134,8 +136,6 @@ func RunReviewpadCommand(
 
 		return engine.ExitStatusFailure, nil, err
 	}
-
-	env.Interpreter.Report(engine.VERBOSE_MODE, false)
 
 	err = collector.Collect("Completed Command Execution", map[string]interface{}{})
 	if err != nil {

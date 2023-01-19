@@ -24,6 +24,10 @@ func (report *Report) addToReport(statement *engine.Statement) {
 	report.Actions = append(report.Actions, statement.GetStatementCode())
 }
 
+func (report *Report) cleanReport() {
+	report.Actions = []string{}
+}
+
 func ReportHeader(safeMode bool) string {
 	var sb strings.Builder
 

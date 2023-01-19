@@ -153,6 +153,13 @@ func (i *Interpreter) ExecStatement(statement *engine.Statement) error {
 	return nil
 }
 
+func (i *Interpreter) CleanReport() {
+	i.Env.GetReport().cleanReport()
+	for severity := range i.Env.GetBuiltInsReportedMessages() {
+		i.Env.GetBuiltInsReportedMessages()[severity] = []string{}
+	}
+}
+
 func (i *Interpreter) Report(mode string, safeMode bool) error {
 	i.Env.GetLogger().Info("generating report")
 
