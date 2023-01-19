@@ -13,8 +13,8 @@ import (
 func AssignRandomReviewerCmd() *cobra.Command {
 	assignRandomReviewerCmd := &cobra.Command{
 		Use:           "assign-random-reviewer",
-		Short:         "Assign random reviewer to a pull request",
-		Long:          "Assigns a random user of the GitHub organization as the reviewer.",
+		Short:         "Assign a random reviewer to a pull request",
+		Long:          "Assign a random user from the GitHub organization as a pull request reviewer",
 		SilenceUsage:  true,
 		SilenceErrors: true,
 		Args: func(cmd *cobra.Command, args []string) error {
