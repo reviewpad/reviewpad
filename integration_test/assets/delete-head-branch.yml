@@ -7,4 +7,3 @@ workflows:
       - 'true'
     then:
       - $deleteHeadBranch()
-  

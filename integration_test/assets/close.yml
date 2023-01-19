@@ -7,4 +7,3 @@ workflows:
       - 'true'
     then:
       - $close("closing because requirements weren't met")
-  
