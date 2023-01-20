@@ -27,6 +27,7 @@ func deleteHeadBranch(e aladino.Env, args []aladino.Value) error {
 	}
 
 	if target.PullRequest.GetHead().GetRepo().GetFork() {
+		e.GetLogger().Warnln("$deleteHeadBranch built-in action doesn't work across forks")
 		return nil
 	}
 
