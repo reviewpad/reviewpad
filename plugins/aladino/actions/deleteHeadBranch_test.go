@@ -121,8 +121,7 @@ func TestDeleteHeadBranch(t *testing.T) {
 					mock.GetReposPullsByOwnerByRepoByPullNumber,
 					http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 						utils.MustWriteBytes(w, mock.MustMarshal(aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
-							Merged:   github.Bool(true),
-							ClosedAt: nil,
+							Merged: github.Bool(true),
 							Head: &github.PullRequestBranch{
 								Repo: &github.Repository{
 									Fork: github.Bool(true),
