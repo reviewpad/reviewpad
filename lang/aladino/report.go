@@ -115,8 +115,12 @@ func BuildDryRunExecutionReport(program *engine.Program) string {
 
 	sb.WriteString("```yaml\n")
 
-	for _, statement := range program.GetProgramStatements() {
-		sb.WriteString(fmt.Sprintf("%v\n", statement.GetStatementCode()))
+	if len(program.GetProgramStatements()) == 0 {
+		sb.WriteString("No actions triggered")
+	} else {
+		for _, statement := range program.GetProgramStatements() {
+			sb.WriteString(fmt.Sprintf("%v\n", statement.GetStatementCode()))
+		}
 	}
 
 	sb.WriteString("```\n")
