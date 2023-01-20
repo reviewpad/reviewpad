@@ -6,6 +6,7 @@ on:
 
 env:
   LD_LIBRARY_PATH: /usr/local/lib
+  INPUT_SEMANTIC_SERVICE: 0.0.0.0:3006
 
 jobs:
   pr-build:
