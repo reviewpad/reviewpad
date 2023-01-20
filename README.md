@@ -150,6 +150,7 @@ The integration tests run reviewpad on an actual repository and pull request. Th
 - at least 3 labels named `bug`, `documentation`, `wontfix` (Github adds this labels to every new repository by default)
 - a team called `integration-test` with at least 3 members
 - a project called `[INTEGRATION TESTS] Reviewpad` with `Todo` and `In Progress` status.
+- a Github status check called `log event`.
 
 #### Required Environment Variables
 

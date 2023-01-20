@@ -160,6 +160,7 @@ func TestIntegration(t *testing.T) {
 		commitMessage          string
 		wantErr                error
 		exitStatus             []engine.ExitStatus
+		cleanup                func(context.Context, *github.GithubClient, string, string, string) error
 	}{
 		"kitchen-sink": {
 			createPullRequestInput: githubv4.CreatePullRequestInput{
@@ -195,8 +196,9 @@ func TestIntegration(t *testing.T) {
 				},
 			},
 			commitMessage:  "kitchen sink test",
-			reviewpadFiles: []*engine.ReviewpadFile{mostBuiltInsReviewpadFile, deleteHeadBranchReviewpadFile},
-			exitStatus:     []engine.ExitStatus{engine.ExitStatusSuccess, engine.ExitStatusSuccess},
+			reviewpadFiles: []*engine.ReviewpadFile{mostBuiltInsReviewpadFile},
+			exitStatus:     []engine.ExitStatus{engine.ExitStatusSuccess},
+			cleanup:        deleteBranch,
 		},
 		"merge-and-delete": {
 			createPullRequestInput: githubv4.CreatePullRequestInput{
@@ -305,8 +307,17 @@ func TestIntegration(t *testing.T) {
 				assert.Equal(test.wantErr, err)
 				assert.Equal(test.exitStatus[i], exitStatus)
 			}
+
+			if test.cleanup != nil {
+				err := test.cleanup(ctx, githubClient, repoOwner, repoName, branchName)
+				assert.Nil(err)
+			}
 		})
 	}
+}
+
+func deleteBranch(ctx context.Context, githubClient *github.GithubClient, owner, repo, branchName string) error {
+	return githubClient.DeleteReference(ctx, owner, repo, fmt.Sprintf("refs/heads/%s", branchName))
 }
 
 func mapSlice[T any, M any](a []T, f func(T) M) *[]M {
