@@ -26,5 +26,9 @@ func deleteHeadBranch(e aladino.Env, args []aladino.Value) error {
 		return nil
 	}
 
+	if target.PullRequest.GetHead().GetRepo().GetFork() {
+		return nil
+	}
+
 	return e.GetGithubClient().DeleteReference(e.GetCtx(), targetEntity.Owner, targetEntity.Repo, "heads/"+*target.PullRequest.Head.Ref)
 }
