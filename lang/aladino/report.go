@@ -109,13 +109,12 @@ func BuildDryRunExecutionReport(program *engine.Program) string {
 
 	var sb strings.Builder
 
-	sb.WriteString("**Reviewpad Report** (Reviewpad ran in dry-run mode because configuration has changed)\n\n")
+	sb.WriteString(ReportHeader(false, true))
 
 	sb.WriteString(":scroll: **Actions to be executed**\n")
 
 	sb.WriteString("```yaml\n")
 
-	// Report
 	for _, statement := range program.GetProgramStatements() {
 		sb.WriteString(fmt.Sprintf("%v\n", statement.GetStatementCode()))
 	}
