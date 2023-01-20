@@ -97,10 +97,30 @@ func RunReviewpadCommand(
 	gitHubClient *gh.GithubClient,
 	targetEntity *handler.TargetEntity,
 	eventDetails *handler.EventDetails,
+	reviewpadFile *engine.ReviewpadFile,
 	env *engine.Env,
 	aladinoInterpreter engine.Interpreter,
 ) (engine.ExitStatus, *engine.Program, error) {
 	command := eventDetails.Payload.(*github.IssueCommentEvent).GetComment().GetBody()
+
+	if utils.IsReviewpadDryRunCommand(command) {
+		program, err := engine.EvalConfigurationFile(reviewpadFile, env)
+		if err != nil {
+			logErrorAndCollect(logger, collector, "error evaluating configuration file", err)
+			return engine.ExitStatusFailure, nil, err
+		}
+
+		report := aladino.BuildDryRunExecutionReport(program)
+
+		_, _, err = gitHubClient.CreateComment(env.Ctx, targetEntity.Owner, targetEntity.Repo, targetEntity.Number, &github.IssueComment{
+			Body: &report,
+		})
+		if err != nil {
+			return engine.ExitStatusFailure, program, fmt.Errorf("error on creating report comment %v", err.(*github.ErrorResponse).Message)
+		}
+
+		return engine.ExitStatusSuccess, program, nil
+	}
 
 	program, err := engine.EvalCommand(command, env)
 	if err != nil {
@@ -279,6 +299,7 @@ func Run(
 			gitHubClient,
 			targetEntity,
 			eventDetails,
+			reviewpadFile,
 			env,
 			aladinoInterpreter,
 		)

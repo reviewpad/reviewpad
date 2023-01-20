@@ -51,7 +51,7 @@ func TestAddToReport(t *testing.T) {
 func TestReportHeader(t *testing.T) {
 	wantReportHeader := "<!--@annotation-reviewpad-report-->\n**Reviewpad Report**\n\n"
 
-	gotReportHeader := ReportHeader(false)
+	gotReportHeader := ReportHeader(false, false)
 
 	assert.Equal(t, wantReportHeader, gotReportHeader)
 }
@@ -59,7 +59,7 @@ func TestReportHeader(t *testing.T) {
 func TestReportHeader_WhenSafeMode(t *testing.T) {
 	wantReportHeader := "<!--@annotation-reviewpad-report-->\n**Reviewpad Report** (Reviewpad ran in dry-run mode because configuration has changed)\n\n"
 
-	gotReportHeader := ReportHeader(true)
+	gotReportHeader := ReportHeader(true, false)
 
 	assert.Equal(t, wantReportHeader, gotReportHeader)
 }
@@ -75,7 +75,7 @@ func TestBuildReport(t *testing.T) {
 :scroll: **Executed actions**
 ` + "```yaml\n$addLabel(\"test\")\n```\n"
 
-	gotReport := buildReport(engine.VERBOSE_MODE, false, make(map[Severity][]string), &report)
+	gotReport := buildReport(engine.VERBOSE_MODE, false, false, make(map[Severity][]string), &report)
 
 	assert.Equal(t, wantReport, gotReport)
 }

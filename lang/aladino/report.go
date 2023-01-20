@@ -24,7 +24,7 @@ func (report *Report) addToReport(statement *engine.Statement) {
 	report.Actions = append(report.Actions, statement.GetStatementCode())
 }
 
-func ReportHeader(safeMode bool) string {
+func ReportHeader(safeMode, dryRun bool) string {
 	var sb strings.Builder
 
 	// Annotation
@@ -33,7 +33,11 @@ func ReportHeader(safeMode bool) string {
 	if safeMode {
 		sb.WriteString("**Reviewpad Report** (Reviewpad ran in dry-run mode because configuration has changed)\n\n")
 	} else {
-		sb.WriteString("**Reviewpad Report**\n\n")
+		if dryRun {
+			sb.WriteString("**Reviewpad Report** (Reviewpad ran in dry-run mode)\n\n")
+		} else {
+			sb.WriteString("**Reviewpad Report**\n\n")
+		}
 	}
 
 	return sb.String()
@@ -66,10 +70,10 @@ func buildCommentSection(comments map[Severity][]string) string {
 	return sb.String()
 }
 
-func buildReport(mode string, safeMode bool, reportComments map[Severity][]string, report *Report) string {
+func buildReport(mode string, dryRun, safeMode bool, reportComments map[Severity][]string, report *Report) string {
 	var sb strings.Builder
 
-	sb.WriteString(ReportHeader(safeMode))
+	sb.WriteString(ReportHeader(safeMode, dryRun))
 	sb.WriteString(buildCommentSection(reportComments))
 	if mode == engine.VERBOSE_MODE || safeMode {
 		sb.WriteString(BuildVerboseReport(report))
@@ -91,6 +95,28 @@ func BuildVerboseReport(report *Report) string {
 
 	// Report
 	for _, action := range report.Actions {
+		sb.WriteString(fmt.Sprintf("%v\n", action))
+	}
+
+	sb.WriteString("```\n")
+	return sb.String()
+}
+
+func BuildDryRunExecutionReport(program *engine.Program) string {
+	if program == nil {
+		return ""
+	}
+
+	var sb strings.Builder
+
+	sb.WriteString("**Reviewpad Report** (Reviewpad ran in dry-run mode because configuration has changed)\n\n")
+
+	sb.WriteString(":scroll: **Actions to be executed**\n")
+
+	sb.WriteString("```yaml\n")
+
+	// Report
+	for _, action := range program.GetProgramStatements() {
 		sb.WriteString(fmt.Sprintf("%v\n", action))
 	}
 
