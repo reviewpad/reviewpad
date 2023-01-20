@@ -245,9 +245,14 @@ func (i *Interpreter) ReportMetrics() error {
 }
 
 func (i *Interpreter) ReportReviewpadCommandOutput(command string) error {
+	output := i.Env.GetCommandOutput().Output
+	if output == "" {
+		return nil
+	}
+
 	report := new(strings.Builder)
 	report.WriteString(fmt.Sprintf("### `%s` Output:\n", command))
-	report.WriteString(fmt.Sprintf("%v\n", i.Env.GetCommandOutput().Output))
+	report.WriteString(fmt.Sprintf("%v\n", output))
 
 	_, _, err := i.Env.GetGithubClient().CreateComment(i.Env.GetCtx(), i.Env.GetTarget().GetTargetEntity().Owner, i.Env.GetTarget().GetTargetEntity().Repo, i.Env.GetTarget().GetTargetEntity().Number, &github.IssueComment{
 		Body: github.String(report.String()),
