@@ -116,8 +116,8 @@ func BuildDryRunExecutionReport(program *engine.Program) string {
 	sb.WriteString("```yaml\n")
 
 	// Report
-	for _, action := range program.GetProgramStatements() {
-		sb.WriteString(fmt.Sprintf("%v\n", action))
+	for _, statement := range program.GetProgramStatements() {
+		sb.WriteString(fmt.Sprintf("%v\n", statement.GetStatementCode()))
 	}
 
 	sb.WriteString("```\n")
