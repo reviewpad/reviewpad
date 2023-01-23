@@ -18,6 +18,7 @@ import (
 type GithubClient struct {
 	clientREST *github.Client
 	clientGQL  *githubv4.Client
+	token      string
 }
 
 type GithubAppClient struct {
@@ -43,6 +44,7 @@ func NewGithubClientFromToken(ctx context.Context, token string) *GithubClient {
 	return &GithubClient{
 		clientREST: clientREST,
 		clientGQL:  clientGQL,
+		token:      token,
 	}
 }
 
@@ -53,6 +55,10 @@ func (c *GithubClient) GetClientREST() *github.Client {
 
 func (c *GithubClient) GetClientGraphQL() *githubv4.Client {
 	return c.clientGQL
+}
+
+func (c *GithubClient) GetToken() string {
+	return c.token
 }
 
 func NewGithubAppClient(gitHubAppID int64, gitHubAppPrivateKey []byte) (*GithubAppClient, error) {
