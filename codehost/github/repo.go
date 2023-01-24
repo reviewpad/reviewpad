@@ -31,7 +31,7 @@ func CloneRepository(log *logrus.Entry, url string, token string, path string, o
 	// TODO: Validate url has the correct format
 	splitted := strings.Split(url, "https://")
 	if token != "" {
-		url = fmt.Sprintf("https://x-access-token:%v@%v", token, splitted[1])
+		url = fmt.Sprintf("https://%v@%v", token, splitted[1])
 	}
 
 	log.Infof("cloning %s to %s", url, dir)
