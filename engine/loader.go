@@ -9,6 +9,7 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
@@ -25,6 +26,8 @@ type LoadEnv struct {
 
 func logExtendedProperties(logger *logrus.Entry, fileA *ReviewpadFile, fileAUri string, fileB *ReviewpadFile, fileBUri string, resultFile *ReviewpadFile) {
 	// Extended labels
+	log.Printf("FILE A: %s", fileAUri)
+	log.Printf("FILE B: %s", fileBUri)
 	for labelKeyName, label := range resultFile.Labels {
 		if _, ok := fileA.Labels[labelKeyName]; ok {
 			if _, ok := fileB.Labels[labelKeyName]; ok {
