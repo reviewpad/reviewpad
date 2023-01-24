@@ -2,6 +2,9 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
+//go:build integration
+// +build integration
+
 package integration_test
 
 import (
@@ -128,7 +131,7 @@ func TestIntegration(t *testing.T) {
 	buildInFailReviewpadFile, err := engine.Load(ctx, githubClient, rawBuiltInFailReviewpadFile)
 	require.Nil(err)
 
-	buildInCloseReviewpadFile, err := engine.Load(ctx, githubClient, rawBuiltInCloseReviewpadFile)
+	closeReviewpadFile, err := engine.Load(ctx, githubClient, rawBuiltInCloseReviewpadFile)
 	require.Nil(err)
 
 	// contains a graphql query that fetches the necessary data
@@ -158,7 +161,7 @@ func TestIntegration(t *testing.T) {
 		exitStatus             []engine.ExitStatus
 		cleanup                func(context.Context, *github.GithubClient, string, string, string) error
 	}{
-		"other-builtins": {
+		"kitchen-sink": {
 			createPullRequestInput: githubv4.CreatePullRequestInput{
 				RepositoryID: integrationTestQuery.Repository.ID,
 				BaseRefName:  githubv4.String(integrationTestQuery.Repository.DefaultBranchRef.Name),
@@ -235,7 +238,7 @@ func TestIntegration(t *testing.T) {
 				},
 			},
 			commitMessage:  "test: fail",
-			reviewpadFiles: []*engine.ReviewpadFile{buildInFailReviewpadFile, buildInCloseReviewpadFile, builtInDeleteHeadBranchReviewpadFile},
+			reviewpadFiles: []*engine.ReviewpadFile{buildInFailReviewpadFile, closeReviewpadFile, builtInDeleteHeadBranchReviewpadFile},
 			exitStatus:     []engine.ExitStatus{engine.ExitStatusFailure, engine.ExitStatusSuccess, engine.ExitStatusSuccess},
 		},
 	}
