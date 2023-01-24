@@ -38,16 +38,16 @@ func logExtendedProperties(logger *logrus.Entry, extensionUri string, extensionF
 	// Extended groups
 	for _, group := range resultFile.Groups {
 		var extensionFileGroup, previousResultFileGroup PadGroup
-		for _, groupA := range extensionFile.Groups {
-			if groupA.Name == group.Name {
-				extensionFileGroup = groupA
+		for _, eGroup := range extensionFile.Groups {
+			if eGroup.Name == group.Name {
+				extensionFileGroup = eGroup
 				break
 			}
 		}
 
-		for _, groupB := range previousResultFile.Groups {
-			if groupB.Name == group.Name {
-				previousResultFileGroup = groupB
+		for _, pGroup := range previousResultFile.Groups {
+			if pGroup.Name == group.Name {
+				previousResultFileGroup = pGroup
 				break
 			}
 		}
@@ -62,16 +62,16 @@ func logExtendedProperties(logger *logrus.Entry, extensionUri string, extensionF
 	// Extended rules
 	for _, rule := range resultFile.Rules {
 		var extensionFileRule, previousResultFileRule PadRule
-		for _, ruleA := range extensionFile.Rules {
-			if ruleA.Name == rule.Name {
-				extensionFileRule = ruleA
+		for _, eRule := range extensionFile.Rules {
+			if eRule.Name == rule.Name {
+				extensionFileRule = eRule
 				break
 			}
 		}
 
-		for _, ruleB := range previousResultFile.Rules {
-			if ruleB.Name == rule.Name {
-				previousResultFileRule = ruleB
+		for _, pRule := range previousResultFile.Rules {
+			if pRule.Name == rule.Name {
+				previousResultFileRule = pRule
 				break
 			}
 		}
@@ -86,16 +86,16 @@ func logExtendedProperties(logger *logrus.Entry, extensionUri string, extensionF
 	// Extended workflows
 	for _, workflow := range resultFile.Workflows {
 		var extensionFileWorkflow, previousResultFileWorkflow PadWorkflow
-		for _, workflowA := range extensionFile.Workflows {
-			if workflowA.Name == workflow.Name {
-				extensionFileWorkflow = workflowA
+		for _, eWorkflow := range extensionFile.Workflows {
+			if eWorkflow.Name == workflow.Name {
+				extensionFileWorkflow = eWorkflow
 				break
 			}
 		}
 
-		for _, workflowB := range previousResultFile.Workflows {
-			if workflowB.Name == workflow.Name {
-				previousResultFileWorkflow = workflowB
+		for _, pWorkflow := range previousResultFile.Workflows {
+			if pWorkflow.Name == workflow.Name {
+				previousResultFileWorkflow = pWorkflow
 				break
 			}
 		}
@@ -110,16 +110,16 @@ func logExtendedProperties(logger *logrus.Entry, extensionUri string, extensionF
 	// Extended pipelines
 	for _, pipeline := range resultFile.Pipelines {
 		var extensionFilePipeline, previousResultFilePipeline PadPipeline
-		for _, pipelineA := range extensionFile.Pipelines {
-			if pipelineA.Name == pipeline.Name {
-				extensionFilePipeline = pipelineA
+		for _, ePipeline := range extensionFile.Pipelines {
+			if ePipeline.Name == pipeline.Name {
+				extensionFilePipeline = ePipeline
 				break
 			}
 		}
 
-		for _, pipelineB := range previousResultFile.Pipelines {
-			if pipelineB.Name == pipeline.Name {
-				previousResultFilePipeline = pipelineB
+		for _, pPipeline := range previousResultFile.Pipelines {
+			if pPipeline.Name == pipeline.Name {
+				previousResultFilePipeline = pPipeline
 				break
 			}
 		}
