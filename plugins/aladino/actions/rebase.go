@@ -55,7 +55,7 @@ func rebaseCode(e aladino.Env, args []aladino.Value) error {
 		return err
 	}
 
-	err = gh.Push(log, repo, "origin", headRef, true)
+	err = gh.Push(log, repo, "origin", headRef, githubToken, true)
 	if err != nil {
 		return err
 	}
