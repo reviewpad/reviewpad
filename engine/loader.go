@@ -23,13 +23,13 @@ type LoadEnv struct {
 	Stack   map[string]bool
 }
 
-func logExtendedProperties(logger *logrus.Entry, extensionUri string, extensionFile, previousResultFile, resultFile *ReviewpadFile) {
+func logExtendedProperties(logger *logrus.Entry, fileA *ReviewpadFile, fileAUri string, fileB, resultFile *ReviewpadFile) {
 	// Extended labels
-	for labelKeyName, label := range resultFile.Labels {
-		if _, ok := extensionFile.Labels[labelKeyName]; ok {
-			if _, ok := previousResultFile.Labels[labelKeyName]; ok {
-				if extensionFile.Labels[labelKeyName].equals(label) {
-					logger.Warnf("label %s has been overridden by %s", labelKeyName, extensionUri)
+	for labelName, label := range resultFile.Labels {
+		if _, ok := fileA.Labels[labelName]; ok {
+			if _, ok := fileB.Labels[labelName]; ok {
+				if fileA.Labels[labelName].equals(label) {
+					logger.Warnf("label '%s' has been overridden by %s", labelName, fileAUri)
 				}
 			}
 		}
@@ -37,96 +37,96 @@ func logExtendedProperties(logger *logrus.Entry, extensionUri string, extensionF
 
 	// Extended groups
 	for _, group := range resultFile.Groups {
-		var extensionFileGroup, previousResultFileGroup PadGroup
-		for _, eGroup := range extensionFile.Groups {
-			if eGroup.Name == group.Name {
-				extensionFileGroup = eGroup
+		var groupA, groupB *PadGroup
+		for _, gA := range fileA.Groups {
+			if gA.Name == group.Name {
+				groupA = &gA
 				break
 			}
 		}
 
-		for _, pGroup := range previousResultFile.Groups {
-			if pGroup.Name == group.Name {
-				previousResultFileGroup = pGroup
+		for _, gB := range fileB.Groups {
+			if gB.Name == group.Name {
+				groupB = &gB
 				break
 			}
 		}
 
-		if !extensionFileGroup.equals(PadGroup{}) && !previousResultFileGroup.equals(PadGroup{}) {
-			if extensionFileGroup.equals(group) {
-				logger.Warnf("group %s has been overridden by %s", group.Name, extensionUri)
+		if groupA != nil && groupB != nil {
+			if groupA.equals(group) {
+				logger.Warnf("group '%s' has been overridden by %s", group.Name, fileAUri)
 			}
 		}
 	}
 
 	// Extended rules
 	for _, rule := range resultFile.Rules {
-		var extensionFileRule, previousResultFileRule PadRule
-		for _, eRule := range extensionFile.Rules {
-			if eRule.Name == rule.Name {
-				extensionFileRule = eRule
+		var ruleA, ruleB *PadRule
+		for _, rA := range fileA.Rules {
+			if rA.Name == rule.Name {
+				ruleA = &rA
 				break
 			}
 		}
 
-		for _, pRule := range previousResultFile.Rules {
-			if pRule.Name == rule.Name {
-				previousResultFileRule = pRule
+		for _, rB := range fileB.Rules {
+			if rB.Name == rule.Name {
+				ruleB = &rB
 				break
 			}
 		}
 
-		if !extensionFileRule.equals(PadRule{}) && !previousResultFileRule.equals(PadRule{}) {
-			if extensionFileRule.equals(rule) {
-				logger.Warnf("rule %s has been overridden by %s", rule.Name, extensionUri)
+		if ruleA != nil && ruleB != nil {
+			if ruleA.equals(rule) {
+				logger.Warnf("rule '%s' has been overridden by %s", rule.Name, fileAUri)
 			}
 		}
 	}
 
 	// Extended workflows
 	for _, workflow := range resultFile.Workflows {
-		var extensionFileWorkflow, previousResultFileWorkflow PadWorkflow
-		for _, eWorkflow := range extensionFile.Workflows {
-			if eWorkflow.Name == workflow.Name {
-				extensionFileWorkflow = eWorkflow
+		var workflowA, workflowB *PadWorkflow
+		for _, wA := range fileA.Workflows {
+			if wA.Name == workflow.Name {
+				workflowA = &wA
 				break
 			}
 		}
 
-		for _, pWorkflow := range previousResultFile.Workflows {
-			if pWorkflow.Name == workflow.Name {
-				previousResultFileWorkflow = pWorkflow
+		for _, wB := range fileB.Workflows {
+			if wB.Name == workflow.Name {
+				workflowB = &wB
 				break
 			}
 		}
 
-		if !extensionFileWorkflow.equals(PadWorkflow{}) && !previousResultFileWorkflow.equals(PadWorkflow{}) {
-			if extensionFileWorkflow.equals(workflow) {
-				logger.Warnf("workflow %s has been overridden by %s", workflow.Name, extensionUri)
+		if workflowA != nil && workflowB != nil {
+			if workflowA.equals(workflow) {
+				logger.Warnf("workflow '%s' has been overridden by %s", workflow.Name, fileAUri)
 			}
 		}
 	}
 
 	// Extended pipelines
 	for _, pipeline := range resultFile.Pipelines {
-		var extensionFilePipeline, previousResultFilePipeline PadPipeline
-		for _, ePipeline := range extensionFile.Pipelines {
-			if ePipeline.Name == pipeline.Name {
-				extensionFilePipeline = ePipeline
+		var pipelineA, pipelineB *PadPipeline
+		for _, pA := range fileA.Pipelines {
+			if pA.Name == pipeline.Name {
+				pipelineA = &pA
 				break
 			}
 		}
 
-		for _, pPipeline := range previousResultFile.Pipelines {
-			if pPipeline.Name == pipeline.Name {
-				previousResultFilePipeline = pPipeline
+		for _, pB := range fileB.Pipelines {
+			if pB.Name == pipeline.Name {
+				pipelineB = &pB
 				break
 			}
 		}
 
-		if !extensionFilePipeline.equals(PadPipeline{}) && !previousResultFilePipeline.equals(PadPipeline{}) {
-			if extensionFilePipeline.equals(pipeline) {
-				logger.Warnf("pipeline %s has been overridden by %s", pipeline.Name, extensionUri)
+		if pipelineA != nil && pipelineB != nil {
+			if pipelineA.equals(pipeline) {
+				logger.Warnf("pipeline '%s' has been overridden by %s", pipeline.Name, fileAUri)
 			}
 		}
 	}
@@ -138,7 +138,7 @@ func hash(data []byte) string {
 	return dHash
 }
 
-func Load(ctx context.Context, log *logrus.Entry, githubClient *gh.GithubClient, data []byte) (*ReviewpadFile, error) {
+func Load(ctx context.Context, logger *logrus.Entry, githubClient *gh.GithubClient, data []byte) (*ReviewpadFile, error) {
 	file, err := parse(data)
 	if err != nil {
 		return nil, err
@@ -161,12 +161,10 @@ func Load(ctx context.Context, log *logrus.Entry, githubClient *gh.GithubClient,
 		return nil, err
 	}
 
-	file, err = processExtends(ctx, log, githubClient, file, "root file", env)
+	file, err = processExtends(ctx, logger, githubClient, file, "root file", env)
 	if err != nil {
 		return nil, err
 	}
-
-	log.Infof("FILE: %+v", file)
 
 	file, err = normalize(file, inlineRulesNormalizer())
 	if err != nil {
@@ -368,7 +366,7 @@ func loadExtension(ctx context.Context, githubClient *gh.GithubClient, extension
 // processExtends inlines files into the current reviewpad file
 // precedence: current file > extends file
 // Post-condition: ReviewpadFile without extends statements
-func processExtends(ctx context.Context, log *logrus.Entry, githubClient *gh.GithubClient, file *ReviewpadFile, fileUri string, env *LoadEnv) (*ReviewpadFile, error) {
+func processExtends(ctx context.Context, logger *logrus.Entry, githubClient *gh.GithubClient, file *ReviewpadFile, fileUri string, env *LoadEnv) (*ReviewpadFile, error) {
 	extendedFile := &ReviewpadFile{}
 	for _, extensionUri := range file.Extends {
 		eFile, eHash, err := loadExtension(ctx, githubClient, extensionUri)
@@ -382,7 +380,7 @@ func processExtends(ctx context.Context, log *logrus.Entry, githubClient *gh.Git
 
 		env.Stack[eHash] = true
 
-		extensionFile, err := processExtends(ctx, log, githubClient, eFile, extensionUri, env)
+		extensionFile, err := processExtends(ctx, logger, githubClient, eFile, extensionUri, env)
 		if err != nil {
 			return nil, err
 		}
@@ -390,18 +388,18 @@ func processExtends(ctx context.Context, log *logrus.Entry, githubClient *gh.Git
 		// remove from the stack
 		delete(env.Stack, eHash)
 
-		previousExtendedFile := *extendedFile
+		extendedFileBeforeExtend := *extendedFile
 
 		extendedFile.extend(extensionFile)
 
-		logExtendedProperties(log, extensionUri, extensionFile, &previousExtendedFile, extendedFile)
+		logExtendedProperties(logger, extensionFile, extensionUri, &extendedFileBeforeExtend, extendedFile)
 	}
 
-	previousExtendedFile := *extendedFile
+	extendedFileBeforeExtend := *extendedFile
 
 	extendedFile.extend(file)
 
-	logExtendedProperties(log, fileUri, file, &previousExtendedFile, extendedFile)
+	logExtendedProperties(logger, file, fileUri, &extendedFileBeforeExtend, extendedFile)
 
 	// reset all extends
 	extendedFile.Extends = []string{}
