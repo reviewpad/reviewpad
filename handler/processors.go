@@ -459,7 +459,7 @@ func processCheckSuiteEvent(log *logrus.Entry, token string, event *github.Check
 			}
 		}
 
-		log.Infof("no pr found with the head sha %v", event.CheckSuite.GetHeadSHA())
+		log.Infof("no pull request found with the head sha %v", event.CheckSuite.GetHeadSHA())
 
 		return []*TargetEntity{}, eventDetails, nil
 	} else {
