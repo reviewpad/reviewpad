@@ -9,7 +9,6 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
@@ -26,16 +25,13 @@ type LoadEnv struct {
 
 func logExtendedProperties(logger *logrus.Entry, fileA *ReviewpadFile, fileAUri string, fileB *ReviewpadFile, fileBUri string, resultFile *ReviewpadFile) {
 	// Extended labels
-	log.Printf("RESULT FILE LABELS: %+v", resultFile.Labels)
-	log.Printf("A FILE LABELS: %+v", fileA.Labels)
-	log.Printf("B FILE LABELS: %+v", fileB.Labels)
-	for _, label := range resultFile.Labels {
-		if _, ok := fileA.Labels[label.Name]; ok {
-			if _, ok := fileB.Labels[label.Name]; ok {
-				if fileA.Labels[label.Name].equals(label) {
-					logger.Warnf("label %s has been overridden by %s", label.Name, fileAUri)
+	for labelKeyName, label := range resultFile.Labels {
+		if _, ok := fileA.Labels[labelKeyName]; ok {
+			if _, ok := fileB.Labels[labelKeyName]; ok {
+				if fileA.Labels[labelKeyName].equals(label) {
+					logger.Warnf("label %s has been overridden by %s", labelKeyName, fileAUri)
 				} else {
-					logger.Warnf("label %s has been overridden by %s", label.Name, fileBUri)
+					logger.Warnf("label %s has been overridden by %s", labelKeyName, fileBUri)
 				}
 			}
 		}
