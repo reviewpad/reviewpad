@@ -66,8 +66,8 @@ github.com/libgit2/git2go/v31 v31.7.9/go.mod h1:c/rkJcBcUFx6wHaT++UwNpKvIsmPNqCe
 github.com/mattn/go-shellwords v1.0.12 h1:M2zGm7EW6UQJvDeQxo4T51eKPurbeFbe8WtebGE2xrk=
 github.com/mattn/go-shellwords v1.0.12/go.mod h1:EZzvwXDESEeg03EKmM+RmDnNOPKG4lLtQsUlTZDWQ8Y=
 github.com/maxatome/go-testdeep v1.11.0 h1:Tgh5efyCYyJFGUYiT0qxBSIDeXw0F5zSoatlou685kk=
-github.com/migueleliasweb/go-github-mock v0.0.13 h1:pV4yG4XlL/fEPE1Er6MzErAYFyiRSBYw1oo2OojTiCQ=
-github.com/migueleliasweb/go-github-mock v0.0.13/go.mod h1:mD5w+9J3oBBMLr7uD6owEYlYBAL8tZd+BA7iGjI4EU8=
+github.com/migueleliasweb/go-github-mock v0.0.14 h1:yKEef6u8mTGHUeKFp3Lsp5cbrxoNwFLIcHee00iDlFk=
+github.com/migueleliasweb/go-github-mock v0.0.14/go.mod h1:mD5w+9J3oBBMLr7uD6owEYlYBAL8tZd+BA7iGjI4EU8=
 github.com/mitchellh/mapstructure v1.5.0 h1:jeMsZIYE/09sWLaz43PL7Gy6RuMjD2eJVyuac5Z2hdY=
 github.com/mitchellh/mapstructure v1.5.0/go.mod h1:bFUtVrKA4DC2yAKiSyO/QUcy7e+RRV2QTWOzhPopBRo=
 github.com/ohler55/ojg v1.17.2 h1:e8vUJa6l9v9li0T5xqQIDhVFnialk21LA1biXJlu0Rs=
