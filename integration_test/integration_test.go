@@ -2,9 +2,6 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-//go:build integration
-// +build integration
-
 package integration_test
 
 import (
@@ -101,37 +98,37 @@ func TestIntegration(t *testing.T) {
 	readmeFile, err := utils.ReadFile("./assets/README.md")
 	require.Nil(err)
 
-	binaryFile, err := utils.ReadFile("./assets/hello-world")
+	binaryFile, err := utils.ReadFile("./assets/binary")
 	require.Nil(err)
 
-	rawMostBuiltInsReviewpadFile, err := utils.ReadFile("./assets/most-built-ins-reviewpad.yml")
+	rawBuiltInOthersReviewpadFile, err := utils.ReadFile("./assets/builtin-others.yml")
 	require.Nil(err)
 
-	rawMergeReviewpadFile, err := utils.ReadFile("./assets/merge.yml")
+	rawBuiltInMergeReviewpadFile, err := utils.ReadFile("./assets/builtin-merge.yml")
 	require.Nil(err)
 
-	rawDeleteHeadBranchReviewpadFile, err := utils.ReadFile("./assets/delete-head-branch.yml")
+	rawBuiltInDeleteHeadBranchReviewpadFile, err := utils.ReadFile("./assets/builtin-delete-head-branch.yml")
 	require.Nil(err)
 
-	rawFailReviewpadFile, err := utils.ReadFile("./assets/fail.yml")
+	rawBuiltInFailReviewpadFile, err := utils.ReadFile("./assets/builtin-fail.yml")
 	require.Nil(err)
 
-	rawCloseReviewpadFile, err := utils.ReadFile("./assets/close.yml")
+	rawBuiltInCloseReviewpadFile, err := utils.ReadFile("./assets/builtin-close.yml")
 	require.Nil(err)
 
-	mostBuiltInsReviewpadFile, err := engine.Load(ctx, githubClient, rawMostBuiltInsReviewpadFile)
+	builtInOthersReviewpadFile, err := engine.Load(ctx, githubClient, rawBuiltInOthersReviewpadFile)
 	require.Nil(err)
 
-	mergeReviewpadFile, err := engine.Load(ctx, githubClient, rawMergeReviewpadFile)
+	builtInMergeReviewpadFile, err := engine.Load(ctx, githubClient, rawBuiltInMergeReviewpadFile)
 	require.Nil(err)
 
-	deleteHeadBranchReviewpadFile, err := engine.Load(ctx, githubClient, rawDeleteHeadBranchReviewpadFile)
+	builtInDeleteHeadBranchReviewpadFile, err := engine.Load(ctx, githubClient, rawBuiltInDeleteHeadBranchReviewpadFile)
 	require.Nil(err)
 
-	failReviewpadFile, err := engine.Load(ctx, githubClient, rawFailReviewpadFile)
+	buildInFailReviewpadFile, err := engine.Load(ctx, githubClient, rawBuiltInFailReviewpadFile)
 	require.Nil(err)
 
-	closeReviewpadFile, err := engine.Load(ctx, githubClient, rawCloseReviewpadFile)
+	buildInCloseReviewpadFile, err := engine.Load(ctx, githubClient, rawBuiltInCloseReviewpadFile)
 	require.Nil(err)
 
 	// contains a graphql query that fetches the necessary data
@@ -144,9 +141,8 @@ func TestIntegration(t *testing.T) {
 	}
 
 	err = githubClient.GetClientGraphQL().Query(ctx, &integrationTestQuery, integrationTestQueryData)
-	// ensure the required things are present on the repo which are
-	// at least one milestone
-	// at least 3 pre configured labels named bug, documentation and duplicate.
+	// Verify that the requirements to perform the integration tests are met.
+	// Mainly, that the repository has at least one milestone and at least the labels bug, documentation and wontfix.
 	require.Nil(err)
 	require.NotEmpty(integrationTestQuery.Repository.ID)
 	require.Len(integrationTestQuery.Repository.Milestones.Nodes, 1)
@@ -162,7 +158,7 @@ func TestIntegration(t *testing.T) {
 		exitStatus             []engine.ExitStatus
 		cleanup                func(context.Context, *github.GithubClient, string, string, string) error
 	}{
-		"kitchen-sink": {
+		"other-builtins": {
 			createPullRequestInput: githubv4.CreatePullRequestInput{
 				RepositoryID: integrationTestQuery.Repository.ID,
 				BaseRefName:  githubv4.String(integrationTestQuery.Repository.DefaultBranchRef.Name),
@@ -196,7 +192,7 @@ func TestIntegration(t *testing.T) {
 				},
 			},
 			commitMessage:  "kitchen sink test",
-			reviewpadFiles: []*engine.ReviewpadFile{mostBuiltInsReviewpadFile},
+			reviewpadFiles: []*engine.ReviewpadFile{builtInOthersReviewpadFile},
 			exitStatus:     []engine.ExitStatus{engine.ExitStatusSuccess},
 			cleanup:        deleteBranch,
 		},
@@ -216,7 +212,7 @@ func TestIntegration(t *testing.T) {
 				},
 			},
 			commitMessage:  "test: merge and delete",
-			reviewpadFiles: []*engine.ReviewpadFile{mergeReviewpadFile, deleteHeadBranchReviewpadFile},
+			reviewpadFiles: []*engine.ReviewpadFile{builtInMergeReviewpadFile, builtInDeleteHeadBranchReviewpadFile},
 			exitStatus:     []engine.ExitStatus{engine.ExitStatusSuccess, engine.ExitStatusSuccess},
 		},
 		"fail": {
@@ -239,7 +235,7 @@ func TestIntegration(t *testing.T) {
 				},
 			},
 			commitMessage:  "test: fail",
-			reviewpadFiles: []*engine.ReviewpadFile{failReviewpadFile, closeReviewpadFile, deleteHeadBranchReviewpadFile},
+			reviewpadFiles: []*engine.ReviewpadFile{buildInFailReviewpadFile, buildInCloseReviewpadFile, builtInDeleteHeadBranchReviewpadFile},
 			exitStatus:     []engine.ExitStatus{engine.ExitStatusFailure, engine.ExitStatusSuccess, engine.ExitStatusSuccess},
 		},
 	}
