@@ -433,8 +433,11 @@ func processCheckSuiteEvent(log *logrus.Entry, token string, event *github.Check
 		Payload:     event,
 	}
 
-	//  if the head is from a forked repository the pull_requests array will be empty on check suite events
+	// When the check suite is from a head of a forked repository the pull_requests array will be empty
+	// We need to fetch all the pull requests for the repository and find the one that matches the head sha
 	if len(event.CheckSuite.PullRequests) == 0 {
+		log.Infof("no pull requests found in check suite event. fetching all pull requests for repository %v", event.GetRepo().GetFullName())
+
 		prs, err := getPullRequests(token, event.GetRepo().GetFullName())
 		if err != nil {
 			return nil, nil, err
@@ -459,15 +462,15 @@ func processCheckSuiteEvent(log *logrus.Entry, token string, event *github.Check
 		log.Infof("no pr found with the head sha %v", event.CheckSuite.GetHeadSHA())
 
 		return []*TargetEntity{}, eventDetails, nil
-	}
-
-	for _, pr := range event.CheckSuite.PullRequests {
-		targetEntities = append(targetEntities, &TargetEntity{
-			Kind:   PullRequest,
-			Owner:  event.GetRepo().GetOwner().GetLogin(),
-			Repo:   event.GetRepo().GetName(),
-			Number: pr.GetNumber(),
-		})
+	} else {
+		for _, pr := range event.CheckSuite.PullRequests {
+			targetEntities = append(targetEntities, &TargetEntity{
+				Kind:   PullRequest,
+				Owner:  event.GetRepo().GetOwner().GetLogin(),
+				Repo:   event.GetRepo().GetName(),
+				Number: pr.GetNumber(),
+			})
+		}
 	}
 
 	return targetEntities, eventDetails, nil
