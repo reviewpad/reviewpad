@@ -27,7 +27,7 @@ require (
 	github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80
 	golang.org/x/exp v0.0.0-20230124142953-7f5a42a36c7e
 	golang.org/x/oauth2 v0.4.0
-	google.golang.org/grpc v1.52.0
+	google.golang.org/grpc v1.52.1
 	gopkg.in/yaml.v3 v3.0.1
 )
 
