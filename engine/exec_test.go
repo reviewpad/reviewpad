@@ -22,6 +22,7 @@ import (
 )
 
 func TestEval_WhenGitHubRequestsFail(t *testing.T) {
+	logger := logrus.NewEntry(logrus.New())
 	tests := map[string]struct {
 		inputReviewpadFilePath string
 		inputContext           context.Context
@@ -98,7 +99,7 @@ func TestEval_WhenGitHubRequestsFail(t *testing.T) {
 				assert.FailNow(t, fmt.Sprintf("Error reading reviewpad file: %v", err))
 			}
 
-			reviewpadFile, err := engine.Load(test.inputContext, test.inputGitHubClient, reviewpadFileData)
+			reviewpadFile, err := engine.Load(test.inputContext, logger, test.inputGitHubClient, reviewpadFileData)
 			if err != nil {
 				assert.FailNow(t, "Error parsing reviewpad file: %v", err)
 			}
@@ -271,6 +272,7 @@ func TestEvalCommand(t *testing.T) {
 }
 
 func TestEvalConfigurationFile(t *testing.T) {
+	logger := logrus.NewEntry(logrus.New())
 	tests := map[string]struct {
 		inputReviewpadFilePath string
 		inputContext           context.Context
@@ -425,7 +427,7 @@ func TestEvalConfigurationFile(t *testing.T) {
 				assert.FailNow(t, fmt.Sprintf("Error reading reviewpad file: %v", err))
 			}
 
-			reviewpadFile, err := engine.Load(test.inputContext, test.inputGitHubClient, reviewpadFileData)
+			reviewpadFile, err := engine.Load(test.inputContext, logger, test.inputGitHubClient, reviewpadFileData)
 			if err != nil {
 				assert.FailNow(t, fmt.Sprintf("Error parsing reviewpad file: %v", err))
 			}
