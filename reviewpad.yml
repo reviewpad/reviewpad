@@ -129,7 +129,7 @@ rules:
     spec: '$isDraft() && $rule("ship-mode")'
   
   - name: ship-approved-renovate-prs
-    spec: '$author() == "renovate[bot]" && $reviewerStatus("marcelosousa") == "APROVED"' 
+    spec: '$author() == "renovate[bot]" && $reviewerStatus("marcelosousa") == "APPROVED"' 
 
 workflows:
   - name: label-ship-show-ask
