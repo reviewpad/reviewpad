@@ -127,6 +127,9 @@ rules:
   - name: inconsistent-state
     description: Pull request is in an inconsistent state
     spec: '$isDraft() && $rule("ship-mode")'
+  
+  - name: ship-approved-renovate-prs
+    spec: '$author() == "renovate[bot]" && $reviewerStatus("marcelosousa") == "APROVED"' 
 
 workflows:
   - name: label-ship-show-ask
@@ -217,6 +220,7 @@ workflows:
     if:
       - rule: auto-merge-authored-by-owners-with-ship-and-green-ci
       - rule: ship-markdown-changes
+      - rule: ship-approved-renovate-prs
     then:
       - '$merge("rebase")'
 
