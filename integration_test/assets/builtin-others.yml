@@ -49,21 +49,21 @@ workflows:
     if:
       - $base() != "development"
     then:
-      - $warn("please open all pull requests again the development branch first")
+      - $warn("Please open all pull requests again the development branch first")
 
   - name: check-head
     always-run: true
     if:
       - '!$any(["feat", "fix"], ($prefix: String => $startsWith($head(), $prefix)))'
     then:
-      - $error("please user proper branch naming")
+      - $error("Please user proper branch naming")
 
   - name: check-description
     always-run: true
     if:
       - $description() == ""
     then:
-      - $error("please add description")
+      - $error("Please add description")
 
   - name: has-code-pattern
     always-run: true
@@ -98,14 +98,14 @@ workflows:
     if:
       - '!$hasLinkedIssues()'
     then:
-      - $warn("please link issue to pull request")
+      - $warn("Please link issue to pull request")
 
   - name: has-required-approvals
     always-run: true
     if:
       - '!$hasRequiredApprovals(2, $organization())'
     then:
-      - $review("COMMENT", "we will do this instead")
+      - $review("COMMENT", "We will do this instead")
 
   - name: is-binary
     always-run: true
@@ -149,7 +149,7 @@ workflows:
     if:
       - '$all($team("integration-test"), ($member: String => $isElementOf($member, $organization())))'
     then:
-      - $comment("all integration test team members are members of the organization")
+      - $comment("All integration test team members are members of the organization")
 
   - name: remove-labels
     always-run: true
@@ -185,7 +185,7 @@ workflows:
     if:
       - '!$any($reviewers(), ($r: String => $reviewerStatus($r) == "APPROVED"))'
     then:
-      - '$warn("pull request hasnt been approved by anybody")'
+      - '$warn("Pull request hasnt been approved by anybody")'
 
   - name: has-binary-file
     always-run: true
@@ -203,11 +203,11 @@ workflows:
       - $info($sprintf("%d comments", [$commentCount()]))
       - $info($sprintf("%d commits", [$commitCount()]))
       - $info($sprintf("%d changed files", [$fileCount()]))
-      - $info($sprintf("created at -> %d", [$createdAt()]))
-      - $info($sprintf("last event at -> %d", [$lastEventAt()]))
-      - $info($sprintf("milestone -> %s", [$milestone()]))
-      - $info($sprintf("state -> %s", [$state()]))
-      - $info($sprintf("title -> %s", [$title()]))
-      - $info($sprintf("log event check run conclusion -> %s", [$checkRunConclusion("log event")]))
+      - $info($sprintf("Created at -> %d", [$createdAt()]))
+      - $info($sprintf("Last event at -> %d", [$lastEventAt()]))
+      - $info($sprintf("Milestone -> %s", [$milestone()]))
+      - $info($sprintf("State -> %s", [$state()]))
+      - $info($sprintf("Title -> %s", [$title()]))
+      - $info($sprintf("Log event check run conclusion -> %s", [$checkRunConclusion("log event")]))
       - $comment($sprintf("```%s```", [$selectFromJSON($toJSON($context()), "$.user")]))
       - $comment($sprintf("```%s```", [$selectFromContext("$.milestone")]))

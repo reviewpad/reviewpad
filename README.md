@@ -144,19 +144,19 @@ ulimit -Sn 500
 
 ### Running integration tests
 
-The integration tests run reviewpad on an actual repository and pull request. The repository that the integration tests are running on needs to have the following
+The integration tests run reviewpad on an actual repository and pull request. The repository that the integration tests are running on needs to have the following:
 
-- at least one milestone
-- at least 3 labels named `bug`, `documentation`, `wontfix` (Github adds this labels to every new repository by default)
-- a team called `integration-test` with at least 3 members
-- a project called `[INTEGRATION TESTS] Reviewpad` with `Todo` and `In Progress` status.
-- a Github status check called `log event`.
+- at least one milestone;
+- at least 3 labels named `bug`, `documentation`, `wontfix` (GitHub adds these labels to every new repository by default);
+- a team called `integration-test` with at least 3 members;
+- a project called `[INTEGRATION TESTS] Reviewpad` with `Todo` and `In Progress` status
+- a GitHub status check called `log event`.
 
 #### Required Environment Variables
 
-- GITHUB_INTEGRATION_TEST_TOKEN : GitHub access token used to setup tests and run reviewpad
-- GITHUB_INTEGRATION_TEST_REPO_OWNER : The owner of the repository used to run integration tests on
-- GITHUB_INTEGRATION_TEST_REPO_NAME : The name of the repository used to run integration tests on
+- `GITHUB_INTEGRATION_TEST_TOKEN` : GitHub access token used to setup tests and run reviewpad
+- `GITHUB_INTEGRATION_TEST_REPO_OWNER` : The owner of the repository used to run integration tests on
+- `GITHUB_INTEGRATION_TEST_REPO_NAME` : The name of the repository used to run integration tests on
 
 After setting those variables, you can run the integration tests with:
 
