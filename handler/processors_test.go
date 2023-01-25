@@ -975,6 +975,108 @@ func TestProcessEvent(t *testing.T) {
 				},
 			},
 		},
+		"check_suite when pr is from same repo": {
+			event: &handler.ActionEvent{
+				EventName: github.String("check_suite"),
+				Token:     github.String("test-token"),
+				EventPayload: buildPayload([]byte(`{
+					"action": "rerequested",
+					"check_suite": {
+						"id": 1,
+						"head_sha": "4bf24cc72f3a62423927a0ac8d70febad7c78e0g",
+						"pull_requests": [
+							{
+								"number": 1
+							}
+						]
+					},
+					"repository": {
+						"name": "reviewpad",
+						"owner": {
+							"login": "reviewpad"
+						}
+					}
+				}`)),
+			},
+			wantTargets: []*handler.TargetEntity{
+				{
+					Kind:   handler.PullRequest,
+					Owner:  "reviewpad",
+					Repo:   "reviewpad",
+					Number: 1,
+				},
+			},
+			wantEventDetails: &handler.EventDetails{
+				EventName:   "check_suite",
+				EventAction: "rerequested",
+				Payload: &github.CheckSuiteEvent{
+					Action: github.String("rerequested"),
+					CheckSuite: &github.CheckSuite{
+						ID:      github.Int64(1),
+						HeadSHA: github.String("4bf24cc72f3a62423927a0ac8d70febad7c78e0g"),
+						PullRequests: []*github.PullRequest{
+							{
+								Number: github.Int(1),
+							},
+						},
+					},
+					Repo: &github.Repository{
+						Name: github.String("reviewpad"),
+						Owner: &github.User{
+							Login: github.String("reviewpad"),
+						},
+					},
+				},
+			},
+		},
+		"check_suite when pr is from a forked repo": {
+			event: &handler.ActionEvent{
+				EventName: github.String("check_suite"),
+				Token:     github.String("test-token"),
+				EventPayload: buildPayload([]byte(`{
+					"action": "created",
+					"check_suite": {
+						"id": 1,
+						"head_sha": "4bf24cc72f3a62423927a0ac8d70febad7c78e0g",
+						"pull_requests": []
+					},
+					"repository": {
+						"name": "reviewpad",
+						"full_name": "reviewpad/reviewpad",
+						"owner": {
+							"login": "reviewpad"
+						}
+					}
+				}`)),
+			},
+			wantTargets: []*handler.TargetEntity{
+				{
+					Kind:   handler.PullRequest,
+					Owner:  "reviewpad",
+					Repo:   "reviewpad",
+					Number: 6,
+				},
+			},
+			wantEventDetails: &handler.EventDetails{
+				EventName:   "check_suite",
+				EventAction: "created",
+				Payload: &github.CheckSuiteEvent{
+					Action: github.String("created"),
+					CheckSuite: &github.CheckSuite{
+						ID:           github.Int64(1),
+						HeadSHA:      github.String("4bf24cc72f3a62423927a0ac8d70febad7c78e0g"),
+						PullRequests: []*github.PullRequest{},
+					},
+					Repo: &github.Repository{
+						Name:     github.String("reviewpad"),
+						FullName: github.String("reviewpad/reviewpad"),
+						Owner: &github.User{
+							Login: github.String("reviewpad"),
+						},
+					},
+				},
+			},
+		},
 	}
 
 	for name, test := range tests {
