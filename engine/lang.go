@@ -224,6 +224,44 @@ type PadStage struct {
 	Until   string   `yaml:"until"`
 }
 
+func (p PadPipeline) equals(o PadPipeline) bool {
+	if p.Name != o.Name {
+		return false
+	}
+
+	if p.Description != o.Description {
+		return false
+	}
+
+	if p.Trigger != o.Trigger {
+		return false
+	}
+
+	for i, pS := range p.Stages {
+		oS := o.Stages[i]
+		if !pS.equals(oS) {
+			return false
+		}
+	}
+
+	return true
+}
+
+func (p PadStage) equals(o PadStage) bool {
+	if p.Until != o.Until {
+		return false
+	}
+
+	for i, pA := range p.Actions {
+		oA := o.Actions[i]
+		if pA != oA {
+			return false
+		}
+	}
+
+	return true
+}
+
 func (r *ReviewpadFile) equals(o *ReviewpadFile) bool {
 	if r.Version != o.Version {
 		return false

@@ -129,3 +129,9 @@ tasks:
   default:
     deps:
       - build
+
+  integration-test:
+    summary: |
+      Runs integration tests
+    cmds:
+      - go test --tags=integration ./...
