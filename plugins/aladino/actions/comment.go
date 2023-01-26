@@ -5,6 +5,8 @@
 package plugins_aladino_actions
 
 import (
+	"fmt"
+
 	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 )
@@ -20,6 +22,7 @@ func Comment() *aladino.BuiltInAction {
 func commentCode(e aladino.Env, args []aladino.Value) error {
 	t := e.GetTarget()
 	commentBody := args[0].(*aladino.StringValue).Val
+	commentBodyWithReviewpadAnnotation := fmt.Sprintf("%s\n%s", aladino.ReviewpadIgnoreCommentAnnotation, commentBody)
 
-	return t.Comment(commentBody)
+	return t.Comment(commentBodyWithReviewpadAnnotation)
 }
