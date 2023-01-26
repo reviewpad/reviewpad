@@ -29,7 +29,7 @@ func ReportHeader(safeMode bool) string {
 	var sb strings.Builder
 
 	// Annotations
-	sb.WriteString(fmt.Sprintf("%v%v\n", ReviewpadReportCommentAnnotation, ReviewpadIgnoreCommentAnnotation))
+	sb.WriteString(fmt.Sprintf("%s%s\n", ReviewpadReportCommentAnnotation, ReviewpadIgnoreCommentAnnotation))
 	// Header
 	if safeMode {
 		sb.WriteString("**Reviewpad Report** (Reviewpad ran in dry-run mode because configuration has changed)\n\n")
