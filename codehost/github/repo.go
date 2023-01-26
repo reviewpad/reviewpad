@@ -214,7 +214,7 @@ func Push(log *logrus.Entry, repo *git.Repository, remoteName string, branchName
 					"url":               url,
 					"username_from_url": username_from_url,
 					"allowed_types":     allowed_types,
-				}).Debug("credentials callback called")
+				}).Debug("called credentials callback")
 
 				return git.NewCredentialUserpassPlaintext(username_from_url, token)
 			},
