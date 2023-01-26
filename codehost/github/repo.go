@@ -195,7 +195,7 @@ func RebaseOnto(log *logrus.Entry, repo *git.Repository, branchName string, reba
 }
 
 // Push performs a push of the provided remote/branch.
-func Push(log *logrus.Entry, repo *git.Repository, remoteName string, branchName string, force bool) error {
+func Push(log *logrus.Entry, repo *git.Repository, remoteName string, branchName string, token string, force bool) error {
 	remote, err := repo.Remotes.Lookup(remoteName)
 	if err != nil {
 		log.Errorf("failed to find remote: %v", remoteName)
@@ -207,7 +207,19 @@ func Push(log *logrus.Entry, repo *git.Repository, remoteName string, branchName
 		refspec = fmt.Sprintf("+%s", refspec)
 	}
 
-	err = remote.Push([]string{refspec}, nil)
+	err = remote.Push([]string{refspec}, &git.PushOptions{
+		RemoteCallbacks: git.RemoteCallbacks{
+			CredentialsCallback: func(url, usernameFromURL string, allowedTypes git.CredentialType) (*git.Credential, error) {
+				log.WithFields(logrus.Fields{
+					"url":               url,
+					"username_from_url": usernameFromURL,
+					"allowed_types":     allowedTypes,
+				}).Debug("called credentials callback")
+
+				return git.NewCredentialUserpassPlaintext(usernameFromURL, token)
+			},
+		},
+	})
 	if err != nil {
 		log.Errorf("failed to push to: %v", branchName)
 		return err
