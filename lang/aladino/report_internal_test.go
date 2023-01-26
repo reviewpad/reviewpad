@@ -49,7 +49,7 @@ func TestAddToReport(t *testing.T) {
 }
 
 func TestReportHeader(t *testing.T) {
-	wantReportHeader := "<!--@annotation-reviewpad-report-->\n**Reviewpad Report**\n\n"
+	wantReportHeader := "<!--@annotation-reviewpad-report--><!--@annotation-reviewpad-ignore-->\n**Reviewpad Report**\n\n"
 
 	gotReportHeader := ReportHeader(false)
 
@@ -57,7 +57,7 @@ func TestReportHeader(t *testing.T) {
 }
 
 func TestReportHeader_WhenSafeMode(t *testing.T) {
-	wantReportHeader := "<!--@annotation-reviewpad-report-->\n**Reviewpad Report** (Reviewpad ran in dry-run mode because configuration has changed)\n\n"
+	wantReportHeader := "<!--@annotation-reviewpad-report--><!--@annotation-reviewpad-ignore-->\n**Reviewpad Report** (Reviewpad ran in dry-run mode because configuration has changed)\n\n"
 
 	gotReportHeader := ReportHeader(true)
 
@@ -69,7 +69,7 @@ func TestBuildReport(t *testing.T) {
 		Actions: []string{"$addLabel(\"test\")"},
 	}
 
-	wantReport := `<!--@annotation-reviewpad-report-->
+	wantReport := `<!--@annotation-reviewpad-report--><!--@annotation-reviewpad-ignore-->
 **Reviewpad Report**
 
 :scroll: **Executed actions**
@@ -317,7 +317,7 @@ func TestFindReportComment_WhenPullRequestCommentsListingFails(t *testing.T) {
 
 func TestFindReportComment_WhenThereIsReviewpadComment(t *testing.T) {
 	wantComment := &github.IssueComment{
-		Body: github.String("<!--@annotation-reviewpad-report-->\n**Reviewpad Report**\n\n:scroll: **Explanation**\nNo workflows activated"),
+		Body: github.String("<!--@annotation-reviewpad-report--><!--@annotation-reviewpad-ignore-->\n**Reviewpad Report**\n\n:scroll: **Explanation**\nNo workflows activated"),
 	}
 	mockedEnv := MockDefaultEnv(
 		t,
