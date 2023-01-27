@@ -95,7 +95,7 @@ func createCommentWithReviewpadCommandExecutionSuccess(env *engine.Env, executio
 
 	commentBody := new(strings.Builder)
 	commentBody.WriteString(fmt.Sprintf("> %s\n\n", command))
-	commentBody.WriteString(fmt.Sprintf("\n*Execution details:*\n%s", executionDetails))
+	commentBody.WriteString(fmt.Sprintf("\n*Execution details:*\n\n%s", executionDetails))
 
 	_, _, err := env.GithubClient.CreateComment(env.Ctx, env.TargetEntity.Owner, env.TargetEntity.Repo, env.TargetEntity.Number, &github.IssueComment{
 		Body: github.String(commentBody.String()),
@@ -325,6 +325,8 @@ func Run(
 	if err != nil {
 		return engine.ExitStatusFailure, nil, err
 	}
+
+	log.WithField("reviewpad_file_2", reviewpadFile).Debug("loaded reviewpad file")
 
 	if utils.IsReviewpadCommand(env.EventDetails) {
 		command := eventDetails.Payload.(*github.IssueCommentEvent).GetComment().GetBody()
