@@ -105,7 +105,7 @@ func BuildDryRunExecutionReport(program *engine.Program) string {
 
 	var sb strings.Builder
 
-	// TODO: Add annotation
+	sb.WriteString(fmt.Sprintf("%s\n", ReviewpadIgnoreCommentAnnotation))
 	sb.WriteString("**Reviewpad Dry-Run Report**\n\n")
 	sb.WriteString(":scroll: **Actions to be executed**\n")
 	sb.WriteString("```yaml\n")
