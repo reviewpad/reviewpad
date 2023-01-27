@@ -22,7 +22,7 @@ var comment = plugins_aladino.PluginBuiltIns().Actions["comment"].Code
 
 func TestComment(t *testing.T) {
 	rawComment := "Lorem Ipsum"
-	wantComment := fmt.Sprintf("<!--@annotation-reviewpad-ignore-->\n%v", rawComment)
+	wantComment := fmt.Sprintf("%s\n%s", aladino.ReviewpadIgnoreCommentAnnotation, rawComment)
 	gotComment := ""
 
 	mockedEnv := aladino.MockDefaultEnv(

@@ -559,7 +559,7 @@ func TestReport_OnSilentMode_WhenThereIsAlreadyAReviewpadComment(t *testing.T) {
 				[]*github.IssueComment{
 					{
 						ID:   github.Int64(1234),
-						Body: github.String("<!--@annotation-reviewpad-report--><!--@annotation-reviewpad-ignore-->\n**Reviewpad Report**\n\n:scroll: **Explanation**\nNo workflows activated"),
+						Body: github.String(fmt.Sprintf("%s%s\n**Reviewpad Report**\n\n:scroll: **Explanation**\nNo workflows activated", ReviewpadReportCommentAnnotation, ReviewpadIgnoreCommentAnnotation)),
 					},
 				},
 			),
@@ -620,7 +620,7 @@ func TestReport_OnSilentMode_WhenNoReviewpadCommentIsFound(t *testing.T) {
 
 func TestReport_OnVerboseMode_WhenNoReviewpadCommentIsFound(t *testing.T) {
 	var addedComment string
-	commentToBeAdded := "<!--@annotation-reviewpad-report--><!--@annotation-reviewpad-ignore-->\n**Reviewpad Report**\n\n:scroll: **Executed actions**\n```yaml\n```\n"
+	commentToBeAdded := fmt.Sprintf("%s%s\n**Reviewpad Report**\n\n:scroll: **Executed actions**\n```yaml\n```\n", ReviewpadReportCommentAnnotation, ReviewpadIgnoreCommentAnnotation)
 	mockedEnv := MockDefaultEnv(
 		t,
 		[]mock.MockBackendOption{
@@ -657,7 +657,7 @@ func TestReport_OnVerboseMode_WhenNoReviewpadCommentIsFound(t *testing.T) {
 
 func TestReport_OnVerboseMode_WhenThereIsAlreadyAReviewpadComment(t *testing.T) {
 	var updatedComment string
-	commentUpdated := "<!--@annotation-reviewpad-report--><!--@annotation-reviewpad-ignore-->\n**Reviewpad Report**\n\n:scroll: **Executed actions**\n```yaml\n```\n"
+	commentUpdated := fmt.Sprintf("%s%s\n**Reviewpad Report**\n\n:scroll: **Executed actions**\n```yaml\n```\n", ReviewpadReportCommentAnnotation, ReviewpadIgnoreCommentAnnotation)
 	mockedEnv := MockDefaultEnv(
 		t,
 		[]mock.MockBackendOption{
@@ -666,7 +666,7 @@ func TestReport_OnVerboseMode_WhenThereIsAlreadyAReviewpadComment(t *testing.T) 
 				[]*github.IssueComment{
 					{
 						ID:   github.Int64(1234),
-						Body: github.String("<!--@annotation-reviewpad-report--><!--@annotation-reviewpad-ignore-->\n**Reviewpad Report**\n**:information_source: Messages**\n* Changes the README.md"),
+						Body: github.String(fmt.Sprintf("%s%s\n**Reviewpad Report**\n**:information_source: Messages**\n* Changes the README.md", ReviewpadReportCommentAnnotation, ReviewpadIgnoreCommentAnnotation)),
 					},
 				},
 			),

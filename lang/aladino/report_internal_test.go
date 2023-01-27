@@ -49,7 +49,7 @@ func TestAddToReport(t *testing.T) {
 }
 
 func TestReportHeader(t *testing.T) {
-	wantReportHeader := "<!--@annotation-reviewpad-report--><!--@annotation-reviewpad-ignore-->\n**Reviewpad Report**\n\n"
+	wantReportHeader := fmt.Sprintf("%s%s\n**Reviewpad Report**\n\n", ReviewpadReportCommentAnnotation, ReviewpadIgnoreCommentAnnotation)
 
 	gotReportHeader := ReportHeader(false)
 
@@ -57,7 +57,7 @@ func TestReportHeader(t *testing.T) {
 }
 
 func TestReportHeader_WhenSafeMode(t *testing.T) {
-	wantReportHeader := "<!--@annotation-reviewpad-report--><!--@annotation-reviewpad-ignore-->\n**Reviewpad Report** (Reviewpad ran in dry-run mode because configuration has changed)\n\n"
+	wantReportHeader := fmt.Sprintf("%s%s\n**Reviewpad Report** (Reviewpad ran in dry-run mode because configuration has changed)\n\n", ReviewpadReportCommentAnnotation, ReviewpadIgnoreCommentAnnotation)
 
 	gotReportHeader := ReportHeader(true)
 
@@ -69,11 +69,11 @@ func TestBuildReport(t *testing.T) {
 		Actions: []string{"$addLabel(\"test\")"},
 	}
 
-	wantReport := `<!--@annotation-reviewpad-report--><!--@annotation-reviewpad-ignore-->
+	wantReport := fmt.Sprintf(`%s%s
 **Reviewpad Report**
 
 :scroll: **Executed actions**
-` + "```yaml\n$addLabel(\"test\")\n```\n"
+`, ReviewpadReportCommentAnnotation, ReviewpadIgnoreCommentAnnotation) + "```yaml\n$addLabel(\"test\")\n```\n"
 
 	gotReport := buildReport(engine.VERBOSE_MODE, false, make(map[Severity][]string), &report)
 
@@ -317,7 +317,7 @@ func TestFindReportComment_WhenPullRequestCommentsListingFails(t *testing.T) {
 
 func TestFindReportComment_WhenThereIsReviewpadComment(t *testing.T) {
 	wantComment := &github.IssueComment{
-		Body: github.String("<!--@annotation-reviewpad-report--><!--@annotation-reviewpad-ignore-->\n**Reviewpad Report**\n\n:scroll: **Explanation**\nNo workflows activated"),
+		Body: github.String(fmt.Sprintf("%s%s\n**Reviewpad Report**\n\n:scroll: **Explanation**\nNo workflows activated", ReviewpadReportCommentAnnotation, ReviewpadIgnoreCommentAnnotation)),
 	}
 	mockedEnv := MockDefaultEnv(
 		t,
