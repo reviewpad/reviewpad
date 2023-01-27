@@ -186,7 +186,6 @@ func (i *Interpreter) Report(mode string, safeMode bool) error {
 	}
 
 	return UpdateReportComment(env, *comment.ID, report)
-
 }
 
 func (i *Interpreter) ReportMetrics() error {

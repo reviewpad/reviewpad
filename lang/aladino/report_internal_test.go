@@ -51,7 +51,7 @@ func TestAddToReport(t *testing.T) {
 func TestReportHeader(t *testing.T) {
 	wantReportHeader := fmt.Sprintf("%s%s\n**Reviewpad Report**\n\n", ReviewpadReportCommentAnnotation, ReviewpadIgnoreCommentAnnotation)
 
-	gotReportHeader := ReportHeader(false)
+	gotReportHeader := builtReportHeader(false)
 
 	assert.Equal(t, wantReportHeader, gotReportHeader)
 }
@@ -59,7 +59,7 @@ func TestReportHeader(t *testing.T) {
 func TestReportHeader_WhenSafeMode(t *testing.T) {
 	wantReportHeader := fmt.Sprintf("%s%s\n**Reviewpad Report** (Reviewpad ran in dry-run mode because configuration has changed)\n\n", ReviewpadReportCommentAnnotation, ReviewpadIgnoreCommentAnnotation)
 
-	gotReportHeader := ReportHeader(true)
+	gotReportHeader := builtReportHeader(true)
 
 	assert.Equal(t, wantReportHeader, gotReportHeader)
 }

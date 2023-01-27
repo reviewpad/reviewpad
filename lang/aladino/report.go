@@ -25,7 +25,7 @@ func (report *Report) addToReport(statement *engine.Statement) {
 	report.Actions = append(report.Actions, statement.GetStatementCode())
 }
 
-func ReportHeader(safeMode bool) string {
+func builtReportHeader(safeMode bool) string {
 	var sb strings.Builder
 
 	// Annotations
@@ -51,8 +51,8 @@ func severityToString(sev Severity) string {
 	default:
 		return "Fatal"
 	}
-
 }
+
 func buildCommentSection(comments map[Severity][]string) string {
 	var sb strings.Builder
 
@@ -70,7 +70,7 @@ func buildCommentSection(comments map[Severity][]string) string {
 func buildReport(mode string, safeMode bool, reportComments map[Severity][]string, report *Report) string {
 	var sb strings.Builder
 
-	sb.WriteString(ReportHeader(safeMode))
+	sb.WriteString(builtReportHeader(safeMode))
 	sb.WriteString(buildCommentSection(reportComments))
 	if mode == engine.VERBOSE_MODE || safeMode {
 		sb.WriteString(BuildVerboseReport(report))
@@ -87,12 +87,35 @@ func BuildVerboseReport(report *Report) string {
 	var sb strings.Builder
 
 	sb.WriteString(":scroll: **Executed actions**\n")
-
 	sb.WriteString("```yaml\n")
 
 	// Report
 	for _, action := range report.Actions {
 		sb.WriteString(fmt.Sprintf("%v\n", action))
+	}
+
+	sb.WriteString("```\n")
+	return sb.String()
+}
+
+func BuildDryRunExecutionReport(program *engine.Program) string {
+	if program == nil {
+		return ""
+	}
+
+	var sb strings.Builder
+
+	sb.WriteString(fmt.Sprintf("%s\n", ReviewpadIgnoreCommentAnnotation))
+	sb.WriteString("**Reviewpad Dry-Run Report**\n\n")
+	sb.WriteString(":scroll: **Actions to be executed**\n")
+	sb.WriteString("```yaml\n")
+
+	if len(program.GetProgramStatements()) == 0 {
+		sb.WriteString("No actions triggered\n")
+	} else {
+		for _, statement := range program.GetProgramStatements() {
+			sb.WriteString(fmt.Sprintf("%v\n", statement.GetStatementCode()))
+		}
 	}
 
 	sb.WriteString("```\n")

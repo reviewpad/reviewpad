@@ -53,9 +53,15 @@ func Load(ctx context.Context, log *logrus.Entry, githubClient *gh.GithubClient,
 }
 
 func createCommentWithReviewpadCommandEvaluationError(env *engine.Env, err error) error {
-	commentBody := fmt.Sprintf("```\n🚫 error\n\n%s```", err.Error())
+	command := env.EventDetails.Payload.(*github.IssueCommentEvent).GetComment().GetBody()
+
+	commentBody := new(strings.Builder)
+	commentBody.WriteString(fmt.Sprintf("%s\n", aladino.ReviewpadIgnoreCommentAnnotation))
+	commentBody.WriteString(fmt.Sprintf("> %s\n\n", command))
+	commentBody.WriteString(fmt.Sprintf("\n*Errors:*\n- %s\n", err.Error()))
+
 	_, _, err = env.GithubClient.CreateComment(env.Ctx, env.TargetEntity.Owner, env.TargetEntity.Repo, env.TargetEntity.Number, &github.IssueComment{
-		Body: github.String(commentBody),
+		Body: github.String(commentBody.String()),
 	})
 
 	return err
@@ -66,6 +72,7 @@ func createCommentWithReviewpadCommandExecutionError(env *engine.Env, err error)
 	sender := env.EventDetails.Payload.(*github.IssueCommentEvent).GetSender().GetLogin()
 
 	commentBody := new(strings.Builder)
+	commentBody.WriteString(fmt.Sprintf("%s\n", aladino.ReviewpadIgnoreCommentAnnotation))
 	commentBody.WriteString(fmt.Sprintf("> %s\n\n", command))
 	commentBody.WriteString(fmt.Sprintf("@%s an error occurred running your command\n", sender))
 	commentBody.WriteString("\n*Errors:*\n")
@@ -90,17 +97,82 @@ func createCommentWithReviewpadCommandExecutionError(env *engine.Env, err error)
 	return err
 }
 
-func RunReviewpadCommand(
+func createCommentWithReviewpadCommandExecutionSuccess(env *engine.Env, executionDetails string) error {
+	command := env.EventDetails.Payload.(*github.IssueCommentEvent).GetComment().GetBody()
+
+	commentBody := new(strings.Builder)
+	commentBody.WriteString(fmt.Sprintf("%s\n", aladino.ReviewpadIgnoreCommentAnnotation))
+	commentBody.WriteString(fmt.Sprintf("> %s\n\n", command))
+	commentBody.WriteString(fmt.Sprintf("\n*Execution details:*\n\n%s", executionDetails))
+
+	_, _, err := env.GithubClient.CreateComment(env.Ctx, env.TargetEntity.Owner, env.TargetEntity.Repo, env.TargetEntity.Number, &github.IssueComment{
+		Body: github.String(commentBody.String()),
+	})
+
+	return err
+}
+
+func runReviewpadCommandDryRun(
+	logger *logrus.Entry,
+	collector collector.Collector,
+	gitHubClient *gh.GithubClient,
+	targetEntity *handler.TargetEntity,
+	reviewpadFile *engine.ReviewpadFile,
+	env *engine.Env,
+) (engine.ExitStatus, *engine.Program, error) {
+	err := collector.Collect("Trigger Command", map[string]interface{}{
+		"project": fmt.Sprintf("%s/%s", targetEntity.Owner, targetEntity.Repo),
+		"command": "dry-run",
+	})
+	if err != nil {
+		logger.WithError(err).Errorf("error collecting trigger command")
+	}
+
+	if reviewpadFile == nil {
+		err = errors.New("trying to run reviewpad dry-run command on a repository without a reviewpad file")
+		logger.WithError(err).Errorln("error running reviewpad dry-run command")
+
+		err = createCommentWithReviewpadCommandExecutionError(env, err)
+		if err != nil {
+			logger.WithError(err).Errorf("error creating comment to report error on command execution")
+		}
+
+		return engine.ExitStatusFailure, nil, err
+	}
+
+	program, err := engine.EvalConfigurationFile(reviewpadFile, env)
+	if err != nil {
+		logErrorAndCollect(logger, collector, "error evaluating configuration file", err)
+		return engine.ExitStatusFailure, nil, err
+	}
+
+	report := aladino.BuildDryRunExecutionReport(program)
+
+	err = createCommentWithReviewpadCommandExecutionSuccess(env, report)
+	if err != nil {
+		return engine.ExitStatusFailure, program, fmt.Errorf("error on creating report comment %v", err.(*github.ErrorResponse).Message)
+	}
+
+	return engine.ExitStatusSuccess, program, nil
+}
+
+func runReviewpadCommand(
 	ctx context.Context,
 	logger *logrus.Entry,
 	collector collector.Collector,
 	gitHubClient *gh.GithubClient,
 	targetEntity *handler.TargetEntity,
-	eventDetails *handler.EventDetails,
 	env *engine.Env,
 	aladinoInterpreter engine.Interpreter,
+	command string,
 ) (engine.ExitStatus, *engine.Program, error) {
-	command := eventDetails.Payload.(*github.IssueCommentEvent).GetComment().GetBody()
+	err := collector.Collect("Trigger Command", map[string]interface{}{
+		"project": fmt.Sprintf("%s/%s", targetEntity.Owner, targetEntity.Repo),
+		"command": command,
+	})
+	if err != nil {
+		logger.WithError(err).Errorf("error collecting trigger command")
+	}
 
 	program, err := engine.EvalCommand(command, env)
 	if err != nil {
@@ -113,14 +185,6 @@ func RunReviewpadCommand(
 		}
 
 		return engine.ExitStatusFailure, nil, err
-	}
-
-	err = collector.Collect("Trigger Command", map[string]interface{}{
-		"project": fmt.Sprintf("%s/%s", targetEntity.Owner, targetEntity.Repo),
-		"command": command,
-	})
-	if err != nil {
-		logger.WithError(err).Errorf("error collecting trigger command")
 	}
 
 	exitStatus, err := aladinoInterpreter.ExecProgram(program)
@@ -143,7 +207,7 @@ func RunReviewpadCommand(
 	return exitStatus, program, nil
 }
 
-func RunReviewpadFile(
+func runReviewpadFile(
 	logger *logrus.Entry,
 	collector collector.Collector,
 	gitHubClient *gh.GithubClient,
@@ -270,29 +334,16 @@ func Run(
 		return engine.ExitStatusFailure, nil, err
 	}
 
+	log.WithField("reviewpad_file_2", reviewpadFile).Debug("loaded reviewpad file")
+
 	if utils.IsReviewpadCommand(env.EventDetails) {
-		return RunReviewpadCommand(
-			ctx,
-			log,
-			collector,
-			gitHubClient,
-			targetEntity,
-			eventDetails,
-			env,
-			aladinoInterpreter,
-		)
+		command := eventDetails.Payload.(*github.IssueCommentEvent).GetComment().GetBody()
+		if utils.IsReviewpadCommandDryRun(command) {
+			return runReviewpadCommandDryRun(log, collector, gitHubClient, targetEntity, reviewpadFile, env)
+		} else {
+			return runReviewpadCommand(ctx, log, collector, gitHubClient, targetEntity, env, aladinoInterpreter, command)
+		}
 	} else {
-		return RunReviewpadFile(
-			log,
-			collector,
-			gitHubClient,
-			targetEntity,
-			eventDetails,
-			reviewpadFile,
-			dryRun,
-			safeMode,
-			env,
-			aladinoInterpreter,
-		)
+		return runReviewpadFile(log, collector, gitHubClient, targetEntity, eventDetails, reviewpadFile, dryRun, safeMode, env, aladinoInterpreter)
 	}
 }
