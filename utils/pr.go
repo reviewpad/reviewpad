@@ -22,6 +22,6 @@ func IsReviewpadCommand(eventDetails *handler.EventDetails) bool {
 		strings.HasPrefix(eventDetails.Payload.(*github.IssueCommentEvent).GetComment().GetBody(), "/reviewpad")
 }
 
-func IsReviewpadDryRunCommand(command string) bool {
+func IsReviewpadCommandDryRun(command string) bool {
 	return strings.TrimPrefix(command, "/reviewpad ") == "dry-run"
 }

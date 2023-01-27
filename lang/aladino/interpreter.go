@@ -179,14 +179,13 @@ func (i *Interpreter) Report(mode string, safeMode bool) error {
 		return nil
 	}
 
-	report := buildReport(mode, i.Env.GetDryRun(), safeMode, reportComments, env.GetReport())
+	report := buildReport(mode, safeMode, reportComments, env.GetReport())
 
 	if comment == nil {
 		return AddReportComment(env, report)
 	}
 
 	return UpdateReportComment(env, *comment.ID, report)
-
 }
 
 func (i *Interpreter) ReportMetrics() error {

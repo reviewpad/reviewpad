@@ -24,7 +24,7 @@ func (report *Report) addToReport(statement *engine.Statement) {
 	report.Actions = append(report.Actions, statement.GetStatementCode())
 }
 
-func ReportHeader(safeMode, dryRun bool) string {
+func builtReportHeader(safeMode bool) string {
 	var sb strings.Builder
 
 	// Annotation
@@ -33,11 +33,7 @@ func ReportHeader(safeMode, dryRun bool) string {
 	if safeMode {
 		sb.WriteString("**Reviewpad Report** (Reviewpad ran in dry-run mode because configuration has changed)\n\n")
 	} else {
-		if dryRun {
-			sb.WriteString("**Reviewpad Report** (Reviewpad ran in dry-run mode)\n\n")
-		} else {
-			sb.WriteString("**Reviewpad Report**\n\n")
-		}
+		sb.WriteString("**Reviewpad Report**\n\n")
 	}
 
 	return sb.String()
@@ -54,8 +50,8 @@ func severityToString(sev Severity) string {
 	default:
 		return "Fatal"
 	}
-
 }
+
 func buildCommentSection(comments map[Severity][]string) string {
 	var sb strings.Builder
 
@@ -70,10 +66,10 @@ func buildCommentSection(comments map[Severity][]string) string {
 	return sb.String()
 }
 
-func buildReport(mode string, dryRun, safeMode bool, reportComments map[Severity][]string, report *Report) string {
+func buildReport(mode string, safeMode bool, reportComments map[Severity][]string, report *Report) string {
 	var sb strings.Builder
 
-	sb.WriteString(ReportHeader(safeMode, dryRun))
+	sb.WriteString(builtReportHeader(safeMode))
 	sb.WriteString(buildCommentSection(reportComments))
 	if mode == engine.VERBOSE_MODE || safeMode {
 		sb.WriteString(BuildVerboseReport(report))
@@ -90,7 +86,6 @@ func BuildVerboseReport(report *Report) string {
 	var sb strings.Builder
 
 	sb.WriteString(":scroll: **Executed actions**\n")
-
 	sb.WriteString("```yaml\n")
 
 	// Report
@@ -109,10 +104,9 @@ func BuildDryRunExecutionReport(program *engine.Program) string {
 
 	var sb strings.Builder
 
-	sb.WriteString(ReportHeader(false, true))
-
+	// TODO: Add annotation
+	sb.WriteString("**Reviewpad Dry-Run Report**\n\n")
 	sb.WriteString(":scroll: **Actions to be executed**\n")
-
 	sb.WriteString("```yaml\n")
 
 	if len(program.GetProgramStatements()) == 0 {
