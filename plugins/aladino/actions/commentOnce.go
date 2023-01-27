@@ -26,7 +26,7 @@ func commentOnceCode(e aladino.Env, args []aladino.Value) error {
 	t := e.GetTarget()
 
 	commentBody := args[0].(*aladino.StringValue).Val
-	commentBodyWithReviewpadAnnotation := fmt.Sprintf("%v%v", ReviewpadCommentAnnotation, commentBody)
+	commentBodyWithReviewpadAnnotation := fmt.Sprintf("%s%s\n%s", ReviewpadCommentAnnotation, aladino.ReviewpadIgnoreCommentAnnotation, commentBody)
 	commentBodyWithReviewpadAnnotationHash := sha256.Sum256([]byte(commentBodyWithReviewpadAnnotation))
 
 	comments, err := t.GetComments()

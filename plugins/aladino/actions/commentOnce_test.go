@@ -44,7 +44,7 @@ func TestCommentOnce_WhenGetCommentsRequestFails(t *testing.T) {
 		nil,
 	)
 
-	args := []aladino.Value{aladino.BuildStringValue(fmt.Sprintf("%v%v", ReviewpadCommentAnnotation, comment))}
+	args := []aladino.Value{aladino.BuildStringValue(fmt.Sprintf("%s%s", ReviewpadCommentAnnotation, comment))}
 	err := commentOnce(mockedEnv, args)
 
 	assert.Equal(t, err.(*github.ErrorResponse).Message, failMessage)
@@ -61,7 +61,7 @@ func TestCommentOnce_WhenCommentAlreadyExists(t *testing.T) {
 				mock.GetReposIssuesCommentsByOwnerByRepoByIssueNumber,
 				[]*github.IssueComment{
 					{
-						Body: github.String(fmt.Sprintf("%v%v", ReviewpadCommentAnnotation, existingComment)),
+						Body: github.String(fmt.Sprintf("%s%s\n%s", ReviewpadCommentAnnotation, aladino.ReviewpadIgnoreCommentAnnotation, existingComment)),
 					},
 				},
 			),
@@ -117,5 +117,5 @@ func TestCommentOnce_WhenFirstTime(t *testing.T) {
 	err := commentOnce(mockedEnv, args)
 
 	assert.Nil(t, err)
-	assert.Equal(t, fmt.Sprintf("%v%v", ReviewpadCommentAnnotation, commentToAdd), addedComment)
+	assert.Equal(t, fmt.Sprintf("%s%s\n%s", ReviewpadCommentAnnotation, aladino.ReviewpadIgnoreCommentAnnotation, commentToAdd), addedComment)
 }

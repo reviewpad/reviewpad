@@ -17,6 +17,7 @@ type Report struct {
 	Actions []string
 }
 
+const ReviewpadIgnoreCommentAnnotation = "<!--@annotation-reviewpad-ignore-->"
 const ReviewpadReportCommentAnnotation = "<!--@annotation-reviewpad-report-->"
 const ReviewpadMetricReportCommentAnnotation = "<!--@annotation-reviewpad-metric-report-->"
 
@@ -27,8 +28,8 @@ func (report *Report) addToReport(statement *engine.Statement) {
 func ReportHeader(safeMode bool) string {
 	var sb strings.Builder
 
-	// Annotation
-	sb.WriteString(fmt.Sprintf("%v\n", ReviewpadReportCommentAnnotation))
+	// Annotations
+	sb.WriteString(fmt.Sprintf("%s%s\n", ReviewpadReportCommentAnnotation, ReviewpadIgnoreCommentAnnotation))
 	// Header
 	if safeMode {
 		sb.WriteString("**Reviewpad Report** (Reviewpad ran in dry-run mode because configuration has changed)\n\n")
