@@ -58,7 +58,7 @@ func createCommentWithReviewpadCommandEvaluationError(env *engine.Env, err error
 	commentBody := new(strings.Builder)
 	commentBody.WriteString(fmt.Sprintf("%s\n", aladino.ReviewpadIgnoreCommentAnnotation))
 	commentBody.WriteString(fmt.Sprintf("> %s\n\n", command))
-	commentBody.WriteString(fmt.Sprintf("```\n🚫 error\n\n%s\n```", err.Error()))
+	commentBody.WriteString(fmt.Sprintf("\n*Errors:*\n- %s\n", err.Error()))
 
 	_, _, err = env.GithubClient.CreateComment(env.Ctx, env.TargetEntity.Owner, env.TargetEntity.Repo, env.TargetEntity.Number, &github.IssueComment{
 		Body: github.String(commentBody.String()),
