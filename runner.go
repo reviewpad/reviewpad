@@ -53,9 +53,15 @@ func Load(ctx context.Context, log *logrus.Entry, githubClient *gh.GithubClient,
 }
 
 func createCommentWithReviewpadCommandEvaluationError(env *engine.Env, err error) error {
-	commentBody := fmt.Sprintf("```\n🚫 error\n\n%s```", err.Error())
+	command := env.EventDetails.Payload.(*github.IssueCommentEvent).GetComment().GetBody()
+
+	commentBody := new(strings.Builder)
+	commentBody.WriteString(fmt.Sprintf("%s\n", aladino.ReviewpadIgnoreCommentAnnotation))
+	commentBody.WriteString(fmt.Sprintf("> %s\n\n", command))
+	commentBody.WriteString(fmt.Sprintf("```\n🚫 error\n\n%s\n```", err.Error()))
+
 	_, _, err = env.GithubClient.CreateComment(env.Ctx, env.TargetEntity.Owner, env.TargetEntity.Repo, env.TargetEntity.Number, &github.IssueComment{
-		Body: github.String(commentBody),
+		Body: github.String(commentBody.String()),
 	})
 
 	return err
@@ -66,6 +72,7 @@ func createCommentWithReviewpadCommandExecutionError(env *engine.Env, err error)
 	sender := env.EventDetails.Payload.(*github.IssueCommentEvent).GetSender().GetLogin()
 
 	commentBody := new(strings.Builder)
+	commentBody.WriteString(fmt.Sprintf("%s\n", aladino.ReviewpadIgnoreCommentAnnotation))
 	commentBody.WriteString(fmt.Sprintf("> %s\n\n", command))
 	commentBody.WriteString(fmt.Sprintf("@%s an error occurred running your command\n", sender))
 	commentBody.WriteString("\n*Errors:*\n")
@@ -94,6 +101,7 @@ func createCommentWithReviewpadCommandExecutionSuccess(env *engine.Env, executio
 	command := env.EventDetails.Payload.(*github.IssueCommentEvent).GetComment().GetBody()
 
 	commentBody := new(strings.Builder)
+	commentBody.WriteString(fmt.Sprintf("%s\n", aladino.ReviewpadIgnoreCommentAnnotation))
 	commentBody.WriteString(fmt.Sprintf("> %s\n\n", command))
 	commentBody.WriteString(fmt.Sprintf("\n*Execution details:*\n\n%s", executionDetails))
 
