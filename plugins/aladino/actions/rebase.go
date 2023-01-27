@@ -24,7 +24,7 @@ func Rebase() *aladino.BuiltInAction {
 }
 
 func rebaseCode(e aladino.Env, args []aladino.Value) error {
-	githubToken := os.Getenv("INPUT_TOKEN")
+	githubToken := e.GetGithubClient().GetToken()
 	log := e.GetLogger().WithField("builtin", "rebase")
 	t := e.GetTarget().(*target.PullRequestTarget)
 	pr := t.PullRequest
@@ -55,7 +55,7 @@ func rebaseCode(e aladino.Env, args []aladino.Value) error {
 		return err
 	}
 
-	err = gh.Push(log, repo, "origin", headRef, true)
+	err = gh.Push(log, repo, "origin", headRef, githubToken, true)
 	if err != nil {
 		return err
 	}

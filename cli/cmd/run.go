@@ -125,7 +125,7 @@ func run() error {
 
 	for _, targetEntity := range targetEntities {
 		log.Infof("Processing entity %s/%s#%d", targetEntity.Owner, targetEntity.Repo, targetEntity.Number)
-		_, _, err = reviewpad.Run(ctx, log, gitHubClient, collectorClient, targetEntity, eventDetails, event, file, dryRun, safeModeRun)
+		_, _, err = reviewpad.Run(ctx, log, gitHubClient, collectorClient, targetEntity, eventDetails, file, dryRun, safeModeRun)
 		if err != nil {
 			return fmt.Errorf("error running reviewpad team edition. Details %v", err.Error())
 		}

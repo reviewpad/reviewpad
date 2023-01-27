@@ -19,6 +19,7 @@ import (
 	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 	"github.com/reviewpad/reviewpad/v3/utils"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -28,6 +29,7 @@ type httpMockResponder struct {
 }
 
 func TestLoadWithAST(t *testing.T) {
+	logger := logrus.NewEntry(logrus.New())
 	inputContext := context.Background()
 	inputGitHubClient := aladino.MockDefaultGithubClient(
 		[]mock.MockBackendOption{
@@ -72,7 +74,7 @@ func TestLoadWithAST(t *testing.T) {
 		assert.FailNow(t, "Error reading reviewpad file: %v", err)
 	}
 
-	gotReviewpadFile, err := engine.Load(inputContext, inputGitHubClient, reviewpadFileData)
+	gotReviewpadFile, err := engine.Load(inputContext, logger, inputGitHubClient, reviewpadFileData)
 	if err != nil {
 		assert.FailNow(t, "Error parsing reviewpad file: %v", err)
 	}
@@ -192,6 +194,7 @@ func TestLoadWithAST(t *testing.T) {
 }
 
 func TestLoad(t *testing.T) {
+	logger := logrus.NewEntry(logrus.New())
 	tests := map[string]struct {
 		httpMockResponders     []httpMockResponder
 		inputReviewpadFilePath string
@@ -413,7 +416,7 @@ func TestLoad(t *testing.T) {
 					assert.FailNow(t, "Error reading reviewpad file: %v", err)
 				}
 
-				wantReviewpadFile, err = engine.Load(test.inputContext, test.inputGitHubClient, wantReviewpadFileData)
+				wantReviewpadFile, err = engine.Load(test.inputContext, logger, test.inputGitHubClient, wantReviewpadFileData)
 				if err != nil {
 					assert.FailNow(t, "Error parsing reviewpad file: %v", err)
 				}
@@ -424,7 +427,7 @@ func TestLoad(t *testing.T) {
 				assert.FailNow(t, "Error reading reviewpad file: %v", err)
 			}
 
-			gotReviewpadFile, gotErr := engine.Load(test.inputContext, test.inputGitHubClient, reviewpadFileData)
+			gotReviewpadFile, gotErr := engine.Load(test.inputContext, logger, test.inputGitHubClient, reviewpadFileData)
 
 			if gotErr != nil {
 				githubError := &github.ErrorResponse{}

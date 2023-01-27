@@ -115,6 +115,24 @@ func TestDeleteHeadBranch(t *testing.T) {
 				DocumentationURL: "https://docs.github.com/rest/reference/git#delete-a-reference",
 			},
 		},
+		"when pull request is from fork": {
+			clientOptions: []mock.MockBackendOption{
+				mock.WithRequestMatchHandler(
+					mock.GetReposPullsByOwnerByRepoByPullNumber,
+					http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+						utils.MustWriteBytes(w, mock.MustMarshal(aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
+							Merged: github.Bool(true),
+							Head: &github.PullRequestBranch{
+								Repo: &github.Repository{
+									Fork: github.Bool(true),
+								},
+							},
+						})))
+					}),
+				),
+			},
+			err: nil,
+		},
 	}
 
 	for name, test := range tests {

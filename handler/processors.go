@@ -422,6 +422,60 @@ func processCheckRunEvent(log *logrus.Entry, token string, event *github.CheckRu
 	return targetEntities, eventDetails, nil
 }
 
+func processCheckSuiteEvent(log *logrus.Entry, token string, event *github.CheckSuiteEvent) ([]*TargetEntity, *EventDetails, error) {
+	log.Info("processing check_suite event")
+
+	targetEntities := []*TargetEntity{}
+
+	eventDetails := &EventDetails{
+		EventName:   "check_suite",
+		EventAction: event.GetAction(),
+		Payload:     event,
+	}
+
+	// When the check suite is from a head of a forked repository the pull_requests array will be empty
+	// We need to fetch all the pull requests for the repository and find the one that matches the head sha
+	if len(event.CheckSuite.PullRequests) == 0 {
+		log.Infof("no pull requests found in check suite event. fetching all pull requests for repository %v", event.GetRepo().GetFullName())
+
+		prs, err := getPullRequests(token, event.GetRepo().GetFullName())
+		if err != nil {
+			return nil, nil, err
+		}
+
+		log.Infof("fetched %d pull requests", len(prs))
+
+		for _, pr := range prs {
+			if pr.GetHead().GetSHA() == event.CheckSuite.GetHeadSHA() {
+				log.Infof("found pull request %v", pr.GetNumber())
+				return []*TargetEntity{
+					{
+						Kind:   PullRequest,
+						Number: pr.GetNumber(),
+						Owner:  event.GetRepo().GetOwner().GetLogin(),
+						Repo:   event.GetRepo().GetName(),
+					},
+				}, eventDetails, nil
+			}
+		}
+
+		log.Infof("no pull request found with the head sha %v", event.CheckSuite.GetHeadSHA())
+
+		return []*TargetEntity{}, eventDetails, nil
+	} else {
+		for _, pr := range event.CheckSuite.PullRequests {
+			targetEntities = append(targetEntities, &TargetEntity{
+				Kind:   PullRequest,
+				Owner:  event.GetRepo().GetOwner().GetLogin(),
+				Repo:   event.GetRepo().GetName(),
+				Number: pr.GetNumber(),
+			})
+		}
+	}
+
+	return targetEntities, eventDetails, nil
+}
+
 func getPullRequests(token, fullName string) ([]*github.PullRequest, error) {
 	ctx, canc := context.WithTimeout(context.Background(), time.Minute*10)
 	defer canc()
@@ -485,7 +539,7 @@ func ProcessEvent(log *logrus.Entry, event *ActionEvent) ([]*TargetEntity, *Even
 	case *github.CheckRunEvent:
 		return processCheckRunEvent(log, *event.Token, payload)
 	case *github.CheckSuiteEvent:
-		return processUnsupportedEvent(payload)
+		return processCheckSuiteEvent(log, *event.Token, payload)
 	case *github.CommitCommentEvent:
 		return processUnsupportedEvent(payload)
 	case *github.ContentReferenceEvent:

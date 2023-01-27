@@ -37,7 +37,7 @@ func logErrorAndCollect(logger *logrus.Entry, collector collector.Collector, mes
 }
 
 func Load(ctx context.Context, log *logrus.Entry, githubClient *gh.GithubClient, buf *bytes.Buffer) (*engine.ReviewpadFile, error) {
-	file, err := engine.Load(ctx, githubClient, buf.Bytes())
+	file, err := engine.Load(ctx, log, githubClient, buf.Bytes())
 	if err != nil {
 		return nil, err
 	}
@@ -305,7 +305,6 @@ func Run(
 	collector collector.Collector,
 	targetEntity *handler.TargetEntity,
 	eventDetails *handler.EventDetails,
-	eventPayload interface{},
 	reviewpadFile *engine.ReviewpadFile,
 	dryRun bool,
 	safeMode bool,
@@ -317,7 +316,7 @@ func Run(
 
 	defer config.CleanupPluginConfig()
 
-	aladinoInterpreter, err := aladino.NewInterpreter(ctx, log, dryRun, gitHubClient, collector, targetEntity, eventPayload, plugins_aladino.PluginBuiltInsWithConfig(config))
+	aladinoInterpreter, err := aladino.NewInterpreter(ctx, log, dryRun, gitHubClient, collector, targetEntity, eventDetails.Payload, plugins_aladino.PluginBuiltInsWithConfig(config))
 	if err != nil {
 		return engine.ExitStatusFailure, nil, err
 	}
