@@ -89,6 +89,8 @@ func run() error {
 		if err != nil {
 			return err
 		}
+
+		event.Token = &gitHubToken
 	}
 
 	gitHubDetailsRegex := regexp.MustCompile(`github\.com\/(.+)\/(.+)\/(\w+)\/(\d+)`)
