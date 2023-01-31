@@ -389,6 +389,49 @@ func TestHaveAllChecksRunCompleted(t *testing.T) {
 			},
 			wantResult: aladino.BuildBoolValue(true),
 		},
+		"when reviewpad is one of the checks": {
+			checkRunsToIgnore: aladino.BuildArrayValue([]aladino.Value{}),
+			conclusion:        aladino.BuildStringValue(""),
+			mockBackendOptions: []mock.MockBackendOption{
+				mock.WithRequestMatch(
+					mock.GetReposCommitsCheckRunsByOwnerByRepoByRef,
+					github.ListCheckRunsResults{
+						Total: github.Int(2),
+						CheckRuns: []*github.CheckRun{
+							{
+								Name:       github.String("build"),
+								Status:     github.String("completed"),
+								Conclusion: github.String("success"),
+							},
+							{
+								Name:   github.String("reviewpad"),
+								Status: github.String("in-progress"),
+							},
+						},
+					},
+				),
+			},
+			graphQLHandler: func(w http.ResponseWriter, r *http.Request) {
+				utils.MustWrite(w, `{
+					"data": {
+						"repository": {
+							"pullRequest": {
+								"commits": {
+									"nodes": [
+										{
+											"commit": {
+												"oid": "b0b55a8a10139a324f3ccb1a6481862a4b5b5bcc"
+											}
+										}
+									]
+								}
+							}
+						}
+					}
+				}`)
+			},
+			wantResult: aladino.BuildBoolValue(true),
+		},
 	}
 
 	for name, test := range tests {

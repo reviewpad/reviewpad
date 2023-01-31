@@ -41,7 +41,10 @@ func haveAllChecksRunCompleted(e aladino.Env, args []aladino.Value) (aladino.Val
 		return nil, err
 	}
 
-	ignoredRuns := map[string]bool{}
+	ignoredRuns := map[string]bool{
+		// By default, ignore Reviewpad's own check runs
+		"reviewpad": true,
+	}
 	for _, item := range checkRunsToIgnore.Vals {
 		ignoredRuns[item.(*aladino.StringValue).Val] = true
 	}
