@@ -76,6 +76,11 @@ func processCronEvent(log *logrus.Entry, token string, e *ActionEvent) ([]*Targe
 	owner := repoParts[0]
 	repo := repoParts[1]
 
+	repository, _, err := ghClient.GetClientREST().Repositories.Get(ctx, owner, repo)
+	if err != nil {
+		return nil, nil, fmt.Errorf("get repository failed: %w", err)
+	}
+
 	issues, _, err := ghClient.ListIssuesByRepo(ctx, owner, repo, nil)
 	if err != nil {
 		return nil, nil, fmt.Errorf("get pull requests: %w", err)
@@ -94,8 +99,8 @@ func processCronEvent(log *logrus.Entry, token string, e *ActionEvent) ([]*Targe
 			Number:      *issue.Number,
 			Owner:       owner,
 			Repo:        repo,
-			AccountType: issue.GetRepository().GetOwner().GetType(),
-			Visibility:  issue.GetRepository().GetVisibility(),
+			AccountType: repository.GetOwner().GetType(),
+			Visibility:  repository.GetVisibility(),
 		})
 	}
 

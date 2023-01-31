@@ -245,6 +245,24 @@ func TestProcessEvent(t *testing.T) {
 		},
 	)
 
+	httpmock.RegisterResponder("GET", fmt.Sprintf("https://api.github.com/repos/%v/%v", owner, repo),
+		func(req *http.Request) (*http.Response, error) {
+			b, err := json.Marshal(github.Repository{
+				Owner: &github.User{
+					Type: github.String("Organization"),
+				},
+				Visibility: github.String("public"),
+			})
+			if err != nil {
+				return nil, err
+			}
+
+			resp := httpmock.NewBytesResponse(200, b)
+
+			return resp, nil
+		},
+	)
+
 	tests := map[string]struct {
 		event            *handler.ActionEvent
 		wantTargets      []*handler.TargetEntity
@@ -469,7 +487,7 @@ func TestProcessEvent(t *testing.T) {
 					Number:      130,
 					Owner:       owner,
 					Repo:        repo,
-					AccountType: "User",
+					AccountType: "Organization",
 					Visibility:  "public",
 				},
 				{
@@ -477,7 +495,7 @@ func TestProcessEvent(t *testing.T) {
 					Number:      aladino.DefaultMockPrNum,
 					Owner:       owner,
 					Repo:        repo,
-					AccountType: "User",
+					AccountType: "Organization",
 					Visibility:  "public",
 				},
 			},
