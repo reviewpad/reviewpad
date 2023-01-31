@@ -213,7 +213,7 @@ Paste the following configuration:
 }
 ```
 
-### Debugging on VSCode
+### Debugging with VSCode
 
 Add the following to your `.vscode/launch.json`.
 
