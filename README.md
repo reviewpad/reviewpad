@@ -61,7 +61,7 @@ This repository generates two artifacts:
     - github.com/reviewpad/reviewpad/engine
     - github.com/reviewpad/reviewpad/lang/aladino
     - github.com/reviewpad/reviewpad/plugins/aladino
-    - github.com/reviewpad/reviewpad/utils/fmtio
+    - github.com/reviewpad/reviewpad/utils
 
 Conceptually, the packages are divided into four categories:
 
@@ -142,28 +142,6 @@ You can solve with:
 ulimit -Sn 500
 ```
 
-### Running integration tests
-
-The integration tests run reviewpad on an actual repository and pull request. The repository that the integration tests are running on needs to have the following:
-
-- at least one milestone;
-- at least 3 labels named `bug`, `documentation`, `wontfix` (GitHub adds these labels to every new repository by default);
-- a team called `integration-test` with at least 3 members;
-- a project called `[INTEGRATION TESTS] Reviewpad` with `Todo` and `In Progress` status
-- a GitHub status check called `log event`.
-
-#### Required Environment Variables
-
-- `GITHUB_INTEGRATION_TEST_TOKEN` : GitHub access token used to setup tests and run reviewpad
-- `GITHUB_INTEGRATION_TEST_REPO_OWNER` : The owner of the repository used to run integration tests on
-- `GITHUB_INTEGRATION_TEST_REPO_NAME` : The name of the repository used to run integration tests on
-
-After setting those variables, you can run the integration tests with:
-
-```
-task integration-test
-```
-
 #### Coverage
 
 To generate the coverage report run:
@@ -184,6 +162,28 @@ To display the total code coverage percentage run:
 go tool cover -func coverage.out | grep total:
 ```
 
+### Running integration tests
+
+The integration tests run reviewpad on an actual repository and pull request. The repository that the integration tests are running on needs to have the following:
+
+- At least one milestone;
+- At least 3 labels named `bug`, `documentation`, `wontfix` (GitHub adds these labels to every new repository by default);
+- A team called `integration-test` with at least 3 members;
+- A project called `[INTEGRATION TESTS] Reviewpad` with `Todo` and `In Progress` status
+- A GitHub status check called `log event`.
+
+#### Required Environment Variables
+
+- `GITHUB_INTEGRATION_TEST_TOKEN` : GitHub access token used to setup tests and run reviewpad
+- `GITHUB_INTEGRATION_TEST_REPO_OWNER` : The owner of the repository used to run integration tests on
+- `GITHUB_INTEGRATION_TEST_REPO_NAME` : The name of the repository used to run integration tests on
+
+After setting those variables, you can run the integration tests with:
+
+```
+task integration-test
+```
+
 ### VSCode
 
 We strongly recommend using [VSCode](https://code.visualstudio.com/) with the following extensions:
@@ -192,6 +192,7 @@ We strongly recommend using [VSCode](https://code.visualstudio.com/) with the fo
 -   [EditorConfig](https://marketplace.visualstudio.com/items?itemName=EditorConfig.EditorConfig) to helps maintaining consistent coding styles.
 -   [licenser](https://marketplace.visualstudio.com/items?itemName=ymotongpoo.licenser) for adding license headers.
 -   [YAML](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml) for enabling `reviewpad.yml` JSON schema.
+-   [JSON Parse & Stringify](https://marketplace.visualstudio.com/items?itemName=nextfaze.json-parse-stringify) for formatting JSON files.
 
 Open the project in VSCode, open the command palette (Ctrl+Shift+P) and search for `Preferences: Open Workspace Settings (JSON)`.
 
@@ -247,24 +248,24 @@ Add the following to your `.vscode/launch.json`.
 }
 ```
 
-For the argument `-e` you case use either a github event from the reviewpad github action run or a github event from the reviewpad github app run.
+For the argument `-e` you case use either a GitHub event from a Reviewpad GitHub Action run or a GitHub event from a Reviewpad GitHub App run.
 
-#### Using the github event from reviewpad github action run
+#### Using a GitHub event from a Reviewpad GitHub Action run
 
-1. Navigate to the logs of the reviewpad github action job run where you wish to copy the event from. [Here's an example](https://github.com/reviewpad/action-stage-test/actions/runs/3915601092/jobs/6693933277).
-2. Once of the logs expand the step `Running reviewpad action`.
-3. Inside that step expand the inner step `Run reviewpad/action@<VERSION>`.
+1. Navigate to the logs of the Reviewpad GitHub Action job run where you wish to copy the event from. [Here's an example](https://github.com/reviewpad/action-stage-test/actions/runs/3915601092/jobs/6693933277).
+2. Expand the step `Running reviewpad action`.
+3. Expand the inner step `Run reviewpad/action@<VERSION>`.
 4. Copy the content inside the property `event`.
 5. Paste the content inside a file (e.g. `my_event.json`) and save it under `cli > debugdata`.
 6. Update the argument `-e` to point to the full path of the file you just created.
 
-#### Using the github event from reviewpad github app run
+#### Using a GitHub event from a Reviewpad GitHub App run
 
-1. Navigate to the logs of the reviewpad github app run where you wish to copy the event from.
+1. Navigate to the logs of the Reviewpad GitHub App run where you wish to copy the event from. You can use the following query to filter the events payload `{$.level=debug && $.msg="request received" }`.
 2. Copy the content inside the property `body`.
-3. This content is an escape JSON string. You need to unescape it using [freeformatter](https://www.freeformatter.com/json-escape.html).
-4. Copy the escaped content and paste it inside a file (e.g. `my_event.json`) and save it under `cli > debugdata`.
-5. In the created file rename the properties `type` to `event_name` and `payload` to `event`.
+3. Paste the content inside a file (e.g. `my_event.json`) and save it under `cli > debugdata`.
+4. This content is an escape JSON string. Use the [JSON Parse & Stringify](https://marketplace.visualstudio.com/items?itemName=nextfaze.json-parse-stringify) extension to parse the content by pressing `Ctrl+Shift+P` and searching for `JSON: Parse Stringified JSON`.
+5. Rename the root properties `type` and `payload ` to `event_name` and `event` respectively.
 6. Update the argument `-e` to point to the full path of the file you just created.
 
 You can then run the debugger by pressing F5.
@@ -276,8 +277,6 @@ We welcome contributions to Reviewpad from the community!
 See the [Contributing Guide](CONTRIBUTING.md).
 
 If you need any assistance, please join [discord](https://reviewpad.com/discord) to reach the core contributors.
-
-**Take a look at the [X-Ray for Reviewpad](https://xray.reviewpad.com/analysis?repository=https%3A%2F%2Fgithub.com%2Freviewpad%2Freviewpad) to see how we are doing!**
 
 ## License
 
