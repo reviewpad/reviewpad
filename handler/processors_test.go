@@ -170,7 +170,9 @@ func TestProcessEvent(t *testing.T) {
 							Name: github.String(repo),
 							Owner: &github.User{
 								Login: github.String(owner),
+								Type:  github.String("Organization"),
 							},
+							Visibility: github.String("public"),
 						},
 					},
 					Head: &github.PullRequestBranch{
@@ -185,7 +187,9 @@ func TestProcessEvent(t *testing.T) {
 							Name: github.String(repo),
 							Owner: &github.User{
 								Login: github.String(owner),
+								Type:  github.String("Organization"),
 							},
+							Visibility: github.String("public"),
 						},
 					},
 					Head: &github.PullRequestBranch{
@@ -211,13 +215,43 @@ func TestProcessEvent(t *testing.T) {
 					PullRequestLinks: &github.PullRequestLinks{
 						HTMLURL: github.String(fmt.Sprintf("https://api.github.com/repos/%v/%v/pull/%v", owner, repo, aladino.DefaultMockPrNum)),
 					},
+					Repository: &github.Repository{
+						Owner: &github.User{
+							Type: github.String("User"),
+						},
+						Visibility: github.String("public"),
+					},
 				},
 				{
 					Number: github.Int(130),
 					PullRequestLinks: &github.PullRequestLinks{
 						HTMLURL: github.String(fmt.Sprintf("https://api.github.com/repos/%v/%v/pull/%v", owner, repo, 130)),
 					},
+					Repository: &github.Repository{
+						Owner: &github.User{
+							Type: github.String("User"),
+						},
+						Visibility: github.String("public"),
+					},
 				},
+			})
+			if err != nil {
+				return nil, err
+			}
+
+			resp := httpmock.NewBytesResponse(200, b)
+
+			return resp, nil
+		},
+	)
+
+	httpmock.RegisterResponder("GET", fmt.Sprintf("https://api.github.com/repos/%v/%v", owner, repo),
+		func(req *http.Request) (*http.Response, error) {
+			b, err := json.Marshal(github.Repository{
+				Owner: &github.User{
+					Type: github.String("Organization"),
+				},
+				Visibility: github.String("public"),
 			})
 			if err != nil {
 				return nil, err
@@ -246,8 +280,10 @@ func TestProcessEvent(t *testing.T) {
 					"repository": {
 						"name": "reviewpad",
 						"owner": {
-							"login": "reviewpad"
-						}
+							"login": "reviewpad",
+							"type": "Organization"
+						},
+						"visibility": "public"
 					},
 					"pull_request": {
 						"body": "## Description",
@@ -257,10 +293,12 @@ func TestProcessEvent(t *testing.T) {
 			},
 			wantTargets: []*handler.TargetEntity{
 				{
-					Kind:   handler.PullRequest,
-					Number: 130,
-					Owner:  owner,
-					Repo:   repo,
+					Kind:        handler.PullRequest,
+					Number:      130,
+					Owner:       owner,
+					Repo:        repo,
+					AccountType: "Organization",
+					Visibility:  "public",
 				},
 			},
 			wantEventDetails: &handler.EventDetails{
@@ -273,7 +311,9 @@ func TestProcessEvent(t *testing.T) {
 						Name: github.String("reviewpad"),
 						Owner: &github.User{
 							Login: github.String("reviewpad"),
+							Type:  github.String("Organization"),
 						},
+						Visibility: github.String("public"),
 					},
 					PullRequest: &github.PullRequest{
 						Body:   github.String("## Description"),
@@ -292,8 +332,10 @@ func TestProcessEvent(t *testing.T) {
 					"repository": {
 						"name": "reviewpad",
 						"owner": {
-							"login": "reviewpad"
-						}
+							"login": "reviewpad",
+							"type": "Organization"
+						},
+						"visibility": "public"
 					},
 					"pull_request": {
 						"body": "## Description",
@@ -303,10 +345,12 @@ func TestProcessEvent(t *testing.T) {
 			},
 			wantTargets: []*handler.TargetEntity{
 				{
-					Kind:   handler.PullRequest,
-					Number: 130,
-					Owner:  owner,
-					Repo:   repo,
+					Kind:        handler.PullRequest,
+					Number:      130,
+					Owner:       owner,
+					Repo:        repo,
+					AccountType: "Organization",
+					Visibility:  "public",
 				},
 			},
 			wantEventDetails: &handler.EventDetails{
@@ -319,7 +363,9 @@ func TestProcessEvent(t *testing.T) {
 						Name: github.String("reviewpad"),
 						Owner: &github.User{
 							Login: github.String("reviewpad"),
+							Type:  github.String("Organization"),
 						},
+						Visibility: github.String("public"),
 					},
 					PullRequest: &github.PullRequest{
 						Body:   github.String("## Description"),
@@ -338,8 +384,10 @@ func TestProcessEvent(t *testing.T) {
 					"repository": {
 						"name": "reviewpad",
 						"owner": {
-							"login": "reviewpad"
-						}
+							"login": "reviewpad",
+							"type": "Organization"
+						},
+						"visibility": "public"
 					},
 					"pull_request": {
 						"body": "## Description",
@@ -349,10 +397,12 @@ func TestProcessEvent(t *testing.T) {
 			},
 			wantTargets: []*handler.TargetEntity{
 				{
-					Kind:   handler.PullRequest,
-					Number: 130,
-					Owner:  owner,
-					Repo:   repo,
+					Kind:        handler.PullRequest,
+					Number:      130,
+					Owner:       owner,
+					Repo:        repo,
+					AccountType: "Organization",
+					Visibility:  "public",
 				},
 			},
 			wantEventDetails: &handler.EventDetails{
@@ -364,7 +414,9 @@ func TestProcessEvent(t *testing.T) {
 						Name: github.String("reviewpad"),
 						Owner: &github.User{
 							Login: github.String("reviewpad"),
+							Type:  github.String("Organization"),
 						},
+						Visibility: github.String("public"),
 					},
 					PullRequest: &github.PullRequest{
 						Body:   github.String("## Description"),
@@ -382,8 +434,10 @@ func TestProcessEvent(t *testing.T) {
 					"repository": {
 						"name": "reviewpad",
 						"owner": {
-							"login": "reviewpad"
-						}
+							"login": "reviewpad",
+							"type": "Organization"
+						},
+						"visibility": "public"
 					},
 					"pull_request": {
 						"body": "## Description",
@@ -393,10 +447,12 @@ func TestProcessEvent(t *testing.T) {
 			},
 			wantTargets: []*handler.TargetEntity{
 				{
-					Kind:   handler.PullRequest,
-					Number: 130,
-					Owner:  owner,
-					Repo:   repo,
+					Kind:        handler.PullRequest,
+					Number:      130,
+					Owner:       owner,
+					Repo:        repo,
+					AccountType: "Organization",
+					Visibility:  "public",
 				},
 			},
 			wantEventDetails: &handler.EventDetails{
@@ -408,7 +464,9 @@ func TestProcessEvent(t *testing.T) {
 						Name: github.String("reviewpad"),
 						Owner: &github.User{
 							Login: github.String("reviewpad"),
+							Type:  github.String("Organization"),
 						},
+						Visibility: github.String("public"),
 					},
 					PullRequest: &github.PullRequest{
 						Body:   github.String("## Description"),
@@ -425,16 +483,20 @@ func TestProcessEvent(t *testing.T) {
 			},
 			wantTargets: []*handler.TargetEntity{
 				{
-					Kind:   handler.PullRequest,
-					Number: 130,
-					Owner:  owner,
-					Repo:   repo,
+					Kind:        handler.PullRequest,
+					Number:      130,
+					Owner:       owner,
+					Repo:        repo,
+					AccountType: "Organization",
+					Visibility:  "public",
 				},
 				{
-					Kind:   handler.PullRequest,
-					Number: aladino.DefaultMockPrNum,
-					Owner:  owner,
-					Repo:   repo,
+					Kind:        handler.PullRequest,
+					Number:      aladino.DefaultMockPrNum,
+					Owner:       owner,
+					Repo:        repo,
+					AccountType: "Organization",
+					Visibility:  "public",
 				},
 			},
 			wantEventDetails: &handler.EventDetails{
@@ -460,10 +522,12 @@ func TestProcessEvent(t *testing.T) {
 			},
 			wantTargets: []*handler.TargetEntity{
 				{
-					Kind:   handler.PullRequest,
-					Number: aladino.DefaultMockPrNum,
-					Owner:  owner,
-					Repo:   repo,
+					Kind:        handler.PullRequest,
+					Number:      aladino.DefaultMockPrNum,
+					Owner:       owner,
+					Repo:        repo,
+					AccountType: "Organization",
+					Visibility:  "public",
 				},
 			},
 			wantEventDetails: &handler.EventDetails{
@@ -633,10 +697,12 @@ func TestProcessEvent(t *testing.T) {
 			},
 			wantTargets: []*handler.TargetEntity{
 				{
-					Kind:   handler.PullRequest,
-					Number: aladino.DefaultMockPrNum,
-					Owner:  owner,
-					Repo:   repo,
+					Kind:        handler.PullRequest,
+					Number:      aladino.DefaultMockPrNum,
+					Owner:       owner,
+					Repo:        repo,
+					AccountType: "Organization",
+					Visibility:  "public",
 				},
 			},
 			wantEventDetails: &handler.EventDetails{
@@ -693,10 +759,12 @@ func TestProcessEvent(t *testing.T) {
 			},
 			wantTargets: []*handler.TargetEntity{
 				{
-					Kind:   handler.PullRequest,
-					Number: aladino.DefaultMockPrNum,
-					Owner:  owner,
-					Repo:   repo,
+					Kind:        handler.PullRequest,
+					Number:      aladino.DefaultMockPrNum,
+					Owner:       owner,
+					Repo:        repo,
+					AccountType: "Organization",
+					Visibility:  "public",
 				},
 			},
 			wantEventDetails: &handler.EventDetails{
@@ -736,24 +804,35 @@ func TestProcessEvent(t *testing.T) {
 				EventName: github.String("installation"),
 				EventPayload: buildPayload([]byte(`{
 					"action": "created",
+					"installation": {
+						"account": {
+							"type": "User"
+						}
+					},
 					"repositories": [
 						{
-							"full_name": "testowner/testrepo"
+							"full_name": "testowner/testrepo",
+							"private": true
 						},
 						{
-							"full_name": "testowner2/testrepo2"
+							"full_name": "testowner2/testrepo2",
+							"private": false
 						}
 					]
 				}`)),
 			},
 			wantTargets: []*handler.TargetEntity{
 				{
-					Repo:  "testrepo",
-					Owner: "testowner",
+					Repo:        "testrepo",
+					Owner:       "testowner",
+					AccountType: "User",
+					Visibility:  "private",
 				},
 				{
-					Repo:  "testrepo2",
-					Owner: "testowner2",
+					Repo:        "testrepo2",
+					Owner:       "testowner2",
+					AccountType: "User",
+					Visibility:  "public",
 				},
 			},
 			wantEventDetails: &handler.EventDetails{
@@ -761,12 +840,19 @@ func TestProcessEvent(t *testing.T) {
 				EventAction: "created",
 				Payload: &github.InstallationEvent{
 					Action: github.String("created"),
+					Installation: &github.Installation{
+						Account: &github.User{
+							Type: github.String("User"),
+						},
+					},
 					Repositories: []*github.Repository{
 						{
 							FullName: github.String("testowner/testrepo"),
+							Private:  github.Bool(true),
 						},
 						{
 							FullName: github.String("testowner2/testrepo2"),
+							Private:  github.Bool(false),
 						},
 					},
 				},
@@ -796,24 +882,35 @@ func TestProcessEvent(t *testing.T) {
 				EventName: github.String("installation_repositories"),
 				EventPayload: buildPayload([]byte(`{
 					"action": "added",
+					"installation": {
+						"account": {
+							"type": "Organization"
+						}
+					},
 					"repositories_added": [
 						{
-							"full_name": "testowner/testrepo"
+							"full_name": "testowner/testrepo",
+							"private": true
 						},
 						{
-							"full_name": "testowner2/testrepo2"
+							"full_name": "testowner2/testrepo2",
+							"private": false
 						}
 					]
 				}`)),
 			},
 			wantTargets: []*handler.TargetEntity{
 				{
-					Repo:  "testrepo",
-					Owner: "testowner",
+					Repo:        "testrepo",
+					Owner:       "testowner",
+					AccountType: "Organization",
+					Visibility:  "private",
 				},
 				{
-					Repo:  "testrepo2",
-					Owner: "testowner2",
+					Repo:        "testrepo2",
+					Owner:       "testowner2",
+					AccountType: "Organization",
+					Visibility:  "public",
 				},
 			},
 			wantEventDetails: &handler.EventDetails{
@@ -821,12 +918,19 @@ func TestProcessEvent(t *testing.T) {
 				EventAction: "added",
 				Payload: &github.InstallationRepositoriesEvent{
 					Action: github.String("added"),
+					Installation: &github.Installation{
+						Account: &github.User{
+							Type: github.String("Organization"),
+						},
+					},
 					RepositoriesAdded: []*github.Repository{
 						{
 							FullName: github.String("testowner/testrepo"),
+							Private:  github.Bool(true),
 						},
 						{
 							FullName: github.String("testowner2/testrepo2"),
+							Private:  github.Bool(false),
 						},
 					},
 				},
@@ -837,24 +941,35 @@ func TestProcessEvent(t *testing.T) {
 				EventName: github.String("installation_repositories"),
 				EventPayload: buildPayload([]byte(`{
 					"action": "removed",
+					"installation": {
+						"account": {
+							"type": "Organization"
+						}
+					},
 					"repositories_removed": [
 						{
-							"full_name": "testowner/testrepo"
+							"full_name": "testowner/testrepo",
+							"private": true
 						},
 						{
-							"full_name": "testowner2/testrepo2"
+							"full_name": "testowner2/testrepo2",
+							"private": true
 						}
 					]
 				}`)),
 			},
 			wantTargets: []*handler.TargetEntity{
 				{
-					Repo:  "testrepo",
-					Owner: "testowner",
+					Repo:        "testrepo",
+					Owner:       "testowner",
+					AccountType: "Organization",
+					Visibility:  "private",
 				},
 				{
-					Repo:  "testrepo2",
-					Owner: "testowner2",
+					Repo:        "testrepo2",
+					Owner:       "testowner2",
+					AccountType: "Organization",
+					Visibility:  "private",
 				},
 			},
 			wantEventDetails: &handler.EventDetails{
@@ -862,12 +977,19 @@ func TestProcessEvent(t *testing.T) {
 				EventAction: "removed",
 				Payload: &github.InstallationRepositoriesEvent{
 					Action: github.String("removed"),
+					Installation: &github.Installation{
+						Account: &github.User{
+							Type: github.String("Organization"),
+						},
+					},
 					RepositoriesRemoved: []*github.Repository{
 						{
 							FullName: github.String("testowner/testrepo"),
+							Private:  github.Bool(true),
 						},
 						{
 							FullName: github.String("testowner2/testrepo2"),
+							Private:  github.Bool(true),
 						},
 					},
 				},
@@ -891,17 +1013,21 @@ func TestProcessEvent(t *testing.T) {
 					"repository": {
 						"name": "reviewpad",
 						"owner": {
-							"login": "reviewpad"
-						}
+							"login": "reviewpad",
+							"type": "User"
+						},
+						"visibility": "public"
 					}
 				}`)),
 			},
 			wantTargets: []*handler.TargetEntity{
 				{
-					Kind:   handler.PullRequest,
-					Owner:  "reviewpad",
-					Repo:   "reviewpad",
-					Number: 1,
+					Kind:        handler.PullRequest,
+					Owner:       "reviewpad",
+					Repo:        "reviewpad",
+					Number:      1,
+					AccountType: "User",
+					Visibility:  "public",
 				},
 			},
 			wantEventDetails: &handler.EventDetails{
@@ -922,7 +1048,9 @@ func TestProcessEvent(t *testing.T) {
 						Name: github.String("reviewpad"),
 						Owner: &github.User{
 							Login: github.String("reviewpad"),
+							Type:  github.String("User"),
 						},
+						Visibility: github.String("public"),
 					},
 				},
 			},
@@ -949,10 +1077,12 @@ func TestProcessEvent(t *testing.T) {
 			},
 			wantTargets: []*handler.TargetEntity{
 				{
-					Kind:   handler.PullRequest,
-					Owner:  "reviewpad",
-					Repo:   "reviewpad",
-					Number: 6,
+					Kind:        handler.PullRequest,
+					Owner:       "reviewpad",
+					Repo:        "reviewpad",
+					Number:      6,
+					AccountType: "Organization",
+					Visibility:  "public",
 				},
 			},
 			wantEventDetails: &handler.EventDetails{
@@ -1051,10 +1181,12 @@ func TestProcessEvent(t *testing.T) {
 			},
 			wantTargets: []*handler.TargetEntity{
 				{
-					Kind:   handler.PullRequest,
-					Owner:  "reviewpad",
-					Repo:   "reviewpad",
-					Number: 6,
+					Kind:        handler.PullRequest,
+					Owner:       "reviewpad",
+					Repo:        "reviewpad",
+					Number:      6,
+					AccountType: "Organization",
+					Visibility:  "public",
 				},
 			},
 			wantEventDetails: &handler.EventDetails{

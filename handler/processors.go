@@ -32,10 +32,12 @@ func (entityType TargetEntityKind) String() string {
 }
 
 type TargetEntity struct {
-	Kind   TargetEntityKind
-	Number int
-	Owner  string
-	Repo   string
+	Kind        TargetEntityKind
+	Number      int
+	Owner       string
+	Repo        string
+	AccountType string
+	Visibility  string
 }
 
 type EventDetails struct {
@@ -74,6 +76,11 @@ func processCronEvent(log *logrus.Entry, token string, e *ActionEvent) ([]*Targe
 	owner := repoParts[0]
 	repo := repoParts[1]
 
+	repository, _, err := ghClient.GetClientREST().Repositories.Get(ctx, owner, repo)
+	if err != nil {
+		return nil, nil, fmt.Errorf("get repository failed: %w", err)
+	}
+
 	issues, _, err := ghClient.ListIssuesByRepo(ctx, owner, repo, nil)
 	if err != nil {
 		return nil, nil, fmt.Errorf("get pull requests: %w", err)
@@ -88,10 +95,12 @@ func processCronEvent(log *logrus.Entry, token string, e *ActionEvent) ([]*Targe
 			kind = PullRequest
 		}
 		targets = append(targets, &TargetEntity{
-			Kind:   kind,
-			Number: *issue.Number,
-			Owner:  owner,
-			Repo:   repo,
+			Kind:        kind,
+			Number:      *issue.Number,
+			Owner:       owner,
+			Repo:        repo,
+			AccountType: repository.GetOwner().GetType(),
+			Visibility:  repository.GetVisibility(),
 		})
 	}
 
@@ -108,10 +117,12 @@ func processIssuesEvent(log *logrus.Entry, e *github.IssuesEvent) ([]*TargetEnti
 
 	return []*TargetEntity{
 			{
-				Kind:   Issue,
-				Number: *e.Issue.Number,
-				Owner:  *e.Repo.Owner.Login,
-				Repo:   *e.Repo.Name,
+				Kind:        Issue,
+				Number:      *e.Issue.Number,
+				Owner:       *e.Repo.Owner.Login,
+				Repo:        *e.Repo.Name,
+				AccountType: e.GetRepo().GetOwner().GetType(),
+				Visibility:  e.GetRepo().GetVisibility(),
 			},
 		}, &EventDetails{
 			EventName:   "issues",
@@ -131,10 +142,12 @@ func processIssueCommentEvent(log *logrus.Entry, e *github.IssueCommentEvent) ([
 
 	return []*TargetEntity{
 			{
-				Kind:   kind,
-				Number: *e.Issue.Number,
-				Owner:  *e.Repo.Owner.Login,
-				Repo:   *e.Repo.Name,
+				Kind:        kind,
+				Number:      *e.Issue.Number,
+				Owner:       *e.Repo.Owner.Login,
+				Repo:        *e.Repo.Name,
+				AccountType: e.GetRepo().GetOwner().GetType(),
+				Visibility:  e.GetRepo().GetVisibility(),
 			},
 		}, &EventDetails{
 			EventName:   "issue_comment",
@@ -149,10 +162,12 @@ func processPullRequestEvent(log *logrus.Entry, e *github.PullRequestEvent) ([]*
 
 	return []*TargetEntity{
 			{
-				Kind:   PullRequest,
-				Number: *e.PullRequest.Number,
-				Owner:  *e.Repo.Owner.Login,
-				Repo:   *e.Repo.Name,
+				Kind:        PullRequest,
+				Number:      *e.PullRequest.Number,
+				Owner:       *e.Repo.Owner.Login,
+				Repo:        *e.Repo.Name,
+				AccountType: e.GetRepo().GetOwner().GetType(),
+				Visibility:  e.GetRepo().GetVisibility(),
 			},
 		}, &EventDetails{
 			EventName:   "pull_request",
@@ -167,10 +182,12 @@ func processPullRequestReviewEvent(log *logrus.Entry, e *github.PullRequestRevie
 
 	return []*TargetEntity{
 			{
-				Kind:   PullRequest,
-				Number: *e.PullRequest.Number,
-				Owner:  *e.Repo.Owner.Login,
-				Repo:   *e.Repo.Name,
+				Kind:        PullRequest,
+				Number:      *e.PullRequest.Number,
+				Owner:       *e.Repo.Owner.Login,
+				Repo:        *e.Repo.Name,
+				AccountType: e.GetRepo().GetOwner().GetType(),
+				Visibility:  e.GetRepo().GetVisibility(),
 			},
 		}, &EventDetails{
 			EventName:   "pull_request_review",
@@ -185,10 +202,12 @@ func processPullRequestReviewCommentEvent(log *logrus.Entry, e *github.PullReque
 
 	return []*TargetEntity{
 			{
-				Kind:   PullRequest,
-				Number: *e.PullRequest.Number,
-				Owner:  *e.Repo.Owner.Login,
-				Repo:   *e.Repo.Name,
+				Kind:        PullRequest,
+				Number:      *e.PullRequest.Number,
+				Owner:       *e.Repo.Owner.Login,
+				Repo:        *e.Repo.Name,
+				AccountType: e.GetRepo().GetOwner().GetType(),
+				Visibility:  e.GetRepo().GetVisibility(),
 			},
 		}, &EventDetails{
 			EventName:   "pull_request_review_comment",
@@ -203,10 +222,12 @@ func processPullRequestTargetEvent(log *logrus.Entry, e *github.PullRequestTarge
 
 	return []*TargetEntity{
 			{
-				Kind:   PullRequest,
-				Number: *e.PullRequest.Number,
-				Owner:  *e.Repo.Owner.Login,
-				Repo:   *e.Repo.Name,
+				Kind:        PullRequest,
+				Number:      *e.PullRequest.Number,
+				Owner:       *e.Repo.Owner.Login,
+				Repo:        *e.Repo.Name,
+				AccountType: e.GetRepo().GetOwner().GetType(),
+				Visibility:  e.GetRepo().GetVisibility(),
 			},
 		}, &EventDetails{
 			EventName:   "pull_request_target",
@@ -240,10 +261,12 @@ func processStatusEvent(log *logrus.Entry, token string, e *github.StatusEvent) 
 			log.Infof("found pull request %v", *pr.Number)
 			return []*TargetEntity{
 				{
-					Kind:   PullRequest,
-					Number: *pr.Number,
-					Owner:  *pr.Base.Repo.Owner.Login,
-					Repo:   *pr.Base.Repo.Name,
+					Kind:        PullRequest,
+					Number:      *pr.Number,
+					Owner:       *pr.Base.Repo.Owner.Login,
+					Repo:        *pr.Base.Repo.Name,
+					AccountType: pr.GetBase().GetRepo().GetOwner().GetType(),
+					Visibility:  pr.GetBase().GetRepo().GetVisibility(),
 				},
 			}, eventDetails, nil
 		}
@@ -279,10 +302,12 @@ func processWorkflowRunEvent(log *logrus.Entry, token string, e *github.Workflow
 			log.Infof("found pull request %v", *pr.Number)
 			return []*TargetEntity{
 				{
-					Kind:   PullRequest,
-					Number: *pr.Number,
-					Owner:  *pr.Base.Repo.Owner.Login,
-					Repo:   *pr.Base.Repo.Name,
+					Kind:        PullRequest,
+					Number:      *pr.Number,
+					Owner:       *pr.Base.Repo.Owner.Login,
+					Repo:        *pr.Base.Repo.Name,
+					AccountType: pr.GetBase().GetRepo().GetOwner().GetType(),
+					Visibility:  pr.GetBase().GetRepo().GetVisibility(),
 				},
 			}, eventDetail, nil
 		}
@@ -317,10 +342,12 @@ func processPushEvent(log *logrus.Entry, token string, e *github.PushEvent) ([]*
 	for _, pr := range prs {
 		if pr.Base.GetRef() == e.GetRef() {
 			targets = append(targets, &TargetEntity{
-				Kind:   PullRequest,
-				Number: *pr.Number,
-				Owner:  owner,
-				Repo:   repo,
+				Kind:        PullRequest,
+				Number:      *pr.Number,
+				Owner:       owner,
+				Repo:        repo,
+				AccountType: pr.GetBase().GetRepo().GetOwner().GetType(),
+				Visibility:  pr.GetBase().GetRepo().GetVisibility(),
 			})
 		}
 	}
@@ -336,7 +363,7 @@ func processPushEvent(log *logrus.Entry, token string, e *github.PushEvent) ([]*
 func processInstallationEvent(log *logrus.Entry, event *github.InstallationEvent) ([]*TargetEntity, *EventDetails, error) {
 	log.Info("processing installation event")
 
-	targetEntities, err := extractTargetEntitiesFromRepositories(event.Repositories)
+	targetEntities, err := extractTargetEntitiesFromRepositories(event.Repositories, event.GetInstallation().GetAccount().GetType())
 	if err != nil {
 		return nil, nil, err
 	}
@@ -359,7 +386,7 @@ func processInstallationRepositoriesEvent(event *github.InstallationRepositories
 		repositories = event.RepositoriesRemoved
 	}
 
-	targetEntities, err := extractTargetEntitiesFromRepositories(repositories)
+	targetEntities, err := extractTargetEntitiesFromRepositories(repositories, event.GetInstallation().GetAccount().GetType())
 	if err != nil {
 		return nil, nil, err
 	}
@@ -396,10 +423,12 @@ func processCheckRunEvent(log *logrus.Entry, token string, event *github.CheckRu
 				log.Infof("found pull request %v", pr.GetNumber())
 				return []*TargetEntity{
 					{
-						Kind:   PullRequest,
-						Number: pr.GetNumber(),
-						Owner:  event.GetRepo().GetOwner().GetLogin(),
-						Repo:   event.GetRepo().GetName(),
+						Kind:        PullRequest,
+						Number:      pr.GetNumber(),
+						Owner:       event.GetRepo().GetOwner().GetLogin(),
+						Repo:        event.GetRepo().GetName(),
+						AccountType: pr.GetBase().GetRepo().GetOwner().GetType(),
+						Visibility:  pr.GetBase().GetRepo().GetVisibility(),
 					},
 				}, eventDetails, nil
 			}
@@ -412,10 +441,12 @@ func processCheckRunEvent(log *logrus.Entry, token string, event *github.CheckRu
 
 	for _, pr := range event.CheckRun.PullRequests {
 		targetEntities = append(targetEntities, &TargetEntity{
-			Kind:   PullRequest,
-			Owner:  event.GetRepo().GetOwner().GetLogin(),
-			Repo:   event.GetRepo().GetName(),
-			Number: pr.GetNumber(),
+			Kind:        PullRequest,
+			Owner:       event.GetRepo().GetOwner().GetLogin(),
+			Repo:        event.GetRepo().GetName(),
+			Number:      pr.GetNumber(),
+			AccountType: event.GetRepo().GetOwner().GetType(),
+			Visibility:  event.GetRepo().GetVisibility(),
 		})
 	}
 
@@ -450,10 +481,12 @@ func processCheckSuiteEvent(log *logrus.Entry, token string, event *github.Check
 				log.Infof("found pull request %v", pr.GetNumber())
 				return []*TargetEntity{
 					{
-						Kind:   PullRequest,
-						Number: pr.GetNumber(),
-						Owner:  event.GetRepo().GetOwner().GetLogin(),
-						Repo:   event.GetRepo().GetName(),
+						Kind:        PullRequest,
+						Number:      pr.GetNumber(),
+						Owner:       event.GetRepo().GetOwner().GetLogin(),
+						Repo:        event.GetRepo().GetName(),
+						AccountType: pr.GetBase().GetRepo().GetOwner().GetType(),
+						Visibility:  pr.GetBase().GetRepo().GetVisibility(),
 					},
 				}, eventDetails, nil
 			}
@@ -465,10 +498,12 @@ func processCheckSuiteEvent(log *logrus.Entry, token string, event *github.Check
 	} else {
 		for _, pr := range event.CheckSuite.PullRequests {
 			targetEntities = append(targetEntities, &TargetEntity{
-				Kind:   PullRequest,
-				Owner:  event.GetRepo().GetOwner().GetLogin(),
-				Repo:   event.GetRepo().GetName(),
-				Number: pr.GetNumber(),
+				Kind:        PullRequest,
+				Owner:       event.GetRepo().GetOwner().GetLogin(),
+				Repo:        event.GetRepo().GetName(),
+				Number:      pr.GetNumber(),
+				AccountType: event.GetRepo().GetOwner().GetType(),
+				Visibility:  event.GetRepo().GetVisibility(),
 			})
 		}
 	}
@@ -495,7 +530,7 @@ func getPullRequests(token, fullName string) ([]*github.PullRequest, error) {
 	return prs, nil
 }
 
-func extractTargetEntitiesFromRepositories(repos []*github.Repository) ([]*TargetEntity, error) {
+func extractTargetEntitiesFromRepositories(repos []*github.Repository, accountType string) ([]*TargetEntity, error) {
 	targetEntities := make([]*TargetEntity, 0)
 
 	for _, repo := range repos {
@@ -505,9 +540,16 @@ func extractTargetEntitiesFromRepositories(repos []*github.Repository) ([]*Targe
 			return nil, fmt.Errorf("invalid full repository name: %v", repo.GetFullName())
 		}
 
+		visibility := "public"
+		if repo.GetPrivate() {
+			visibility = "private"
+		}
+
 		targetEntities = append(targetEntities, &TargetEntity{
-			Owner: parts[0],
-			Repo:  parts[1],
+			Owner:       parts[0],
+			Repo:        parts[1],
+			AccountType: accountType,
+			Visibility:  visibility,
 		})
 	}
 
