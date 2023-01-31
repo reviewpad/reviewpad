@@ -55,6 +55,14 @@ func (v *Variable) Eval(e Env) (Value, error) {
 
 	for _, supportedKind := range fn.SupportedKinds {
 		if entityKind == supportedKind {
+			collectedData := map[string]interface{}{
+				"builtin": variableName,
+			}
+
+			if err := e.GetCollector().Collect("Ran Builtin", collectedData); err != nil {
+				e.GetLogger().Errorf("error collection built-in run: %v\n", err)
+			}
+
 			return fn.Code(e, []Value{})
 		}
 	}
@@ -95,6 +103,14 @@ func (fc *FunctionCall) Eval(e Env) (Value, error) {
 
 	for _, supportedKind := range fn.SupportedKinds {
 		if entityKind == supportedKind {
+			collectedData := map[string]interface{}{
+				"builtin": fc.name.ident,
+			}
+
+			if err := e.GetCollector().Collect("Ran Builtin", collectedData); err != nil {
+				e.GetLogger().Errorf("error collection built-in run: %v\n", err)
+			}
+
 			return fn.Code(e, args)
 		}
 	}
