@@ -1,6 +1,6 @@
 api-version: reviewpad.com/v3.x
 
-extends: 
+extends:
   - https://github.com/reviewpad/.github/blob/main/reviewpad-models/common.yml
 
 labels:
@@ -127,9 +127,9 @@ rules:
   - name: inconsistent-state
     description: Pull request is in an inconsistent state
     spec: '$isDraft() && $rule("ship-mode")'
-  
+
   - name: ship-approved-renovate-prs
-    spec: '$author() == "renovate[bot]" && $reviewerStatus("marcelosousa") == "APPROVED"' 
+    spec: '$author() == "renovate[bot]" && $reviewerStatus("marcelosousa") == "APPROVED"'
 
 workflows:
   - name: label-ship-show-ask
@@ -206,14 +206,6 @@ workflows:
     then:
       - '$addLabel("modifies-license")'
       - '$assignReviewer($group("owners"), 1)'
-
-  - name: add-label-for-build
-    description: Add label to kick-in the build
-    always-run: true
-    if:
-      - rule: changes-should-be-built
-    then:
-      - '$addLabel("run-build")'
 
   - name: auto-merge-owner-pull-requests
     description: Auto merge pull requests
