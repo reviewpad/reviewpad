@@ -33,7 +33,7 @@ jobs:
       - name: Build
         run: task build
 
-      - name: Test
+      - name: Unit tests
         run: task test
 
       - name: Convert coverage to lcov
@@ -44,3 +44,10 @@ jobs:
         with:
           path: "coverage.lcov"
           min_coverage: 80
+
+      - name: Integration tests
+        run: task integration
+        env:
+          GITHUB_INTEGRATION_TEST_TOKEN: ${{ secrets.REVIEWPAD_INTEGRATION_TESTS_TOKEN }}
+          GITHUB_INTEGRATION_TEST_REPO_OWNER: reviewpad
+          GITHUB_INTEGRATION_TEST_REPO_NAME: reviewpad-integration-test
