@@ -46,7 +46,7 @@ jobs:
           min_coverage: 80
 
       - name: Integration tests
-        run: task integration
+        run: task integration-test
         env:
           GITHUB_INTEGRATION_TEST_TOKEN: ${{ secrets.REVIEWPAD_INTEGRATION_TESTS_TOKEN }}
           GITHUB_INTEGRATION_TEST_REPO_OWNER: reviewpad
