@@ -11,6 +11,7 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/google/go-github/v49/github"
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/utils"
@@ -352,7 +353,13 @@ func loadExtension(ctx context.Context, githubClient *gh.GithubClient, extension
 
 	content, err := githubClient.DownloadContents(ctx, filePath, branch)
 	if err != nil {
-		return nil, "", err
+		if responseErr, ok := err.(*github.ErrorResponse); ok && responseErr.Response.StatusCode == 404 {
+			if responseErr.Message == "Repository access blocked" {
+				return nil, "", fmt.Errorf("We were unable to load the Reviewpad configuration due to an authorization error. If you are using extends please make sure you have Reviewpad installed in all extended repositories.")
+			} else {
+				return nil, "", err
+			}
+		}
 	}
 
 	file, err := parse(content)

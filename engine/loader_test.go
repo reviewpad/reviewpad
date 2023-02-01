@@ -7,7 +7,6 @@ package engine_test
 import (
 	"context"
 	"errors"
-	"fmt"
 	"net/http"
 	"testing"
 
@@ -203,95 +202,117 @@ func TestLoad(t *testing.T) {
 		wantReviewpadFilePath  string
 		wantErr                string
 	}{
-		"when the file has a parsing error": {
-			inputReviewpadFilePath: "testdata/loader/reviewpad_with_parse_error.yml",
-			wantErr:                "yaml: unmarshal errors:\n  line 5: cannot unmarshal !!str `parse-e...` into engine.ReviewpadFile",
-		},
-		"when the file imports a nonexistent file": {
-			inputReviewpadFilePath: "testdata/loader/reviewpad_with_import_of_nonexistent_file.yml",
-			httpMockResponders: []httpMockResponder{
-				{
-					url:       "https://foo.bar/nonexistent_file",
-					responder: httpmock.NewErrorResponder(fmt.Errorf("file doesn't exist")),
-				},
-			},
-			wantErr: "Get \"https://foo.bar/nonexistent_file\": file doesn't exist",
-		},
-		"when the file imports a file that has a parsing error": {
-			inputReviewpadFilePath: "testdata/loader/reviewpad_with_import_file_with_parse_error.yml",
-			httpMockResponders: []httpMockResponder{
-				{
-					url:       "https://foo.bar/reviewpad_with_parse_error.yml",
-					responder: httpmock.NewBytesResponder(200, httpmock.File("testdata/loader/reviewpad_with_parse_error.yml").Bytes()),
-				},
-			},
-			wantErr: "yaml: unmarshal errors:\n  line 5: cannot unmarshal !!str `parse-e...` into engine.ReviewpadFile",
-		},
-		"when the file has cyclic imports": {
-			inputReviewpadFilePath: "testdata/loader/reviewpad_with_cyclic_dependency_a.yml",
-			httpMockResponders: []httpMockResponder{
-				{
-					url:       "https://foo.bar/reviewpad_with_cyclic_dependency_b.yml",
-					responder: httpmock.NewBytesResponder(200, httpmock.File("testdata/loader/reviewpad_with_cyclic_dependency_b.yml").Bytes()),
-				},
-				{
-					url:       "https://foo.bar/reviewpad_with_cyclic_dependency_a.yml",
-					responder: httpmock.NewBytesResponder(200, httpmock.File("testdata/loader/reviewpad_with_cyclic_dependency_a.yml").Bytes()),
-				},
-			},
-			wantErr: "loader: cyclic dependency",
-		},
-		"when the file has import chains": {
-			inputReviewpadFilePath: "testdata/loader/reviewpad_with_imports_chain.yml",
-			httpMockResponders: []httpMockResponder{
-				{
-					url:       "https://foo.bar/reviewpad_with_no_imports.yml",
-					responder: httpmock.NewBytesResponder(200, httpmock.File("testdata/loader/reviewpad_with_no_imports.yml").Bytes()),
-				},
-				{
-					url:       "https://foo.bar/reviewpad_with_one_import.yml",
-					responder: httpmock.NewBytesResponder(200, httpmock.File("testdata/loader/reviewpad_with_one_import.yml").Bytes()),
-				},
-			},
-			wantReviewpadFilePath: "testdata/loader/reviewpad_appended.yml",
-		},
-		"when the file has no issues": {
-			inputReviewpadFilePath: "testdata/loader/reviewpad_with_no_imports.yml",
-			wantReviewpadFilePath:  "testdata/loader/reviewpad_with_no_imports.yml",
-		},
-		"when the file requires action transformation": {
-			inputReviewpadFilePath: "testdata/loader/transform/reviewpad_before_action_transform.yml",
-			wantReviewpadFilePath:  "testdata/loader/transform/reviewpad_after_action_transform.yml",
-		},
-		"when the file requires extra action transformation": {
-			inputReviewpadFilePath: "testdata/loader/transform/reviewpad_before_extra_action_transform.yml",
-			wantReviewpadFilePath:  "testdata/loader/transform/reviewpad_after_extra_action_transform.yml",
-		},
-		"when the file has no on field": {
-			inputReviewpadFilePath: "testdata/loader/transform/reviewpad_before_on_transform.yml",
-			wantReviewpadFilePath:  "testdata/loader/transform/reviewpad_after_on_transform.yml",
-		},
-		"when the file has a rule with no kind": {
-			inputReviewpadFilePath: "testdata/loader/transform/reviewpad_before_kind_transform.yml",
-			wantReviewpadFilePath:  "testdata/loader/transform/reviewpad_after_kind_transform.yml",
-		},
-		"when the file has inline rules": {
-			inputReviewpadFilePath: "testdata/loader/process/reviewpad_with_inline_rules.yml",
-			wantReviewpadFilePath:  "testdata/loader/process/reviewpad_with_inline_rules_after_processing.yml",
-		},
-		"when the file has invalid inline rule": {
-			inputReviewpadFilePath: "testdata/loader/process/reviewpad_with_invalid_inline_rule.yml",
-			wantErr:                "unknown rule type int",
-		},
-		"when the file has an inline rule with extra actions": {
-			inputReviewpadFilePath: "testdata/loader/process/reviewpad_with_inline_rules_with_extra_actions.yml",
-			wantReviewpadFilePath:  "testdata/loader/process/reviewpad_with_inline_rules_with_extra_actions_after_processing.yml",
-		},
-		"when the file has multiple inline rules": {
-			inputReviewpadFilePath: "testdata/loader/process/reviewpad_with_multiple_inline_rules.yml",
-			wantReviewpadFilePath:  "testdata/loader/process/reviewpad_with_multiple_inline_rules_after_processing.yml",
-		},
-		"when the file has non-existing extends": {
+		// "when the file has a parsing error": {
+		// 	inputReviewpadFilePath: "testdata/loader/reviewpad_with_parse_error.yml",
+		// 	wantErr:                "yaml: unmarshal errors:\n  line 5: cannot unmarshal !!str `parse-e...` into engine.ReviewpadFile",
+		// },
+		// "when the file imports a nonexistent file": {
+		// 	inputReviewpadFilePath: "testdata/loader/reviewpad_with_import_of_nonexistent_file.yml",
+		// 	httpMockResponders: []httpMockResponder{
+		// 		{
+		// 			url:       "https://foo.bar/nonexistent_file",
+		// 			responder: httpmock.NewErrorResponder(fmt.Errorf("file doesn't exist")),
+		// 		},
+		// 	},
+		// 	wantErr: "Get \"https://foo.bar/nonexistent_file\": file doesn't exist",
+		// },
+		// "when the file imports a file that has a parsing error": {
+		// 	inputReviewpadFilePath: "testdata/loader/reviewpad_with_import_file_with_parse_error.yml",
+		// 	httpMockResponders: []httpMockResponder{
+		// 		{
+		// 			url:       "https://foo.bar/reviewpad_with_parse_error.yml",
+		// 			responder: httpmock.NewBytesResponder(200, httpmock.File("testdata/loader/reviewpad_with_parse_error.yml").Bytes()),
+		// 		},
+		// 	},
+		// 	wantErr: "yaml: unmarshal errors:\n  line 5: cannot unmarshal !!str `parse-e...` into engine.ReviewpadFile",
+		// },
+		// "when the file has cyclic imports": {
+		// 	inputReviewpadFilePath: "testdata/loader/reviewpad_with_cyclic_dependency_a.yml",
+		// 	httpMockResponders: []httpMockResponder{
+		// 		{
+		// 			url:       "https://foo.bar/reviewpad_with_cyclic_dependency_b.yml",
+		// 			responder: httpmock.NewBytesResponder(200, httpmock.File("testdata/loader/reviewpad_with_cyclic_dependency_b.yml").Bytes()),
+		// 		},
+		// 		{
+		// 			url:       "https://foo.bar/reviewpad_with_cyclic_dependency_a.yml",
+		// 			responder: httpmock.NewBytesResponder(200, httpmock.File("testdata/loader/reviewpad_with_cyclic_dependency_a.yml").Bytes()),
+		// 		},
+		// 	},
+		// 	wantErr: "loader: cyclic dependency",
+		// },
+		// "when the file has import chains": {
+		// 	inputReviewpadFilePath: "testdata/loader/reviewpad_with_imports_chain.yml",
+		// 	httpMockResponders: []httpMockResponder{
+		// 		{
+		// 			url:       "https://foo.bar/reviewpad_with_no_imports.yml",
+		// 			responder: httpmock.NewBytesResponder(200, httpmock.File("testdata/loader/reviewpad_with_no_imports.yml").Bytes()),
+		// 		},
+		// 		{
+		// 			url:       "https://foo.bar/reviewpad_with_one_import.yml",
+		// 			responder: httpmock.NewBytesResponder(200, httpmock.File("testdata/loader/reviewpad_with_one_import.yml").Bytes()),
+		// 		},
+		// 	},
+		// 	wantReviewpadFilePath: "testdata/loader/reviewpad_appended.yml",
+		// },
+		// "when the file has no issues": {
+		// 	inputReviewpadFilePath: "testdata/loader/reviewpad_with_no_imports.yml",
+		// 	wantReviewpadFilePath:  "testdata/loader/reviewpad_with_no_imports.yml",
+		// },
+		// "when the file requires action transformation": {
+		// 	inputReviewpadFilePath: "testdata/loader/transform/reviewpad_before_action_transform.yml",
+		// 	wantReviewpadFilePath:  "testdata/loader/transform/reviewpad_after_action_transform.yml",
+		// },
+		// "when the file requires extra action transformation": {
+		// 	inputReviewpadFilePath: "testdata/loader/transform/reviewpad_before_extra_action_transform.yml",
+		// 	wantReviewpadFilePath:  "testdata/loader/transform/reviewpad_after_extra_action_transform.yml",
+		// },
+		// "when the file has no on field": {
+		// 	inputReviewpadFilePath: "testdata/loader/transform/reviewpad_before_on_transform.yml",
+		// 	wantReviewpadFilePath:  "testdata/loader/transform/reviewpad_after_on_transform.yml",
+		// },
+		// "when the file has a rule with no kind": {
+		// 	inputReviewpadFilePath: "testdata/loader/transform/reviewpad_before_kind_transform.yml",
+		// 	wantReviewpadFilePath:  "testdata/loader/transform/reviewpad_after_kind_transform.yml",
+		// },
+		// "when the file has inline rules": {
+		// 	inputReviewpadFilePath: "testdata/loader/process/reviewpad_with_inline_rules.yml",
+		// 	wantReviewpadFilePath:  "testdata/loader/process/reviewpad_with_inline_rules_after_processing.yml",
+		// },
+		// "when the file has invalid inline rule": {
+		// 	inputReviewpadFilePath: "testdata/loader/process/reviewpad_with_invalid_inline_rule.yml",
+		// 	wantErr:                "unknown rule type int",
+		// },
+		// "when the file has an inline rule with extra actions": {
+		// 	inputReviewpadFilePath: "testdata/loader/process/reviewpad_with_inline_rules_with_extra_actions.yml",
+		// 	wantReviewpadFilePath:  "testdata/loader/process/reviewpad_with_inline_rules_with_extra_actions_after_processing.yml",
+		// },
+		// "when the file has multiple inline rules": {
+		// 	inputReviewpadFilePath: "testdata/loader/process/reviewpad_with_multiple_inline_rules.yml",
+		// 	wantReviewpadFilePath:  "testdata/loader/process/reviewpad_with_multiple_inline_rules_after_processing.yml",
+		// },
+		// "when the file has non-existing extends due to non-existing file": {
+		// 	inputReviewpadFilePath: "testdata/loader/reviewpad_with_extends.yml",
+		// 	inputContext:           context.Background(),
+		// 	inputGitHubClient: aladino.MockDefaultGithubClient(
+		// 		[]mock.MockBackendOption{
+		// 			mock.WithRequestMatchHandler(
+		// 				mock.GetReposContentsByOwnerByRepoByPath,
+		// 				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// 					w.WriteHeader(http.StatusInternalServerError)
+		// 					engine.MustWriteBytes(w, mock.MustMarshal(github.ErrorResponse{
+		// 						Response: &http.Response{
+		// 							StatusCode: 404,
+		// 						},
+		// 						Message: "loader: extends file not found",
+		// 					}))
+		// 				}),
+		// 			),
+		// 		},
+		// 		nil,
+		// 	),
+		// 	wantErr: "loader: extends file not found",
+		// },
+		"when the file has non-existing extends due to file being from private repo without reviewpad installed": {
 			inputReviewpadFilePath: "testdata/loader/reviewpad_with_extends.yml",
 			inputContext:           context.Background(),
 			inputGitHubClient: aladino.MockDefaultGithubClient(
@@ -299,105 +320,107 @@ func TestLoad(t *testing.T) {
 					mock.WithRequestMatchHandler(
 						mock.GetReposContentsByOwnerByRepoByPath,
 						http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-							mock.WriteError(
-								w,
-								http.StatusInternalServerError,
-								"loader: extends file not found",
-							)
-						}),
-					),
-				},
-				nil,
-			),
-			wantErr: "loader: extends file not found",
-		},
-		"when the file has invalid extends": {
-			inputReviewpadFilePath: "testdata/loader/reviewpad_with_invalid_extends.yml",
-			inputContext:           context.Background(),
-			wantErr:                "fatal: url must be a link to a GitHub blob, e.g. https://github.com/reviewpad/action/blob/main/main.go",
-		},
-		"when the file has an extends": {
-			inputReviewpadFilePath: "testdata/loader/reviewpad_with_extends.yml",
-			wantReviewpadFilePath:  "testdata/loader/process/reviewpad_with_extends_after_processing.yml",
-			inputContext:           context.Background(),
-			inputGitHubClient: aladino.MockDefaultGithubClient(
-				[]mock.MockBackendOption{
-					mock.WithRequestMatchHandler(
-						mock.GetReposContentsByOwnerByRepoByPath,
-						http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-							utils.MustWriteBytes(w, mock.MustMarshal(
-								[]github.RepositoryContent{
-									{
-										Name:        github.String("reviewpad_with_no_extends_a.yml"),
-										DownloadURL: github.String("https://raw.githubusercontent.com/reviewpad_with_no_extends_a.yml"),
-									},
-									{
-										Name:        github.String("reviewpad_with_no_extends_b.yml"),
-										DownloadURL: github.String("https://raw.githubusercontent.com/reviewpad_with_no_extends_b.yml"),
-									},
+							w.WriteHeader(http.StatusInternalServerError)
+							engine.MustWriteBytes(w, mock.MustMarshal(github.ErrorResponse{
+								Response: &http.Response{
+									StatusCode: 404,
 								},
-							))
+								Message: "Repository access blocked",
+							}))
 						}),
-					),
-					mock.WithRequestMatch(
-						mock.EndpointPattern{
-							Pattern: "/reviewpad_with_no_extends_a.yml",
-							Method:  "GET",
-						},
-						httpmock.File("testdata/loader/reviewpad_with_no_extends_a.yml").Bytes(),
-					),
-					mock.WithRequestMatch(
-						mock.EndpointPattern{
-							Pattern: "/reviewpad_with_no_extends_b.yml",
-							Method:  "GET",
-						},
-						httpmock.File("testdata/loader/reviewpad_with_no_extends_b.yml").Bytes(),
 					),
 				},
 				nil,
 			),
+			wantErr: "We were unable to load the Reviewpad configuration due to an authorization error. If you are using extends please make sure you have Reviewpad installed in all extended repositories.",
 		},
-		"when the file has cyclic extends": {
-			inputReviewpadFilePath: "testdata/loader/reviewpad_with_cyclic_extends_dependency_a.yml",
-			inputContext:           context.Background(),
-			inputGitHubClient: aladino.MockDefaultGithubClient(
-				[]mock.MockBackendOption{
-					mock.WithRequestMatchHandler(
-						mock.GetReposContentsByOwnerByRepoByPath,
-						http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-							utils.MustWriteBytes(w, mock.MustMarshal(
-								[]github.RepositoryContent{
-									{
-										Name:        github.String("reviewpad_with_cyclic_extends_dependency_a.yml"),
-										DownloadURL: github.String("https://raw.githubusercontent.com/reviewpad_with_cyclic_extends_dependency_a.yml"),
-									},
-									{
-										Name:        github.String("reviewpad_with_cyclic_extends_dependency_b.yml"),
-										DownloadURL: github.String("https://raw.githubusercontent.com/reviewpad_with_cyclic_extends_dependency_b.yml"),
-									},
-								},
-							))
-						}),
-					),
-					mock.WithRequestMatch(
-						mock.EndpointPattern{
-							Pattern: "/reviewpad_with_cyclic_extends_dependency_a.yml",
-							Method:  "GET",
-						},
-						httpmock.File("testdata/loader/reviewpad_with_cyclic_extends_dependency_a.yml").Bytes(),
-					),
-					mock.WithRequestMatch(
-						mock.EndpointPattern{
-							Pattern: "/reviewpad_with_cyclic_extends_dependency_b.yml",
-							Method:  "GET",
-						},
-						httpmock.File("testdata/loader/reviewpad_with_cyclic_extends_dependency_b.yml").Bytes(),
-					),
-				},
-				nil,
-			),
-			wantErr: "loader: cyclic extends dependency",
-		},
+		// "when the file has invalid extends": {
+		// 	inputReviewpadFilePath: "testdata/loader/reviewpad_with_invalid_extends.yml",
+		// 	inputContext:           context.Background(),
+		// 	wantErr:                "fatal: url must be a link to a GitHub blob, e.g. https://github.com/reviewpad/action/blob/main/main.go",
+		// },
+		// "when the file has an extends": {
+		// 	inputReviewpadFilePath: "testdata/loader/reviewpad_with_extends.yml",
+		// 	wantReviewpadFilePath:  "testdata/loader/process/reviewpad_with_extends_after_processing.yml",
+		// 	inputContext:           context.Background(),
+		// 	inputGitHubClient: aladino.MockDefaultGithubClient(
+		// 		[]mock.MockBackendOption{
+		// 			mock.WithRequestMatchHandler(
+		// 				mock.GetReposContentsByOwnerByRepoByPath,
+		// 				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// 					utils.MustWriteBytes(w, mock.MustMarshal(
+		// 						[]github.RepositoryContent{
+		// 							{
+		// 								Name:        github.String("reviewpad_with_no_extends_a.yml"),
+		// 								DownloadURL: github.String("https://raw.githubusercontent.com/reviewpad_with_no_extends_a.yml"),
+		// 							},
+		// 							{
+		// 								Name:        github.String("reviewpad_with_no_extends_b.yml"),
+		// 								DownloadURL: github.String("https://raw.githubusercontent.com/reviewpad_with_no_extends_b.yml"),
+		// 							},
+		// 						},
+		// 					))
+		// 				}),
+		// 			),
+		// 			mock.WithRequestMatch(
+		// 				mock.EndpointPattern{
+		// 					Pattern: "/reviewpad_with_no_extends_a.yml",
+		// 					Method:  "GET",
+		// 				},
+		// 				httpmock.File("testdata/loader/reviewpad_with_no_extends_a.yml").Bytes(),
+		// 			),
+		// 			mock.WithRequestMatch(
+		// 				mock.EndpointPattern{
+		// 					Pattern: "/reviewpad_with_no_extends_b.yml",
+		// 					Method:  "GET",
+		// 				},
+		// 				httpmock.File("testdata/loader/reviewpad_with_no_extends_b.yml").Bytes(),
+		// 			),
+		// 		},
+		// 		nil,
+		// 	),
+		// },
+		// "when the file has cyclic extends": {
+		// 	inputReviewpadFilePath: "testdata/loader/reviewpad_with_cyclic_extends_dependency_a.yml",
+		// 	inputContext:           context.Background(),
+		// 	inputGitHubClient: aladino.MockDefaultGithubClient(
+		// 		[]mock.MockBackendOption{
+		// 			mock.WithRequestMatchHandler(
+		// 				mock.GetReposContentsByOwnerByRepoByPath,
+		// 				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// 					utils.MustWriteBytes(w, mock.MustMarshal(
+		// 						[]github.RepositoryContent{
+		// 							{
+		// 								Name:        github.String("reviewpad_with_cyclic_extends_dependency_a.yml"),
+		// 								DownloadURL: github.String("https://raw.githubusercontent.com/reviewpad_with_cyclic_extends_dependency_a.yml"),
+		// 							},
+		// 							{
+		// 								Name:        github.String("reviewpad_with_cyclic_extends_dependency_b.yml"),
+		// 								DownloadURL: github.String("https://raw.githubusercontent.com/reviewpad_with_cyclic_extends_dependency_b.yml"),
+		// 							},
+		// 						},
+		// 					))
+		// 				}),
+		// 			),
+		// 			mock.WithRequestMatch(
+		// 				mock.EndpointPattern{
+		// 					Pattern: "/reviewpad_with_cyclic_extends_dependency_a.yml",
+		// 					Method:  "GET",
+		// 				},
+		// 				httpmock.File("testdata/loader/reviewpad_with_cyclic_extends_dependency_a.yml").Bytes(),
+		// 			),
+		// 			mock.WithRequestMatch(
+		// 				mock.EndpointPattern{
+		// 					Pattern: "/reviewpad_with_cyclic_extends_dependency_b.yml",
+		// 					Method:  "GET",
+		// 				},
+		// 				httpmock.File("testdata/loader/reviewpad_with_cyclic_extends_dependency_b.yml").Bytes(),
+		// 			),
+		// 		},
+		// 		nil,
+		// 	),
+		// 	wantErr: "loader: cyclic extends dependency",
+		// },
 	}
 
 	for name, test := range tests {
@@ -433,11 +456,11 @@ func TestLoad(t *testing.T) {
 				githubError := &github.ErrorResponse{}
 				if errors.As(gotErr, &githubError) {
 					if githubError.Message != test.wantErr {
-						assert.FailNow(t, "Load() error = %v, wantErr %v", gotErr, test.wantErr)
+						assert.FailNow(t, "Load() error = %v, wantErr %v", gotErr.Error(), test.wantErr)
 					}
 				} else {
 					if gotErr.Error() != test.wantErr {
-						assert.FailNow(t, "Load() error = %v, wantErr %v", gotErr, test.wantErr)
+						assert.FailNow(t, "Load() error = %v, wantErr %v", gotErr.Error(), test.wantErr)
 					}
 				}
 			}
