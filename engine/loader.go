@@ -354,9 +354,12 @@ func loadExtension(ctx context.Context, githubClient *gh.GithubClient, extension
 	content, err := githubClient.DownloadContents(ctx, filePath, branch)
 	if err != nil {
 		if responseErr, ok := err.(*github.ErrorResponse); ok && responseErr.Response.StatusCode == 404 {
-			if responseErr.Message == "Not Found" {
+			switch responseErr.Message {
+			case "Not Found":
 				return nil, "", fmt.Errorf("We encountered an error while loading the Reviewpad configuration. This may be due to reasons such as incorrect file path, invalid URL, or unauthenticated access. Please verify that you have installed Reviewpad in all extended repositories and that the file name and path are correct. If you still encounter this error, reach out to us at #help on https://reviewpad.com/discord for additional support.")
-			} else {
+			case "Repository access blocked":
+				return nil, "", fmt.Errorf("We encountered an authorization error while trying to load the Reviewpad configuration. Please ensure that Reviewpad is installed in all extended repositories if you are using the 'extends' feature. If the issue persists, kindly reach out to us at #help on https://reviewpad.com/discord for further assistance.")
+			default:
 				return nil, "", err
 			}
 		}

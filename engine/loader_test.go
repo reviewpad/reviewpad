@@ -291,7 +291,7 @@ func TestLoad(t *testing.T) {
 			inputReviewpadFilePath: "testdata/loader/process/reviewpad_with_multiple_inline_rules.yml",
 			wantReviewpadFilePath:  "testdata/loader/process/reviewpad_with_multiple_inline_rules_after_processing.yml",
 		},
-		"when the file has non-existing extends due to file being from private repo without reviewpad installed": {
+		"when the file has non-existing extends": {
 			inputReviewpadFilePath: "testdata/loader/reviewpad_with_extends.yml",
 			inputContext:           context.Background(),
 			inputGitHubClient: aladino.MockDefaultGithubClient(
@@ -312,6 +312,28 @@ func TestLoad(t *testing.T) {
 				nil,
 			),
 			wantErr: "We encountered an error while loading the Reviewpad configuration. This may be due to reasons such as incorrect file path, invalid URL, or unauthenticated access. Please verify that you have installed Reviewpad in all extended repositories and that the file name and path are correct. If you still encounter this error, reach out to us at #help on https://reviewpad.com/discord for additional support.",
+		},
+		"when the file has an extends from a repository with blocked access": {
+			inputReviewpadFilePath: "testdata/loader/reviewpad_with_extends.yml",
+			inputContext:           context.Background(),
+			inputGitHubClient: aladino.MockDefaultGithubClient(
+				[]mock.MockBackendOption{
+					mock.WithRequestMatchHandler(
+						mock.GetReposContentsByOwnerByRepoByPath,
+						http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+							w.WriteHeader(http.StatusInternalServerError)
+							engine.MustWriteBytes(w, mock.MustMarshal(github.ErrorResponse{
+								Response: &http.Response{
+									StatusCode: 404,
+								},
+								Message: "Repository access blocked",
+							}))
+						}),
+					),
+				},
+				nil,
+			),
+			wantErr: "We encountered an authorization error while trying to load the Reviewpad configuration. Please ensure that Reviewpad is installed in all extended repositories if you are using the 'extends' feature. If the issue persists, kindly reach out to us at #help on https://reviewpad.com/discord for further assistance.",
 		},
 		"when the file has invalid extends": {
 			inputReviewpadFilePath: "testdata/loader/reviewpad_with_invalid_extends.yml",
