@@ -457,7 +457,7 @@ func TestLoad(t *testing.T) {
 				githubError := &github.ErrorResponse{}
 				if errors.As(gotErr, &githubError) {
 					if githubError.Message != test.wantErr {
-						assert.FailNow(t, "Load() error = %v, wantErr %v", gotErr.Error(), test.wantErr)
+						assert.FailNow(t, "Load() error = %v, wantErr %v", githubError.Message, test.wantErr)
 					}
 				} else {
 					if gotErr.Error() != test.wantErr {
