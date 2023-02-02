@@ -98,7 +98,7 @@ func TestIntegration(t *testing.T) {
 	subFile, err := utils.ReadFile("./assets/utils/sub.go")
 	require.Nil(err)
 
-	readmeFile, err := utils.ReadFile("./assets/readme.md")
+	readmeFile, err := utils.ReadFile("./assets/README.md")
 	require.Nil(err)
 
 	binaryFile, err := utils.ReadFile("./assets/binary")
