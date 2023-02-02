@@ -119,19 +119,19 @@ func TestIntegration(t *testing.T) {
 	rawBuiltInCloseReviewpadFile, err := utils.ReadFile("./assets/builtin-close.yml")
 	require.Nil(err)
 
-	builtInOthersReviewpadFile, err := engine.Load(ctx, githubClient, rawBuiltInOthersReviewpadFile)
+	builtInOthersReviewpadFile, err := engine.Load(ctx, logger, githubClient, rawBuiltInOthersReviewpadFile)
 	require.Nil(err)
 
-	builtInMergeReviewpadFile, err := engine.Load(ctx, githubClient, rawBuiltInMergeReviewpadFile)
+	builtInMergeReviewpadFile, err := engine.Load(ctx, logger, githubClient, rawBuiltInMergeReviewpadFile)
 	require.Nil(err)
 
-	builtInDeleteHeadBranchReviewpadFile, err := engine.Load(ctx, githubClient, rawBuiltInDeleteHeadBranchReviewpadFile)
+	builtInDeleteHeadBranchReviewpadFile, err := engine.Load(ctx, logger, githubClient, rawBuiltInDeleteHeadBranchReviewpadFile)
 	require.Nil(err)
 
-	buildInFailReviewpadFile, err := engine.Load(ctx, githubClient, rawBuiltInFailReviewpadFile)
+	buildInFailReviewpadFile, err := engine.Load(ctx, logger, githubClient, rawBuiltInFailReviewpadFile)
 	require.Nil(err)
 
-	closeReviewpadFile, err := engine.Load(ctx, githubClient, rawBuiltInCloseReviewpadFile)
+	closeReviewpadFile, err := engine.Load(ctx, logger, githubClient, rawBuiltInCloseReviewpadFile)
 	require.Nil(err)
 
 	// contains a graphql query that fetches the necessary data
@@ -302,7 +302,7 @@ func TestIntegration(t *testing.T) {
 			// execute the reviewpad files one by one and
 			// ensure there are no errors and exit statuses match
 			for i, file := range test.reviewpadFiles {
-				exitStatus, _, err := reviewpad.Run(ctx, logger, githubClient, collector, targetEntity, eventDetails, nil, file, false, false)
+				exitStatus, _, err := reviewpad.Run(ctx, logger, githubClient, collector, targetEntity, eventDetails, file, false, false)
 				assert.Equal(test.wantErr, err)
 				assert.Equal(test.exitStatus[i], exitStatus)
 			}
