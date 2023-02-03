@@ -90,8 +90,12 @@ func BuildVerboseReport(report *Report) string {
 	sb.WriteString("```yaml\n")
 
 	// Report
-	for _, action := range report.Actions {
-		sb.WriteString(fmt.Sprintf("%v\n", action))
+	if len(report.Actions) == 0 {
+		sb.WriteString("No actions executed\n")
+	} else {
+		for _, action := range report.Actions {
+			sb.WriteString(fmt.Sprintf("%v\n", action))
+		}
 	}
 
 	sb.WriteString("```\n")
