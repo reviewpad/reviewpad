@@ -7,6 +7,7 @@ package engine
 import (
 	"context"
 	"crypto/sha256"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -354,13 +355,9 @@ func loadExtension(ctx context.Context, githubClient *gh.GithubClient, extension
 	content, err := githubClient.DownloadContents(ctx, filePath, branch)
 	if err != nil {
 		if responseErr, ok := err.(*github.ErrorResponse); ok && responseErr.Response.StatusCode == 404 {
-			contactUs := "If you still encounter this error, please reach out to us at #help on https://reviewpad.com/discord for additional support."
-			switch responseErr.Message {
-			case "Repository access blocked":
-				return nil, "", fmt.Errorf("we encountered an authorization error while processing the 'extends' property in your Reviewpad configuration. Please ensure that you have the Reviewpad GitHub App installed in all repositories you are trying to extend from. %s", contactUs)
-			default:
-				return nil, "", fmt.Errorf("we encountered an error while processing the 'extends' property in your Reviewpad configuration. This problem may be due to an incorrect URL or unauthenticated access. Please ensure that you have Reviewpad GitHub App installed in all repositories you are trying to extend from and that the file URL is correct. %s", contactUs)
-			}
+			return nil, "", errors.New("we encountered an error while processing the 'extends' property in your Reviewpad configuration. This problem may be due to an incorrect URL or unauthenticated access. Please ensure that you have Reviewpad GitHub App installed in all repositories you are trying to extend from and that the file URL is correct. If you still encounter this error, please reach out to us at #help on https://reviewpad.com/discord for additional support.")
+		} else {
+			return nil, "", err
 		}
 	}
 

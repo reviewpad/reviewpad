@@ -313,28 +313,6 @@ func TestLoad(t *testing.T) {
 			),
 			wantErr: "we encountered an error while processing the 'extends' property in your Reviewpad configuration. This problem may be due to an incorrect URL or unauthenticated access. Please ensure that you have Reviewpad GitHub App installed in all repositories you are trying to extend from and that the file URL is correct. If you still encounter this error, please reach out to us at #help on https://reviewpad.com/discord for additional support.",
 		},
-		"when the file has an extends from a repository with blocked access": {
-			inputReviewpadFilePath: "testdata/loader/reviewpad_with_extends.yml",
-			inputContext:           context.Background(),
-			inputGitHubClient: aladino.MockDefaultGithubClient(
-				[]mock.MockBackendOption{
-					mock.WithRequestMatchHandler(
-						mock.GetReposContentsByOwnerByRepoByPath,
-						http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-							w.WriteHeader(http.StatusInternalServerError)
-							engine.MustWriteBytes(w, mock.MustMarshal(github.ErrorResponse{
-								Response: &http.Response{
-									StatusCode: 404,
-								},
-								Message: "Repository access blocked",
-							}))
-						}),
-					),
-				},
-				nil,
-			),
-			wantErr: "we encountered an authorization error while processing the 'extends' property in your Reviewpad configuration. Please ensure that you have the Reviewpad GitHub App installed in all repositories you are trying to extend from. If you still encounter this error, please reach out to us at #help on https://reviewpad.com/discord for additional support.",
-		},
 		"when the file has invalid extends": {
 			inputReviewpadFilePath: "testdata/loader/reviewpad_with_invalid_extends.yml",
 			inputContext:           context.Background(),
