@@ -7,6 +7,7 @@ package aladino
 import (
 	"context"
 	"fmt"
+	"log"
 	"strings"
 
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
@@ -110,6 +111,8 @@ func (i *Interpreter) EvalExpr(kind, expr string) (bool, error) {
 func (i *Interpreter) ExecProgram(program *engine.Program) (engine.ExitStatus, error) {
 	i.Env.GetLogger().Info("executing program")
 
+	failBuiltinStatus := "success"
+
 	for _, statement := range program.GetProgramStatements() {
 		err := i.ExecStatement(statement)
 		if err != nil {
@@ -118,9 +121,12 @@ func (i *Interpreter) ExecProgram(program *engine.Program) (engine.ExitStatus, e
 
 		hasFatalError := len(i.Env.GetBuiltInsReportedMessages()[SEVERITY_FATAL]) > 0
 		if hasFatalError {
-			i.Env.GetLogger().Info("execution stopped")
-			return engine.ExitStatusFailure, nil
+			failBuiltinStatus = "failure"
 		}
+	}
+
+	if err := i.createReviewpadFailCommitStatus(failBuiltinStatus); err != nil {
+		return engine.ExitStatusFailure, err
 	}
 
 	i.Env.GetLogger().Info("execution done")
@@ -234,6 +240,27 @@ func (i *Interpreter) ReportMetrics() error {
 		}
 
 		err = UpdateReportComment(i.Env, *comment.ID, r)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (i *Interpreter) createReviewpadFailCommitStatus(state string) error {
+	targetEntity := i.Env.GetTarget().GetTargetEntity()
+
+	if targetEntity.Kind == handler.PullRequest {
+		ctx := i.Env.GetCtx()
+		pr := i.Env.GetTarget().(*target.PullRequestTarget).PullRequest
+		log.Println(pr.GetHead().GetSHA())
+
+		_, err := i.Env.GetGithubClient().CreateCommitStatus(ctx, targetEntity.Owner, targetEntity.Repo, pr.GetHead().GetSHA(), &gh.CreateCommitStatusOptions{
+			Context:     "Reviewpad Failed",
+			State:       state,
+			Description: "Reviewpad $fail built-in status.",
+		})
 		if err != nil {
 			return err
 		}

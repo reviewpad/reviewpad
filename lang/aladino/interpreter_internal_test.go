@@ -365,6 +365,12 @@ func TestExecProgram(t *testing.T) {
 					{Name: github.String("test")},
 				},
 			),
+			mock.WithRequestMatchHandler(mock.EndpointPattern{
+				Pattern: "/repos/foobar/default-mock-repo/statuses/",
+				Method:  "POST",
+			}, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				utils.MustWrite(w, `{}`)
+			})),
 		},
 		nil,
 		builtIns,
