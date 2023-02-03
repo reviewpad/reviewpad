@@ -311,7 +311,7 @@ func TestLoad(t *testing.T) {
 				},
 				nil,
 			),
-			wantErr: "We encountered an error while loading the Reviewpad configuration. This may be due to reasons such as incorrect file path, invalid URL, or unauthenticated access. Please verify that you have installed Reviewpad in all extended repositories and that the file name and path are correct. If you still encounter this error, reach out to us at #help on https://reviewpad.com/discord for additional support.",
+			wantErr: "we encountered an error while processing the 'extends' property in your Reviewpad configuration. This problem may be due to an incorrect URL or unauthenticated access. Please ensure that you have Reviewpad GitHub App installed in all repositories you are trying to extend from and that the file URL is correct. If you still encounter this error, please reach out to us at #help on https://reviewpad.com/discord for additional support.",
 		},
 		"when the file has an extends from a repository with blocked access": {
 			inputReviewpadFilePath: "testdata/loader/reviewpad_with_extends.yml",
@@ -333,7 +333,7 @@ func TestLoad(t *testing.T) {
 				},
 				nil,
 			),
-			wantErr: "We encountered an authorization error while trying to load the Reviewpad configuration. Please ensure that Reviewpad is installed in all extended repositories if you are using the 'extends' feature. If the issue persists, kindly reach out to us at #help on https://reviewpad.com/discord for further assistance.",
+			wantErr: "we encountered an authorization error while processing the 'extends' property in your Reviewpad configuration. Please ensure that you have the Reviewpad GitHub App installed in all repositories you are trying to extend from. If you still encounter this error, please reach out to us at #help on https://reviewpad.com/discord for additional support.",
 		},
 		"when the file has invalid extends": {
 			inputReviewpadFilePath: "testdata/loader/reviewpad_with_invalid_extends.yml",
@@ -457,11 +457,11 @@ func TestLoad(t *testing.T) {
 				githubError := &github.ErrorResponse{}
 				if errors.As(gotErr, &githubError) {
 					if githubError.Message != test.wantErr {
-						assert.FailNow(t, "Load() error = %v, wantErr %v", githubError.Message, test.wantErr)
+						assert.FailNow(t, fmt.Sprintf("Load() error = %v, wantErr %v", githubError.Message, test.wantErr))
 					}
 				} else {
 					if gotErr.Error() != test.wantErr {
-						assert.FailNow(t, "Load() error = %v, wantErr %v", gotErr.Error(), test.wantErr)
+						assert.FailNow(t, fmt.Sprintf("Load() error = %v, wantErr %v", gotErr.Error(), test.wantErr))
 					}
 				}
 			}

@@ -354,13 +354,12 @@ func loadExtension(ctx context.Context, githubClient *gh.GithubClient, extension
 	content, err := githubClient.DownloadContents(ctx, filePath, branch)
 	if err != nil {
 		if responseErr, ok := err.(*github.ErrorResponse); ok && responseErr.Response.StatusCode == 404 {
+			contactUs := "If you still encounter this error, please reach out to us at #help on https://reviewpad.com/discord for additional support."
 			switch responseErr.Message {
-			case "Not Found":
-				return nil, "", fmt.Errorf("We encountered an error while loading the Reviewpad configuration. This may be due to reasons such as incorrect file path, invalid URL, or unauthenticated access. Please verify that you have installed Reviewpad in all extended repositories and that the file name and path are correct. If you still encounter this error, reach out to us at #help on https://reviewpad.com/discord for additional support.")
 			case "Repository access blocked":
-				return nil, "", fmt.Errorf("We encountered an authorization error while trying to load the Reviewpad configuration. Please ensure that Reviewpad is installed in all extended repositories if you are using the 'extends' feature. If the issue persists, kindly reach out to us at #help on https://reviewpad.com/discord for further assistance.")
+				return nil, "", fmt.Errorf("we encountered an authorization error while processing the 'extends' property in your Reviewpad configuration. Please ensure that you have the Reviewpad GitHub App installed in all repositories you are trying to extend from. %s", contactUs)
 			default:
-				return nil, "", err
+				return nil, "", fmt.Errorf("we encountered an error while processing the 'extends' property in your Reviewpad configuration. This problem may be due to an incorrect URL or unauthenticated access. Please ensure that you have Reviewpad GitHub App installed in all repositories you are trying to extend from and that the file URL is correct. %s", contactUs)
 			}
 		}
 	}
