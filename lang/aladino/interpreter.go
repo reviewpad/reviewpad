@@ -257,7 +257,7 @@ func (i *Interpreter) createReviewpadFailCommitStatus(state string) error {
 		log.Println(pr.GetHead().GetSHA())
 
 		_, err := i.Env.GetGithubClient().CreateCommitStatus(ctx, targetEntity.Owner, targetEntity.Repo, pr.GetHead().GetSHA(), &gh.CreateCommitStatusOptions{
-			Context:     "Reviewpad Failed",
+			Context:     "Reviewpad Fail",
 			State:       state,
 			Description: "Reviewpad $fail built-in status.",
 		})
