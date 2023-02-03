@@ -93,7 +93,7 @@ func TestBuildVerboseReport_WhenNoReportProvided(t *testing.T) {
 func TestBuildVerboseReport_WhenIsProvidedReportWithNoWorkflowDetails(t *testing.T) {
 	reportWithNoWorkflowDetails := &Report{}
 
-	wantReport := ":scroll: **Executed actions**\n```yaml\n```\n"
+	wantReport := ":scroll: **Executed actions**\n```yaml\nNo actions executed\n```\n"
 
 	gotReport := BuildVerboseReport(reportWithNoWorkflowDetails)
 
