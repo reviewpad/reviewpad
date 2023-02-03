@@ -299,17 +299,19 @@ func TestLoad(t *testing.T) {
 					mock.WithRequestMatchHandler(
 						mock.GetReposContentsByOwnerByRepoByPath,
 						http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-							mock.WriteError(
-								w,
-								http.StatusInternalServerError,
-								"loader: extends file not found",
-							)
+							w.WriteHeader(http.StatusInternalServerError)
+							engine.MustWriteBytes(w, mock.MustMarshal(github.ErrorResponse{
+								Response: &http.Response{
+									StatusCode: 404,
+								},
+								Message: "Not Found",
+							}))
 						}),
 					),
 				},
 				nil,
 			),
-			wantErr: "loader: extends file not found",
+			wantErr: "we encountered an error while processing the 'extends' property in your Reviewpad configuration. This problem may be due to an incorrect URL or unauthenticated access. Please ensure that you have Reviewpad GitHub App installed in all repositories you are trying to extend from and that the file URL is correct. If you still encounter this error, please reach out to us at #help on https://reviewpad.com/discord for additional support.",
 		},
 		"when the file has invalid extends": {
 			inputReviewpadFilePath: "testdata/loader/reviewpad_with_invalid_extends.yml",
@@ -433,11 +435,11 @@ func TestLoad(t *testing.T) {
 				githubError := &github.ErrorResponse{}
 				if errors.As(gotErr, &githubError) {
 					if githubError.Message != test.wantErr {
-						assert.FailNow(t, "Load() error = %v, wantErr %v", gotErr, test.wantErr)
+						assert.FailNow(t, fmt.Sprintf("Load() error = %v, wantErr %v", githubError.Message, test.wantErr))
 					}
 				} else {
 					if gotErr.Error() != test.wantErr {
-						assert.FailNow(t, "Load() error = %v, wantErr %v", gotErr, test.wantErr)
+						assert.FailNow(t, fmt.Sprintf("Load() error = %v, wantErr %v", gotErr.Error(), test.wantErr))
 					}
 				}
 			}

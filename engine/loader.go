@@ -7,10 +7,12 @@ package engine
 import (
 	"context"
 	"crypto/sha256"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
 
+	"github.com/google/go-github/v49/github"
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/utils"
@@ -352,7 +354,11 @@ func loadExtension(ctx context.Context, githubClient *gh.GithubClient, extension
 
 	content, err := githubClient.DownloadContents(ctx, filePath, branch)
 	if err != nil {
-		return nil, "", err
+		if responseErr, ok := err.(*github.ErrorResponse); ok && responseErr.Response.StatusCode == 404 {
+			return nil, "", errors.New("we encountered an error while processing the 'extends' property in your Reviewpad configuration. This problem may be due to an incorrect URL or unauthenticated access. Please ensure that you have Reviewpad GitHub App installed in all repositories you are trying to extend from and that the file URL is correct. If you still encounter this error, please reach out to us at #help on https://reviewpad.com/discord for additional support.")
+		} else {
+			return nil, "", err
+		}
 	}
 
 	file, err := parse(content)
