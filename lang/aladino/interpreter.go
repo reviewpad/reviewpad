@@ -115,7 +115,7 @@ func (i *Interpreter) ExecProgram(program *engine.Program) (engine.ExitStatus, e
 	i.Env.GetLogger().Info("executing program")
 
 	failBuiltinStatus := "success"
-	failureReason := "Reviewpad commit status check succeeded."
+	commitStatusDescription := "Reviewpad commit status check succeeded."
 
 	for _, statement := range program.GetProgramStatements() {
 		err := i.ExecStatement(statement)
@@ -125,16 +125,16 @@ func (i *Interpreter) ExecProgram(program *engine.Program) (engine.ExitStatus, e
 
 		hasFatalError := len(i.Env.GetBuiltInsReportedMessages()[SEVERITY_FATAL]) > 0
 		if hasFatalError {
-			failureReason = strings.Join(i.Env.GetBuiltInsReportedMessages()[SEVERITY_FATAL], ",")
-			if len(failureReason) > commitStatusDescriptionMaxLength {
-				failureReason = failureReason[:commitStatusDescriptionMaxLength]
+			commitStatusDescription = strings.Join(i.Env.GetBuiltInsReportedMessages()[SEVERITY_FATAL], ",")
+			if len(commitStatusDescription) > commitStatusDescriptionMaxLength {
+				commitStatusDescription = commitStatusDescription[:commitStatusDescriptionMaxLength]
 			}
 
 			failBuiltinStatus = "failure"
 		}
 	}
 
-	if err := i.createReviewpadFailCommitStatus(failBuiltinStatus, failureReason); err != nil {
+	if err := i.createReviewpadFailCommitStatus(failBuiltinStatus, commitStatusDescription); err != nil {
 		return engine.ExitStatusFailure, err
 	}
 
@@ -257,7 +257,7 @@ func (i *Interpreter) ReportMetrics() error {
 	return nil
 }
 
-func (i *Interpreter) createReviewpadFailCommitStatus(state, reason string) error {
+func (i *Interpreter) createReviewpadFailCommitStatus(state, description string) error {
 	targetEntity := i.Env.GetTarget().GetTargetEntity()
 
 	if targetEntity.Kind == handler.PullRequest {
@@ -267,7 +267,7 @@ func (i *Interpreter) createReviewpadFailCommitStatus(state, reason string) erro
 		_, err := i.Env.GetGithubClient().CreateCommitStatus(ctx, targetEntity.Owner, targetEntity.Repo, pr.GetHead().GetSHA(), &gh.CreateCommitStatusOptions{
 			Context:     "Reviewpad Commit Status Check",
 			State:       state,
-			Description: reason,
+			Description: description,
 		})
 		if err != nil {
 			return err
