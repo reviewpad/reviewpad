@@ -209,7 +209,8 @@ Paste the following configuration:
         "https://raw.githubusercontent.com/reviewpad/schemas/main/latest/schema.json": [
             "reviewpad.yml",
             "reviewpad.yaml",
-            "!.github/workflows/reviewpad.yml"
+            "!.github/workflows/reviewpad.yml",
+            "!.github/workflows/reviewpad.yaml"
         ]
     },
     // Go configuration
