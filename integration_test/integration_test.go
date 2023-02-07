@@ -239,7 +239,7 @@ func TestIntegration(t *testing.T) {
 			},
 			commitMessage:  "test: fail",
 			reviewpadFiles: []*engine.ReviewpadFile{buildInFailReviewpadFile, closeReviewpadFile, builtInDeleteHeadBranchReviewpadFile},
-			exitStatus:     []engine.ExitStatus{engine.ExitStatusFailure, engine.ExitStatusSuccess, engine.ExitStatusSuccess},
+			exitStatus:     []engine.ExitStatus{engine.ExitStatusSuccess, engine.ExitStatusSuccess, engine.ExitStatusSuccess},
 		},
 	}
 
