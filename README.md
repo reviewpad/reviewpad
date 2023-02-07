@@ -204,6 +204,14 @@ Paste the following configuration:
     "licenser.license": "Custom",
     "licenser.author": "Explore.dev, Unipessoal Lda",
     "licenser.customHeader": "Copyright (C) @YEAR@ @AUTHOR@ - All Rights Reserved\nUse of this source code is governed by a license that can be\nfound in the LICENSE file.",
+    // Associate Reviewpad schema to reviewpad.(yml|yaml) files
+    "yaml.schemas": {
+        "https://raw.githubusercontent.com/reviewpad/schemas/main/latest/schema.json": [
+            "reviewpad.yml",
+            "reviewpad.yaml",
+            "!.github/workflows/reviewpad.yml"
+        ]
+    },
     // Go configuration
     "go.testFlags": [
         "integration"
