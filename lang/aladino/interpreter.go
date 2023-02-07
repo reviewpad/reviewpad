@@ -7,7 +7,6 @@ package aladino
 import (
 	"context"
 	"fmt"
-	"log"
 	"strings"
 
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
@@ -17,6 +16,10 @@ import (
 	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/utils"
 	"github.com/sirupsen/logrus"
+)
+
+const (
+	commitStatusDescriptionMaxLength = 140
 )
 
 type Interpreter struct {
@@ -112,6 +115,7 @@ func (i *Interpreter) ExecProgram(program *engine.Program) (engine.ExitStatus, e
 	i.Env.GetLogger().Info("executing program")
 
 	failBuiltinStatus := "success"
+	failureReason := "Reviewpad commit status check succeeded."
 
 	for _, statement := range program.GetProgramStatements() {
 		err := i.ExecStatement(statement)
@@ -121,11 +125,16 @@ func (i *Interpreter) ExecProgram(program *engine.Program) (engine.ExitStatus, e
 
 		hasFatalError := len(i.Env.GetBuiltInsReportedMessages()[SEVERITY_FATAL]) > 0
 		if hasFatalError {
+			failureReason = strings.Join(i.Env.GetBuiltInsReportedMessages()[SEVERITY_FATAL], ",")
+			if len(failureReason) > commitStatusDescriptionMaxLength {
+				failureReason = failureReason[:commitStatusDescriptionMaxLength]
+			}
+
 			failBuiltinStatus = "failure"
 		}
 	}
 
-	if err := i.createReviewpadFailCommitStatus(failBuiltinStatus); err != nil {
+	if err := i.createReviewpadFailCommitStatus(failBuiltinStatus, failureReason); err != nil {
 		return engine.ExitStatusFailure, err
 	}
 
@@ -248,18 +257,17 @@ func (i *Interpreter) ReportMetrics() error {
 	return nil
 }
 
-func (i *Interpreter) createReviewpadFailCommitStatus(state string) error {
+func (i *Interpreter) createReviewpadFailCommitStatus(state, reason string) error {
 	targetEntity := i.Env.GetTarget().GetTargetEntity()
 
 	if targetEntity.Kind == handler.PullRequest {
 		ctx := i.Env.GetCtx()
 		pr := i.Env.GetTarget().(*target.PullRequestTarget).PullRequest
-		log.Println(pr.GetHead().GetSHA())
 
 		_, err := i.Env.GetGithubClient().CreateCommitStatus(ctx, targetEntity.Owner, targetEntity.Repo, pr.GetHead().GetSHA(), &gh.CreateCommitStatusOptions{
-			Context:     "Reviewpad Fail",
+			Context:     "Reviewpad Commit Status Check",
 			State:       state,
-			Description: "Reviewpad $fail built-in status.",
+			Description: reason,
 		})
 		if err != nil {
 			return err
