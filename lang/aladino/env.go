@@ -25,7 +25,7 @@ const (
 	SEVERITY_INFO    Severity = 4
 )
 
-const ReviewpadMergeGateCheckName = "Reviewpad Merge Gate"
+const ReviewpadMergeGateCheckName = "reviewpad merge gate"
 
 type TypeEnv map[string]Type
 

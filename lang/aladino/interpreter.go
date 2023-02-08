@@ -251,7 +251,7 @@ func (i *Interpreter) ReportChecks() error {
 		_, err := i.Env.GetGithubClient().CreateCommitStatus(ctx, targetEntity.Owner, targetEntity.Repo, pr.GetHead().GetSHA(), &gh.CreateCommitStatusOptions{
 			Context:     check.Name,
 			State:       string(check.Status),
-			Description: check.Reason,
+			Description: check.Reason[:140],
 		})
 		if err != nil {
 			return err
