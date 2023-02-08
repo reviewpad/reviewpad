@@ -288,6 +288,14 @@ func runReviewpadFile(
 		}
 	}
 
+	if !dryRun {
+		err = aladinoInterpreter.ReportChecks()
+		if err != nil {
+			logErrorAndCollect(logger, collector, "error reporting checks", err)
+			return engine.ExitStatusFailure, nil, err
+		}
+	}
+
 	if utils.IsPullRequestReadyForReportMetrics(eventDetails) {
 		if reviewpadFile.MetricsOnMerge != nil && *reviewpadFile.MetricsOnMerge {
 			err = aladinoInterpreter.ReportMetrics()
@@ -333,8 +341,6 @@ func Run(
 	if err != nil {
 		return engine.ExitStatusFailure, nil, err
 	}
-
-	log.WithField("reviewpad_file_2", reviewpadFile).Debug("loaded reviewpad file")
 
 	if utils.IsReviewpadCommand(env.EventDetails) {
 		command := eventDetails.Payload.(*github.IssueCommentEvent).GetComment().GetBody()

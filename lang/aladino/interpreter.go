@@ -242,8 +242,22 @@ func (i *Interpreter) ReportMetrics() error {
 	return nil
 }
 
-func (i *Interpreter) GetChecks() map[string]engine.Check {
-	return i.Env.GetChecks()
+func (i *Interpreter) ReportChecks() error {
+	for _, check := range i.Env.GetChecks() {
+		targetEntity := i.Env.GetTarget().GetTargetEntity()
+		ctx := i.Env.GetCtx()
+		pr := i.Env.GetTarget().(*target.PullRequestTarget).PullRequest
+
+		_, err := i.Env.GetGithubClient().CreateCommitStatus(ctx, targetEntity.Owner, targetEntity.Repo, pr.GetHead().GetSHA(), &gh.CreateCommitStatusOptions{
+			Context:     check.Name,
+			State:       string(check.Status),
+			Description: check.Reason,
+		})
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func NewInterpreter(

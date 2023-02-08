@@ -49,7 +49,7 @@ type Interpreter interface {
 	ExecStatement(statement *Statement) error
 	Report(mode string, safeMode bool) error
 	ReportMetrics() error
-	GetChecks() map[string]Check
+	ReportChecks() error
 }
 
 type Env struct {
