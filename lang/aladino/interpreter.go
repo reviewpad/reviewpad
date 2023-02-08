@@ -242,6 +242,10 @@ func (i *Interpreter) ReportMetrics() error {
 	return nil
 }
 
+func (i *Interpreter) GetChecks() map[string]engine.Check {
+	return i.Env.GetChecks()
+}
+
 func NewInterpreter(
 	ctx context.Context,
 	logger *logrus.Entry,

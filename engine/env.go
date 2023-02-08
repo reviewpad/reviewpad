@@ -25,6 +25,21 @@ const GroupTypeFilter GroupType = "filter"
 const ExitStatusSuccess ExitStatus = 0
 const ExitStatusFailure ExitStatus = 1
 
+type Check struct {
+	Name   string
+	Status CheckStatus
+	Reason string
+}
+
+type CheckStatus string
+
+const (
+	CheckStatusError   CheckStatus = "error"
+	CheckStatusFailure CheckStatus = "failure"
+	CheckStatusPending CheckStatus = "pending"
+	CheckStatusSuccess CheckStatus = "success"
+)
+
 type Interpreter interface {
 	ProcessGroup(name string, kind GroupKind, typeOf GroupType, expr, paramExpr, whereExpr string) error
 	ProcessLabel(id, name string) error
@@ -34,6 +49,7 @@ type Interpreter interface {
 	ExecStatement(statement *Statement) error
 	Report(mode string, safeMode bool) error
 	ReportMetrics() error
+	GetChecks() map[string]Check
 }
 
 type Env struct {
