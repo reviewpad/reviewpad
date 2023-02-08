@@ -479,7 +479,3 @@ func (t *PullRequestTarget) JSON() (string, error) {
 
 	return string(j), nil
 }
-
-func (t *PullRequestTarget) CreateCommitStatus(commitSHA string, opt *gh.CreateCommitStatusOptions) (*gh.CommitStatus, error) {
-	return t.githubClient.CreateCommitStatus(t.ctx, t.targetEntity.Owner, t.targetEntity.Repo, commitSHA, opt)
-}

@@ -23,7 +23,7 @@ func disableMergeCode(e aladino.Env, args []aladino.Value) error {
 
 	e.GetChecks()[aladino.ReviewpadMergeGateCheckName] = engine.Check{
 		Name:   aladino.ReviewpadMergeGateCheckName,
-		Status: engine.CheckStatusFailure,
+		Status: engine.CheckStateFailure,
 		Reason: reason,
 	}
 

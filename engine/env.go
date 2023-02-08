@@ -27,17 +27,17 @@ const ExitStatusFailure ExitStatus = 1
 
 type Check struct {
 	Name   string
-	Status CheckStatus
+	Status CheckState
 	Reason string
 }
 
-type CheckStatus string
+type CheckState string
 
 const (
-	CheckStatusError   CheckStatus = "error"
-	CheckStatusFailure CheckStatus = "failure"
-	CheckStatusPending CheckStatus = "pending"
-	CheckStatusSuccess CheckStatus = "success"
+	CheckStateError   CheckState = "error"
+	CheckStateFailure CheckState = "failure"
+	CheckStatePending CheckState = "pending"
+	CheckStateSuccess CheckState = "success"
 )
 
 type Interpreter interface {
