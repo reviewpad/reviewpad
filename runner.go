@@ -288,7 +288,7 @@ func runReviewpadFile(
 		}
 	}
 
-	if !dryRun {
+	if !dryRun && targetEntity.Kind == handler.PullRequest {
 		err = aladinoInterpreter.ReportChecks()
 		if err != nil {
 			logErrorAndCollect(logger, collector, "error reporting checks", err)
