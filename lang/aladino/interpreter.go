@@ -18,10 +18,6 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-const (
-	commitStatusDescriptionMaxLength = 140
-)
-
 type Interpreter struct {
 	Env Env
 }
@@ -114,9 +110,6 @@ func (i *Interpreter) EvalExpr(kind, expr string) (bool, error) {
 func (i *Interpreter) ExecProgram(program *engine.Program) (engine.ExitStatus, error) {
 	i.Env.GetLogger().Info("executing program")
 
-	failBuiltinStatus := "success"
-	commitStatusDescription := "Reviewpad commit status check succeeded."
-
 	for _, statement := range program.GetProgramStatements() {
 		err := i.ExecStatement(statement)
 		if err != nil {
@@ -125,17 +118,9 @@ func (i *Interpreter) ExecProgram(program *engine.Program) (engine.ExitStatus, e
 
 		hasFatalError := len(i.Env.GetBuiltInsReportedMessages()[SEVERITY_FATAL]) > 0
 		if hasFatalError {
-			commitStatusDescription = strings.Join(i.Env.GetBuiltInsReportedMessages()[SEVERITY_FATAL], ",")
-			if len(commitStatusDescription) > commitStatusDescriptionMaxLength {
-				commitStatusDescription = commitStatusDescription[:commitStatusDescriptionMaxLength]
-			}
-
-			failBuiltinStatus = "failure"
+			i.Env.GetLogger().Info("execution stopped")
+			return engine.ExitStatusFailure, nil
 		}
-	}
-
-	if err := i.createReviewpadFailCommitStatus(failBuiltinStatus, commitStatusDescription); err != nil {
-		return engine.ExitStatusFailure, err
 	}
 
 	i.Env.GetLogger().Info("execution done")
@@ -257,23 +242,27 @@ func (i *Interpreter) ReportMetrics() error {
 	return nil
 }
 
-func (i *Interpreter) createReviewpadFailCommitStatus(state, description string) error {
-	targetEntity := i.Env.GetTarget().GetTargetEntity()
-
-	if targetEntity.Kind == handler.PullRequest {
+func (i *Interpreter) ReportChecks() error {
+	for _, check := range i.Env.GetChecks() {
+		targetEntity := i.Env.GetTarget().GetTargetEntity()
 		ctx := i.Env.GetCtx()
 		pr := i.Env.GetTarget().(*target.PullRequestTarget).PullRequest
 
-		_, err := i.Env.GetGithubClient().CreateCommitStatus(ctx, targetEntity.Owner, targetEntity.Repo, pr.GetHead().GetSHA(), &gh.CreateCommitStatusOptions{
-			Context:     "Reviewpad Commit Status Check",
-			State:       state,
-			Description: description,
-		})
+		createCommitStatusOptions := &gh.CreateCommitStatusOptions{
+			Context:     check.Name,
+			State:       string(check.Status),
+			Description: check.Reason,
+		}
+
+		if len(check.Reason) > 140 {
+			createCommitStatusOptions.Description = check.Reason[:140]
+		}
+
+		_, err := i.Env.GetGithubClient().CreateCommitStatus(ctx, targetEntity.Owner, targetEntity.Repo, pr.GetHead().GetSHA(), createCommitStatusOptions)
 		if err != nil {
 			return err
 		}
 	}
-
 	return nil
 }
 
