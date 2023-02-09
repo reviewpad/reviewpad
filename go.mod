@@ -17,7 +17,7 @@ require (
 	github.com/mattn/go-shellwords v1.0.12
 	github.com/migueleliasweb/go-github-mock v0.0.14
 	github.com/mitchellh/mapstructure v1.5.0
-	github.com/ohler55/ojg v1.17.2
+	github.com/ohler55/ojg v1.17.4
 	github.com/reviewpad/api/go v0.0.0-20220830170955-4342a58c9339
 	github.com/reviewpad/go-conventionalcommits v0.10.0
 	github.com/shurcooL/githubv4 v0.0.0-20221229060216-a8d4a561cc93
