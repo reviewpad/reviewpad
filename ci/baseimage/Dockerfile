@@ -6,7 +6,7 @@
 # You can see the image being used at .github/workflows/build.yml under jobs > build > container > image.
 # The image is publish on https://hub.docker.com/repository/docker/reviewpad/ci.
 
-FROM golang:1.19
+FROM golang:1.20
 
 ENV LIBGIT2_ZIP v1.2.0.zip
 ENV LIBGIT2 libgit2-1.2.0
