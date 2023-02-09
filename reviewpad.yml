@@ -73,7 +73,7 @@ rules:
 
   - name: ci-is-green
     description: Pipeline is green
-    spec: '$workflowStatus("pr-build") == "success" && $workflowStatus("reviewpad") == "success"'
+    spec: '$checkRunConclusion("pr-build") == "success"'
 
   - name: auto-merge-authored-by-owners-with-ship-and-green-ci
     description: Auto merge pull requests authored by owners with ship and green ci
