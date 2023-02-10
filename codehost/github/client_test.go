@@ -5,10 +5,13 @@
 package github_test
 
 import (
+	"net/http"
 	"testing"
 
 	"github.com/google/go-github/v49/github"
 	host "github.com/reviewpad/reviewpad/v3/codehost/github"
+	"github.com/reviewpad/reviewpad/v3/lang/aladino"
+	"github.com/reviewpad/reviewpad/v3/utils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -70,6 +73,64 @@ func TestNewGithubAppClient(t *testing.T) {
 			} else {
 				assert.Nil(t, err)
 				assert.IsType(t, tt.wantType, got)
+			}
+		})
+	}
+}
+
+func TestGetAuthenticatedUserLogin(t *testing.T) {
+	mockedAuthenticatedUserLoginGQLQuery := `{"query":"{viewer{login}}"}`
+
+	tests := map[string]struct {
+		ghGraphQLHandler func(http.ResponseWriter, *http.Request)
+		wantUser         string
+		wantErr          string
+	}{
+		"when get authenticated user login request fails": {
+			ghGraphQLHandler: func(w http.ResponseWriter, req *http.Request) {
+				query := utils.MinifyQuery(utils.MustRead(req.Body))
+				if query == utils.MinifyQuery(mockedAuthenticatedUserLoginGQLQuery) {
+					http.Error(w, "GetAuthenticatedUserLoginRequestFail", http.StatusNotFound)
+				}
+			},
+			wantErr: "non-200 OK status code: 404 Not Found body: \"GetAuthenticatedUserLoginRequestFail\\n\"",
+		},
+		"when get authenticated user login request succeeds": {
+			ghGraphQLHandler: func(w http.ResponseWriter, req *http.Request) {
+				query := utils.MinifyQuery(utils.MustRead(req.Body))
+				switch query {
+				case utils.MinifyQuery(mockedAuthenticatedUserLoginGQLQuery):
+					utils.MustWrite(w, `{
+							"data": {
+								"viewer": {
+									"login": "test"
+								}
+							}
+						}`)
+				}
+			},
+			wantUser: "test",
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			mockedEnv := aladino.MockDefaultEnv(
+				t,
+				nil,
+				test.ghGraphQLHandler,
+				aladino.MockBuiltIns(),
+				nil,
+			)
+
+			gotUser, gotErr := mockedEnv.GetGithubClient().GetAuthenticatedUserLogin()
+
+			if gotErr != nil {
+				assert.EqualError(t, gotErr, test.wantErr)
+				assert.Equal(t, "", gotUser)
+			} else {
+				assert.Nil(t, gotErr)
+				assert.Equal(t, test.wantUser, gotUser)
 			}
 		})
 	}
