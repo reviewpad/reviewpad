@@ -479,3 +479,53 @@ func (t *PullRequestTarget) JSON() (string, error) {
 
 	return string(j), nil
 }
+
+func (t *PullRequestTarget) GetLatestReviewFromReviewer(clientGQL *githubv4.Client, author string) (*codehost.Review, error) {
+	targetEntity := t.targetEntity
+	owner := targetEntity.Owner
+	repo := targetEntity.Repo
+	number := targetEntity.Number
+
+	var reviewsQuery struct {
+		Repository struct {
+			PullRequest struct {
+				Reviews struct {
+					Nodes []struct {
+						Author struct {
+							Login githubv4.String
+						}
+						Body        githubv4.String
+						State       githubv4.String
+						SubmittedAt *time.Time
+					}
+				} `graphql:"reviews(last: 1, author: $author)"`
+			} `graphql:"pullRequest(number: $pullRequestNumber)"`
+		} `graphql:"repository(owner: $repositoryOwner, name: $repositoryName)"`
+	}
+	varGQLReviews := map[string]interface{}{
+		"repositoryOwner":   githubv4.String(owner),
+		"repositoryName":    githubv4.String(repo),
+		"pullRequestNumber": githubv4.Int(number),
+		"author":            githubv4.String(author),
+	}
+
+	err := clientGQL.Query(context.Background(), &reviewsQuery, varGQLReviews)
+	if err != nil {
+		return nil, err
+	}
+
+	reviews := reviewsQuery.Repository.PullRequest.Reviews.Nodes
+	if len(reviews) == 0 {
+		return nil, nil
+	}
+
+	latestReview := reviews[0]
+	return &codehost.Review{
+		User: &codehost.User{
+			Login: string(latestReview.Author.Login),
+		},
+		Body:        string(latestReview.Body),
+		State:       string(latestReview.State),
+		SubmittedAt: latestReview.SubmittedAt,
+	}, nil
+}
