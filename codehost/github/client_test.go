@@ -101,12 +101,12 @@ func TestGetAuthenticatedUserLogin(t *testing.T) {
 				switch query {
 				case utils.MinifyQuery(mockedAuthenticatedUserLoginGQLQuery):
 					utils.MustWrite(w, `{
-							"data": {
-								"viewer": {
-									"login": "test"
-								}
+						"data": {
+							"viewer": {
+								"login": "test"
 							}
-						}`)
+						}
+					}`)
 				}
 			},
 			wantUser: "test",

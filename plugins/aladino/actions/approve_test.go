@@ -275,7 +275,7 @@ func TestApprove(t *testing.T) {
 				Body:  github.String("test"),
 			},
 		},
-		"when the pull request hasn't has any updates since the last review made by the user": {
+		"when the pull request hasn't had any updates since the last review made by the user": {
 			clientOptions: []mock.MockBackendOption{
 				mock.WithRequestMatchHandler(
 					mock.GetReposPullsByOwnerByRepoByPullNumber,

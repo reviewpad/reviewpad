@@ -56,7 +56,7 @@ func approveCode(e aladino.Env, args []aladino.Value) error {
 			return nil
 		}
 
-		log.Infof("latest review from %v is %v with body %v", authenticatedUserLogin, latestReview.State, latestReview.Body)
+		log.Infof("latest review from %v is %v with body '%v'", authenticatedUserLogin, latestReview.State, latestReview.Body)
 
 		if latestReview.State == "APPROVED" && latestReview.Body == reviewBody {
 			log.Infof("skipping approve since it's the same as the latest review")
