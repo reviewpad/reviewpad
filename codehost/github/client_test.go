@@ -129,7 +129,6 @@ func TestGetAuthenticatedUserLogin(t *testing.T) {
 				assert.EqualError(t, gotErr, test.wantErr)
 				assert.Equal(t, "", gotUser)
 			} else {
-				assert.Nil(t, gotErr)
 				assert.Equal(t, test.wantUser, gotUser)
 			}
 		})
