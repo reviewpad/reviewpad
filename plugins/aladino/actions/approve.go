@@ -63,7 +63,7 @@ func approveCode(e aladino.Env, args []aladino.Value) error {
 			return nil
 		}
 	}
-	log.Infof("creating review APPROVE with body %v", reviewBody)
+	log.Infof("creating review APPROVE with body '%v'", reviewBody)
 
 	return t.Review("APPROVE", reviewBody)
 }
