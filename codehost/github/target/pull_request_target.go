@@ -480,7 +480,8 @@ func (t *PullRequestTarget) JSON() (string, error) {
 	return string(j), nil
 }
 
-func (t *PullRequestTarget) GetLatestReviewFromReviewer(clientGQL *githubv4.Client, author string) (*codehost.Review, error) {
+func (t *PullRequestTarget) GetLatestReviewFromReviewer(author string) (*codehost.Review, error) {
+	clientGQL := t.githubClient.GetClientGraphQL()
 	targetEntity := t.targetEntity
 	owner := targetEntity.Owner
 	repo := targetEntity.Repo

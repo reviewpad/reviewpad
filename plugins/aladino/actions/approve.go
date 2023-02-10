@@ -20,7 +20,6 @@ func Approve() *aladino.BuiltInAction {
 
 func approveCode(e aladino.Env, args []aladino.Value) error {
 	t := e.GetTarget().(*target.PullRequestTarget)
-	clientGraphQL := e.GetGithubClient().GetClientGraphQL()
 	log := e.GetLogger().WithField("builtin", "approve")
 
 	reviewBody := args[0].(*aladino.StringValue).Val
@@ -35,12 +34,12 @@ func approveCode(e aladino.Env, args []aladino.Value) error {
 		return nil
 	}
 
-	authenticatedUserLogin, err := getAuthenticatedUserLogin(clientGraphQL)
+	authenticatedUserLogin, err := e.GetGithubClient().GetAuthenticatedUserLogin()
 	if err != nil {
 		return err
 	}
 
-	latestReview, err := t.GetLatestReviewFromReviewer(clientGraphQL, authenticatedUserLogin)
+	latestReview, err := t.GetLatestReviewFromReviewer(authenticatedUserLogin)
 	if err != nil {
 		return err
 	}

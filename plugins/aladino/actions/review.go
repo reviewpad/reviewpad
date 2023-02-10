@@ -5,13 +5,11 @@
 package plugins_aladino_actions
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/reviewpad/reviewpad/v3/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
-	"github.com/shurcooL/githubv4"
 )
 
 func Review() *aladino.BuiltInAction {
@@ -24,7 +22,7 @@ func Review() *aladino.BuiltInAction {
 
 func reviewCode(e aladino.Env, args []aladino.Value) error {
 	t := e.GetTarget().(*target.PullRequestTarget)
-	clientGraphQL := e.GetGithubClient().GetClientGraphQL()
+
 	log := e.GetLogger().WithField("builtin", "review")
 
 	if *t.PullRequest.State == "closed" {
@@ -42,12 +40,12 @@ func reviewCode(e aladino.Env, args []aladino.Value) error {
 		return err
 	}
 
-	authenticatedUserLogin, err := getAuthenticatedUserLogin(clientGraphQL)
+	authenticatedUserLogin, err := e.GetGithubClient().GetAuthenticatedUserLogin()
 	if err != nil {
 		return err
 	}
 
-	latestReview, err := t.GetLatestReviewFromReviewer(clientGraphQL, authenticatedUserLogin)
+	latestReview, err := t.GetLatestReviewFromReviewer(authenticatedUserLogin)
 	if err != nil {
 		return err
 	}
@@ -109,19 +107,4 @@ func mapReviewStateToEvent(reviewState string) (string, error) {
 	default:
 		return "", fmt.Errorf("review: unsupported review state %v", reviewState)
 	}
-}
-
-func getAuthenticatedUserLogin(clientGQL *githubv4.Client) (string, error) {
-	var userLogin struct {
-		Viewer struct {
-			Login string
-		}
-	}
-
-	err := clientGQL.Query(context.Background(), &userLogin, nil)
-	if err != nil {
-		return "", err
-	}
-
-	return userLogin.Viewer.Login, nil
 }
