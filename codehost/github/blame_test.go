@@ -48,7 +48,7 @@ func TestGetGitBlame(t *testing.T) {
 					"data": {
 					  "repository": {
 						"object": {
-						  "blame": {
+						  "blame0": {
 							"ranges": [
 							  {
 								"startingLine": 1,
