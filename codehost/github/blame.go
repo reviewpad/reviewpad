@@ -29,11 +29,6 @@ type GitBlame struct {
 	Files     map[string]GitBlameFile
 }
 
-type FileSliceLimits struct {
-	From uint64
-	To   uint64
-}
-
 type GitBlameQuery struct {
 	Repository struct {
 		Object map[string]struct {
