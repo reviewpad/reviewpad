@@ -725,7 +725,7 @@ func TestNewInterpreter_WhenNewEvalEnvFails(t *testing.T) {
 		ctx,
 		DefaultMockLogger,
 		false,
-		gh.NewGithubClient(clientREST, nil),
+		gh.NewGithubClient(clientREST, nil, nil),
 		nil,
 		DefaultMockTargetEntity,
 		GetDefaultMockPullRequestDetails(),
