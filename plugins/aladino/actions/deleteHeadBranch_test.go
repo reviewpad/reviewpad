@@ -24,6 +24,7 @@ func TestDeleteHeadBranch(t *testing.T) {
 	isDeleteHeadBranchRequestPerformed := false
 	tests := map[string]struct {
 		clientOptions           []mock.MockBackendOption
+		graphQLHandler          http.HandlerFunc
 		deleteShouldBePerformed bool
 		err                     error
 	}{
@@ -46,6 +47,17 @@ func TestDeleteHeadBranch(t *testing.T) {
 					}),
 				),
 			},
+			graphQLHandler: func(w http.ResponseWriter, r *http.Request) {
+				utils.MustWrite(w, `{
+					"data": {
+						"repository": {
+							"ref": {
+								"id": "XYSD9fbcCu"
+							}
+						}
+					}
+				}`)
+			},
 			deleteShouldBePerformed: true,
 		},
 		"when pull request is merged": {
@@ -66,6 +78,17 @@ func TestDeleteHeadBranch(t *testing.T) {
 						isDeleteHeadBranchRequestPerformed = true
 					}),
 				),
+			},
+			graphQLHandler: func(w http.ResponseWriter, r *http.Request) {
+				utils.MustWrite(w, `{
+					"data": {
+						"repository": {
+							"ref": {
+								"id": "XYSD9fbcCu"
+							}
+						}
+					}
+				}`)
 			},
 			deleteShouldBePerformed: true,
 		},
@@ -110,6 +133,17 @@ func TestDeleteHeadBranch(t *testing.T) {
 					}),
 				),
 			},
+			graphQLHandler: func(w http.ResponseWriter, r *http.Request) {
+				utils.MustWrite(w, `{
+					"data": {
+						"repository": {
+							"ref": {
+								"id": "XYSD9fbcCu"
+							}
+						}
+					}
+				}`)
+			},
 			err: &github.ErrorResponse{
 				Message:          "Reference does not exist",
 				DocumentationURL: "https://docs.github.com/rest/reference/git#delete-a-reference",
@@ -133,6 +167,27 @@ func TestDeleteHeadBranch(t *testing.T) {
 			},
 			err: nil,
 		},
+		"when head branch doesn't exist": {
+			clientOptions: []mock.MockBackendOption{
+				mock.WithRequestMatchHandler(
+					mock.GetReposPullsByOwnerByRepoByPullNumber,
+					http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+						utils.MustWriteBytes(w, mock.MustMarshal(aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
+							Merged: github.Bool(true),
+						})))
+					}),
+				),
+			},
+			graphQLHandler: func(w http.ResponseWriter, r *http.Request) {
+				utils.MustWrite(w, `{
+					"data": {
+						"repository": {
+							"ref": null
+						}
+					}
+				}`)
+			},
+		},
 	}
 
 	for name, test := range tests {
@@ -140,7 +195,7 @@ func TestDeleteHeadBranch(t *testing.T) {
 			mockedEnv := aladino.MockDefaultEnv(
 				t,
 				test.clientOptions,
-				nil,
+				test.graphQLHandler,
 				aladino.MockBuiltIns(),
 				nil,
 			)
