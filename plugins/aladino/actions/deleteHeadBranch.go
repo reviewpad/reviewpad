@@ -5,6 +5,8 @@
 package plugins_aladino_actions
 
 import (
+	"fmt"
+
 	"github.com/reviewpad/reviewpad/v3/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
@@ -21,6 +23,9 @@ func DeleteHeadBranch() *aladino.BuiltInAction {
 func deleteHeadBranch(e aladino.Env, args []aladino.Value) error {
 	target := e.GetTarget().(*target.PullRequestTarget)
 	targetEntity := target.GetTargetEntity()
+	ctx := e.GetCtx()
+	owner := targetEntity.Owner
+	repo := targetEntity.Repo
 
 	if !*target.PullRequest.Merged && target.PullRequest.ClosedAt == nil {
 		return nil
@@ -31,5 +36,16 @@ func deleteHeadBranch(e aladino.Env, args []aladino.Value) error {
 		return nil
 	}
 
-	return e.GetGithubClient().DeleteReference(e.GetCtx(), targetEntity.Owner, targetEntity.Repo, "heads/"+*target.PullRequest.Head.Ref)
+	ref := "heads/" + *target.PullRequest.Head.Ref
+
+	exists, err := e.GetGithubClient().RefExists(ctx, owner, repo, "refs/"+ref)
+	if err != nil {
+		return fmt.Errorf("error getting reference: %w", err)
+	}
+
+	if !exists {
+		return nil
+	}
+
+	return e.GetGithubClient().DeleteReference(ctx, owner, repo, ref)
 }

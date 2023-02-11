@@ -123,6 +123,14 @@ type GetApprovalsCountQuery struct {
 	} `graphql:"repository(owner: $repositoryOwner, name: $repositoryName)"`
 }
 
+type GetRefIDQuery struct {
+	Repository struct {
+		Ref struct {
+			ID string
+		} `ref(qualifiedName: $ref)`
+	} `graphql:"repository(owner: $owner, name: $repo)"`
+}
+
 func GetPullRequestHeadOwnerName(pullRequest *github.PullRequest) string {
 	return pullRequest.Head.Repo.Owner.GetLogin()
 }
@@ -618,4 +626,20 @@ func (c *GithubClient) GetApprovalsCount(ctx context.Context, owner, repo string
 	}
 
 	return getApprovalsCountQuery.Repository.PullRequest.Reviews.TotalCount, nil
+}
+
+func (c *GithubClient) RefExists(ctx context.Context, owner, repo, ref string) (bool, error) {
+	var getRefIDQuery GetRefIDQuery
+	varGetRefIDQueryData := map[string]interface{}{
+		"owner": githubv4.String(owner),
+		"repo":  githubv4.String(repo),
+		"ref":   githubv4.String(ref),
+	}
+
+	err := c.GetClientGraphQL().Query(ctx, &getRefIDQuery, varGetRefIDQueryData)
+	if err != nil {
+		return false, err
+	}
+
+	return getRefIDQuery.Repository.Ref.ID != "", nil
 }
