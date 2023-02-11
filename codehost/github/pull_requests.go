@@ -127,7 +127,7 @@ type GetRefIDQuery struct {
 	Repository struct {
 		Ref struct {
 			ID string
-		} `ref(qualifiedName: $ref)`
+		} `graphql:"ref(qualifiedName: $ref)"`
 	} `graphql:"repository(owner: $owner, name: $repo)"`
 }
 
