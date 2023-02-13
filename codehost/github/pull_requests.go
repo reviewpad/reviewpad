@@ -131,12 +131,12 @@ type GetRefIDQuery struct {
 	} `graphql:"repository(owner: $owner, name: $repo)"`
 }
 
-type GetOpenPullRequestsAsReviewerQuery struct {
-	Search struct {
-		Issues struct {
-			TotalCount int
-		} `graphql:"issues(query: $query, states: OPEN, first: 50)"`
-	} `graphql:"search(query: $query, type: ISSUE)"`
+type LastFiftyOpenedPullRequestsQuery struct {
+	Repository struct {
+		PullRequests struct {
+			Nodes []pullRequest
+		} `graphql:"pullRequests(states: OPEN, last: 50)"`
+	} `graphql:"repository(owner: $owner, name: $name)"`
 }
 
 func GetPullRequestHeadOwnerName(pullRequest *github.PullRequest) string {
@@ -678,14 +678,6 @@ type pullRequest struct {
 	} `graphql:"reviewRequests(first: 50)"`
 }
 
-type searchResult struct {
-	Repository struct {
-		PullRequests struct {
-			Nodes []pullRequest
-		} `graphql:"pullRequests(states: OPEN, first: 50)"`
-	} `graphql:"repository(owner: $owner, name: $name)"`
-}
-
 func (c *GithubClient) GetOpenPullRequestsAsReviewer(ctx context.Context, owner string, repo string, usernames []string) (map[string]int, error) {
 	if len(usernames) == 0 {
 		repoCollaborators, err := c.GetRepoCollaborators(ctx, owner, repo)
@@ -708,7 +700,7 @@ func (c *GithubClient) GetOpenPullRequestsAsReviewer(ctx context.Context, owner 
 		"name":  githubv4.String(repo),
 	}
 
-	var result searchResult
+	var result LastFiftyOpenedPullRequestsQuery
 
 	err := c.GetClientGraphQL().Query(ctx, &result, variables)
 	if err != nil {
