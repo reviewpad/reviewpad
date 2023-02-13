@@ -131,6 +131,24 @@ type GetRefIDQuery struct {
 	} `graphql:"repository(owner: $owner, name: $repo)"`
 }
 
+type RequestedReviewer struct {
+	AsUser struct {
+		Login githubv4.String `graphql:"login"`
+	} `graphql:"... on User"`
+}
+
+type pullRequest struct {
+	Number githubv4.Int
+	Title  githubv4.String
+	Author struct {
+		Login githubv4.String `graphql:"login"`
+	}
+	CreatedAt      githubv4.DateTime
+	ReviewRequests struct {
+		Nodes []struct{ RequestedReviewer RequestedReviewer }
+	} `graphql:"reviewRequests(first: 50)"`
+}
+
 type LastFiftyOpenedPullRequestsQuery struct {
 	Repository struct {
 		PullRequests struct {
@@ -652,33 +670,11 @@ func (c *GithubClient) RefExists(ctx context.Context, owner, repo, ref string) (
 	return getRefIDQuery.Repository.Ref.ID != "", nil
 }
 
-type User struct {
-	Login githubv4.String `graphql:"login"`
-}
-
-type RequestedReviewer struct {
-	AsUser struct {
-		Login githubv4.String `graphql:"login"`
-	} `graphql:"... on User"`
-}
-
-type pullRequest struct {
-	Number githubv4.Int
-	Title  githubv4.String
-	Author struct {
-		Login githubv4.String `graphql:"login"`
-	}
-	CreatedAt      githubv4.DateTime
-	ReviewRequests struct {
-		Nodes    []struct{ RequestedReviewer RequestedReviewer }
-		PageInfo struct {
-			HasNextPage bool
-			EndCursor   githubv4.String
-		}
-	} `graphql:"reviewRequests(first: 50)"`
-}
-
 func (c *GithubClient) GetOpenPullRequestsAsReviewer(ctx context.Context, owner string, repo string, usernames []string) (map[string]int, error) {
+	if usernames == nil {
+		usernames = make([]string, 0)
+	}
+
 	if len(usernames) == 0 {
 		repoCollaborators, err := c.GetRepoCollaborators(ctx, owner, repo)
 		if err != nil {
