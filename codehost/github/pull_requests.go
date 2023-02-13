@@ -653,32 +653,22 @@ func (c *GithubClient) RefExists(ctx context.Context, owner, repo, ref string) (
 }
 
 type pullRequest struct {
+	Number         githubv4.Int
+	Title          githubv4.String
+	Author         struct{ Login githubv4.String }
+	CreatedAt      githubv4.DateTime
 	ReviewRequests struct {
 		Nodes []struct {
-			RequestedReviewer struct {
-				Typename string `graphql:"__typename"`
-				Login    string
-			}
+			RequestedReviewer struct{ Login githubv4.String }
 		}
-		PageInfo struct {
-			EndCursor   githubv4.String
-			HasNextPage bool
-		}
-	} `graphql:"reviewRequests(first: 10, after: $reviewCursor)"`
-	Number githubv4.Int
-	State  githubv4.PullRequestState
+	}
 }
 
 type searchResult struct {
 	Repository struct {
 		PullRequests struct {
-			Nodes    []pullRequest
-			PageInfo struct {
-				EndCursor   githubv4.String
-				HasNextPage bool
-			}
-			TotalCount githubv4.Int
-		} `graphql:"pullRequests(states: OPEN, first: 10, after: $prCursor, reviewRequestFrom: $reviewer)"`
+			Nodes []pullRequest
+		} `graphql:"pullRequests(states: OPEN, first: 50)"`
 	} `graphql:"repository(owner: $owner, name: $name)"`
 }
 
@@ -694,37 +684,36 @@ func (c *GithubClient) GetOpenPullRequestsAsReviewer(ctx context.Context, owner 
 		}
 	}
 
+	variables := map[string]interface{}{
+		"owner": githubv4.String(owner),
+		"name":  githubv4.String(repo),
+	}
+
 	numOfOpenPullRequestsByUser := map[string]int{}
 
-	for _, username := range usernames {
-		var search searchResult
-		var totalCount int
+	var search searchResult
+	err := c.GetClientGraphQL().Query(ctx, &search, variables)
+	if err != nil {
+		return nil, err
+	}
 
-		variables := map[string]interface{}{
-			"owner":        githubv4.String(owner),
-			"name":         githubv4.String(repo),
-			"prCursor":     (*githubv4.String)(nil),
-			"reviewer":     githubv4.String(username),
-			"reviewCursor": (*githubv4.String)(nil),
-		}
-
-		for {
-			err := c.GetClientGraphQL().Query(ctx, &search, variables)
-			if err != nil {
-				return nil, err
+	for _, pr := range search.Repository.PullRequests.Nodes {
+		for _, rr := range pr.ReviewRequests.Nodes {
+			requestedReviewer := string(rr.RequestedReviewer.Login)
+			if len(usernames) == 0 || contains(usernames, requestedReviewer) {
+				numOfOpenPullRequestsByUser[requestedReviewer]++
 			}
-
-			totalCount += len(search.Repository.PullRequests.Nodes)
-
-			if !search.Repository.PullRequests.PageInfo.HasNextPage {
-				break
-			}
-
-			variables["prCursor"] = githubv4.NewString(search.Repository.PullRequests.PageInfo.EndCursor)
 		}
-
-		numOfOpenPullRequestsByUser[username] = totalCount
 	}
 
 	return numOfOpenPullRequestsByUser, nil
+}
+
+func contains(slice []string, s string) bool {
+	for _, element := range slice {
+		if element == s {
+			return true
+		}
+	}
+	return false
 }
