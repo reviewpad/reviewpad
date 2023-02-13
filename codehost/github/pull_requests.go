@@ -682,7 +682,9 @@ func (c *GithubClient) GetOpenPullRequestsAsReviewer(ctx context.Context, owner 
 		}
 
 		for _, collaborator := range repoCollaborators {
-			usernames = append(usernames, collaborator.GetLogin())
+			if collaborator.GetLogin() != owner {
+				usernames = append(usernames, collaborator.GetLogin())
+			}
 		}
 	}
 
