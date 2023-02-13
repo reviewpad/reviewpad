@@ -131,6 +131,14 @@ type GetRefIDQuery struct {
 	} `graphql:"repository(owner: $owner, name: $repo)"`
 }
 
+type GetOpenPullRequestsAsReviewerQuery struct {
+	Search struct {
+		Issues struct {
+			TotalCount int
+		} `graphql:"issues(query: $query, states: OPEN, first: 50)"`
+	} `graphql:"search(query: $query, type: ISSUE)"`
+}
+
 func GetPullRequestHeadOwnerName(pullRequest *github.PullRequest) string {
 	return pullRequest.Head.Repo.Owner.GetLogin()
 }
@@ -642,4 +650,42 @@ func (c *GithubClient) RefExists(ctx context.Context, owner, repo, ref string) (
 	}
 
 	return getRefIDQuery.Repository.Ref.ID != "", nil
+}
+
+func (c *GithubClient) GetOpenPullRequestsAsReviewer(ctx context.Context, owner string, repo string, usernames []string) (map[string]int, error) {
+	if len(usernames) == 0 {
+		repoCollaborators, err := c.GetRepoCollaborators(ctx, owner, repo)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, collaborator := range repoCollaborators {
+			usernames = append(usernames, collaborator.GetLogin())
+		}
+	}
+
+	numOfOpenPullRequestsByUser := map[string]int{}
+
+	var openedPullRequestsQuery struct {
+		Search struct {
+			Issues struct {
+				TotalCount int
+			} `graphql:"issues(query: $query, states: OPEN, first: 50)"`
+		} `graphql:"search(query: $query, type: ISSUE)"`
+	}
+
+	for _, username := range usernames {
+		openedPullRequestsQueryData := map[string]interface{}{
+			"query": fmt.Sprintf("review-requested:%s is:pr is:open", username),
+		}
+
+		err := c.GetClientGraphQL().Query(ctx, &openedPullRequestsQuery, openedPullRequestsQueryData)
+		if err != nil {
+			return nil, err
+		}
+
+		numOfOpenPullRequestsByUser[username] = openedPullRequestsQuery.Search.Issues.TotalCount
+	}
+
+	return numOfOpenPullRequestsByUser, nil
 }
