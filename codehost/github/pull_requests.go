@@ -670,7 +670,7 @@ func (c *GithubClient) GetOpenPullRequestsAsReviewer(ctx context.Context, owner 
 		Search struct {
 			Issues struct {
 				TotalCount int
-			} `graphql:"issues(query: $query, states: OPEN, first: 50)"`
+			} `graphql:"pullRequests(query: $query, states: OPEN, first: 50)"`
 		} `graphql:"search(query: $query, type: ISSUE)"`
 	}
 
