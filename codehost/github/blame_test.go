@@ -86,6 +86,34 @@ func TestGetGitBlame(t *testing.T) {
 				},
 			},
 		},
+		"when successful with empty ranges": {
+			commitSHA: "41a7b4350148def9e98c9352a64cc3ac95c1de9c",
+			filePaths: []string{"reviewpad.yml"},
+			graphQLHandler: func(w http.ResponseWriter, r *http.Request) {
+				utils.MustWrite(w, `{
+					"data": {
+					  "repository": {
+						"object": {
+						  "blame0": {
+							"ranges": [
+							]
+						  }
+						}
+					  }
+					}
+				}`)
+			},
+			wantRes: &github.GitBlame{
+				CommitSHA: "41a7b4350148def9e98c9352a64cc3ac95c1de9c",
+				Files: map[string]github.GitBlameFile{
+					"reviewpad.yml": {
+						FilePath:  "reviewpad.yml",
+						LineCount: 0,
+						Lines:     []github.GitBlameFileLines{},
+					},
+				},
+			},
+		},
 	}
 
 	for name, test := range tests {

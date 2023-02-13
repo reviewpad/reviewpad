@@ -125,12 +125,11 @@ func mapGitBlameQueryToGitBlame(commitSHA string, gitBlameQuery GitBlameQuery, p
 	for queryKey, fileGitBlame := range gitBlameQuery.Repository.Object {
 		filePath := pathToKeyMap[queryKey]
 		rangesLen := len(fileGitBlame.Ranges)
+		var linesCount uint64
 
-		if rangesLen == 0 {
-			return nil, fmt.Errorf("error getting blame information: ranges not found for %s", filePath)
+		if rangesLen > 0 {
+			linesCount = fileGitBlame.Ranges[rangesLen-1].EndingLine
 		}
-
-		linesCount := fileGitBlame.Ranges[rangesLen-1].EndingLine
 
 		file := GitBlameFile{
 			FilePath:  filePath,
