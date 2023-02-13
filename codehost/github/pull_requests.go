@@ -661,19 +661,25 @@ type RequestedReviewer struct {
 }
 
 type pullRequest struct {
-	Number         githubv4.Int
-	Title          githubv4.String
-	Author         struct{ Login githubv4.String }
-	CreatedAt      githubv4.DateTime
-	ReviewRequests struct {
-		Nodes []struct{ RequestedReviewer RequestedReviewer }
-	}
+	Number    githubv4.Int
+	Title     githubv4.String
+	Author    struct{ Login githubv4.String }
+	CreatedAt githubv4.DateTime
 }
 
 type searchResult struct {
 	Repository struct {
 		PullRequests struct {
-			Nodes []pullRequest
+			Nodes []struct {
+				pullRequest
+				ReviewRequests struct {
+					Nodes    []struct{ RequestedReviewer RequestedReviewer }
+					PageInfo struct {
+						HasNextPage bool
+						EndCursor   githubv4.String
+					}
+				} `graphql:"reviewRequests(first: 50)"`
+			}
 		} `graphql:"pullRequests(states: OPEN, first: 50)"`
 	} `graphql:"repository(owner: $owner, name: $name)"`
 }
@@ -695,15 +701,15 @@ func (c *GithubClient) GetOpenPullRequestsAsReviewer(ctx context.Context, owner 
 		"name":  githubv4.String(repo),
 	}
 
-	numOfOpenPullRequestsByUser := map[string]int{}
+	numOfOpenPullRequestsByUser := make(map[string]int)
+	var result searchResult
 
-	var search searchResult
-	err := c.GetClientGraphQL().Query(ctx, &search, variables)
+	err := c.GetClientGraphQL().Query(ctx, &result, variables)
 	if err != nil {
 		return nil, err
 	}
 
-	for _, pr := range search.Repository.PullRequests.Nodes {
+	for _, pr := range result.Repository.PullRequests.Nodes {
 		for _, rr := range pr.ReviewRequests.Nodes {
 			requestedReviewer := string(rr.RequestedReviewer.AsUser.Login)
 			if contains(usernames, requestedReviewer) {
