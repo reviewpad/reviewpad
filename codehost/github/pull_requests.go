@@ -653,7 +653,7 @@ func (c *GithubClient) RefExists(ctx context.Context, owner, repo, ref string) (
 }
 
 type User struct {
-	Login githubv4.String
+	Login githubv4.String `graphql:"login,omitempty"`
 }
 
 type RequestedReviewer struct {
@@ -696,12 +696,16 @@ func (c *GithubClient) GetOpenPullRequestsAsReviewer(ctx context.Context, owner 
 		}
 	}
 
+	numOfOpenPullRequestsByUser := make(map[string]int)
+	for _, username := range usernames {
+		numOfOpenPullRequestsByUser[username] = 0
+	}
+
 	variables := map[string]interface{}{
 		"owner": githubv4.String(owner),
 		"name":  githubv4.String(repo),
 	}
 
-	numOfOpenPullRequestsByUser := make(map[string]int)
 	var result searchResult
 
 	err := c.GetClientGraphQL().Query(ctx, &result, variables)
