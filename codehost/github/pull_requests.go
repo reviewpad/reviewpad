@@ -657,7 +657,9 @@ type User struct {
 }
 
 type RequestedReviewer struct {
-	AsUser *User `graphql:"... on User"`
+	AsUser struct {
+		Login githubv4.String `graphql:"login"`
+	} `graphql:"... on User"`
 }
 
 type pullRequest struct {
@@ -666,22 +668,20 @@ type pullRequest struct {
 	Author struct {
 		Login githubv4.String `graphql:"login"`
 	}
-	CreatedAt githubv4.DateTime
+	CreatedAt      githubv4.DateTime
+	ReviewRequests struct {
+		Nodes    []struct{ RequestedReviewer RequestedReviewer }
+		PageInfo struct {
+			HasNextPage bool
+			EndCursor   githubv4.String
+		}
+	} `graphql:"reviewRequests(first: 50)"`
 }
 
 type searchResult struct {
 	Repository struct {
 		PullRequests struct {
-			Nodes []struct {
-				pullRequest
-				ReviewRequests struct {
-					Nodes    []struct{ RequestedReviewer RequestedReviewer }
-					PageInfo struct {
-						HasNextPage bool
-						EndCursor   githubv4.String
-					}
-				} `graphql:"reviewRequests(first: 50)"`
-			}
+			Nodes []pullRequest
 		} `graphql:"pullRequests(states: OPEN, first: 50)"`
 	} `graphql:"repository(owner: $owner, name: $name)"`
 }
