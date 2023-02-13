@@ -700,7 +700,7 @@ func (c *GithubClient) GetOpenPullRequestsAsReviewer(ctx context.Context, owner 
 	for _, pr := range search.Repository.PullRequests.Nodes {
 		for _, rr := range pr.ReviewRequests.Nodes {
 			requestedReviewer := string(rr.RequestedReviewer.Login)
-			if len(usernames) == 0 || contains(usernames, requestedReviewer) {
+			if contains(usernames, requestedReviewer) {
 				numOfOpenPullRequestsByUser[requestedReviewer]++
 			}
 		}
