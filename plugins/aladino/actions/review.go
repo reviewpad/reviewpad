@@ -25,7 +25,12 @@ func reviewCode(e aladino.Env, args []aladino.Value) error {
 
 	log := e.GetLogger().WithField("builtin", "review")
 
-	if *t.PullRequest.State == "closed" {
+	if t.PullRequest.GetDraft() {
+		log.Infof("skipping approve because the pull request is in draft")
+		return nil
+	}
+
+	if t.PullRequest.GetState() == "closed" {
 		log.Infof("skipping review because the pull request is closed")
 		return nil
 	}
@@ -68,11 +73,6 @@ func reviewCode(e aladino.Env, args []aladino.Value) error {
 		}
 
 		log.Infof("latest review from %v is %v with body %v", authenticatedUserLogin, latestReviewEvent, latestReview.Body)
-
-		if latestReviewEvent == reviewEvent && latestReview.Body == reviewBody {
-			log.Infof("skipping review since it's the same as the latest review")
-			return nil
-		}
 	}
 	log.Infof("creating review %v with body %v", reviewEvent, reviewBody)
 
