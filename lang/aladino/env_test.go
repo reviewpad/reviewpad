@@ -52,7 +52,7 @@ func TestNewEvalEnv_WhenGetPullRequestFilesFails(t *testing.T) {
 		),
 	))
 
-	mockedGithubClient := gh.NewGithubClient(mockedGithubClientREST, nil)
+	mockedGithubClient := gh.NewGithubClient(mockedGithubClientREST, nil, nil)
 	ctx := context.Background()
 
 	targetEntity := &handler.TargetEntity{
@@ -91,7 +91,7 @@ func TestNewEvalEnv_WhenNewFileFails(t *testing.T) {
 		),
 	))
 
-	mockedGithubClient := gh.NewGithubClient(mockedGithubClientREST, nil)
+	mockedGithubClient := gh.NewGithubClient(mockedGithubClientREST, nil, nil)
 	ctx := context.Background()
 	targetEntity := &handler.TargetEntity{
 		Owner:  aladino.DefaultMockPrOwner,
@@ -147,7 +147,7 @@ func TestNewEvalEnv(t *testing.T) {
 		assert.FailNow(t, "couldn't get pull request", err)
 	}
 
-	mockedGithubClient := gh.NewGithubClient(mockedGithubClientREST, nil)
+	mockedGithubClient := gh.NewGithubClient(mockedGithubClientREST, nil, nil)
 
 	gotEnv, err := aladino.NewEvalEnv(
 		ctx,
@@ -212,7 +212,7 @@ func TestNewEvalEnv_WhenGetPullRequestFails(t *testing.T) {
 		),
 	))
 
-	mockedGithubClient := gh.NewGithubClient(mockedGithubClientREST, nil)
+	mockedGithubClient := gh.NewGithubClient(mockedGithubClientREST, nil, nil)
 	ctx := context.Background()
 
 	targetEntity := &handler.TargetEntity{

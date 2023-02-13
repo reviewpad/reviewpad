@@ -11,24 +11,27 @@ import (
 
 	"github.com/bradleyfalzon/ghinstallation/v2"
 	"github.com/google/go-github/v49/github"
+	"github.com/hasura/go-graphql-client"
 	"github.com/shurcooL/githubv4"
 	"golang.org/x/oauth2"
 )
 
 type GithubClient struct {
-	clientREST *github.Client
-	clientGQL  *githubv4.Client
-	token      string
+	clientREST   *github.Client
+	clientGQL    *githubv4.Client
+	rawClientGQL *graphql.Client
+	token        string
 }
 
 type GithubAppClient struct {
 	*github.Client
 }
 
-func NewGithubClient(clientREST *github.Client, clientGQL *githubv4.Client) *GithubClient {
+func NewGithubClient(clientREST *github.Client, clientGQL *githubv4.Client, rawClientGQL *graphql.Client) *GithubClient {
 	return &GithubClient{
-		clientREST: clientREST,
-		clientGQL:  clientGQL,
+		clientREST:   clientREST,
+		clientGQL:    clientGQL,
+		rawClientGQL: rawClientGQL,
 	}
 }
 
@@ -40,11 +43,13 @@ func NewGithubClientFromToken(ctx context.Context, token string) *GithubClient {
 
 	clientREST := github.NewClient(tc)
 	clientGQL := githubv4.NewClient(tc)
+	rawClientGQL := graphql.NewClient("https://api.github.com/graphql", tc)
 
 	return &GithubClient{
-		clientREST: clientREST,
-		clientGQL:  clientGQL,
-		token:      token,
+		clientREST:   clientREST,
+		clientGQL:    clientGQL,
+		rawClientGQL: rawClientGQL,
+		token:        token,
 	}
 }
 
@@ -59,6 +64,10 @@ func (c *GithubClient) GetClientGraphQL() *githubv4.Client {
 
 func (c *GithubClient) GetToken() string {
 	return c.token
+}
+
+func (c *GithubClient) GetRawClientGraphQL() *graphql.Client {
+	return c.rawClientGQL
 }
 
 func NewGithubAppClient(gitHubAppID int64, gitHubAppPrivateKey []byte) (*GithubAppClient, error) {

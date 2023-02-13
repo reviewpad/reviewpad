@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/google/go-github/v49/github"
+	"github.com/hasura/go-graphql-client"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/collector"
@@ -377,13 +378,15 @@ func MockDefaultGithubClient(ghApiClientOptions []mock.MockBackendOption, ghGrap
 
 	// Handle GraphQL
 	var clientGQL *githubv4.Client
+	var rawClientGQL *graphql.Client
 	if ghGraphQLHandler != nil {
 		mux := http.NewServeMux()
 		mux.HandleFunc("/graphql", ghGraphQLHandler)
 		clientGQL = githubv4.NewClient(&http.Client{Transport: localRoundTripper{handler: mux}})
+		rawClientGQL = graphql.NewClient("https://api.github.com/graphql", &http.Client{Transport: localRoundTripper{handler: mux}})
 	}
 
-	return gh.NewGithubClient(client, clientGQL)
+	return gh.NewGithubClient(client, clientGQL, rawClientGQL)
 }
 
 func MockDefaultGithubAppClient(ghApiClientOptions []mock.MockBackendOption) *gh.GithubAppClient {
