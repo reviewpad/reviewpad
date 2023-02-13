@@ -28,6 +28,16 @@ type GitBlame struct {
 	Files     map[string]GitBlameFile
 }
 
+type FileSliceLimits struct {
+	From uint64
+	To   uint64
+}
+
+type GitBlameAuthorRank struct {
+	Username   string
+	TotalLines int
+}
+
 type GitBlameQuery struct {
 	Repository struct {
 		Object map[string]struct {
@@ -48,21 +58,21 @@ type GitBlameQuery struct {
 }
 
 func (c *GithubClient) GetGitBlame(ctx context.Context, owner, name, commitSHA string, filePaths []string) (*GitBlame, error) {
-	query, pathToKeyMap := buildGitBlameGraphQLQuery(filePaths)
-	gitBlameQueryData := map[string]interface{}{
+	graphQLQuery, mapQueryKeyToFilePath := buildGitBlameGraphQLQuery(filePaths)
+	gitBlameQueryVariables := map[string]interface{}{
 		"owner":            owner,
 		"name":             name,
 		"objectExpression": commitSHA,
 	}
 
-	rawRes, err := c.GetRawClientGraphQL().ExecRaw(ctx, query, gitBlameQueryData)
+	rawResponse, err := c.GetRawClientGraphQL().ExecRaw(ctx, graphQLQuery, gitBlameQueryVariables)
 	if err != nil {
 		return nil, fmt.Errorf("error executing blame query: %s", err.Error())
 	}
 
 	var gitBlameQuery GitBlameQuery
 
-	if err = json.Unmarshal(rawRes, &gitBlameQuery); err != nil {
+	if err = json.Unmarshal(rawResponse, &gitBlameQuery); err != nil {
 		return nil, err
 	}
 
@@ -70,11 +80,11 @@ func (c *GithubClient) GetGitBlame(ctx context.Context, owner, name, commitSHA s
 		return nil, fmt.Errorf("error getting blame information: no blame information found")
 	}
 
-	return mapGitBlameQueryToGitBlame(commitSHA, gitBlameQuery, pathToKeyMap)
+	return mapGitBlameQueryToGitBlame(commitSHA, gitBlameQuery, mapQueryKeyToFilePath)
 }
 
 func buildGitBlameGraphQLQuery(filePaths []string) (string, map[string]string) {
-	query := `query($owner: String!, $name: String!, $objectExpression: String!) {
+	graphQLQuery := `query($owner: String!, $name: String!, $objectExpression: String!) {
 		repository(owner: $owner, name: $name) {
 			object(expression: $objectExpression) {
 				... on Commit {
@@ -86,11 +96,11 @@ func buildGitBlameGraphQLQuery(filePaths []string) (string, map[string]string) {
 
 	blameQuery := strings.Builder{}
 
-	pathToKeyMap := map[string]string{}
+	mapQueryKeyToFilePath := map[string]string{}
 
 	for i, filePath := range filePaths {
 		key := fmt.Sprintf("blame%d", i)
-		pathToKeyMap[key] = filePath
+		mapQueryKeyToFilePath[key] = filePath
 
 		blameQuery.WriteString(fmt.Sprintf(`%s: blame(path: "%s") {
 			ranges {
@@ -109,31 +119,31 @@ func buildGitBlameGraphQLQuery(filePaths []string) (string, map[string]string) {
 		`, key, filePath))
 	}
 
-	query = fmt.Sprintf(query, blameQuery.String())
+	graphQLQuery = fmt.Sprintf(graphQLQuery, blameQuery.String())
 
-	return query, pathToKeyMap
+	return graphQLQuery, mapQueryKeyToFilePath
 }
 
 func mapGitBlameQueryToGitBlame(commitSHA string, gitBlameQuery GitBlameQuery, pathToKeyMap map[string]string) (*GitBlame, error) {
 	files := map[string]GitBlameFile{}
 
-	for key, blame := range gitBlameQuery.Repository.Object {
-		path := pathToKeyMap[key]
-		rangesLen := len(blame.Ranges)
+	for queryKey, fileGitBlame := range gitBlameQuery.Repository.Object {
+		filePath := pathToKeyMap[queryKey]
+		rangesLen := len(fileGitBlame.Ranges)
 
 		if rangesLen == 0 {
-			return nil, fmt.Errorf("error getting blame information: ranges not found for %s", path)
+			return nil, fmt.Errorf("error getting blame information: ranges not found for %s", filePath)
 		}
 
-		linesCount := blame.Ranges[rangesLen-1].EndingLine
+		linesCount := fileGitBlame.Ranges[rangesLen-1].EndingLine
 
 		file := GitBlameFile{
-			FilePath:  path,
+			FilePath:  filePath,
 			LineCount: linesCount,
 			Lines:     []GitBlameFileLines{},
 		}
 
-		for _, ran := range blame.Ranges {
+		for _, ran := range fileGitBlame.Ranges {
 			file.Lines = append(file.Lines, GitBlameFileLines{
 				FromLine: ran.StartingLine,
 				ToLine:   ran.EndingLine,
@@ -141,7 +151,7 @@ func mapGitBlameQueryToGitBlame(commitSHA string, gitBlameQuery GitBlameQuery, p
 			})
 		}
 
-		files[path] = file
+		files[filePath] = file
 	}
 
 	return &GitBlame{
