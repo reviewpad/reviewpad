@@ -653,7 +653,7 @@ func (c *GithubClient) RefExists(ctx context.Context, owner, repo, ref string) (
 }
 
 type User struct {
-	Login githubv4.String `graphql:"login,omitempty"`
+	Login githubv4.String `graphql:"login"`
 }
 
 type RequestedReviewer struct {
@@ -661,9 +661,11 @@ type RequestedReviewer struct {
 }
 
 type pullRequest struct {
-	Number    githubv4.Int
-	Title     githubv4.String
-	Author    struct{ Login githubv4.String }
+	Number githubv4.Int
+	Title  githubv4.String
+	Author struct {
+		Login githubv4.String `graphql:"login"`
+	}
 	CreatedAt githubv4.DateTime
 }
 
