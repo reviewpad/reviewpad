@@ -326,13 +326,6 @@ func Run(
 	dryRun bool,
 	safeMode bool,
 ) (engine.ExitStatus, *engine.Program, error) {
-
-	prs, err := gitHubClient.GetOpenPullRequestsAsReviewer(ctx, targetEntity.Owner, targetEntity.Repo, []string{"dummypad"})
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-	fmt.Printf("NUMBER OF PRS: %+v", prs)
-
 	config, err := plugins_aladino.DefaultPluginConfig()
 	if err != nil {
 		return engine.ExitStatusFailure, nil, err
