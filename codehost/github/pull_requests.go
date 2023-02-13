@@ -676,7 +676,7 @@ func (c *GithubClient) GetOpenPullRequestsAsReviewer(ctx context.Context, owner 
 
 	for _, username := range usernames {
 		openedPullRequestsQueryData := map[string]interface{}{
-			"query": fmt.Sprintf("review-requested:%s is:pr is:open", username),
+			"query": githubv4.String(fmt.Sprintf("review-requested:%s is:pr is:open", username)),
 		}
 
 		err := c.GetClientGraphQL().Query(ctx, &openedPullRequestsQuery, openedPullRequestsQueryData)
