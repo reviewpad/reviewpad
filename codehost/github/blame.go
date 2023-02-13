@@ -35,11 +35,6 @@ type FileSliceLimits struct {
 	To   uint64
 }
 
-type GitBlameAuthorRank struct {
-	Username   string
-	TotalLines int
-}
-
 type GitBlameQuery struct {
 	Repository struct {
 		Object map[string]struct {
