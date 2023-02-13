@@ -667,16 +667,18 @@ func (c *GithubClient) GetOpenPullRequestsAsReviewer(ctx context.Context, owner 
 	numOfOpenPullRequestsByUser := map[string]int{}
 
 	var openedPullRequestsQuery struct {
-		Search struct {
+		Repository struct {
 			PullRequests struct {
 				TotalCount int
-			} `graphql:"pullRequests(query: $query, states: OPEN, first: 50)"`
-		} `graphql:"search(query: $query, type: ISSUE)"`
+			} `graphql:"pullRequests(states: OPEN, reviewRequested: $username, first: 50)"`
+		} `graphql:"repository(owner: $owner, name: $name)"`
 	}
 
 	for _, username := range usernames {
 		openedPullRequestsQueryData := map[string]interface{}{
-			"query": githubv4.String(fmt.Sprintf("review-requested:%s is:pr is:open", username)),
+			"owner":    githubv4.String(owner),
+			"name":     githubv4.String(repo),
+			"username": githubv4.String(username),
 		}
 
 		err := c.GetClientGraphQL().Query(ctx, &openedPullRequestsQuery, openedPullRequestsQueryData)
@@ -684,7 +686,7 @@ func (c *GithubClient) GetOpenPullRequestsAsReviewer(ctx context.Context, owner 
 			return nil, err
 		}
 
-		numOfOpenPullRequestsByUser[username] = openedPullRequestsQuery.Search.PullRequests.TotalCount
+		numOfOpenPullRequestsByUser[username] = openedPullRequestsQuery.Repository.PullRequests.TotalCount
 	}
 
 	return numOfOpenPullRequestsByUser, nil
