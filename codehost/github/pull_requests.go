@@ -652,15 +652,21 @@ func (c *GithubClient) RefExists(ctx context.Context, owner, repo, ref string) (
 	return getRefIDQuery.Repository.Ref.ID != "", nil
 }
 
+type User struct {
+	Login githubv4.String
+}
+
+type RequestedReviewer struct {
+	AsUser *User `graphql:"... on User"`
+}
+
 type pullRequest struct {
 	Number         githubv4.Int
 	Title          githubv4.String
 	Author         struct{ Login githubv4.String }
 	CreatedAt      githubv4.DateTime
 	ReviewRequests struct {
-		Nodes []struct {
-			RequestedReviewer struct{ Login githubv4.String }
-		}
+		Nodes []struct{ RequestedReviewer RequestedReviewer }
 	}
 }
 
@@ -699,7 +705,7 @@ func (c *GithubClient) GetOpenPullRequestsAsReviewer(ctx context.Context, owner 
 
 	for _, pr := range search.Repository.PullRequests.Nodes {
 		for _, rr := range pr.ReviewRequests.Nodes {
-			requestedReviewer := string(rr.RequestedReviewer.Login)
+			requestedReviewer := string(rr.RequestedReviewer.AsUser.Login)
 			if contains(usernames, requestedReviewer) {
 				numOfOpenPullRequestsByUser[requestedReviewer]++
 			}
