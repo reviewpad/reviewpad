@@ -652,6 +652,36 @@ func (c *GithubClient) RefExists(ctx context.Context, owner, repo, ref string) (
 	return getRefIDQuery.Repository.Ref.ID != "", nil
 }
 
+type pullRequest struct {
+	ReviewRequests struct {
+		Nodes []struct {
+			RequestedReviewer struct {
+				Typename string `graphql:"__typename"`
+				Login    string
+			}
+		}
+		PageInfo struct {
+			EndCursor   githubv4.String
+			HasNextPage bool
+		}
+	} `graphql:"reviewRequests(first: 10, after: $reviewCursor)"`
+	Number githubv4.Int
+	State  githubv4.PullRequestState
+}
+
+type searchResult struct {
+	Repository struct {
+		PullRequests struct {
+			Nodes    []pullRequest
+			PageInfo struct {
+				EndCursor   githubv4.String
+				HasNextPage bool
+			}
+			TotalCount githubv4.Int
+		} `graphql:"pullRequests(states: OPEN, first: 10, after: $prCursor, reviewRequestFrom: $reviewer)"`
+	} `graphql:"repository(owner: $owner, name: $name)"`
+}
+
 func (c *GithubClient) GetOpenPullRequestsAsReviewer(ctx context.Context, owner string, repo string, usernames []string) (map[string]int, error) {
 	if len(usernames) == 0 {
 		repoCollaborators, err := c.GetRepoCollaborators(ctx, owner, repo)
@@ -666,27 +696,34 @@ func (c *GithubClient) GetOpenPullRequestsAsReviewer(ctx context.Context, owner 
 
 	numOfOpenPullRequestsByUser := map[string]int{}
 
-	var openedPullRequestsQuery struct {
-		Repository struct {
-			PullRequests struct {
-				TotalCount int
-			} `graphql:"pullRequests(states: OPEN, reviewRequested: $username, first: 50)"`
-		} `graphql:"repository(owner: $owner, name: $name)"`
-	}
-
 	for _, username := range usernames {
-		openedPullRequestsQueryData := map[string]interface{}{
-			"owner":    githubv4.String(owner),
-			"name":     githubv4.String(repo),
-			"username": githubv4.String(username),
+		var search searchResult
+		var totalCount int
+
+		variables := map[string]interface{}{
+			"owner":        githubv4.String(owner),
+			"name":         githubv4.String(repo),
+			"prCursor":     (*githubv4.String)(nil),
+			"reviewer":     githubv4.String(username),
+			"reviewCursor": (*githubv4.String)(nil),
 		}
 
-		err := c.GetClientGraphQL().Query(ctx, &openedPullRequestsQuery, openedPullRequestsQueryData)
-		if err != nil {
-			return nil, err
+		for {
+			err := c.GetClientGraphQL().Query(ctx, &search, variables)
+			if err != nil {
+				return nil, err
+			}
+
+			totalCount += len(search.Repository.PullRequests.Nodes)
+
+			if !search.Repository.PullRequests.PageInfo.HasNextPage {
+				break
+			}
+
+			variables["prCursor"] = githubv4.NewString(search.Repository.PullRequests.PageInfo.EndCursor)
 		}
 
-		numOfOpenPullRequestsByUser[username] = openedPullRequestsQuery.Repository.PullRequests.TotalCount
+		numOfOpenPullRequestsByUser[username] = totalCount
 	}
 
 	return numOfOpenPullRequestsByUser, nil
