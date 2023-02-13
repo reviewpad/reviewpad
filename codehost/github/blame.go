@@ -48,6 +48,32 @@ type GitBlameQuery struct {
 }
 
 func (c *GithubClient) GetGitBlame(ctx context.Context, owner, name, commitSHA string, filePaths []string) (*GitBlame, error) {
+	query, pathToKeyMap := buildGitBlameGraphQLQuery(filePaths)
+	gitBlameQueryData := map[string]interface{}{
+		"owner":            owner,
+		"name":             name,
+		"objectExpression": commitSHA,
+	}
+
+	rawRes, err := c.GetRawClientGraphQL().ExecRaw(ctx, query, gitBlameQueryData)
+	if err != nil {
+		return nil, fmt.Errorf("error executing blame query: %s", err.Error())
+	}
+
+	var gitBlameQuery GitBlameQuery
+
+	if err = json.Unmarshal(rawRes, &gitBlameQuery); err != nil {
+		return nil, err
+	}
+
+	if len(gitBlameQuery.Repository.Object) == 0 {
+		return nil, fmt.Errorf("error getting blame information: no blame information found")
+	}
+
+	return mapGitBlameQueryToGitBlame(commitSHA, gitBlameQuery, pathToKeyMap)
+}
+
+func buildGitBlameGraphQLQuery(filePaths []string) (string, map[string]string) {
 	query := `query($owner: String!, $name: String!, $objectExpression: String!) {
 		repository(owner: $owner, name: $name) {
 			object(expression: $objectExpression) {
@@ -85,27 +111,10 @@ func (c *GithubClient) GetGitBlame(ctx context.Context, owner, name, commitSHA s
 
 	query = fmt.Sprintf(query, blameQuery.String())
 
-	gitBlameQueryData := map[string]interface{}{
-		"owner":            owner,
-		"name":             name,
-		"objectExpression": commitSHA,
-	}
+	return query, pathToKeyMap
+}
 
-	rawRes, err := c.GetRawClientGraphQL().ExecRaw(ctx, query, gitBlameQueryData)
-	if err != nil {
-		return nil, fmt.Errorf("error executing blame query: %s", err.Error())
-	}
-
-	var gitBlameQuery GitBlameQuery
-
-	if err = json.Unmarshal(rawRes, &gitBlameQuery); err != nil {
-		return nil, err
-	}
-
-	if len(gitBlameQuery.Repository.Object) == 0 {
-		return nil, fmt.Errorf("error getting blame information: no blame information found")
-	}
-
+func mapGitBlameQueryToGitBlame(commitSHA string, gitBlameQuery GitBlameQuery, pathToKeyMap map[string]string) (*GitBlame, error) {
 	files := map[string]GitBlameFile{}
 
 	for key, blame := range gitBlameQuery.Repository.Object {
