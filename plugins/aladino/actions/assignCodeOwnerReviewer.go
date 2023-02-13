@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/reviewpad/reviewpad/v3/codehost"
 	"github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v3/handler"
@@ -54,6 +55,11 @@ func assignCodeOwnerReviewer(e aladino.Env, args []aladino.Value) error {
 		return fmt.Errorf("error getting git blame information: %w", err)
 	}
 
+	availableAssignees, err := t.GetAvailableAssignees()
+	if err != nil {
+		return fmt.Errorf("error getting available assignees: %w", err)
+	}
+
 	reviewerRanks := githubClient.ComputeGitBlameRank(blame)
 	filteredReviewers := []github.GitBlameAuthorRank{}
 	for _, rank := range reviewerRanks {
@@ -63,7 +69,7 @@ func assignCodeOwnerReviewer(e aladino.Env, args []aladino.Value) error {
 				return fmt.Errorf("error getting number of open reviews for user: %w", err)
 			}
 
-			if numberOfOpenReviews < maxReviews && !isExcluded(excludeReviewers, rank.Username) {
+			if numberOfOpenReviews < maxReviews && !isExcluded(excludeReviewers, rank.Username) && isAvailableAssignee(availableAssignees, rank.Username) {
 				filteredReviewers = append(filteredReviewers, rank)
 			}
 		}
@@ -79,6 +85,16 @@ func assignCodeOwnerReviewer(e aladino.Env, args []aladino.Value) error {
 func isExcluded(excludedReviewers []aladino.Value, username string) bool {
 	for _, excludedReviewer := range excludedReviewers {
 		if excludedReviewer.(*aladino.StringValue).Val == username {
+			return true
+		}
+	}
+
+	return false
+}
+
+func isAvailableAssignee(availableAssignees []*codehost.User, username string) bool {
+	for _, availableAssignee := range availableAssignees {
+		if availableAssignee.Login == username {
 			return true
 		}
 	}
