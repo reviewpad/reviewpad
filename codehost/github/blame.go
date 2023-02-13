@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"sort"
 	"strings"
 )
 
@@ -129,6 +130,37 @@ func (c *GithubClient) SliceGitBlame(blame *GitBlame, filePath string, slices []
 	slicedBlame.Files[filePath] = gitBlameFile
 
 	return slicedBlame, nil
+}
+
+func (c *GithubClient) ComputeGitBlameRank(gitBlame *GitBlame) []GitBlameAuthorRank {
+	var rankedAuthors []GitBlameAuthorRank
+	authorIndices := make(map[string]int)
+
+	for _, file := range gitBlame.Files {
+		for _, line := range file.Lines {
+			author := line.Author
+			lineCount := int(line.ToLine - line.FromLine + 1)
+
+			authorIndex, ok := authorIndices[author]
+			if !ok {
+				authorIndex = len(rankedAuthors)
+				authorIndices[author] = authorIndex
+				rankedAuthors = append(rankedAuthors, GitBlameAuthorRank{
+					Username:   author,
+					TotalLines: lineCount,
+				})
+				continue
+			}
+
+			rankedAuthors[authorIndex].TotalLines += lineCount
+		}
+	}
+
+	sort.Slice(rankedAuthors, func(i, j int) bool {
+		return rankedAuthors[i].TotalLines > rankedAuthors[j].TotalLines
+	})
+
+	return rankedAuthors
 }
 
 func buildGitBlameGraphQLQuery(filePaths []string) (string, map[string]string) {
