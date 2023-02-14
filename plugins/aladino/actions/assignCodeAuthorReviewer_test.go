@@ -54,18 +54,31 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 			"searchType":"ISSUE"
 		}
 	}`
+	jamesOpenReviewsQuery := `{
+		"query": "query($query:String! $searchType:SearchType!){
+			search(type: $searchType, query: $query) {
+				issueCount
+			}
+		}",
+		"variables":{
+			"query": "repo:foobar/default-mock-repo is:open type:pr review-requested:james",
+			"searchType":"ISSUE"
+		}
+	}`
 
-	reviewRequestedFrom := ""
+	reviewRequestedFrom := []string{}
 	tests := map[string]struct {
-		maxReviews          *aladino.IntValue
+		totalReviewers      int
+		maxReviews          int
 		excludedReviewers   *aladino.ArrayValue
 		wantErr             error
 		mockBackendOptions  []mock.MockBackendOption
 		graphQLHandler      http.HandlerFunc
-		reviewRequestedFrom string
+		reviewRequestedFrom []string
 	}{
 		"when the pull request is already assigned reviewers": {
-			maxReviews:        aladino.BuildIntValue(3),
+			totalReviewers:    1,
+			maxReviews:        3,
 			excludedReviewers: aladino.BuildArrayValue([]aladino.Value{}),
 			mockBackendOptions: []mock.MockBackendOption{
 				mock.WithRequestMatch(
@@ -81,7 +94,8 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 			},
 		},
 		"when error getting git blame information": {
-			maxReviews:        aladino.BuildIntValue(3),
+			totalReviewers:    1,
+			maxReviews:        3,
 			excludedReviewers: aladino.BuildArrayValue([]aladino.Value{}),
 			mockBackendOptions: []mock.MockBackendOption{
 				mock.WithRequestMatch(
@@ -95,7 +109,8 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 			wantErr: fmt.Errorf("error getting git blame information: %w", fmt.Errorf("error executing blame query: Message: 403 Forbidden; body: \"\", Locations: []")),
 		},
 		"when no blame information is found": {
-			maxReviews:        aladino.BuildIntValue(3),
+			totalReviewers:    1,
+			maxReviews:        3,
 			excludedReviewers: aladino.BuildArrayValue([]aladino.Value{}),
 			graphQLHandler: func(w http.ResponseWriter, r *http.Request) {
 				utils.MustWrite(w, `{
@@ -116,7 +131,8 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 			wantErr: fmt.Errorf("error getting git blame information: %w", fmt.Errorf("no blame information found")),
 		},
 		"when all files are owned by bot": {
-			maxReviews:        aladino.BuildIntValue(3),
+			totalReviewers:    1,
+			maxReviews:        3,
 			excludedReviewers: aladino.BuildArrayValue([]aladino.Value{}),
 			graphQLHandler: func(w http.ResponseWriter, r *http.Request) {
 				utils.MustWrite(w, `{
@@ -198,14 +214,15 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 						body, _ := io.ReadAll(r.Body)
 						reviewersRequest := &github.ReviewersRequest{}
 						utils.MustUnmarshal(body, reviewersRequest)
-						reviewRequestedFrom = reviewersRequest.Reviewers[0]
+						reviewRequestedFrom = reviewersRequest.Reviewers
 					}),
 				),
 			},
-			reviewRequestedFrom: "test",
+			reviewRequestedFrom: []string{"test"},
 		},
 		"when all files are owned pull request author": {
-			maxReviews:        aladino.BuildIntValue(3),
+			totalReviewers:    1,
+			maxReviews:        3,
 			excludedReviewers: aladino.BuildArrayValue([]aladino.Value{}),
 			graphQLHandler: func(w http.ResponseWriter, r *http.Request) {
 				utils.MustWrite(w, `{
@@ -293,14 +310,15 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 						body, _ := io.ReadAll(r.Body)
 						reviewersRequest := &github.ReviewersRequest{}
 						utils.MustUnmarshal(body, reviewersRequest)
-						reviewRequestedFrom = reviewersRequest.Reviewers[0]
+						reviewRequestedFrom = reviewersRequest.Reviewers
 					}),
 				),
 			},
-			reviewRequestedFrom: "jane",
+			reviewRequestedFrom: []string{"jane"},
 		},
 		"when all code owners are handling too many open pull requests": {
-			maxReviews:        aladino.BuildIntValue(3),
+			totalReviewers:    1,
+			maxReviews:        3,
 			excludedReviewers: aladino.BuildArrayValue([]aladino.Value{}),
 			graphQLHandler: func(w http.ResponseWriter, r *http.Request) {
 				graphQLQuery := utils.MustRead(r.Body)
@@ -441,14 +459,15 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 						body, _ := io.ReadAll(r.Body)
 						reviewersRequest := &github.ReviewersRequest{}
 						utils.MustUnmarshal(body, reviewersRequest)
-						reviewRequestedFrom = reviewersRequest.Reviewers[0]
+						reviewRequestedFrom = reviewersRequest.Reviewers
 					}),
 				),
 			},
-			reviewRequestedFrom: "test",
+			reviewRequestedFrom: []string{"test"},
 		},
 		"when first code owner is available": {
-			maxReviews:        aladino.BuildIntValue(3),
+			totalReviewers:    1,
+			maxReviews:        3,
 			excludedReviewers: aladino.BuildArrayValue([]aladino.Value{}),
 			graphQLHandler: func(w http.ResponseWriter, r *http.Request) {
 				graphQLQuery := utils.MustRead(r.Body)
@@ -597,28 +616,24 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 						body, _ := io.ReadAll(r.Body)
 						reviewersRequest := &github.ReviewersRequest{}
 						utils.MustUnmarshal(body, reviewersRequest)
-						reviewRequestedFrom = reviewersRequest.Reviewers[0]
+						reviewRequestedFrom = reviewersRequest.Reviewers
 					}),
 				),
 			},
-			reviewRequestedFrom: "jack",
+			reviewRequestedFrom: []string{"jack"},
 		},
 		"when first code owner is excluded": {
-			maxReviews:        aladino.BuildIntValue(3),
+			totalReviewers:    3,
+			maxReviews:        3,
 			excludedReviewers: aladino.BuildArrayValue([]aladino.Value{aladino.BuildStringValue("jack")}),
 			graphQLHandler: func(w http.ResponseWriter, r *http.Request) {
 				graphQLQuery := utils.MustRead(r.Body)
 				switch utils.MinifyQuery(graphQLQuery) {
-				case utils.MinifyQuery(johnOpenReviewsQuery):
-					utils.MustWrite(w, `{
-						"data": {
-							"search": {
-								"issueCount": 5
-							}
-						}
-					}`)
-					return
-				case utils.MinifyQuery(janeOpenReviewsQuery), utils.MinifyQuery(jackOpenReviewsQuery):
+				case
+					utils.MinifyQuery(janeOpenReviewsQuery),
+					utils.MinifyQuery(jackOpenReviewsQuery),
+					utils.MinifyQuery(jamesOpenReviewsQuery),
+					utils.MinifyQuery(johnOpenReviewsQuery):
 					utils.MustWrite(w, `{
 							"data": {
 								"search": {
@@ -641,7 +656,7 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 											"commit": {
 												"author": {
 													"user": {
-														"login": "john"
+														"login": "james"
 													}
 												}
 											}
@@ -678,7 +693,7 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 											"commit": {
 												"author": {
 													"user": {
-														"login": "john"
+														"login": "james"
 													}
 												}
 											}
@@ -715,7 +730,7 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 											"commit": {
 												"author": {
 													"user": {
-														"login": "john"
+														"login": "james"
 													}
 												}
 											}
@@ -744,6 +759,9 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 						{
 							Login: github.String("john"),
 						},
+						{
+							Login: github.String("james"),
+						},
 					},
 				),
 				mock.WithRequestMatchHandler(
@@ -752,20 +770,20 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 						body, _ := io.ReadAll(r.Body)
 						reviewersRequest := &github.ReviewersRequest{}
 						utils.MustUnmarshal(body, reviewersRequest)
-						reviewRequestedFrom = reviewersRequest.Reviewers[0]
+						reviewRequestedFrom = reviewersRequest.Reviewers
 					}),
 				),
 			},
-			reviewRequestedFrom: "jane",
+			reviewRequestedFrom: []string{"jane", "james"},
 		},
 	}
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			reviewRequestedFrom = ""
+			reviewRequestedFrom = nil
 			env := aladino.MockDefaultEnv(t, test.mockBackendOptions, test.graphQLHandler, nil, nil)
 
-			err := assignCodeAuthorReviewer(env, []aladino.Value{test.maxReviews, test.excludedReviewers})
+			err := assignCodeAuthorReviewer(env, []aladino.Value{aladino.BuildIntValue(test.totalReviewers), test.excludedReviewers, aladino.BuildIntValue(test.maxReviews)})
 
 			assert.Equal(t, test.wantErr, err)
 			assert.Equal(t, test.reviewRequestedFrom, reviewRequestedFrom)

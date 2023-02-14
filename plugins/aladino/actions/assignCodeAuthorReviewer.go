@@ -17,7 +17,7 @@ import (
 
 func AssignCodeAuthorReviewer() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildIntType(), aladino.BuildArrayOfType(aladino.BuildStringType())}, nil),
+		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildIntType(), aladino.BuildArrayOfType(aladino.BuildStringType()), aladino.BuildIntType()}, nil),
 		Code:           assignCodeAuthorReviewer,
 		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest},
 	}
@@ -25,8 +25,9 @@ func AssignCodeAuthorReviewer() *aladino.BuiltInAction {
 
 func assignCodeAuthorReviewer(e aladino.Env, args []aladino.Value) error {
 	t := e.GetTarget().(*target.PullRequestTarget)
-	maxReviews := args[0].(*aladino.IntValue).Val
+	total := args[0].(*aladino.IntValue).Val
 	excludeReviewers := args[1].(*aladino.ArrayValue).Vals
+	maxReviews := args[2].(*aladino.IntValue).Val
 	pr := t.PullRequest
 	ctx := e.GetCtx()
 	targetEntity := t.GetTargetEntity()
@@ -83,7 +84,17 @@ func assignCodeAuthorReviewer(e aladino.Env, args []aladino.Value) error {
 		return assignRandomReviewerCode(e, nil)
 	}
 
-	return t.RequestReviewers([]string{filteredReviewers[0].Username})
+	if total > len(filteredReviewers) {
+		e.GetLogger().Warnf("number of required reviewers(%d) is less than available code author reviewers(%d)", total, len(filteredReviewers))
+		total = len(filteredReviewers)
+	}
+
+	reviewersToRequest := []string{}
+	for i := 0; i < total; i++ {
+		reviewersToRequest = append(reviewersToRequest, filteredReviewers[i].Username)
+	}
+
+	return t.RequestReviewers(reviewersToRequest)
 }
 
 func isExcluded(excludedReviewers []aladino.Value, username string) bool {
