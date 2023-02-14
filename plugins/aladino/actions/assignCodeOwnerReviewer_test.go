@@ -603,14 +603,13 @@ func TestAssignCodeOwnerReviewerCode(t *testing.T) {
 			},
 			reviewRequestedFrom: "jack",
 		},
-		"when second code owner is available": {
+		"when first code owner is excluded": {
 			maxReviews:        aladino.BuildIntValue(3),
-			excludedReviewers: aladino.BuildArrayValue([]aladino.Value{}),
+			excludedReviewers: aladino.BuildArrayValue([]aladino.Value{aladino.BuildStringValue("jack")}),
 			graphQLHandler: func(w http.ResponseWriter, r *http.Request) {
 				graphQLQuery := utils.MustRead(r.Body)
 				switch utils.MinifyQuery(graphQLQuery) {
-				case utils.MinifyQuery(jackOpenReviewsQuery),
-					utils.MinifyQuery(johnOpenReviewsQuery):
+				case utils.MinifyQuery(johnOpenReviewsQuery):
 					utils.MustWrite(w, `{
 						"data": {
 							"search": {
@@ -619,7 +618,7 @@ func TestAssignCodeOwnerReviewerCode(t *testing.T) {
 						}
 					}`)
 					return
-				case utils.MinifyQuery(janeOpenReviewsQuery):
+				case utils.MinifyQuery(janeOpenReviewsQuery), utils.MinifyQuery(jackOpenReviewsQuery):
 					utils.MustWrite(w, `{
 							"data": {
 								"search": {
