@@ -79,6 +79,53 @@ func (c *GithubClient) GetGitBlame(ctx context.Context, owner, name, commitSHA s
 	return mapGitBlameQueryToGitBlame(commitSHA, gitBlameQuery, mapQueryKeyToFilePath)
 }
 
+func (c *GithubClient) SliceGitBlame(blame *GitBlame, filePath string, slices []FileSliceLimits) (*GitBlame, error) {
+	file, ok := blame.Files[filePath]
+	if !ok {
+		return nil, errors.New("file not found in blame information")
+	}
+
+	slicedBlame := &GitBlame{
+		CommitSHA: blame.CommitSHA,
+		Files:     map[string]GitBlameFile{},
+	}
+
+	gitBlameFile := GitBlameFile{
+		FilePath:  file.FilePath,
+		LineCount: file.LineCount,
+		Lines:     []GitBlameFileLines{},
+	}
+
+	for _, slice := range slices {
+		for _, line := range file.Lines {
+			fromLine := line.FromLine
+			toLine := line.ToLine
+
+			if line.ToLine < slice.From || line.FromLine > slice.To {
+				continue
+			}
+
+			if line.FromLine < slice.From {
+				fromLine = slice.From
+			}
+
+			if line.ToLine > slice.To {
+				toLine = slice.To
+			}
+
+			gitBlameFile.Lines = append(gitBlameFile.Lines, GitBlameFileLines{
+				FromLine: fromLine,
+				ToLine:   toLine,
+				Author:   line.Author,
+			})
+		}
+	}
+
+	slicedBlame.Files[filePath] = gitBlameFile
+
+	return slicedBlame, nil
+}
+
 func buildGitBlameGraphQLQuery(filePaths []string) (string, map[string]string) {
 	graphQLQuery := `query($owner: String!, $name: String!, $objectExpression: String!) {
 		repository(owner: $owner, name: $name) {
@@ -153,51 +200,4 @@ func mapGitBlameQueryToGitBlame(commitSHA string, gitBlameQuery GitBlameQuery, p
 		CommitSHA: commitSHA,
 		Files:     files,
 	}, nil
-}
-
-func (c *GithubClient) SliceGitBlame(blame *GitBlame, filePath string, slices []FileSliceLimits) (*GitBlame, error) {
-	file, ok := blame.Files[filePath]
-	if !ok {
-		return nil, errors.New("file not found in blame information")
-	}
-
-	slicedBlame := &GitBlame{
-		CommitSHA: blame.CommitSHA,
-		Files:     map[string]GitBlameFile{},
-	}
-
-	gitBlameFile := GitBlameFile{
-		FilePath:  file.FilePath,
-		LineCount: file.LineCount,
-		Lines:     []GitBlameFileLines{},
-	}
-
-	for _, slice := range slices {
-		for _, line := range file.Lines {
-			fromLine := line.FromLine
-			toLine := line.ToLine
-
-			if line.ToLine < slice.From || line.FromLine > slice.To {
-				continue
-			}
-
-			if line.FromLine < slice.From {
-				fromLine = slice.From
-			}
-
-			if line.ToLine > slice.To {
-				toLine = slice.To
-			}
-
-			gitBlameFile.Lines = append(gitBlameFile.Lines, GitBlameFileLines{
-				FromLine: fromLine,
-				ToLine:   toLine,
-				Author:   line.Author,
-			})
-		}
-	}
-
-	slicedBlame.Files[filePath] = gitBlameFile
-
-	return slicedBlame, nil
 }
