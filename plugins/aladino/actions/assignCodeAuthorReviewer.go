@@ -38,7 +38,7 @@ func assignCodeAuthorReviewer(e aladino.Env, args []aladino.Value) error {
 
 	reviewers, err := t.GetReviewers()
 	if err != nil {
-		return fmt.Errorf("error getting reviewers: %w", err)
+		return fmt.Errorf("error getting reviewers: %s", err.Error())
 	}
 
 	if len(reviewers.Users) > 0 {
@@ -53,12 +53,12 @@ func assignCodeAuthorReviewer(e aladino.Env, args []aladino.Value) error {
 
 	blame, err := githubClient.GetGitBlame(ctx, targetEntity.Owner, targetEntity.Repo, baseSHA, filePaths)
 	if err != nil {
-		return fmt.Errorf("error getting git blame information: %w", err)
+		return fmt.Errorf("error getting git blame information: %s", err.Error())
 	}
 
 	availableAssignees, err := t.GetAvailableAssignees()
 	if err != nil {
-		return fmt.Errorf("error getting available assignees: %w", err)
+		return fmt.Errorf("error getting available assignees: %s", err.Error())
 	}
 
 	reviewersRanks := githubClient.ComputeGitBlameRank(blame)

@@ -106,7 +106,7 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 			graphQLHandler: func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(http.StatusForbidden)
 			},
-			wantErr: fmt.Errorf("error getting git blame information: %w", fmt.Errorf("error executing blame query: Message: 403 Forbidden; body: \"\", Locations: []")),
+			wantErr: fmt.Errorf("error getting git blame information: error executing blame query: Message: 403 Forbidden; body: \"\", Locations: []"),
 		},
 		"when no blame information is found": {
 			totalReviewers:    1,
@@ -128,7 +128,7 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 					&github.Reviewers{},
 				),
 			},
-			wantErr: fmt.Errorf("error getting git blame information: %w", fmt.Errorf("no blame information found")),
+			wantErr: fmt.Errorf("error getting git blame information: no blame information found"),
 		},
 		"when all files are owned by bot": {
 			totalReviewers:    1,
