@@ -138,10 +138,13 @@ type LastFiftyOpenedPullRequestsQuery struct {
 				ReviewRequests struct {
 					Nodes []struct {
 						RequestedReviewer struct {
-							Login githubv4.String
-						} `graphql:"... on User"`
+							TypeName string `graphql:"__typename"`
+							AsUser   struct {
+								Login githubv4.String
+							} `graphql:"... on User"`
+						}
 					}
-				} `graphql:"reviewRequests(as: USER, first: 50)"`
+				} `graphql:"reviewRequests(first: 50)"`
 				Reviews struct {
 					Nodes []struct {
 						Author struct {
@@ -702,7 +705,7 @@ func (c *GithubClient) GetOpenPullRequestsAsReviewer(ctx context.Context, owner 
 
 	for _, pullRequest := range lastFiftyOpenedPullRequests.Repository.PullRequests.Nodes {
 		for _, reviewRequest := range pullRequest.ReviewRequests.Nodes {
-			requestedReviewer := string(reviewRequest.RequestedReviewer.Login)
+			requestedReviewer := string(reviewRequest.RequestedReviewer.AsUser.Login)
 			if contains(usernames, requestedReviewer) {
 				totalOpenPullRequestsByUser[requestedReviewer]++
 			}
