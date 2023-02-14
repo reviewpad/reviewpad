@@ -70,6 +70,23 @@ func (c *GithubClient) GetRawClientGraphQL() *graphql.Client {
 	return c.rawClientGQL
 }
 
+func (c *GithubClient) GetAuthenticatedUserLogin() (string, error) {
+	clientGQL := c.GetClientGraphQL()
+
+	var userLogin struct {
+		Viewer struct {
+			Login string
+		}
+	}
+
+	err := clientGQL.Query(context.Background(), &userLogin, nil)
+	if err != nil {
+		return "", err
+	}
+
+	return userLogin.Viewer.Login, nil
+}
+
 func NewGithubAppClient(gitHubAppID int64, gitHubAppPrivateKey []byte) (*GithubAppClient, error) {
 	transport, err := ghinstallation.NewAppsTransport(http.DefaultTransport, gitHubAppID, gitHubAppPrivateKey)
 	if err != nil {

@@ -163,6 +163,18 @@ func TestTransformAladinoExpression(t *testing.T) {
 			arg:     `$sprintf("hello: %s", [$join(["test", "test2"], " - ")])`,
 			wantVal: `$sprintf("hello: %s", [$join(["test", "test2"], " - ")])`,
 		},
+		"approve": {
+			arg:     `$approve()`,
+			wantVal: `$approve("")`,
+		},
+		"approve with comment": {
+			arg:     `$approve("test")`,
+			wantVal: `$approve("test")`,
+		},
+		"approve with empty comment": {
+			arg:     `$approve("")`,
+			wantVal: `$approve("")`,
+		},
 		// TODO: test addDefaultTotalRequestedReviewers
 	}
 

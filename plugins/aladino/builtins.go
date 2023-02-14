@@ -131,6 +131,7 @@ func PluginBuiltInsWithConfig(config *PluginConfig) *aladino.BuiltIns {
 		Actions: map[string]*aladino.BuiltInAction{
 			"addLabel":             actions.AddLabel(),
 			"addToProject":         actions.AddToProject(),
+			"approve":              actions.Approve(),
 			"assignAssignees":      actions.AssignAssignees(),
 			"assignRandomReviewer": actions.AssignRandomReviewer(),
 			"assignReviewer":       actions.AssignReviewer(),

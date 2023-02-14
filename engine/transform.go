@@ -80,6 +80,10 @@ func addDefaultJoinSeparator(str string) string {
 	return r.ReplaceAllString(str, `$$join($1, " ")`)
 }
 
+func addEmptyApproveComment(str string) string {
+	return strings.ReplaceAll(str, "$approve()", "$approve(\"\")")
+}
+
 func transformAladinoExpression(str string) string {
 	transformedActionStr := str
 
@@ -93,6 +97,7 @@ func transformAladinoExpression(str string) string {
 		addDefaultCloseReason,
 		addDefaultHaveAllChecksRunCompleted,
 		addDefaultJoinSeparator,
+		addEmptyApproveComment,
 	}
 
 	for i := range transformations {
