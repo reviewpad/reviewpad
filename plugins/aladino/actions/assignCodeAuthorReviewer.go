@@ -60,21 +60,21 @@ func assignCodeAuthorReviewer(e aladino.Env, args []aladino.Value) error {
 		return fmt.Errorf("error getting available assignees: %w", err)
 	}
 
-	reviewerRanks := githubClient.ComputeGitBlameRank(blame)
+	reviewersRanks := githubClient.ComputeGitBlameRank(blame)
 	filteredReviewers := []github.GitBlameAuthorRank{}
-	for _, rank := range reviewerRanks {
-		if !strings.HasSuffix(rank.Username, "[bot]") && pr.GetUser().GetLogin() != rank.Username {
-			numberOfOpenReviews, err := githubClient.GetOpenReviewsCountByUser(ctx, owner, repo, rank.Username)
+	for _, reviewerRank := range reviewersRanks {
+		if !strings.HasSuffix(reviewerRank.Username, "[bot]") && pr.GetUser().GetLogin() != reviewerRank.Username {
+			numberOfOpenReviews, err := githubClient.GetOpenReviewsCountByUser(ctx, owner, repo, reviewerRank.Username)
 			if err != nil {
-				return fmt.Errorf("error getting number of open reviews for user %s: %w", rank.Username, err)
+				return fmt.Errorf("error getting number of open reviews for user %s: %w", reviewerRank.Username, err)
 			}
 
 			if maxReviews > 0 && numberOfOpenReviews > maxReviews {
 				continue
 			}
 
-			if !isExcluded(excludeReviewers, rank.Username) && isAvailableAssignee(availableAssignees, rank.Username) {
-				filteredReviewers = append(filteredReviewers, rank)
+			if !isExcluded(excludeReviewers, reviewerRank.Username) && isAvailableAssignee(availableAssignees, reviewerRank.Username) {
+				filteredReviewers = append(filteredReviewers, reviewerRank)
 			}
 		}
 	}

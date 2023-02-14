@@ -64,7 +64,7 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 		graphQLHandler      http.HandlerFunc
 		reviewRequestedFrom string
 	}{
-		"when pr is already assigned reviewers": {
+		"when the pull request is already assigned reviewers": {
 			maxReviews:        aladino.BuildIntValue(3),
 			excludedReviewers: aladino.BuildArrayValue([]aladino.Value{}),
 			mockBackendOptions: []mock.MockBackendOption{
@@ -204,7 +204,7 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 			},
 			reviewRequestedFrom: "test",
 		},
-		"when all files are owned pr creator": {
+		"when all files are owned pull request author": {
 			maxReviews:        aladino.BuildIntValue(3),
 			excludedReviewers: aladino.BuildArrayValue([]aladino.Value{}),
 			graphQLHandler: func(w http.ResponseWriter, r *http.Request) {
@@ -299,7 +299,7 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 			},
 			reviewRequestedFrom: "jane",
 		},
-		"when all code owners have too many open reviews": {
+		"when all code owners are handling too many open pull requests": {
 			maxReviews:        aladino.BuildIntValue(3),
 			excludedReviewers: aladino.BuildArrayValue([]aladino.Value{}),
 			graphQLHandler: func(w http.ResponseWriter, r *http.Request) {
