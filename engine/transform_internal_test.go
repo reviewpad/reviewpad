@@ -175,25 +175,29 @@ func TestTransformAladinoExpression(t *testing.T) {
 			arg:     `$approve("")`,
 			wantVal: `$approve("")`,
 		},
-		"assign code owner reviewer empty args": {
-			arg:     `$assignCodeOwnerReviewer()`,
-			wantVal: `$assignCodeOwnerReviewer(0, [])`,
+		"assign code author reviewer empty args": {
+			arg:     `$assignCodeAuthorReviewer()`,
+			wantVal: `$assignCodeAuthorReviewer(1, [], 0)`,
 		},
-		"assign code owner reviewer max reviews provided": {
-			arg:     `$assignCodeOwnerReviewer(5)`,
-			wantVal: `$assignCodeOwnerReviewer(5, [])`,
+		"assign code author reviewer total provided": {
+			arg:     `$assignCodeAuthorReviewer(5)`,
+			wantVal: `$assignCodeAuthorReviewer(5, [], 0)`,
 		},
-		"assign code owner reviewer max reviews and excluded provided": {
-			arg:     `$assignCodeOwnerReviewer(5, ["john", "jane"])`,
-			wantVal: `$assignCodeOwnerReviewer(5, ["john", "jane"])`,
+		"assign code author reviewer total and excluded provided": {
+			arg:     `$assignCodeAuthorReviewer(5, ["john", "jane"])`,
+			wantVal: `$assignCodeAuthorReviewer(5, ["john", "jane"], 0)`,
 		},
-		"assign code owner reviewer max reviews and excluded provided as group": {
-			arg:     `$assignCodeOwnerReviewer(1, $group("excluded_reviewers"))`,
-			wantVal: `$assignCodeOwnerReviewer(1, $group("excluded_reviewers"))`,
+		"assign code author reviewer total, excluded and max reviews provided": {
+			arg:     `$assignCodeAuthorReviewer(5, ["john", "jane"], 3)`,
+			wantVal: `$assignCodeAuthorReviewer(5, ["john", "jane"], 3)`,
 		},
-		"assign code owner reviewer max reviews and excluded provided as team": {
-			arg:     `$assignCodeOwnerReviewer(1, $team("reviewers"))`,
-			wantVal: `$assignCodeOwnerReviewer(1, $team("reviewers"))`,
+		"assign code author reviewer total, excluded as group and max reviews provided": {
+			arg:     `$assignCodeAuthorReviewer(1, $group("excluded_reviewers"), 2)`,
+			wantVal: `$assignCodeAuthorReviewer(1, $group("excluded_reviewers"), 2)`,
+		},
+		"assign code author reviewer total and excluded provided as team": {
+			arg:     `$assignCodeAuthorReviewer(1, $team("reviewers"))`,
+			wantVal: `$assignCodeAuthorReviewer(1, $team("reviewers"), 0)`,
 		},
 		// TODO: test addDefaultTotalRequestedReviewers
 	}

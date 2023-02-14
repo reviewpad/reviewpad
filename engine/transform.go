@@ -84,13 +84,17 @@ func addEmptyApproveComment(str string) string {
 	return strings.ReplaceAll(str, "$approve()", "$approve(\"\")")
 }
 
-func addDefaultAssignCodeOwnerReviewersMaxReviews(str string) string {
-	return strings.ReplaceAll(str, "$assignCodeOwnerReviewer()", "$assignCodeOwnerReviewer(0)")
-}
+func addDefaultAssignCodeAuthorReviewer(str string) string {
+	allArgsRegex := regexp.MustCompile(`\$assignCodeAuthorReviewer\((\d+),\s*((?:\[.*\])|(?:[^,]+)),\s*\d+\)`)
+	if allArgsRegex.MatchString(str) {
+		return str
+	}
 
-func addDefaultAssignCodeOwnerReviewersExcludeReviewers(str string) string {
-	r := regexp.MustCompile(`\$assignCodeOwnerReviewer\(([^,]*)\)`)
-	return r.ReplaceAllString(str, `$$assignCodeOwnerReviewer($1, [])`)
+	str = strings.ReplaceAll(str, "$assignCodeAuthorReviewer()", "$assignCodeAuthorReviewer(1)")
+	r := regexp.MustCompile(`\$assignCodeAuthorReviewer\(([^,]*)\)`)
+	str = r.ReplaceAllString(str, `$$assignCodeAuthorReviewer($1, [])`)
+	r = regexp.MustCompile(`\$assignCodeAuthorReviewer\((\d+),\s*((?:\[.*\])|(?:[^,]+))\)`)
+	return r.ReplaceAllString(str, `$$assignCodeAuthorReviewer($1, $2, 0)`)
 }
 
 func transformAladinoExpression(str string) string {
@@ -107,8 +111,7 @@ func transformAladinoExpression(str string) string {
 		addDefaultHaveAllChecksRunCompleted,
 		addDefaultJoinSeparator,
 		addEmptyApproveComment,
-		addDefaultAssignCodeOwnerReviewersMaxReviews,
-		addDefaultAssignCodeOwnerReviewersExcludeReviewers,
+		addDefaultAssignCodeAuthorReviewer,
 	}
 
 	for i := range transformations {
