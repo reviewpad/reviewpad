@@ -66,7 +66,7 @@ func assignCodeAuthorReviewer(e aladino.Env, args []aladino.Value) error {
 		if !strings.HasSuffix(rank.Username, "[bot]") && pr.GetUser().GetLogin() != rank.Username {
 			numberOfOpenReviews, err := githubClient.GetOpenReviewsCountByUser(ctx, owner, repo, rank.Username)
 			if err != nil {
-				return fmt.Errorf("error getting number of open reviews for user: %w", err)
+				return fmt.Errorf("error getting number of open reviews for user %s: %w", rank.Username, err)
 			}
 
 			if maxReviews > 0 && numberOfOpenReviews > maxReviews {
