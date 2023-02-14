@@ -131,28 +131,25 @@ type GetRefIDQuery struct {
 	} `graphql:"repository(owner: $owner, name: $repo)"`
 }
 
-type RequestedReviewer struct {
-	AsUser struct {
-		Login githubv4.String `graphql:"login"`
-	} `graphql:"... on User"`
-}
-
-type pullRequest struct {
-	Number githubv4.Int
-	Title  githubv4.String
-	Author struct {
-		Login githubv4.String `graphql:"login"`
-	}
-	CreatedAt      githubv4.DateTime
-	ReviewRequests struct {
-		Nodes []struct{ RequestedReviewer RequestedReviewer }
-	} `graphql:"reviewRequests(first: 50)"`
-}
-
 type LastFiftyOpenedPullRequestsQuery struct {
 	Repository struct {
 		PullRequests struct {
-			Nodes []pullRequest
+			Nodes []struct {
+				ReviewRequests struct {
+					Nodes []struct {
+						AsUser struct {
+							Login githubv4.String `graphql:"login"`
+						} `graphql:"... on User"`
+					}
+				} `graphql:"reviewRequests(first: 50)"`
+				Reviews struct {
+					Nodes []struct {
+						Author struct {
+							Login githubv4.String `graphql:"login"`
+						} `graphql:"... on User"`
+					}
+				} `graphql:"reviews(first: 50)"`
+			}
 		} `graphql:"pullRequests(states: OPEN, last: 50)"`
 	} `graphql:"repository(owner: $owner, name: $name)"`
 }
@@ -682,15 +679,13 @@ func (c *GithubClient) GetOpenPullRequestsAsReviewer(ctx context.Context, owner 
 		}
 
 		for _, collaborator := range repoCollaborators {
-			if collaborator.GetLogin() != owner {
-				usernames = append(usernames, collaborator.GetLogin())
-			}
+			usernames = append(usernames, collaborator.GetLogin())
 		}
 	}
 
-	numOfOpenPullRequestsByUser := make(map[string]int)
+	totalOpenPullRequestsByUser := make(map[string]int)
 	for _, username := range usernames {
-		numOfOpenPullRequestsByUser[username] = 0
+		totalOpenPullRequestsByUser[username] = 0
 	}
 
 	variables := map[string]interface{}{
@@ -698,23 +693,30 @@ func (c *GithubClient) GetOpenPullRequestsAsReviewer(ctx context.Context, owner 
 		"name":  githubv4.String(repo),
 	}
 
-	var result LastFiftyOpenedPullRequestsQuery
+	var lastFiftyOpenedPullRequests LastFiftyOpenedPullRequestsQuery
 
-	err := c.GetClientGraphQL().Query(ctx, &result, variables)
+	err := c.GetClientGraphQL().Query(ctx, &lastFiftyOpenedPullRequests, variables)
 	if err != nil {
 		return nil, err
 	}
 
-	for _, pr := range result.Repository.PullRequests.Nodes {
-		for _, rr := range pr.ReviewRequests.Nodes {
-			requestedReviewer := string(rr.RequestedReviewer.AsUser.Login)
-			if requestedReviewer != owner && contains(usernames, requestedReviewer) {
-				numOfOpenPullRequestsByUser[requestedReviewer]++
+	for _, pullRequest := range lastFiftyOpenedPullRequests.Repository.PullRequests.Nodes {
+		for _, reviewRequest := range pullRequest.ReviewRequests.Nodes {
+			requestedReviewer := string(reviewRequest.AsUser.Login)
+			if contains(usernames, requestedReviewer) {
+				totalOpenPullRequestsByUser[requestedReviewer]++
+			}
+		}
+
+		for _, review := range pullRequest.Reviews.Nodes {
+			reviewer := string(review.Author.Login)
+			if contains(usernames, reviewer) {
+				totalOpenPullRequestsByUser[reviewer]++
 			}
 		}
 	}
 
-	return numOfOpenPullRequestsByUser, nil
+	return totalOpenPullRequestsByUser, nil
 }
 
 func contains(slice []string, s string) bool {
