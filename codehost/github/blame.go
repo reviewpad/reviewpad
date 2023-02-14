@@ -147,9 +147,8 @@ func (c *GithubClient) ComputeGitBlameRank(gitBlame *GitBlame) []GitBlameAuthorR
 				authorIndices[author] = authorIndex
 				rankedAuthors = append(rankedAuthors, GitBlameAuthorRank{
 					Username:   author,
-					TotalLines: lineCount,
+					TotalLines: 0,
 				})
-				continue
 			}
 
 			rankedAuthors[authorIndex].TotalLines += lineCount
