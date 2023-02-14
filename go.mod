@@ -26,7 +26,7 @@ require (
 	github.com/spf13/cobra v1.6.1
 	github.com/stretchr/testify v1.8.1
 	github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80
-	golang.org/x/exp v0.0.0-20230206171751-46f607a40771
+	golang.org/x/exp v0.0.0-20230213192124-5e25df0256eb
 	golang.org/x/oauth2 v0.5.0
 	google.golang.org/grpc v1.52.1
 	gopkg.in/yaml.v3 v3.0.1
