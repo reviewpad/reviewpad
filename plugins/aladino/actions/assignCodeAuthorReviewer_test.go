@@ -18,9 +18,9 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var assignCodeOwnerReviewerCode = plugins_aladino.PluginBuiltIns().Actions["assignCodeOwnerReviewer"].Code
+var assignCodeAuthorReviewer = plugins_aladino.PluginBuiltIns().Actions["assignCodeAuthorReviewer"].Code
 
-func TestAssignCodeOwnerReviewerCode(t *testing.T) {
+func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 	jackOpenReviewsQuery := `{
 		"query": "query($query:String! $searchType:SearchType!){
 			search(type: $searchType, query: $query) {
@@ -765,7 +765,7 @@ func TestAssignCodeOwnerReviewerCode(t *testing.T) {
 			reviewRequestedFrom = ""
 			env := aladino.MockDefaultEnv(t, test.mockBackendOptions, test.graphQLHandler, nil, nil)
 
-			err := assignCodeOwnerReviewerCode(env, []aladino.Value{test.maxReviews, test.excludedReviewers})
+			err := assignCodeAuthorReviewer(env, []aladino.Value{test.maxReviews, test.excludedReviewers})
 
 			assert.Equal(t, test.wantErr, err)
 			assert.Equal(t, test.reviewRequestedFrom, reviewRequestedFrom)
