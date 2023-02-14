@@ -175,6 +175,22 @@ func TestTransformAladinoExpression(t *testing.T) {
 			arg:     `$approve("")`,
 			wantVal: `$approve("")`,
 		},
+		"assign code owner reviewer empty args": {
+			arg:     `$assignCodeOwnerReviewer()`,
+			wantVal: `$assignCodeOwnerReviewer(3, [])`,
+		},
+		"assign code owner reviewer max reviews provided": {
+			arg:     `$assignCodeOwnerReviewer(5)`,
+			wantVal: `$assignCodeOwnerReviewer(5, [])`,
+		},
+		"assign code owner reviewer max reviews and excluded provided": {
+			arg:     `$assignCodeOwnerReviewer(5, ["john", "jane"])`,
+			wantVal: `$assignCodeOwnerReviewer(5, ["john", "jane"])`,
+		},
+		"assign code owner reviewer max reviews and excluded provided as group": {
+			arg:     `$assignCodeOwnerReviewer(1, $group("excluded_reviewers"))`,
+			wantVal: `$assignCodeOwnerReviewer(1, $group("excluded_reviewers"))`,
+		},
 		// TODO: test addDefaultTotalRequestedReviewers
 	}
 
