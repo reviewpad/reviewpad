@@ -260,9 +260,7 @@ func (i *Interpreter) ReportChecks() error {
 
 		_, err := i.Env.GetGithubClient().CreateCommitStatus(ctx, targetEntity.Owner, targetEntity.Repo, pr.GetHead().GetSHA(), createCommitStatusOptions)
 		if err != nil {
-			i.Env.GetLogger().WithError(err).Errorf("unable to create commit status %s", check.Name)
-			// Do not fail if there's an error creating the commit status
-			// When using Reviewpad as a GitHub Action without a GitHub token Reviewpad won't be able to create the commit status.
+			return err
 		}
 	}
 	return nil
