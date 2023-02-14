@@ -707,7 +707,7 @@ func (c *GithubClient) GetOpenPullRequestsAsReviewer(ctx context.Context, owner 
 
 	for _, pullRequest := range lastFiftyOpenedPullRequests.Repository.PullRequests.Nodes {
 		for _, username := range usernames {
-			if contains(usernames, username) && isPullRequestReviewer(pullRequest, username) {
+			if _, ok := totalOpenPRsAsReviewerByUser[username]; ok && isPullRequestReviewer(pullRequest, username) {
 				totalOpenPRsAsReviewerByUser[username]++
 			}
 		}
@@ -729,14 +729,5 @@ func isPullRequestReviewer(pullRequest PullRequestsQuery, username string) bool 
 		}
 	}
 
-	return false
-}
-
-func contains(slice []string, s string) bool {
-	for _, element := range slice {
-		if element == s {
-			return true
-		}
-	}
 	return false
 }
