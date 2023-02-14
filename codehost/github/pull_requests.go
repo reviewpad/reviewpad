@@ -704,16 +704,30 @@ func (c *GithubClient) GetOpenPullRequestsAsReviewer(ctx context.Context, owner 
 	}
 
 	for _, pullRequest := range lastFiftyOpenedPullRequests.Repository.PullRequests.Nodes {
+		isRequestedReviewerByUser := make(map[string]bool)
 		for _, reviewRequest := range pullRequest.ReviewRequests.Nodes {
 			requestedReviewer := string(reviewRequest.RequestedReviewer.AsUser.Login)
 			if contains(usernames, requestedReviewer) {
+				isRequestedReviewerByUser[requestedReviewer] = true
 				totalOpenPullRequestsByUser[requestedReviewer]++
 			}
 		}
 
+		hasReviewedByUser := make(map[string]bool)
 		for _, review := range pullRequest.Reviews.Nodes {
 			reviewer := string(review.Author.Login)
 			if contains(usernames, reviewer) {
+				isRequestedReviewer, ok := isRequestedReviewerByUser[reviewer]
+				if ok && isRequestedReviewer {
+					continue
+				}
+
+				userHasReviewed, ok := hasReviewedByUser[reviewer]
+				if ok && userHasReviewed {
+					continue
+				}
+
+				hasReviewedByUser[reviewer] = true
 				totalOpenPullRequestsByUser[reviewer]++
 			}
 		}

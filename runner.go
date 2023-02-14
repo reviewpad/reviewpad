@@ -219,6 +219,32 @@ func runReviewpadFile(
 	env *engine.Env,
 	aladinoInterpreter engine.Interpreter,
 ) (engine.ExitStatus, *engine.Program, error) {
+	// The user "dummypad" is one of the collaborators of the testing repository
+	noUsers1, err := gitHubClient.GetOpenPullRequestsAsReviewer(ctx, targetEntity.Owner, targetEntity.Repo, nil)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Printf("NO USERS PROVIDED (NIL): %+v", noUsers1)
+
+	noUsers2, err := gitHubClient.GetOpenPullRequestsAsReviewer(ctx, targetEntity.Owner, targetEntity.Repo, []string{})
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Printf("NO USERS PROVIDED (EMPTY ARRAY): %+v", noUsers2)
+
+	oneUser, err := gitHubClient.GetOpenPullRequestsAsReviewer(ctx, targetEntity.Owner, targetEntity.Repo, []string{"dummypad"})
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Printf("ONE USER PROVIDED: %+v", oneUser)
+
+	// shay2025 is the owner of the testing repository
+	repoOwnerProvided, err := gitHubClient.GetOpenPullRequestsAsReviewer(ctx, targetEntity.Owner, targetEntity.Repo, []string{"dummypad", "shay2025"})
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Printf("TWO USERS PROVIDED WHERE ONE OF THEM IS THE REPO OWNER: %+v", repoOwnerProvided)
+
 	if safeMode && !dryRun {
 		return engine.ExitStatusFailure, nil, fmt.Errorf("when reviewpad is running in safe mode, it must also run in dry-run")
 	}
