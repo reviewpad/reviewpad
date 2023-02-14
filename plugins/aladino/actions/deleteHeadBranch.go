@@ -38,12 +38,12 @@ func deleteHeadBranch(e aladino.Env, args []aladino.Value) error {
 
 	ref := "heads/" + *target.PullRequest.Head.Ref
 
-	exists, err := e.GetGithubClient().RefExists(ctx, owner, repo, "refs/"+ref)
+	refExists, err := e.GetGithubClient().RefExists(ctx, owner, repo, "refs/"+ref)
 	if err != nil {
 		return fmt.Errorf("error getting reference: %w", err)
 	}
 
-	if !exists {
+	if !refExists {
 		return nil
 	}
 
