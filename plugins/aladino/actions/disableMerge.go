@@ -5,6 +5,8 @@
 package plugins_aladino_actions
 
 import (
+	"github.com/reviewpad/reviewpad/v3/codehost/github"
+	"github.com/reviewpad/reviewpad/v3/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v3/engine"
 	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
@@ -20,12 +22,14 @@ func DisableMerge() *aladino.BuiltInAction {
 
 func disableMergeCode(e aladino.Env, args []aladino.Value) error {
 	reason := args[0].(*aladino.StringValue).Val
+	targetEntity := e.GetTarget().GetTargetEntity()
+	pullRequest := e.GetTarget().(*target.PullRequestTarget).PullRequest
 
-	e.GetChecks()[aladino.ReviewpadMergeGateCheckName] = engine.Check{
-		Name:   aladino.ReviewpadMergeGateCheckName,
-		Status: engine.CheckStateFailure,
-		Reason: reason,
-	}
+	_, err := e.GetGithubClient().CreateCommitStatus(e.GetCtx(), targetEntity.Owner, targetEntity.Repo, pullRequest.GetHead().GetSHA(), &github.CreateCommitStatusOptions{
+		Context:     aladino.ReviewpadMergeGateCheckName,
+		State:       string(engine.CheckStateFailure),
+		Description: reason,
+	})
 
-	return nil
+	return err
 }
