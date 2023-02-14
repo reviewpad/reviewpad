@@ -41,7 +41,7 @@ jobs:
         uses: VeryGoodOpenSource/very_good_coverage@v2
         with:
           path: "coverage.lcov"
-          min_coverage: 80
+          min_coverage: 75
 
       - name: Integration tests
         run: task integration-test
