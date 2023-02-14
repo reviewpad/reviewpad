@@ -69,7 +69,11 @@ func assignCodeAuthorReviewer(e aladino.Env, args []aladino.Value) error {
 				return fmt.Errorf("error getting number of open reviews for user: %w", err)
 			}
 
-			if numberOfOpenReviews < maxReviews && !isExcluded(excludeReviewers, rank.Username) && isAvailableAssignee(availableAssignees, rank.Username) {
+			if maxReviews > 0 && numberOfOpenReviews > maxReviews {
+				continue
+			}
+
+			if !isExcluded(excludeReviewers, rank.Username) && isAvailableAssignee(availableAssignees, rank.Username) {
 				filteredReviewers = append(filteredReviewers, rank)
 			}
 		}

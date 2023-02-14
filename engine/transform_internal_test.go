@@ -177,7 +177,7 @@ func TestTransformAladinoExpression(t *testing.T) {
 		},
 		"assign code owner reviewer empty args": {
 			arg:     `$assignCodeOwnerReviewer()`,
-			wantVal: `$assignCodeOwnerReviewer(3, [])`,
+			wantVal: `$assignCodeOwnerReviewer(0, [])`,
 		},
 		"assign code owner reviewer max reviews provided": {
 			arg:     `$assignCodeOwnerReviewer(5)`,

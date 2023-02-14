@@ -85,7 +85,7 @@ func addEmptyApproveComment(str string) string {
 }
 
 func addDefaultAssignCodeOwnerReviewersMaxReviews(str string) string {
-	return strings.ReplaceAll(str, "$assignCodeOwnerReviewer()", "$assignCodeOwnerReviewer(3)")
+	return strings.ReplaceAll(str, "$assignCodeOwnerReviewer()", "$assignCodeOwnerReviewer(0)")
 }
 
 func addDefaultAssignCodeOwnerReviewersExcludeReviewers(str string) string {
