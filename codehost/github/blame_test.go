@@ -435,3 +435,178 @@ func TestSliceGitBlame(t *testing.T) {
 		})
 	}
 }
+
+func TestComputeGitBlameRank(t *testing.T) {
+	tests := map[string]struct {
+		blame    *github.GitBlame
+		wantRank []github.GitBlameAuthorRank
+	}{
+		"when single author": {
+			blame: &github.GitBlame{
+				CommitSHA: "41a7b4350148def9e98c9352a64cc3ac95c1de9c",
+				Files: map[string]github.GitBlameFile{
+					"reviewpad.yml": {
+						FilePath:  "reviewpad.yml",
+						LineCount: 100,
+						Lines: []github.GitBlameFileLines{
+							{
+								FromLine: 1,
+								ToLine:   100,
+								Author:   "reviewpad[bot]",
+							},
+						},
+					},
+				},
+			},
+			wantRank: []github.GitBlameAuthorRank{
+				{
+					Username:   "reviewpad[bot]",
+					TotalLines: 100,
+				},
+			},
+		},
+		"when multiple authors in single file": {
+			blame: &github.GitBlame{
+				CommitSHA: "41a7b4350148def9e98c9352a64cc3ac95c1de9c",
+				Files: map[string]github.GitBlameFile{
+					"reviewpad.yml": {
+						FilePath:  "reviewpad.yml",
+						LineCount: 100,
+						Lines: []github.GitBlameFileLines{
+							{
+								FromLine: 1,
+								ToLine:   35,
+								Author:   "reviewpad[bot]",
+							},
+							{
+								FromLine: 36,
+								ToLine:   45,
+								Author:   "jack",
+							},
+							{
+								FromLine: 46,
+								ToLine:   100,
+								Author:   "jill",
+							},
+						},
+					},
+				},
+			},
+			wantRank: []github.GitBlameAuthorRank{
+				{
+					Username:   "jill",
+					TotalLines: 55,
+				},
+				{
+					Username:   "reviewpad[bot]",
+					TotalLines: 35,
+				},
+				{
+					Username:   "jack",
+					TotalLines: 10,
+				},
+			},
+		},
+		"when one authors in multiple files": {
+			blame: &github.GitBlame{
+				CommitSHA: "41a7b4350148def9e98c9352a64cc3ac95c1de9c",
+				Files: map[string]github.GitBlameFile{
+					"reviewpad.yml": {
+						FilePath:  "reviewpad.yml",
+						LineCount: 35,
+						Lines: []github.GitBlameFileLines{
+							{
+								FromLine: 1,
+								ToLine:   35,
+								Author:   "reviewpad[bot]",
+							},
+						},
+					},
+					"main.go": {
+						FilePath:  "main.go",
+						LineCount: 100,
+						Lines: []github.GitBlameFileLines{
+							{
+								FromLine: 1,
+								ToLine:   100,
+								Author:   "reviewpad[bot]",
+							},
+						},
+					},
+				},
+			},
+			wantRank: []github.GitBlameAuthorRank{
+				{
+					Username:   "reviewpad[bot]",
+					TotalLines: 135,
+				},
+			},
+		},
+		"when multiple authors in multiple files": {
+			blame: &github.GitBlame{
+				CommitSHA: "41a7b4350148def9e98c9352a64cc3ac95c1de9c",
+				Files: map[string]github.GitBlameFile{
+					"reviewpad.yml": {
+						FilePath:  "reviewpad.yml",
+						LineCount: 100,
+						Lines: []github.GitBlameFileLines{
+							{
+								FromLine: 1,
+								ToLine:   35,
+								Author:   "reviewpad[bot]",
+							},
+							{
+								FromLine: 36,
+								ToLine:   45,
+								Author:   "jack",
+							},
+							{
+								FromLine: 46,
+								ToLine:   100,
+								Author:   "jill",
+							},
+						},
+					},
+					"main.go": {
+						FilePath:  "main.go",
+						LineCount: 50,
+						Lines: []github.GitBlameFileLines{
+							{
+								FromLine: 1,
+								ToLine:   35,
+								Author:   "jill",
+							},
+							{
+								FromLine: 36,
+								ToLine:   50,
+								Author:   "jack",
+							},
+						},
+					},
+				},
+			},
+			wantRank: []github.GitBlameAuthorRank{
+				{
+					Username:   "jill",
+					TotalLines: 90,
+				},
+				{
+					Username:   "reviewpad[bot]",
+					TotalLines: 35,
+				},
+				{
+					Username:   "jack",
+					TotalLines: 25,
+				},
+			},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			client := aladino.MockDefaultGithubClient(nil, nil)
+			rank := client.ComputeGitBlameRank(test.blame)
+			assert.Equal(t, test.wantRank, rank)
+		})
+	}
+}
