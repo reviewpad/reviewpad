@@ -131,28 +131,30 @@ type GetRefIDQuery struct {
 	} `graphql:"repository(owner: $owner, name: $repo)"`
 }
 
+type PullRequestsQuery struct {
+	ReviewRequests struct {
+		Nodes []struct {
+			RequestedReviewer struct {
+				TypeName string `graphql:"__typename"`
+				AsUser   struct {
+					Login githubv4.String
+				} `graphql:"... on User"`
+			}
+		}
+	} `graphql:"reviewRequests(first: 50)"`
+	Reviews struct {
+		Nodes []struct {
+			Author struct {
+				Login githubv4.String
+			}
+		}
+	} `graphql:"reviews(first: 50)"`
+}
+
 type LastFiftyOpenedPullRequestsQuery struct {
 	Repository struct {
 		PullRequests struct {
-			Nodes []struct {
-				ReviewRequests struct {
-					Nodes []struct {
-						RequestedReviewer struct {
-							TypeName string `graphql:"__typename"`
-							AsUser   struct {
-								Login githubv4.String
-							} `graphql:"... on User"`
-						}
-					}
-				} `graphql:"reviewRequests(first: 50)"`
-				Reviews struct {
-					Nodes []struct {
-						Author struct {
-							Login githubv4.String
-						}
-					}
-				} `graphql:"reviews(first: 50)"`
-			}
+			Nodes []PullRequestsQuery
 		} `graphql:"pullRequests(states: OPEN, last: 50)"`
 	} `graphql:"repository(owner: $owner, name: $name)"`
 }
@@ -686,9 +688,9 @@ func (c *GithubClient) GetOpenPullRequestsAsReviewer(ctx context.Context, owner 
 		}
 	}
 
-	totalOpenPullRequestsByUser := make(map[string]int)
+	totalOpenPRsAsReviewerByUser := make(map[string]int)
 	for _, username := range usernames {
-		totalOpenPullRequestsByUser[username] = 0
+		totalOpenPRsAsReviewerByUser[username] = 0
 	}
 
 	variables := map[string]interface{}{
@@ -704,36 +706,30 @@ func (c *GithubClient) GetOpenPullRequestsAsReviewer(ctx context.Context, owner 
 	}
 
 	for _, pullRequest := range lastFiftyOpenedPullRequests.Repository.PullRequests.Nodes {
-		isRequestedReviewerByUser := make(map[string]bool)
-		for _, reviewRequest := range pullRequest.ReviewRequests.Nodes {
-			requestedReviewer := string(reviewRequest.RequestedReviewer.AsUser.Login)
-			if contains(usernames, requestedReviewer) {
-				isRequestedReviewerByUser[requestedReviewer] = true
-				totalOpenPullRequestsByUser[requestedReviewer]++
-			}
-		}
-
-		hasReviewedByUser := make(map[string]bool)
-		for _, review := range pullRequest.Reviews.Nodes {
-			reviewer := string(review.Author.Login)
-			if contains(usernames, reviewer) {
-				isRequestedReviewer, ok := isRequestedReviewerByUser[reviewer]
-				if ok && isRequestedReviewer {
-					continue
-				}
-
-				userHasReviewed, ok := hasReviewedByUser[reviewer]
-				if ok && userHasReviewed {
-					continue
-				}
-
-				hasReviewedByUser[reviewer] = true
-				totalOpenPullRequestsByUser[reviewer]++
+		for _, username := range usernames {
+			if contains(usernames, username) && isPullRequestReviewer(pullRequest, username) {
+				totalOpenPRsAsReviewerByUser[username]++
 			}
 		}
 	}
 
-	return totalOpenPullRequestsByUser, nil
+	return totalOpenPRsAsReviewerByUser, nil
+}
+
+func isPullRequestReviewer(pullRequest PullRequestsQuery, username string) bool {
+	for _, reviewRequest := range pullRequest.ReviewRequests.Nodes {
+		if string(reviewRequest.RequestedReviewer.AsUser.Login) == username {
+			return true
+		}
+	}
+
+	for _, review := range pullRequest.Reviews.Nodes {
+		if string(review.Author.Login) == username {
+			return true
+		}
+	}
+
+	return false
 }
 
 func contains(slice []string, s string) bool {
