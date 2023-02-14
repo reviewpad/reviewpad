@@ -26,7 +26,7 @@ func reviewCode(e aladino.Env, args []aladino.Value) error {
 	log := e.GetLogger().WithField("builtin", "review")
 
 	if t.PullRequest.GetDraft() {
-		log.Infof("skipping approve because the pull request is in draft")
+		log.Infof("skipping review because the pull request is in draft")
 		return nil
 	}
 
