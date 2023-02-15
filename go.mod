@@ -21,7 +21,7 @@ require (
 	github.com/ohler55/ojg v1.17.4
 	github.com/reviewpad/api/go v0.0.0-20220830170955-4342a58c9339
 	github.com/reviewpad/go-conventionalcommits v0.10.0
-	github.com/shurcooL/githubv4 v0.0.0-20221229060216-a8d4a561cc93
+	github.com/shurcooL/githubv4 v0.0.0-20230215024106-420ad0987b9b
 	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/cobra v1.6.1
 	github.com/stretchr/testify v1.8.1
