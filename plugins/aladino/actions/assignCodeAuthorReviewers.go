@@ -15,19 +15,19 @@ import (
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 )
 
-func AssignCodeAuthorReviewer() *aladino.BuiltInAction {
+func AssignCodeAuthorReviewers() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
 		Type: aladino.BuildFunctionType([]aladino.Type{
 			aladino.BuildIntType(),
 			aladino.BuildArrayOfType(aladino.BuildStringType()),
 			aladino.BuildIntType(),
 		}, nil),
-		Code:           assignCodeAuthorReviewer,
+		Code:           assignCodeAuthorReviewersCode,
 		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest},
 	}
 }
 
-func assignCodeAuthorReviewer(env aladino.Env, args []aladino.Value) error {
+func assignCodeAuthorReviewersCode(env aladino.Env, args []aladino.Value) error {
 	target := env.GetTarget().(*target.PullRequestTarget)
 	totalRequiredReviewers := args[0].(*aladino.IntValue).Val
 	reviewersToExclude := args[1].(*aladino.ArrayValue).Vals

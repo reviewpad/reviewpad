@@ -18,7 +18,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var assignCodeAuthorReviewer = plugins_aladino.PluginBuiltIns().Actions["assignCodeAuthorReviewer"].Code
+var assignCodeAuthorReviewer = plugins_aladino.PluginBuiltIns().Actions["assignCodeAuthorReviewers"].Code
 
 func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 	jackOpenReviewsQuery := `{
