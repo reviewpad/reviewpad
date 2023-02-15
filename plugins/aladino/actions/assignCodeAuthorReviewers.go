@@ -62,6 +62,12 @@ func assignCodeAuthorReviewersCode(env aladino.Env, args []aladino.Value) error 
 	}
 
 	reviewersRanks := githubClient.ComputeGitBlameRank(gitBlame)
+	reviewersUsernames := getUsernamesFromAuthorRank(reviewersRanks)
+	totalOpenPRsAsReviewerByUser, err := githubClient.GetOpenPullRequestsAsReviewer(ctx, targetEntity.Owner, targetEntity.Repo, reviewersUsernames)
+	if err != nil {
+		return fmt.Errorf("error getting open pull request as reviewer: %s", err.Error())
+	}
+
 	filteredReviewers := []github.GitBlameAuthorRank{}
 	for _, reviewerRank := range reviewersRanks {
 		if strings.HasSuffix(reviewerRank.Username, "[bot]") {
@@ -72,12 +78,9 @@ func assignCodeAuthorReviewersCode(env aladino.Env, args []aladino.Value) error 
 			continue
 		}
 
-		totalOpenPRAsReviewerByUser, err := githubClient.GetOpenReviewsCountByUser(ctx, targetEntity.Owner, targetEntity.Repo, reviewerRank.Username)
-		if err != nil {
-			return fmt.Errorf("error getting number of open reviews for user %s: %w", reviewerRank.Username, err)
-		}
+		totalOpenPRsAsReviewer := totalOpenPRsAsReviewerByUser[reviewerRank.Username]
 
-		if maxAssignedReviews > 0 && totalOpenPRAsReviewerByUser > maxAssignedReviews {
+		if maxAssignedReviews > 0 && totalOpenPRsAsReviewer > maxAssignedReviews {
 			continue
 		}
 
@@ -95,12 +98,18 @@ func assignCodeAuthorReviewersCode(env aladino.Env, args []aladino.Value) error 
 		totalRequiredReviewers = len(filteredReviewers)
 	}
 
-	reviewersToRequest := []string{}
-	for i := 0; i < totalRequiredReviewers; i++ {
-		reviewersToRequest = append(reviewersToRequest, filteredReviewers[i].Username)
-	}
+	reviewersToRequest := getUsernamesFromAuthorRank(filteredReviewers[:totalRequiredReviewers])
 
 	return target.RequestReviewers(reviewersToRequest)
+}
+
+func getUsernamesFromAuthorRank(reviewersRanks []github.GitBlameAuthorRank) []string {
+	usernames := []string{}
+	for _, reviewerRank := range reviewersRanks {
+		usernames = append(usernames, reviewerRank.Username)
+	}
+
+	return usernames
 }
 
 func isValueInList(excludedReviewers []aladino.Value, value string) bool {
