@@ -137,6 +137,34 @@ type GetOpenReviewsCountByUserQuery struct {
 	} `graphql:"search(type: $searchType, query: $query)"`
 }
 
+type PullRequestsQuery struct {
+	ReviewRequests struct {
+		Nodes []struct {
+			RequestedReviewer struct {
+				TypeName string `graphql:"__typename"`
+				AsUser   struct {
+					Login githubv4.String
+				} `graphql:"... on User"`
+			}
+		}
+	} `graphql:"reviewRequests(first: 50)"`
+	Reviews struct {
+		Nodes []struct {
+			Author struct {
+				Login githubv4.String
+			}
+		}
+	} `graphql:"reviews(first: 50)"`
+}
+
+type LastFiftyOpenedPullRequestsQuery struct {
+	Repository struct {
+		PullRequests struct {
+			Nodes []PullRequestsQuery
+		} `graphql:"pullRequests(states: OPEN, last: 50)"`
+	} `graphql:"repository(owner: $owner, name: $name)"`
+}
+
 func GetPullRequestHeadOwnerName(pullRequest *github.PullRequest) string {
 	return pullRequest.Head.Repo.Owner.GetLogin()
 }
@@ -663,4 +691,64 @@ func (c *GithubClient) GetOpenReviewsCountByUser(ctx context.Context, owner, rep
 	}
 
 	return getOpenReviewsCountByUserQuery.Search.IssueCount, nil
+}
+
+func (c *GithubClient) GetOpenPullRequestsAsReviewer(ctx context.Context, owner string, repo string, usernames []string) (map[string]int, error) {
+	if usernames == nil {
+		usernames = make([]string, 0)
+	}
+
+	if len(usernames) == 0 {
+		repoCollaborators, err := c.GetRepoCollaborators(ctx, owner, repo)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, collaborator := range repoCollaborators {
+			usernames = append(usernames, collaborator.GetLogin())
+		}
+	}
+
+	totalOpenPRsAsReviewerByUser := make(map[string]int)
+	for _, username := range usernames {
+		totalOpenPRsAsReviewerByUser[username] = 0
+	}
+
+	variables := map[string]interface{}{
+		"owner": githubv4.String(owner),
+		"name":  githubv4.String(repo),
+	}
+
+	var lastFiftyOpenedPullRequests LastFiftyOpenedPullRequestsQuery
+
+	err := c.GetClientGraphQL().Query(ctx, &lastFiftyOpenedPullRequests, variables)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, pullRequest := range lastFiftyOpenedPullRequests.Repository.PullRequests.Nodes {
+		for _, username := range usernames {
+			if _, ok := totalOpenPRsAsReviewerByUser[username]; ok && isPullRequestReviewer(pullRequest, username) {
+				totalOpenPRsAsReviewerByUser[username]++
+			}
+		}
+	}
+
+	return totalOpenPRsAsReviewerByUser, nil
+}
+
+func isPullRequestReviewer(pullRequest PullRequestsQuery, username string) bool {
+	for _, reviewRequest := range pullRequest.ReviewRequests.Nodes {
+		if string(reviewRequest.RequestedReviewer.AsUser.Login) == username {
+			return true
+		}
+	}
+
+	for _, review := range pullRequest.Reviews.Nodes {
+		if string(review.Author.Login) == username {
+			return true
+		}
+	}
+
+	return false
 }

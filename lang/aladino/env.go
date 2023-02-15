@@ -138,7 +138,7 @@ func NewEvalEnv(
 		ReviewpadMergeGateCheckName: {
 			Name:   ReviewpadMergeGateCheckName,
 			Status: engine.CheckStateSuccess,
-			Reason: "Reviewpad merge gate completed successfully",
+			Reason: "Completed successfully",
 		},
 	}
 
