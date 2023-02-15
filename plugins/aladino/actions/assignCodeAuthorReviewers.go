@@ -72,12 +72,12 @@ func assignCodeAuthorReviewersCode(env aladino.Env, args []aladino.Value) error 
 			continue
 		}
 
-		numberOfOpenReviews, err := githubClient.GetOpenReviewsCountByUser(ctx, targetEntity.Owner, targetEntity.Repo, reviewerRank.Username)
+		totalOpenPRAsReviewerByUser, err := githubClient.GetOpenReviewsCountByUser(ctx, targetEntity.Owner, targetEntity.Repo, reviewerRank.Username)
 		if err != nil {
 			return fmt.Errorf("error getting number of open reviews for user %s: %w", reviewerRank.Username, err)
 		}
 
-		if maxAssignedReviews > 0 && numberOfOpenReviews > maxAssignedReviews {
+		if maxAssignedReviews > 0 && totalOpenPRAsReviewerByUser > maxAssignedReviews {
 			continue
 		}
 
