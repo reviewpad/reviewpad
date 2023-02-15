@@ -88,11 +88,19 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 					mock.GetReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
 					&github.Reviewers{},
 				),
+				mock.WithRequestMatch(
+					mock.GetReposAssigneesByOwnerByRepo,
+					[]*github.User{
+						{
+							Login: github.String("test"),
+						},
+					},
+				),
 			},
 			graphQLHandler: func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(http.StatusForbidden)
 			},
-			wantErr: fmt.Errorf("error getting git blame information: error executing blame query: Message: 403 Forbidden; body: \"\", Locations: []"),
+			wantErr: fmt.Errorf("error getting authors from git blame: error executing blame query: Message: 403 Forbidden; body: \"\", Locations: []"),
 		},
 		"when no blame information is found": {
 			totalReviewers:    1,
@@ -113,8 +121,16 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 					mock.GetReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
 					&github.Reviewers{},
 				),
+				mock.WithRequestMatch(
+					mock.GetReposAssigneesByOwnerByRepo,
+					[]*github.User{
+						{
+							Login: github.String("test"),
+						},
+					},
+				),
 			},
-			wantErr: fmt.Errorf("error getting git blame information: no blame information found"),
+			wantErr: fmt.Errorf("error getting authors from git blame: no blame information found"),
 		},
 		"when get open pull requests as reviewer query fails": {
 			totalReviewers:    1,
