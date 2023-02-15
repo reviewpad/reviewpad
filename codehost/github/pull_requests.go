@@ -131,12 +131,6 @@ type GetRefIDQuery struct {
 	} `graphql:"repository(owner: $owner, name: $repo)"`
 }
 
-type GetOpenReviewsCountByUserQuery struct {
-	Search struct {
-		IssueCount int
-	} `graphql:"search(type: $searchType, query: $query)"`
-}
-
 type PullRequestsQuery struct {
 	ReviewRequests struct {
 		Nodes []struct {
@@ -676,21 +670,6 @@ func (c *GithubClient) RefExists(ctx context.Context, owner, repo, ref string) (
 	}
 
 	return getRefIDQuery.Repository.Ref.ID != "", nil
-}
-
-func (c *GithubClient) GetOpenReviewsCountByUser(ctx context.Context, owner, repo, user string) (int, error) {
-	var getOpenReviewsCountByUserQuery GetOpenReviewsCountByUserQuery
-	getOpenReviewsCountByUserQueryVariables := map[string]interface{}{
-		"searchType": githubv4.SearchType("ISSUE"),
-		"query":      githubv4.String(fmt.Sprintf("repo:%s/%s is:open type:pr review-requested:%s", owner, repo, user)),
-	}
-
-	err := c.GetClientGraphQL().Query(ctx, &getOpenReviewsCountByUserQuery, getOpenReviewsCountByUserQueryVariables)
-	if err != nil {
-		return 0, err
-	}
-
-	return getOpenReviewsCountByUserQuery.Search.IssueCount, nil
 }
 
 func (c *GithubClient) GetOpenPullRequestsAsReviewer(ctx context.Context, owner string, repo string, usernames []string) (map[string]int, error) {
