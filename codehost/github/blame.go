@@ -79,7 +79,7 @@ func (c *GithubClient) GetGitBlame(ctx context.Context, owner, name, commitSHA s
 	}
 
 	if len(gitBlameQuery.Repository.Object) == 0 {
-		return nil, fmt.Errorf("error getting blame information: no blame information found")
+		return nil, fmt.Errorf("no blame information found")
 	}
 
 	return mapGitBlameQueryToGitBlame(commitSHA, gitBlameQuery, mapQueryKeyToFilePath)

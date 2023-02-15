@@ -38,7 +38,7 @@ func TestGetGitBlame(t *testing.T) {
 			graphQLHandler: func(w http.ResponseWriter, r *http.Request) {
 				utils.MustWrite(w, `{"data": {}}`)
 			},
-			wantErr: errors.New("error getting blame information: no blame information found"),
+			wantErr: errors.New("no blame information found"),
 		},
 		"when successful": {
 			commitSHA: "41a7b4350148def9e98c9352a64cc3ac95c1de9c",
