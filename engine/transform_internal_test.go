@@ -176,28 +176,28 @@ func TestTransformAladinoExpression(t *testing.T) {
 			wantVal: `$approve("")`,
 		},
 		"assign code author reviewer empty args": {
-			arg:     `$assignCodeAuthorReviewer()`,
-			wantVal: `$assignCodeAuthorReviewer(1, [], 0)`,
+			arg:     `$assignCodeAuthorReviewers()`,
+			wantVal: `$assignCodeAuthorReviewers(1, [], 0)`,
 		},
 		"assign code author reviewer total provided": {
-			arg:     `$assignCodeAuthorReviewer(5)`,
-			wantVal: `$assignCodeAuthorReviewer(5, [], 0)`,
+			arg:     `$assignCodeAuthorReviewers(5)`,
+			wantVal: `$assignCodeAuthorReviewers(5, [], 0)`,
 		},
 		"assign code author reviewer total and excluded provided": {
-			arg:     `$assignCodeAuthorReviewer(5, ["john", "jane"])`,
-			wantVal: `$assignCodeAuthorReviewer(5, ["john", "jane"], 0)`,
+			arg:     `$assignCodeAuthorReviewers(5, ["john", "jane"])`,
+			wantVal: `$assignCodeAuthorReviewers(5, ["john", "jane"], 0)`,
 		},
 		"assign code author reviewer total, excluded and max reviews provided": {
-			arg:     `$assignCodeAuthorReviewer(5, ["john", "jane"], 3)`,
-			wantVal: `$assignCodeAuthorReviewer(5, ["john", "jane"], 3)`,
+			arg:     `$assignCodeAuthorReviewers(5, ["john", "jane"], 3)`,
+			wantVal: `$assignCodeAuthorReviewers(5, ["john", "jane"], 3)`,
 		},
 		"assign code author reviewer total, excluded as group and max reviews provided": {
-			arg:     `$assignCodeAuthorReviewer(1, $group("excluded_reviewers"), 2)`,
-			wantVal: `$assignCodeAuthorReviewer(1, $group("excluded_reviewers"), 2)`,
+			arg:     `$assignCodeAuthorReviewers(1, $group("excluded_reviewers"), 2)`,
+			wantVal: `$assignCodeAuthorReviewers(1, $group("excluded_reviewers"), 2)`,
 		},
 		"assign code author reviewer total and excluded provided as team": {
-			arg:     `$assignCodeAuthorReviewer(1, $team("reviewers"))`,
-			wantVal: `$assignCodeAuthorReviewer(1, $team("reviewers"), 0)`,
+			arg:     `$assignCodeAuthorReviewers(1, $team("reviewers"))`,
+			wantVal: `$assignCodeAuthorReviewers(1, $team("reviewers"), 0)`,
 		},
 		// TODO: test addDefaultTotalRequestedReviewers
 	}

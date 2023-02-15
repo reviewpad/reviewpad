@@ -85,16 +85,16 @@ func addEmptyApproveComment(str string) string {
 }
 
 func addDefaultAssignCodeAuthorReviewer(str string) string {
-	allArgsRegex := regexp.MustCompile(`\$assignCodeAuthorReviewer\((\d+),\s*((?:\[.*\])|(?:[^,]+)),\s*\d+\)`)
+	allArgsRegex := regexp.MustCompile(`\$assignCodeAuthorReviewers\((\d+),\s*((?:\[.*\])|(?:[^,]+)),\s*\d+\)`)
 	if allArgsRegex.MatchString(str) {
 		return str
 	}
 
-	str = strings.ReplaceAll(str, "$assignCodeAuthorReviewer()", "$assignCodeAuthorReviewer(1)")
-	r := regexp.MustCompile(`\$assignCodeAuthorReviewer\(([^,]*)\)`)
-	str = r.ReplaceAllString(str, `$$assignCodeAuthorReviewer($1, [])`)
-	r = regexp.MustCompile(`\$assignCodeAuthorReviewer\((\d+),\s*((?:\[.*\])|(?:[^,]+))\)`)
-	return r.ReplaceAllString(str, `$$assignCodeAuthorReviewer($1, $2, 0)`)
+	str = strings.ReplaceAll(str, "$assignCodeAuthorReviewers()", "$assignCodeAuthorReviewers(1)")
+	r := regexp.MustCompile(`\$assignCodeAuthorReviewers\(([^,]*)\)`)
+	str = r.ReplaceAllString(str, `$$assignCodeAuthorReviewers($1, [])`)
+	r = regexp.MustCompile(`\$assignCodeAuthorReviewers\((\d+),\s*((?:\[.*\])|(?:[^,]+))\)`)
+	return r.ReplaceAllString(str, `$$assignCodeAuthorReviewers($1, $2, 0)`)
 }
 
 func transformAladinoExpression(str string) string {
