@@ -21,49 +21,35 @@ import (
 var assignCodeAuthorReviewer = plugins_aladino.PluginBuiltIns().Actions["assignCodeAuthorReviewers"].Code
 
 func TestAssignCodeAuthorReviewerCode(t *testing.T) {
-	jackOpenReviewsQuery := `{
-		"query": "query($query:String! $searchType:SearchType!){
-			search(type: $searchType, query: $query) {
-				issueCount
+	getOpenPullRequestsAsReviewerQuery := `{
+		"query":"query($name:String!$owner:String!){
+			repository(owner: $owner, name: $name){
+				pullRequests(states: OPEN, last: 50){
+					nodes{reviewRequests(first: 50){
+						nodes{
+							requestedReviewer{
+								__typename,
+								... on User{
+									login
+								}
+							}
+						}
+					},
+					reviews(first: 50){
+						nodes{
+							author{
+								login
+							}
+						}
+					}
+				}
 			}
-		}",
-		"variables":{
-			"query": "repo:foobar/default-mock-repo is:open type:pr review-requested:jack",
-			"searchType":"ISSUE"
 		}
-	}`
-	janeOpenReviewsQuery := `{
-		"query": "query($query:String! $searchType:SearchType!){
-			search(type: $searchType, query: $query) {
-				issueCount
-			}
-		}",
-		"variables":{
-			"query": "repo:foobar/default-mock-repo is:open type:pr review-requested:jane",
-			"searchType":"ISSUE"
-		}
-	}`
-	johnOpenReviewsQuery := `{
-		"query": "query($query:String! $searchType:SearchType!){
-			search(type: $searchType, query: $query) {
-				issueCount
-			}
-		}",
-		"variables":{
-			"query": "repo:foobar/default-mock-repo is:open type:pr review-requested:john",
-			"searchType":"ISSUE"
-		}
-	}`
-	jamesOpenReviewsQuery := `{
-		"query": "query($query:String! $searchType:SearchType!){
-			search(type: $searchType, query: $query) {
-				issueCount
-			}
-		}",
-		"variables":{
-			"query": "repo:foobar/default-mock-repo is:open type:pr review-requested:james",
-			"searchType":"ISSUE"
-		}
+	}",
+	"variables":{
+		"name":"default-mock-repo",
+		"owner":"foobar"
+	}
 	}`
 
 	reviewRequestedFrom := []string{}
@@ -130,11 +116,106 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 			},
 			wantErr: fmt.Errorf("error getting git blame information: no blame information found"),
 		},
+		"when get open pull requests as reviewer query fails": {
+			totalReviewers:    1,
+			maxReviews:        3,
+			excludedReviewers: aladino.BuildArrayValue([]aladino.Value{}),
+			graphQLHandler: func(w http.ResponseWriter, r *http.Request) {
+				graphQLQuery := utils.MustRead(r.Body)
+				if utils.MinifyQuery(getOpenPullRequestsAsReviewerQuery) == utils.MinifyQuery(graphQLQuery) {
+					w.WriteHeader(http.StatusBadRequest)
+					return
+				}
+
+				utils.MustWrite(w, `{
+					"data": {
+						"repository": {
+							"object": {
+								"blame0": {
+									"ranges": [
+										{
+											"startingLine": 1,
+											"endingLine": 10,
+											"commit": {
+												"author": {
+													"user": {
+														"login": "reviewpad[bot]"
+													}
+												}
+											}
+										}
+									]
+								},
+								"blame1": {
+									"ranges": [
+										{
+											"startingLine": 1,
+											"endingLine": 5,
+											"commit": {
+												"author": {
+													"user": {
+														"login": "reviewpad[bot]"
+													}
+												}
+											}
+										}
+									]
+								},
+								"blame3": {
+									"ranges": [
+										{
+											"startingLine": 1,
+											"endingLine": 10,
+											"commit": {
+												"author": {
+													"user": {
+														"login": "reviewpad[bot]"
+													}
+												}
+											}
+										}
+									]
+								}
+							}
+						}
+					}
+				}`)
+			},
+			mockBackendOptions: []mock.MockBackendOption{
+				mock.WithRequestMatch(
+					mock.GetReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
+					&github.Reviewers{},
+				),
+				mock.WithRequestMatch(
+					mock.GetReposAssigneesByOwnerByRepo,
+					[]*github.User{
+						{
+							Login: github.String("test"),
+						},
+					},
+				),
+			},
+			wantErr: fmt.Errorf("error getting open pull requests as reviewer: non-200 OK status code: 400 Bad Request body: \"\""),
+		},
 		"when all files are owned by bot": {
 			totalReviewers:    1,
 			maxReviews:        3,
 			excludedReviewers: aladino.BuildArrayValue([]aladino.Value{}),
 			graphQLHandler: func(w http.ResponseWriter, r *http.Request) {
+				graphQLQuery := utils.MustRead(r.Body)
+				if utils.MinifyQuery(getOpenPullRequestsAsReviewerQuery) == utils.MinifyQuery(graphQLQuery) {
+					utils.MustWrite(w, `{
+						"data": {
+							"repository": {
+								"pullRequests": {
+									"nodes": []
+								}
+							}
+						}
+					}`)
+					return
+				}
+
 				utils.MustWrite(w, `{
 					"data": {
 						"repository": {
@@ -225,6 +306,20 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 			maxReviews:        3,
 			excludedReviewers: aladino.BuildArrayValue([]aladino.Value{}),
 			graphQLHandler: func(w http.ResponseWriter, r *http.Request) {
+				graphQLQuery := utils.MustRead(r.Body)
+				if utils.MinifyQuery(getOpenPullRequestsAsReviewerQuery) == utils.MinifyQuery(graphQLQuery) {
+					utils.MustWrite(w, `{
+						"data": {
+							"repository": {
+								"pullRequests": {
+									"nodes": []
+								}
+							}
+						}
+					}`)
+					return
+				}
+
 				utils.MustWrite(w, `{
 					"data": {
 						"repository": {
@@ -318,18 +413,39 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 		},
 		"when all code owners are handling too many open pull requests": {
 			totalReviewers:    1,
-			maxReviews:        3,
+			maxReviews:        1,
 			excludedReviewers: aladino.BuildArrayValue([]aladino.Value{}),
 			graphQLHandler: func(w http.ResponseWriter, r *http.Request) {
 				graphQLQuery := utils.MustRead(r.Body)
-				switch utils.MinifyQuery(graphQLQuery) {
-				case utils.MinifyQuery(jackOpenReviewsQuery),
-					utils.MinifyQuery(janeOpenReviewsQuery),
-					utils.MinifyQuery(johnOpenReviewsQuery):
+				if utils.MinifyQuery(getOpenPullRequestsAsReviewerQuery) == utils.MinifyQuery(graphQLQuery) {
 					utils.MustWrite(w, `{
 						"data": {
-							"search": {
-								"issueCount": 5
+							"repository": {
+								"pullRequests": {
+									"nodes": [
+										{
+											"reviewRequests": {
+												"nodes": [
+													{
+														"requestedReviewer": {
+															"login": "john"
+														}
+													},
+													{
+														"requestedReviewer": {
+															"login": "jane"
+														}
+													},
+													{
+														"requestedReviewer": {
+															"login": "jack"
+														}
+													}
+												]
+											}
+										}
+									]
+								}
 							}
 						}
 					}`)
@@ -467,29 +583,37 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 		},
 		"when first code owner is available": {
 			totalReviewers:    1,
-			maxReviews:        3,
+			maxReviews:        1,
 			excludedReviewers: aladino.BuildArrayValue([]aladino.Value{}),
 			graphQLHandler: func(w http.ResponseWriter, r *http.Request) {
 				graphQLQuery := utils.MustRead(r.Body)
-				switch utils.MinifyQuery(graphQLQuery) {
-				case utils.MinifyQuery(janeOpenReviewsQuery),
-					utils.MinifyQuery(johnOpenReviewsQuery):
+				if utils.MinifyQuery(getOpenPullRequestsAsReviewerQuery) == utils.MinifyQuery(graphQLQuery) {
 					utils.MustWrite(w, `{
-						"data": {
-							"search": {
-								"issueCount": 5
+					"data": {
+						"repository": {
+							"pullRequests": {
+								"nodes": [
+									{
+										"reviewRequests": {
+											"nodes": [
+												{
+													"requestedReviewer": {
+														"login": "john"
+													}
+												},
+												{
+													"requestedReviewer": {
+														"login": "jane"
+													}
+												}
+											]
+										}
+									}
+								]
 							}
 						}
-					}`)
-					return
-				case utils.MinifyQuery(jackOpenReviewsQuery):
-					utils.MustWrite(w, `{
-							"data": {
-								"search": {
-									"issueCount": 2
-								}
-							}
-						}`)
+					}
+				}`)
 					return
 				}
 
@@ -628,19 +752,16 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 			excludedReviewers: aladino.BuildArrayValue([]aladino.Value{aladino.BuildStringValue("jack")}),
 			graphQLHandler: func(w http.ResponseWriter, r *http.Request) {
 				graphQLQuery := utils.MustRead(r.Body)
-				switch utils.MinifyQuery(graphQLQuery) {
-				case
-					utils.MinifyQuery(janeOpenReviewsQuery),
-					utils.MinifyQuery(jackOpenReviewsQuery),
-					utils.MinifyQuery(jamesOpenReviewsQuery),
-					utils.MinifyQuery(johnOpenReviewsQuery):
+				if utils.MinifyQuery(getOpenPullRequestsAsReviewerQuery) == utils.MinifyQuery(graphQLQuery) {
 					utils.MustWrite(w, `{
-							"data": {
-								"search": {
-									"issueCount": 2
-								}
+					"data": {
+						"repository": {
+							"pullRequests": {
+								"nodes": []
 							}
-						}`)
+						}
+					}
+				}`)
 					return
 				}
 
@@ -778,31 +899,42 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 		},
 		"when code owner isn't an available assignee": {
 			totalReviewers:    1,
-			maxReviews:        3,
+			maxReviews:        1,
 			excludedReviewers: aladino.BuildArrayValue([]aladino.Value{aladino.BuildStringValue("jack")}),
 			graphQLHandler: func(w http.ResponseWriter, r *http.Request) {
 				graphQLQuery := utils.MustRead(r.Body)
-				switch utils.MinifyQuery(graphQLQuery) {
-				case
-					utils.MinifyQuery(janeOpenReviewsQuery):
+				if utils.MinifyQuery(getOpenPullRequestsAsReviewerQuery) == utils.MinifyQuery(graphQLQuery) {
 					utils.MustWrite(w, `{
-						"data": {
-							"search": {
-								"issueCount": 2
+					"data": {
+						"repository": {
+							"pullRequests": {
+								"nodes": [
+									{
+										"reviewRequests": {
+											"nodes": [
+												{
+													"requestedReviewer": {
+														"login": "jack"
+													}
+												},
+												{
+													"requestedReviewer": {
+														"login": "james"
+													}
+												},
+												{
+													"requestedReviewer": {
+														"login": "john"
+													}
+												}
+											]
+										}
+									}
+								]
 							}
 						}
-					}`)
-				case
-					utils.MinifyQuery(jackOpenReviewsQuery),
-					utils.MinifyQuery(jamesOpenReviewsQuery),
-					utils.MinifyQuery(johnOpenReviewsQuery):
-					utils.MustWrite(w, `{
-							"data": {
-								"search": {
-									"issueCount": 5
-								}
-							}
-						}`)
+					}
+				}`)
 					return
 				}
 

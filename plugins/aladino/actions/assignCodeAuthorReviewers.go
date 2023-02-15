@@ -65,7 +65,7 @@ func assignCodeAuthorReviewersCode(env aladino.Env, args []aladino.Value) error 
 	reviewersUsernames := getUsernamesFromAuthorRank(reviewersRanks)
 	totalOpenPRsAsReviewerByUser, err := githubClient.GetOpenPullRequestsAsReviewer(ctx, targetEntity.Owner, targetEntity.Repo, reviewersUsernames)
 	if err != nil {
-		return fmt.Errorf("error getting open pull request as reviewer: %s", err.Error())
+		return fmt.Errorf("error getting open pull requests as reviewer: %s", err.Error())
 	}
 
 	filteredReviewers := []github.GitBlameAuthorRank{}
@@ -80,7 +80,7 @@ func assignCodeAuthorReviewersCode(env aladino.Env, args []aladino.Value) error 
 
 		totalOpenPRsAsReviewer := totalOpenPRsAsReviewerByUser[reviewerRank.Username]
 
-		if maxAssignedReviews > 0 && totalOpenPRsAsReviewer > maxAssignedReviews {
+		if maxAssignedReviews > 0 && totalOpenPRsAsReviewer >= maxAssignedReviews {
 			continue
 		}
 
