@@ -5,7 +5,6 @@
 package plugins_aladino_actions_test
 
 import (
-	"fmt"
 	"io"
 	"net/http"
 	"testing"
@@ -22,7 +21,6 @@ var comment = plugins_aladino.PluginBuiltIns().Actions["comment"].Code
 
 func TestComment(t *testing.T) {
 	rawComment := "Lorem Ipsum"
-	wantComment := fmt.Sprintf("%s\n%s", aladino.ReviewpadIgnoreCommentAnnotation, rawComment)
 	gotComment := ""
 
 	mockedEnv := aladino.MockDefaultEnv(
@@ -53,5 +51,5 @@ func TestComment(t *testing.T) {
 	err := comment(mockedEnv, args)
 
 	assert.Nil(t, err)
-	assert.Equal(t, wantComment, gotComment)
+	assert.Equal(t, rawComment, gotComment)
 }

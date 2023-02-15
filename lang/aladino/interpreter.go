@@ -223,7 +223,7 @@ func (i *Interpreter) ReportMetrics() error {
 			return err
 		}
 
-		r := fmt.Sprintf("%s%s\n## 📈 Pull Request Metrics\n%s", ReviewpadMetricReportCommentAnnotation, ReviewpadIgnoreCommentAnnotation, report.String())
+		r := fmt.Sprintf("%s\n## 📈 Pull Request Metrics\n%s", ReviewpadMetricReportCommentAnnotation, report.String())
 
 		if comment == nil {
 			err = AddReportComment(i.Env, r)
