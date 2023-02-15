@@ -17,26 +17,27 @@ import (
 
 func AssignCodeAuthorReviewer() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildIntType(), aladino.BuildArrayOfType(aladino.BuildStringType()), aladino.BuildIntType()}, nil),
+		Type: aladino.BuildFunctionType([]aladino.Type{
+			aladino.BuildIntType(),
+			aladino.BuildArrayOfType(aladino.BuildStringType()),
+			aladino.BuildIntType(),
+		}, nil),
 		Code:           assignCodeAuthorReviewer,
 		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest},
 	}
 }
 
-func assignCodeAuthorReviewer(e aladino.Env, args []aladino.Value) error {
-	t := e.GetTarget().(*target.PullRequestTarget)
-	total := args[0].(*aladino.IntValue).Val
-	excludeReviewers := args[1].(*aladino.ArrayValue).Vals
-	maxReviews := args[2].(*aladino.IntValue).Val
-	pr := t.PullRequest
-	ctx := e.GetCtx()
-	targetEntity := t.GetTargetEntity()
-	owner := targetEntity.Owner
-	repo := targetEntity.Repo
-	baseSHA := pr.GetBase().GetSHA()
-	githubClient := e.GetGithubClient()
+func assignCodeAuthorReviewer(env aladino.Env, args []aladino.Value) error {
+	target := env.GetTarget().(*target.PullRequestTarget)
+	totalRequiredReviewers := args[0].(*aladino.IntValue).Val
+	reviewersToExclude := args[1].(*aladino.ArrayValue).Vals
+	maxAssignedReviews := args[2].(*aladino.IntValue).Val
+	pr := target.PullRequest
+	ctx := env.GetCtx()
+	targetEntity := target.GetTargetEntity()
+	githubClient := env.GetGithubClient()
 
-	reviewers, err := t.GetReviewers()
+	reviewers, err := target.GetReviewers()
 	if err != nil {
 		return fmt.Errorf("error getting reviewers: %s", err.Error())
 	}
@@ -45,61 +46,66 @@ func assignCodeAuthorReviewer(e aladino.Env, args []aladino.Value) error {
 		return nil
 	}
 
-	filePaths := []string{}
-	patch := t.Patch
-	for _, fp := range patch {
-		filePaths = append(filePaths, fp.Repr.GetFilename())
+	changedFilesPath := []string{}
+	for _, patch := range target.Patch {
+		changedFilesPath = append(changedFilesPath, patch.Repr.GetFilename())
 	}
 
-	blame, err := githubClient.GetGitBlame(ctx, targetEntity.Owner, targetEntity.Repo, baseSHA, filePaths)
+	gitBlame, err := githubClient.GetGitBlame(ctx, targetEntity.Owner, targetEntity.Repo, pr.GetBase().GetSHA(), changedFilesPath)
 	if err != nil {
 		return fmt.Errorf("error getting git blame information: %s", err.Error())
 	}
 
-	availableAssignees, err := t.GetAvailableAssignees()
+	availableAssignees, err := target.GetAvailableAssignees()
 	if err != nil {
 		return fmt.Errorf("error getting available assignees: %s", err.Error())
 	}
 
-	reviewersRanks := githubClient.ComputeGitBlameRank(blame)
+	reviewersRanks := githubClient.ComputeGitBlameRank(gitBlame)
 	filteredReviewers := []github.GitBlameAuthorRank{}
 	for _, reviewerRank := range reviewersRanks {
-		if !strings.HasSuffix(reviewerRank.Username, "[bot]") && pr.GetUser().GetLogin() != reviewerRank.Username {
-			numberOfOpenReviews, err := githubClient.GetOpenReviewsCountByUser(ctx, owner, repo, reviewerRank.Username)
-			if err != nil {
-				return fmt.Errorf("error getting number of open reviews for user %s: %w", reviewerRank.Username, err)
-			}
+		if strings.HasSuffix(reviewerRank.Username, "[bot]") {
+			continue
+		}
 
-			if maxReviews > 0 && numberOfOpenReviews > maxReviews {
-				continue
-			}
+		if pr.GetUser().GetLogin() == reviewerRank.Username {
+			continue
+		}
 
-			if !isExcluded(excludeReviewers, reviewerRank.Username) && isAvailableAssignee(availableAssignees, reviewerRank.Username) {
-				filteredReviewers = append(filteredReviewers, reviewerRank)
-			}
+		numberOfOpenReviews, err := githubClient.GetOpenReviewsCountByUser(ctx, targetEntity.Owner, targetEntity.Repo, reviewerRank.Username)
+		if err != nil {
+			return fmt.Errorf("error getting number of open reviews for user %s: %w", reviewerRank.Username, err)
+		}
+
+		if maxAssignedReviews > 0 && numberOfOpenReviews > maxAssignedReviews {
+			continue
+		}
+
+		if !isValueInList(reviewersToExclude, reviewerRank.Username) && isAvailableAssignee(availableAssignees, reviewerRank.Username) {
+			filteredReviewers = append(filteredReviewers, reviewerRank)
 		}
 	}
 
 	if len(filteredReviewers) == 0 {
-		return assignRandomReviewerCode(e, nil)
+		return assignRandomReviewerCode(env, nil)
 	}
 
-	if total > len(filteredReviewers) {
-		e.GetLogger().Warnf("number of required reviewers(%d) is less than available code author reviewers(%d)", total, len(filteredReviewers))
-		total = len(filteredReviewers)
+	if totalRequiredReviewers > len(filteredReviewers) {
+		env.GetLogger().Warnf("number of required reviewers(%d) is less than available code author reviewers(%d)", totalRequiredReviewers, len(filteredReviewers))
+		totalRequiredReviewers = len(filteredReviewers)
 	}
 
 	reviewersToRequest := []string{}
-	for i := 0; i < total; i++ {
+	for i := 0; i < totalRequiredReviewers; i++ {
 		reviewersToRequest = append(reviewersToRequest, filteredReviewers[i].Username)
 	}
 
-	return t.RequestReviewers(reviewersToRequest)
+	return target.RequestReviewers(reviewersToRequest)
 }
 
-func isExcluded(excludedReviewers []aladino.Value, username string) bool {
+func isValueInList(excludedReviewers []aladino.Value, value string) bool {
 	for _, excludedReviewer := range excludedReviewers {
-		if excludedReviewer.(*aladino.StringValue).Val == username {
+		if excludedReviewer.(*aladino.StringValue).Val == value {
 			return true
 		}
 	}
