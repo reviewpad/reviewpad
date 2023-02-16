@@ -84,6 +84,7 @@ func PluginBuiltInsWithConfig(config *PluginConfig) *aladino.BuiltIns {
 			"head":                      functions.Head(),
 			"isBinary":                  functions.IsBinary(),
 			"isDraft":                   functions.IsDraft(),
+			"isUpdatedWithBaseBranch":   functions.IsUpdatedWithBaseBranch(),
 			"isLinkedToProject":         functions.IsLinkedToProject(),
 			"isMerged":                  functions.IsMerged(),
 			"isWaitingForReview":        functions.IsWaitingForReview(),
