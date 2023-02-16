@@ -171,6 +171,22 @@ type CompareBaseAndHeadQuery struct {
 	} `graphql:"repository(owner: $owner, name: $name)"`
 }
 
+type PullRequestReviewsInRepoQuery struct {
+	Repository struct {
+		PullRequests struct {
+			Nodes []struct {
+				Reviews struct {
+					Nodes []struct {
+						Author struct {
+							Login string
+						}
+					}
+				} `graphql:"reviews(first: 100)"`
+			}
+		} `graphql:"pullRequests(first: 100, states: OPEN)"`
+	} `graphql:"repository(owner: $owner, name: $name)"`
+}
+
 func GetPullRequestHeadOwnerName(pullRequest *github.PullRequest) string {
 	return pullRequest.Head.Repo.Owner.GetLogin()
 }
@@ -744,6 +760,33 @@ func (c *GithubClient) GetHeadBehindBy(ctx context.Context, owner, repo, prOwner
 	}
 
 	return compareBaseAndHeadQuery.Repository.PullRequest.BaseRef.Compare.BehindBy, nil
+}
+
+func (c *GithubClient) GetTotalReviewsByUserInOrg(ctx context.Context, owner string, username string) (int, error) {
+	var totalReviews int
+
+	var pullRequestReviewsInRepo PullRequestReviewsInRepoQuery
+	variables := map[string]interface{}{
+		"owner": githubv4.String(owner),
+		"name":  githubv4.String(""),
+	}
+
+	err := c.GetClientGraphQL().Query(ctx, &pullRequestReviewsInRepo, variables)
+	if err != nil {
+		return 0, err
+	}
+
+	for _, pr := range pullRequestReviewsInRepo.Repository.PullRequests.Nodes {
+		if pr.Reviews.Nodes != nil {
+			for _, r := range pr.Reviews.Nodes {
+				if string(r.Author.Login) == username {
+					totalReviews++
+				}
+			}
+		}
+	}
+
+	return totalReviews, nil
 }
 
 func isPullRequestReviewer(pullRequest PullRequestsQuery, username string) bool {
