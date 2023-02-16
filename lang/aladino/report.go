@@ -17,7 +17,6 @@ type Report struct {
 	Actions []string
 }
 
-const ReviewpadIgnoreCommentAnnotation = "<!--@annotation-reviewpad-ignore-->"
 const ReviewpadReportCommentAnnotation = "<!--@annotation-reviewpad-report-->"
 const ReviewpadMetricReportCommentAnnotation = "<!--@annotation-reviewpad-metric-report-->"
 
@@ -29,7 +28,7 @@ func builtReportHeader(safeMode bool) string {
 	var sb strings.Builder
 
 	// Annotations
-	sb.WriteString(fmt.Sprintf("%s%s\n", ReviewpadReportCommentAnnotation, ReviewpadIgnoreCommentAnnotation))
+	sb.WriteString(fmt.Sprintf("%s\n", ReviewpadReportCommentAnnotation))
 	// Header
 	if safeMode {
 		sb.WriteString("**Reviewpad Report** (Reviewpad ran in dry-run mode because configuration has changed)\n\n")
@@ -109,7 +108,6 @@ func BuildDryRunExecutionReport(program *engine.Program) string {
 
 	var sb strings.Builder
 
-	sb.WriteString(fmt.Sprintf("%s\n", ReviewpadIgnoreCommentAnnotation))
 	sb.WriteString("**Reviewpad Dry-Run Report**\n\n")
 	sb.WriteString(":scroll: **Actions to be executed**\n")
 	sb.WriteString("```yaml\n")

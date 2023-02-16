@@ -61,7 +61,7 @@ func TestCommentOnce_WhenCommentAlreadyExists(t *testing.T) {
 				mock.GetReposIssuesCommentsByOwnerByRepoByIssueNumber,
 				[]*github.IssueComment{
 					{
-						Body: github.String(fmt.Sprintf("%s%s\n%s", ReviewpadCommentAnnotation, aladino.ReviewpadIgnoreCommentAnnotation, existingComment)),
+						Body: github.String(fmt.Sprintf("%s\n%s", ReviewpadCommentAnnotation, existingComment)),
 					},
 				},
 			),
@@ -117,5 +117,5 @@ func TestCommentOnce_WhenFirstTime(t *testing.T) {
 	err := commentOnce(mockedEnv, args)
 
 	assert.Nil(t, err)
-	assert.Equal(t, fmt.Sprintf("%s%s\n%s", ReviewpadCommentAnnotation, aladino.ReviewpadIgnoreCommentAnnotation, commentToAdd), addedComment)
+	assert.Equal(t, fmt.Sprintf("%s\n%s", ReviewpadCommentAnnotation, commentToAdd), addedComment)
 }
