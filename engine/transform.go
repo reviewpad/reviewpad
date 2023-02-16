@@ -65,7 +65,7 @@ func addDefaultCloseReason(str string) string {
 }
 
 func addDefaultHaveAllChecksRunCompleted(str string) string {
-	allArgsRegex := regexp.MustCompile(`\$haveAllChecksRunCompleted\(((?:\[.*\])|(?:[^,]+)),\s*((?:\[.*\])|(?:[^,]+)),\s*((?:\[.*\])|(?:[^,]+))\)`)
+	allArgsRegex := regexp.MustCompile(`\$haveAllChecksRunCompleted\(((?:\[[^\(\)]*\])|(?:\$.+\(.*\))),\s*((?:\"[^\"]*\")|(?:\$.+\(.*\))),\s((?:\[[^\(\)]*\])|(?:\$.+\(.*\)))\)`)
 	if allArgsRegex.MatchString(str) {
 		return str
 	}
@@ -91,7 +91,7 @@ func addEmptyApproveComment(str string) string {
 }
 
 func addDefaultAssignCodeAuthorReviewer(str string) string {
-	allArgsRegex := regexp.MustCompile(`\$assignCodeAuthorReviewers\((\d+),\s*((?:\[.*\])|(?:[^,]+)),\s*\d+\)`)
+	allArgsRegex := regexp.MustCompile(`^\$assignCodeAuthorReviewers\((\d+),\s*((?:\[.*\])|(?:[^,]+)),\s*\d+\)$`)
 	if allArgsRegex.MatchString(str) {
 		return str
 	}

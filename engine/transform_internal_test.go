@@ -108,8 +108,8 @@ func TestTransformAladinoExpression(t *testing.T) {
 			wantVal: `$haveAllChecksRunCompleted([], "", [])`,
 		},
 		"one $haveAllChecksRunCompleted with no empty arg provided": {
-			arg:     `$haveAllChecksRunCompleted([], "success", [])`,
-			wantVal: `$haveAllChecksRunCompleted([], "success", [])`,
+			arg:     `$haveAllChecksRunCompleted(["build", "test"], "success", ["skipped"])`,
+			wantVal: `$haveAllChecksRunCompleted(["build", "test"], "success", ["skipped"])`,
 		},
 		"multiple $haveAllChecksRunCompleted": {
 			arg:     `$haveAllChecksRunCompleted() && true && $haveAllChecksRunCompleted(["build"]) && $haveAllChecksRunCompleted(["build", "run"], "completed") && $haveAllChecksRunCompleted([]) && $haveAllChecksRunCompleted([], "")`,
