@@ -65,12 +65,18 @@ func addDefaultCloseReason(str string) string {
 }
 
 func addDefaultHaveAllChecksRunCompleted(str string) string {
-	r := regexp.MustCompile(`\$haveAllChecksRunCompleted\(((?:\[(?:".*")?(?:,".*")?\])|(?:[^,\s\[\]]+))?(?:,\s*("[^\(\)]*"))?\)`)
-	str = r.ReplaceAllString(str, `$$haveAllChecksRunCompleted($1, $2)`)
-	r = regexp.MustCompile(`\$haveAllChecksRunCompleted\(((?:\[(?:".*")?(?:,".*")?\])|(?:[^,\s]+))?(\,\s?)?\)`)
+	allArgsRegex := regexp.MustCompile(`\$haveAllChecksRunCompleted\(((?:\[[^\(\)]*\])|(?:\$.+\(.*\))),\s*((?:\"[^\"]*\")|(?:\$.+\(.*\))),\s((?:\[[^\(\)]*\])|(?:\$.+\(.*\)))\)`)
+	if allArgsRegex.MatchString(str) {
+		return str
+	}
+
+	str = strings.ReplaceAll(str, "$haveAllChecksRunCompleted()", "$haveAllChecksRunCompleted([])")
+
+	r := regexp.MustCompile(`\$haveAllChecksRunCompleted\((\[[^\(\)]+\]|(?:\$.+\(.*\))|(?:[^,\(\)]+))\)`)
 	str = r.ReplaceAllString(str, `$$haveAllChecksRunCompleted($1, "")`)
-	r = regexp.MustCompile(`\$haveAllChecksRunCompleted\(,\s?""\)`)
-	return r.ReplaceAllString(str, `$$haveAllChecksRunCompleted([], "")`)
+
+	r = regexp.MustCompile(`\$haveAllChecksRunCompleted\((\[[^\(\)]+\]|(?:\$.+\(.*\))|(?:[^,\(\)]+)),\s*(\[[^\(\)]+\]|(?:\$.+\(.*\))|(?:[^,\(\)]+))\)`)
+	return r.ReplaceAllString(str, `$$haveAllChecksRunCompleted($1, $2, [])`)
 }
 
 func addDefaultJoinSeparator(str string) string {

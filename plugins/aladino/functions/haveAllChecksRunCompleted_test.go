@@ -17,12 +17,13 @@ var haveAllChecksRunCompleted = plugins_aladino.PluginBuiltIns().Functions["have
 
 func TestHaveAllChecksRunCompleted(t *testing.T) {
 	tests := map[string]struct {
-		checkRunsToIgnore  *aladino.ArrayValue
-		conclusion         *aladino.StringValue
-		mockBackendOptions []mock.MockBackendOption
-		graphQLHandler     http.HandlerFunc
-		wantResult         aladino.Value
-		wantErr            error
+		checkRunsToIgnore   *aladino.ArrayValue
+		conclusion          *aladino.StringValue
+		conclusionsToIgnore *aladino.ArrayValue
+		mockBackendOptions  []mock.MockBackendOption
+		graphQLHandler      http.HandlerFunc
+		wantResult          aladino.Value
+		wantErr             error
 	}{
 		"when last commit sha failed": {
 			mockBackendOptions: []mock.MockBackendOption{},
@@ -49,8 +50,9 @@ func TestHaveAllChecksRunCompleted(t *testing.T) {
 			wantResult: aladino.BuildBoolValue(false),
 		},
 		"when listing check runs fails": {
-			checkRunsToIgnore: aladino.BuildArrayValue([]aladino.Value{}),
-			conclusion:        aladino.BuildStringValue(""),
+			checkRunsToIgnore:   aladino.BuildArrayValue([]aladino.Value{}),
+			conclusion:          aladino.BuildStringValue(""),
+			conclusionsToIgnore: aladino.BuildArrayValue([]aladino.Value{}),
 			mockBackendOptions: []mock.MockBackendOption{
 				mock.WithRequestMatchHandler(
 					mock.GetReposCommitsCheckRunsByOwnerByRepoByRef,
@@ -84,8 +86,9 @@ func TestHaveAllChecksRunCompleted(t *testing.T) {
 			},
 		},
 		"when there are no check runs": {
-			checkRunsToIgnore: aladino.BuildArrayValue([]aladino.Value{}),
-			conclusion:        aladino.BuildStringValue(""),
+			checkRunsToIgnore:   aladino.BuildArrayValue([]aladino.Value{}),
+			conclusion:          aladino.BuildStringValue(""),
+			conclusionsToIgnore: aladino.BuildArrayValue([]aladino.Value{}),
 			mockBackendOptions: []mock.MockBackendOption{
 				mock.WithRequestMatch(
 					mock.GetReposCommitsCheckRunsByOwnerByRepoByRef,
@@ -117,8 +120,9 @@ func TestHaveAllChecksRunCompleted(t *testing.T) {
 			wantResult: aladino.BuildBoolValue(true),
 		},
 		"when all check runs are completed": {
-			checkRunsToIgnore: aladino.BuildArrayValue([]aladino.Value{}),
-			conclusion:        aladino.BuildStringValue(""),
+			checkRunsToIgnore:   aladino.BuildArrayValue([]aladino.Value{}),
+			conclusion:          aladino.BuildStringValue(""),
+			conclusionsToIgnore: aladino.BuildArrayValue([]aladino.Value{}),
 			mockBackendOptions: []mock.MockBackendOption{
 				mock.WithRequestMatch(
 					mock.GetReposCommitsCheckRunsByOwnerByRepoByRef,
@@ -161,8 +165,9 @@ func TestHaveAllChecksRunCompleted(t *testing.T) {
 			wantResult: aladino.BuildBoolValue(true),
 		},
 		"when all check runs are not completed with success conclusion": {
-			checkRunsToIgnore: aladino.BuildArrayValue([]aladino.Value{}),
-			conclusion:        aladino.BuildStringValue("success"),
+			checkRunsToIgnore:   aladino.BuildArrayValue([]aladino.Value{}),
+			conclusion:          aladino.BuildStringValue("success"),
+			conclusionsToIgnore: aladino.BuildArrayValue([]aladino.Value{}),
 			mockBackendOptions: []mock.MockBackendOption{
 				mock.WithRequestMatch(
 					mock.GetReposCommitsCheckRunsByOwnerByRepoByRef,
@@ -205,8 +210,9 @@ func TestHaveAllChecksRunCompleted(t *testing.T) {
 			wantResult: aladino.BuildBoolValue(false),
 		},
 		"when all check runs are completed with success conclusion": {
-			checkRunsToIgnore: aladino.BuildArrayValue([]aladino.Value{}),
-			conclusion:        aladino.BuildStringValue("success"),
+			checkRunsToIgnore:   aladino.BuildArrayValue([]aladino.Value{}),
+			conclusion:          aladino.BuildStringValue("success"),
+			conclusionsToIgnore: aladino.BuildArrayValue([]aladino.Value{}),
 			mockBackendOptions: []mock.MockBackendOption{
 				mock.WithRequestMatch(
 					mock.GetReposCommitsCheckRunsByOwnerByRepoByRef,
@@ -249,8 +255,9 @@ func TestHaveAllChecksRunCompleted(t *testing.T) {
 			wantResult: aladino.BuildBoolValue(true),
 		},
 		"when all check runs are completed with ignored": {
-			checkRunsToIgnore: aladino.BuildArrayValue([]aladino.Value{aladino.BuildStringValue("build")}),
-			conclusion:        aladino.BuildStringValue(""),
+			checkRunsToIgnore:   aladino.BuildArrayValue([]aladino.Value{aladino.BuildStringValue("build")}),
+			conclusion:          aladino.BuildStringValue(""),
+			conclusionsToIgnore: aladino.BuildArrayValue([]aladino.Value{}),
 			mockBackendOptions: []mock.MockBackendOption{
 				mock.WithRequestMatch(
 					mock.GetReposCommitsCheckRunsByOwnerByRepoByRef,
@@ -292,8 +299,9 @@ func TestHaveAllChecksRunCompleted(t *testing.T) {
 			wantResult: aladino.BuildBoolValue(true),
 		},
 		"when all check runs are completed with ignored and success conclusion": {
-			checkRunsToIgnore: aladino.BuildArrayValue([]aladino.Value{aladino.BuildStringValue("run")}),
-			conclusion:        aladino.BuildStringValue("success"),
+			checkRunsToIgnore:   aladino.BuildArrayValue([]aladino.Value{aladino.BuildStringValue("run")}),
+			conclusion:          aladino.BuildStringValue("success"),
+			conclusionsToIgnore: aladino.BuildArrayValue([]aladino.Value{}),
 			mockBackendOptions: []mock.MockBackendOption{
 				mock.WithRequestMatch(
 					mock.GetReposCommitsCheckRunsByOwnerByRepoByRef,
@@ -341,8 +349,9 @@ func TestHaveAllChecksRunCompleted(t *testing.T) {
 			wantResult: aladino.BuildBoolValue(true),
 		},
 		"when all check runs are completed with ignored and failure conclusion": {
-			checkRunsToIgnore: aladino.BuildArrayValue([]aladino.Value{aladino.BuildStringValue("build")}),
-			conclusion:        aladino.BuildStringValue("failure"),
+			checkRunsToIgnore:   aladino.BuildArrayValue([]aladino.Value{aladino.BuildStringValue("build")}),
+			conclusion:          aladino.BuildStringValue("failure"),
+			conclusionsToIgnore: aladino.BuildArrayValue([]aladino.Value{}),
 			mockBackendOptions: []mock.MockBackendOption{
 				mock.WithRequestMatch(
 					mock.GetReposCommitsCheckRunsByOwnerByRepoByRef,
@@ -390,8 +399,9 @@ func TestHaveAllChecksRunCompleted(t *testing.T) {
 			wantResult: aladino.BuildBoolValue(true),
 		},
 		"when reviewpad is one of the checks": {
-			checkRunsToIgnore: aladino.BuildArrayValue([]aladino.Value{}),
-			conclusion:        aladino.BuildStringValue(""),
+			checkRunsToIgnore:   aladino.BuildArrayValue([]aladino.Value{}),
+			conclusion:          aladino.BuildStringValue(""),
+			conclusionsToIgnore: aladino.BuildArrayValue([]aladino.Value{}),
 			mockBackendOptions: []mock.MockBackendOption{
 				mock.WithRequestMatch(
 					mock.GetReposCommitsCheckRunsByOwnerByRepoByRef,
@@ -432,13 +442,63 @@ func TestHaveAllChecksRunCompleted(t *testing.T) {
 			},
 			wantResult: aladino.BuildBoolValue(true),
 		},
+		"when check runs are skipped with ignored conclusion and check run": {
+			checkRunsToIgnore:   aladino.BuildArrayValue([]aladino.Value{aladino.BuildStringValue("build")}),
+			conclusion:          aladino.BuildStringValue("success"),
+			conclusionsToIgnore: aladino.BuildArrayValue([]aladino.Value{aladino.BuildStringValue("skipped")}),
+			mockBackendOptions: []mock.MockBackendOption{
+				mock.WithRequestMatch(
+					mock.GetReposCommitsCheckRunsByOwnerByRepoByRef,
+					github.ListCheckRunsResults{
+						Total: github.Int(2),
+						CheckRuns: []*github.CheckRun{
+							{
+								Name:       github.String("build"),
+								Status:     github.String("completed"),
+								Conclusion: github.String("failure"),
+							},
+							{
+								Name:       github.String("run"),
+								Status:     github.String("in_progress"),
+								Conclusion: github.String("skipped"),
+							},
+							{
+								Name:       github.String("test"),
+								Status:     github.String("completed"),
+								Conclusion: github.String("skipped"),
+							},
+						},
+					},
+				),
+			},
+			graphQLHandler: func(w http.ResponseWriter, r *http.Request) {
+				utils.MustWrite(w, `{
+					"data": {
+						"repository": {
+							"pullRequest": {
+								"commits": {
+									"nodes": [
+										{
+											"commit": {
+												"oid": "b0b55a8a10139a324f3ccb1a6481862a4b5b5bcc"
+											}
+										}
+									]
+								}
+							}
+						}
+					}
+				}`)
+			},
+			wantResult: aladino.BuildBoolValue(true),
+		},
 	}
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			env := aladino.MockDefaultEnv(t, test.mockBackendOptions, test.graphQLHandler, nil, nil)
 
-			res, err := haveAllChecksRunCompleted(env, []aladino.Value{test.checkRunsToIgnore, test.conclusion})
+			res, err := haveAllChecksRunCompleted(env, []aladino.Value{test.checkRunsToIgnore, test.conclusion, test.conclusionsToIgnore})
 
 			githubError := &github.ErrorResponse{}
 			if errors.As(err, &githubError) {

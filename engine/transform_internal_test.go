@@ -97,23 +97,23 @@ func TestTransformAladinoExpression(t *testing.T) {
 		},
 		"multiple $haveAllChecksRunCompleted with one empty": {
 			arg:     `$haveAllChecksRunCompleted() && true && $haveAllChecksRunCompleted(["build"])`,
-			wantVal: `$haveAllChecksRunCompleted([], "") && true && $haveAllChecksRunCompleted(["build"], "")`,
+			wantVal: `$haveAllChecksRunCompleted([], "", []) && true && $haveAllChecksRunCompleted(["build"], "", [])`,
 		},
 		"one $haveAllChecksRunCompleted with arg provided": {
-			arg:     `$haveAllChecksRunCompleted(["build", "test"], "")`,
-			wantVal: `$haveAllChecksRunCompleted(["build", "test"], "")`,
+			arg:     `$haveAllChecksRunCompleted(["build", "test"], "", [])`,
+			wantVal: `$haveAllChecksRunCompleted(["build", "test"], "", [])`,
 		},
 		"one $haveAllChecksRunCompleted with no arg provided": {
 			arg:     `$haveAllChecksRunCompleted()`,
-			wantVal: `$haveAllChecksRunCompleted([], "")`,
+			wantVal: `$haveAllChecksRunCompleted([], "", [])`,
 		},
 		"one $haveAllChecksRunCompleted with no empty arg provided": {
-			arg:     `$haveAllChecksRunCompleted([], "success")`,
-			wantVal: `$haveAllChecksRunCompleted([], "success")`,
+			arg:     `$haveAllChecksRunCompleted(["build", "test"], "success", ["skipped"])`,
+			wantVal: `$haveAllChecksRunCompleted(["build", "test"], "success", ["skipped"])`,
 		},
-		"multiple $haveAllChecksRunCompleted": {
-			arg:     `$haveAllChecksRunCompleted() && true && $haveAllChecksRunCompleted(["build"]) && $haveAllChecksRunCompleted(["build", "run"], "completed") && $haveAllChecksRunCompleted([]) && $haveAllChecksRunCompleted([], "")`,
-			wantVal: `$haveAllChecksRunCompleted([], "") && true && $haveAllChecksRunCompleted(["build"], "") && $haveAllChecksRunCompleted(["build", "run"], "completed") && $haveAllChecksRunCompleted([], "") && $haveAllChecksRunCompleted([], "")`,
+		"one $haveAllChecksRunCompleted with two args provided": {
+			arg:     `$haveAllChecksRunCompleted(["build"], "completed")`,
+			wantVal: `$haveAllChecksRunCompleted(["build"], "completed", [])`,
 		},
 		"join empty array with empty separator": {
 			arg:     `$join([])`,
