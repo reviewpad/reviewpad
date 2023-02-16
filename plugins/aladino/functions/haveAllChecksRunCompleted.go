@@ -22,6 +22,7 @@ func HaveAllChecksRunCompleted() *aladino.BuiltInFunction {
 func haveAllChecksRunCompleted(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
 	checkRunsToIgnore := args[0].(*aladino.ArrayValue)
 	conclusion := args[1].(*aladino.StringValue)
+	checkConclusionsToIgnore := args[2].(*aladino.ArrayValue)
 	pullRequest := e.GetTarget().(*target.PullRequestTarget)
 	owner := pullRequest.GetTargetEntity().Owner
 	repo := pullRequest.GetTargetEntity().Repo
@@ -49,8 +50,13 @@ func haveAllChecksRunCompleted(e aladino.Env, args []aladino.Value) (aladino.Val
 		ignoredRuns[item.(*aladino.StringValue).Val] = true
 	}
 
+	ignoredConclusions := map[string]bool{}
+	for _, ignoredConclusion := range checkConclusionsToIgnore.Vals {
+		ignoredConclusions[ignoredConclusion.(*aladino.StringValue).Val] = true
+	}
+
 	for _, checkRun := range checkRuns {
-		if ignoredRuns[checkRun.GetName()] {
+		if isIgnoredCheckRun(checkRun, ignoredRuns, ignoredConclusions) {
 			continue
 		}
 
@@ -64,4 +70,8 @@ func haveAllChecksRunCompleted(e aladino.Env, args []aladino.Value) (aladino.Val
 	}
 
 	return aladino.BuildBoolValue(true), nil
+}
+
+func isIgnoredCheckRun(checkRun *github.CheckRun, ignoredRuns, ignoredConclusions map[string]bool) bool {
+	return ignoredRuns[checkRun.GetName()] || ignoredConclusions[checkRun.GetConclusion()]
 }
