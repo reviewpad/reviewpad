@@ -13,7 +13,11 @@ import (
 
 func HaveAllChecksRunCompleted() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildArrayOfType(aladino.BuildStringType()), aladino.BuildStringType()}, aladino.BuildBoolType()),
+		Type: aladino.BuildFunctionType([]aladino.Type{
+			aladino.BuildArrayOfType(aladino.BuildStringType()),
+			aladino.BuildStringType(),
+			aladino.BuildArrayOfType(aladino.BuildStringType()),
+		}, aladino.BuildBoolType()),
 		Code:           haveAllChecksRunCompleted,
 		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest},
 	}
