@@ -159,6 +159,18 @@ type LastFiftyOpenedPullRequestsQuery struct {
 	} `graphql:"repository(owner: $owner, name: $name)"`
 }
 
+type CompareBaseAndHeadQuery struct {
+	Repository struct {
+		PullRequest struct {
+			BaseRef struct {
+				Compare struct {
+					BehindBy int
+				} `graphql:"compare(headRef: $headRef)"`
+			} `graphql:"baseRef"`
+		} `graphql:"pullRequest(number: $number)"`
+	} `graphql:"repository(owner: $owner, name: $name)"`
+}
+
 func GetPullRequestHeadOwnerName(pullRequest *github.PullRequest) string {
 	return pullRequest.Head.Repo.Owner.GetLogin()
 }
@@ -714,6 +726,24 @@ func (c *GithubClient) GetOpenPullRequestsAsReviewer(ctx context.Context, owner 
 	}
 
 	return totalOpenPRsAsReviewerByUser, nil
+}
+
+func (c *GithubClient) GetHeadBehindBy(ctx context.Context, owner, repo, prOwner, headBranch string, number int) (int, error) {
+	var compareBaseAndHeadQuery CompareBaseAndHeadQuery
+	compareBaseAndHeadQueryVariables := map[string]interface{}{
+		"owner": githubv4.String(owner),
+		"name":  githubv4.String(repo),
+		// We have to have the head ref in the format login:branch in order to support
+		// comparisons across forks
+		"headRef": githubv4.String(fmt.Sprintf("%s:%s", prOwner, headBranch)),
+		"number":  githubv4.Int(number),
+	}
+
+	if err := c.GetClientGraphQL().Query(ctx, &compareBaseAndHeadQuery, compareBaseAndHeadQueryVariables); err != nil {
+		return 0, err
+	}
+
+	return compareBaseAndHeadQuery.Repository.PullRequest.BaseRef.Compare.BehindBy, nil
 }
 
 func isPullRequestReviewer(pullRequest PullRequestsQuery, username string) bool {
