@@ -5,7 +5,7 @@
 package plugins_aladino_functions
 
 import (
-	"log"
+	"fmt"
 	"strings"
 
 	host "github.com/reviewpad/reviewpad/v3/codehost/github"
@@ -49,7 +49,7 @@ func totalCodeReviewsInOrganizationCode(e aladino.Env, args []aladino.Value) (al
 		reviewsCount += userReviewsCountInRepo
 	}
 
-	log.Printf("The user %s has created %d reviews in open pull requests.", username, reviewsCount)
+	e.GetLogger().Logger.Info(fmt.Sprintf("The user %s has created %d reviews in open pull requests.", username, reviewsCount))
 
 	return aladino.BuildIntValue(reviewsCount), nil
 }
