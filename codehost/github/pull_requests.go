@@ -171,7 +171,20 @@ type CompareBaseAndHeadQuery struct {
 	} `graphql:"repository(owner: $owner, name: $name)"`
 }
 
-type PullRequestReviewsInRepoQuery struct {
+type RepositoriesQuery struct {
+	RepositoryOwner struct {
+		Login        string
+		Repositories struct {
+			Nodes    []struct{ NameWithOwner string }
+			PageInfo struct {
+				HasNextPage bool
+				EndCursor   string
+			}
+		} `graphql:"repositories(first: $perPage, after: $after, ownerAffiliations: OWNER)"`
+	} `graphql:"repositoryOwner(login: $login)"`
+}
+
+type OpenPullRequestsInRepoQuery struct {
 	Repository struct {
 		PullRequests struct {
 			Nodes []struct {
@@ -181,9 +194,13 @@ type PullRequestReviewsInRepoQuery struct {
 							Login string
 						}
 					}
-				} `graphql:"reviews(first: 100)"`
+				} `graphql:"reviews(first: $perPage)"`
 			}
-		} `graphql:"pullRequests(first: 100, states: OPEN)"`
+			PageInfo struct {
+				EndCursor   githubv4.String
+				HasNextPage bool
+			}
+		} `graphql:"pullRequests(states: [OPEN], first: $perPage, after: $prCursor)"`
 	} `graphql:"repository(owner: $owner, name: $name)"`
 }
 
@@ -747,8 +764,7 @@ func (c *GithubClient) GetOpenPullRequestsAsReviewer(ctx context.Context, owner 
 func (c *GithubClient) GetHeadBehindBy(ctx context.Context, owner, repo, prOwner, headBranch string, number int) (int, error) {
 	var compareBaseAndHeadQuery CompareBaseAndHeadQuery
 	compareBaseAndHeadQueryVariables := map[string]interface{}{
-		"owner": githubv4.String(owner),
-		"name":  githubv4.String(repo),
+		"name": githubv4.String(repo),
 		// We have to have the head ref in the format login:branch in order to support
 		// comparisons across forks
 		"headRef": githubv4.String(fmt.Sprintf("%s:%s", prOwner, headBranch)),
@@ -762,31 +778,70 @@ func (c *GithubClient) GetHeadBehindBy(ctx context.Context, owner, repo, prOwner
 	return compareBaseAndHeadQuery.Repository.PullRequest.BaseRef.Compare.BehindBy, nil
 }
 
-func (c *GithubClient) GetTotalReviewsByUserInOrg(ctx context.Context, owner string, username string) (int, error) {
-	var totalReviews int
+func (c *GithubClient) GetRepositoriesByOrgOrUserLogin(ctx context.Context, orgOrUserLogin string) ([]string, error) {
+	var allRepos []string
+	var cursor *githubv4.String
 
-	var pullRequestReviewsInRepo PullRequestReviewsInRepoQuery
-	variables := map[string]interface{}{
-		"owner": githubv4.String(owner),
-		"name":  githubv4.String(""),
+	repositoriesData := map[string]interface{}{
+		"login": githubv4.String(orgOrUserLogin),
+		"after": cursor,
 	}
 
-	err := c.GetClientGraphQL().Query(ctx, &pullRequestReviewsInRepo, variables)
-	if err != nil {
-		return 0, err
+	for {
+		var repositories RepositoriesQuery
+		err := c.GetClientGraphQL().Query(ctx, &repositories, repositoriesData)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, node := range repositories.RepositoryOwner.Repositories.Nodes {
+			allRepos = append(allRepos, node.NameWithOwner)
+		}
+
+		if !repositories.RepositoryOwner.Repositories.PageInfo.HasNextPage {
+			break
+		}
+
+		repositoriesData["after"] = githubv4.String(repositories.RepositoryOwner.Repositories.PageInfo.EndCursor)
 	}
 
-	for _, pr := range pullRequestReviewsInRepo.Repository.PullRequests.Nodes {
-		if pr.Reviews.Nodes != nil {
-			for _, r := range pr.Reviews.Nodes {
-				if string(r.Author.Login) == username {
-					totalReviews++
+	return allRepos, nil
+}
+
+func (c *GithubClient) GetReviewsCountByUserFromOpenPullRequests(ctx context.Context, repoOwner, repoName, username string) (int, error) {
+	var totalCount int
+	var prCursor *githubv4.String
+	var openPullRequestsInRepo OpenPullRequestsInRepoQuery
+
+	openPullRequestsInRepoData := map[string]interface{}{
+		"owner":    githubv4.String(repoOwner),
+		"name":     githubv4.String(repoName),
+		"perPage":  githubv4.Int(100),
+		"prCursor": prCursor,
+	}
+
+	for {
+		err := c.GetClientGraphQL().Query(ctx, &openPullRequestsInRepo, openPullRequestsInRepoData)
+		if err != nil {
+			return 0, err
+		}
+
+		for _, pullRequest := range openPullRequestsInRepo.Repository.PullRequests.Nodes {
+			for _, review := range pullRequest.Reviews.Nodes {
+				if review.Author.Login == username {
+					totalCount++
 				}
 			}
 		}
+
+		if !openPullRequestsInRepo.Repository.PullRequests.PageInfo.HasNextPage {
+			break
+		}
+
+		openPullRequestsInRepoData["prCursor"] = &openPullRequestsInRepo.Repository.PullRequests.PageInfo.EndCursor
 	}
 
-	return totalReviews, nil
+	return totalCount, nil
 }
 
 func isPullRequestReviewer(pullRequest PullRequestsQuery, username string) bool {
