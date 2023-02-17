@@ -764,7 +764,8 @@ func (c *GithubClient) GetOpenPullRequestsAsReviewer(ctx context.Context, owner 
 func (c *GithubClient) GetHeadBehindBy(ctx context.Context, owner, repo, prOwner, headBranch string, number int) (int, error) {
 	var compareBaseAndHeadQuery CompareBaseAndHeadQuery
 	compareBaseAndHeadQueryVariables := map[string]interface{}{
-		"name": githubv4.String(repo),
+		"owner": githubv4.String(owner),
+		"name":  githubv4.String(repo),
 		// We have to have the head ref in the format login:branch in order to support
 		// comparisons across forks
 		"headRef": githubv4.String(fmt.Sprintf("%s:%s", prOwner, headBranch)),
