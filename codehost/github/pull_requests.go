@@ -783,8 +783,9 @@ func (c *GithubClient) GetRepositoriesByOrgOrUserLogin(ctx context.Context, orgO
 	var cursor *githubv4.String
 
 	repositoriesData := map[string]interface{}{
-		"login": githubv4.String(orgOrUserLogin),
-		"after": cursor,
+		"login":   githubv4.String(orgOrUserLogin),
+		"perPage": githubv4.Int(100),
+		"after":   cursor,
 	}
 
 	for {
