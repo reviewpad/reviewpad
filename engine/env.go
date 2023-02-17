@@ -25,12 +25,6 @@ const GroupTypeFilter GroupType = "filter"
 const ExitStatusSuccess ExitStatus = 0
 const ExitStatusFailure ExitStatus = 1
 
-type Check struct {
-	Name   string
-	Status CheckState
-	Reason string
-}
-
 type CheckState string
 
 const (
@@ -49,7 +43,6 @@ type Interpreter interface {
 	ExecStatement(statement *Statement) error
 	Report(mode string, safeMode bool) error
 	ReportMetrics() error
-	ReportChecks() error
 }
 
 type Env struct {

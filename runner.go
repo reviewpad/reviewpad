@@ -246,15 +246,6 @@ func runReviewpadFile(
 		logger.WithError(err).Errorf("error collecting trigger analysis")
 	}
 
-	if targetEntity.Kind == handler.PullRequest && !dryRun {
-		err = aladinoInterpreter.ReportChecks()
-		if err != nil {
-			logErrorAndCollect(logger, collector, "error reporting checks", err)
-			// Do not fail if there's an error creating the commit status
-			// When using Reviewpad as a GitHub Action without a GitHub token Reviewpad won't be able to create the commit status.
-		}
-	}
-
 	exitStatus, err := aladinoInterpreter.ExecProgram(program)
 	if err != nil {
 		logErrorAndCollect(logger, collector, "error executing configuration file", err)

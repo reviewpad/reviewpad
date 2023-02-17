@@ -11,7 +11,6 @@ import (
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
 	"github.com/reviewpad/reviewpad/v3/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v3/collector"
-	"github.com/reviewpad/reviewpad/v3/engine"
 	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/sirupsen/logrus"
 )
@@ -24,8 +23,6 @@ const (
 	SEVERITY_WARNING Severity = 3
 	SEVERITY_INFO    Severity = 4
 )
-
-const ReviewpadMergeGateCheckName = "reviewpad merge gate"
 
 type TypeEnv map[string]Type
 
@@ -40,7 +37,6 @@ type Env interface {
 	GetDryRun() bool
 	GetEventPayload() interface{}
 	GetRegisterMap() RegisterMap
-	GetChecks() map[string]engine.Check
 	GetReport() *Report
 	GetTarget() codehost.Target
 	GetLogger() *logrus.Entry
@@ -55,7 +51,6 @@ type BaseEnv struct {
 	DryRun                   bool
 	EventPayload             interface{}
 	RegisterMap              RegisterMap
-	Checks                   map[string]engine.Check
 	Report                   *Report
 	Target                   codehost.Target
 	Logger                   *logrus.Entry
@@ -91,10 +86,6 @@ func (e *BaseEnv) GetEventPayload() interface{} {
 
 func (e *BaseEnv) GetRegisterMap() RegisterMap {
 	return e.RegisterMap
-}
-
-func (e *BaseEnv) GetChecks() map[string]engine.Check {
-	return e.Checks
 }
 
 func (e *BaseEnv) GetReport() *Report {
@@ -134,13 +125,6 @@ func NewEvalEnv(
 ) (Env, error) {
 	registerMap := RegisterMap(make(map[string]Value))
 	report := &Report{Actions: make([]string, 0)}
-	checks := map[string]engine.Check{
-		ReviewpadMergeGateCheckName: {
-			Name:   ReviewpadMergeGateCheckName,
-			Status: engine.CheckStateSuccess,
-			Reason: "Completed successfully",
-		},
-	}
 
 	input := &BaseEnv{
 		BuiltIns:                 builtIns,
@@ -151,7 +135,6 @@ func NewEvalEnv(
 		DryRun:                   dryRun,
 		EventPayload:             eventPayload,
 		RegisterMap:              registerMap,
-		Checks:                   checks,
 		Report:                   report,
 		Logger:                   logger,
 	}

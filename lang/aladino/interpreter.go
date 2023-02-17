@@ -242,30 +242,6 @@ func (i *Interpreter) ReportMetrics() error {
 	return nil
 }
 
-func (i *Interpreter) ReportChecks() error {
-	for _, check := range i.Env.GetChecks() {
-		targetEntity := i.Env.GetTarget().GetTargetEntity()
-		ctx := i.Env.GetCtx()
-		pr := i.Env.GetTarget().(*target.PullRequestTarget).PullRequest
-
-		createCommitStatusOptions := &gh.CreateCommitStatusOptions{
-			Context:     check.Name,
-			State:       string(check.Status),
-			Description: check.Reason,
-		}
-
-		if len(check.Reason) > 140 {
-			createCommitStatusOptions.Description = check.Reason[:140]
-		}
-
-		_, err := i.Env.GetGithubClient().CreateCommitStatus(ctx, targetEntity.Owner, targetEntity.Repo, pr.GetHead().GetSHA(), createCommitStatusOptions)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
 func NewInterpreter(
 	ctx context.Context,
 	logger *logrus.Entry,
