@@ -15,6 +15,8 @@ import (
 	"github.com/reviewpad/reviewpad/v3/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
+	"github.com/reviewpad/reviewpad/v3/utils"
+	"golang.org/x/exp/slices"
 )
 
 func AssignCodeAuthorReviewers() *aladino.BuiltInAction {
@@ -61,8 +63,11 @@ func assignCodeAuthorReviewersCode(env aladino.Env, args []aladino.Value) error 
 		return fmt.Errorf("error getting authors from git blame: %s", err)
 	}
 
+	// Get all available assignees that are not authors
+	nonAuthorAvailableAssignees := getNonAuthorAvailableAssignees(availableAssignees, authors)
+
 	// Fetch the total number of open pull requests that each author has already assigned to them as a reviewer.
-	totalOpenPRsAsReviewerByUser, err := gitHubClient.GetOpenPullRequestsAsReviewer(env.GetCtx(), pr.GetTargetEntity().Owner, pr.GetTargetEntity().Repo, authors)
+	totalOpenPRsAsReviewerByUser, err := gitHubClient.GetOpenPullRequestsAsReviewer(env.GetCtx(), pr.GetTargetEntity().Owner, pr.GetTargetEntity().Repo, append(authors, nonAuthorAvailableAssignees...))
 	if err != nil {
 		return fmt.Errorf("error getting open pull requests as reviewer: %s", err)
 	}
@@ -74,8 +79,24 @@ func assignCodeAuthorReviewersCode(env aladino.Env, args []aladino.Value) error 
 		}
 	}
 
+	// If there are no authors eligible to review
+	// Find eligible reviewers from the available assignees and pick one at random
 	if len(selectedReviewers) == 0 {
-		return assignRandomReviewerCode(env, nil)
+		for _, assignee := range nonAuthorAvailableAssignees {
+			if isAssigneeEligibleToReview(assignee, pr.PullRequest, reviewersToExclude, totalOpenPRsAsReviewerByUser[assignee], maxAllowedAssignedReviews) {
+				selectedReviewers = append(selectedReviewers, assignee)
+			}
+		}
+
+		// If we couldn't find any eligible reviewers from the available assignees that are not authors
+		// Assign a random reviewer
+		if len(selectedReviewers) == 0 {
+			return assignRandomReviewerCode(env, nil)
+		}
+
+		randomReviewer := selectedReviewers[utils.GenerateRandom(len(selectedReviewers))]
+
+		return pr.RequestReviewers([]string{randomReviewer})
 	}
 
 	if totalRequiredReviewers > len(selectedReviewers) {
@@ -87,6 +108,17 @@ func assignCodeAuthorReviewersCode(env aladino.Env, args []aladino.Value) error 
 	selectedReviewers = selectedReviewers[:totalRequiredReviewers]
 
 	return pr.RequestReviewers(selectedReviewers)
+}
+
+func getNonAuthorAvailableAssignees(availableAssignees []*codehost.User, authors []string) []string {
+	assignees := []string{}
+	for _, assignee := range availableAssignees {
+		if !slices.Contains(authors, assignee.Login) {
+			assignees = append(assignees, assignee.Login)
+		}
+	}
+
+	return assignees
 }
 
 func getAuthorsFromGitBlame(ctx context.Context, gitHubClient *github.GithubClient, pullRequest *target.PullRequestTarget) ([]string, error) {
@@ -111,11 +143,10 @@ func getAuthorsFromGitBlame(ctx context.Context, gitHubClient *github.GithubClie
 	return authors, nil
 }
 
-func isUserEligibleToReview(
+func isAssigneeEligibleToReview(
 	username string,
 	pullRequest *gh.PullRequest,
 	reviewersToExclude []aladino.Value,
-	availableAssignees []*codehost.User,
 	totalOpenPRsAsReviewer int,
 	maxAllowedAssignedReviews int,
 ) bool {
@@ -131,15 +162,26 @@ func isUserEligibleToReview(
 		return false
 	}
 
-	if !isUserValidAssignee(availableAssignees, username) {
-		return false
-	}
-
 	if maxAllowedAssignedReviews > 0 && totalOpenPRsAsReviewer >= maxAllowedAssignedReviews {
 		return false
 	}
 
 	return true
+}
+
+func isUserEligibleToReview(
+	username string,
+	pullRequest *gh.PullRequest,
+	reviewersToExclude []aladino.Value,
+	availableAssignees []*codehost.User,
+	totalOpenPRsAsReviewer int,
+	maxAllowedAssignedReviews int,
+) bool {
+	if !isUserValidAssignee(availableAssignees, username) {
+		return false
+	}
+
+	return isAssigneeEligibleToReview(username, pullRequest, reviewersToExclude, totalOpenPRsAsReviewer, maxAllowedAssignedReviews)
 }
 
 func isUserExcluded(users []aladino.Value, username string) bool {
