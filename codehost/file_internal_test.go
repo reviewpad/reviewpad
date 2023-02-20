@@ -53,7 +53,7 @@ func TestAppendToDiff(t *testing.T) {
 
 	wantDiff := []*diffBlock{
 		{
-			isContext: isContext,
+			IsContext: isContext,
 			Old: &diffSpan{
 				int32(oldStart),
 				int32(oldEnd),
