@@ -61,8 +61,8 @@ func PluginBuiltInsWithConfig(config *PluginConfig) *aladino.BuiltIns {
 	return &aladino.BuiltIns{
 		Functions: map[string]*aladino.BuiltInFunction{
 			// Pull Request
-			"assignees":                 functions.Assignees(),
 			"approvalsCount":            functions.ApprovalsCount(),
+			"assignees":                 functions.Assignees(),
 			"author":                    functions.Author(),
 			"base":                      functions.Base(),
 			"changed":                   functions.Changed(),
@@ -87,15 +87,16 @@ func PluginBuiltInsWithConfig(config *PluginConfig) *aladino.BuiltIns {
 			"hasGitConflicts":           functions.HasGitConflicts(),
 			"hasLinearHistory":          functions.HasLinearHistory(),
 			"hasLinkedIssues":           functions.HasLinkedIssues(),
+			"hasOnlyCodeChanges":        functions.HasOnlyCodeChanges(),
 			"hasRequiredApprovals":      functions.HasRequiredApprovals(),
 			"hasUnaddressedThreads":     functions.HasUnaddressedThreads(),
 			"haveAllChecksRunCompleted": functions.HaveAllChecksRunCompleted(),
 			"head":                      functions.Head(),
 			"isBinary":                  functions.IsBinary(),
 			"isDraft":                   functions.IsDraft(),
-			"isUpdatedWithBaseBranch":   functions.IsUpdatedWithBaseBranch(),
 			"isLinkedToProject":         functions.IsLinkedToProject(),
 			"isMerged":                  functions.IsMerged(),
+			"isUpdatedWithBaseBranch":   functions.IsUpdatedWithBaseBranch(),
 			"isWaitingForReview":        functions.IsWaitingForReview(),
 			"labels":                    functions.Labels(),
 			"lastEventAt":               functions.LastEventAt(),
