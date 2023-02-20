@@ -179,13 +179,8 @@ func TestTotalCodeReviewsInOrganization(t *testing.T) {
 			args := []aladino.Value{aladino.BuildStringValue(test.inputUsername)}
 			gotResult, gotErr := totalCodeReviewsInOrganization(mockedEnv, args)
 
-			if test.wantErr != nil {
-				assert.EqualError(t, gotErr, test.wantErr.Error())
-				assert.Nil(t, gotResult)
-			} else {
-				assert.Nil(t, gotErr)
-				assert.Equal(t, test.wantResult, gotResult)
-			}
+			assert.Equal(t, test.wantErr, gotErr)
+			assert.Equal(t, test.wantResult, gotResult)
 		})
 	}
 }

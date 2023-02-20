@@ -42,7 +42,7 @@ func TestGetReviewsCountByUserFromOpenPullRequests(t *testing.T) {
 	tests := map[string]struct {
 		ghGraphQLHandler func(http.ResponseWriter, *http.Request)
 		wantCount        int
-		wantErr          string
+		wantErr          error
 	}{
 		"when the request for the reviews count fails": {
 			ghGraphQLHandler: func(w http.ResponseWriter, req *http.Request) {
@@ -51,7 +51,7 @@ func TestGetReviewsCountByUserFromOpenPullRequests(t *testing.T) {
 					http.Error(w, "GetReviewsCountFail", http.StatusNotFound)
 				}
 			},
-			wantErr: "non-200 OK status code: 404 Not Found body: \"GetReviewsCountFail\\n\"",
+			wantErr: fmt.Errorf("non-200 OK status code: 404 Not Found body: \"GetReviewsCountFail\\n\""),
 		},
 		"when the user has created reviews in open pull requests": {
 			ghGraphQLHandler: func(w http.ResponseWriter, req *http.Request) {
@@ -93,13 +93,8 @@ func TestGetReviewsCountByUserFromOpenPullRequests(t *testing.T) {
 
 			gotCount, gotErr := mockedEnv.GetGithubClient().GetReviewsCountByUserFromOpenPullRequests(mockedEnv.GetCtx(), aladino.DefaultMockPrOwner, "test")
 
-			if test.wantErr != "" {
-				assert.EqualError(t, gotErr, test.wantErr)
-				assert.Equal(t, 0, gotCount)
-			} else {
-				assert.Equal(t, test.wantCount, gotCount)
-				assert.Nil(t, gotErr)
-			}
+			assert.Equal(t, test.wantErr, gotErr)
+			assert.Equal(t, test.wantCount, gotCount)
 		})
 	}
 }

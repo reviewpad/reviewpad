@@ -8,6 +8,7 @@ import (
 	"fmt"
 
 	host "github.com/reviewpad/reviewpad/v3/codehost/github"
+	"github.com/reviewpad/reviewpad/v3/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
 )
@@ -22,12 +23,7 @@ func TotalCodeReviewsInOrganization() *aladino.BuiltInFunction {
 
 func totalCodeReviewsInOrganizationCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
 	username := args[0].(*aladino.StringValue).Val
-	entity := e.GetTarget().GetTargetEntity()
-
-	ghPullRequest, _, err := e.GetGithubClient().GetPullRequest(e.GetCtx(), entity.Owner, entity.Repo, entity.Number)
-	if err != nil {
-		return nil, err
-	}
+	ghPullRequest := e.GetTarget().(*target.PullRequestTarget).PullRequest
 
 	userOrOrgLogin := host.GetPullRequestHeadOwnerName(ghPullRequest)
 
