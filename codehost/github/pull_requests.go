@@ -171,37 +171,20 @@ type CompareBaseAndHeadQuery struct {
 	} `graphql:"repository(owner: $owner, name: $name)"`
 }
 
-type RepositoriesQuery struct {
-	RepositoryOwner struct {
-		Login        string
-		Repositories struct {
-			Nodes    []struct{ NameWithOwner string }
-			PageInfo struct {
-				HasNextPage bool
-				EndCursor   string
-			}
-		} `graphql:"repositories(first: $perPage, after: $after, ownerAffiliations: OWNER)"`
-	} `graphql:"repositoryOwner(login: $login)"`
-}
-
-type OpenPullRequestsInRepoQuery struct {
-	Repository struct {
-		PullRequests struct {
-			Nodes []struct {
+type ReviewsByUserTotalCountQuery struct {
+	Search struct {
+		PageInfo struct {
+			EndCursor   githubv4.String
+			HasNextPage bool
+		}
+		Nodes []struct {
+			PullRequest struct {
 				Reviews struct {
-					Nodes []struct {
-						Author struct {
-							Login string
-						}
-					}
-				} `graphql:"reviews(first: $perPage)"`
-			}
-			PageInfo struct {
-				EndCursor   githubv4.String
-				HasNextPage bool
-			}
-		} `graphql:"pullRequests(states: [OPEN], first: $perPage, after: $prCursor)"`
-	} `graphql:"repository(owner: $owner, name: $name)"`
+					TotalCount githubv4.Int
+				} `graphql:"reviews(author: $author)"`
+			} `graphql:"... on PullRequest"`
+		}
+	} `graphql:"search(query: $query, type: ISSUE, first: $perPage, after: $afterCursor)"`
 }
 
 func GetPullRequestHeadOwnerName(pullRequest *github.PullRequest) string {
@@ -779,68 +762,32 @@ func (c *GithubClient) GetHeadBehindBy(ctx context.Context, owner, repo, prOwner
 	return compareBaseAndHeadQuery.Repository.PullRequest.BaseRef.Compare.BehindBy, nil
 }
 
-func (c *GithubClient) GetRepositoriesByOrgOrUserLogin(ctx context.Context, orgOrUserLogin string) ([]string, error) {
-	var allRepos []string
-	var cursor *githubv4.String
-
-	repositoriesData := map[string]interface{}{
-		"login":   githubv4.String(orgOrUserLogin),
-		"perPage": githubv4.Int(100),
-		"after":   cursor,
-	}
-
-	for {
-		var repositories RepositoriesQuery
-		err := c.GetClientGraphQL().Query(ctx, &repositories, repositoriesData)
-		if err != nil {
-			return nil, err
-		}
-
-		for _, node := range repositories.RepositoryOwner.Repositories.Nodes {
-			allRepos = append(allRepos, node.NameWithOwner)
-		}
-
-		if !repositories.RepositoryOwner.Repositories.PageInfo.HasNextPage {
-			break
-		}
-
-		repositoriesData["after"] = githubv4.String(repositories.RepositoryOwner.Repositories.PageInfo.EndCursor)
-	}
-
-	return allRepos, nil
-}
-
-func (c *GithubClient) GetReviewsCountByUserFromOpenPullRequests(ctx context.Context, repoOwner, repoName, username string) (int, error) {
+func (c *GithubClient) GetReviewsCountByUserFromOpenPullRequests(ctx context.Context, userOrOrgLogin, username string) (int, error) {
 	var totalCount int
-	var prCursor *githubv4.String
-	var openPullRequestsInRepo OpenPullRequestsInRepoQuery
+	var reviewsByUserTotalCount ReviewsByUserTotalCountQuery
 
-	openPullRequestsInRepoData := map[string]interface{}{
-		"owner":    githubv4.String(repoOwner),
-		"name":     githubv4.String(repoName),
-		"perPage":  githubv4.Int(100),
-		"prCursor": prCursor,
+	reviewsByUserTotalCountData := map[string]interface{}{
+		"query":       githubv4.String(fmt.Sprintf("user:%s is:pr is:open reviewed-by:%s", userOrOrgLogin, username)),
+		"author":      githubv4.String(username),
+		"perPage":     githubv4.Int(100),
+		"afterCursor": (*githubv4.String)(nil),
 	}
 
 	for {
-		err := c.GetClientGraphQL().Query(ctx, &openPullRequestsInRepo, openPullRequestsInRepoData)
+		err := c.GetClientGraphQL().Query(ctx, &reviewsByUserTotalCount, reviewsByUserTotalCountData)
 		if err != nil {
 			return 0, err
 		}
 
-		for _, pullRequest := range openPullRequestsInRepo.Repository.PullRequests.Nodes {
-			for _, review := range pullRequest.Reviews.Nodes {
-				if review.Author.Login == username {
-					totalCount++
-				}
-			}
+		for _, node := range reviewsByUserTotalCount.Search.Nodes {
+			totalCount += int(node.PullRequest.Reviews.TotalCount)
 		}
 
-		if !openPullRequestsInRepo.Repository.PullRequests.PageInfo.HasNextPage {
+		if !reviewsByUserTotalCount.Search.PageInfo.HasNextPage {
 			break
 		}
 
-		openPullRequestsInRepoData["prCursor"] = &openPullRequestsInRepo.Repository.PullRequests.PageInfo.EndCursor
+		reviewsByUserTotalCountData["afterCursor"] = &reviewsByUserTotalCount.Search.PageInfo.EndCursor
 	}
 
 	return totalCount, nil
