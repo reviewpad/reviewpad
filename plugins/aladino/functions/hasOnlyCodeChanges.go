@@ -5,9 +5,11 @@
 package plugins_aladino_functions
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
+	"github.com/google/uuid"
 	"github.com/reviewpad/api/go/entities"
 	api "github.com/reviewpad/api/go/services"
 	"github.com/reviewpad/reviewpad/v3/codehost/github/target"
@@ -17,6 +19,9 @@ import (
 	plugins_aladino_services "github.com/reviewpad/reviewpad/v3/plugins/aladino/services"
 	"github.com/reviewpad/reviewpad/v3/utils"
 )
+
+// RequestIDKey identifies request id field in context
+const RequestIDKey = "request-id"
 
 func HasOnlyCodeChanges() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
@@ -64,7 +69,11 @@ func hasOnlyCodeChanges(e aladino.Env, args []aladino.Value) (aladino.Value, err
 		RepoUri: url,
 	}
 
-	reply, err := diffClient.EnhancedDiff(e.GetCtx(), req)
+	requestID := uuid.New().String()
+	ctx := e.GetCtx()
+	reqCtx := context.WithValue(ctx, RequestIDKey, requestID)
+
+	reply, err := diffClient.EnhancedDiff(reqCtx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -94,15 +103,21 @@ func getRawDiff(e aladino.Env, baseFiles map[string]string, headFiles map[string
 		gitFileDiffs := make([]*entities.GitDiffBlock, len(commitFile.Diff))
 
 		for i, diffBlock := range commitFile.Diff {
+			old := &entities.GitDiffSpan{}
+			if diffBlock.Old != nil {
+				old.Start = diffBlock.Old.Start
+				old.End = diffBlock.Old.End
+			}
+
+			new := &entities.GitDiffSpan{}
+			if diffBlock.New != nil {
+				new.Start = diffBlock.New.Start
+				new.End = diffBlock.New.End
+			}
+
 			gitFileDiffs[i] = &entities.GitDiffBlock{
-				Old: &entities.GitDiffSpan{
-					Start: diffBlock.Old.Start,
-					End:   diffBlock.Old.End,
-				},
-				New: &entities.GitDiffSpan{
-					Start: diffBlock.New.Start,
-					End:   diffBlock.New.End,
-				},
+				Old:       old,
+				New:       new,
 				IsContext: diffBlock.IsContext,
 			}
 		}
