@@ -7,6 +7,7 @@ package plugins_aladino_actions
 import (
 	"context"
 	"fmt"
+	"math/rand"
 	"strings"
 
 	gh "github.com/google/go-github/v49/github"
@@ -15,7 +16,6 @@ import (
 	"github.com/reviewpad/reviewpad/v3/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
-	"github.com/reviewpad/reviewpad/v3/utils"
 	"golang.org/x/exp/slices"
 )
 
@@ -64,7 +64,7 @@ func assignCodeAuthorReviewersCode(env aladino.Env, args []aladino.Value) error 
 	}
 
 	// Get all available assignees that are not authors
-	nonAuthorAvailableAssignees := getNonAuthorAvailableAssignees(availableAssignees, authors)
+	nonAuthorAvailableAssignees := filterAuthorsFromAssignees(availableAssignees, authors)
 
 	// Fetch the total number of open pull requests that each author has already assigned to them as a reviewer.
 	totalOpenPRsAsReviewerByUser, err := gitHubClient.GetOpenPullRequestsAsReviewer(env.GetCtx(), pr.GetTargetEntity().Owner, pr.GetTargetEntity().Repo, append(authors, nonAuthorAvailableAssignees...))
@@ -83,7 +83,7 @@ func assignCodeAuthorReviewersCode(env aladino.Env, args []aladino.Value) error 
 	// Find eligible reviewers from the available assignees and pick one at random
 	if len(selectedReviewers) == 0 {
 		for _, assignee := range nonAuthorAvailableAssignees {
-			if isAssigneeEligibleToReview(assignee, pr.PullRequest, reviewersToExclude, totalOpenPRsAsReviewerByUser[assignee], maxAllowedAssignedReviews) {
+			if isUserEligibleToReview(assignee, pr.PullRequest, reviewersToExclude, availableAssignees, totalOpenPRsAsReviewerByUser[assignee], maxAllowedAssignedReviews) {
 				selectedReviewers = append(selectedReviewers, assignee)
 			}
 		}
@@ -94,9 +94,7 @@ func assignCodeAuthorReviewersCode(env aladino.Env, args []aladino.Value) error 
 			return assignRandomReviewerCode(env, nil)
 		}
 
-		randomReviewer := selectedReviewers[utils.GenerateRandom(len(selectedReviewers))]
-
-		return pr.RequestReviewers([]string{randomReviewer})
+		selectedReviewers = []string{selectedReviewers[rand.Intn(len(selectedReviewers))]}
 	}
 
 	if totalRequiredReviewers > len(selectedReviewers) {
@@ -110,7 +108,7 @@ func assignCodeAuthorReviewersCode(env aladino.Env, args []aladino.Value) error 
 	return pr.RequestReviewers(selectedReviewers)
 }
 
-func getNonAuthorAvailableAssignees(availableAssignees []*codehost.User, authors []string) []string {
+func filterAuthorsFromAssignees(availableAssignees []*codehost.User, authors []string) []string {
 	assignees := []string{}
 	for _, assignee := range availableAssignees {
 		if !slices.Contains(authors, assignee.Login) {
@@ -143,10 +141,11 @@ func getAuthorsFromGitBlame(ctx context.Context, gitHubClient *github.GithubClie
 	return authors, nil
 }
 
-func isAssigneeEligibleToReview(
+func isUserEligibleToReview(
 	username string,
 	pullRequest *gh.PullRequest,
 	reviewersToExclude []aladino.Value,
+	availableAssignees []*codehost.User,
 	totalOpenPRsAsReviewer int,
 	maxAllowedAssignedReviews int,
 ) bool {
@@ -162,26 +161,15 @@ func isAssigneeEligibleToReview(
 		return false
 	}
 
+	if !isUserValidAssignee(availableAssignees, username) {
+		return false
+	}
+
 	if maxAllowedAssignedReviews > 0 && totalOpenPRsAsReviewer >= maxAllowedAssignedReviews {
 		return false
 	}
 
 	return true
-}
-
-func isUserEligibleToReview(
-	username string,
-	pullRequest *gh.PullRequest,
-	reviewersToExclude []aladino.Value,
-	availableAssignees []*codehost.User,
-	totalOpenPRsAsReviewer int,
-	maxAllowedAssignedReviews int,
-) bool {
-	if !isUserValidAssignee(availableAssignees, username) {
-		return false
-	}
-
-	return isAssigneeEligibleToReview(username, pullRequest, reviewersToExclude, totalOpenPRsAsReviewer, maxAllowedAssignedReviews)
 }
 
 func isUserExcluded(users []aladino.Value, username string) bool {
