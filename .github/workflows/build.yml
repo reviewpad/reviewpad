@@ -8,6 +8,7 @@ on:
 
 env:
   LD_LIBRARY_PATH: /usr/local/lib
+  INPUT_DIFF_SERVICE: 0.0.0.0:3003
   INPUT_SEMANTIC_SERVICE: 0.0.0.0:3006
 
 jobs:
