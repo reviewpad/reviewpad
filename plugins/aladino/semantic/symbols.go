@@ -155,6 +155,8 @@ func GetSymbolsFromFileInBranch(e aladino.Env, commitFile *codehost.File, branch
 	str, _ := strconv.Unquote(strings.Replace(strconv.Quote(string(blob)), `\\u`, `\u`, -1))
 	blob = []byte(str)
 
+	blocks := getBlocks(commitFile)
+
 	service, ok := e.GetBuiltIns().Services[plugins_aladino_services.SEMANTIC_SERVICE_KEY]
 	if !ok {
 		return nil, "", fmt.Errorf("semantic service not found")
@@ -167,6 +169,7 @@ func GetSymbolsFromFileInBranch(e aladino.Env, commitFile *codehost.File, branch
 		Filepath: fp,
 		Blob:     blob,
 		BlobId:   commitFile.Repr.GetSHA(),
+		Diff:     &entities.ResolveFileDiff{Blocks: blocks},
 	}
 	reply, err := semanticClient.GetSymbols(e.GetCtx(), req)
 	if err != nil {
