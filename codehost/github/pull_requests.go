@@ -171,6 +171,35 @@ type CompareBaseAndHeadQuery struct {
 	} `graphql:"repository(owner: $owner, name: $name)"`
 }
 
+type RepositoriesQuery struct {
+	RepositoryOwner struct {
+		Login        string
+		Repositories struct {
+			Nodes    []struct{ NameWithOwner string }
+			PageInfo struct {
+				HasNextPage bool
+				EndCursor   string
+			}
+		} `graphql:"repositories(first: $perPage, after: $after, ownerAffiliations: OWNER)"`
+	} `graphql:"repositoryOwner(login: $login)"`
+}
+
+// type OpenPullRequestsInRepoQuery struct {
+// 	Repository struct {
+// 		PullRequests struct {
+// 			Nodes []struct {
+// 				Reviews struct {
+// 					TotalCount githubv4.Int
+// 				} `graphql:"reviews(author: $author, first: $perPage)"`
+// 			}
+// 			PageInfo struct {
+// 				EndCursor   githubv4.String
+// 				HasNextPage bool
+// 			}
+// 		} `graphql:"pullRequests(states: [OPEN], first: $perPage, after: $prCursor)"`
+// 	} `graphql:"repository(owner: $owner, name: $name)"`
+// }
+
 type ReviewsByUserTotalCountQuery struct {
 	Search struct {
 		PageInfo struct {
@@ -762,12 +791,43 @@ func (c *GithubClient) GetHeadBehindBy(ctx context.Context, owner, repo, prOwner
 	return compareBaseAndHeadQuery.Repository.PullRequest.BaseRef.Compare.BehindBy, nil
 }
 
-func (c *GithubClient) GetReviewsCountByUserFromOpenPullRequests(ctx context.Context, userOrOrgLogin, username string) (int, error) {
+func (c *GithubClient) GetRepositoriesByOrgOrUserLogin(ctx context.Context, orgOrUserLogin string) ([]string, error) {
+	var allRepos []string
+	var cursor *githubv4.String
+
+	repositoriesData := map[string]interface{}{
+		"login":   githubv4.String(orgOrUserLogin),
+		"perPage": githubv4.Int(100),
+		"after":   cursor,
+	}
+
+	for {
+		var repositories RepositoriesQuery
+		err := c.GetClientGraphQL().Query(ctx, &repositories, repositoriesData)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, node := range repositories.RepositoryOwner.Repositories.Nodes {
+			allRepos = append(allRepos, node.NameWithOwner)
+		}
+
+		if !repositories.RepositoryOwner.Repositories.PageInfo.HasNextPage {
+			break
+		}
+
+		repositoriesData["after"] = githubv4.String(repositories.RepositoryOwner.Repositories.PageInfo.EndCursor)
+	}
+
+	return allRepos, nil
+}
+
+func (c *GithubClient) GetReviewsCountByUserFromOpenPullRequests(ctx context.Context, repoFullName, username string) (int, error) {
 	var totalCount int
 	var reviewsByUserTotalCount ReviewsByUserTotalCountQuery
 
 	reviewsByUserTotalCountData := map[string]interface{}{
-		"query":       githubv4.String(fmt.Sprintf("user:%s is:pr is:open reviewed-by:%s", userOrOrgLogin, username)),
+		"query":       githubv4.String(fmt.Sprintf("repo:%s is:pr is:open reviewed-by:%s", repoFullName, username)),
 		"author":      githubv4.String(username),
 		"perPage":     githubv4.Int(100),
 		"afterCursor": (*githubv4.String)(nil),

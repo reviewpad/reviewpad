@@ -23,17 +23,26 @@ func TotalCodeReviewsInOrganization() *aladino.BuiltInFunction {
 func totalCodeReviewsInOrganizationCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
 	username := args[0].(*aladino.StringValue).Val
 	entity := e.GetTarget().GetTargetEntity()
+	var reviewsCount int
 
-	ghPullRequest, _, err := e.GetGithubClient().GetPullRequest(e.GetCtx(), entity.Owner, entity.Repo, entity.Number)
-	if err != nil {
-		return nil, err
+	ghPullRequest, _, fetchPrErr := e.GetGithubClient().GetPullRequest(e.GetCtx(), entity.Owner, entity.Repo, entity.Number)
+	if fetchPrErr != nil {
+		return nil, fetchPrErr
 	}
 
-	userOrOrgLogin := host.GetPullRequestHeadOwnerName(ghPullRequest)
+	// Fetch the repositories owned by the organization/user that owns the repository where the pull request was opened
+	repositories, fetchReposErr := e.GetGithubClient().GetRepositoriesByOrgOrUserLogin(e.GetCtx(), host.GetPullRequestHeadOwnerName(ghPullRequest))
+	if fetchReposErr != nil {
+		return nil, fetchReposErr
+	}
 
-	reviewsCount, err := e.GetGithubClient().GetReviewsCountByUserFromOpenPullRequests(e.GetCtx(), userOrOrgLogin, username)
-	if err != nil {
-		return nil, err
+	for _, repository := range repositories {
+		reviewsCountInRepo, err := e.GetGithubClient().GetReviewsCountByUserFromOpenPullRequests(e.GetCtx(), repository, username)
+		if err != nil {
+			return nil, err
+		}
+
+		reviewsCount += reviewsCountInRepo
 	}
 
 	e.GetLogger().Logger.Info(fmt.Sprintf("The user %s has created %d reviews in open pull requests.", username, reviewsCount))
