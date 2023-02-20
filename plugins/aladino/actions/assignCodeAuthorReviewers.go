@@ -94,11 +94,11 @@ func assignCodeAuthorReviewersCode(env aladino.Env, args []aladino.Value) error 
 			return assignRandomReviewerCode(env, nil)
 		}
 
-		selectedReviewers = []string{selectedReviewers[rand.Intn(len(selectedReviewers))]}
+		selectedReviewers = getTotalRequiredRandomReviewers(selectedReviewers, totalRequiredReviewers)
 	}
 
 	if totalRequiredReviewers > len(selectedReviewers) {
-		env.GetLogger().Warnf("number of required reviewers %d is less than available code author reviewers %d", totalRequiredReviewers, len(selectedReviewers))
+		env.GetLogger().Warnf("number of required reviewers %d is less than available reviewers %d", totalRequiredReviewers, len(selectedReviewers))
 
 		totalRequiredReviewers = len(selectedReviewers)
 	}
@@ -188,4 +188,19 @@ func isUserValidAssignee(assignees []*codehost.User, username string) bool {
 		}
 	}
 	return false
+}
+
+func getTotalRequiredRandomReviewers(reviewers []string, requiredNumberOfReviewers int) []string {
+	if requiredNumberOfReviewers > len(reviewers) {
+		requiredNumberOfReviewers = len(reviewers)
+	}
+
+	randomReviewers := make([]string, requiredNumberOfReviewers)
+	for i := 0; i < requiredNumberOfReviewers; i++ {
+		randIndex := rand.Intn(len(reviewers))
+		randomReviewers[i] = reviewers[randIndex]
+		reviewers = append(reviewers[:randIndex], reviewers[randIndex+1:]...)
+	}
+
+	return randomReviewers
 }

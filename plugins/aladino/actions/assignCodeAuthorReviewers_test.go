@@ -1084,7 +1084,7 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 			reviewRequestedFrom: []string{"test"},
 		},
 		"when all code authors are handling too many open pull requests with one eligible available assignees": {
-			totalReviewers:    1,
+			totalReviewers:    3,
 			maxReviews:        1,
 			excludedReviewers: aladino.BuildArrayValue([]aladino.Value{}),
 			graphQLHandler: func(w http.ResponseWriter, r *http.Request) {
