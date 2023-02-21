@@ -73,10 +73,9 @@ func GetSymbolsFromPatch(e aladino.Env) (map[string]*entities.Symbols, error) {
 	return res, nil
 }
 
-func GetSymbolsFromHead(e aladino.Env) (*entities.Symbols, map[string]string, error) {
+func GetSymbolsFromHeadByPatch(e aladino.Env, patch target.Patch) (*entities.Symbols, map[string]string, error) {
 	pullRequest := e.GetTarget().(*target.PullRequestTarget)
 	head := pullRequest.PullRequest.GetHead()
-	patch := pullRequest.Patch
 
 	res := &entities.Symbols{
 		Files:   make(map[string]*entities.File),
@@ -103,10 +102,9 @@ func GetSymbolsFromHead(e aladino.Env) (*entities.Symbols, map[string]string, er
 	return res, files, nil
 }
 
-func GetSymbolsFromBase(e aladino.Env) (*entities.Symbols, map[string]string, error) {
+func GetSymbolsFromBaseByPatch(e aladino.Env, patch target.Patch) (*entities.Symbols, map[string]string, error) {
 	pullRequest := e.GetTarget().(*target.PullRequestTarget)
 	base := pullRequest.PullRequest.GetBase()
-	patch := pullRequest.Patch
 
 	res := &entities.Symbols{
 		Files:   make(map[string]*entities.File),
