@@ -8,9 +8,11 @@ import (
 	"fmt"
 	"strings"
 
+	doublestar "github.com/bmatcuk/doublestar/v4"
 	"github.com/google/uuid"
 	"github.com/reviewpad/api/go/entities"
 	api "github.com/reviewpad/api/go/services"
+	"github.com/reviewpad/reviewpad/v3/codehost"
 	"github.com/reviewpad/reviewpad/v3/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
@@ -36,12 +38,27 @@ func hasCodeWithoutSemanticChanges(e aladino.Env, args []aladino.Value) (aladino
 	head := pullRequest.PullRequest.GetHead()
 	url := head.GetRepo().GetURL()
 
-	baseSymbols, baseFiles, err := semantic.GetSymbolsFromBase(e)
+	// filter patch by file pattern
+	patch := pullRequest.Patch
+	newPatch := make(map[string]*codehost.File)
+
+	filePatterns := args[0].(*aladino.ArrayValue)
+	for _, v := range filePatterns.Vals {
+		filePatternRegex := v.(*aladino.StringValue)
+		for fp, file := range patch {
+			re, err := doublestar.Match(filePatternRegex.Val, fp)
+			if err == nil && re {
+				newPatch[fp] = file
+			}
+		}
+	}
+
+	baseSymbols, baseFiles, err := semantic.GetSymbolsFromBaseByPatch(e, newPatch)
 	if err != nil {
 		return nil, err
 	}
 
-	headSymbols, headFiles, err := semantic.GetSymbolsFromHead(e)
+	headSymbols, headFiles, err := semantic.GetSymbolsFromHeadByPatch(e, newPatch)
 	if err != nil {
 		return nil, err
 	}
