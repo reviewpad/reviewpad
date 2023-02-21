@@ -63,7 +63,7 @@ func assignCodeAuthorReviewersCode(env aladino.Env, args []aladino.Value) error 
 		return fmt.Errorf("error getting authors from git blame: %s", err)
 	}
 
-	// Get all available assignees that are not authors
+	// Get all available assignees that are not authors.
 	nonAuthorAvailableAssignees := filterAuthorsFromAssignees(availableAssignees, authors)
 
 	// Fetch the total number of open pull requests that each author has already assigned to them as a reviewer.
@@ -80,7 +80,7 @@ func assignCodeAuthorReviewersCode(env aladino.Env, args []aladino.Value) error 
 	}
 
 	// If there are no authors eligible to review
-	// Find eligible reviewers from the available assignees and pick one at random
+	// find eligible reviewers from the available assignees.
 	if len(selectedReviewers) == 0 {
 		for _, assignee := range nonAuthorAvailableAssignees {
 			if isUserEligibleToReview(assignee, pr.PullRequest, reviewersToExclude, availableAssignees, totalOpenPRsAsReviewerByUser[assignee], maxAllowedAssignedReviews) {
@@ -88,13 +88,13 @@ func assignCodeAuthorReviewersCode(env aladino.Env, args []aladino.Value) error 
 			}
 		}
 
-		// If we couldn't find any eligible reviewers from the available assignees that are not authors
-		// Assign a random reviewer
-		if len(selectedReviewers) == 0 {
-			return assignRandomReviewerCode(env, nil)
-		}
+		selectedReviewers = getRandomReviewers(selectedReviewers, totalRequiredReviewers)
+	}
 
-		selectedReviewers = getTotalRequiredRandomReviewers(selectedReviewers, totalRequiredReviewers)
+	// If no reviewers were found until now
+	// assign a random reviewer.
+	if len(selectedReviewers) == 0 {
+		return assignRandomReviewerCode(env, nil)
 	}
 
 	if totalRequiredReviewers > len(selectedReviewers) {
@@ -190,17 +190,19 @@ func isUserValidAssignee(assignees []*codehost.User, username string) bool {
 	return false
 }
 
-func getTotalRequiredRandomReviewers(reviewers []string, requiredNumberOfReviewers int) []string {
-	if requiredNumberOfReviewers > len(reviewers) {
-		requiredNumberOfReviewers = len(reviewers)
+func getRandomReviewers(reviewers []string, total int) []string {
+	if total >= len(reviewers) {
+		return reviewers
 	}
 
-	randomReviewers := make([]string, requiredNumberOfReviewers)
-	for i := 0; i < requiredNumberOfReviewers; i++ {
+	selectedReviewers := make([]string, total)
+
+	for i := 0; i < total; i++ {
 		randIndex := rand.Intn(len(reviewers))
-		randomReviewers[i] = reviewers[randIndex]
+		selectedReviewers[i] = reviewers[randIndex]
+
 		reviewers = append(reviewers[:randIndex], reviewers[randIndex+1:]...)
 	}
 
-	return randomReviewers
+	return selectedReviewers
 }
