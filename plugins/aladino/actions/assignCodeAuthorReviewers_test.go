@@ -1083,6 +1083,160 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 			},
 			reviewRequestedFrom: []string{"test"},
 		},
+		"when all code authors are handling too many open pull requests with one eligible available assignees": {
+			totalReviewers:    3,
+			maxReviews:        1,
+			excludedReviewers: aladino.BuildArrayValue([]aladino.Value{}),
+			graphQLHandler: func(w http.ResponseWriter, r *http.Request) {
+				graphQLQuery := utils.MustRead(r.Body)
+				if utils.MinifyQuery(getOpenPullRequestsAsReviewerQuery) == utils.MinifyQuery(graphQLQuery) {
+					utils.MustWrite(w, `{
+						"data": {
+							"repository": {
+								"pullRequests": {
+									"nodes": [
+										{
+											"reviewRequests": {
+												"nodes": [
+													{
+														"requestedReviewer": {
+															"login": "john"
+														}
+													},
+													{
+														"requestedReviewer": {
+															"login": "jane"
+														}
+													},
+													{
+														"requestedReviewer": {
+															"login": "jack"
+														}
+													}
+												]
+											}
+										}
+									]
+								}
+							}
+						}
+					}`)
+					return
+				}
+
+				utils.MustWrite(w, `{
+					"data": {
+						"repository": {
+							"object": {
+								"blame0": {
+									"ranges": [
+										{
+											"startingLine": 1,
+											"endingLine": 30,
+											"commit": {
+												"author": {
+													"user": {
+														"login": "john"
+													}
+												}
+											}
+										},
+										{
+											"startingLine": 31,
+											"endingLine": 100,
+											"commit": {
+												"author": {
+													"user": {
+														"login": "jack"
+													}
+												}
+											}
+										}
+									]
+								},
+								"blame1": {
+									"ranges": [
+										{
+											"startingLine": 1,
+											"endingLine": 34,
+											"commit": {
+												"author": {
+													"user": {
+														"login": "john"
+													}
+												}
+											}
+										},
+										{
+											"startingLine": 35,
+											"endingLine": 111,
+											"commit": {
+												"author": {
+													"user": {
+														"login": "jack"
+													}
+												}
+											}
+										}
+									]
+								},
+								"blame3": {
+									"ranges": [
+										{
+											"startingLine": 1,
+											"endingLine": 10,
+											"commit": {
+												"author": {
+													"user": {
+														"login": "john"
+													}
+												}
+											}
+										}
+									]
+								}
+							}
+						}
+					}
+				}`)
+			},
+			mockBackendOptions: []mock.MockBackendOption{
+				mock.WithRequestMatch(
+					mock.GetReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
+					&github.Reviewers{},
+					&github.Reviewers{},
+				),
+				mock.WithRequestMatch(
+					mock.GetReposAssigneesByOwnerByRepo,
+					[]*github.User{
+						{
+							Login: github.String("james"),
+						},
+						{
+							Login: github.String("jane"),
+						},
+					},
+					[]*github.User{
+						{
+							Login: github.String("james"),
+						},
+						{
+							Login: github.String("jane"),
+						},
+					},
+				),
+				mock.WithRequestMatchHandler(
+					mock.PostReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
+					http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+						body, _ := io.ReadAll(r.Body)
+						reviewersRequest := &github.ReviewersRequest{}
+						utils.MustUnmarshal(body, reviewersRequest)
+						reviewRequestedFrom = reviewersRequest.Reviewers
+					}),
+				),
+			},
+			reviewRequestedFrom: []string{"james"},
+		},
 	}
 
 	for name, test := range tests {

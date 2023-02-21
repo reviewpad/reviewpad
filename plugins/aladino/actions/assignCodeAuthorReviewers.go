@@ -7,6 +7,7 @@ package plugins_aladino_actions
 import (
 	"context"
 	"fmt"
+	"math/rand"
 	"strings"
 
 	gh "github.com/google/go-github/v49/github"
@@ -15,6 +16,7 @@ import (
 	"github.com/reviewpad/reviewpad/v3/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v3/lang/aladino"
+	"golang.org/x/exp/slices"
 )
 
 func AssignCodeAuthorReviewers() *aladino.BuiltInAction {
@@ -61,8 +63,11 @@ func assignCodeAuthorReviewersCode(env aladino.Env, args []aladino.Value) error 
 		return fmt.Errorf("error getting authors from git blame: %s", err)
 	}
 
+	// Get all available assignees that are not authors.
+	nonAuthorAvailableAssignees := filterAuthorsFromAssignees(availableAssignees, authors)
+
 	// Fetch the total number of open pull requests that each author has already assigned to them as a reviewer.
-	totalOpenPRsAsReviewerByUser, err := gitHubClient.GetOpenPullRequestsAsReviewer(env.GetCtx(), pr.GetTargetEntity().Owner, pr.GetTargetEntity().Repo, authors)
+	totalOpenPRsAsReviewerByUser, err := gitHubClient.GetOpenPullRequestsAsReviewer(env.GetCtx(), pr.GetTargetEntity().Owner, pr.GetTargetEntity().Repo, append(authors, nonAuthorAvailableAssignees...))
 	if err != nil {
 		return fmt.Errorf("error getting open pull requests as reviewer: %s", err)
 	}
@@ -74,12 +79,26 @@ func assignCodeAuthorReviewersCode(env aladino.Env, args []aladino.Value) error 
 		}
 	}
 
+	// If there are no authors eligible to review
+	// find eligible reviewers from the available assignees.
+	if len(selectedReviewers) == 0 {
+		for _, assignee := range nonAuthorAvailableAssignees {
+			if isUserEligibleToReview(assignee, pr.PullRequest, reviewersToExclude, availableAssignees, totalOpenPRsAsReviewerByUser[assignee], maxAllowedAssignedReviews) {
+				selectedReviewers = append(selectedReviewers, assignee)
+			}
+		}
+
+		selectedReviewers = getRandomReviewers(selectedReviewers, totalRequiredReviewers)
+	}
+
+	// If no reviewers were found until now
+	// assign a random reviewer.
 	if len(selectedReviewers) == 0 {
 		return assignRandomReviewerCode(env, nil)
 	}
 
 	if totalRequiredReviewers > len(selectedReviewers) {
-		env.GetLogger().Warnf("number of required reviewers %d is less than available code author reviewers %d", totalRequiredReviewers, len(selectedReviewers))
+		env.GetLogger().Warnf("number of required reviewers %d is less than available reviewers %d", totalRequiredReviewers, len(selectedReviewers))
 
 		totalRequiredReviewers = len(selectedReviewers)
 	}
@@ -87,6 +106,17 @@ func assignCodeAuthorReviewersCode(env aladino.Env, args []aladino.Value) error 
 	selectedReviewers = selectedReviewers[:totalRequiredReviewers]
 
 	return pr.RequestReviewers(selectedReviewers)
+}
+
+func filterAuthorsFromAssignees(availableAssignees []*codehost.User, authors []string) []string {
+	assignees := []string{}
+	for _, assignee := range availableAssignees {
+		if !slices.Contains(authors, assignee.Login) {
+			assignees = append(assignees, assignee.Login)
+		}
+	}
+
+	return assignees
 }
 
 func getAuthorsFromGitBlame(ctx context.Context, gitHubClient *github.GithubClient, pullRequest *target.PullRequestTarget) ([]string, error) {
@@ -158,4 +188,21 @@ func isUserValidAssignee(assignees []*codehost.User, username string) bool {
 		}
 	}
 	return false
+}
+
+func getRandomReviewers(reviewers []string, total int) []string {
+	if total >= len(reviewers) {
+		return reviewers
+	}
+
+	selectedReviewers := make([]string, total)
+
+	for i := 0; i < total; i++ {
+		randIndex := rand.Intn(len(reviewers))
+		selectedReviewers[i] = reviewers[randIndex]
+
+		reviewers = append(reviewers[:randIndex], reviewers[randIndex+1:]...)
+	}
+
+	return selectedReviewers
 }
