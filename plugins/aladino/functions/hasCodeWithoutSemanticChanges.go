@@ -5,7 +5,6 @@
 package plugins_aladino_functions
 
 import (
-	"context"
 	"fmt"
 	"strings"
 
@@ -18,24 +17,21 @@ import (
 	semantic "github.com/reviewpad/reviewpad/v3/plugins/aladino/semantic"
 	plugins_aladino_services "github.com/reviewpad/reviewpad/v3/plugins/aladino/services"
 	"github.com/reviewpad/reviewpad/v3/utils"
+	"google.golang.org/grpc/metadata"
 )
 
 // RequestIDKey identifies request id field in context
 const RequestIDKey = "request-id"
 
-func HasOnlyCodeChanges() *aladino.BuiltInFunction {
+func HasCodeWithoutSemanticChanges() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type: aladino.BuildFunctionType(
-			[]aladino.Type{
-				aladino.BuildArrayOfType(aladino.BuildStringType()),
-				aladino.BuildArrayOfType(aladino.BuildStringType()),
-			}, aladino.BuildBoolType()),
-		Code:           hasOnlyCodeChanges,
+		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildArrayOfType(aladino.BuildStringType())}, aladino.BuildBoolType()),
+		Code:           hasCodeWithoutSemanticChanges,
 		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest},
 	}
 }
 
-func hasOnlyCodeChanges(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
+func hasCodeWithoutSemanticChanges(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
 	pullRequest := e.GetTarget().(*target.PullRequestTarget)
 	head := pullRequest.PullRequest.GetHead()
 	url := head.GetRepo().GetURL()
@@ -62,24 +58,25 @@ func hasOnlyCodeChanges(e aladino.Env, args []aladino.Value) (aladino.Value, err
 
 	diffClient := service.(api.DiffClient)
 
-	req := &api.EnhancedDiffRequest{
+	req := &api.GetDefinedSymbolsDiffRequest{
+		RepoUri: url,
 		Old:     baseSymbols,
 		New:     headSymbols,
-		RawDiff: gitDiff,
-		RepoUri: url,
+		GitDiff: gitDiff,
 	}
 
 	requestID := uuid.New().String()
 	ctx := e.GetCtx()
-	reqCtx := context.WithValue(ctx, RequestIDKey, requestID)
+	md := metadata.Pairs(RequestIDKey, requestID)
+	reqCtx := metadata.NewOutgoingContext(ctx, md)
 
-	reply, err := diffClient.EnhancedDiff(reqCtx, req)
+	reply, err := diffClient.GetDefinedSymbolsDiff(reqCtx, req)
 	if err != nil {
 		return nil, err
 	}
 
 	// if any symbol is modified, then return false
-	for _, symbol := range reply.Diff.Symbols {
+	for _, symbol := range reply.Symbols {
 		if symbol.ChangeType != entities.ChangeType_UNMODIFIED {
 			return aladino.BuildFalseValue(), nil
 		}
