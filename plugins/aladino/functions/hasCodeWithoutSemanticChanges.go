@@ -37,6 +37,7 @@ func hasCodeWithoutSemanticChanges(e aladino.Env, args []aladino.Value) (aladino
 	pullRequest := e.GetTarget().(*target.PullRequestTarget)
 	head := pullRequest.PullRequest.GetHead()
 	url := head.GetRepo().GetURL()
+	log := e.GetLogger()
 
 	// filter patch by file pattern
 	patch := pullRequest.Patch
@@ -56,6 +57,9 @@ func hasCodeWithoutSemanticChanges(e aladino.Env, args []aladino.Value) (aladino
 		}
 		if !ignore {
 			newPatch[fp] = file
+			log.Infof("file %s is not ignored", fp)
+		} else {
+			log.Infof("file %s is ignored", fp)
 		}
 	}
 
@@ -99,13 +103,25 @@ func hasCodeWithoutSemanticChanges(e aladino.Env, args []aladino.Value) (aladino
 	}
 
 	// if any symbol is modified, then return false
+	res := true
 	for _, symbol := range reply.Symbols {
+		// log symbol information
+		log.Infof("symbol: %+q", symbol)
+		log.Infof("file: %v, symbol: (old: %s, new:%v), type: %s", symbol.MainDefinitionPath, symbol.OldInfo.Name, symbol.NewInfo.Name, symbol.ChangeType.String())
+		log.Infof("------------------------------------------------")
+
 		if symbol.ChangeType != entities.ChangeType_UNMODIFIED {
-			return aladino.BuildFalseValue(), nil
+			res = false
 		}
 	}
 
-	return aladino.BuildTrueValue(), nil
+	if res {
+		log.Infof("no semantic changes detected")
+		return aladino.BuildTrueValue(), nil
+	} else {
+		log.Infof("semantic changes detected")
+		return aladino.BuildFalseValue(), nil
+	}
 }
 
 func getRawDiff(e aladino.Env, baseFiles map[string]string, headFiles map[string]string) (*entities.GitDiff, error) {
