@@ -106,7 +106,7 @@ func hasCodeWithoutSemanticChanges(e aladino.Env, args []aladino.Value) (aladino
 	res := true
 	for _, symbol := range reply.Symbols {
 		// log symbol information
-		log.WithField("symbol", symbol).Info("semantic diff symbol")
+
 		var sb strings.Builder
 
 		sb.WriteString(fmt.Sprintf("path: %v, ", symbol.MainDefinitionPath))
@@ -120,7 +120,7 @@ func hasCodeWithoutSemanticChanges(e aladino.Env, args []aladino.Value) (aladino
 		}
 
 		sb.WriteString(fmt.Sprintf("change type: %s", symbol.ChangeType))
-		log.Infof(sb.String())
+		log.WithField("symbol", symbol).Info(sb.String())
 
 		log.Infof("------------------------------------------------")
 
