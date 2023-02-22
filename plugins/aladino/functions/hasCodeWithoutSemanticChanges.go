@@ -106,8 +106,7 @@ func hasCodeWithoutSemanticChanges(e aladino.Env, args []aladino.Value) (aladino
 	res := true
 	for _, symbol := range reply.Symbols {
 		// log symbol information
-		log.Infof("symbol: %+q", symbol)
-		log.Infof("file: %v, symbol: (old: %s, new:%v), type: %s", symbol.MainDefinitionPath, symbol.OldInfo.Name, symbol.NewInfo.Name, symbol.ChangeType.String())
+		log.WithField("symbol", symbol).Info("semantic diff symbol")
 		log.Infof("------------------------------------------------")
 
 		if symbol.ChangeType != entities.ChangeType_UNMODIFIED {
