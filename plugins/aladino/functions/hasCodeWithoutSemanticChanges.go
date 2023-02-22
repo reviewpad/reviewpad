@@ -116,7 +116,7 @@ func hasCodeWithoutSemanticChanges(e aladino.Env, args []aladino.Value) (aladino
 		}
 
 		if symbol.NewInfo != nil {
-			sb.WriteString(fmt.Sprintf("old: %s, ", symbol.NewInfo.Name))
+			sb.WriteString(fmt.Sprintf("new: %s, ", symbol.NewInfo.Name))
 		}
 
 		sb.WriteString(fmt.Sprintf("change type: %s", symbol.ChangeType))
