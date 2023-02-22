@@ -43,13 +43,19 @@ func hasCodeWithoutSemanticChanges(e aladino.Env, args []aladino.Value) (aladino
 	newPatch := make(map[string]*codehost.File)
 
 	filePatterns := args[0].(*aladino.ArrayValue)
-	for _, v := range filePatterns.Vals {
-		filePatternRegex := v.(*aladino.StringValue)
-		for fp, file := range patch {
+	for fp, file := range patch {
+		ignore := false
+		for _, v := range filePatterns.Vals {
+			filePatternRegex := v.(*aladino.StringValue)
+
 			re, err := doublestar.Match(filePatternRegex.Val, fp)
 			if err == nil && re {
-				newPatch[fp] = file
+				ignore = true
+				break
 			}
+		}
+		if !ignore {
+			newPatch[fp] = file
 		}
 	}
 
