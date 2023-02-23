@@ -25,3 +25,7 @@ func IsReviewpadCommand(eventDetails *handler.EventDetails) bool {
 func IsReviewpadCommandDryRun(command string) bool {
 	return strings.TrimPrefix(command, "/reviewpad ") == "dry-run"
 }
+
+func IsReviewpadCommandRun(command string) bool {
+	return strings.TrimPrefix(command, "/reviewpad ") == "run"
+}

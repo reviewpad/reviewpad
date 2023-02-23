@@ -335,9 +335,13 @@ func Run(
 		command := eventDetails.Payload.(*github.IssueCommentEvent).GetComment().GetBody()
 		if utils.IsReviewpadCommandDryRun(command) {
 			return runReviewpadCommandDryRun(log, collector, gitHubClient, targetEntity, reviewpadFile, env)
-		} else {
-			return runReviewpadCommand(ctx, log, collector, gitHubClient, targetEntity, env, aladinoInterpreter, command)
 		}
+
+		if utils.IsReviewpadCommandRun(command) {
+			return runReviewpadFile(log, collector, gitHubClient, targetEntity, eventDetails, reviewpadFile, dryRun, safeMode, env, aladinoInterpreter)
+		}
+
+		return runReviewpadCommand(ctx, log, collector, gitHubClient, targetEntity, env, aladinoInterpreter, command)
 	} else {
 		return runReviewpadFile(log, collector, gitHubClient, targetEntity, eventDetails, reviewpadFile, dryRun, safeMode, env, aladinoInterpreter)
 	}
