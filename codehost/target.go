@@ -41,6 +41,7 @@ type Target interface {
 	RemoveLabel(labelName string) error
 	SetProjectField(projectItems []gh.GQLProjectV2Item, projectTitle, fieldName, fieldValue string) error
 	JSON() (string, error)
+	GetProjectV2ItemID(projectID string) (string, error)
 }
 
 type User struct {

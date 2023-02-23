@@ -197,3 +197,12 @@ func (t *IssueTarget) JSON() (string, error) {
 
 	return string(j), nil
 }
+
+func (target *IssueTarget) GetProjectV2ItemID(projectID string) (string, error) {
+	ctx := target.ctx
+	targetEntity := target.targetEntity
+	owner := targetEntity.Owner
+	repo := targetEntity.Repo
+
+	return target.githubClient.GetIssueProjectV2ItemIDByNumber(ctx, owner, repo, projectID, targetEntity.Number)
+}
