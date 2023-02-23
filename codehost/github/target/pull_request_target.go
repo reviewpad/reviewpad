@@ -530,3 +530,12 @@ func (t *PullRequestTarget) GetLatestReviewFromReviewer(author string) (*codehos
 		SubmittedAt: latestReview.SubmittedAt,
 	}, nil
 }
+
+func (target *PullRequestTarget) GetProjectV2ItemID(projectID string) (string, error) {
+	ctx := target.ctx
+	targetEntity := target.targetEntity
+	owner := targetEntity.Owner
+	repo := targetEntity.Repo
+
+	return target.githubClient.GetPullRequestProjectV2ItemIDByNumber(ctx, owner, repo, projectID, targetEntity.Number)
+}
