@@ -104,7 +104,7 @@ type GetPullRequestProjectItemsQuery struct {
 					}
 					ID string
 				}
-			} `graphql:"projectItems(first: 100, after: $after)"`
+			} `graphql:"projectItems(first: 100, after: $afterCursor)"`
 		} `graphql:"pullRequest(number: $number)"`
 	} `graphql:"repository(owner: $owner, name: $name)"`
 }
@@ -119,7 +119,7 @@ type GetIssueProjectItemsQuery struct {
 					}
 					ID string
 				}
-			} `graphql:"projectItems(first: 100, after: $after)"`
+			} `graphql:"projectItems(first: 100, after: $afterCursor)"`
 		} `graphql:"issue(number: $number)"`
 	} `graphql:"repository(owner: $owner, name: $name)"`
 }
@@ -208,10 +208,10 @@ func (c *GithubClient) GetProjectFieldsByProjectNumber(ctx context.Context, owne
 func (c *GithubClient) GetPullRequestProjectV2ItemIDByNumber(ctx context.Context, owner, repo, projectID string, number int) (string, error) {
 	var getPullRequestProjectItemsQuery GetPullRequestProjectItemsQuery
 	varGQLGetPullRequestProjectItemsQuery := map[string]interface{}{
-		"owner":  githubv4.String(owner),
-		"name":   githubv4.String(repo),
-		"number": githubv4.Int(number),
-		"after":  githubv4.String(""),
+		"owner":       githubv4.String(owner),
+		"name":        githubv4.String(repo),
+		"number":      githubv4.Int(number),
+		"afterCursor": githubv4.String(""),
 	}
 
 	for {
@@ -231,7 +231,7 @@ func (c *GithubClient) GetPullRequestProjectV2ItemIDByNumber(ctx context.Context
 			break
 		}
 
-		varGQLGetPullRequestProjectItemsQuery["after"] = githubv4.String(getPullRequestProjectItemsQuery.Repository.PullRequest.ProjectItems.PageInfo.EndCursor)
+		varGQLGetPullRequestProjectItemsQuery["afterCursor"] = githubv4.String(getPullRequestProjectItemsQuery.Repository.PullRequest.ProjectItems.PageInfo.EndCursor)
 	}
 
 	return "", ErrProjectItemNotFound
@@ -240,10 +240,10 @@ func (c *GithubClient) GetPullRequestProjectV2ItemIDByNumber(ctx context.Context
 func (c *GithubClient) GetIssueProjectV2ItemIDByNumber(ctx context.Context, owner, repo, projectID string, number int) (string, error) {
 	var getIssueProjectItemsQuery GetIssueProjectItemsQuery
 	varGQLGetIssueProjectItemsQuery := map[string]interface{}{
-		"owner":  githubv4.String(owner),
-		"name":   githubv4.String(repo),
-		"number": githubv4.Int(number),
-		"after":  githubv4.String(""),
+		"owner":       githubv4.String(owner),
+		"name":        githubv4.String(repo),
+		"number":      githubv4.Int(number),
+		"afterCursor": githubv4.String(""),
 	}
 
 	for {
@@ -263,7 +263,7 @@ func (c *GithubClient) GetIssueProjectV2ItemIDByNumber(ctx context.Context, owne
 			break
 		}
 
-		varGQLGetIssueProjectItemsQuery["after"] = githubv4.String(getIssueProjectItemsQuery.Repository.Issue.ProjectItems.PageInfo.EndCursor)
+		varGQLGetIssueProjectItemsQuery["afterCursor"] = githubv4.String(getIssueProjectItemsQuery.Repository.Issue.ProjectItems.PageInfo.EndCursor)
 	}
 
 	return "", ErrProjectItemNotFound
