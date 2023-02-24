@@ -38,10 +38,10 @@ func TestRemoveFromProject(t *testing.T) {
 	 }`
 
 	getProjectItemIDGraphQLQuery := `{
-		"query":"query($after:String! $name:String! $number:Int! $owner:String!){
+		"query":"query($afterCursor:String! $name:String! $number:Int! $owner:String!){
 			repository(owner: $owner, name: $name){
 				pullRequest(number: $number){
-					projectItems(first: 100, after: $after){
+					projectItems(first: 100, after: $afterCursor){
 						pageInfo{
 							hasNextPage,
 							endCursor
@@ -57,7 +57,7 @@ func TestRemoveFromProject(t *testing.T) {
 			}
 		}",
 		"variables":{
-		   "after":"",
+		   "afterCursor":"",
 		   "name":"default-mock-repo",
 		   "number":6,
 		   "owner":"foobar"
