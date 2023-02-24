@@ -536,6 +536,46 @@ func TestReview(t *testing.T) {
 			inputReviewBody:  "test",
 			wantErr:          fmt.Errorf("review: unsupported review state NOT_SUPPORTED"),
 		},
+		"when latest review is the same as the one we want to create": {
+			clientOptions: []mock.MockBackendOption{},
+			mockedLatestReviewFromReviewerGQLQueryBody: `{
+				"data": {
+					"repository": {
+						"pullRequest": {
+							"reviews": {
+								"nodes": [{
+									"author": {
+										"login": "test"
+									},
+									"body": "test",
+									"state": "APPROVED",
+									"submittedAt": "2022-11-26T19:01:12Z"
+								}]
+							}
+						}
+					}
+				}
+			}`,
+			mockedLastPullRequestPushDateGQLQueryBody: `{
+				"data": {
+					"repository": {
+						"pullRequest": {
+							"timelineItems": {
+								"nodes": [{
+									"__typename": "PullRequestCommit",
+									"commit": {
+										"pushedDate": "2022-11-11T13:36:05Z",
+										"committedDate": "2022-11-11T13:36:05Z"
+									}
+								}]
+							}
+						}
+					}
+				}
+			}`,
+			inputReviewEvent: "APPROVE",
+			inputReviewBody:  "test",
+		},
 	}
 
 	for name, test := range tests {
