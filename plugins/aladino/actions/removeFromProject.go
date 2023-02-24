@@ -30,7 +30,7 @@ func removeFromProjectCode(e aladino.Env, args []aladino.Value) error {
 
 	project, err := e.GetGithubClient().GetProjectV2ByName(e.GetCtx(), owner, repo, projectName)
 	if err != nil {
-		return fmt.Errorf("failed to get project by name: %w", err)
+		return fmt.Errorf("failed to get project by name: %s", err.Error())
 	}
 
 	itemID, err := target.GetProjectV2ItemID(project.ID)
@@ -39,12 +39,12 @@ func removeFromProjectCode(e aladino.Env, args []aladino.Value) error {
 			return nil
 		}
 
-		return fmt.Errorf("failed to get project item id: %w", err)
+		return fmt.Errorf("failed to get project item id: %s", err.Error())
 	}
 
 	err = e.GetGithubClient().DeleteProjectV2Item(e.GetCtx(), project.ID, itemID)
 	if err != nil {
-		return fmt.Errorf("failed to remove from project: %w", err)
+		return fmt.Errorf("failed to remove from project: %s", err.Error())
 	}
 
 	return nil
