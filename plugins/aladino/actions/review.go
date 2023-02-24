@@ -68,7 +68,7 @@ func reviewCode(e aladino.Env, args []aladino.Value) error {
 
 		// If the latest review is the same as the one we want to create, and the last push date is before the latest review
 		// then we skip the review creation.
-		if latestReview.State == reviewEvent && latestReview.Body == reviewBody && lastPushDate.Before(*latestReview.SubmittedAt) {
+		if latestReviewEvent == reviewEvent && latestReview.Body == reviewBody && lastPushDate.Before(*latestReview.SubmittedAt) {
 			log.Infof("skipping review because there were no updates since the last review")
 			return nil
 		}
