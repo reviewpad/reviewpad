@@ -85,7 +85,6 @@ workflows:
       - rule: $hasUnaddressedThreads()
         extra-actions:
           - $addLabel("requires-author-attention")
-          - $info($sprintf("@%s requires your attention!", [$author()]))
       - rule: '!$hasUnaddressedThreads()'
         extra-actions:
           - $removeLabel("requires-author-attention")
