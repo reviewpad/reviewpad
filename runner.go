@@ -52,6 +52,17 @@ func Load(ctx context.Context, log *logrus.Entry, githubClient *gh.GithubClient,
 	return file, nil
 }
 
+func LoadReviewpadFileFromGitHub(ctx context.Context, logger *logrus.Entry, githubClient *gh.GithubClient, filePath string, branch *github.PullRequestBranch) (*engine.ReviewpadFile, error) {
+	reviewpadFileContent, err := githubClient.DownloadContents(ctx, filePath, branch)
+	if err != nil {
+		return nil, err
+	}
+
+	buf := bytes.NewBuffer(reviewpadFileContent)
+
+	return Load(ctx, logger, githubClient, buf)
+}
+
 func createCommentWithReviewpadCommandEvaluationError(env *engine.Env, err error) error {
 	command := env.EventDetails.Payload.(*github.IssueCommentEvent).GetComment().GetBody()
 
