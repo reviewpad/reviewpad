@@ -34,6 +34,24 @@ func CloneRepository(log *logrus.Entry, url string, token string, path string, o
 		url = fmt.Sprintf("https://%v@%v", token, splitted[1])
 	}
 
+	if options == nil {
+		options = &git.CloneOptions{}
+	}
+
+	options.FetchOptions = &git.FetchOptions{
+		RemoteCallbacks: git.RemoteCallbacks{
+			CredentialsCallback: func(url, usernameFromURL string, allowedTypes git.CredentialType) (*git.Credential, error) {
+				log.WithFields(logrus.Fields{
+					"url":               url,
+					"username_from_url": usernameFromURL,
+					"allowed_types":     allowedTypes,
+				}).Debug("called credentials callback in clone")
+
+				return git.NewCredentialUserpassPlaintext(usernameFromURL, token)
+			},
+		},
+	}
+
 	log.Infof("cloning %s to %s", url, dir)
 
 	repo, err := git.Clone(url, dir, options)
@@ -214,7 +232,7 @@ func Push(log *logrus.Entry, repo *git.Repository, remoteName string, branchName
 					"url":               url,
 					"username_from_url": usernameFromURL,
 					"allowed_types":     allowedTypes,
-				}).Debug("called credentials callback")
+				}).Debug("called credentials callback in push")
 
 				return git.NewCredentialUserpassPlaintext(usernameFromURL, token)
 			},
