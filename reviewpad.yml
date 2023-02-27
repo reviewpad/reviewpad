@@ -1,8 +1,5 @@
 api-version: reviewpad.com/v3.x
 
-extends:
-  - https://github.com/reviewpad/.github/blob/main/reviewpad-models/common.yml
-
 labels:
   external-contribution:
     description: External contribution
