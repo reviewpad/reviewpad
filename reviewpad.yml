@@ -43,6 +43,14 @@ groups:
     spec: $append($group("maintainers"), $group("rising-stars"))
 
 rules:
+  - name: is-renovate-bot
+    description: Author is Renovate Bot
+    spec: $author() == "renovate[bot]"
+
+  - name: is-external-contribution
+    description: Author is not a Reviewpad core contributor
+    spec: '!$isElementOf($author(), $group("official-contributors"))'
+
   - name: ci-is-green
     description: Pipeline is green
     spec: $checkRunConclusion("pr-build") == "success"
@@ -86,10 +94,12 @@ workflows:
   - name: external-contribution
     always-run: true
     if:
-      - '!$isElementOf($author(), $group("official-contributors"))'
-    then:
-      - $addLabel("external-contribution")
-      - $info($sprintf("@%s thanks for your contribution!", [$author()]))
+      - rule: is-external-contribution
+        extra-actions:
+          - $addLabel("external-contribution")
+      - rule: $rule("is-external-contribution") && !$rule("is-renovate-bot")
+        extra-actions:
+          - $info($sprintf("@%s thanks for your contribution!", [$author()]))
 
   # Bind the pull request to the project
   - name: add-to-project
@@ -178,10 +188,14 @@ pipelines:
     trigger: $author() == "renovate[bot]"
     stages:
       - actions:
+          - $comment("Pull request is not up to date with the base branch. Reviewpad will rebase it for you. Please wait for the rebase to complete.")
+          - $rebase()
+        until: $isUpdatedWithBaseBranch() && $hasLinearHistory()
+      - actions:
           - $review("REQUEST_CHANGES", "The CI is failing. Please fix the build first.")
         until: $rule("ci-is-green")
       - actions:
-          - $info("An approval is required from @marcelosousa or @ferreiratiago to merge this pull request.")
-        until: $reviewerStatus("marcelosousa") == "APPROVED" || $reviewerStatus("ferreiratiago") == "APPROVED"
+          - $assignReviewer($group("owners"), 1)
+        until: $hasRequiredApprovals(1, $group("owners"))
       - actions:
           - $merge("rebase")
