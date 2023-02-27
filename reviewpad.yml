@@ -51,8 +51,8 @@ rules:
     description: Author is not a Reviewpad core contributor
     spec: '!$isElementOf($author(), $group("official-contributors"))'
 
-  - name: ci-is-green
-    description: Pipeline is green
+  - name: ci-succeeded
+    description: Pipeline succeeded
     spec: $checkRunConclusion("pr-build") == "success"
 
   - name: touches-plugin-functions
@@ -108,6 +108,14 @@ workflows:
       - '!$hasLinkedIssues() && !$isLinkedToProject("Reviewpad")'
     then:
       - $addToProject("Reviewpad", "In Review")
+
+  # When the build fails, we need to make sure that the reviewer is aware of it.
+  - name: build-fails
+    always-run: true
+    if:
+      - $checkRunConclusion("pr-build") == "failure"
+    then:
+      - $review("REQUEST_CHANGES", "The build failed. Please fix it before continuing.")
 
   # When changing critical code, we need to make sure that the reviewer is aware of it.
   - name: changes-to-critical-code
@@ -175,10 +183,10 @@ pipelines:
       - actions:
           - $error("Pull request cannot be in ship state when it has do-not-merge label.")
         until: '!$isElementOf("do-not-merge", $labels())'
-      # Check if the pull request CI is green or if it only includes markdown changes
+      # Check if the pull request CI succeeded or if it only includes markdown changes
       - actions:
-          - $review("REQUEST_CHANGES", "Pull request is in ship mode but the build is failing. Please fix the build first.")
-        until: $rule("ci-is-green") || $hasFileExtensions([".md"])
+          - $addLabel("waiting-checks")
+        until: $rule("ci-succeeded") || $hasFileExtensions([".md"])
       - actions:
           - $approve("Pull request is in ship mode and the build is green.")
           - $merge("rebase")
@@ -192,10 +200,11 @@ pipelines:
           - $rebase()
         until: $isUpdatedWithBaseBranch() && $hasLinearHistory()
       - actions:
-          - $review("REQUEST_CHANGES", "The CI is failing. Please fix the build first.")
-        until: $rule("ci-is-green")
+          - $addLabel("waiting-checks")
+        until: $rule("ci-succeeded")
       - actions:
           - $assignReviewer($group("owners"), 1)
         until: $hasRequiredApprovals(1, $group("owners"))
       - actions:
+          - $comment("Pull request is ready to be merged. Reviewpad will merge it for you. Please wait for the merge to complete.")
           - $merge("rebase")
