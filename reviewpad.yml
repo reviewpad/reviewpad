@@ -1,5 +1,8 @@
 api-version: reviewpad.com/v3.x
 
+extends:
+  - https://github.com/reviewpad/.github/blob/main/reviewpad-models/common.yml
+
 labels:
   external-contribution:
     description: External contribution
@@ -10,20 +13,11 @@ labels:
   critical:
     description: Modifications to critical changes
     color: "#294b75"
-  ship:
-    description: Ship mode
-    color: "#76dbbe"
-  show:
-    description: Show mode
-    color: "#2986cc"
-  ask:
-    description: Ask mode
-    color: "#c90076"
   waiting-review:
-    description: PR waiting for review
+    description: Pull request is waiting for review
     color: "#cccc00"
   requires-author-attention:
-    description: PR requires author attention
+    description: Pull request requires author attention
     color: "#b20000"
 
 groups:
@@ -34,7 +28,7 @@ groups:
 
   - name: plugins-reviewers
     description: Group of plugin reviewers
-    spec: '["marcelosousa", "ferreiratiago", "shay2025"]'
+    spec: '["marcelosousa", "ferreiratiago", "shay2025", "zolamk"]'
 
   - name: maintainers
     description: Official maintainers
@@ -46,232 +40,148 @@ groups:
 
   - name: official-contributors
     description: Reviewpad core contributors
-    spec: '$append($group("maintainers"), $group("rising-stars"))'
+    spec: $append($group("maintainers"), $group("rising-stars"))
 
 rules:
-  - name: changes-are-in-markdown
-    description: Checks if changes are only in markdown files
-    spec: '$hasFileExtensions([".md"])'
-
-  - name: ship-mode
-    spec: '$contains($description(), "[x] Ship:")'
-
-  - name: ship-authored-by-owners
-    description: Ship pull requests authored by owners
-    spec: '$rule("ship-mode") && $isElementOf($author(), $group("owners"))'
-
-  - name: ship-markdown-changes
-    description: Owners can ship simple pull requests
-    spec: '$rule("ship-authored-by-owners") && $rule("changes-are-in-markdown")'
-
-  - name: changes-should-be-built
-    description: Checks if changes are not only in markdown files
-    spec: '!$rule("changes-are-in-markdown")'
-
   - name: ci-is-green
     description: Pipeline is green
-    spec: '$checkRunConclusion("pr-build") == "success"'
-
-  - name: auto-merge-authored-by-owners-with-ship-and-green-ci
-    description: Auto merge pull requests authored by owners with ship and green ci
-    spec: '$rule("ship-authored-by-owners") && $rule("ci-is-green")'
-
-  - name: show-mode
-    spec: '$contains($description(), "[x] Show:")'
-
-  - name: ask-mode
-    spec: '$contains($description(), "[x] Ask:")'
-
-  - name: touches-license
-    spec: '$hasFileName("LICENSE")'
-
-  - name: touches-more-than-license
-    description: Modifies the LICENSE file and other files
-    spec: '$rule("touches-license") && $fileCount() > 1'
-
-  - name: touches-license-by-non-owner
-    description: Non-owner modifies the LICENSE file
-    spec: '$rule("touches-license") && !$isElementOf($author(), $group("owners"))'
+    spec: $checkRunConclusion("pr-build") == "success"
 
   - name: touches-plugin-functions
     description: Modifies the plugin functions
-    spec: '$hasFilePattern("plugins/aladino/functions/**")'
+    spec: $hasFilePattern("plugins/aladino/functions/**")
 
   - name: touches-plugin-actions
     description: Modifies the plugin actions
-    spec: '$hasFilePattern("plugins/aladino/actions/**")'
+    spec: $hasFilePattern("plugins/aladino/actions/**")
 
   - name: touches-plugin-functions-and-actions
     description: Modifies both plugin actions and functions
-    spec: '$rule("touches-plugin-actions") && $rule("touches-plugin-functions")'
+    spec: $rule("touches-plugin-actions") && $rule("touches-plugin-functions")
 
   - name: touches-plugin-functions-or-actions-and-not-builtins
     description: Modifies plugins but not built-ins
-    spec: '($rule("touches-plugin-actions") || $rule("touches-plugin-functions")) && !$hasFileName("plugins/aladino/builtins.go")'
-
-  - name: authored-by-rising-stars
-    description: Pull request was authored by rising stars
-    spec: '$isElementOf($author(), $group("rising-stars"))'
-
-  - name: authored-by-maintainers
-    description: Pull request was authored by maintainers
-    spec: '$isElementOf($author(), $group("maintainers"))'
-
-  - name: authored-by-external-contributors
-    description: Pull request was authored by external contributors
-    spec: '!$isElementOf($author(), $group("official-contributors"))'
-
-  - name: inconsistent-state
-    description: Pull request is in an inconsistent state
-    spec: '$isDraft() && $rule("ship-mode")'
-
-  - name: ship-approved-renovate-prs
-    spec: '$author() == "renovate[bot]" && $reviewerStatus("marcelosousa") == "APPROVED"'
+    spec: ($rule("touches-plugin-actions") || $rule("touches-plugin-functions")) && !$hasFileName("plugins/aladino/builtins.go")
 
 workflows:
-  - name: label-ship-show-ask
-    always-run: true
-    if:
-      - rule: ship-authored-by-owners
-        extra-actions:
-          - '$removeLabels(["ask", "show"])'
-          - '$addLabel("ship")'
-      - rule: show-mode
-        extra-actions:
-          - '$removeLabels(["ask", "ship"])'
-          - '$addLabel("show")'
-      - rule: ask-mode
-        extra-actions:
-          - '$removeLabels(["show", "ship"])'
-          - '$addLabel("ask")'
-
+  # Define who needs to pay attention to the pull request
   - name: attention-set
     always-run: true
     if:
-      - rule: '$isWaitingForReview()'
+      - rule: $isWaitingForReview()
         extra-actions:
-          - '$addLabel("waiting-review")'
+          - $addLabel("waiting-review")
       - rule: '!$isWaitingForReview()'
         extra-actions:
-          - '$removeLabel("waiting-review")'
-      - rule: '$hasUnaddressedThreads()'
+          - $removeLabel("waiting-review")
+      - rule: $hasUnaddressedThreads()
         extra-actions:
-          - '$addLabel("requires-author-attention")'
+          - $addLabel("requires-author-attention")
+          - $info($sprintf("@%s requires your attention!", [$author()]))
       - rule: '!$hasUnaddressedThreads()'
         extra-actions:
-          - '$removeLabel("requires-author-attention")'
+          - $removeLabel("requires-author-attention")
 
+  # Welcome external contributors
+  - name: external-contribution
+    always-run: true
+    if:
+      - '!$isElementOf($author(), $group("official-contributors"))'
+    then:
+      - $addLabel("external-contribution")
+      - $info($sprintf("@%s thanks for your contribution!", [$author()]))
+
+  # Bind the pull request to the project
   - name: add-to-project
-    description: Pull requests without linked issues are added to the project
     always-run: true
     if:
-      - rule: '!$hasLinkedIssues() && !$isLinkedToProject("Reviewpad")'
+      - '!$hasLinkedIssues() && !$isLinkedToProject("Reviewpad")'
     then:
-      - '$addToProject("Reviewpad", "In Review")'
+      - $addToProject("Reviewpad", "In Review")
 
-  - name: add-issue-to-project
-    on:
-      - issue
-    description: Automatically add issues to project in the backlog state
-    always-run: true
-    if:
-      - rule: '!$isLinkedToProject("Reviewpad")'
-    then:
-      - '$addToProject("Reviewpad", "Backlog")'
-
-  - name: check-inconsistent-state
-    if:
-      - rule: inconsistent-state
-    then:
-      - '$error("Pull request cannot be in ship state when it is a work in progress!")'
-
-  - name: unauthorized-license-workflow
-    description: Protect unauthorized modifications to the LICENSE
-    if:
-      - rule: touches-license-by-non-owner
-    then:
-      - '$error("Sorry, you are not authorized to make these changes")'
-      - '$close()'
-
-  - name: license-workflow
-    description: Protect modifications to the LICENSE
-    if:
-      - rule: touches-license
-      - rule: touches-more-than-license
-        extra-actions:
-          - '$warn("This pull request should only modify the LICENSE!")'
-    then:
-      - '$addLabel("modifies-license")'
-      - '$assignReviewer($group("owners"), 1)'
-
-  - name: auto-merge-owner-pull-requests
-    description: Auto merge pull requests
-    if:
-      - rule: auto-merge-authored-by-owners-with-ship-and-green-ci
-      - rule: ship-markdown-changes
-      - rule: ship-approved-renovate-prs
-    then:
-      - '$merge("rebase")'
-
+  # When changing critical code, we need to make sure that the reviewer is aware of it.
   - name: changes-to-critical-code
     always-run: true
     if:
-      - rule: '$hasAnnotation("critical")'
-      - rule: '$hasFileName("runner.go")'
+      - $hasAnnotation("critical")
+      - $hasFileName("runner.go")
     then:
-      - '$addLabel("critical")'
-      - '$assignReviewer($group("owners"), 1)'
-      - '$info("@marcelosousa: you are being notified because critical code was modified")'
+      - $addLabel("critical")
+      - $assignReviewer($group("owners"), 1)
 
-  - name: default-review-process
-    # only runs if the pull request is not automatically merged
-    if:
-      - rule: '$pullRequestCountBy($author(), "all") == 1'
-        extra-actions:
-          - '$commentOnce("Thank you so much for your first pull request!")'
-      - rule: authored-by-rising-stars
-        extra-actions:
-          - '$assignReviewer($group("maintainers"), 1)'
-          - '$assignAssignees([$author()])'
-      - rule: authored-by-maintainers
-        extra-actions:
-          - '$assignReviewer($group("maintainers"), 1)'
-          - '$assignReviewer($group("rising-stars"), 1)'
-          - '$assignAssignees([$author()])'
-      - rule: authored-by-external-contributors
-        extra-actions:
-          - '$addLabel("external-contribution")'
-          - '$assignReviewer($group("maintainers"), 1)'
-          - '$assignAssignees(["marcelosousa"])'
-
-  - name: fail-if-should-not-be-merged
-    always-run: true
-    if:
-      - rule: '$isElementOf("do-not-merge", $labels())'
-    then:
-      - '$fail("merge blocked because of do-not-merge label")'
-
-  - name: label-plugins
+  # When changing plugins, we need to make sure that the documentation is updated.
+  - name: changes-to-plugins
     always-run: true
     if:
       - rule: touches-plugin-functions
       - rule: touches-plugin-actions
     then:
-      - '$addLabel("plugins")'
-      - '$assignReviewer($group("plugins-reviewers"), 1)'
-      - '$info("If you are adding or updating a built-in, please do not forget to update the [docs](https://github.com/reviewpad/docs)")'
+      - $addLabel("plugins")
+      - $assignReviewer($group("plugins-reviewers"), 1)
+      - $info("If you are adding or updating a built-in, please do not forget to update the [docs](https://github.com/reviewpad/docs)")
 
+  # When changing both functions and actions, we need to make sure that this is intentional.
   - name: contained-plugin-changes
-    description: Warn when touching multiple changes
     always-run: true
     if:
       - rule: touches-plugin-functions-and-actions
     then:
-      - '$info("It looks like you modified both functions and actions. Is that intentional?")'
+      - $warn("It looks like you modified both functions and actions. Is that intentional?")
 
+  # When changing plugins but not built-ins, we need to make sure that this is intentional.
   - name: help-with-builtins
     always-run: true
     if:
       - rule: touches-plugin-functions-or-actions-and-not-builtins
     then:
-      - '$info("If you have added a new function or action do not forget to include it in the built-in list!")'
+      - $info("If you have added a new function or action do not forget to include it in the built-in list!")
+
+pipelines:
+  # When the pull request touches the LICENSE file
+  - name: license
+    trigger: $hasFileName("LICENSE")
+    stages:
+      - actions:
+          - $error("Sorry, you are not authorized to make these changes")
+          - $close()
+        until: $isElementOf($author(), $group("owners"))
+      - actions:
+          - $error("You are changing more than the LICENSE file. Pull request that change the LICENSE file should only modify the LICENSE file.")
+        until: $fileCount() == 1
+      - actions:
+          - $addLabel("modifies-license")
+          - $assignReviewer($group("owners"), 1)
+
+  # When the pull request is in ship mode
+  - name: ship-mode
+    trigger: $rule("is-ship")
+    stages:
+      - actions:
+          - $error("Only owners can use ship mode. Please choose another pull request merge strategy.")
+        until: $isElementOf($author(), $group("owners"))
+      - actions:
+          - $error("Pull request cannot be in ship state when in draft mode.")
+        until: '!$isDraft()'
+      - actions:
+          - $error("Pull request cannot be in ship state when it has do-not-merge label.")
+        until: '!$isElementOf("do-not-merge", $labels())'
+      # Check if the pull request CI is green or if it only includes markdown changes
+      - actions:
+          - $review("REQUEST_CHANGES", "Pull request is in ship mode but the build is failing. Please fix the build first.")
+        until: $rule("ci-is-green") || $hasFileExtensions([".md"])
+      - actions:
+          - $approve("Pull request is in ship mode and the build is green.")
+          - $merge("rebase")
+
+  # When the pull request is from renovate bot
+  - name: renovate-bot
+    trigger: $author() == "renovate[bot]"
+    stages:
+      - actions:
+          - $review("REQUEST_CHANGES", "The CI is failing. Please fix the build first.")
+        until: $rule("ci-is-green")
+      - actions:
+          - $info("An approval is required from @marcelosousa or @ferreiratiago to merge this pull request.")
+        until: $reviewerStatus("marcelosousa") == "APPROVED" || $reviewerStatus("ferreiratiago") == "APPROVED"
+      - actions:
+          - $merge("rebase")
