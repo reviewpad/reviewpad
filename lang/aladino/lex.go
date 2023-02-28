@@ -48,7 +48,7 @@ var tokens = []tokenDef{
 		token: RELATIVETIMESTAMP,
 	},
 	{
-		regex: regexp.MustCompile(`^[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?`),
+		regex: regexp.MustCompile(`^-?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?`),
 		kind:  "number",
 		token: NUMBER,
 	},

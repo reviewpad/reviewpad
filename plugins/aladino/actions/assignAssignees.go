@@ -7,8 +7,10 @@ package plugins_aladino_actions
 import (
 	"fmt"
 	"math/rand"
+	"strconv"
 	"time"
 
+	"github.com/reviewpad/reviewpad/v4/engine"
 	"github.com/reviewpad/reviewpad/v4/handler"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
@@ -35,7 +37,12 @@ func assignAssigneesCode(e aladino.Env, args []aladino.Value) error {
 		return fmt.Errorf("assignAssignees: total required assignees is invalid")
 	}
 
-	if totalRequiredAssignees == -1 {
+	reviewpadDefaultIntValue, err := strconv.Atoi(engine.REVIEWPAD_DEFAULT_INT_VALUE)
+	if err != nil {
+		return err
+	}
+
+	if totalRequiredAssignees == reviewpadDefaultIntValue {
 		totalRequiredAssignees = len(assignees)
 	}
 
