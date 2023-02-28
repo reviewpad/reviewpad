@@ -108,6 +108,7 @@ type GetPullRequestProjectItemsQuery struct {
 		} `graphql:"pullRequest(number: $number)"`
 	} `graphql:"repository(owner: $owner, name: $name)"`
 }
+
 type GetIssueProjectItemsQuery struct {
 	Repository struct {
 		Issue struct {
