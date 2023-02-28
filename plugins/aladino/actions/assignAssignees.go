@@ -34,7 +34,7 @@ func assignAssigneesCode(e aladino.Env, args []aladino.Value) error {
 	}
 
 	if totalRequiredAssignees == 0 {
-		return fmt.Errorf("assignAssignees: total required assignees is invalid")
+		return fmt.Errorf("assignAssignees: total required assignees is invalid. please insert a number bigger than 0.")
 	}
 
 	reviewpadDefaultIntValue, err := strconv.Atoi(engine.REVIEWPAD_DEFAULT_INT_VALUE)
