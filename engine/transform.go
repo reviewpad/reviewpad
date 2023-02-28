@@ -122,7 +122,7 @@ func addDefaultHasAnyCheckRunCompleted(str string) string {
 
 func addDefaultsToRequestedAssignees(str string) string {
 	trimmedStr := strings.ReplaceAll(str, " ", "")
-	m := regexp.MustCompile(`\$assignAssignees\(((\[.*\])|(\$(team|group)\("[^"]*"\)))(,(-)?(\d+))?\)`)
+	m := regexp.MustCompile(`\$assignAssignees\(((\[.*\])|(\$(team|group)\("[^"]*"\)))(,((-)?(\d+)))?\)`)
 	match := m.FindStringSubmatch(trimmedStr)
 
 	if len(match) == 0 {
