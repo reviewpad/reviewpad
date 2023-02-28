@@ -208,12 +208,12 @@ func (c *GithubClient) GetProjectFieldsByProjectNumber(ctx context.Context, owne
 
 // GetPullRequestProjectV2ItemID returns the project item ID for a pull request.
 // Each item on a project board is represented by a project item.
-func (c *GithubClient) GetPullRequestProjectV2ItemID(ctx context.Context, owner, repo, projectID string, number int) (string, error) {
+func (c *GithubClient) GetPullRequestProjectV2ItemID(ctx context.Context, owner, repo, projectID string, prNum int) (string, error) {
 	var getPullRequestProjectItemsQuery GetPullRequestProjectItemsQuery
 	varGQLGetPullRequestProjectItemsQuery := map[string]interface{}{
 		"owner":       githubv4.String(owner),
 		"name":        githubv4.String(repo),
-		"number":      githubv4.Int(number),
+		"number":      githubv4.Int(prNum),
 		"afterCursor": githubv4.String(""),
 	}
 
@@ -242,12 +242,12 @@ func (c *GithubClient) GetPullRequestProjectV2ItemID(ctx context.Context, owner,
 
 // GetIssueProjectV2ItemID returns the project item ID for an issue.
 // Each item on a project board is represented by a project item.
-func (c *GithubClient) GetIssueProjectV2ItemID(ctx context.Context, owner, repo, projectID string, number int) (string, error) {
+func (c *GithubClient) GetIssueProjectV2ItemID(ctx context.Context, owner, repo, projectID string, issueNum int) (string, error) {
 	var getIssueProjectItemsQuery GetIssueProjectItemsQuery
 	varGQLGetIssueProjectItemsQuery := map[string]interface{}{
 		"owner":       githubv4.String(owner),
 		"name":        githubv4.String(repo),
-		"number":      githubv4.Int(number),
+		"number":      githubv4.Int(issueNum),
 		"afterCursor": githubv4.String(""),
 	}
 
