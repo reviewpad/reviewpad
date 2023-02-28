@@ -11,6 +11,7 @@ import (
 
 	"github.com/google/go-github/v49/github"
 	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
+	"github.com/sirupsen/logrus"
 )
 
 const pullRequestFileLimit = 50
@@ -70,4 +71,13 @@ func ReviewpadFileChanged(ctx context.Context, githubClient *gh.GithubClient, fi
 	}
 
 	return false, nil
+}
+
+func DownloadReviewpadFileFromGitHub(ctx context.Context, logger *logrus.Entry, githubClient *gh.GithubClient, filePath string, branch *github.PullRequestBranch) (*bytes.Buffer, error) {
+	reviewpadFileContent, err := githubClient.DownloadContents(ctx, filePath, branch)
+	if err != nil {
+		return nil, err
+	}
+
+	return bytes.NewBuffer(reviewpadFileContent), nil
 }
