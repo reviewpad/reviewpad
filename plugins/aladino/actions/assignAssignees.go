@@ -53,7 +53,17 @@ func assignAssigneesCode(e aladino.Env, args []aladino.Value) error {
 
 	rand.Seed(time.Now().UnixNano())
 	for totalRequiredAssignees > 0 {
-		assignee := assignees[rand.Intn(totalAvailableAssignees-1)].(*aladino.StringValue).Val
+		var selectedAssigneeIndex int
+
+		// Intn returns, as an int, a non-negative pseudo-random number in the half-open interval [0,n) from the default Source. It panics if n <= 0.
+		randMax := totalAvailableAssignees - 1
+		if randMax <= 0 {
+			selectedAssigneeIndex = 0
+		} else {
+			selectedAssigneeIndex = rand.Intn(randMax)
+		}
+
+		assignee := assignees[selectedAssigneeIndex].(*aladino.StringValue).Val
 
 		if contains(assigneesSelected, assignee) {
 			continue
