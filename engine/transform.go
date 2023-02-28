@@ -132,13 +132,13 @@ func addDefaultsToRequestedAssignees(str string) string {
 	assignees := match[1]
 	totalRequiredAssignees := match[6]
 
-	intTotalRequiredAssignees, _ := strconv.Atoi(totalRequiredAssignees)
-	if intTotalRequiredAssignees < 0 {
-		totalRequiredAssignees = "0"
-	}
-
 	if totalRequiredAssignees == "" {
 		totalRequiredAssignees = REVIEWPAD_DEFAULT_INT_VALUE
+	} else {
+		intTotalRequiredAssignees, _ := strconv.Atoi(totalRequiredAssignees)
+		if intTotalRequiredAssignees < 0 {
+			totalRequiredAssignees = "0"
+		}
 	}
 
 	return strings.Replace(trimmedStr, match[0], "$assignReviewer("+assignees+", "+totalRequiredAssignees+")", 1)
