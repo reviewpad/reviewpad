@@ -141,7 +141,7 @@ func addDefaultsToRequestedAssignees(str string) string {
 		}
 	}
 
-	return strings.Replace(trimmedStr, match[0], "$assignReviewer("+assignees+", "+totalRequiredAssignees+")", 1)
+	return strings.Replace(trimmedStr, match[0], "$assignAssignees("+assignees+", "+totalRequiredAssignees+")", 1)
 }
 
 func transformAladinoExpression(str string) string {
