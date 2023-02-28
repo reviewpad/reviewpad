@@ -120,3 +120,29 @@ func TestIsReviewPadCommand(t *testing.T) {
 		})
 	}
 }
+
+func TestIsReviewpadCommandRun(t *testing.T) {
+	tests := map[string]struct {
+		command string
+		wantVal bool
+	}{
+		"when command is empty": {
+			wantVal: false,
+		},
+		"when command is not /reviewpad run": {
+			command: "/reviewpad assign-reviewers",
+			wantVal: false,
+		},
+		"when command is /reviewpad run": {
+			command: "/reviewpad run",
+			wantVal: true,
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			val := utils.IsReviewpadCommandRun(test.command)
+			assert.Equal(t, test.wantVal, val)
+		})
+	}
+}

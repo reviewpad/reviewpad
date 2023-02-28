@@ -249,7 +249,7 @@ func transform(file *ReviewpadFile) *ReviewpadFile {
 
 			transformedStages = append(transformedStages, PadStage{
 				Actions: transformedActions,
-				Until:   stage.Until,
+				Until:   transformAladinoExpression(stage.Until),
 			})
 		}
 
