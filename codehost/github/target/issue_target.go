@@ -204,5 +204,5 @@ func (target *IssueTarget) GetProjectV2ItemID(projectID string) (string, error) 
 	owner := targetEntity.Owner
 	repo := targetEntity.Repo
 
-	return target.githubClient.GetIssueProjectV2ItemIDByNumber(ctx, owner, repo, projectID, targetEntity.Number)
+	return target.githubClient.GetIssueProjectV2ItemID(ctx, owner, repo, projectID, targetEntity.Number)
 }

@@ -108,6 +108,7 @@ type GetPullRequestProjectItemsQuery struct {
 		} `graphql:"pullRequest(number: $number)"`
 	} `graphql:"repository(owner: $owner, name: $name)"`
 }
+
 type GetIssueProjectItemsQuery struct {
 	Repository struct {
 		Issue struct {
@@ -205,7 +206,9 @@ func (c *GithubClient) GetProjectFieldsByProjectNumber(ctx context.Context, owne
 	return fields, nil
 }
 
-func (c *GithubClient) GetPullRequestProjectV2ItemIDByNumber(ctx context.Context, owner, repo, projectID string, number int) (string, error) {
+// GetPullRequestProjectV2ItemID returns the project item ID for a pull request.
+// Each item on a project board is represented by a project item.
+func (c *GithubClient) GetPullRequestProjectV2ItemID(ctx context.Context, owner, repo, projectID string, number int) (string, error) {
 	var getPullRequestProjectItemsQuery GetPullRequestProjectItemsQuery
 	varGQLGetPullRequestProjectItemsQuery := map[string]interface{}{
 		"owner":       githubv4.String(owner),
@@ -237,7 +240,9 @@ func (c *GithubClient) GetPullRequestProjectV2ItemIDByNumber(ctx context.Context
 	return "", ErrProjectItemNotFound
 }
 
-func (c *GithubClient) GetIssueProjectV2ItemIDByNumber(ctx context.Context, owner, repo, projectID string, number int) (string, error) {
+// GetIssueProjectV2ItemID returns the project item ID for an issue.
+// Each item on a project board is represented by a project item.
+func (c *GithubClient) GetIssueProjectV2ItemID(ctx context.Context, owner, repo, projectID string, number int) (string, error) {
 	var getIssueProjectItemsQuery GetIssueProjectItemsQuery
 	varGQLGetIssueProjectItemsQuery := map[string]interface{}{
 		"owner":       githubv4.String(owner),

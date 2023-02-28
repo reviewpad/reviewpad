@@ -537,5 +537,5 @@ func (target *PullRequestTarget) GetProjectV2ItemID(projectID string) (string, e
 	owner := targetEntity.Owner
 	repo := targetEntity.Repo
 
-	return target.githubClient.GetPullRequestProjectV2ItemIDByNumber(ctx, owner, repo, projectID, targetEntity.Number)
+	return target.githubClient.GetPullRequestProjectV2ItemID(ctx, owner, repo, projectID, targetEntity.Number)
 }
