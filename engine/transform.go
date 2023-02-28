@@ -6,7 +6,12 @@ package engine
 
 import (
 	"regexp"
+	"strconv"
 	"strings"
+)
+
+const (
+	REVIEWPAD_DEFAULT_INT_VALUE string = "-1"
 )
 
 func addDefaultsToRequestedReviewers(str string) string {
@@ -115,6 +120,30 @@ func addDefaultHasAnyCheckRunCompleted(str string) string {
 	return r.ReplaceAllString(str, `$$hasAnyCheckRunCompleted($1, [])`)
 }
 
+func addDefaultsToRequestedAssignees(str string) string {
+	trimmedStr := strings.ReplaceAll(str, " ", "")
+	m := regexp.MustCompile(`\$assignAssignees\(((\[.*\])|(\$(team|group)\("[^"]*"\)))(,(\d+))?\)`)
+	match := m.FindStringSubmatch(trimmedStr)
+
+	if len(match) == 0 {
+		return str
+	}
+
+	assignees := match[1]
+	totalRequiredAssignees := match[6]
+
+	intTotalRequiredAssignees, _ := strconv.Atoi(totalRequiredAssignees)
+	if intTotalRequiredAssignees < 0 {
+		totalRequiredAssignees = "0"
+	}
+
+	if totalRequiredAssignees == "" {
+		totalRequiredAssignees = REVIEWPAD_DEFAULT_INT_VALUE
+	}
+
+	return strings.Replace(trimmedStr, match[0], "$assignReviewer("+assignees+", "+totalRequiredAssignees+")", 1)
+}
+
 func transformAladinoExpression(str string) string {
 	transformedActionStr := str
 
@@ -131,6 +160,7 @@ func transformAladinoExpression(str string) string {
 		addEmptyApproveComment,
 		addDefaultAssignCodeAuthorReviewer,
 		addDefaultHasAnyCheckRunCompleted,
+		addDefaultsToRequestedAssignees,
 	}
 
 	for i := range transformations {
