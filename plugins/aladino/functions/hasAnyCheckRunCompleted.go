@@ -1,10 +1,12 @@
-// Copyright 2022 Explore.dev Unipessoal Lda. All Rights Reserved.
+// Copyright 2023 Explore.dev Unipessoal Lda. All Rights Reserved.
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
 package plugins_aladino_functions
 
 import (
+	"fmt"
+
 	"github.com/google/go-github/v49/github"
 	"github.com/reviewpad/reviewpad/v3/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v3/handler"
@@ -32,7 +34,7 @@ func hasAnyCheckRunCompleted(e aladino.Env, args []aladino.Value) (aladino.Value
 
 	lastCommitSHA, err := pullRequest.GetLastCommit()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get last commit: %s", err.Error())
 	}
 
 	if lastCommitSHA == "" {
@@ -41,7 +43,7 @@ func hasAnyCheckRunCompleted(e aladino.Env, args []aladino.Value) (aladino.Value
 
 	checkRuns, err := e.GetGithubClient().GetCheckRunsForRef(e.GetCtx(), owner, repo, number, lastCommitSHA, &github.ListCheckRunsOptions{})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get check runs: %s", err.Error())
 	}
 
 	ignoredRuns := map[string]bool{}
@@ -49,9 +51,9 @@ func hasAnyCheckRunCompleted(e aladino.Env, args []aladino.Value) (aladino.Value
 		ignoredRuns[item.(*aladino.StringValue).Val] = true
 	}
 
-	checkConclusionsToCheck := map[string]bool{}
+	checkConclusionsToConsider := map[string]bool{}
 	for _, ignoredConclusion := range checkConclusions.Vals {
-		checkConclusionsToCheck[ignoredConclusion.(*aladino.StringValue).Val] = true
+		checkConclusionsToConsider[ignoredConclusion.(*aladino.StringValue).Val] = true
 	}
 
 	for _, checkRun := range checkRuns {
@@ -59,7 +61,7 @@ func hasAnyCheckRunCompleted(e aladino.Env, args []aladino.Value) (aladino.Value
 			continue
 		}
 
-		if checkConclusionsToCheck[checkRun.GetConclusion()] {
+		if checkConclusionsToConsider[checkRun.GetConclusion()] {
 			return aladino.BuildBoolValue(true), nil
 		}
 	}
