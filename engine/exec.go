@@ -51,7 +51,6 @@ func EvalConfigurationFile(file *ReviewpadFile, env *Env) (*Program, error) {
 		"reviewpad_file": file,
 		"reviewpad_details": map[string]interface{}{
 			"project":        fmt.Sprintf(env.TargetEntity.Owner + "/" + env.TargetEntity.Repo),
-			"version":        file.Version,
 			"edition":        file.Edition,
 			"mode":           file.Mode,
 			"ignoreErrors":   file.IgnoreErrors,

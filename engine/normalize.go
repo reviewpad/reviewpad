@@ -2,7 +2,6 @@ package engine
 
 import (
 	"fmt"
-	"regexp"
 	"strings"
 )
 
@@ -50,34 +49,12 @@ func defaultModeNormalizer() *NormalizeRule {
 	return defaultModeNormalizer
 }
 
-func defaultVersionNormalizer() *NormalizeRule {
-	apiVersReg := regexp.MustCompile(`^reviewpad\.com\/v\d+\.(\d+\.\d+|x)$`)
-	defaultVersionNormalizer := NewNormalizeRule()
-	defaultVersionNormalizer.WithModificators(func(file *ReviewpadFile) (*ReviewpadFile, error) {
-		if file.Version == "" {
-			file.Version = defaultApiVersion
-			return file, nil
-		}
-
-		file.Version = strings.ToLower(strings.TrimSpace(file.Version))
-		return file, nil
-	})
-	defaultVersionNormalizer.WithValidators(func(file *ReviewpadFile) error {
-		if apiVersReg.MatchString(file.Version) {
-			return nil
-		}
-		return fmt.Errorf("incorrect api-version: %s", file.Version)
-	})
-	return defaultVersionNormalizer
-}
-
 func normalize(f *ReviewpadFile, customRules ...*NormalizeRule) (*ReviewpadFile, error) {
 	var err error
 	var errStrings []string
 	rules := []*NormalizeRule{
 		defaultEditionNormalizer(),
 		defaultModeNormalizer(),
-		defaultVersionNormalizer(),
 	}
 	rules = append(rules, customRules...)
 
