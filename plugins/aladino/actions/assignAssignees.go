@@ -25,11 +25,11 @@ func AssignAssignees() *aladino.BuiltInAction {
 
 func assignAssigneesCode(e aladino.Env, args []aladino.Value) error {
 	t := e.GetTarget()
-	assignees := args[0].(*aladino.ArrayValue).Vals
+	availableAssignees := args[0].(*aladino.ArrayValue).Vals
 	totalRequiredAssignees := args[1].(*aladino.IntValue).Val
 	log := e.GetLogger().WithField("builtin", "assignAssignees")
 
-	if len(assignees) == 0 {
+	if len(availableAssignees) == 0 {
 		return fmt.Errorf("assignAssignees: list of assignees can't be empty")
 	}
 
@@ -43,10 +43,10 @@ func assignAssigneesCode(e aladino.Env, args []aladino.Value) error {
 	}
 
 	if totalRequiredAssignees == reviewpadDefaultIntValue {
-		totalRequiredAssignees = len(assignees)
+		totalRequiredAssignees = len(availableAssignees)
 	}
 
-	totalAvailableAssignees := len(assignees)
+	totalAvailableAssignees := len(availableAssignees)
 	if totalRequiredAssignees > totalAvailableAssignees {
 		log.Infof("total required assignees %d exceeds the total available assignees %d", totalRequiredAssignees, totalAvailableAssignees)
 		totalRequiredAssignees = totalAvailableAssignees
@@ -56,31 +56,44 @@ func assignAssigneesCode(e aladino.Env, args []aladino.Value) error {
 		return fmt.Errorf("assignAssignees: can only assign up to 10 assignees")
 	}
 
-	assigneesSelected := make([]string, totalRequiredAssignees)
+	// Skip current assignees if mention on the provided assignees list
+	currentAssignees, err := t.GetAssignees()
+	if err != nil {
+		return err
+	}
+
+	for _, assignee := range currentAssignees {
+		for _, availableAssignee := range availableAssignees {
+			if availableAssignee.(*aladino.StringValue).Val == assignee.Login {
+				totalRequiredAssignees--
+				availableAssignees = filterAssigneeFromAssignees(availableAssignees, assignee.Login)
+				break
+			}
+		}
+	}
+
+	assignees := make([]string, totalRequiredAssignees)
 
 	rand.Seed(time.Now().UnixNano())
 	for totalRequiredAssignees > 0 {
 		selectedAssigneeIndex := rand.Intn(totalAvailableAssignees)
 
-		assignee := assignees[selectedAssigneeIndex].(*aladino.StringValue).Val
+		assignee := availableAssignees[selectedAssigneeIndex].(*aladino.StringValue).Val
 
-		if contains(assigneesSelected, assignee) {
-			continue
-		}
-
-		assigneesSelected = append(assigneesSelected, assignee)
+		assignees = append(assignees, assignee)
 		totalRequiredAssignees--
+		availableAssignees = filterAssigneeFromAssignees(availableAssignees, assignee)
 	}
 
-	return t.AddAssignees(assigneesSelected)
+	return t.AddAssignees(assignees)
 }
 
-func contains(s []string, str string) bool {
-	for _, v := range s {
-		if v == str {
-			return true
+func filterAssigneeFromAssignees(assignees []aladino.Value, assignee string) []aladino.Value {
+	var filteredAssignees []aladino.Value
+	for _, a := range assignees {
+		if a.(*aladino.StringValue).Val != assignee {
+			filteredAssignees = append(filteredAssignees, a)
 		}
 	}
-
-	return false
+	return filteredAssignees
 }
