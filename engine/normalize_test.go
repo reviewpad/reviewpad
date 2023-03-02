@@ -8,7 +8,7 @@ import (
 )
 
 func TestNormalize(t *testing.T) {
-	t.Run("missing edition, mode, and version", func(t *testing.T) {
+	t.Run("missing edition and mode", func(t *testing.T) {
 		t.Parallel()
 
 		reviewpadFile, err := normalize(&ReviewpadFile{})
