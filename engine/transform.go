@@ -121,9 +121,8 @@ func addDefaultHasAnyCheckRunCompleted(str string) string {
 }
 
 func addDefaultsToRequestedAssignees(str string) string {
-	trimmedStr := strings.ReplaceAll(str, " ", "")
 	m := regexp.MustCompile(`\$assignAssignees\(((\[.*\])|(\$(team|group)\("[^"]*"\)))(,((-)?(\d+)))?\)`)
-	match := m.FindStringSubmatch(trimmedStr)
+	match := m.FindStringSubmatch(str)
 
 	if len(match) == 0 {
 		return str
@@ -141,7 +140,7 @@ func addDefaultsToRequestedAssignees(str string) string {
 		}
 	}
 
-	return strings.Replace(trimmedStr, match[0], "$assignAssignees("+assignees+", "+totalRequiredAssignees+")", 1)
+	return strings.Replace(str, match[0], "$assignAssignees("+assignees+", "+totalRequiredAssignees+")", 1)
 }
 
 func transformAladinoExpression(str string) string {
