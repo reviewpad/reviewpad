@@ -26,10 +26,6 @@ groups:
     kind: developers
     spec: '["marcelosousa", "ferreiratiago"]'
 
-  - name: plugins-reviewers
-    description: Group of plugin reviewers
-    spec: '["marcelosousa", "ferreiratiago", "shay2025", "zolamk"]'
-
   - name: maintainers
     description: Official maintainers
     spec: '["marcelosousa", "ferreiratiago"]'
@@ -120,8 +116,9 @@ workflows:
   - name: changes-to-critical-code
     always-run: true
     if:
-      - $hasAnnotation("critical")
-      - $hasFileName("runner.go")
+      # Having assignees means that the pull request is already being assigned to someone.
+      # Therefore, we are ready to verify if the code is critical or not.
+      - $assignees() == [] && ($hasAnnotation("critical") || $hasFileName("runner.go"))
     then:
       - $addLabel("critical")
       - $assignReviewer($group("owners"), 1)
@@ -134,7 +131,6 @@ workflows:
       - rule: touches-plugin-actions
     then:
       - $addLabel("plugins")
-      - $assignReviewer($group("plugins-reviewers"), 1)
       - $info("If you are adding or updating a built-in, please do not forget to update the [docs](https://github.com/reviewpad/docs)")
 
   # When changing both functions and actions, we need to make sure that this is intentional.
