@@ -7,10 +7,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const (
-	testNormalizeCorrectExpectedVersion = "reviewpad.com/v3.x"
-)
-
 func TestNormalize(t *testing.T) {
 	t.Run("missing edition, mode, and version", func(t *testing.T) {
 		t.Parallel()
@@ -28,10 +24,6 @@ func TestNormalize(t *testing.T) {
 }
 
 func TestNormalize_WithCustomNormalizers(t *testing.T) {
-	const (
-		customApiVersion = "reviewpad.com/v4.0.0-alpha"
-	)
-
 	defaultNormalizedRuleMode := NewNormalizeRule()
 	defaultNormalizedRuleMode.WithModificators(func(file *ReviewpadFile) (*ReviewpadFile, error) {
 		file.Mode = strings.ToUpper(defaultMode)
