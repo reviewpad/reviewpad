@@ -83,6 +83,7 @@ func assignAssigneesCode(e aladino.Env, args []aladino.Value) error {
 		assignees = append(assignees, assignee)
 		totalRequiredAssignees--
 		availableAssignees = filterAssigneeFromAssignees(availableAssignees, assignee)
+		totalAvailableAssignees = len(availableAssignees)
 	}
 
 	return t.AddAssignees(assignees)
