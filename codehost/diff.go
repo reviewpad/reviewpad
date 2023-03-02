@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/reviewpad/reviewpad/v3/utils"
+	"github.com/reviewpad/reviewpad/v4/utils"
 )
 
 type diff struct {

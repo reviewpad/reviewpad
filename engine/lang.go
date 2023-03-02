@@ -7,7 +7,7 @@ package engine
 import (
 	"reflect"
 
-	"github.com/reviewpad/reviewpad/v3/handler"
+	"github.com/reviewpad/reviewpad/v4/handler"
 )
 
 const (

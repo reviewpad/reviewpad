@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"regexp"
 
-	"github.com/reviewpad/reviewpad/v3/utils"
+	"github.com/reviewpad/reviewpad/v4/utils"
 	"github.com/sirupsen/logrus"
 )
 

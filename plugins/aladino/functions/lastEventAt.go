@@ -7,8 +7,8 @@ package plugins_aladino_functions
 import (
 	"time"
 
-	"github.com/reviewpad/reviewpad/v3/handler"
-	"github.com/reviewpad/reviewpad/v3/lang/aladino"
+	"github.com/reviewpad/reviewpad/v4/handler"
+	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
 func LastEventAt() *aladino.BuiltInFunction {

@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/mattn/go-shellwords"
-	"github.com/reviewpad/reviewpad/v3/engine/commands"
+	"github.com/reviewpad/reviewpad/v4/engine/commands"
 	"github.com/sirupsen/logrus"
 )
 

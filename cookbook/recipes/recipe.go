@@ -7,7 +7,7 @@ package recipes
 import (
 	"context"
 
-	"github.com/reviewpad/reviewpad/v3/handler"
+	"github.com/reviewpad/reviewpad/v4/handler"
 )
 
 type Recipe interface {

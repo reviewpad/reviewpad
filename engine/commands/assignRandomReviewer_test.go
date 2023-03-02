@@ -9,7 +9,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/reviewpad/reviewpad/v3/engine/commands"
+	"github.com/reviewpad/reviewpad/v4/engine/commands"
 	"github.com/stretchr/testify/assert"
 )
 

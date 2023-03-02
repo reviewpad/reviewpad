@@ -12,8 +12,8 @@ import (
 	"time"
 
 	git "github.com/libgit2/git2go/v31"
-	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
-	"github.com/reviewpad/reviewpad/v3/utils"
+	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
+	"github.com/reviewpad/reviewpad/v4/utils"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )

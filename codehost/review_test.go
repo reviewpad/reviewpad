@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/reviewpad/reviewpad/v3/codehost"
+	"github.com/reviewpad/reviewpad/v4/codehost"
 	"github.com/stretchr/testify/assert"
 )
 

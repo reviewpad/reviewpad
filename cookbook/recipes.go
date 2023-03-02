@@ -7,8 +7,8 @@ package cookbook
 import (
 	"fmt"
 
-	"github.com/reviewpad/reviewpad/v3/codehost/github"
-	"github.com/reviewpad/reviewpad/v3/cookbook/recipes"
+	"github.com/reviewpad/reviewpad/v4/codehost/github"
+	"github.com/reviewpad/reviewpad/v4/cookbook/recipes"
 	"github.com/sirupsen/logrus"
 )
 

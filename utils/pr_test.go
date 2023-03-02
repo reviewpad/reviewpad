@@ -8,8 +8,8 @@ import (
 	"testing"
 
 	"github.com/google/go-github/v49/github"
-	"github.com/reviewpad/reviewpad/v3/handler"
-	"github.com/reviewpad/reviewpad/v3/utils"
+	"github.com/reviewpad/reviewpad/v4/handler"
+	"github.com/reviewpad/reviewpad/v4/utils"
 	"github.com/stretchr/testify/assert"
 )
 

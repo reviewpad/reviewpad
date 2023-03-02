@@ -7,11 +7,11 @@ package aladino
 import (
 	"context"
 
-	"github.com/reviewpad/reviewpad/v3/codehost"
-	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
-	"github.com/reviewpad/reviewpad/v3/codehost/github/target"
-	"github.com/reviewpad/reviewpad/v3/collector"
-	"github.com/reviewpad/reviewpad/v3/handler"
+	"github.com/reviewpad/reviewpad/v4/codehost"
+	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
+	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
+	"github.com/reviewpad/reviewpad/v4/collector"
+	"github.com/reviewpad/reviewpad/v4/handler"
 	"github.com/sirupsen/logrus"
 )
 

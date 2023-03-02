@@ -8,12 +8,12 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/reviewpad/reviewpad/v3/codehost"
-	"github.com/reviewpad/reviewpad/v3/codehost/github"
-	"github.com/reviewpad/reviewpad/v3/codehost/github/target"
-	"github.com/reviewpad/reviewpad/v3/handler"
-	"github.com/reviewpad/reviewpad/v3/lang/aladino"
-	"github.com/reviewpad/reviewpad/v3/utils"
+	"github.com/reviewpad/reviewpad/v4/codehost"
+	"github.com/reviewpad/reviewpad/v4/codehost/github"
+	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
+	"github.com/reviewpad/reviewpad/v4/handler"
+	"github.com/reviewpad/reviewpad/v4/lang/aladino"
+	"github.com/reviewpad/reviewpad/v4/utils"
 )
 
 func AssignReviewer() *aladino.BuiltInAction {

@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/google/go-github/v49/github"
-	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
+	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/sirupsen/logrus"
 )
 

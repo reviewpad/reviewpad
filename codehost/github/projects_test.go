@@ -10,9 +10,9 @@ import (
 	"net/http"
 	"testing"
 
-	host "github.com/reviewpad/reviewpad/v3/codehost/github"
-	"github.com/reviewpad/reviewpad/v3/lang/aladino"
-	"github.com/reviewpad/reviewpad/v3/utils"
+	host "github.com/reviewpad/reviewpad/v4/codehost/github"
+	"github.com/reviewpad/reviewpad/v4/lang/aladino"
+	"github.com/reviewpad/reviewpad/v4/utils"
 	"github.com/stretchr/testify/assert"
 )
 

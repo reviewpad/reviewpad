@@ -7,10 +7,10 @@ package plugins_aladino
 import (
 	"log"
 
-	"github.com/reviewpad/reviewpad/v3/lang/aladino"
-	actions "github.com/reviewpad/reviewpad/v3/plugins/aladino/actions"
-	functions "github.com/reviewpad/reviewpad/v3/plugins/aladino/functions"
-	services "github.com/reviewpad/reviewpad/v3/plugins/aladino/services"
+	"github.com/reviewpad/reviewpad/v4/lang/aladino"
+	actions "github.com/reviewpad/reviewpad/v4/plugins/aladino/actions"
+	functions "github.com/reviewpad/reviewpad/v4/plugins/aladino/functions"
+	services "github.com/reviewpad/reviewpad/v4/plugins/aladino/services"
 	"google.golang.org/grpc"
 )
 

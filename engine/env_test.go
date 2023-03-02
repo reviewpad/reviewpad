@@ -7,8 +7,8 @@ package engine_test
 import (
 	"testing"
 
-	"github.com/reviewpad/reviewpad/v3/engine"
-	"github.com/reviewpad/reviewpad/v3/lang/aladino"
+	"github.com/reviewpad/reviewpad/v4/engine"
+	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
