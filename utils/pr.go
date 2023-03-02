@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/google/go-github/v49/github"
-	"github.com/reviewpad/reviewpad/v3/handler"
+	"github.com/reviewpad/reviewpad/v4/handler"
 )
 
 func IsPullRequestReadyForReportMetrics(eventDetails *handler.EventDetails) bool {

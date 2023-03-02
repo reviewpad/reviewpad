@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/reviewpad/reviewpad/v3/utils/report"
+	"github.com/reviewpad/reviewpad/v4/utils/report"
 )
 
 type Expr interface {

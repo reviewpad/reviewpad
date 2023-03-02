@@ -14,9 +14,9 @@ import (
 
 	"github.com/google/go-github/v49/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
-	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
-	"github.com/reviewpad/reviewpad/v3/collector"
-	"github.com/reviewpad/reviewpad/v3/handler"
+	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
+	"github.com/reviewpad/reviewpad/v4/collector"
+	"github.com/reviewpad/reviewpad/v4/handler"
 	"github.com/sirupsen/logrus"
 )
 

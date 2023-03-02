@@ -5,7 +5,7 @@
 package main
 
 import (
-	"github.com/reviewpad/reviewpad/v3/cli/cmd"
+	"github.com/reviewpad/reviewpad/v4/cli/cmd"
 )
 
 func main() {

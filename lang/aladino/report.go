@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/google/go-github/v49/github"
-	"github.com/reviewpad/reviewpad/v3/engine"
+	"github.com/reviewpad/reviewpad/v4/engine"
 )
 
 type Report struct {

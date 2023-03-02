@@ -8,8 +8,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/reviewpad/reviewpad/v3/lang/aladino"
-	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
+	"github.com/reviewpad/reviewpad/v4/lang/aladino"
+	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/stretchr/testify/assert"
 )
 

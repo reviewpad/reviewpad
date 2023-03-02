@@ -15,10 +15,10 @@ import (
 	"github.com/reviewpad/api/go/entities"
 	"github.com/reviewpad/api/go/services"
 	"github.com/reviewpad/api/go/services_mocks"
-	"github.com/reviewpad/reviewpad/v3/codehost"
-	"github.com/reviewpad/reviewpad/v3/lang/aladino"
-	plugins_aladino_services "github.com/reviewpad/reviewpad/v3/plugins/aladino/services"
-	"github.com/reviewpad/reviewpad/v3/utils"
+	"github.com/reviewpad/reviewpad/v4/codehost"
+	"github.com/reviewpad/reviewpad/v4/lang/aladino"
+	plugins_aladino_services "github.com/reviewpad/reviewpad/v4/plugins/aladino/services"
+	"github.com/reviewpad/reviewpad/v4/utils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -88,9 +88,9 @@ func TestGetBlocks(t *testing.T) {
 	fileName := "crawlerWithRemovedBlock.go"
 	patchData := `
 @@ -2,9 +2,11 @@ package main
- 
+
  import "fmt"
- 
+
 -// First version as presented at:
 -// https://gist.github.com/harryhare/6a4979aa7f8b90db6cbc74400d0beb49#file-exercise-web-crawler-go
  func Crawl(url string, depth int, fetcher Fetcher) {

@@ -12,14 +12,14 @@ import (
 	"strings"
 
 	"github.com/google/go-github/v49/github"
-	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
-	"github.com/reviewpad/reviewpad/v3/collector"
-	"github.com/reviewpad/reviewpad/v3/cookbook"
-	"github.com/reviewpad/reviewpad/v3/engine"
-	"github.com/reviewpad/reviewpad/v3/handler"
-	"github.com/reviewpad/reviewpad/v3/lang/aladino"
-	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
-	"github.com/reviewpad/reviewpad/v3/utils"
+	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
+	"github.com/reviewpad/reviewpad/v4/collector"
+	"github.com/reviewpad/reviewpad/v4/cookbook"
+	"github.com/reviewpad/reviewpad/v4/engine"
+	"github.com/reviewpad/reviewpad/v4/handler"
+	"github.com/reviewpad/reviewpad/v4/lang/aladino"
+	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
+	"github.com/reviewpad/reviewpad/v4/utils"
 	"github.com/sirupsen/logrus"
 )
 

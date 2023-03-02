@@ -5,8 +5,8 @@
 package plugins_aladino_actions
 
 import (
-	"github.com/reviewpad/reviewpad/v3/handler"
-	"github.com/reviewpad/reviewpad/v3/lang/aladino"
+	"github.com/reviewpad/reviewpad/v4/handler"
+	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
 func Warn() *aladino.BuiltInAction {

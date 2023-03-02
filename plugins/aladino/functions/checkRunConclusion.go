@@ -6,9 +6,9 @@ package plugins_aladino_functions
 
 import (
 	"github.com/google/go-github/v49/github"
-	"github.com/reviewpad/reviewpad/v3/codehost/github/target"
-	"github.com/reviewpad/reviewpad/v3/handler"
-	"github.com/reviewpad/reviewpad/v3/lang/aladino"
+	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
+	"github.com/reviewpad/reviewpad/v4/handler"
+	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
 func CheckRunConclusion() *aladino.BuiltInFunction {

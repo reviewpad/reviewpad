@@ -8,9 +8,9 @@ import (
 	"context"
 
 	"github.com/google/go-github/v49/github"
-	reviewpadGitHub "github.com/reviewpad/reviewpad/v3/codehost/github"
-	"github.com/reviewpad/reviewpad/v3/cookbook/ingredients"
-	"github.com/reviewpad/reviewpad/v3/handler"
+	reviewpadGitHub "github.com/reviewpad/reviewpad/v4/codehost/github"
+	"github.com/reviewpad/reviewpad/v4/cookbook/ingredients"
+	"github.com/reviewpad/reviewpad/v4/handler"
 	"github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/exp/slices"

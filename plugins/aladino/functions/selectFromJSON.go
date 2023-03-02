@@ -8,8 +8,8 @@ import (
 	"encoding/json"
 
 	"github.com/ohler55/ojg/jp"
-	"github.com/reviewpad/reviewpad/v3/handler"
-	"github.com/reviewpad/reviewpad/v3/lang/aladino"
+	"github.com/reviewpad/reviewpad/v4/handler"
+	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
 func SelectFromJSON() *aladino.BuiltInFunction {

@@ -7,7 +7,7 @@ package report_test
 import (
 	"testing"
 
-	"github.com/reviewpad/reviewpad/v3/utils/report"
+	"github.com/reviewpad/reviewpad/v4/utils/report"
 	"github.com/stretchr/testify/assert"
 )
 

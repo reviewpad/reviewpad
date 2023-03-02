@@ -9,12 +9,12 @@ import (
 	"fmt"
 	"strings"
 
-	gh "github.com/reviewpad/reviewpad/v3/codehost/github"
-	"github.com/reviewpad/reviewpad/v3/codehost/github/target"
-	"github.com/reviewpad/reviewpad/v3/collector"
-	"github.com/reviewpad/reviewpad/v3/engine"
-	"github.com/reviewpad/reviewpad/v3/handler"
-	"github.com/reviewpad/reviewpad/v3/utils"
+	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
+	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
+	"github.com/reviewpad/reviewpad/v4/collector"
+	"github.com/reviewpad/reviewpad/v4/engine"
+	"github.com/reviewpad/reviewpad/v4/handler"
+	"github.com/reviewpad/reviewpad/v4/utils"
 	"github.com/sirupsen/logrus"
 )
 

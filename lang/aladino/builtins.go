@@ -4,7 +4,7 @@
 
 package aladino
 
-import "github.com/reviewpad/reviewpad/v3/handler"
+import "github.com/reviewpad/reviewpad/v4/handler"
 
 type BuiltIns struct {
 	Functions map[string]*BuiltInFunction

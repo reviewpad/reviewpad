@@ -7,10 +7,10 @@ package plugins_aladino_functions_test
 import (
 	"testing"
 
-	"github.com/reviewpad/reviewpad/v3/handler"
-	"github.com/reviewpad/reviewpad/v3/lang/aladino"
-	plugins_aladino "github.com/reviewpad/reviewpad/v3/plugins/aladino"
-	"github.com/reviewpad/reviewpad/v3/utils"
+	"github.com/reviewpad/reviewpad/v4/handler"
+	"github.com/reviewpad/reviewpad/v4/lang/aladino"
+	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
+	"github.com/reviewpad/reviewpad/v4/utils"
 	"github.com/stretchr/testify/assert"
 )
 

@@ -8,8 +8,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/reviewpad/reviewpad/v3/handler"
-	"github.com/reviewpad/reviewpad/v3/lang/aladino"
+	"github.com/reviewpad/reviewpad/v4/handler"
+	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
 func Join() *aladino.BuiltInFunction {
