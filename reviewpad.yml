@@ -24,19 +24,11 @@ groups:
   - name: owners
     description: Group of owners
     kind: developers
-    spec: '["marcelosousa", "ferreiratiago"]'
+    spec: '["ferreiratiago"]'
 
   - name: maintainers
     description: Official maintainers
-    spec: '["marcelosousa", "ferreiratiago"]'
-
-  - name: rising-stars
-    description: Rising stars in the team
-    spec: '["shay2025", "zolamk"]'
-
-  - name: official-contributors
-    description: Reviewpad core contributors
-    spec: $append($group("maintainers"), $group("rising-stars"))
+    spec: '["marcelosousa", "ferreiratiago", "shay2025", "zolamk"]'
 
 rules:
   - name: is-renovate-bot
@@ -45,7 +37,7 @@ rules:
 
   - name: is-external-contribution
     description: Author is not a Reviewpad core contributor
-    spec: '!$isElementOf($author(), $group("official-contributors"))'
+    spec: '!$isElementOf($author(), $group("maintainers"))'
 
   - name: ci-succeeded
     description: Pipeline succeeded
@@ -198,6 +190,7 @@ pipelines:
           - $addLabel("waiting-checks")
         until: $rule("ci-succeeded")
       - actions:
+          - $removeLabel("waiting-checks")
           - $assignReviewer($group("owners"), 1)
         until: $hasRequiredApprovals(1, $group("owners"))
       - actions:
