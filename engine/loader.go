@@ -262,7 +262,6 @@ func transform(file *ReviewpadFile) *ReviewpadFile {
 	}
 
 	return &ReviewpadFile{
-		Edition:        file.Edition,
 		Mode:           file.Mode,
 		IgnoreErrors:   file.IgnoreErrors,
 		MetricsOnMerge: file.MetricsOnMerge,

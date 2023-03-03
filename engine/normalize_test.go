@@ -14,9 +14,6 @@ func TestNormalize(t *testing.T) {
 		reviewpadFile, err := normalize(&ReviewpadFile{})
 		assert.Nil(t, err)
 
-		if reviewpadFile.Edition != defaultEdition {
-			t.Fatalf("expected edition: %s, got edition: %s", defaultEdition, reviewpadFile.Edition)
-		}
 		if reviewpadFile.Mode != defaultMode {
 			t.Fatalf("expected mode: %s, got mode: %s", defaultMode, reviewpadFile.Mode)
 		}

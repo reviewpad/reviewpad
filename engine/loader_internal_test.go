@@ -33,7 +33,6 @@ pipelines:
 
 	metricsOnMerge := true
 	wantFile := &ReviewpadFile{
-		Edition:        "professional",
 		Mode:           "silent",
 		MetricsOnMerge: &metricsOnMerge,
 		Pipelines: []PadPipeline{

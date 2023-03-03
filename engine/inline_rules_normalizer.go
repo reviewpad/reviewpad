@@ -18,7 +18,6 @@ func inlineRulesNormalizer() *NormalizeRule {
 
 func inlineRulesModificator(file *ReviewpadFile) (*ReviewpadFile, error) {
 	reviewpadFile := &ReviewpadFile{
-		Edition:        file.Edition,
 		Mode:           file.Mode,
 		IgnoreErrors:   file.IgnoreErrors,
 		MetricsOnMerge: file.MetricsOnMerge,
