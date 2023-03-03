@@ -11,6 +11,7 @@ import (
 
 	"github.com/mattn/go-shellwords"
 	"github.com/reviewpad/reviewpad/v4/engine/commands"
+	"github.com/reviewpad/reviewpad/v4/handler"
 	"github.com/sirupsen/logrus"
 )
 
@@ -196,36 +197,39 @@ func EvalConfigurationFile(file *ReviewpadFile, env *Env) (*Program, error) {
 		}
 	}
 
-	// process pipelines
-	for _, pipeline := range file.Pipelines {
-		log.Infof("evaluating pipeline '%v':", pipeline.Name)
-		pipelineLog := log.WithField("pipeline", pipeline.Name)
+	// pipelines should only run on pull requests
+	if env.TargetEntity.Kind == handler.PullRequest {
+		// process pipelines
+		for _, pipeline := range file.Pipelines {
+			log.Infof("evaluating pipeline '%v':", pipeline.Name)
+			pipelineLog := log.WithField("pipeline", pipeline.Name)
 
-		var err error
-		activated := pipeline.Trigger == ""
-		if !activated {
-			activated, err = interpreter.EvalExpr("patch", pipeline.Trigger)
-			if err != nil {
-				return nil, err
-			}
-		}
-
-		if activated {
-			for num, stage := range pipeline.Stages {
-				pipelineLog.Infof("evaluating pipeline stage '%v'", num)
-				if stage.Until == "" {
-					program.append(stage.Actions)
-					break
-				}
-
-				isDone, err := interpreter.EvalExpr("patch", stage.Until)
+			var err error
+			activated := pipeline.Trigger == ""
+			if !activated {
+				activated, err = interpreter.EvalExpr("patch", pipeline.Trigger)
 				if err != nil {
 					return nil, err
 				}
+			}
 
-				if !isDone {
-					program.append(stage.Actions)
-					break
+			if activated {
+				for num, stage := range pipeline.Stages {
+					pipelineLog.Infof("evaluating pipeline stage '%v'", num)
+					if stage.Until == "" {
+						program.append(stage.Actions)
+						break
+					}
+
+					isDone, err := interpreter.EvalExpr("patch", stage.Until)
+					if err != nil {
+						return nil, err
+					}
+
+					if !isDone {
+						program.append(stage.Actions)
+						break
+					}
 				}
 			}
 		}
