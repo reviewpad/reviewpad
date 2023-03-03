@@ -393,6 +393,50 @@ func TestHasAnyCheckRunCompleted(t *testing.T) {
 			},
 			wantResult: aladino.BuildBoolValue(true),
 		},
+		"when no conclusions are provided": {
+			checkRunsToIgnore: aladino.BuildArrayValue([]aladino.Value{}),
+			checkConclusions:  aladino.BuildArrayValue([]aladino.Value{}),
+			mockBackendOptions: []mock.MockBackendOption{
+				mock.WithRequestMatch(
+					mock.GetReposCommitsCheckRunsByOwnerByRepoByRef,
+					github.ListCheckRunsResults{
+						Total: github.Int(2),
+						CheckRuns: []*github.CheckRun{
+							{
+								Name:       github.String("build"),
+								Status:     github.String("in_progress"),
+								Conclusion: github.String("pending"),
+							},
+							{
+								Name:       github.String("test"),
+								Status:     github.String("completed"),
+								Conclusion: github.String("failure"),
+							},
+						},
+					},
+				),
+			},
+			graphQLHandler: func(w http.ResponseWriter, r *http.Request) {
+				utils.MustWrite(w, `{
+					"data": {
+						"repository": {
+							"pullRequest": {
+								"commits": {
+									"nodes": [
+										{
+											"commit": {
+												"oid": "b0b55a8a10139a324f3ccb1a6481862a4b5b5bcc"
+											}
+										}
+									]
+								}
+							}
+						}
+					}
+				}`)
+			},
+			wantResult: aladino.BuildBoolValue(true),
+		},
 	}
 
 	for name, test := range tests {

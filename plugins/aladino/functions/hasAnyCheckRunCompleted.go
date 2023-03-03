@@ -61,6 +61,11 @@ func hasAnyCheckRunCompleted(e aladino.Env, args []aladino.Value) (aladino.Value
 			continue
 		}
 
+		// If no conclusions are specified, we consider all check runs as valid
+		if len(checkConclusionsToConsider) == 0 {
+			return aladino.BuildBoolValue(true), nil
+		}
+
 		if checkConclusionsToConsider[checkRun.GetConclusion()] {
 			return aladino.BuildBoolValue(true), nil
 		}
