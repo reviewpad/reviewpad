@@ -133,8 +133,6 @@ workflows:
     if:
       - $length($requestedReviewers()) == 0
     then:
-      - $assignRandomReviewer()
-      - $assignReviewer($organization(), 1, "random")
       - $assignTeamReviewer(["integration-test"])
 
   - name: is-waiting-for-review
