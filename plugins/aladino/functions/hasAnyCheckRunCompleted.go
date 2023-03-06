@@ -27,6 +27,7 @@ func HasAnyCheckRunCompleted() *aladino.BuiltInFunction {
 func hasAnyCheckRunCompleted(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
 	checkRunsToIgnore := args[0].(*aladino.ArrayValue)
 	checkConclusions := args[1].(*aladino.ArrayValue)
+
 	pullRequest := e.GetTarget().(*target.PullRequestTarget)
 	owner := pullRequest.GetTargetEntity().Owner
 	repo := pullRequest.GetTargetEntity().Repo
@@ -46,34 +47,34 @@ func hasAnyCheckRunCompleted(e aladino.Env, args []aladino.Value) (aladino.Value
 		return nil, fmt.Errorf("failed to get check runs: %s", err.Error())
 	}
 
-	ignoredRuns := map[string]bool{}
+	checkRunIgnored := map[string]bool{}
 	for _, item := range checkRunsToIgnore.Vals {
-		ignoredRuns[item.(*aladino.StringValue).Val] = true
+		checkRunIgnored[item.(*aladino.StringValue).Val] = true
 	}
 
-	checkConclusionsToConsider := map[string]bool{}
+	checkConclusionsConsidered := map[string]bool{}
 	for _, ignoredConclusion := range checkConclusions.Vals {
-		checkConclusionsToConsider[ignoredConclusion.(*aladino.StringValue).Val] = true
+		checkConclusionsConsidered[ignoredConclusion.(*aladino.StringValue).Val] = true
 	}
 
 	for _, checkRun := range checkRuns {
-		if isExcludedCheckRun(checkRun, ignoredRuns) {
+		if checkRunIgnored[checkRun.GetName()] {
+			continue
+		}
+
+		if checkRun.GetStatus() != "completed" {
 			continue
 		}
 
 		// If no conclusions are specified, we consider all check runs as valid
-		if len(checkConclusionsToConsider) == 0 {
+		if len(checkConclusionsConsidered) == 0 {
 			return aladino.BuildBoolValue(true), nil
 		}
 
-		if checkConclusionsToConsider[checkRun.GetConclusion()] {
+		if checkConclusionsConsidered[checkRun.GetConclusion()] {
 			return aladino.BuildBoolValue(true), nil
 		}
 	}
 
 	return aladino.BuildBoolValue(false), nil
-}
-
-func isExcludedCheckRun(checkRun *github.CheckRun, ignoredRuns map[string]bool) bool {
-	return ignoredRuns[checkRun.GetName()] || checkRun.GetStatus() != "completed"
 }
