@@ -35,6 +35,7 @@ func NewCommands(out io.Writer, args []string) *cobra.Command {
 
 	root.AddCommand(AssignReviewerCmd())
 	root.AddCommand(AssignRandomReviewerCmd())
+	root.AddCommand(RobinCmd())
 
 	return root
 }
