@@ -217,7 +217,7 @@ func TestTransformAladinoExpression(t *testing.T) {
 		},
 		"assign assignee with users list provided": {
 			arg:     `$assignAssignees(["john", "mary"])`,
-			wantVal: `$assignAssignees(["john", "mary"], -1)`,
+			wantVal: `$assignAssignees(["john", "mary"], 10)`,
 		},
 		"assign assignee with users list and total provided": {
 			arg:     `$assignAssignees(["john", "mary"], 1)`,
@@ -225,7 +225,7 @@ func TestTransformAladinoExpression(t *testing.T) {
 		},
 		"assign assignee with group": {
 			arg:     `$assignAssignees($group("test"))`,
-			wantVal: `$assignAssignees($group("test"), -1)`,
+			wantVal: `$assignAssignees($group("test"), 10)`,
 		},
 		"assign assignee with group and total provided": {
 			arg:     `$assignAssignees($group("test"), 1)`,
@@ -233,7 +233,7 @@ func TestTransformAladinoExpression(t *testing.T) {
 		},
 		"assign assignee with team": {
 			arg:     `$assignAssignees($team("test"))`,
-			wantVal: `$assignAssignees($team("test"), -1)`,
+			wantVal: `$assignAssignees($team("test"), 10)`,
 		},
 		"assign assignee with team and total provided": {
 			arg:     `$assignAssignees($team("test"), 1)`,

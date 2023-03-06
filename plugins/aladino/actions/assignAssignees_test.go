@@ -7,12 +7,10 @@ package plugins_aladino_actions_test
 import (
 	"fmt"
 	"net/http"
-	"strconv"
 	"testing"
 
 	"github.com/google/go-github/v49/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
-	"github.com/reviewpad/reviewpad/v4/engine"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/reviewpad/reviewpad/v4/utils"
@@ -22,11 +20,7 @@ import (
 var assignAssignees = plugins_aladino.PluginBuiltIns().Actions["assignAssignees"].Code
 
 func TestAssignAssignees(t *testing.T) {
-	reviewpadDefaultIntValue, err := strconv.Atoi(engine.DEFAULT_INT_VALUE)
-	if err != nil {
-		assert.FailNow(t, err.Error())
-	}
-
+	defaultAssignees := 10
 	tests := map[string]struct {
 		clientOptions               []mock.MockBackendOption
 		inputAssignees              aladino.Value
@@ -36,7 +30,7 @@ func TestAssignAssignees(t *testing.T) {
 	}{
 		"when list of assignees is empty": {
 			inputAssignees:              aladino.BuildArrayValue([]aladino.Value{}),
-			inputTotalRequiredAssignees: aladino.BuildIntValue(reviewpadDefaultIntValue),
+			inputTotalRequiredAssignees: aladino.BuildIntValue(defaultAssignees),
 			wantErr:                     fmt.Errorf("assignAssignees: list of assignees can't be empty"),
 		},
 		"when list of assignees exceeds 10 users": {
@@ -53,7 +47,7 @@ func TestAssignAssignees(t *testing.T) {
 				aladino.BuildStringValue("michael"),
 				aladino.BuildStringValue("tom"),
 			}),
-			inputTotalRequiredAssignees: aladino.BuildIntValue(reviewpadDefaultIntValue),
+			inputTotalRequiredAssignees: aladino.BuildIntValue(11),
 			wantErr:                     fmt.Errorf("assignAssignees: can only assign up to 10 assignees"),
 		},
 		"when the total required assignees is an invalid number": {
@@ -62,7 +56,7 @@ func TestAssignAssignees(t *testing.T) {
 				aladino.BuildStringValue("mary"),
 			}),
 			inputTotalRequiredAssignees: aladino.BuildIntValue(0),
-			wantErr:                     fmt.Errorf("assignAssignees: total required assignees is invalid. please insert a number bigger than 0."),
+			wantErr:                     fmt.Errorf("assignAssignees: total required assignees is invalid. please insert a number bigger than 0"),
 		},
 		"when the total required assignees is greater than the total of available assignees": {
 			clientOptions: []mock.MockBackendOption{
