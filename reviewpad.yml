@@ -24,7 +24,7 @@ groups:
   - name: owners
     description: Group of owners
     kind: developers
-    spec: '["ferreiratiago", "marcelosousa""]'
+    spec: '["ferreiratiago", "marcelosousa"]'
 
   - name: maintainers
     description: Official maintainers
