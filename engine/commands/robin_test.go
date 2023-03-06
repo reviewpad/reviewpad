@@ -6,7 +6,6 @@ package commands_test
 
 import (
 	"bytes"
-	"errors"
 	"testing"
 
 	"github.com/reviewpad/reviewpad/v4/engine/commands"
@@ -24,11 +23,11 @@ func TestRobin(t *testing.T) {
 				"john",
 				"jane",
 			},
-			wantErr: errors.New("accepts 1 arg(s), received 2"),
+			wantAction: `$robin("john jane")`,
 		},
 		"when correct string": {
 			args: []string{
-				"\"john\"",
+				"john",
 			},
 			wantAction: `$robin("john")`,
 		},
