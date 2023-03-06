@@ -41,7 +41,7 @@ func TestTypeInference_WhenGivenNonExistingBuiltIn(t *testing.T) {
 	gotType, err := TypeInference(mockedEnv, expr)
 
 	assert.Nil(t, gotType)
-	assert.EqualError(t, err, "no type for built-in nonBuiltIn. Please check if the mode in the reviewpad.yml file supports it")
+	assert.EqualError(t, err, "no type for built-in nonBuiltIn")
 }
 
 func TestTypeInference_WhenGivenBoolConst(t *testing.T) {
@@ -65,7 +65,7 @@ func TestTypesInfer_WhenGivenArrayOfExprThatContainsNonExistingBuiltIn(t *testin
 	gotType, err := typesinfer(mockedTypeEnv, exprs)
 
 	assert.Nil(t, gotType)
-	assert.EqualError(t, err, "no type for built-in nonBuiltIn. Please check if the mode in the reviewpad.yml file supports it")
+	assert.EqualError(t, err, "no type for built-in nonBuiltIn")
 }
 
 func TestTypesInfer_WhenGivenArrayOfExprThatContainsExistingBuiltInWithArgs(t *testing.T) {
@@ -89,7 +89,7 @@ func TestTypeInfer_WhenUnaryOpExprIsANonExistingBuiltIn(t *testing.T) {
 	gotType, err := unaryOp.typeinfer(mockedTypeEnv)
 
 	assert.Nil(t, gotType)
-	assert.EqualError(t, err, "no type for built-in nonBuiltIn. Please check if the mode in the reviewpad.yml file supports it")
+	assert.EqualError(t, err, "no type for built-in nonBuiltIn")
 }
 
 func TestTypeInfer_WhenUnaryOpOperatorIsNotANotOp(t *testing.T) {
@@ -121,7 +121,7 @@ func TestTypeInfer_WhenBinaryOpLhsHasError(t *testing.T) {
 	gotType, err := binaryOp.typeinfer(mockedTypeEnv)
 
 	assert.Nil(t, gotType)
-	assert.EqualError(t, err, "no type for built-in nonBuiltIn. Please check if the mode in the reviewpad.yml file supports it")
+	assert.EqualError(t, err, "no type for built-in nonBuiltIn")
 }
 
 func TestTypeInfer_WhenBinaryOpRhsHasError(t *testing.T) {
@@ -131,7 +131,7 @@ func TestTypeInfer_WhenBinaryOpRhsHasError(t *testing.T) {
 	gotType, err := binaryOp.typeinfer(mockedTypeEnv)
 
 	assert.Nil(t, gotType)
-	assert.EqualError(t, err, "no type for built-in nonBuiltIn. Please check if the mode in the reviewpad.yml file supports it")
+	assert.EqualError(t, err, "no type for built-in nonBuiltIn")
 }
 
 func TestTypeInfer_WhenBinaryOpHasEqOperator(t *testing.T) {
@@ -248,7 +248,7 @@ func TestTypeInfer_WhenFunctionCallArgsHasTypeError(t *testing.T) {
 	gotType, err := fc.typeinfer(mockedTypeEnv)
 
 	assert.Nil(t, gotType)
-	assert.EqualError(t, err, "no type for built-in nonBuiltIn. Please check if the mode in the reviewpad.yml file supports it")
+	assert.EqualError(t, err, "no type for built-in nonBuiltIn")
 }
 
 func TestTypeInfer_WhenFunctionCallNameHasTypeError(t *testing.T) {
@@ -258,7 +258,7 @@ func TestTypeInfer_WhenFunctionCallNameHasTypeError(t *testing.T) {
 	gotType, err := fc.typeinfer(mockedTypeEnv)
 
 	assert.Nil(t, gotType)
-	assert.EqualError(t, err, "no type for built-in nonBuiltIn. Please check if the mode in the reviewpad.yml file supports it")
+	assert.EqualError(t, err, "no type for built-in nonBuiltIn")
 }
 
 func TestTypeInfer_WhenFunctionCallHasCorrectTypes(t *testing.T) {
@@ -295,7 +295,7 @@ func TestTypeInfer_WhenLambdaParamTypeHasError(t *testing.T) {
 	gotType, err := lambda.typeinfer(mockedTypeEnv)
 
 	assert.Nil(t, gotType)
-	assert.EqualError(t, err, "no type for built-in nonBuiltIn. Please check if the mode in the reviewpad.yml file supports it")
+	assert.EqualError(t, err, "no type for built-in nonBuiltIn")
 }
 
 func TestTypeInfer_WhenLambdaBodyTypeHasError(t *testing.T) {
@@ -308,7 +308,7 @@ func TestTypeInfer_WhenLambdaBodyTypeHasError(t *testing.T) {
 	gotType, err := lambda.typeinfer(mockedTypeEnv)
 
 	assert.Nil(t, gotType)
-	assert.EqualError(t, err, "no type for built-in nonBuiltIn. Please check if the mode in the reviewpad.yml file supports it")
+	assert.EqualError(t, err, "no type for built-in nonBuiltIn")
 }
 
 func TestTypeInfer_WhenLambdaHasCorrectTypes(t *testing.T) {
@@ -376,7 +376,7 @@ func TestTypeInfer_WhenVariableIsNotABuiltIn(t *testing.T) {
 	gotType, err := variable.typeinfer(mockedTypeEnv)
 
 	assert.Nil(t, gotType)
-	assert.EqualError(t, err, "no type for built-in nonBuiltIn. Please check if the mode in the reviewpad.yml file supports it")
+	assert.EqualError(t, err, "no type for built-in nonBuiltIn")
 }
 
 func TestTypeInfer_WhenVariableIsABuiltIn(t *testing.T) {
@@ -435,7 +435,7 @@ func TestTypeInfer_WhenArrayElemsTypeHasError(t *testing.T) {
 	gotType, err := array.typeinfer(mockedTypeEnv)
 
 	assert.Nil(t, gotType)
-	assert.EqualError(t, err, "no type for built-in nonBuiltIn. Please check if the mode in the reviewpad.yml file supports it")
+	assert.EqualError(t, err, "no type for built-in nonBuiltIn")
 }
 
 func TestTypeInfer_WhenArrayElemsTypeHasCorrectTypes(t *testing.T) {

@@ -117,7 +117,7 @@ func (v *Variable) typeinfer(env TypeEnv) (Type, error) {
 	varName := v.ident
 	varType, ok := env[varName]
 	if !ok {
-		return nil, fmt.Errorf("no type for built-in %v. Please check if the mode in the reviewpad.yml file supports it", varName)
+		return nil, fmt.Errorf("no type for built-in %v", varName)
 	}
 
 	return varType, nil
