@@ -21,20 +21,6 @@ type NormalizeRule struct {
 	Modificators []modificator
 }
 
-func defaultEditionNormalizer() *NormalizeRule {
-	normalizedRule := NewNormalizeRule()
-	normalizedRule.WithModificators(func(file *ReviewpadFile) (*ReviewpadFile, error) {
-		if file.Edition == "" {
-			file.Edition = defaultEdition
-			return file, nil
-		}
-
-		file.Edition = strings.ToLower(strings.TrimSpace(file.Edition))
-		return file, nil
-	})
-	return normalizedRule
-}
-
 func defaultModeNormalizer() *NormalizeRule {
 	defaultModeNormalizer := NewNormalizeRule()
 	defaultModeNormalizer.WithModificators(func(file *ReviewpadFile) (*ReviewpadFile, error) {
@@ -53,7 +39,6 @@ func normalize(f *ReviewpadFile, customRules ...*NormalizeRule) (*ReviewpadFile,
 	var err error
 	var errStrings []string
 	rules := []*NormalizeRule{
-		defaultEditionNormalizer(),
 		defaultModeNormalizer(),
 	}
 	rules = append(rules, customRules...)

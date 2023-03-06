@@ -82,7 +82,6 @@ func TestLoadWithAST(t *testing.T) {
 	noIgnoreErrors := true
 	noMetricsOnMerge := true
 	wantReviewpadFile := &engine.ReviewpadFile{
-		Edition:        "enterprise",
 		Mode:           "verbose",
 		Recipes:        map[string]*bool{},
 		IgnoreErrors:   &noIgnoreErrors,
