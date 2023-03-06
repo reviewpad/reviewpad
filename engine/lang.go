@@ -197,7 +197,6 @@ func (p PadGroup) equals(o PadGroup) bool {
 }
 
 type ReviewpadFile struct {
-	Version        string              `yaml:"api-version"`
 	Edition        string              `yaml:"edition"`
 	Mode           string              `yaml:"mode"`
 	IgnoreErrors   *bool               `yaml:"ignore-errors"`
@@ -263,10 +262,6 @@ func (p PadStage) equals(o PadStage) bool {
 }
 
 func (r *ReviewpadFile) equals(o *ReviewpadFile) bool {
-	if r.Version != o.Version {
-		return false
-	}
-
 	if r.Edition != o.Edition {
 		return false
 	}
@@ -416,10 +411,6 @@ func (r *ReviewpadFile) appendRecipes(o *ReviewpadFile) {
 }
 
 func (r *ReviewpadFile) extend(o *ReviewpadFile) {
-	if o.Version != "" {
-		r.Version = o.Version
-	}
-
 	if o.Edition != "" {
 		r.Edition = o.Edition
 	}

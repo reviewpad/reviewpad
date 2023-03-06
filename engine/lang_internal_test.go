@@ -13,7 +13,6 @@ import (
 )
 
 var mockedReviewpadFile = &ReviewpadFile{
-	Version:      "reviewpad.com/v3.x",
 	Edition:      "professional",
 	Mode:         "silent",
 	IgnoreErrors: nil,
@@ -729,17 +728,6 @@ func TestEquals_WhenReviewpadFilesAreEqual(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.True(t, mockedReviewpadFile.equals(otherReviewpadFile))
-}
-
-func TestEquals_WhenReviewpadFilesHaveDiffVersion(t *testing.T) {
-	otherReviewpadFile := &ReviewpadFile{}
-	err := copier.Copy(otherReviewpadFile, mockedReviewpadFile)
-
-	assert.Nil(t, err)
-
-	otherReviewpadFile.Version = "reviewpad.com/v1beta"
-
-	assert.False(t, mockedReviewpadFile.equals(otherReviewpadFile))
 }
 
 func TestEquals_WhenReviewpadFilesHaveDiffEdition(t *testing.T) {
