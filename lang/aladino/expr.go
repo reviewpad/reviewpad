@@ -165,8 +165,6 @@ func BuildRelativeTimeConst(val string) *IntConst {
 
 	switch timeUnit {
 	case "year":
-		var a = now.AddDate(-timeValue, 0, 0)
-		a.UnixMilli()
 		return &IntConst{
 			value: int(now.AddDate(-timeValue, 0, 0).Unix()),
 		}
