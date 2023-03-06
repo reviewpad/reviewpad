@@ -209,8 +209,6 @@ Paste the following configuration:
         "https://raw.githubusercontent.com/reviewpad/schemas/main/latest/schema.json": [
             "reviewpad.yml",
             "reviewpad.yaml",
-            "!.github/workflows/reviewpad.yml",
-            "!.github/workflows/reviewpad.yaml"
         ]
     },
     // Go configuration
@@ -259,15 +257,6 @@ Add the following to your `.vscode/launch.json`.
 ```
 
 For the argument `-e` you case use either a GitHub event from a Reviewpad GitHub Action run or a GitHub event from a Reviewpad GitHub App run.
-
-#### Using a GitHub event from a Reviewpad GitHub Action run
-
-1. Navigate to the logs of the Reviewpad GitHub Action job run where you wish to copy the event from. [Here's an example](https://github.com/reviewpad/action-stage-test/actions/runs/3915601092/jobs/6693933277).
-2. Expand the step `Running reviewpad action`.
-3. Expand the inner step `Run reviewpad/action@<VERSION>`.
-4. Copy the content inside the property `event`.
-5. Paste the content inside a file (e.g. `my_event.json`) and save it under `cli > debugdata`.
-6. Update the argument `-e` to point to the full path of the file you just created.
 
 #### Using a GitHub event from a Reviewpad GitHub App run
 
