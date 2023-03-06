@@ -199,6 +199,22 @@ func TestTransformAladinoExpression(t *testing.T) {
 			arg:     `$assignCodeAuthorReviewers(1, $team("reviewers"))`,
 			wantVal: `$assignCodeAuthorReviewers(1, $team("reviewers"), 0)`,
 		},
+		"has any check run completed with no args": {
+			arg:     `$hasAnyCheckRunCompleted()`,
+			wantVal: `$hasAnyCheckRunCompleted([], [])`,
+		},
+		"has any check run completed with one arg": {
+			arg:     `$hasAnyCheckRunCompleted($group("build"))`,
+			wantVal: `$hasAnyCheckRunCompleted($group("build"), [])`,
+		},
+		"has any check run completed with two args": {
+			arg:     `$hasAnyCheckRunCompleted(["build"], ["skipped"])`,
+			wantVal: `$hasAnyCheckRunCompleted(["build"], ["skipped"])`,
+		},
+		"has any check run completed with group args": {
+			arg:     `$hasAnyCheckRunCompleted($group("ignored"), $group("conclusions"))`,
+			wantVal: `$hasAnyCheckRunCompleted($group("ignored"), $group("conclusions"))`,
+		},
 		// TODO: test addDefaultTotalRequestedReviewers
 	}
 

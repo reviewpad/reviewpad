@@ -103,6 +103,18 @@ func addDefaultAssignCodeAuthorReviewer(str string) string {
 	return r.ReplaceAllString(str, `$$assignCodeAuthorReviewers($1, $2, 0)`)
 }
 
+func addDefaultHasAnyCheckRunCompleted(str string) string {
+	allArgsRegex := regexp.MustCompile(`\$hasAnyCheckRunCompleted\(((?:\[[^\(\)]*\])|(?:\$.+\(.*\))),\s*((?:\[[^\(\)]*\])|(?:\$.+\(.*\)))\)`)
+	if allArgsRegex.MatchString(str) {
+		return str
+	}
+
+	str = strings.ReplaceAll(str, "$hasAnyCheckRunCompleted()", "$hasAnyCheckRunCompleted([])")
+
+	r := regexp.MustCompile(`\$hasAnyCheckRunCompleted\(((?:\[[^\(\)\[\]]*\])|(?:\$.+\([^\)\(]*\)))\)`)
+	return r.ReplaceAllString(str, `$$hasAnyCheckRunCompleted($1, [])`)
+}
+
 func transformAladinoExpression(str string) string {
 	transformedActionStr := str
 
@@ -118,6 +130,7 @@ func transformAladinoExpression(str string) string {
 		addDefaultJoinSeparator,
 		addEmptyApproveComment,
 		addDefaultAssignCodeAuthorReviewer,
+		addDefaultHasAnyCheckRunCompleted,
 	}
 
 	for i := range transformations {
