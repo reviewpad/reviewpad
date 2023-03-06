@@ -13,7 +13,7 @@ import (
 
 func AssignAssignees() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildArrayOfType(aladino.BuildStringType())}, nil),
+		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildArrayOfType(aladino.BuildStringType()), aladino.BuildIntType()}, nil),
 		Code:           assignAssigneesCode,
 		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest, handler.Issue},
 	}
@@ -21,19 +21,34 @@ func AssignAssignees() *aladino.BuiltInAction {
 
 func assignAssigneesCode(e aladino.Env, args []aladino.Value) error {
 	t := e.GetTarget()
-	assignees := args[0].(*aladino.ArrayValue).Vals
-	if len(assignees) == 0 {
+
+	rawAvailableAssignees := args[0].(*aladino.ArrayValue).Vals
+	totalRequiredAssignees := args[1].(*aladino.IntValue).Val
+
+	log := e.GetLogger().WithField("builtin", "assignAssignees")
+
+	availableAssignees := make([]string, len(rawAvailableAssignees))
+	for i, v := range rawAvailableAssignees {
+		availableAssignees[i] = v.(*aladino.StringValue).Val
+	}
+
+	if len(availableAssignees) == 0 {
 		return fmt.Errorf("assignAssignees: list of assignees can't be empty")
 	}
 
-	if len(assignees) > 10 {
+	if totalRequiredAssignees == 0 {
+		return fmt.Errorf("assignAssignees: total required assignees is invalid. please insert a number bigger than 0")
+	}
+
+	totalAvailableAssignees := len(availableAssignees)
+	if totalRequiredAssignees > totalAvailableAssignees {
+		log.Infof("total required assignees %d exceeds the total available assignees %d", totalRequiredAssignees, totalAvailableAssignees)
+		totalRequiredAssignees = totalAvailableAssignees
+	}
+
+	if totalRequiredAssignees > 10 {
 		return fmt.Errorf("assignAssignees: can only assign up to 10 assignees")
 	}
 
-	assigneesLogin := make([]string, len(assignees))
-	for i, assignee := range assignees {
-		assigneesLogin[i] = assignee.(*aladino.StringValue).Val
-	}
-
-	return t.AddAssignees(assigneesLogin)
+	return t.AddAssignees(getRandomUsers(availableAssignees, totalRequiredAssignees))
 }

@@ -115,6 +115,24 @@ func addDefaultHasAnyCheckRunCompleted(str string) string {
 	return r.ReplaceAllString(str, `$$hasAnyCheckRunCompleted($1, [])`)
 }
 
+func addDefaultsToRequestedAssignees(str string) string {
+	m := regexp.MustCompile(`\$assignAssignees\(((\[.*\])|(\$(team|group)\("[^"]*"\)))(,((-)?(\d+)))?\)`)
+	match := m.FindStringSubmatch(str)
+
+	if len(match) == 0 {
+		return str
+	}
+
+	assignees := match[1]
+	totalRequiredAssignees := match[6]
+
+	if totalRequiredAssignees == "" {
+		totalRequiredAssignees = "10"
+	}
+
+	return strings.Replace(str, match[0], "$assignAssignees("+assignees+", "+totalRequiredAssignees+")", 1)
+}
+
 func transformAladinoExpression(str string) string {
 	transformedActionStr := str
 
@@ -131,6 +149,7 @@ func transformAladinoExpression(str string) string {
 		addEmptyApproveComment,
 		addDefaultAssignCodeAuthorReviewer,
 		addDefaultHasAnyCheckRunCompleted,
+		addDefaultsToRequestedAssignees,
 	}
 
 	for i := range transformations {
