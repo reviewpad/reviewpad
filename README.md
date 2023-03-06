@@ -30,8 +30,6 @@ In Reviewpad, you can automate actions over the pull requests and issues such as
 As an example, the following workflow:
 
 ```yml
-api-version: reviewpad.com/v3.x
-
 labels:
     ship:
         description: Ship mode
