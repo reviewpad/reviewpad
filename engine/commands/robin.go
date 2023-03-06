@@ -33,7 +33,7 @@ func RobinCmd() *cobra.Command {
 func Robin(cmd *cobra.Command, args []string) error {
 	prompt := args[0]
 
-	action := fmt.Sprintf(`$robin(%s)`, prompt)
+	action := fmt.Sprintf(`$robin("%s")`, prompt)
 
 	cmd.Print(action)
 
