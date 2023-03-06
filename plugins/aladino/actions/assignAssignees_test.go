@@ -22,7 +22,7 @@ import (
 var assignAssignees = plugins_aladino.PluginBuiltIns().Actions["assignAssignees"].Code
 
 func TestAssignAssignees(t *testing.T) {
-	reviewpadDefaultIntValue, err := strconv.Atoi(engine.REVIEWPAD_DEFAULT_INT_VALUE)
+	reviewpadDefaultIntValue, err := strconv.Atoi(engine.DEFAULT_INT_VALUE)
 	if err != nil {
 		assert.FailNow(t, err.Error())
 	}

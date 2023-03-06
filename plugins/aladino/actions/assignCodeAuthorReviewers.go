@@ -88,7 +88,7 @@ func assignCodeAuthorReviewersCode(env aladino.Env, args []aladino.Value) error 
 			}
 		}
 
-		selectedReviewers = getRandomReviewers(selectedReviewers, totalRequiredReviewers)
+		selectedReviewers = getRandomUsers(selectedReviewers, totalRequiredReviewers)
 	}
 
 	// If no reviewers were found until now
@@ -190,19 +190,19 @@ func isUserValidAssignee(assignees []*codehost.User, username string) bool {
 	return false
 }
 
-func getRandomReviewers(reviewers []string, total int) []string {
-	if total >= len(reviewers) {
-		return reviewers
+func getRandomUsers(users []string, total int) []string {
+	if total >= len(users) {
+		return users
 	}
 
-	selectedReviewers := make([]string, total)
+	selectedUsers := make([]string, total)
 
 	for i := 0; i < total; i++ {
-		randIndex := rand.Intn(len(reviewers))
-		selectedReviewers[i] = reviewers[randIndex]
+		randIndex := rand.Intn(len(users))
+		selectedUsers[i] = users[randIndex]
 
-		reviewers = append(reviewers[:randIndex], reviewers[randIndex+1:]...)
+		users = append(users[:randIndex], users[randIndex+1:]...)
 	}
 
-	return selectedReviewers
+	return selectedUsers
 }

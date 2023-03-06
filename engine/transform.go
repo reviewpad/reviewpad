@@ -6,12 +6,7 @@ package engine
 
 import (
 	"regexp"
-	"strconv"
 	"strings"
-)
-
-const (
-	REVIEWPAD_DEFAULT_INT_VALUE string = "-1"
 )
 
 func addDefaultsToRequestedReviewers(str string) string {
@@ -132,12 +127,7 @@ func addDefaultsToRequestedAssignees(str string) string {
 	totalRequiredAssignees := match[6]
 
 	if totalRequiredAssignees == "" {
-		totalRequiredAssignees = REVIEWPAD_DEFAULT_INT_VALUE
-	} else {
-		intTotalRequiredAssignees, _ := strconv.Atoi(totalRequiredAssignees)
-		if intTotalRequiredAssignees < 0 {
-			totalRequiredAssignees = "0"
-		}
+		totalRequiredAssignees = "10"
 	}
 
 	return strings.Replace(str, match[0], "$assignAssignees("+assignees+", "+totalRequiredAssignees+")", 1)
