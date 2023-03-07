@@ -40,5 +40,6 @@ type ActionEvent struct {
 	SHA              *string          `json:"sha,omitempty"`
 	Token            *string          `json:"token,omitempty"`
 	Workflow         *string          `json:"workflow,omitempty"`
+	WorkflowRef      *string          `json:"workflow_ref,omitempty"`
 	Workspace        *string          `json:"workspace,omitempty"`
 }
