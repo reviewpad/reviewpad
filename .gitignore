@@ -30,3 +30,6 @@ vendor/
 # Debug
 debugdata/
 __debug_bin
+
+# Local test data
+local-testdata/
