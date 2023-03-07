@@ -239,6 +239,18 @@ func TestTransformAladinoExpression(t *testing.T) {
 			arg:     `$assignAssignees($team("test"), 1)`,
 			wantVal: `$assignAssignees($team("test"), 1)`,
 		},
+		"hasCodeWithoutSemanticChanges with no argument": {
+			arg:     `$hasCodeWithoutSemanticChanges()`,
+			wantVal: `$hasCodeWithoutSemanticChanges([])`,
+		},
+		"hasCodeWithoutSemanticChanges with default argument": {
+			arg:     `$hasCodeWithoutSemanticChanges([])`,
+			wantVal: `$hasCodeWithoutSemanticChanges([])`,
+		},
+		"hasCodeWithoutSemanticChanges with argument": {
+			arg:     `$hasCodeWithoutSemanticChanges(["*.md", "*.txt"])`,
+			wantVal: `$hasCodeWithoutSemanticChanges(["*.md", "*.txt"])`,
+		},
 		// TODO: test addDefaultTotalRequestedReviewers
 	}
 

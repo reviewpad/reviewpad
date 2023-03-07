@@ -133,6 +133,10 @@ func addDefaultsToRequestedAssignees(str string) string {
 	return strings.Replace(str, match[0], "$assignAssignees("+assignees+", "+totalRequiredAssignees+")", 1)
 }
 
+func addEmptyFilterToHasCodeWithoutSemanticChanges(str string) string {
+	return strings.ReplaceAll(str, "$hasCodeWithoutSemanticChanges()", "$hasCodeWithoutSemanticChanges([])")
+}
+
 func transformAladinoExpression(str string) string {
 	transformedActionStr := str
 
@@ -150,6 +154,7 @@ func transformAladinoExpression(str string) string {
 		addDefaultAssignCodeAuthorReviewer,
 		addDefaultHasAnyCheckRunCompleted,
 		addDefaultsToRequestedAssignees,
+		addEmptyFilterToHasCodeWithoutSemanticChanges,
 	}
 
 	for i := range transformations {
