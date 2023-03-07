@@ -7,13 +7,13 @@ package target
 import (
 	"context"
 	"encoding/json"
+	"sort"
 	"time"
 
 	"github.com/google/go-github/v49/github"
 	"github.com/reviewpad/reviewpad/v4/codehost"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/reviewpad/reviewpad/v4/handler"
-	"github.com/reviewpad/reviewpad/v4/utils"
 	"github.com/shurcooL/githubv4"
 )
 
@@ -547,21 +547,23 @@ func (target *PullRequestTarget) GetApprovedReviewers() ([]string, error) {
 		return nil, err
 	}
 
-	reviewers := make([]string, 0)
+	// Sort reviews by date, from latest to oldest
+	sort.Slice(reviews, func(i, j int) bool {
+		return reviews[i].SubmittedAt.After(*reviews[j].SubmittedAt)
+	})
+
+	approvalByReviewer := make(map[string]bool)
 	for _, review := range reviews {
-		if !utils.Contains(reviewers, review.User.Login) {
-			reviewers = append(reviewers, review.User.Login)
+		reviewer := review.User.Login
+
+		if _, ok := approvalByReviewer[reviewer]; !ok {
+			approvalByReviewer[reviewer] = review.State == "APPROVED"
 		}
 	}
 
 	approvedBy := make([]string, 0)
-	for _, reviewer := range reviewers {
-		latestReview, err := target.GetLatestReviewFromReviewer(reviewer)
-		if err != nil {
-			return nil, err
-		}
-
-		if latestReview.State == "APPROVED" {
+	for reviewer, approved := range approvalByReviewer {
+		if approved {
 			approvedBy = append(approvedBy, reviewer)
 		}
 	}
