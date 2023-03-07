@@ -28,16 +28,8 @@ func DefaultPluginConfig() (*PluginConfig, error) {
 
 	connections = append(connections, semanticConnection)
 
-	diffClient, diffConnection, err := services.NewDiffService()
-	if err != nil {
-		return nil, err
-	}
-
-	connections = append(connections, diffConnection)
-
 	services := map[string]interface{}{
 		services.SEMANTIC_SERVICE_KEY: semanticClient,
-		services.DIFF_SERVICE_KEY:     diffClient,
 	}
 
 	config := &PluginConfig{

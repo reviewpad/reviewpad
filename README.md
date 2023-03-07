@@ -81,7 +81,6 @@ Before you begin, ensure you have met the following requirements:
 -   [libgit2](https://github.com/libgit2/libgit2) with version v1.2.
 -   To run the tests, Reviewpad requires the following environment variables:
      - `INPUT_SEMANTIC_SERVICE`. You can do this by running the following command in your terminal: `export INPUT_SEMANTIC_SERVICE="0.0.0.0:3006"`.
-     - `INPUT_DIFF_SERVICE`. You can do this by running the following command in your terminal: `export INPUT_DIFF_SERVICE="0.0.0.0:3003"`.
 
 ### Compilation
 
