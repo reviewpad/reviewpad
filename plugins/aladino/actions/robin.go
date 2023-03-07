@@ -25,7 +25,7 @@ func robinCode(e aladino.Env, args []aladino.Value) error {
 
 	reply, err := robin.Prompt(e, prompt)
 	if err != nil {
-		return err
+		return nil
 	}
 
 	return target.Comment(reply)
