@@ -10,6 +10,7 @@ import (
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v4/handler"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
+	"github.com/reviewpad/reviewpad/v4/utils"
 )
 
 func HasRequiredApprovals() *aladino.BuiltInFunction {
@@ -42,20 +43,10 @@ func hasRequiredApprovalsCode(e aladino.Env, args []aladino.Value) (aladino.Valu
 
 	totalApprovedReviews := 0
 	for _, requiredApproval := range requiredApprovalsFrom {
-		if contains(approvedBy, requiredApproval.(*aladino.StringValue).Val) {
+		if utils.Contains(approvedBy, requiredApproval.(*aladino.StringValue).Val) {
 			totalApprovedReviews++
 		}
 	}
 
 	return aladino.BuildBoolValue(totalApprovedReviews >= totalRequiredApprovals), nil
-}
-
-func contains(slice []string, str string) bool {
-	for _, elem := range slice {
-		if elem == str {
-			return true
-		}
-	}
-
-	return false
 }

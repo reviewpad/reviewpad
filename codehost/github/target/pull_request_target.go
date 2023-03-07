@@ -13,6 +13,7 @@ import (
 	"github.com/reviewpad/reviewpad/v4/codehost"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/reviewpad/reviewpad/v4/handler"
+	"github.com/reviewpad/reviewpad/v4/utils"
 	"github.com/shurcooL/githubv4"
 )
 
@@ -541,22 +542,27 @@ func (target *PullRequestTarget) GetProjectV2ItemID(projectID string) (string, e
 }
 
 func (target *PullRequestTarget) GetApprovedReviewers() ([]string, error) {
-	reviewers, err := target.GetReviewers()
+	reviews, err := target.GetReviews()
 	if err != nil {
 		return nil, err
 	}
 
-	approvedBy := make([]string, 0)
-	for _, reviewer := range reviewers.Users {
-		username := reviewer.Login
+	reviewers := make([]string, 0)
+	for _, review := range reviews {
+		if !utils.Contains(reviewers, review.User.Login) {
+			reviewers = append(reviewers, review.User.Login)
+		}
+	}
 
-		latestReview, err := target.GetLatestReviewFromReviewer(username)
+	approvedBy := make([]string, 0)
+	for _, reviewer := range reviewers {
+		latestReview, err := target.GetLatestReviewFromReviewer(reviewer)
 		if err != nil {
 			return nil, err
 		}
 
 		if latestReview.State == "APPROVED" {
-			approvedBy = append(approvedBy, username)
+			approvedBy = append(approvedBy, reviewer)
 		}
 	}
 
