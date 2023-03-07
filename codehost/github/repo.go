@@ -52,7 +52,7 @@ func CloneRepository(log *logrus.Entry, url string, token string, path string, o
 		},
 	}
 
-	log.Infof("cloning %s to %s", url, dir)
+	log.Debugf("cloning %s to %s", url, dir)
 
 	repo, err := git.Clone(url, dir, options)
 
