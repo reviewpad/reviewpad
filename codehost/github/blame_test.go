@@ -32,7 +32,7 @@ func TestGetGitBlame(t *testing.T) {
 			graphQLHandler: func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(http.StatusForbidden)
 			},
-			wantErr: fmt.Errorf("error executing blame query: Message: 403 Forbidden; body: \"\", Locations: []"),
+			wantErr: fmt.Errorf("error executing blame query: Message: 403 Forbidden; body: \"\", Locations: [], Extensions: map[code:request_error]"),
 		},
 		"when blame information is not found": {
 			graphQLHandler: func(w http.ResponseWriter, r *http.Request) {

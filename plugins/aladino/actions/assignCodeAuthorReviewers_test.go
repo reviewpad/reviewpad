@@ -100,7 +100,7 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 			graphQLHandler: func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(http.StatusForbidden)
 			},
-			wantErr: fmt.Errorf("error getting authors from git blame: error executing blame query: Message: 403 Forbidden; body: \"\", Locations: []"),
+			wantErr: fmt.Errorf("error getting authors from git blame: error executing blame query: Message: 403 Forbidden; body: \"\", Locations: [], Extensions: map[code:request_error]"),
 		},
 		"when no blame information is found": {
 			totalReviewers:    1,
