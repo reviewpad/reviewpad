@@ -1,3 +1,7 @@
+// Copyright 2022 Explore.dev Unipessoal Lda. All Rights Reserved.
+// Use of this source code is governed by a license that can be
+// found in the LICENSE file.
+
 package plugins_aladino_functions
 
 import (
@@ -31,7 +35,7 @@ func hasRequiredApprovalsCode(e aladino.Env, args []aladino.Value) (aladino.Valu
 		return nil, fmt.Errorf("hasRequiredApprovals: the number of required approvals exceeds the number of members from the given list of required approvals")
 	}
 
-	approvedBy, err := getUserLoginsFromApprovals(pullRequest)
+	approvedBy, err := pullRequest.GetApprovedReviewers()
 	if err != nil {
 		return nil, err
 	}
@@ -44,24 +48,6 @@ func hasRequiredApprovalsCode(e aladino.Env, args []aladino.Value) (aladino.Valu
 	}
 
 	return aladino.BuildBoolValue(totalApprovedReviews >= totalRequiredApprovals), nil
-}
-
-func getUserLoginsFromApprovals(pullRequest *target.PullRequestTarget) ([]string, error) {
-	reviews, err := pullRequest.GetReviews()
-	if err != nil {
-		return nil, err
-	}
-
-	approvedBy := make([]string, 0)
-	for _, review := range reviews {
-		user := review.User.Login
-
-		if review.State == "APPROVED" && !contains(approvedBy, user) {
-			approvedBy = append(approvedBy, user)
-		}
-	}
-
-	return approvedBy, nil
 }
 
 func contains(slice []string, str string) bool {

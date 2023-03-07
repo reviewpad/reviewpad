@@ -539,3 +539,26 @@ func (target *PullRequestTarget) GetProjectV2ItemID(projectID string) (string, e
 
 	return target.githubClient.GetPullRequestProjectV2ItemID(ctx, owner, repo, projectID, targetEntity.Number)
 }
+
+func (target *PullRequestTarget) GetApprovedReviewers() ([]string, error) {
+	reviewers, err := target.GetReviewers()
+	if err != nil {
+		return nil, err
+	}
+
+	approvedBy := make([]string, 0)
+	for _, reviewer := range reviewers.Users {
+		username := reviewer.Login
+
+		latestReview, err := target.GetLatestReviewFromReviewer(username)
+		if err != nil {
+			return nil, err
+		}
+
+		if latestReview.State == "APPROVED" {
+			approvedBy = append(approvedBy, username)
+		}
+	}
+
+	return approvedBy, nil
+}
