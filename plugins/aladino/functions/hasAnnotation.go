@@ -9,6 +9,7 @@ import (
 
 	"github.com/reviewpad/reviewpad/v4/handler"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
+	semantic "github.com/reviewpad/reviewpad/v4/plugins/aladino/semantic"
 )
 
 func HasAnnotation() *aladino.BuiltInFunction {
