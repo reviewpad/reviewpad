@@ -176,9 +176,14 @@ func getRawDiff(e aladino.Env, baseFiles map[string]string, headFiles map[string
 			Blocks: gitFileDiffs,
 		}
 
+		oldName := commitFile.Repr.GetFilename()
+		if commitFile.Repr.GetStatus() == "renamed" {
+			oldName = commitFile.Repr.GetPreviousFilename()
+		}
+
 		files[fp] = &entities.FileInfoDiff{
 			OldInfo: &entities.FileInfo{
-				Path:      commitFile.Repr.GetPreviousFilename(),
+				Path:      oldName,
 				Extension: utils.FileExt(commitFile.Repr.GetPreviousFilename()),
 				BlobId:    commitFile.Repr.GetBlobURL(),
 				NumLines:  getLineCount(baseFiles[fp]),
