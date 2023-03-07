@@ -16,6 +16,9 @@ jobs:
     container:
       image: reviewpad/ci:latest
     steps:
+      - name: Set up git config
+        run: git config --global url."https://${{ secrets.REVIEWPAD_TOKEN }}:@github.com/".insteadOf "https://github.com/"
+
       - uses: actions/checkout@v3
 
       - name: Download dependencies
