@@ -10,6 +10,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/go-github/v49/github"
+	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v4/codehost"
 	host "github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
@@ -140,6 +142,109 @@ func TestGetLatestReviewFromReviewer(t *testing.T) {
 			} else {
 				assert.Equal(t, test.wantReview, gotReview)
 			}
+		})
+	}
+}
+
+func TestGetApprovedReviewers(t *testing.T) {
+	reviewASubmissionTime := time.Date(2011, 1, 26, 19, 1, 12, 0, time.UTC)
+	reviewBSubmissionTime := time.Date(2011, 1, 26, 19, 1, 13, 0, time.UTC)
+
+	tests := map[string]struct {
+		clientOptions         []mock.MockBackendOption
+		wantApprovedReviewers []string
+		wantErr               error
+	}{
+		"when pull request reviews request fails": {
+			clientOptions: []mock.MockBackendOption{
+				mock.WithRequestMatchHandler(
+					mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
+					http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+						mock.WriteError(
+							w,
+							http.StatusInternalServerError,
+							"GetReposPullsReviewsByOwnerByRepoByPullNumber error",
+						)
+					}),
+				),
+			},
+			wantErr: fmt.Errorf("GetReposPullsReviewsByOwnerByRepoByPullNumber error"),
+		},
+		"when pull request has no reviews": {
+			clientOptions: []mock.MockBackendOption{
+				mock.WithRequestMatch(
+					mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
+					[]*github.PullRequestReview{},
+				),
+			},
+		},
+		"when pull request has no approvals": {
+			clientOptions: []mock.MockBackendOption{
+				mock.WithRequestMatch(
+					mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
+					[]*github.PullRequestReview{
+						{
+							ID:    github.Int64(1),
+							Body:  github.String("Here is the body for the review."),
+							State: github.String("REQUESTED_CHANGES"),
+							User: &github.User{
+								Login: github.String("mary"),
+							},
+						},
+					},
+				),
+			},
+			wantApprovedReviewers: []string{},
+		},
+		"when pull request has approvals": {
+			clientOptions: []mock.MockBackendOption{
+				mock.WithRequestMatch(
+					mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
+					[]*github.PullRequestReview{
+						{
+							ID:    github.Int64(1),
+							Body:  github.String("Here is the body for the review."),
+							State: github.String("REQUESTED_CHANGES"),
+							User: &github.User{
+								Login: github.String("mary"),
+							},
+							SubmittedAt: &reviewASubmissionTime,
+						},
+						{
+							ID:    github.Int64(2),
+							Body:  github.String("Here is the body for the review."),
+							State: github.String("APPROVED"),
+							User: &github.User{
+								Login: github.String("mary"),
+							},
+							SubmittedAt: &reviewBSubmissionTime,
+						},
+					},
+				),
+			},
+			wantApprovedReviewers: []string{"mary"},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			mockedEnv := aladino.MockDefaultEnv(
+				t,
+				test.clientOptions,
+				nil,
+				aladino.MockBuiltIns(),
+				nil,
+			)
+
+			gotApprovedReviewers, gotErr := mockedEnv.GetTarget().(*target.PullRequestTarget).GetApprovedReviewers()
+
+			if ghError, isGitHubError := gotErr.(*github.ErrorResponse); isGitHubError {
+				assert.Equal(t, test.wantErr.Error(), ghError.Message)
+			} else {
+				assert.Equal(t, test.wantErr, gotErr)
+			}
+
+			assert.Equal(t, test.wantApprovedReviewers, gotApprovedReviewers)
 		})
 	}
 }
