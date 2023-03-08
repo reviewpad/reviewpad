@@ -7,13 +7,18 @@ package plugins_aladino_actions
 import (
 	"fmt"
 
+	"github.com/google/uuid"
 	pbe "github.com/reviewpad/api/go/entities"
 	api "github.com/reviewpad/api/go/services"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v4/handler"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino_services "github.com/reviewpad/reviewpad/v4/plugins/aladino/services"
+	"google.golang.org/grpc/metadata"
 )
+
+// RequestIDKey identifies request id field in context
+const RequestIDKey = "request-id"
 
 func Comment() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
@@ -39,8 +44,8 @@ func commentCode(e aladino.Env, args []aladino.Value) error {
 		Host:             pbe.Host_GITHUB,
 		HostUri:          "https://github.com",
 		Slug:             repo.GetFullName(),
-		ExternalRepoId:   fmt.Sprint(repo.GetID()),
-		ExternalReviewId: fmt.Sprint(pullRequest.GetID()),
+		ExternalRepoId:   repo.GetNodeID(),
+		ExternalReviewId: pullRequest.GetNodeID(),
 		ReviewNumber:     int32(pullRequest.GetNumber()),
 		AccessToken:      e.GetGithubClient().GetToken(),
 		Comment: &pbe.ReviewComment{
@@ -48,7 +53,12 @@ func commentCode(e aladino.Env, args []aladino.Value) error {
 		},
 	}
 
-	reply, err := codehostClient.PostGeneralComment(e.GetCtx(), req)
+	requestID := uuid.New().String()
+	ctx := e.GetCtx()
+	md := metadata.Pairs(RequestIDKey, requestID)
+	reqCtx := metadata.NewOutgoingContext(ctx, md)
+
+	reply, err := codehostClient.PostGeneralComment(reqCtx, req)
 	if err != nil {
 		return err
 	}
