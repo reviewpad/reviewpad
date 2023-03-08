@@ -547,6 +547,10 @@ func (target *PullRequestTarget) GetApprovedReviewers() ([]string, error) {
 		return nil, err
 	}
 
+	if len(reviews) == 0 {
+		return nil, nil
+	}
+
 	// Sort reviews by date, from latest to oldest
 	sort.Slice(reviews, func(i, j int) bool {
 		return reviews[i].SubmittedAt.After(*reviews[j].SubmittedAt)
