@@ -10,8 +10,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/google/go-github/v49/github"
-	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v4/codehost"
 	host "github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
@@ -147,82 +145,116 @@ func TestGetLatestReviewFromReviewer(t *testing.T) {
 }
 
 func TestGetApprovedReviewers(t *testing.T) {
-	reviewASubmissionTime := time.Date(2011, 1, 26, 19, 1, 12, 0, time.UTC)
-	reviewBSubmissionTime := time.Date(2011, 1, 26, 19, 1, 13, 0, time.UTC)
+	mockedPullRequest := aladino.GetDefaultMockPullRequestDetails()
+
+	mockedPullRequestNumber := host.GetPullRequestNumber(mockedPullRequest)
+	mockOwner := host.GetPullRequestBaseOwnerName(mockedPullRequest)
+	mockRepo := host.GetPullRequestBaseRepoName(mockedPullRequest)
+
+	mockedLatestReviewsGQLQuery := fmt.Sprintf(`{
+		"query":"query($pullRequestNumber:Int!$repositoryName:String!$repositoryOwner:String!){
+			repository(owner:$repositoryOwner,name:$repositoryName){
+				pullRequest(number:$pullRequestNumber){
+					latestReviews(last:100){
+						nodes{
+							author{login},
+							state
+						}
+					}
+				}
+			}
+		}",
+		"variables":{
+			"pullRequestNumber":%d,
+			"repositoryName":"%s",
+			"repositoryOwner":"%s"
+		}
+	}`, mockedPullRequestNumber, mockRepo, mockOwner)
 
 	tests := map[string]struct {
-		clientOptions         []mock.MockBackendOption
+		ghGraphQLHandler      func(http.ResponseWriter, *http.Request)
 		wantApprovedReviewers []string
 		wantErr               error
 	}{
-		"when pull request reviews request fails": {
-			clientOptions: []mock.MockBackendOption{
-				mock.WithRequestMatchHandler(
-					mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
-					http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-						mock.WriteError(
-							w,
-							http.StatusInternalServerError,
-							"GetReposPullsReviewsByOwnerByRepoByPullNumber error",
-						)
-					}),
-				),
+		"when pull request latest reviews request fails": {
+			ghGraphQLHandler: func(w http.ResponseWriter, req *http.Request) {
+				query := utils.MinifyQuery(utils.MustRead(req.Body))
+				if query == utils.MinifyQuery(mockedLatestReviewsGQLQuery) {
+					http.Error(w, "GetLatestReviewsRequestFail", http.StatusNotFound)
+				}
 			},
-			wantErr: fmt.Errorf("GetReposPullsReviewsByOwnerByRepoByPullNumber error"),
+			wantErr: fmt.Errorf("non-200 OK status code: 404 Not Found body: \"GetLatestReviewsRequestFail\\n\""),
 		},
 		"when pull request has no reviews": {
-			clientOptions: []mock.MockBackendOption{
-				mock.WithRequestMatch(
-					mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
-					[]*github.PullRequestReview{},
-				),
+			ghGraphQLHandler: func(w http.ResponseWriter, req *http.Request) {
+				query := utils.MinifyQuery(utils.MustRead(req.Body))
+				if query == utils.MinifyQuery(mockedLatestReviewsGQLQuery) {
+					utils.MustWrite(w, `{
+						"data": {
+							"repository": {
+								"pullRequest": {
+									"latestReviews": {
+										"nodes": []
+									}
+								}
+							}
+						}
+					}`)
+				}
 			},
+			wantApprovedReviewers: []string{},
 		},
 		"when pull request has no approvals": {
-			clientOptions: []mock.MockBackendOption{
-				mock.WithRequestMatch(
-					mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
-					[]*github.PullRequestReview{
-						{
-							ID:    github.Int64(1),
-							Body:  github.String("Here is the body for the review."),
-							State: github.String("REQUESTED_CHANGES"),
-							User: &github.User{
-								Login: github.String("mary"),
-							},
-						},
-					},
-				),
+			ghGraphQLHandler: func(w http.ResponseWriter, req *http.Request) {
+				query := utils.MinifyQuery(utils.MustRead(req.Body))
+				if query == utils.MinifyQuery(mockedLatestReviewsGQLQuery) {
+					utils.MustWrite(w, `{
+						"data": {
+							"repository": {
+								"pullRequest": {
+									"latestReviews": {
+										"nodes": [
+											{
+												"state": "CHANGES_REQUESTED",
+												"author": {
+													"login": "test"
+												}
+											}
+										]
+									}
+								}
+							}
+						}
+					}`)
+				}
 			},
 			wantApprovedReviewers: []string{},
 		},
 		"when pull request has approvals": {
-			clientOptions: []mock.MockBackendOption{
-				mock.WithRequestMatch(
-					mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
-					[]*github.PullRequestReview{
-						{
-							ID:    github.Int64(1),
-							Body:  github.String("Here is the body for the review."),
-							State: github.String("REQUESTED_CHANGES"),
-							User: &github.User{
-								Login: github.String("mary"),
-							},
-							SubmittedAt: &reviewASubmissionTime,
-						},
-						{
-							ID:    github.Int64(2),
-							Body:  github.String("Here is the body for the review."),
-							State: github.String("APPROVED"),
-							User: &github.User{
-								Login: github.String("mary"),
-							},
-							SubmittedAt: &reviewBSubmissionTime,
-						},
-					},
-				),
+			ghGraphQLHandler: func(w http.ResponseWriter, req *http.Request) {
+				query := utils.MinifyQuery(utils.MustRead(req.Body))
+				if query == utils.MinifyQuery(mockedLatestReviewsGQLQuery) {
+					utils.MustWrite(w, `{
+						"data": {
+							"repository": {
+								"pullRequest": {
+									"latestReviews": {
+										"nodes": [
+											{
+												"state": "APPROVED",
+												"author": {
+													"login": "test"
+												}
+											}
+										]
+									}
+								}
+							}
+						}
+					}`)
+				}
 			},
-			wantApprovedReviewers: []string{"mary"},
+			wantApprovedReviewers: []string{"test"},
 		},
 	}
 
@@ -230,20 +262,15 @@ func TestGetApprovedReviewers(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			mockedEnv := aladino.MockDefaultEnv(
 				t,
-				test.clientOptions,
 				nil,
+				test.ghGraphQLHandler,
 				aladino.MockBuiltIns(),
 				nil,
 			)
 
 			gotApprovedReviewers, gotErr := mockedEnv.GetTarget().(*target.PullRequestTarget).GetApprovedReviewers()
 
-			if ghError, isGitHubError := gotErr.(*github.ErrorResponse); isGitHubError {
-				assert.Equal(t, test.wantErr.Error(), ghError.Message)
-			} else {
-				assert.Equal(t, test.wantErr, gotErr)
-			}
-
+			assert.Equal(t, test.wantErr, gotErr)
 			assert.Equal(t, test.wantApprovedReviewers, gotApprovedReviewers)
 		})
 	}

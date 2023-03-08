@@ -7,7 +7,6 @@ package target
 import (
 	"context"
 	"encoding/json"
-	"sort"
 	"time"
 
 	"github.com/google/go-github/v49/github"
@@ -542,33 +541,42 @@ func (target *PullRequestTarget) GetProjectV2ItemID(projectID string) (string, e
 }
 
 func (target *PullRequestTarget) GetApprovedReviewers() ([]string, error) {
-	reviews, err := target.GetReviews()
+	clientGQL := target.githubClient.GetClientGraphQL()
+	targetEntity := target.targetEntity
+	owner := targetEntity.Owner
+	repo := targetEntity.Repo
+	number := targetEntity.Number
+
+	var latestReviewsQuery struct {
+		Repository struct {
+			PullRequest struct {
+				Reviews struct {
+					Nodes []struct {
+						Author struct {
+							Login githubv4.String
+						}
+						State githubv4.String
+					}
+				} `graphql:"latestReviews(last: 100)"`
+			} `graphql:"pullRequest(number: $pullRequestNumber)"`
+		} `graphql:"repository(owner: $repositoryOwner, name: $repositoryName)"`
+	}
+
+	varGQLReviews := map[string]interface{}{
+		"repositoryOwner":   githubv4.String(owner),
+		"repositoryName":    githubv4.String(repo),
+		"pullRequestNumber": githubv4.Int(number),
+	}
+
+	err := clientGQL.Query(context.Background(), &latestReviewsQuery, varGQLReviews)
 	if err != nil {
 		return nil, err
 	}
 
-	if len(reviews) == 0 {
-		return nil, nil
-	}
-
-	// Sort reviews by date, from latest to oldest
-	sort.Slice(reviews, func(i, j int) bool {
-		return reviews[i].SubmittedAt.After(*reviews[j].SubmittedAt)
-	})
-
-	approvalByReviewer := make(map[string]bool)
-	for _, review := range reviews {
-		reviewer := review.User.Login
-
-		if _, ok := approvalByReviewer[reviewer]; !ok {
-			approvalByReviewer[reviewer] = review.State == "APPROVED"
-		}
-	}
-
 	approvedBy := make([]string, 0)
-	for reviewer, approved := range approvalByReviewer {
-		if approved {
-			approvedBy = append(approvedBy, reviewer)
+	for _, review := range latestReviewsQuery.Repository.PullRequest.Reviews.Nodes {
+		if review.State == "APPROVED" {
+			approvedBy = append(approvedBy, string(review.Author.Login))
 		}
 	}
 
