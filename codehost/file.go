@@ -22,7 +22,7 @@ func (f *File) AppendToDiff(
 	oldLine, newLine string,
 ) {
 	f.Diff = append(f.Diff, &diffBlock{
-		isContext: isContext,
+		IsContext: isContext,
 		Old: &diffSpan{
 			int32(oldStart),
 			int32(oldEnd),
@@ -55,7 +55,7 @@ func (f *File) Query(expr string) (bool, error) {
 	}
 
 	for _, block := range f.Diff {
-		if !block.isContext {
+		if !block.IsContext {
 			if r.Match([]byte(block.newLine)) {
 				return true, nil
 			}
