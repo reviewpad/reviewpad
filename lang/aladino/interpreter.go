@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/reviewpad/reviewpad/v4/codehost"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v4/collector"
@@ -247,12 +248,13 @@ func NewInterpreter(
 	logger *logrus.Entry,
 	dryRun bool,
 	githubClient *gh.GithubClient,
+	codeHostClient *codehost.CodeHostClient,
 	collector collector.Collector,
 	targetEntity *handler.TargetEntity,
 	eventPayload interface{},
 	builtIns *BuiltIns,
 ) (engine.Interpreter, error) {
-	evalEnv, err := NewEvalEnv(ctx, logger, dryRun, githubClient, collector, targetEntity, eventPayload, builtIns)
+	evalEnv, err := NewEvalEnv(ctx, logger, dryRun, githubClient, codeHostClient, collector, targetEntity, eventPayload, builtIns)
 	if err != nil {
 		return nil, err
 	}

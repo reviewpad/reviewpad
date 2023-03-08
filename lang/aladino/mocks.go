@@ -314,6 +314,7 @@ func mockEnvWith(prOwner string, prRepoName string, prNum int, githubClient *gh.
 		DefaultMockLogger,
 		false,
 		githubClient,
+		nil,
 		DefaultMockCollector,
 		targetEntity,
 		eventPayload,

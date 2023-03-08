@@ -7,9 +7,9 @@ package cmd
 var (
 	dryRun        bool
 	eventFilePath string
-	gitHubToken   string
+	token         string
 	mixpanelToken string
-	gitHubUrl     string
+	url           string
 	reviewpadFile string
 	safeModeRun   bool
 	logLevel      string

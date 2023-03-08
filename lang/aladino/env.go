@@ -32,6 +32,7 @@ type Env interface {
 	GetBuiltIns() *BuiltIns
 	GetBuiltInsReportedMessages() map[Severity][]string
 	GetGithubClient() *gh.GithubClient
+	GetCodeHostClient() *codehost.CodeHostClient
 	GetCollector() collector.Collector
 	GetCtx() context.Context
 	GetDryRun() bool
@@ -46,6 +47,7 @@ type BaseEnv struct {
 	BuiltIns                 *BuiltIns
 	BuiltInsReportedMessages map[Severity][]string
 	GithubClient             *gh.GithubClient
+	CodeHostClient           *codehost.CodeHostClient
 	Collector                collector.Collector
 	Ctx                      context.Context
 	DryRun                   bool
@@ -100,6 +102,10 @@ func (e *BaseEnv) GetLogger() *logrus.Entry {
 	return e.Logger
 }
 
+func (e *BaseEnv) GetCodeHostClient() *codehost.CodeHostClient {
+	return e.CodeHostClient
+}
+
 func NewTypeEnv(e Env) TypeEnv {
 	builtInsType := make(map[string]Type)
 	for builtInName, builtInFunction := range e.GetBuiltIns().Functions {
@@ -118,6 +124,7 @@ func NewEvalEnv(
 	logger *logrus.Entry,
 	dryRun bool,
 	githubClient *gh.GithubClient,
+	codeHostClient *codehost.CodeHostClient,
 	collector collector.Collector,
 	targetEntity *handler.TargetEntity,
 	eventPayload interface{},
@@ -137,6 +144,7 @@ func NewEvalEnv(
 		RegisterMap:              registerMap,
 		Report:                   report,
 		Logger:                   logger,
+		CodeHostClient:           codeHostClient,
 	}
 
 	switch targetEntity.Kind {

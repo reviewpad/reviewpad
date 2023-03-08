@@ -32,7 +32,7 @@ var checkCmd = &cobra.Command{
 
 		log := utils.NewLogger(logLevel)
 		ctx := context.Background()
-		githubClient := gh.NewGithubClientFromToken(ctx, gitHubToken)
+		githubClient := gh.NewGithubClientFromToken(ctx, token)
 
 		data, err := os.ReadFile(reviewpadFile)
 		if err != nil {
