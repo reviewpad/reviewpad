@@ -101,6 +101,7 @@ func run() error {
 		event.Token = &token
 	}
 
+	// FIXME: abstract to be code host agnostic
 	gitHubDetailsRegex := regexp.MustCompile(`github\.com\/(.+)\/(.+)\/(\w+)\/(\d+)`)
 	gitHubEntityDetails := gitHubDetailsRegex.FindSubmatch([]byte(url))
 
