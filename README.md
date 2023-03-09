@@ -82,6 +82,7 @@ Before you begin, ensure you have met the following requirements:
 -   To run the tests, Reviewpad requires the following environment variables:
      - `INPUT_SEMANTIC_SERVICE`. You can do this by running the following command in your terminal: `export INPUT_SEMANTIC_SERVICE="0.0.0.0:3006"`.
      - `INPUT_ROBIN_SERVICE`. You can do this by running the following command in your terminal: `export INPUT_ROBIN_SERVICE="0.0.0.0:3011"`.
+     - `INPUT_CODEHOST_SERVICE`. You can do this by running the following command in your terminal: `export INPUT_CODEHOST_SERVICE="0.0.0.0:3004"`.
 
 ### Compilation
 

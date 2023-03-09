@@ -13,6 +13,8 @@ import (
 	"regexp"
 
 	"github.com/google/uuid"
+	"github.com/reviewpad/go-lib/host"
+	"github.com/reviewpad/go-lib/uri"
 	"github.com/reviewpad/reviewpad/v4"
 	"github.com/reviewpad/reviewpad/v4/codehost"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
@@ -141,9 +143,14 @@ func run() error {
 	}
 	defer codehostConnection.Close()
 
+	hostInfo, err := getHostInfo(url)
+	if err != nil {
+		return fmt.Errorf("error getting host info. Details %v", err.Error())
+	}
+
 	codeHostClient := &codehost.CodeHostClient{
 		Token:          token,
-		HostInfo:       getHostInfo(url),
+		HostInfo:       hostInfo,
 		CodehostClient: codehostClient,
 	}
 
@@ -158,9 +165,21 @@ func run() error {
 	return nil
 }
 
-// FIXME: Find this function in the atlas codebase
-func getHostInfo(url string) *codehost.HostInfo {
-	return nil
+func getHostInfo(url string) (*codehost.HostInfo, error) {
+	uriData, err := uri.DataFrom(url)
+	if err != nil {
+		return nil, err
+	}
+
+	hostId, err := host.StringToHost(uriData.Host)
+	if err != nil {
+		return nil, err
+	}
+
+	return &codehost.HostInfo{
+		Host:    hostId,
+		HostUri: uriData.Prefix + uriData.Host,
+	}, nil
 }
 
 var runCmd = &cobra.Command{
