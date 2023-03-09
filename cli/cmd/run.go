@@ -20,7 +20,7 @@ import (
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/reviewpad/reviewpad/v4/collector"
 	"github.com/reviewpad/reviewpad/v4/handler"
-	services "github.com/reviewpad/reviewpad/v4/plugins/aladino/services"
+	plugins_aladino_services "github.com/reviewpad/reviewpad/v4/plugins/aladino/services"
 	"github.com/reviewpad/reviewpad/v4/utils"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -137,7 +137,7 @@ func run() error {
 	md := metadata.Pairs(RequestIDKey, requestID)
 	ctxReq := metadata.NewOutgoingContext(ctx, md)
 
-	codehostClient, codehostConnection, err := services.NewCodeHostService()
+	codehostClient, codehostConnection, err := plugins_aladino_services.NewCodeHostService()
 	if err != nil {
 		return fmt.Errorf("error creating codehost client. Details %v", err.Error())
 	}
