@@ -19,6 +19,12 @@ func Comment() *aladino.BuiltInAction {
 }
 
 func commentCode(e aladino.Env, args []aladino.Value) error {
+	// FIXME: We need to change this definition to be able to comment on issues
+	// Previous definition:
+	// t := e.GetTarget()
+	// commentBody := args[0].(*aladino.StringValue).Val
+	// return t.Comment(commentBody)
+
 	t := e.GetTarget().(*target.PullRequestTarget)
 	pullRequest := t.PullRequest
 	repo := pullRequest.GetBase().GetRepo()
