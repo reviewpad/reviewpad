@@ -142,7 +142,7 @@ workflows:
       - $info("If you have added a new function or action do not forget to include it in the built-in list!")
 
 pipelines:
-  # When the pull request touches the LICENSE file
+  # When the pull request touches the LICENSE file.
   - name: license
     trigger: $hasFileName("LICENSE")
     stages:
@@ -157,7 +157,7 @@ pipelines:
           - $addLabel("modifies-license")
           - $assignReviewer($group("owners"), 1)
 
-  # When the pull request is in ship mode
+  # When the pull request is in ship mode.
   - name: ship-mode
     trigger: $rule("is-ship")
     stages:
@@ -170,29 +170,33 @@ pipelines:
       - actions:
           - $error("Pull request cannot be in ship state when it has do-not-merge label.")
         until: '!$isElementOf("do-not-merge", $labels())'
-      # Check if the pull request CI succeeded or if it only includes markdown changes
+      # Check is the changes only include markdown files.
+      # If the changes include markdown files, we can merge it right away.
+      # Otherwise, we need to wait for the build to pass.
       - actions:
-          - $addLabel("waiting-checks")
-        until: $rule("ci-succeeded") || $hasFileExtensions([".md"])
+          - $review("REQUEST_CHANGES", "The build is failing. Please fix it before continuing.")
+        until: $hasFileExtensions([".md"]) || $checkRunConclusion("pr-build") != "failure"
       - actions:
           - $approve("Pull request is in ship mode and the build is green.")
           - $merge("rebase")
 
-  # When the pull request is from renovate bot
+  # When the pull request is from renovate bot.
   - name: renovate-bot
     trigger: $author() == "renovate[bot]"
     stages:
+      - actions:
+          - $assignAssignees($group("owners"), 1)
+        until: $assignees() != []
       - actions:
           - $comment("Pull request is not up to date with the base branch. Reviewpad will rebase it for you. Please wait for the rebase to complete.")
           - $rebase()
         until: $isUpdatedWithBaseBranch() && $hasLinearHistory()
       - actions:
-          - $addLabel("waiting-checks")
-        until: $rule("ci-succeeded")
+          - $review("REQUEST_CHANGES", "The build is failing. Please fix it before continuing.")
+        until: $checkRunConclusion("pr-build") != "failure"
       - actions:
-          - $removeLabel("waiting-checks")
           - $assignReviewer($group("owners"), 1)
         until: $hasRequiredApprovals(1, $group("owners"))
       - actions:
-          - $comment("Pull request is ready to be merged. Reviewpad will merge it for you. Please wait for the merge to complete.")
+          - $approve("Pull request is ready to be merged. Reviewpad will merge it for you. Please wait for the merge to complete.")
           - $merge("rebase")
