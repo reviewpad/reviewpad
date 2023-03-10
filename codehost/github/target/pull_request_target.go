@@ -543,6 +543,7 @@ func (target *PullRequestTarget) GetProjectV2ItemID(projectID string) (string, e
 func (target *PullRequestTarget) GetApprovedReviewers() ([]string, error) {
 	clientGQL := target.githubClient.GetClientGraphQL()
 	targetEntity := target.targetEntity
+	ctx := target.ctx
 	owner := targetEntity.Owner
 	repo := targetEntity.Repo
 	number := targetEntity.Number
@@ -568,7 +569,7 @@ func (target *PullRequestTarget) GetApprovedReviewers() ([]string, error) {
 		"pullRequestNumber": githubv4.Int(number),
 	}
 
-	err := clientGQL.Query(context.Background(), &latestReviewsQuery, varGQLReviews)
+	err := clientGQL.Query(ctx, &latestReviewsQuery, varGQLReviews)
 	if err != nil {
 		return nil, err
 	}
