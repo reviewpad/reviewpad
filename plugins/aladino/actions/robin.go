@@ -5,28 +5,50 @@
 package plugins_aladino_actions
 
 import (
-	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
+	"fmt"
+
+	"github.com/reviewpad/api/go/entities"
+	api "github.com/reviewpad/api/go/services"
+	converter "github.com/reviewpad/go-lib/converters"
 	"github.com/reviewpad/reviewpad/v4/handler"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
-	"github.com/reviewpad/robin"
+	plugins_aladino_services "github.com/reviewpad/reviewpad/v4/plugins/aladino/services"
 )
 
 func Robin() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
 		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, nil),
 		Code:           robinCode,
-		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest},
+		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest, handler.Issue},
 	}
 }
 
 func robinCode(e aladino.Env, args []aladino.Value) error {
-	target := e.GetTarget().(*target.PullRequestTarget)
+	target := e.GetTarget()
+	targetEntity := target.GetTargetEntity()
 	prompt := args[0].(*aladino.StringValue).Val
 
-	reply, err := robin.Prompt(e, prompt)
-	if err != nil {
-		return nil
+	service, ok := e.GetBuiltIns().Services[plugins_aladino_services.ROBIN_SERVICE_KEY]
+	if !ok {
+		return fmt.Errorf("robin service not found")
 	}
 
-	return target.Comment(reply)
+	robinClient := service.(api.RobinClient)
+	req := &api.PromptRequest{
+		Prompt: prompt,
+		Token:  e.GetGithubClient().GetToken(),
+		Target: &entities.TargetEntity{
+			Owner:  targetEntity.Owner,
+			Repo:   targetEntity.Repo,
+			Kind:   converter.ToEntityKind(targetEntity.Kind),
+			Number: int32(targetEntity.Number),
+		},
+	}
+
+	reply, err := robinClient.Prompt(e.GetCtx(), req)
+	if err != nil {
+		return err
+	}
+
+	return target.Comment(reply.Reply)
 }

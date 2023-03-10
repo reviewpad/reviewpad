@@ -19,9 +19,9 @@ require (
 	github.com/migueleliasweb/go-github-mock v0.0.16
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/ohler55/ojg v1.17.5
-	github.com/reviewpad/api/go v0.0.0-20230221231411-2ca6d0299a66
+	github.com/reviewpad/api/go v0.0.0-20230310170530-874294dd4813
 	github.com/reviewpad/go-conventionalcommits v0.10.0
-	github.com/reviewpad/robin v0.0.1
+	github.com/reviewpad/go-lib v0.0.0-20230310172418-883017b7f6c8
 	github.com/shurcooL/githubv4 v0.0.0-20230305132112-efb623903184
 	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/cobra v1.6.1
@@ -46,7 +46,6 @@ require (
 	github.com/kr/text v0.2.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rogpeppe/go-internal v1.9.0 // indirect
-	github.com/sashabaranov/go-openai v1.4.2 // indirect
 	github.com/shurcooL/graphql v0.0.0-20220606043923-3cf50f8a0a29 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	golang.org/x/crypto v0.7.0 // indirect
