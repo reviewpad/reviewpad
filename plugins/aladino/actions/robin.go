@@ -45,10 +45,6 @@ func robinCode(e aladino.Env, args []aladino.Value) error {
 		},
 	}
 
-	reply, err := robinClient.Prompt(e.GetCtx(), req)
-	if err != nil {
-		return err
-	}
-
-	return target.Comment(reply.Reply)
+	_, err := robinClient.Prompt(e.GetCtx(), req)
+	return err
 }
