@@ -11,6 +11,7 @@ type Repository struct {
 	Name     string
 	FullName string
 	Owner    User
+	IsFork   bool
 }
 
 type Repositories []Repository
@@ -20,6 +21,7 @@ func FromGithubRepository(githubRepository *github.Repository) Repository {
 		ID:       githubRepository.GetNodeID(),
 		Name:     githubRepository.GetName(),
 		FullName: githubRepository.GetFullName(),
+		IsFork:   githubRepository.GetFork(),
 		Owner:    FromGithubUser(githubRepository.GetOwner()),
 	}
 }

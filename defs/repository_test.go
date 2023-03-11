@@ -47,6 +47,7 @@ func TestFromGithubRepositories(t *testing.T) {
 					NodeID:   github.String("1"),
 					Name:     github.String("name"),
 					FullName: github.String("full_name"),
+					Fork:     github.Bool(true),
 				},
 				{
 					NodeID:   github.String("2"),
@@ -59,6 +60,7 @@ func TestFromGithubRepositories(t *testing.T) {
 					ID:       "1",
 					Name:     "name",
 					FullName: "full_name",
+					IsFork:   true,
 				},
 				{
 					ID:       "2",

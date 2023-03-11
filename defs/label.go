@@ -4,7 +4,9 @@
 
 package defs
 
-import "github.com/google/go-github/v49/github"
+import (
+	"github.com/google/go-github/v49/github"
+)
 
 type Label struct {
 	ID          string
