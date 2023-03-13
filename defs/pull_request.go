@@ -38,6 +38,7 @@ type PullRequest struct {
 	Milestone          *Milestone
 	Additions          int
 	Deletions          int
+	ChangedFiles       int
 }
 
 type PullRequests []PullRequest
@@ -71,6 +72,7 @@ func FromGithubPullRequest(githubPullRequest *github.PullRequest) PullRequest {
 		Milestone:          FromGithubMilestone(githubPullRequest.Milestone),
 		Additions:          githubPullRequest.GetAdditions(),
 		Deletions:          githubPullRequest.GetDeletions(),
+		ChangedFiles:       githubPullRequest.GetChangedFiles(),
 	}
 }
 

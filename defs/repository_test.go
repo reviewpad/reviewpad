@@ -27,6 +27,7 @@ func TestFromGithubRepositories(t *testing.T) {
 						NodeID: github.String("1"),
 						Login:  github.String("login"),
 					},
+					URL: github.String("https://example.com"),
 				},
 			},
 			repositories: []defs.Repository{
@@ -38,6 +39,7 @@ func TestFromGithubRepositories(t *testing.T) {
 						ID:    "1",
 						Login: "login",
 					},
+					URL: "https://example.com",
 				},
 			},
 		},

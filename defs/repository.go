@@ -12,6 +12,7 @@ type Repository struct {
 	FullName string
 	Owner    User
 	IsFork   bool
+	URL      string
 }
 
 type Repositories []Repository
@@ -23,6 +24,7 @@ func FromGithubRepository(githubRepository *github.Repository) Repository {
 		FullName: githubRepository.GetFullName(),
 		IsFork:   githubRepository.GetFork(),
 		Owner:    FromGithubUser(githubRepository.GetOwner()),
+		URL:      githubRepository.GetURL(),
 	}
 }
 

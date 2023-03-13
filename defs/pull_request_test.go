@@ -145,7 +145,7 @@ func TestFromGithubPullRequests(t *testing.T) {
 					},
 					Head: defs.Branch{
 						Ref:   "head",
-						Sha:   "sha",
+						SHA:   "sha",
 						Label: "label",
 						Repo: defs.Repository{
 							ID:   "1",
@@ -158,7 +158,7 @@ func TestFromGithubPullRequests(t *testing.T) {
 					},
 					Base: defs.Branch{
 						Ref:   "base",
-						Sha:   "sha",
+						SHA:   "sha",
 						Label: "label",
 						Repo: defs.Repository{
 							ID:   "1",
@@ -365,7 +365,7 @@ func TestFromGithubPullRequests(t *testing.T) {
 					},
 					Head: defs.Branch{
 						Ref:   "head",
-						Sha:   "sha",
+						SHA:   "sha",
 						Label: "label",
 						Repo: defs.Repository{
 							ID:   "1",
@@ -378,7 +378,7 @@ func TestFromGithubPullRequests(t *testing.T) {
 					},
 					Base: defs.Branch{
 						Ref:   "base",
-						Sha:   "sha",
+						SHA:   "sha",
 						Label: "label",
 						Repo: defs.Repository{
 							ID:   "1",
@@ -437,7 +437,7 @@ func TestFromGithubPullRequests(t *testing.T) {
 					},
 					Head: defs.Branch{
 						Ref:   "head",
-						Sha:   "sha",
+						SHA:   "sha",
 						Label: "label",
 						Repo: defs.Repository{
 							ID:   "2",
@@ -450,7 +450,7 @@ func TestFromGithubPullRequests(t *testing.T) {
 					},
 					Base: defs.Branch{
 						Ref:   "base",
-						Sha:   "sha",
+						SHA:   "sha",
 						Label: "label",
 						Repo: defs.Repository{
 							ID:   "2",

@@ -9,7 +9,7 @@ import "github.com/google/go-github/v49/github"
 type Branch struct {
 	Label string
 	Ref   string
-	Sha   string
+	SHA   string
 	Repo  Repository
 	User  User
 }
@@ -28,7 +28,7 @@ func FromGithubBranch(githubBranch *github.PullRequestBranch) Branch {
 	return Branch{
 		Label: githubBranch.GetLabel(),
 		Ref:   githubBranch.GetRef(),
-		Sha:   githubBranch.GetSHA(),
+		SHA:   githubBranch.GetSHA(),
 		Repo:  FromGithubRepository(githubBranch.GetRepo()),
 		User:  FromGithubUser(githubBranch.GetUser()),
 	}
