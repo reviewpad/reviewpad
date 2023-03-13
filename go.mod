@@ -1,6 +1,6 @@
 module github.com/reviewpad/reviewpad/v4
 
-go 1.19
+go 1.20
 
 require (
 	github.com/aws/aws-secretsmanager-caching-go v1.1.0
@@ -18,7 +18,7 @@ require (
 	github.com/mattn/go-shellwords v1.0.12
 	github.com/migueleliasweb/go-github-mock v0.0.16
 	github.com/mitchellh/mapstructure v1.5.0
-	github.com/ohler55/ojg v1.17.5
+	github.com/ohler55/ojg v1.18.1
 	github.com/reviewpad/api/go v0.0.0-20230310170530-874294dd4813
 	github.com/reviewpad/go-conventionalcommits v0.10.0
 	github.com/reviewpad/go-lib v0.0.0-20230310172418-883017b7f6c8
@@ -27,17 +27,17 @@ require (
 	github.com/spf13/cobra v1.6.1
 	github.com/stretchr/testify v1.8.2
 	github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80
-	golang.org/x/exp v0.0.0-20230306221820-f0f767cdffd6
+	golang.org/x/exp v0.0.0-20230310171629-522b1b587ee0
 	golang.org/x/oauth2 v0.6.0
 	google.golang.org/grpc v1.53.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
-	github.com/aws/aws-sdk-go v1.44.215 // indirect
+	github.com/aws/aws-sdk-go v1.44.219 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/golang-jwt/jwt/v4 v4.5.0 // indirect
-	github.com/golang/protobuf v1.5.2 // indirect
+	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/go-github/v50 v50.1.0 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
@@ -54,6 +54,6 @@ require (
 	golang.org/x/text v0.8.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20230306155012-7f2fa6fef1f4 // indirect
-	google.golang.org/protobuf v1.28.1 // indirect
+	google.golang.org/protobuf v1.29.0 // indirect
 	nhooyr.io/websocket v1.8.7 // indirect
 )
