@@ -15,15 +15,15 @@ import (
 	plugins_aladino_services "github.com/reviewpad/reviewpad/v4/plugins/aladino/services"
 )
 
-func Robin() *aladino.BuiltInAction {
+func RobinPrompt() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
 		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, nil),
-		Code:           robinCode,
+		Code:           robinPromptCode,
 		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest, handler.Issue},
 	}
 }
 
-func robinCode(e aladino.Env, args []aladino.Value) error {
+func robinPromptCode(e aladino.Env, args []aladino.Value) error {
 	target := e.GetTarget()
 	targetEntity := target.GetTargetEntity()
 	prompt := args[0].(*aladino.StringValue).Val
@@ -43,8 +43,13 @@ func robinCode(e aladino.Env, args []aladino.Value) error {
 			Kind:   converter.ToEntityKind(targetEntity.Kind),
 			Number: int32(targetEntity.Number),
 		},
+		Act: false,
 	}
 
-	_, err := robinClient.Prompt(e.GetCtx(), req)
-	return err
+	resp, err := robinClient.Prompt(e.GetCtx(), req)
+	if err != nil {
+		return err
+	}
+
+	return target.Comment(resp.Reply)
 }
