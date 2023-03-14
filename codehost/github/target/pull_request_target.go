@@ -539,3 +539,47 @@ func (target *PullRequestTarget) GetProjectV2ItemID(projectID string) (string, e
 
 	return target.githubClient.GetPullRequestProjectV2ItemID(ctx, owner, repo, projectID, targetEntity.Number)
 }
+
+func (target *PullRequestTarget) GetLatestApprovedReviews() ([]string, error) {
+	clientGQL := target.githubClient.GetClientGraphQL()
+	targetEntity := target.targetEntity
+	ctx := target.ctx
+	owner := targetEntity.Owner
+	repo := targetEntity.Repo
+	number := targetEntity.Number
+
+	var latestReviewsQuery struct {
+		Repository struct {
+			PullRequest struct {
+				Reviews struct {
+					Nodes []struct {
+						Author struct {
+							Login githubv4.String
+						}
+						State githubv4.String
+					}
+				} `graphql:"latestReviews(last: 100)"`
+			} `graphql:"pullRequest(number: $pullRequestNumber)"`
+		} `graphql:"repository(owner: $repositoryOwner, name: $repositoryName)"`
+	}
+
+	varGQLReviews := map[string]interface{}{
+		"repositoryOwner":   githubv4.String(owner),
+		"repositoryName":    githubv4.String(repo),
+		"pullRequestNumber": githubv4.Int(number),
+	}
+
+	err := clientGQL.Query(ctx, &latestReviewsQuery, varGQLReviews)
+	if err != nil {
+		return nil, err
+	}
+
+	approvedBy := make([]string, 0)
+	for _, review := range latestReviewsQuery.Repository.PullRequest.Reviews.Nodes {
+		if review.State == "APPROVED" {
+			approvedBy = append(approvedBy, string(review.Author.Login))
+		}
+	}
+
+	return approvedBy, nil
+}

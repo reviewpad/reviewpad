@@ -143,3 +143,135 @@ func TestGetLatestReviewFromReviewer(t *testing.T) {
 		})
 	}
 }
+
+func TestGetLatestApprovedReviews(t *testing.T) {
+	mockedPullRequest := aladino.GetDefaultMockPullRequestDetails()
+
+	mockedPullRequestNumber := host.GetPullRequestNumber(mockedPullRequest)
+	mockOwner := host.GetPullRequestBaseOwnerName(mockedPullRequest)
+	mockRepo := host.GetPullRequestBaseRepoName(mockedPullRequest)
+
+	mockedLatestReviewsGQLQuery := fmt.Sprintf(`{
+		"query":"query($pullRequestNumber:Int!$repositoryName:String!$repositoryOwner:String!){
+			repository(owner:$repositoryOwner,name:$repositoryName){
+				pullRequest(number:$pullRequestNumber){
+					latestReviews(last:100){
+						nodes{
+							author{login},
+							state
+						}
+					}
+				}
+			}
+		}",
+		"variables":{
+			"pullRequestNumber":%d,
+			"repositoryName":"%s",
+			"repositoryOwner":"%s"
+		}
+	}`, mockedPullRequestNumber, mockRepo, mockOwner)
+
+	tests := map[string]struct {
+		ghGraphQLHandler      func(http.ResponseWriter, *http.Request)
+		wantApprovedReviewers []string
+		wantErr               error
+	}{
+		"when pull request latest reviews request fails": {
+			ghGraphQLHandler: func(w http.ResponseWriter, req *http.Request) {
+				query := utils.MinifyQuery(utils.MustRead(req.Body))
+				if query == utils.MinifyQuery(mockedLatestReviewsGQLQuery) {
+					http.Error(w, "GetLatestReviewsRequestFail", http.StatusNotFound)
+				}
+			},
+			wantErr: fmt.Errorf("non-200 OK status code: 404 Not Found body: \"GetLatestReviewsRequestFail\\n\""),
+		},
+		"when pull request has no reviews": {
+			ghGraphQLHandler: func(w http.ResponseWriter, req *http.Request) {
+				query := utils.MinifyQuery(utils.MustRead(req.Body))
+				if query == utils.MinifyQuery(mockedLatestReviewsGQLQuery) {
+					utils.MustWrite(w, `{
+						"data": {
+							"repository": {
+								"pullRequest": {
+									"latestReviews": {
+										"nodes": []
+									}
+								}
+							}
+						}
+					}`)
+				}
+			},
+			wantApprovedReviewers: []string{},
+		},
+		"when pull request has no approvals": {
+			ghGraphQLHandler: func(w http.ResponseWriter, req *http.Request) {
+				query := utils.MinifyQuery(utils.MustRead(req.Body))
+				if query == utils.MinifyQuery(mockedLatestReviewsGQLQuery) {
+					utils.MustWrite(w, `{
+						"data": {
+							"repository": {
+								"pullRequest": {
+									"latestReviews": {
+										"nodes": [
+											{
+												"state": "CHANGES_REQUESTED",
+												"author": {
+													"login": "test"
+												}
+											}
+										]
+									}
+								}
+							}
+						}
+					}`)
+				}
+			},
+			wantApprovedReviewers: []string{},
+		},
+		"when pull request has approvals": {
+			ghGraphQLHandler: func(w http.ResponseWriter, req *http.Request) {
+				query := utils.MinifyQuery(utils.MustRead(req.Body))
+				if query == utils.MinifyQuery(mockedLatestReviewsGQLQuery) {
+					utils.MustWrite(w, `{
+						"data": {
+							"repository": {
+								"pullRequest": {
+									"latestReviews": {
+										"nodes": [
+											{
+												"state": "APPROVED",
+												"author": {
+													"login": "test"
+												}
+											}
+										]
+									}
+								}
+							}
+						}
+					}`)
+				}
+			},
+			wantApprovedReviewers: []string{"test"},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			mockedEnv := aladino.MockDefaultEnv(
+				t,
+				nil,
+				test.ghGraphQLHandler,
+				aladino.MockBuiltIns(),
+				nil,
+			)
+
+			gotApprovedReviewers, gotErr := mockedEnv.GetTarget().(*target.PullRequestTarget).GetLatestApprovedReviews()
+
+			assert.Equal(t, test.wantErr, gotErr)
+			assert.Equal(t, test.wantApprovedReviewers, gotApprovedReviewers)
+		})
+	}
+}
