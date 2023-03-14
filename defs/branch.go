@@ -16,14 +16,6 @@ type Branch struct {
 
 type Branches []Branch
 
-func FromGithubBranches(githubBranches []*github.PullRequestBranch) Branches {
-	branches := make(Branches, len(githubBranches))
-	for i, githubBranch := range githubBranches {
-		branches[i] = FromGithubBranch(githubBranch)
-	}
-	return branches
-}
-
 func FromGithubBranch(githubBranch *github.PullRequestBranch) Branch {
 	return Branch{
 		Label: githubBranch.GetLabel(),
