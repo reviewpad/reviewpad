@@ -12,6 +12,7 @@ import (
 	"os"
 	"regexp"
 
+	"github.com/google/uuid"
 	"github.com/reviewpad/reviewpad/v4"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/reviewpad/reviewpad/v4/collector"
@@ -19,7 +20,10 @@ import (
 	"github.com/reviewpad/reviewpad/v4/utils"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"google.golang.org/grpc/metadata"
 )
+
+const RequestIDKey = "request-id"
 
 func init() {
 	rootCmd.AddCommand(runCmd)
@@ -125,9 +129,13 @@ func run() error {
 		return fmt.Errorf("error processing event. Details %v", err.Error())
 	}
 
+	requestID := uuid.New().String()
+	md := metadata.Pairs(RequestIDKey, requestID)
+	ctxReq := metadata.NewOutgoingContext(ctx, md)
+
 	for _, targetEntity := range targetEntities {
 		log.Infof("Processing entity %s/%s#%d", targetEntity.Owner, targetEntity.Repo, targetEntity.Number)
-		_, _, err = reviewpad.Run(ctx, log, gitHubClient, collectorClient, targetEntity, eventDetails, file, dryRun, safeModeRun)
+		_, _, err = reviewpad.Run(ctxReq, log, gitHubClient, collectorClient, targetEntity, eventDetails, file, dryRun, safeModeRun)
 		if err != nil {
 			return fmt.Errorf("error running reviewpad team edition. Details %v", err.Error())
 		}
