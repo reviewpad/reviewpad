@@ -540,7 +540,7 @@ func (target *PullRequestTarget) GetProjectV2ItemID(projectID string) (string, e
 	return target.githubClient.GetPullRequestProjectV2ItemID(ctx, owner, repo, projectID, targetEntity.Number)
 }
 
-func (target *PullRequestTarget) GetApprovedReviewers() ([]string, error) {
+func (target *PullRequestTarget) GetLatestApprovedReviews() ([]string, error) {
 	clientGQL := target.githubClient.GetClientGraphQL()
 	targetEntity := target.targetEntity
 	ctx := target.ctx

@@ -36,14 +36,14 @@ func hasRequiredApprovalsCode(e aladino.Env, args []aladino.Value) (aladino.Valu
 		return nil, fmt.Errorf("hasRequiredApprovals: the number of required approvals exceeds the number of members from the given list of required approvals")
 	}
 
-	approvedBy, err := pullRequest.GetApprovedReviewers()
+	approvedBy, err := pullRequest.GetLatestApprovedReviews()
 	if err != nil {
 		return nil, err
 	}
 
 	totalApprovedReviews := 0
 	for _, requiredApproval := range requiredApprovalsFrom {
-		if utils.Contains(approvedBy, requiredApproval.(*aladino.StringValue).Val) {
+		if utils.ElementOf(approvedBy, requiredApproval.(*aladino.StringValue).Val) {
 			totalApprovedReviews++
 		}
 	}

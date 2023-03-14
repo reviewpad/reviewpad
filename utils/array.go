@@ -13,13 +13,3 @@ func ElementOf(s []string, str string) bool {
 
 	return false
 }
-
-func Contains(slice []string, str string) bool {
-	for _, elem := range slice {
-		if elem == str {
-			return true
-		}
-	}
-
-	return false
-}

@@ -144,7 +144,7 @@ func TestGetLatestReviewFromReviewer(t *testing.T) {
 	}
 }
 
-func TestGetApprovedReviewers(t *testing.T) {
+func TestGetLatestApprovedReviews(t *testing.T) {
 	mockedPullRequest := aladino.GetDefaultMockPullRequestDetails()
 
 	mockedPullRequestNumber := host.GetPullRequestNumber(mockedPullRequest)
@@ -268,7 +268,7 @@ func TestGetApprovedReviewers(t *testing.T) {
 				nil,
 			)
 
-			gotApprovedReviewers, gotErr := mockedEnv.GetTarget().(*target.PullRequestTarget).GetApprovedReviewers()
+			gotApprovedReviewers, gotErr := mockedEnv.GetTarget().(*target.PullRequestTarget).GetLatestApprovedReviews()
 
 			assert.Equal(t, test.wantErr, gotErr)
 			assert.Equal(t, test.wantApprovedReviewers, gotApprovedReviewers)
