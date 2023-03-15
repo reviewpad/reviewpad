@@ -5,34 +5,29 @@
 package commands
 
 import (
-	"fmt"
-	"strings"
+	"errors"
 
 	"github.com/spf13/cobra"
 )
 
 func RobinCmd() *cobra.Command {
 	robinCmd := &cobra.Command{
-		Use:           "robin",
-		Short:         "Sneak peak at pandora box",
-		Long:          "Sneak peak at pandora box",
+		Use: "robin",
+		CompletionOptions: cobra.CompletionOptions{
+			DisableDefaultCmd: true,
+		},
 		SilenceUsage:  true,
 		SilenceErrors: true,
-		Args: func(cmd *cobra.Command, args []string) error {
-			return nil
+		RunE: func(cmd *cobra.Command, args []string) error {
+			cmd.Flags().Lookup("help").Hidden = true
+			return errors.New(cmd.UsageString())
 		},
-		RunE: Robin,
+		DisableFlagParsing: true,
 	}
 
+	robinCmd.AddCommand(RobinSummarizeCmd())
+	robinCmd.AddCommand(RobinSummarizeExtendedCmd())
+	robinCmd.AddCommand(RobinPromptCmd())
+
 	return robinCmd
-}
-
-func Robin(cmd *cobra.Command, args []string) error {
-	prompt := strings.Join(args, " ")
-
-	action := fmt.Sprintf(`$robin("%s")`, prompt)
-
-	cmd.Print(action)
-
-	return nil
 }

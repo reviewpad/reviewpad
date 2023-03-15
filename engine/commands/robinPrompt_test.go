@@ -12,32 +12,31 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestRobin(t *testing.T) {
+func TestRobinPrompt(t *testing.T) {
 	testCases := map[string]struct {
 		args       []string
 		wantAction string
 		wantErr    error
 	}{
-		"when prompt": {
+		"when invalid number of arguments": {
 			args: []string{
-				"prompt",
-				"hello",
-				"world",
+				"john",
+				"jane",
 			},
-			wantAction: `$robinPrompt("hello world")`,
+			wantAction: `$robinPrompt("john jane")`,
 		},
-		"when summarize": {
+		"when correct string": {
 			args: []string{
-				"summarize",
+				"john",
 			},
-			wantAction: `$robinSummarize("default")`,
+			wantAction: `$robinPrompt("john")`,
 		},
 	}
 
 	for name, test := range testCases {
 		t.Run(name, func(t *testing.T) {
 			out := new(bytes.Buffer)
-			cmd := commands.RobinCmd()
+			cmd := commands.RobinPromptCmd()
 
 			cmd.SetOut(out)
 			cmd.SetArgs(test.args)

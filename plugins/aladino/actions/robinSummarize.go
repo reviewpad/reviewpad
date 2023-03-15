@@ -15,18 +15,18 @@ import (
 	plugins_aladino_services "github.com/reviewpad/reviewpad/v4/plugins/aladino/services"
 )
 
-func Robin() *aladino.BuiltInAction {
+func RobinSummarize() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
 		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, nil),
-		Code:           robinCode,
-		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest, handler.Issue},
+		Code:           robinSummarizeCode,
+		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest},
 	}
 }
 
-func robinCode(e aladino.Env, args []aladino.Value) error {
+func robinSummarizeCode(e aladino.Env, args []aladino.Value) error {
 	target := e.GetTarget()
 	targetEntity := target.GetTargetEntity()
-	prompt := args[0].(*aladino.StringValue).Val
+	summaryMode := args[0].(*aladino.StringValue).Val
 
 	service, ok := e.GetBuiltIns().Services[plugins_aladino_services.ROBIN_SERVICE_KEY]
 	if !ok {
@@ -34,17 +34,22 @@ func robinCode(e aladino.Env, args []aladino.Value) error {
 	}
 
 	robinClient := service.(api.RobinClient)
-	req := &api.PromptRequest{
-		Prompt: prompt,
-		Token:  e.GetGithubClient().GetToken(),
+	req := &api.SummarizeRequest{
+		Token: e.GetGithubClient().GetToken(),
 		Target: &entities.TargetEntity{
 			Owner:  targetEntity.Owner,
 			Repo:   targetEntity.Repo,
 			Kind:   converter.ToEntityKind(targetEntity.Kind),
 			Number: int32(targetEntity.Number),
 		},
+		Act:      false,
+		Extended: summaryMode == "extended",
 	}
 
-	_, err := robinClient.Prompt(e.GetCtx(), req)
-	return err
+	resp, err := robinClient.Summarize(e.GetCtx(), req)
+	if err != nil {
+		return err
+	}
+
+	return target.Comment(resp.Summary)
 }

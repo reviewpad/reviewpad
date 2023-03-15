@@ -6,30 +6,27 @@ package commands_test
 
 import (
 	"bytes"
+	"errors"
 	"testing"
 
 	"github.com/reviewpad/reviewpad/v4/engine/commands"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestRobin(t *testing.T) {
+func TestRobinSummarize(t *testing.T) {
 	testCases := map[string]struct {
 		args       []string
 		wantAction string
 		wantErr    error
 	}{
-		"when prompt": {
+		"when invalid number of arguments": {
 			args: []string{
-				"prompt",
-				"hello",
-				"world",
+				"john",
 			},
-			wantAction: `$robinPrompt("hello world")`,
+			wantErr: errors.New("accepts 0 args, received 1"),
 		},
-		"when summarize": {
-			args: []string{
-				"summarize",
-			},
+		"when correct string": {
+			args:       []string{},
 			wantAction: `$robinSummarize("default")`,
 		},
 	}
@@ -37,7 +34,7 @@ func TestRobin(t *testing.T) {
 	for name, test := range testCases {
 		t.Run(name, func(t *testing.T) {
 			out := new(bytes.Buffer)
-			cmd := commands.RobinCmd()
+			cmd := commands.RobinSummarizeCmd()
 
 			cmd.SetOut(out)
 			cmd.SetArgs(test.args)
