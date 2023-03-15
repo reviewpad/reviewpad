@@ -119,8 +119,8 @@ github.com/opentracing/opentracing-go v1.2.0/go.mod h1:GxEUsuufX4nBwe+T+Wl9TAgYr
 github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
-github.com/reviewpad/api/go v0.0.0-20230314193416-6e79a0516c1b h1:U30sbGWZcTk9k4x30jPDllxNsK9SZ+NEz3dm8D7gTpM=
-github.com/reviewpad/api/go v0.0.0-20230314193416-6e79a0516c1b/go.mod h1:v+U/hNqRIL6+v4VIDPY7k/bv+Bun8mo2lMSipsu0FaQ=
+github.com/reviewpad/api/go v0.0.0-20230315194758-19fbca20bf06 h1:7gOriCVYtqp7Eoa5TSInuMIUOjES13TaX5T4D5SuRTw=
+github.com/reviewpad/api/go v0.0.0-20230315194758-19fbca20bf06/go.mod h1:v+U/hNqRIL6+v4VIDPY7k/bv+Bun8mo2lMSipsu0FaQ=
 github.com/reviewpad/go-conventionalcommits v0.10.0 h1:49Fv1q5vougqA7g5mpFZ+W5sQs9kJ5F5zH7kCEwZ+w8=
 github.com/reviewpad/go-conventionalcommits v0.10.0/go.mod h1:NWUK2G+V+KrhmHW2fBAWGEgZFW8jUXqqBkm9mYJJNi4=
 github.com/reviewpad/go-lib v0.0.0-20230314182417-85626ff59194 h1:hMFXJMTCf1mohKFcpdhAVA0EJhWklfonaUUjZu0T5ng=

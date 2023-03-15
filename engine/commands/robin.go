@@ -26,6 +26,7 @@ func RobinCmd() *cobra.Command {
 	}
 
 	robinCmd.AddCommand(RobinSummarizeCmd())
+	robinCmd.AddCommand(RobinSummarizeExtendedCmd())
 	robinCmd.AddCommand(RobinPromptCmd())
 
 	return robinCmd

@@ -27,7 +27,7 @@ func TestRobinSummarize(t *testing.T) {
 		},
 		"when correct string": {
 			args:       []string{},
-			wantAction: `$robinSummarize()`,
+			wantAction: `$robinSummarize("default")`,
 		},
 	}
 

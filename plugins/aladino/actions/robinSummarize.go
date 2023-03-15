@@ -17,15 +17,16 @@ import (
 
 func RobinSummarize() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{}, nil),
+		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, nil),
 		Code:           robinSummarizeCode,
 		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest},
 	}
 }
 
-func robinSummarizeCode(e aladino.Env, _ []aladino.Value) error {
+func robinSummarizeCode(e aladino.Env, args []aladino.Value) error {
 	target := e.GetTarget()
 	targetEntity := target.GetTargetEntity()
+	summaryMode := args[0].(*aladino.StringValue).Val
 
 	service, ok := e.GetBuiltIns().Services[plugins_aladino_services.ROBIN_SERVICE_KEY]
 	if !ok {
@@ -41,7 +42,8 @@ func robinSummarizeCode(e aladino.Env, _ []aladino.Value) error {
 			Kind:   converter.ToEntityKind(targetEntity.Kind),
 			Number: int32(targetEntity.Number),
 		},
-		Act: false,
+		Act:      false,
+		Extended: summaryMode == "extended",
 	}
 
 	resp, err := robinClient.Summarize(e.GetCtx(), req)

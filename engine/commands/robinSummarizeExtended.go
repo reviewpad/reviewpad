@@ -10,9 +10,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func RobinSummarizeCmd() *cobra.Command {
-	robinSummarizeCmd := &cobra.Command{
-		Use:           "summarize",
+func RobinSummarizeExtendedCmd() *cobra.Command {
+	robinSummarizeExtendedCmd := &cobra.Command{
+		Use:           "summarize-extended",
 		SilenceUsage:  true,
 		SilenceErrors: true,
 		Args: func(cmd *cobra.Command, args []string) error {
@@ -21,14 +21,14 @@ func RobinSummarizeCmd() *cobra.Command {
 			}
 			return nil
 		},
-		RunE: RobinSummarize,
+		RunE: RobinSummarizeExtended,
 	}
 
-	return robinSummarizeCmd
+	return robinSummarizeExtendedCmd
 }
 
-func RobinSummarize(cmd *cobra.Command, _ []string) error {
-	cmd.Print(`$robinSummarize("default")`)
+func RobinSummarizeExtended(cmd *cobra.Command, _ []string) error {
+	cmd.Print(`$robinSummarize("extended")`)
 
 	return nil
 }
