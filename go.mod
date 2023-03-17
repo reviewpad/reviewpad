@@ -11,7 +11,7 @@ require (
 	github.com/google/go-github/v49 v49.1.0
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/mux v1.8.0
-	github.com/hasura/go-graphql-client v0.9.1
+	github.com/hasura/go-graphql-client v0.9.2
 	github.com/jarcoal/httpmock v1.3.0
 	github.com/jinzhu/copier v0.3.5
 	github.com/libgit2/git2go/v31 v31.7.9
