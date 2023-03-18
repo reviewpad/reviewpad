@@ -28,7 +28,7 @@ func RobinSummarizeCmd() *cobra.Command {
 }
 
 func RobinSummarize(cmd *cobra.Command, _ []string) error {
-	cmd.Print(`$robinSummarize("default")`)
+	cmd.Print(`$robinSummarize("default", "openai-gpt-4")`)
 
 	return nil
 }

@@ -27,7 +27,7 @@ func TestRobinSummarizeExtended(t *testing.T) {
 		},
 		"when correct string": {
 			args:       []string{},
-			wantAction: `$robinSummarize("extended")`,
+			wantAction: `$robinSummarize("extended", "openai-gpt-4")`,
 		},
 	}
 
