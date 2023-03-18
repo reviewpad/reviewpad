@@ -30,7 +30,7 @@ func RobinPromptCmd() *cobra.Command {
 func RobinPrompt(cmd *cobra.Command, args []string) error {
 	prompt := strings.Join(args, " ")
 
-	action := fmt.Sprintf(`$robinPrompt("%s")`, prompt)
+	action := fmt.Sprintf(`$robinPrompt("%s", "openai-gpt-4")`, prompt)
 
 	cmd.Print(action)
 

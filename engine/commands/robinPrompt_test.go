@@ -23,13 +23,13 @@ func TestRobinPrompt(t *testing.T) {
 				"john",
 				"jane",
 			},
-			wantAction: `$robinPrompt("john jane")`,
+			wantAction: `$robinPrompt("john jane", "openai-gpt-4")`,
 		},
 		"when correct string": {
 			args: []string{
 				"john",
 			},
-			wantAction: `$robinPrompt("john")`,
+			wantAction: `$robinPrompt("john", "openai-gpt-4")`,
 		},
 	}
 

@@ -24,13 +24,13 @@ func TestRobin(t *testing.T) {
 				"hello",
 				"world",
 			},
-			wantAction: `$robinPrompt("hello world")`,
+			wantAction: `$robinPrompt("hello world", "openai-gpt-4")`,
 		},
 		"when summarize": {
 			args: []string{
 				"summarize",
 			},
-			wantAction: `$robinSummarize("default")`,
+			wantAction: `$robinSummarize("default", "openai-gpt-4")`,
 		},
 	}
 
