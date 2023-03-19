@@ -13,6 +13,7 @@ import (
 	"github.com/google/go-github/v49/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/api/go/entities"
+	pbe "github.com/reviewpad/api/go/entities"
 	"github.com/reviewpad/api/go/services"
 	"github.com/reviewpad/api/go/services_mocks"
 	"github.com/reviewpad/reviewpad/v4/codehost"
@@ -642,16 +643,14 @@ func TestGetSymbolsFromFileInBranch_WhenGetSymbolsRequestFails(t *testing.T) {
 		Repr: githubMockedCommitFile,
 	}
 
-	mockedBranch := &github.PullRequestBranch{
-		Repo: &github.Repository{
-			Owner: &github.User{
-				Login: github.String(mockedPRRepoOwner),
-			},
-			URL:  github.String(mockedPRUrl),
-			Name: github.String(mockedPRRepoName),
+	mockedBranch := &pbe.Branch{
+		Repo: &pbe.Repository{
+			Owner: mockedPRRepoOwner,
+			Uri:   mockedPRUrl,
+			Name:  mockedPRRepoName,
 		},
-		Ref: github.String("new-topic"),
-		SHA: github.String(mockedHeadSHA),
+		Name: "new-topic",
+		Oid:  mockedHeadSHA,
 	}
 
 	gotVal, _, err := GetSymbolsFromFileInBranch(mockedEnv, mockedCommitFile, mockedBranch)
@@ -798,16 +797,14 @@ func TestGetSymbolsFromFileInBranch(t *testing.T) {
 		Repr: githubMockedCommitFile,
 	}
 
-	mockedBranch := &github.PullRequestBranch{
-		Repo: &github.Repository{
-			Owner: &github.User{
-				Login: github.String(mockedPRRepoOwner),
-			},
-			URL:  github.String(mockedPRUrl),
-			Name: github.String(mockedPRRepoName),
+	mockedBranch := &pbe.Branch{
+		Repo: &pbe.Repository{
+			Owner: mockedPRRepoOwner,
+			Uri:   mockedPRUrl,
+			Name:  mockedPRRepoName,
 		},
-		Ref: github.String("new-topic"),
-		SHA: github.String(mockedHeadSHA),
+		Name: "new-topic",
+		Oid:  mockedHeadSHA,
 	}
 
 	gotVal, _, err := GetSymbolsFromFileInBranch(mockedEnv, mockedCommitFile, mockedBranch)

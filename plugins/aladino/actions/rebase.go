@@ -29,13 +29,13 @@ func rebaseCode(e aladino.Env, args []aladino.Value) error {
 	t := e.GetTarget().(*target.PullRequestTarget)
 	pr := t.PullRequest
 
-	if !*pr.Rebaseable {
+	if !pr.Rebaseable {
 		return errors.New("the pull request is not rebaseable")
 	}
 
-	headHTMLUrl := pr.Head.GetRepo().GetHTMLURL()
-	headRef := pr.Head.GetRef()
-	baseRef := pr.Base.GetRef()
+	headHTMLUrl := pr.Head.GetRepo().GetUri()
+	headRef := pr.Head.Name
+	baseRef := pr.Base.Name
 
 	repo, dir, err := gh.CloneRepository(log, headHTMLUrl, githubToken, "", &git.CloneOptions{
 		CheckoutBranch: baseRef,

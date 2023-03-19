@@ -31,5 +31,5 @@ func commentCode(e aladino.Env, args []aladino.Value) error {
 	commentBody := args[0].(*aladino.StringValue).Val
 
 	hostClient := e.GetCodeHostClient()
-	return hostClient.PostGeneralComment(e.GetCtx(), repo.GetFullName(), repo.GetNodeID(), pullRequest.GetNodeID(), int32(pullRequest.GetNumber()), commentBody)
+	return hostClient.PostGeneralComment(e.GetCtx(), repo.GetFullName(), repo.GetId(), pullRequest.GetNodeId(), pullRequest.GetNumber(), commentBody)
 }

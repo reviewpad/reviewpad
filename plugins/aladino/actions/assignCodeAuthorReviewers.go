@@ -10,7 +10,7 @@ import (
 	"math/rand"
 	"strings"
 
-	gh "github.com/google/go-github/v49/github"
+	pbe "github.com/reviewpad/api/go/entities"
 	"github.com/reviewpad/reviewpad/v4/codehost"
 	"github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
@@ -128,7 +128,7 @@ func getAuthorsFromGitBlame(ctx context.Context, gitHubClient *github.GithubClie
 		changedFilesPath = append(changedFilesPath, patch.Repr.GetFilename())
 	}
 
-	gitBlame, err := gitHubClient.GetGitBlame(ctx, pullRequest.GetTargetEntity().Owner, pullRequest.GetTargetEntity().Repo, pullRequest.PullRequest.GetBase().GetSHA(), changedFilesPath)
+	gitBlame, err := gitHubClient.GetGitBlame(ctx, pullRequest.GetTargetEntity().Owner, pullRequest.GetTargetEntity().Repo, pullRequest.PullRequest.GetBase().GetOid(), changedFilesPath)
 	if err != nil {
 		return nil, err
 	}
@@ -143,7 +143,7 @@ func getAuthorsFromGitBlame(ctx context.Context, gitHubClient *github.GithubClie
 
 func isUserEligibleToReview(
 	username string,
-	pullRequest *gh.PullRequest,
+	pullRequest *pbe.ExternalCodeReview,
 	reviewersToExclude []aladino.Value,
 	availableAssignees []*codehost.User,
 	totalOpenPRsAsReviewer int,
@@ -153,7 +153,7 @@ func isUserEligibleToReview(
 		return false
 	}
 
-	if pullRequest.GetUser().GetLogin() == username {
+	if pullRequest.GetAuthor().GetLogin() == username {
 		return false
 	}
 

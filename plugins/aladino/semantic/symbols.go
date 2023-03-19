@@ -9,8 +9,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/google/go-github/v49/github"
 	"github.com/reviewpad/api/go/entities"
+	pbe "github.com/reviewpad/api/go/entities"
 	api "github.com/reviewpad/api/go/services"
 	"github.com/reviewpad/reviewpad/v4/codehost"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
@@ -25,10 +25,10 @@ func GetSymbolsFromPatch(e aladino.Env) (map[string]*entities.Symbols, error) {
 
 	head := pullRequest.PullRequest.GetHead()
 	base := pullRequest.PullRequest.GetBase()
-	url := head.GetRepo().GetURL()
+	url := head.Repo.Uri
 	patch := pullRequest.Patch
 
-	lastCommit := head.SHA
+	lastCommit := head.Oid
 
 	for fp, commitFile := range patch {
 		blob, err := e.GetGithubClient().DownloadContents(e.GetCtx(), fp, head)
@@ -56,7 +56,7 @@ func GetSymbolsFromPatch(e aladino.Env) (map[string]*entities.Symbols, error) {
 		semanticClient := service.(api.SemanticClient)
 		req := &api.GetSymbolsRequest{
 			Uri:      url,
-			CommitId: *lastCommit,
+			CommitId: lastCommit,
 			Filepath: fp,
 			Blob:     blob,
 			BlobId:   *commitFile.Repr.SHA,
@@ -141,7 +141,7 @@ func joinSymbols(current *entities.Symbols, new *entities.Symbols) {
 	}
 }
 
-func GetSymbolsFromFileInBranch(e aladino.Env, commitFile *codehost.File, branch *github.PullRequestBranch) (*entities.Symbols, string, error) {
+func GetSymbolsFromFileInBranch(e aladino.Env, commitFile *codehost.File, branch *pbe.Branch) (*entities.Symbols, string, error) {
 	fp := commitFile.Repr.GetFilename()
 
 	blob, err := e.GetGithubClient().DownloadContents(e.GetCtx(), fp, branch)
@@ -162,8 +162,8 @@ func GetSymbolsFromFileInBranch(e aladino.Env, commitFile *codehost.File, branch
 
 	semanticClient := service.(api.SemanticClient)
 	req := &api.GetSymbolsRequest{
-		Uri:      branch.GetRepo().GetURL(),
-		CommitId: branch.GetSHA(),
+		Uri:      branch.Repo.Uri,
+		CommitId: branch.Oid,
 		Filepath: fp,
 		Blob:     blob,
 		BlobId:   commitFile.Repr.GetSHA(),
