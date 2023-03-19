@@ -13,8 +13,6 @@ import (
 	"regexp"
 
 	"github.com/google/uuid"
-	"github.com/reviewpad/go-lib/host"
-	"github.com/reviewpad/go-lib/uri"
 	"github.com/reviewpad/reviewpad/v4"
 	"github.com/reviewpad/reviewpad/v4/codehost"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
@@ -26,8 +24,6 @@ import (
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc/metadata"
 )
-
-const RequestIDKey = "request-id"
 
 func init() {
 	rootCmd.AddCommand(runCmd)
@@ -135,7 +131,7 @@ func run() error {
 	}
 
 	requestID := uuid.New().String()
-	md := metadata.Pairs(RequestIDKey, requestID)
+	md := metadata.Pairs(codehost.RequestIDKey, requestID)
 	ctxReq := metadata.NewOutgoingContext(ctx, md)
 
 	codehostClient, codehostConnection, err := plugins_aladino_services.NewCodeHostService()
@@ -144,7 +140,7 @@ func run() error {
 	}
 	defer codehostConnection.Close()
 
-	hostInfo, err := getHostInfo(url)
+	hostInfo, err := codehost.GetHostInfo(url)
 	if err != nil {
 		return fmt.Errorf("error getting host info. Details %v", err.Error())
 	}
@@ -164,23 +160,6 @@ func run() error {
 	}
 
 	return nil
-}
-
-func getHostInfo(url string) (*codehost.HostInfo, error) {
-	uriData, err := uri.DataFrom(url)
-	if err != nil {
-		return nil, err
-	}
-
-	hostId, err := host.StringToHost(uriData.Host)
-	if err != nil {
-		return nil, err
-	}
-
-	return &codehost.HostInfo{
-		Host:    hostId,
-		HostUri: uriData.Prefix + uriData.Host,
-	}, nil
 }
 
 var runCmd = &cobra.Command{
