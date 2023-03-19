@@ -7,8 +7,10 @@ package target
 import (
 	"context"
 	"encoding/json"
+	"strings"
 
 	"github.com/google/go-github/v49/github"
+	pbe "github.com/reviewpad/api/go/entities"
 	"github.com/reviewpad/reviewpad/v4/codehost"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/reviewpad/reviewpad/v4/handler"
@@ -80,14 +82,14 @@ func (t *IssueTarget) Close(comment string, stateReason string) error {
 	return nil
 }
 
-func (t *IssueTarget) GetLabels() []*codehost.Label {
+func (t *IssueTarget) GetLabels() []*pbe.Label {
 	issue := t.issue
-	labels := make([]*codehost.Label, len(issue.Labels))
+	labels := make([]*pbe.Label, len(issue.Labels))
 
 	for i, label := range issue.Labels {
-		labels[i] = &codehost.Label{
-			ID:   *label.ID,
-			Name: *label.Name,
+		labels[i] = &pbe.Label{
+			Id:   label.GetNodeID(),
+			Name: label.GetName(),
 		}
 	}
 
@@ -119,17 +121,17 @@ func (t *IssueTarget) GetProjectByName(name string) (*codehost.Project, error) {
 	}, nil
 }
 
-func (t *IssueTarget) GetAssignees() ([]*codehost.User, error) {
+func (t *IssueTarget) GetAssignees() []*pbe.ExternalUser {
 	issue := t.issue
-	assignees := make([]*codehost.User, len(issue.Assignees))
+	assignees := make([]*pbe.ExternalUser, len(issue.Assignees))
 
 	for i, assignee := range issue.Assignees {
-		assignees[i] = &codehost.User{
+		assignees[i] = &pbe.ExternalUser{
 			Login: *assignee.Login,
 		}
 	}
 
-	return assignees, nil
+	return assignees
 }
 
 func (t *IssueTarget) IsLinkedToProject(title string) (bool, error) {
@@ -154,12 +156,12 @@ func (t *IssueTarget) IsLinkedToProject(title string) (bool, error) {
 	return false, nil
 }
 
-func (t *IssueTarget) GetCommentCount() (int, error) {
-	return t.issue.GetComments(), nil
+func (t *IssueTarget) GetCommentCount() int64 {
+	return int64(t.issue.GetComments())
 }
 
-func (t *IssueTarget) GetCreatedAt() (string, error) {
-	return t.issue.GetCreatedAt().String(), nil
+func (t *IssueTarget) GetCreatedAt() string {
+	return t.issue.GetCreatedAt().String()
 }
 
 func (t *IssueTarget) GetLinkedProjects() ([]gh.GQLProjectV2Item, error) {
@@ -173,16 +175,16 @@ func (t *IssueTarget) GetLinkedProjects() ([]gh.GQLProjectV2Item, error) {
 	return t.githubClient.GetLinkedProjectsForIssue(ctx, owner, repo, number, totalRetries)
 }
 
-func (t *IssueTarget) GetUpdatedAt() (string, error) {
-	return t.issue.GetUpdatedAt().String(), nil
+func (t *IssueTarget) GetUpdatedAt() string {
+	return t.issue.GetUpdatedAt().String()
 }
 
-func (t *IssueTarget) GetDescription() (string, error) {
-	return t.issue.GetBody(), nil
+func (t *IssueTarget) GetDescription() string {
+	return t.issue.GetBody()
 }
 
-func (t *IssueTarget) GetState() string {
-	return t.issue.GetState()
+func (t *IssueTarget) GetState() pbe.CodeReviewStatus {
+	return pbe.CodeReviewStatus(pbe.CodeReviewStatus_value[strings.ToUpper(t.issue.GetState())])
 }
 
 func (t *IssueTarget) GetTitle() string {

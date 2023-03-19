@@ -9,6 +9,7 @@ import (
 	"io"
 
 	"github.com/google/go-github/v49/github"
+	pbe "github.com/reviewpad/api/go/entities"
 )
 
 func (c *GithubClient) GetRepositoryBranch(ctx context.Context, owner string, repo string, branch string, followRedirects bool) (*github.Branch, *github.Response, error) {
@@ -24,10 +25,10 @@ func (c *GithubClient) GetDefaultRepositoryBranch(ctx context.Context, owner str
 	return repository.GetDefaultBranch(), nil
 }
 
-func (c *GithubClient) DownloadContents(ctx context.Context, filePath string, branch *github.PullRequestBranch) ([]byte, error) {
-	branchRepoOwner := *branch.Repo.Owner.Login
-	branchRepoName := *branch.Repo.Name
-	branchRef := *branch.Ref
+func (c *GithubClient) DownloadContents(ctx context.Context, filePath string, branch *pbe.Branch) ([]byte, error) {
+	branchRepoOwner := branch.Repo.Owner
+	branchRepoName := branch.Repo.Name
+	branchRef := branch.Name
 
 	ioReader, _, err := c.clientREST.Repositories.DownloadContents(ctx, branchRepoOwner, branchRepoName, filePath, &github.RepositoryContentGetOptions{
 		Ref: branchRef,
