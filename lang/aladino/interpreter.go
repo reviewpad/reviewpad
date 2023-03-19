@@ -8,6 +8,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/reviewpad/reviewpad/v4/codehost"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
@@ -197,7 +198,7 @@ func (i *Interpreter) ReportMetrics() error {
 	ctx := i.Env.GetCtx()
 	pr := i.Env.GetTarget().(*target.PullRequestTarget).PullRequest
 
-	if !*pr.Merged {
+	if !pr.Merged {
 		return nil
 	}
 
@@ -209,13 +210,13 @@ func (i *Interpreter) ReportMetrics() error {
 	}
 
 	if firstCommitDate != nil {
-		report.WriteString(fmt.Sprintf("**💻 Coding Time**: %s", utils.ReadableTimeDiff(*firstCommitDate, *pr.CreatedAt)))
+		report.WriteString(fmt.Sprintf("**💻 Coding Time**: %s", utils.ReadableTimeDiff(*firstCommitDate, time.Unix(0, pr.CreatedAt))))
 	}
 
-	if firstReviewDate != nil && firstReviewDate.Before(*pr.MergedAt) {
-		report.WriteString(fmt.Sprintf("\n**🛻 Pickup Time**: %s", utils.ReadableTimeDiff(*pr.CreatedAt, *firstReviewDate)))
+	if firstReviewDate != nil && firstReviewDate.Before(pr.MergedAt.AsTime()) {
+		report.WriteString(fmt.Sprintf("\n**🛻 Pickup Time**: %s", utils.ReadableTimeDiff(time.Unix(0, pr.CreatedAt), *firstReviewDate)))
 
-		report.WriteString(fmt.Sprintf("\n**👀 Review Time**: %s", utils.ReadableTimeDiff(*firstReviewDate, *pr.MergedAt)))
+		report.WriteString(fmt.Sprintf("\n**👀 Review Time**: %s", utils.ReadableTimeDiff(*firstReviewDate, pr.MergedAt.AsTime())))
 	}
 
 	if report.Len() > 0 {
