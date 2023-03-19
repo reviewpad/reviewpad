@@ -18,10 +18,5 @@ func Description() *aladino.BuiltInFunction {
 }
 
 func descriptionCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
-	description, err := e.GetTarget().GetDescription()
-	if err != nil {
-		return nil, err
-	}
-
-	return aladino.BuildStringValue(description), nil
+	return aladino.BuildStringValue(e.GetTarget().GetDescription()), nil
 }

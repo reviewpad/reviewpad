@@ -20,10 +20,10 @@ func IsBinary() *aladino.BuiltInFunction {
 
 func isBinaryCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
 	target := e.GetTarget().(*target.PullRequestTarget)
-	head := target.PullRequest.GetHead()
+	headBranch := target.PullRequest.GetHeadBranch()
 	fileName := args[0].(*aladino.StringValue).Val
 
-	isBinary, err := target.IsFileBinary(head.GetRef(), fileName)
+	isBinary, err := target.IsFileBinary(headBranch, fileName)
 	if err != nil {
 		return nil, err
 	}

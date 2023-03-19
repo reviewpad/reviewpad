@@ -18,5 +18,5 @@ func State() *aladino.BuiltInFunction {
 }
 
 func stateCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
-	return aladino.BuildStringValue(e.GetTarget().GetState()), nil
+	return aladino.BuildStringValue(e.GetTarget().GetState().String()), nil
 }

@@ -28,9 +28,9 @@ func isUpdatedWithBaseBranchCode(e aladino.Env, _ []aladino.Value) (aladino.Valu
 		e.GetCtx(),
 		targetEntity.Owner,
 		targetEntity.Repo,
-		pullRequest.GetHead().GetUser().GetLogin(),
-		pullRequest.GetHead().GetRef(),
-		pullRequest.GetNumber(),
+		pullRequest.GetHead().GetRepo().GetOwner(),
+		pullRequest.GetHead().GetName(),
+		int(pullRequest.GetNumber()),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("error getting head behind by information: %s", err.Error())

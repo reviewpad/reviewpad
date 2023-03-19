@@ -20,8 +20,8 @@ func RequestedReviewers() *aladino.BuiltInFunction {
 
 func requestedReviewersCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
 	pullRequest := e.GetTarget().(*target.PullRequestTarget).PullRequest
-	usersReviewers := pullRequest.RequestedReviewers
-	teamReviewers := pullRequest.RequestedTeams
+	usersReviewers := pullRequest.RequestedReviewers.Users
+	teamReviewers := pullRequest.RequestedReviewers.Teams
 	totalReviewers := len(usersReviewers) + len(teamReviewers)
 	reviewersLogin := make([]aladino.Value, totalReviewers)
 
@@ -30,7 +30,7 @@ func requestedReviewersCode(e aladino.Env, _ []aladino.Value) (aladino.Value, er
 	}
 
 	for i, teamReviewer := range teamReviewers {
-		reviewersLogin[i+len(usersReviewers)] = aladino.BuildStringValue(teamReviewer.GetSlug())
+		reviewersLogin[i+len(usersReviewers)] = aladino.BuildStringValue(teamReviewer.GetAlias())
 	}
 
 	return aladino.BuildArrayValue(reviewersLogin), nil

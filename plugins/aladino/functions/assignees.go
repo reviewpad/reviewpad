@@ -20,10 +20,7 @@ func Assignees() *aladino.BuiltInFunction {
 func assigneesCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
 	t := e.GetTarget()
 
-	ghAssignees, err := t.GetAssignees()
-	if err != nil {
-		return nil, err
-	}
+	ghAssignees := t.GetAssignees()
 
 	assignees := make([]aladino.Value, len(ghAssignees))
 

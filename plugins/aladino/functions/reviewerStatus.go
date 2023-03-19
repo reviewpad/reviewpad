@@ -5,7 +5,6 @@
 package plugins_aladino_functions
 
 import (
-	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v4/handler"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
@@ -23,11 +22,11 @@ func reviewerStatusCode(e aladino.Env, args []aladino.Value) (aladino.Value, err
 	reviewerLogin := args[0].(*aladino.StringValue)
 
 	pullRequest := e.GetTarget().(*target.PullRequestTarget).PullRequest
-	prNum := gh.GetPullRequestNumber(pullRequest)
-	owner := gh.GetPullRequestBaseOwnerName(pullRequest)
-	repo := gh.GetPullRequestBaseRepoName(pullRequest)
+	prNum := pullRequest.Number
+	owner := pullRequest.GetBase().GetRepo().GetOwner()
+	repo := pullRequest.GetBase().GetRepo().GetName()
 
-	reviews, err := e.GetGithubClient().GetPullRequestReviews(e.GetCtx(), owner, repo, prNum)
+	reviews, err := e.GetGithubClient().GetPullRequestReviews(e.GetCtx(), owner, repo, int(prNum))
 	if err != nil {
 		return nil, err
 	}

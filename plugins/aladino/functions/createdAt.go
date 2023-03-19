@@ -20,12 +20,7 @@ func CreatedAt() *aladino.BuiltInFunction {
 }
 
 func createdAtCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
-	createdAt, err := e.GetTarget().GetCreatedAt()
-	if err != nil {
-		return nil, err
-	}
-
-	createdAtTime, err := time.Parse("2006-01-02 15:04:05.999999999 -0700 MST", createdAt)
+	createdAtTime, err := time.Parse("2006-01-02 15:04:05.999999999 -0700 MST", e.GetTarget().GetCreatedAt())
 	if err != nil {
 		return nil, err
 	}

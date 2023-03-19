@@ -20,10 +20,6 @@ func CommitCount() *aladino.BuiltInFunction {
 
 func commitCountCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
 	t := e.GetTarget().(*target.PullRequestTarget)
-	commitCount, err := t.GetCommitCount()
-	if err != nil {
-		return nil, err
-	}
 
-	return aladino.BuildIntValue(commitCount), nil
+	return aladino.BuildIntValue(int(t.GetCommitCount())), nil
 }
