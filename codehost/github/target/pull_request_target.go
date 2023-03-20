@@ -6,7 +6,6 @@ package target
 
 import (
 	"context"
-	"encoding/json"
 	"time"
 
 	"github.com/google/go-github/v49/github"
@@ -445,12 +444,7 @@ func (t *PullRequestTarget) TriggerWorkflowByFileName(workflowFileName string) e
 }
 
 func (t *PullRequestTarget) JSON() (string, error) {
-	j, err := json.Marshal(t.PullRequest)
-	if err != nil {
-		return "", err
-	}
-
-	return string(j), nil
+	return t.PullRequest.Raw, nil
 }
 
 func (t *PullRequestTarget) GetLatestReviewFromReviewer(author string) (*codehost.Review, error) {
