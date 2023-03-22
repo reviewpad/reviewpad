@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/google/go-github/v49/github"
+	pbe "github.com/reviewpad/api/go/entities"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -23,9 +23,9 @@ return
 
 func TestAppendToDiff(t *testing.T) {
 	fileName := "default-mock-repo/file1.ts"
-	mockedFile := &github.CommitFile{
-		Patch:    github.String(getTestPatch()),
-		Filename: github.String(fileName),
+	mockedFile := &pbe.CommitFile{
+		Patch:    getTestPatch(),
+		Filename: fileName,
 	}
 
 	isContext := false
@@ -72,9 +72,9 @@ func TestAppendToDiff(t *testing.T) {
 
 func TestNewFile_WhenErrorInFilePatch(t *testing.T) {
 	fileName := "default-mock-repo/file1.ts"
-	mockedFile := &github.CommitFile{
-		Patch:    github.String("@@"),
-		Filename: github.String(fileName),
+	mockedFile := &pbe.CommitFile{
+		Patch:    "@@",
+		Filename: fileName,
 	}
 
 	gotFile, err := NewFile(mockedFile)
@@ -85,9 +85,9 @@ func TestNewFile_WhenErrorInFilePatch(t *testing.T) {
 
 func TestNewFile(t *testing.T) {
 	fileName := "default-mock-repo/file1.ts"
-	mockedFile := &github.CommitFile{
-		Patch:    github.String(getTestPatch()),
-		Filename: github.String(fileName),
+	mockedFile := &pbe.CommitFile{
+		Patch:    getTestPatch(),
+		Filename: fileName,
 	}
 
 	wantFile := &File{
@@ -104,9 +104,9 @@ func TestNewFile(t *testing.T) {
 func TestQuery_WhenCompileFails(t *testing.T) {
 	fileName := "default-mock-repo/file1.ts"
 	mockedFile := &File{
-		Repr: &github.CommitFile{
-			Patch:    github.String(getTestPatch()),
-			Filename: github.String(fileName),
+		Repr: &pbe.CommitFile{
+			Patch:    getTestPatch(),
+			Filename: fileName,
 		},
 	}
 	mockedFile.AppendToDiff(false, 2, 2, 2, 3, " func previous() {", " func new() {\n")
@@ -120,9 +120,9 @@ func TestQuery_WhenCompileFails(t *testing.T) {
 func TestQuery_WhenFound(t *testing.T) {
 	fileName := "default-mock-repo/file1.ts"
 	mockedFile := &File{
-		Repr: &github.CommitFile{
-			Patch:    github.String(getTestPatch()),
-			Filename: github.String(fileName),
+		Repr: &pbe.CommitFile{
+			Patch:    getTestPatch(),
+			Filename: fileName,
 		},
 	}
 	mockedFile.AppendToDiff(false, 2, 2, 2, 3, " func previous() {", " func new() {\n")
@@ -136,9 +136,9 @@ func TestQuery_WhenFound(t *testing.T) {
 func TestQuery_WhenNotFound(t *testing.T) {
 	fileName := "default-mock-repo/file1.ts"
 	mockedFile := &File{
-		Repr: &github.CommitFile{
-			Patch:    github.String(getTestPatch()),
-			Filename: github.String(fileName),
+		Repr: &pbe.CommitFile{
+			Patch:    getTestPatch(),
+			Filename: fileName,
 		},
 	}
 	mockedFile.AppendToDiff(false, 2, 2, 2, 3, " func previous() {", " func new() {\n")

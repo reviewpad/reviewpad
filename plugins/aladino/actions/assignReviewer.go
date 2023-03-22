@@ -151,7 +151,7 @@ func getReviewersUsingPolicyRoundRobin(e aladino.Env, availableReviewers []aladi
 	reviewers := []string{}
 
 	// Use pull request number as a starting point to select reviewers
-	pullRequest := e.GetTarget().(*target.PullRequestTarget).PullRequest
+	pullRequest := e.GetTarget().(*target.PullRequestTarget).CodeReview
 	prNum := int(pullRequest.GetNumber())
 	startPos := (prNum - 1) * totalRequiredReviewers
 

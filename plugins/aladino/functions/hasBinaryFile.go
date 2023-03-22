@@ -20,7 +20,7 @@ func HasBinaryFile() *aladino.BuiltInFunction {
 
 func hasBinaryFile(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
 	target := e.GetTarget().(*target.PullRequestTarget)
-	headBranch := target.PullRequest.GetHeadBranch()
+	headBranch := target.CodeReview.Head.Name
 
 	for _, patchFile := range target.Patch {
 		isBinary, err := target.IsFileBinary(headBranch, patchFile.Repr.GetFilename())

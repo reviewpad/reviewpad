@@ -19,7 +19,7 @@ func RequestedReviewers() *aladino.BuiltInFunction {
 }
 
 func requestedReviewersCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
-	pullRequest := e.GetTarget().(*target.PullRequestTarget).PullRequest
+	pullRequest := e.GetTarget().(*target.PullRequestTarget).CodeReview
 	usersReviewers := pullRequest.RequestedReviewers.Users
 	teamReviewers := pullRequest.RequestedReviewers.Teams
 	totalReviewers := len(usersReviewers) + len(teamReviewers)

@@ -27,11 +27,13 @@ func filesPathCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
 			continue
 		}
 
-		if patchFile.Repr.Filename == nil {
+		// TODO: investigate if this ever happens
+		// and if we should be using previous file name in this case
+		if patchFile.Repr.Filename == "" {
 			continue
 		}
 
-		filesPath = append(filesPath, aladino.BuildStringValue(*patchFile.Repr.Filename))
+		filesPath = append(filesPath, aladino.BuildStringValue(patchFile.Repr.Filename))
 	}
 
 	return aladino.BuildArrayValue(filesPath), nil

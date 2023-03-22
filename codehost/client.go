@@ -64,18 +64,18 @@ func (c *CodeHostClient) PostGeneralComment(ctx context.Context, slug, repoID, r
 	return err
 }
 
-func (c *CodeHostClient) GetExternalCodeReview(ctx context.Context, targetEntity *handler.TargetEntity) (*pbe.ExternalCodeReview, error) {
-	req := &api.GetExternalCodeReviewRequest{
+func (c *CodeHostClient) GetCodeReview(ctx context.Context, targetEntity *handler.TargetEntity) (*pbe.CodeReview, error) {
+	req := &api.GetCodeReviewRequest{
 		Slug:         fmt.Sprintf("%s/%s", targetEntity.Owner, targetEntity.Repo),
 		Host:         c.HostInfo.Host,
 		HostUri:      c.HostInfo.HostUri,
 		ReviewNumber: int32(targetEntity.Number),
 	}
 
-	resp, err := c.CodehostClient.GetExternalCodeReview(ctx, req)
+	resp, err := c.CodehostClient.GetCodeReview(ctx, req)
 	if err != nil {
 		return nil, err
 	}
 
-	return resp.CodeReview, nil
+	return resp.Review, nil
 }

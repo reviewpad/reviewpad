@@ -8,7 +8,6 @@ import (
 	"context"
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/reviewpad/reviewpad/v4/codehost"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
@@ -196,9 +195,9 @@ func (i *Interpreter) ReportMetrics() error {
 	prNum := targetEntity.Number
 	repo := targetEntity.Repo
 	ctx := i.Env.GetCtx()
-	pr := i.Env.GetTarget().(*target.PullRequestTarget).PullRequest
+	pr := i.Env.GetTarget().(*target.PullRequestTarget).CodeReview
 
-	if !pr.Merged {
+	if !pr.IsMerged {
 		return nil
 	}
 
@@ -210,11 +209,11 @@ func (i *Interpreter) ReportMetrics() error {
 	}
 
 	if firstCommitDate != nil {
-		report.WriteString(fmt.Sprintf("**💻 Coding Time**: %s", utils.ReadableTimeDiff(*firstCommitDate, time.Unix(0, pr.CreatedAt))))
+		report.WriteString(fmt.Sprintf("**💻 Coding Time**: %s", utils.ReadableTimeDiff(*firstCommitDate, pr.CreatedAt.AsTime())))
 	}
 
 	if firstReviewDate != nil && firstReviewDate.Before(pr.MergedAt.AsTime()) {
-		report.WriteString(fmt.Sprintf("\n**🛻 Pickup Time**: %s", utils.ReadableTimeDiff(time.Unix(0, pr.CreatedAt), *firstReviewDate)))
+		report.WriteString(fmt.Sprintf("\n**🛻 Pickup Time**: %s", utils.ReadableTimeDiff(pr.CreatedAt.AsTime(), *firstReviewDate)))
 
 		report.WriteString(fmt.Sprintf("\n**👀 Review Time**: %s", utils.ReadableTimeDiff(*firstReviewDate, pr.MergedAt.AsTime())))
 	}

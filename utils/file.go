@@ -34,7 +34,7 @@ func FileExt(fp string) string {
 // then we download both files using the filePath and check their contents.
 // This strategy assumes that the file path exists in the head branch.
 // Otherwise, we download the pull request files and check the filePath exists in them.
-func ReviewpadFileChanged(ctx context.Context, githubClient *gh.GithubClient, filePath string, pullRequest *pbe.ExternalCodeReview) (bool, error) {
+func ReviewpadFileChanged(ctx context.Context, githubClient *gh.GithubClient, filePath string, pullRequest *pbe.CodeReview) (bool, error) {
 	if pullRequest.ChangedFilesCount > pullRequestFileLimit {
 		rawHeadFile, err := githubClient.DownloadContents(ctx, filePath, pullRequest.Head)
 		if err != nil {

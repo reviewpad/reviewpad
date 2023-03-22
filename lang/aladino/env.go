@@ -156,7 +156,7 @@ func NewEvalEnv(
 
 		input.Target = target.NewIssueTarget(ctx, targetEntity, githubClient, issue)
 	case handler.PullRequest:
-		pullRequest, err := codeHostClient.GetExternalCodeReview(ctx, targetEntity)
+		pullRequest, err := codeHostClient.GetCodeReview(ctx, targetEntity)
 		if err != nil {
 			return nil, err
 		}

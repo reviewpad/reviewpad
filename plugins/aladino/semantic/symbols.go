@@ -23,12 +23,12 @@ func GetSymbolsFromPatch(e aladino.Env) (map[string]*entities.Symbols, error) {
 
 	res := make(map[string]*entities.Symbols)
 
-	head := pullRequest.PullRequest.GetHead()
-	base := pullRequest.PullRequest.GetBase()
+	head := pullRequest.CodeReview.GetHead()
+	base := pullRequest.CodeReview.GetBase()
 	url := head.Repo.Uri
 	patch := pullRequest.Patch
 
-	lastCommit := head.Oid
+	lastCommit := head.Sha
 
 	for fp, commitFile := range patch {
 		blob, err := e.GetGithubClient().DownloadContents(e.GetCtx(), fp, head)
@@ -59,7 +59,7 @@ func GetSymbolsFromPatch(e aladino.Env) (map[string]*entities.Symbols, error) {
 			CommitId: lastCommit,
 			Filepath: fp,
 			Blob:     blob,
-			BlobId:   *commitFile.Repr.SHA,
+			BlobId:   commitFile.Repr.Sha,
 			Diff:     &entities.ResolveFileDiff{Blocks: blocks},
 		}
 		reply, err := semanticClient.GetSymbols(e.GetCtx(), req)
@@ -75,7 +75,7 @@ func GetSymbolsFromPatch(e aladino.Env) (map[string]*entities.Symbols, error) {
 
 func GetSymbolsFromHeadByPatch(e aladino.Env, patch target.Patch) (*entities.Symbols, map[string]string, error) {
 	pullRequest := e.GetTarget().(*target.PullRequestTarget)
-	head := pullRequest.PullRequest.GetHead()
+	head := pullRequest.CodeReview.GetHead()
 
 	res := &entities.Symbols{
 		Files:   make(map[string]*entities.File),
@@ -85,7 +85,7 @@ func GetSymbolsFromHeadByPatch(e aladino.Env, patch target.Patch) (*entities.Sym
 	files := make(map[string]string)
 
 	for fp, commitFile := range patch {
-		if commitFile.Repr.GetStatus() == "removed" {
+		if commitFile.Repr.Status == pbe.CommitFile_REMOVED {
 			// in this case, the file is not in the head branch
 			continue
 		}
@@ -104,7 +104,7 @@ func GetSymbolsFromHeadByPatch(e aladino.Env, patch target.Patch) (*entities.Sym
 
 func GetSymbolsFromBaseByPatch(e aladino.Env, patch target.Patch) (*entities.Symbols, map[string]string, error) {
 	pullRequest := e.GetTarget().(*target.PullRequestTarget)
-	base := pullRequest.PullRequest.GetBase()
+	base := pullRequest.CodeReview.GetBase()
 
 	res := &entities.Symbols{
 		Files:   make(map[string]*entities.File),
@@ -114,7 +114,7 @@ func GetSymbolsFromBaseByPatch(e aladino.Env, patch target.Patch) (*entities.Sym
 	files := make(map[string]string)
 
 	for fp, commitFile := range patch {
-		if commitFile.Repr.GetStatus() == "added" {
+		if commitFile.Repr.GetStatus() == pbe.CommitFile_ADDED {
 			// in this case, the file is not in the base branch
 			continue
 		}
@@ -163,10 +163,10 @@ func GetSymbolsFromFileInBranch(e aladino.Env, commitFile *codehost.File, branch
 	semanticClient := service.(api.SemanticClient)
 	req := &api.GetSymbolsRequest{
 		Uri:      branch.Repo.Uri,
-		CommitId: branch.Oid,
+		CommitId: branch.Sha,
 		Filepath: fp,
 		Blob:     blob,
-		BlobId:   commitFile.Repr.GetSHA(),
+		BlobId:   commitFile.Repr.Sha,
 		Diff:     &entities.ResolveFileDiff{Blocks: blocks},
 	}
 	reply, err := semanticClient.GetSymbols(e.GetCtx(), req)

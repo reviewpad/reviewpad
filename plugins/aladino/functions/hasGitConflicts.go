@@ -5,6 +5,7 @@
 package plugins_aladino_functions
 
 import (
+	host "github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v4/handler"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
@@ -20,12 +21,11 @@ func HasGitConflicts() *aladino.BuiltInFunction {
 }
 
 func hasGitConflictsCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
-	pullRequest := e.GetTarget().(*target.PullRequestTarget).PullRequest
+	pullRequest := e.GetTarget().(*target.PullRequestTarget).CodeReview
 
-	prNum := pullRequest.Number
-	repoOwner := pullRequest.Base.Repo.Owner
-	repoName := pullRequest.Base.Repo.Name
-
+	prNum := host.GetCodeReviewNumber(pullRequest)
+	repoOwner := host.GetCodeReviewBaseOwnerName(pullRequest)
+	repoName := host.GetCodeReviewBaseRepoName(pullRequest)
 	var pullRequestQuery struct {
 		Repository struct {
 			PullRequest struct {

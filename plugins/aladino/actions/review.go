@@ -26,12 +26,12 @@ func reviewCode(e aladino.Env, args []aladino.Value) error {
 
 	log := e.GetLogger().WithField("builtin", "review")
 
-	if t.PullRequest.IsDraft {
+	if t.CodeReview.IsDraft {
 		log.Infof("skipping review because the pull request is in draft")
 		return nil
 	}
 
-	if t.PullRequest.Status == pbe.CodeReviewStatus_CLOSED {
+	if t.CodeReview.Status == pbe.CodeReviewStatus_CLOSED {
 		log.Infof("skipping review because the pull request is closed")
 		return nil
 	}

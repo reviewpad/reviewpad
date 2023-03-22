@@ -74,7 +74,7 @@ func assignCodeAuthorReviewersCode(env aladino.Env, args []aladino.Value) error 
 
 	selectedReviewers := []string{}
 	for _, author := range authors {
-		if isUserEligibleToReview(author, pr.PullRequest, reviewersToExclude, availableAssignees, totalOpenPRsAsReviewerByUser[author], maxAllowedAssignedReviews) {
+		if isUserEligibleToReview(author, pr.CodeReview, reviewersToExclude, availableAssignees, totalOpenPRsAsReviewerByUser[author], maxAllowedAssignedReviews) {
 			selectedReviewers = append(selectedReviewers, author)
 		}
 	}
@@ -83,7 +83,7 @@ func assignCodeAuthorReviewersCode(env aladino.Env, args []aladino.Value) error 
 	// find eligible reviewers from the available assignees.
 	if len(selectedReviewers) == 0 {
 		for _, assignee := range nonAuthorAvailableAssignees {
-			if isUserEligibleToReview(assignee, pr.PullRequest, reviewersToExclude, availableAssignees, totalOpenPRsAsReviewerByUser[assignee], maxAllowedAssignedReviews) {
+			if isUserEligibleToReview(assignee, pr.CodeReview, reviewersToExclude, availableAssignees, totalOpenPRsAsReviewerByUser[assignee], maxAllowedAssignedReviews) {
 				selectedReviewers = append(selectedReviewers, assignee)
 			}
 		}
@@ -128,7 +128,7 @@ func getAuthorsFromGitBlame(ctx context.Context, gitHubClient *github.GithubClie
 		changedFilesPath = append(changedFilesPath, patch.Repr.GetFilename())
 	}
 
-	gitBlame, err := gitHubClient.GetGitBlame(ctx, pullRequest.GetTargetEntity().Owner, pullRequest.GetTargetEntity().Repo, pullRequest.PullRequest.GetBase().GetOid(), changedFilesPath)
+	gitBlame, err := gitHubClient.GetGitBlame(ctx, pullRequest.GetTargetEntity().Owner, pullRequest.GetTargetEntity().Repo, pullRequest.CodeReview.GetBase().GetSha(), changedFilesPath)
 	if err != nil {
 		return nil, err
 	}
@@ -143,7 +143,7 @@ func getAuthorsFromGitBlame(ctx context.Context, gitHubClient *github.GithubClie
 
 func isUserEligibleToReview(
 	username string,
-	pullRequest *pbe.ExternalCodeReview,
+	codeReview *pbe.CodeReview,
 	reviewersToExclude []aladino.Value,
 	availableAssignees []*codehost.User,
 	totalOpenPRsAsReviewer int,
@@ -153,7 +153,7 @@ func isUserEligibleToReview(
 		return false
 	}
 
-	if pullRequest.GetAuthor().GetLogin() == username {
+	if codeReview.Author.Login == username {
 		return false
 	}
 
