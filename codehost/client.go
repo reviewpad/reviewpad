@@ -66,6 +66,7 @@ func (c *CodeHostClient) PostGeneralComment(ctx context.Context, slug, repoID, r
 
 func (c *CodeHostClient) GetCodeReview(ctx context.Context, targetEntity *handler.TargetEntity) (*pbe.CodeReview, error) {
 	req := &api.GetCodeReviewRequest{
+		AccessToken:  c.Token,
 		Slug:         fmt.Sprintf("%s/%s", targetEntity.Owner, targetEntity.Repo),
 		Host:         c.HostInfo.Host,
 		HostUri:      c.HostInfo.HostUri,
