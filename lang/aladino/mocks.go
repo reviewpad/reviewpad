@@ -543,3 +543,22 @@ func getDefaultMockCodereviewFileList() []*pbe.CommitFile {
 		},
 	}
 }
+
+func GetDefaultCodeHostClient(t *testing.T) *codehost.CodeHostClient {
+	hostsClient := api_mocks.NewMockHostsClient(gomock.NewController(t))
+
+	hostsClient.EXPECT().
+		GetCodeReview(gomock.Any(), gomock.Any(), gomock.Any()).
+		AnyTimes().
+		Return(&pbs.GetCodeReviewReply{
+			Review: GetDefaultMockReview(),
+		}, nil)
+
+	return &codehost.CodeHostClient{
+		HostInfo: &codehost.HostInfo{
+			Host:    pbe.Host_GITHUB,
+			HostUri: "https://github.com",
+		},
+		CodehostClient: hostsClient,
+	}
+}
