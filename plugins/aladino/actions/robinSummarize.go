@@ -53,5 +53,5 @@ func robinSummarizeCode(e aladino.Env, args []aladino.Value) error {
 		return err
 	}
 
-	return target.Comment(resp.Summary)
+	return target.Comment(fmt.Sprintf("**AI-Generated Pull Request Summary: %s", resp.Summary))
 }
