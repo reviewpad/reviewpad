@@ -229,6 +229,7 @@ func runReviewpadFile(
 	err = collector.Collect("Trigger Analysis", map[string]interface{}{
 		"project":        fmt.Sprintf("%s/%s", targetEntity.Owner, targetEntity.Repo),
 		"mode":           reviewpadFile.Mode,
+		"author":         handler.GetEventSender(eventDetails.Payload),
 		"ignoreErrors":   reviewpadFile.IgnoreErrors,
 		"metricsOnMerge": reviewpadFile.MetricsOnMerge,
 		"totalImports":   len(reviewpadFile.Imports),
