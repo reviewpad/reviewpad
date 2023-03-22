@@ -7,7 +7,6 @@ package plugins_aladino_actions
 import (
 	"fmt"
 
-	pbe "github.com/reviewpad/api/go/entities"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v4/handler"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
@@ -28,7 +27,7 @@ func deleteHeadBranch(e aladino.Env, args []aladino.Value) error {
 	owner := targetEntity.Owner
 	repo := targetEntity.Repo
 
-	if target.PullRequest.Merged && target.PullRequest.GetStatus() == pbe.CodeReviewStatus_CLOSED {
+	if !target.PullRequest.IsMerged && target.PullRequest.ClosedAt == nil {
 		return nil
 	}
 
@@ -37,7 +36,7 @@ func deleteHeadBranch(e aladino.Env, args []aladino.Value) error {
 		return nil
 	}
 
-	ref := "heads/" + target.PullRequest.HeadBranch
+	ref := "heads/" + target.PullRequest.Head.Name
 
 	refExists, err := e.GetGithubClient().RefExists(ctx, owner, repo, "refs/"+ref)
 	if err != nil {
