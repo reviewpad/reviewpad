@@ -251,6 +251,10 @@ func TestTransformAladinoExpression(t *testing.T) {
 			arg:     `$hasCodeWithoutSemanticChanges(["*.md", "*.txt"])`,
 			wantVal: `$hasCodeWithoutSemanticChanges(["*.md", "*.txt"])`,
 		},
+		"summarize alias": {
+			arg:     `$summarize()`,
+			wantVal: `$robinSummarize("default", "openai-gpt-4")`,
+		},
 		// TODO: test addDefaultTotalRequestedReviewers
 	}
 
