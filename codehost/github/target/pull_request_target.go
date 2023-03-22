@@ -22,7 +22,7 @@ type PullRequestTarget struct {
 	*CommonTarget
 
 	ctx          context.Context
-	PullRequest  *pbe.ExternalCodeReview
+	CodeReview   *pbe.CodeReview
 	githubClient *gh.GithubClient
 	Patch        Patch
 }
@@ -30,19 +30,10 @@ type PullRequestTarget struct {
 // ensure PullRequestTarget conforms to Target interface
 var _ codehost.Target = (*PullRequestTarget)(nil)
 
-func getPullRequestPatch(ctx context.Context, pullRequest *pbe.ExternalCodeReview, githubClient *gh.GithubClient) (Patch, error) {
-	owner := pullRequest.GetBase().GetRepo().GetOwner()
-	repo := pullRequest.GetBase().GetRepo().GetName()
-	number := pullRequest.GetNumber()
-
-	files, err := githubClient.GetPullRequestFiles(ctx, owner, repo, int(number))
-	if err != nil {
-		return nil, err
-	}
-
+func getPullRequestPatch(ctx context.Context, codeReview *pbe.CodeReview, githubClient *gh.GithubClient) (Patch, error) {
 	patchMap := make(map[string]*codehost.File)
 
-	for _, file := range files {
+	for _, file := range codeReview.Files {
 		patchFile, err := codehost.NewFile(file)
 		if err != nil {
 			return nil, err
@@ -54,7 +45,7 @@ func getPullRequestPatch(ctx context.Context, pullRequest *pbe.ExternalCodeRevie
 	return Patch(patchMap), nil
 }
 
-func NewPullRequestTarget(ctx context.Context, targetEntity *handler.TargetEntity, githubClient *gh.GithubClient, pr *pbe.ExternalCodeReview) (*PullRequestTarget, error) {
+func NewPullRequestTarget(ctx context.Context, targetEntity *handler.TargetEntity, githubClient *gh.GithubClient, pr *pbe.CodeReview) (*PullRequestTarget, error) {
 	patch, err := getPullRequestPatch(ctx, pr, githubClient)
 	if err != nil {
 		return nil, err
@@ -70,12 +61,12 @@ func NewPullRequestTarget(ctx context.Context, targetEntity *handler.TargetEntit
 }
 
 func (t *PullRequestTarget) GetNodeID() string {
-	return t.PullRequest.GetNodeId()
+	return t.CodeReview.GetId()
 }
 
 func (t *PullRequestTarget) Close(comment string, _ string) error {
 	ctx := t.ctx
-	pr := t.PullRequest
+	pr := t.CodeReview
 
 	if pr.GetStatus() == pbe.CodeReviewStatus_CLOSED {
 		return nil
@@ -88,7 +79,7 @@ func (t *PullRequestTarget) Close(comment string, _ string) error {
 	}
 
 	input := githubv4.ClosePullRequestInput{
-		PullRequestID: githubv4.ID(pr.GetNodeId()),
+		PullRequestID: githubv4.ID(pr.Id),
 	}
 
 	if err := t.githubClient.GetClientGraphQL().Mutate(ctx, &closePullRequestMutation, input, nil); err != nil {
@@ -105,7 +96,7 @@ func (t *PullRequestTarget) Close(comment string, _ string) error {
 }
 
 func (t *PullRequestTarget) GetAuthor() (*codehost.User, error) {
-	pr := t.PullRequest
+	pr := t.CodeReview
 
 	return &codehost.User{
 		Login: pr.GetAuthor().GetLogin(),
@@ -113,7 +104,7 @@ func (t *PullRequestTarget) GetAuthor() (*codehost.User, error) {
 }
 
 func (t *PullRequestTarget) GetLabels() []*pbe.Label {
-	return t.PullRequest.GetLabels()
+	return t.CodeReview.GetLabels()
 }
 
 func (t *PullRequestTarget) GetProjectByName(name string) (*codehost.Project, error) {
@@ -134,7 +125,7 @@ func (t *PullRequestTarget) GetProjectByName(name string) (*codehost.Project, er
 }
 
 func (t *PullRequestTarget) GetRequestedReviewers() []*pbe.ExternalUser {
-	return t.PullRequest.RequestedReviewers.Users
+	return t.CodeReview.RequestedReviewers.Users
 }
 
 func (t *PullRequestTarget) GetReviewers() (*codehost.Reviewers, error) {
@@ -280,19 +271,19 @@ func (t *PullRequestTarget) RequestTeamReviewers(reviewers []string) error {
 }
 
 func (t *PullRequestTarget) GetAssignees() []*pbe.ExternalUser {
-	return t.PullRequest.GetAssignees()
+	return t.CodeReview.GetAssignees()
 }
 
 func (t *PullRequestTarget) GetBase() string {
-	return t.PullRequest.GetBaseBranch()
+	return t.CodeReview.Base.Name
 }
 
 func (t *PullRequestTarget) GetCommentCount() int64 {
-	return t.PullRequest.GetCommentsCount()
+	return t.CodeReview.CommentsCount
 }
 
 func (t *PullRequestTarget) GetCommitCount() int64 {
-	return t.PullRequest.GetCommitsCount()
+	return t.CodeReview.CommitsCount
 }
 
 func (t *PullRequestTarget) GetCommits() ([]*codehost.Commit, error) {
@@ -320,15 +311,15 @@ func (t *PullRequestTarget) GetCommits() ([]*codehost.Commit, error) {
 }
 
 func (t *PullRequestTarget) GetCreatedAt() string {
-	return time.Unix(0, t.PullRequest.GetCreatedAt()).String()
+	return t.CodeReview.CreatedAt.AsTime().String()
 }
 
 func (t *PullRequestTarget) GetUpdatedAt() string {
-	return time.Unix(0, t.PullRequest.GetUpdatedAt()).String()
+	return t.CodeReview.UpdatedAt.AsTime().String()
 }
 
 func (t *PullRequestTarget) GetDescription() string {
-	return t.PullRequest.GetDescription()
+	return t.CodeReview.GetDescription()
 }
 
 func (t *PullRequestTarget) GetLinkedIssuesCount() (int, error) {
@@ -366,19 +357,19 @@ func (t *PullRequestTarget) GetReviewThreads() ([]*codehost.ReviewThread, error)
 }
 
 func (t *PullRequestTarget) GetHead() string {
-	return t.PullRequest.GetHeadBranch()
+	return t.CodeReview.Head.Name
 }
 
 func (t *PullRequestTarget) IsDraft() bool {
-	return t.PullRequest.GetIsDraft()
+	return t.CodeReview.IsDraft
 }
 
 func (t *PullRequestTarget) GetState() pbe.CodeReviewStatus {
-	return t.PullRequest.GetStatus()
+	return t.CodeReview.Status
 }
 
 func (t *PullRequestTarget) GetTitle() string {
-	return t.PullRequest.GetTitle()
+	return t.CodeReview.Title
 }
 
 func (t *PullRequestTarget) GetPullRequestLastPushDate() (time.Time, error) {
@@ -436,7 +427,7 @@ func (t *PullRequestTarget) TriggerWorkflowByFileName(workflowFileName string) e
 	targetEntity := t.targetEntity
 	owner := targetEntity.Owner
 	repo := targetEntity.Repo
-	head := t.PullRequest.GetHeadBranch()
+	head := t.CodeReview.Head.Name
 
 	_, err := t.githubClient.TriggerWorkflowByFileName(ctx, owner, repo, head, workflowFileName)
 
@@ -444,7 +435,7 @@ func (t *PullRequestTarget) TriggerWorkflowByFileName(workflowFileName string) e
 }
 
 func (t *PullRequestTarget) JSON() (string, error) {
-	return t.PullRequest.Raw, nil
+	return t.CodeReview.Raw, nil
 }
 
 func (t *PullRequestTarget) GetLatestReviewFromReviewer(author string) (*codehost.Review, error) {

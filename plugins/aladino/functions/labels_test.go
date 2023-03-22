@@ -5,44 +5,35 @@
 package plugins_aladino_functions_test
 
 import (
-	"net/http"
 	"testing"
 
-	"github.com/google/go-github/v49/github"
-	"github.com/migueleliasweb/go-github-mock/src/mock"
+	pbe "github.com/reviewpad/api/go/entities"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
-	"github.com/reviewpad/reviewpad/v4/utils"
 	"github.com/stretchr/testify/assert"
 )
 
 var labels = plugins_aladino.PluginBuiltIns().Functions["labels"].Code
 
 func TestLabels(t *testing.T) {
-	ghLabels := []*github.Label{
+	ghLabels := []*pbe.Label{
 		{
-			Name: github.String("bug"),
-			ID:   github.Int64(1),
+			Name: "bug",
+			Id:   "1",
 		},
 		{
-			Name: github.String("enhancement"),
-			ID:   github.Int64(2),
+			Name: "enhancement",
+			Id:   "2",
 		},
 	}
-	mockedPullRequest := aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
+	mockedCodeReview := aladino.GetDefaultMockCodeReviewDetailsWith(&pbe.CodeReview{
 		Labels: ghLabels,
 	})
-	mockedEnv := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnvWithCodeReview(
 		t,
-		[]mock.MockBackendOption{
-			mock.WithRequestMatchHandler(
-				mock.GetReposPullsByOwnerByRepoByPullNumber,
-				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					utils.MustWriteBytes(w, mock.MustMarshal(mockedPullRequest))
-				}),
-			),
-		},
 		nil,
+		nil,
+		mockedCodeReview,
 		aladino.MockBuiltIns(),
 		nil,
 	)

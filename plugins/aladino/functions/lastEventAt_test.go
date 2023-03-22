@@ -5,36 +5,28 @@
 package plugins_aladino_functions_test
 
 import (
-	"net/http"
 	"testing"
 	"time"
 
-	"github.com/google/go-github/v49/github"
-	"github.com/migueleliasweb/go-github-mock/src/mock"
+	pbe "github.com/reviewpad/api/go/entities"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
-	"github.com/reviewpad/reviewpad/v4/utils"
 	"github.com/stretchr/testify/assert"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 var lastEventAt = plugins_aladino.PluginBuiltIns().Functions["lastEventAt"].Code
 
 func TestLastEventAt(t *testing.T) {
 	date := time.Date(2009, 11, 17, 20, 34, 58, 651387237, time.UTC)
-	mockedPullRequest := aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
-		UpdatedAt: &date,
+	mockedCodeReview := aladino.GetDefaultMockCodeReviewDetailsWith(&pbe.CodeReview{
+		UpdatedAt: timestamppb.New(date),
 	})
-	mockedEnv := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnvWithCodeReview(
 		t,
-		[]mock.MockBackendOption{
-			mock.WithRequestMatchHandler(
-				mock.GetReposPullsByOwnerByRepoByPullNumber,
-				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					utils.MustWriteBytes(w, mock.MustMarshal(mockedPullRequest))
-				}),
-			),
-		},
 		nil,
+		nil,
+		mockedCodeReview,
 		aladino.MockBuiltIns(),
 		nil,
 	)

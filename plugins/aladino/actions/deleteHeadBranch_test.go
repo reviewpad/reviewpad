@@ -11,10 +11,12 @@ import (
 
 	"github.com/google/go-github/v49/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
+	pbe "github.com/reviewpad/api/go/entities"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/reviewpad/reviewpad/v4/utils"
 	"github.com/stretchr/testify/assert"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 var deleteHeadBranch = plugins_aladino.PluginBuiltIns().Actions["deleteHeadBranch"].Code
@@ -24,21 +26,17 @@ func TestDeleteHeadBranch(t *testing.T) {
 	isDeleteHeadBranchRequestPerformed := false
 	tests := map[string]struct {
 		clientOptions           []mock.MockBackendOption
+		codeReview              *pbe.CodeReview
 		graphQLHandler          http.HandlerFunc
 		deleteShouldBePerformed bool
 		err                     error
 	}{
 		"when pull request is closed": {
+			codeReview: aladino.GetDefaultMockCodeReviewDetailsWith(&pbe.CodeReview{
+				IsMerged: false,
+				ClosedAt: timestamppb.New(now),
+			}),
 			clientOptions: []mock.MockBackendOption{
-				mock.WithRequestMatchHandler(
-					mock.GetReposPullsByOwnerByRepoByPullNumber,
-					http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-						utils.MustWriteBytes(w, mock.MustMarshal(aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
-							Merged:   github.Bool(false),
-							ClosedAt: &now,
-						})))
-					}),
-				),
 				mock.WithRequestMatchHandler(
 					mock.DeleteReposGitRefsByOwnerByRepoByRef,
 					http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
@@ -61,16 +59,11 @@ func TestDeleteHeadBranch(t *testing.T) {
 			deleteShouldBePerformed: true,
 		},
 		"when pull request is merged": {
+			codeReview: aladino.GetDefaultMockCodeReviewDetailsWith(&pbe.CodeReview{
+				IsMerged: true,
+				ClosedAt: timestamppb.New(now),
+			}),
 			clientOptions: []mock.MockBackendOption{
-				mock.WithRequestMatchHandler(
-					mock.GetReposPullsByOwnerByRepoByPullNumber,
-					http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-						utils.MustWriteBytes(w, mock.MustMarshal(aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
-							Merged:   github.Bool(true),
-							ClosedAt: &now,
-						})))
-					}),
-				),
 				mock.WithRequestMatchHandler(
 					mock.DeleteReposGitRefsByOwnerByRepoByRef,
 					http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
@@ -93,16 +86,11 @@ func TestDeleteHeadBranch(t *testing.T) {
 			deleteShouldBePerformed: true,
 		},
 		"when pull request is not merged or closed": {
+			codeReview: aladino.GetDefaultMockCodeReviewDetailsWith(&pbe.CodeReview{
+				IsMerged: false,
+				ClosedAt: nil,
+			}),
 			clientOptions: []mock.MockBackendOption{
-				mock.WithRequestMatchHandler(
-					mock.GetReposPullsByOwnerByRepoByPullNumber,
-					http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-						utils.MustWriteBytes(w, mock.MustMarshal(aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
-							Merged:   github.Bool(false),
-							ClosedAt: nil,
-						})))
-					}),
-				),
 				mock.WithRequestMatchHandler(
 					mock.DeleteReposGitRefsByOwnerByRepoByRef,
 					http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
@@ -113,15 +101,10 @@ func TestDeleteHeadBranch(t *testing.T) {
 			err: nil,
 		},
 		"when delete head branch ref request fails": {
+			codeReview: aladino.GetDefaultMockCodeReviewDetailsWith(&pbe.CodeReview{
+				IsMerged: true,
+			}),
 			clientOptions: []mock.MockBackendOption{
-				mock.WithRequestMatchHandler(
-					mock.GetReposPullsByOwnerByRepoByPullNumber,
-					http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-						utils.MustWriteBytes(w, mock.MustMarshal(aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
-							Merged: github.Bool(true),
-						})))
-					}),
-				),
 				mock.WithRequestMatchHandler(
 					mock.DeleteReposGitRefsByOwnerByRepoByRef,
 					http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
@@ -150,34 +133,22 @@ func TestDeleteHeadBranch(t *testing.T) {
 			},
 		},
 		"when pull request is from fork": {
-			clientOptions: []mock.MockBackendOption{
-				mock.WithRequestMatchHandler(
-					mock.GetReposPullsByOwnerByRepoByPullNumber,
-					http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-						utils.MustWriteBytes(w, mock.MustMarshal(aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
-							Merged: github.Bool(true),
-							Head: &github.PullRequestBranch{
-								Repo: &github.Repository{
-									Fork: github.Bool(true),
-								},
-							},
-						})))
-					}),
-				),
-			},
-			err: nil,
+			codeReview: aladino.GetDefaultMockCodeReviewDetailsWith(&pbe.CodeReview{
+				IsMerged: true,
+				Head: &pbe.Branch{
+					Repo: &pbe.Repository{
+						IsFork: true,
+					},
+				},
+			}),
+			clientOptions: []mock.MockBackendOption{},
+			err:           nil,
 		},
 		"when head branch doesn't exist": {
-			clientOptions: []mock.MockBackendOption{
-				mock.WithRequestMatchHandler(
-					mock.GetReposPullsByOwnerByRepoByPullNumber,
-					http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-						utils.MustWriteBytes(w, mock.MustMarshal(aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
-							Merged: github.Bool(true),
-						})))
-					}),
-				),
-			},
+			codeReview: aladino.GetDefaultMockCodeReviewDetailsWith(&pbe.CodeReview{
+				IsMerged: false,
+			}),
+			clientOptions: []mock.MockBackendOption{},
 			graphQLHandler: func(w http.ResponseWriter, r *http.Request) {
 				utils.MustWrite(w, `{
 					"data": {
@@ -192,10 +163,11 @@ func TestDeleteHeadBranch(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			mockedEnv := aladino.MockDefaultEnv(
+			mockedEnv := aladino.MockDefaultEnvWithCodeReview(
 				t,
 				test.clientOptions,
 				test.graphQLHandler,
+				test.codeReview,
 				aladino.MockBuiltIns(),
 				nil,
 			)

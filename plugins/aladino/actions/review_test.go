@@ -12,6 +12,7 @@ import (
 
 	"github.com/google/go-github/v49/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
+	pbe "github.com/reviewpad/api/go/entities"
 	host "github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
@@ -83,11 +84,11 @@ func TestReview_WhenLatestReviewRequestFails(t *testing.T) {
 
 func TestReview_WhenLastPushDateRequestFails(t *testing.T) {
 	failMessage := "GetPullRequestLastPushDate"
-	mockedPullRequest := aladino.GetDefaultMockPullRequestDetails()
+	mockedCodeReview := aladino.GetDefaultMockReview()
 
-	mockedPullRequestNumber := host.GetPullRequestNumber(mockedPullRequest)
-	mockOwner := host.GetPullRequestBaseOwnerName(mockedPullRequest)
-	mockRepo := host.GetPullRequestBaseRepoName(mockedPullRequest)
+	mockedCodeReviewNumber := host.GetCodeReviewNumber(mockedCodeReview)
+	mockOwner := host.GetCodeReviewBaseOwnerName(mockedCodeReview)
+	mockRepo := host.GetCodeReviewBaseRepoName(mockedCodeReview)
 
 	mockedAuthenticatedUserLoginGQLQuery := `{"query":"{viewer{login}}"}`
 	mockedAuthenticatedUserLoginGQLQueryBody := `{
@@ -119,7 +120,7 @@ func TestReview_WhenLastPushDateRequestFails(t *testing.T) {
 			"repositoryName":"%s",
 			"repositoryOwner":"%s"
 		}
-	}`, mockedPullRequestNumber, mockRepo, mockOwner)
+	}`, mockedCodeReviewNumber, mockRepo, mockOwner)
 
 	mockedLatestReviewFromReviewerGQLQueryBody := `{
 		"data": {
@@ -166,11 +167,11 @@ func TestReview_WhenLastPushDateRequestFails(t *testing.T) {
 
 func TestReview_WhenPostReviewRequestFail(t *testing.T) {
 	failMessage := "PostReviewRequestFail"
-	mockedPullRequest := aladino.GetDefaultMockPullRequestDetails()
+	mockedCodeReview := aladino.GetDefaultMockReview()
 
-	mockedPullRequestNumber := host.GetPullRequestNumber(mockedPullRequest)
-	mockOwner := host.GetPullRequestBaseOwnerName(mockedPullRequest)
-	mockRepo := host.GetPullRequestBaseRepoName(mockedPullRequest)
+	mockedCodeReviewNumber := host.GetCodeReviewNumber(mockedCodeReview)
+	mockOwner := host.GetCodeReviewBaseOwnerName(mockedCodeReview)
+	mockRepo := host.GetCodeReviewBaseRepoName(mockedCodeReview)
 
 	mockedLatestReviewFromReviewerGQLQuery := fmt.Sprintf(`{
 		"query":"query($author:String!$pullRequestNumber:Int!$repositoryName:String!$repositoryOwner:String!){
@@ -193,7 +194,7 @@ func TestReview_WhenPostReviewRequestFail(t *testing.T) {
 			"repositoryName":"%s",
 			"repositoryOwner":"%s"
 		}
-	}`, mockedPullRequestNumber, mockRepo, mockOwner)
+	}`, mockedCodeReviewNumber, mockRepo, mockOwner)
 
 	mockedLatestReviewFromReviewerGQLQueryBody := `{
 		"data": {
@@ -250,7 +251,7 @@ func TestReview_WhenPostReviewRequestFail(t *testing.T) {
 			"repositoryName": "%s",
 			"repositoryOwner": "%s"
 		}
-	}`, mockedPullRequestNumber, mockRepo, mockOwner)
+	}`, mockedCodeReviewNumber, mockRepo, mockOwner)
 
 	mockedLastPullRequestPushDateGQLQueryBody := `{
 		"data": {
@@ -306,11 +307,11 @@ func TestReview_WhenPostReviewRequestFail(t *testing.T) {
 }
 
 func TestReview(t *testing.T) {
-	mockedPullRequest := aladino.GetDefaultMockPullRequestDetails()
+	mockedCodeReview := aladino.GetDefaultMockReview()
 
-	mockedPullRequestNumber := host.GetPullRequestNumber(mockedPullRequest)
-	mockOwner := host.GetPullRequestBaseOwnerName(mockedPullRequest)
-	mockRepo := host.GetPullRequestBaseRepoName(mockedPullRequest)
+	mockedCodeReviewNumber := host.GetCodeReviewNumber(mockedCodeReview)
+	mockOwner := host.GetCodeReviewBaseOwnerName(mockedCodeReview)
+	mockRepo := host.GetCodeReviewBaseRepoName(mockedCodeReview)
 
 	mockedLatestReviewFromReviewerGQLQuery := fmt.Sprintf(`{
 		"query":"query($author:String!$pullRequestNumber:Int!$repositoryName:String!$repositoryOwner:String!){
@@ -333,7 +334,7 @@ func TestReview(t *testing.T) {
 			"repositoryName":"%s",
 			"repositoryOwner":"%s"
 		}
-	}`, mockedPullRequestNumber, mockRepo, mockOwner)
+	}`, mockedCodeReviewNumber, mockRepo, mockOwner)
 
 	mockedAuthenticatedUserLoginGQLQuery := `{"query":"{viewer{login}}"}`
 
@@ -371,7 +372,7 @@ func TestReview(t *testing.T) {
 			"repositoryName": "%s",
 			"repositoryOwner": "%s"
 		}
-	}`, mockedPullRequestNumber, mockRepo, mockOwner)
+	}`, mockedCodeReviewNumber, mockRepo, mockOwner)
 
 	tests := map[string]struct {
 		clientOptions                              []mock.MockBackendOption
@@ -381,18 +382,13 @@ func TestReview(t *testing.T) {
 		inputReviewBody                            string
 		wantReview                                 *github.PullRequestReview
 		wantErr                                    error
+		codeReview                                 *pbe.CodeReview
 	}{
 		"when pull request is closed": {
-			clientOptions: []mock.MockBackendOption{
-				mock.WithRequestMatchHandler(
-					mock.GetReposPullsByOwnerByRepoByPullNumber,
-					http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-						utils.MustWriteBytes(w, mock.MustMarshal(aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
-							State: github.String("closed"),
-						})))
-					}),
-				),
+			codeReview: &pbe.CodeReview{
+				Status: pbe.CodeReviewStatus_CLOSED,
 			},
+			clientOptions:    []mock.MockBackendOption{},
 			inputReviewEvent: "COMMENT",
 			inputReviewBody:  "test",
 			wantErr:          nil,
@@ -580,7 +576,7 @@ func TestReview(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			mockedEnv := aladino.MockDefaultEnv(
+			mockedEnv := aladino.MockDefaultEnvWithCodeReview(
 				t,
 				append(
 					[]mock.MockBackendOption{
@@ -618,6 +614,7 @@ func TestReview(t *testing.T) {
 						utils.MustWrite(w, test.mockedLastPullRequestPushDateGQLQueryBody)
 					}
 				},
+				aladino.GetDefaultMockCodeReviewDetailsWith(test.codeReview),
 				aladino.MockBuiltIns(),
 				nil,
 			)

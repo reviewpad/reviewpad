@@ -10,8 +10,13 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/golang/mock/gomock"
 	"github.com/google/go-github/v49/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
+	pbe "github.com/reviewpad/api/go/entities"
+	api_mocks "github.com/reviewpad/api/go/mocks"
+	pbs "github.com/reviewpad/api/go/services"
+	"github.com/reviewpad/reviewpad/v4/codehost"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/reviewpad/reviewpad/v4/engine"
 	"github.com/reviewpad/reviewpad/v4/handler"
@@ -79,12 +84,28 @@ func TestEval_WhenGitHubRequestsFail(t *testing.T) {
 			wantErr: "CreateLabelRequestFailed",
 		},
 	}
+	hostsClient := api_mocks.NewMockHostsClient(gomock.NewController(t))
+
+	hostsClient.EXPECT().
+		GetCodeReview(gomock.Any(), gomock.Any(), gomock.Any()).
+		AnyTimes().
+		Return(&pbs.GetCodeReviewReply{
+			Review: aladino.GetDefaultMockReview(),
+		}, nil)
+
+	codehostClient := &codehost.CodeHostClient{
+		HostInfo: &codehost.HostInfo{
+			Host:    pbe.Host_GITHUB,
+			HostUri: "https://github.com",
+		},
+		CodehostClient: hostsClient,
+	}
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			mockedClient := engine.MockGithubClient(test.clientOptions)
 
-			mockedAladinoInterpreter, err := mockAladinoInterpreter(mockedClient)
+			mockedAladinoInterpreter, err := mockAladinoInterpreter(mockedClient, codehostClient)
 			if err != nil {
 				assert.FailNow(t, fmt.Sprintf("mockAladinoInterpreter: %v", err))
 			}
@@ -247,11 +268,28 @@ func TestEvalCommand(t *testing.T) {
 		},
 	}
 
+	hostsClient := api_mocks.NewMockHostsClient(gomock.NewController(t))
+
+	hostsClient.EXPECT().
+		GetCodeReview(gomock.Any(), gomock.Any(), gomock.Any()).
+		AnyTimes().
+		Return(&pbs.GetCodeReviewReply{
+			Review: aladino.GetDefaultMockReview(),
+		}, nil)
+
+	codehostClient := &codehost.CodeHostClient{
+		HostInfo: &codehost.HostInfo{
+			Host:    pbe.Host_GITHUB,
+			HostUri: "https://github.com",
+		},
+		CodehostClient: hostsClient,
+	}
+
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			mockedClient := engine.MockGithubClient(test.clientOptions)
 
-			mockedAladinoInterpreter, err := mockAladinoInterpreter(mockedClient)
+			mockedAladinoInterpreter, err := mockAladinoInterpreter(mockedClient, codehostClient)
 			if err != nil {
 				assert.FailNow(t, fmt.Sprintf("mockAladinoInterpreter: %v", err))
 			}
@@ -408,11 +446,28 @@ func TestEvalConfigurationFile(t *testing.T) {
 		},
 	}
 
+	hostsClient := api_mocks.NewMockHostsClient(gomock.NewController(t))
+
+	hostsClient.EXPECT().
+		GetCodeReview(gomock.Any(), gomock.Any(), gomock.Any()).
+		AnyTimes().
+		Return(&pbs.GetCodeReviewReply{
+			Review: aladino.GetDefaultMockReview(),
+		}, nil)
+
+	codehostClient := &codehost.CodeHostClient{
+		HostInfo: &codehost.HostInfo{
+			Host:    pbe.Host_GITHUB,
+			HostUri: "https://github.com",
+		},
+		CodehostClient: hostsClient,
+	}
+
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			mockedClient := engine.MockGithubClient(test.clientOptions)
 
-			mockedAladinoInterpreter, err := mockAladinoInterpreter(mockedClient)
+			mockedAladinoInterpreter, err := mockAladinoInterpreter(mockedClient, codehostClient)
 			if err != nil {
 				assert.FailNow(t, fmt.Sprintf("mockAladinoInterpreter: %v", err))
 			}
@@ -442,7 +497,7 @@ func TestEvalConfigurationFile(t *testing.T) {
 	}
 }
 
-func mockAladinoInterpreter(githubClient *gh.GithubClient) (engine.Interpreter, error) {
+func mockAladinoInterpreter(githubClient *gh.GithubClient, codehostClient *codehost.CodeHostClient) (engine.Interpreter, error) {
 	dryRun := false
 	logger := logrus.NewEntry(logrus.New())
 	mockedAladinoInterpreter, err := aladino.NewInterpreter(
@@ -450,7 +505,7 @@ func mockAladinoInterpreter(githubClient *gh.GithubClient) (engine.Interpreter, 
 		logger,
 		dryRun,
 		githubClient,
-		nil,
+		codehostClient,
 		engine.DefaultMockCollector,
 		engine.DefaultMockTargetEntity,
 		engine.DefaultMockEventPayload,

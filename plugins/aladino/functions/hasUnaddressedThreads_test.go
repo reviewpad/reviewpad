@@ -9,8 +9,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/google/go-github/v49/github"
-	"github.com/migueleliasweb/go-github-mock/src/mock"
+	pbe "github.com/reviewpad/api/go/entities"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/reviewpad/reviewpad/v4/utils"
@@ -74,28 +73,9 @@ func TestHasUnaddressedThreads(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		mockedEnv := aladino.MockDefaultEnv(
+		mockedEnv := aladino.MockDefaultEnvWithCodeReview(
 			t,
-			[]mock.MockBackendOption{
-				mock.WithRequestMatchHandler(
-					mock.GetReposPullsByOwnerByRepoByPullNumber,
-					http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-						utils.MustWriteBytes(w, mock.MustMarshal(
-							aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
-								Number: github.Int(aladino.DefaultMockPrNum),
-								Base: &github.PullRequestBranch{
-									Repo: &github.Repository{
-										Owner: &github.User{
-											Login: github.String(aladino.DefaultMockPrOwner),
-										},
-										Name: github.String(aladino.DefaultMockPrRepoName),
-									},
-								},
-							}),
-						))
-					}),
-				),
-			},
+			nil,
 			func(w http.ResponseWriter, req *http.Request) {
 				query := utils.MustRead(req.Body)
 				switch query {
@@ -117,6 +97,15 @@ func TestHasUnaddressedThreads(t *testing.T) {
 					)
 				}
 			},
+			aladino.GetDefaultMockCodeReviewDetailsWith(&pbe.CodeReview{
+				Number: aladino.DefaultMockPrNum,
+				Base: &pbe.Branch{
+					Repo: &pbe.Repository{
+						Owner: aladino.DefaultMockPrOwner,
+						Name:  aladino.DefaultMockPrRepoName,
+					},
+				},
+			}),
 			aladino.MockBuiltIns(),
 			nil,
 		)

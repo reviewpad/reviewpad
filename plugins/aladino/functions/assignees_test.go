@@ -5,15 +5,12 @@
 package plugins_aladino_functions_test
 
 import (
-	"net/http"
 	"testing"
 
-	"github.com/google/go-github/v49/github"
-	"github.com/migueleliasweb/go-github-mock/src/mock"
+	pbe "github.com/reviewpad/api/go/entities"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
-	"github.com/reviewpad/reviewpad/v4/utils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -21,27 +18,21 @@ var assignees = plugins_aladino.PluginBuiltIns().Functions["assignees"].Code
 
 func TestAssignees(t *testing.T) {
 	assigneeLogin := "jane"
-	mockedPullRequest := aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
-		Assignees: []*github.User{
-			{Login: github.String(assigneeLogin)},
+	mockedCodeReview := aladino.GetDefaultMockCodeReviewDetailsWith(&pbe.CodeReview{
+		Assignees: []*pbe.ExternalUser{
+			{Login: assigneeLogin},
 		},
 	})
-	mockedEnv := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnvWithCodeReview(
 		t,
-		[]mock.MockBackendOption{
-			mock.WithRequestMatchHandler(
-				mock.GetReposPullsByOwnerByRepoByPullNumber,
-				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					utils.MustWriteBytes(w, mock.MustMarshal(mockedPullRequest))
-				}),
-			),
-		},
 		nil,
+		nil,
+		mockedCodeReview,
 		aladino.MockBuiltIns(),
 		nil,
 	)
 
-	mockedAssignees := mockedEnv.GetTarget().(*target.PullRequestTarget).PullRequest.Assignees
+	mockedAssignees := mockedEnv.GetTarget().(*target.PullRequestTarget).CodeReview.Assignees
 	wantAssigneesLogins := make([]aladino.Value, len(mockedAssignees))
 	for i, assignee := range mockedAssignees {
 		wantAssigneesLogins[i] = aladino.BuildStringValue(assignee.GetLogin())

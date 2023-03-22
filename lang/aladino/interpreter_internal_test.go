@@ -12,9 +12,12 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/golang/mock/gomock"
 	"github.com/google/go-github/v49/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
-	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
+	pbe "github.com/reviewpad/api/go/entities"
+	api_mocks "github.com/reviewpad/api/go/mocks"
+	"github.com/reviewpad/reviewpad/v4/codehost"
 	"github.com/reviewpad/reviewpad/v4/engine"
 	"github.com/reviewpad/reviewpad/v4/handler"
 	"github.com/reviewpad/reviewpad/v4/utils"
@@ -519,29 +522,21 @@ func TestExecStatement(t *testing.T) {
 }
 
 func TestReport_WhenFindReportCommentFails(t *testing.T) {
-	mockedPullRequest := GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
-		User: &github.User{Login: github.String("foobar")},
-		Base: &github.PullRequestBranch{
-			Repo: &github.Repository{
-				Owner: &github.User{
-					Login: github.String("foobar"),
-				},
-				Name: github.String("default-mock-repo"),
+	mockedCodeReview := GetDefaultMockCodeReviewDetailsWith(&pbe.CodeReview{
+		Author: &pbe.ExternalUser{Login: "foobar"},
+		Base: &pbe.Branch{
+			Repo: &pbe.Repository{
+				Owner: "foobar",
+				Name:  "default-mock-repo",
 			},
-			Ref: github.String("master"),
+			Name: "master",
 		},
 	})
-	mockedEnv := MockDefaultEnv(
+	mockedEnv := MockDefaultEnvWithCodeReview(
 		t,
-		[]mock.MockBackendOption{
-			mock.WithRequestMatchHandler(
-				mock.GetReposPullsByOwnerByRepoByPullNumber,
-				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					utils.MustWriteBytes(w, mock.MustMarshal(mockedPullRequest))
-				}),
-			),
-		},
 		nil,
+		nil,
+		mockedCodeReview,
 		MockBuiltIns(),
 		nil,
 	)
@@ -705,31 +700,33 @@ func TestReport_OnVerboseMode_WhenThereIsAlreadyAReviewpadComment(t *testing.T) 
 
 func TestNewInterpreter_WhenNewEvalEnvFails(t *testing.T) {
 	ctx := context.Background()
-	failMessage := "GetPullRequestFilesRequestFail"
-	clientREST := github.NewClient(
-		mock.NewMockedHTTPClient(
-			mock.WithRequestMatchHandler(
-				mock.GetReposPullsFilesByOwnerByRepoByPullNumber,
-				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					mock.WriteError(
-						w,
-						http.StatusInternalServerError,
-						failMessage,
-					)
-				}),
-			),
-		),
-	)
+	mockErr := errors.New("mock error")
+
+	hostsClient := api_mocks.NewMockHostsClient(gomock.NewController(t))
+
+	hostsClient.EXPECT().
+		GetCodeReview(gomock.Any(), gomock.Any(), gomock.Any()).
+		AnyTimes().
+		Return(nil, mockErr)
+
+	codehostClient := &codehost.CodeHostClient{
+		HostInfo: &codehost.HostInfo{
+			Host:    pbe.Host_GITHUB,
+			HostUri: "https://github.com",
+		},
+		CodehostClient: hostsClient,
+	}
+
 	// TODO: Ideally, we should not have nil arguments in the call to NewInterpreter
 	gotInterpreter, err := NewInterpreter(
 		ctx,
 		DefaultMockLogger,
 		false,
-		gh.NewGithubClient(clientREST, nil, nil),
 		nil,
+		codehostClient,
 		nil,
 		DefaultMockTargetEntity,
-		GetDefaultMockPullRequestDetails(),
+		nil,
 		nil,
 	)
 

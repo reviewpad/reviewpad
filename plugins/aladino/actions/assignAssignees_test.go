@@ -9,11 +9,10 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/google/go-github/v49/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
+	pbe "github.com/reviewpad/api/go/entities"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
-	"github.com/reviewpad/reviewpad/v4/utils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -23,6 +22,7 @@ func TestAssignAssignees(t *testing.T) {
 	defaultAssignees := 10
 	tests := map[string]struct {
 		clientOptions               []mock.MockBackendOption
+		codeReview                  *pbe.CodeReview
 		inputAssignees              aladino.Value
 		inputTotalRequiredAssignees aladino.Value
 		shouldAssign                bool
@@ -59,15 +59,8 @@ func TestAssignAssignees(t *testing.T) {
 			wantErr:                     fmt.Errorf("assignAssignees: total required assignees is invalid. please insert a number bigger than 0"),
 		},
 		"when the total required assignees is greater than the total of available assignees": {
-			clientOptions: []mock.MockBackendOption{
-				mock.WithRequestMatchHandler(
-					mock.GetReposPullsByOwnerByRepoByPullNumber,
-					http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-						utils.MustWriteBytes(w, mock.MustMarshal(aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
-							Assignees: []*github.User{},
-						})))
-					}),
-				),
+			codeReview: &pbe.CodeReview{
+				Assignees: []*pbe.ExternalUser{},
 			},
 			inputAssignees: aladino.BuildArrayValue([]aladino.Value{
 				aladino.BuildStringValue("john"),
@@ -77,17 +70,12 @@ func TestAssignAssignees(t *testing.T) {
 			shouldAssign:                true,
 		},
 		"when one of the required assignees is already an assignee": {
-			clientOptions: []mock.MockBackendOption{
-				mock.WithRequestMatchHandler(
-					mock.GetReposPullsByOwnerByRepoByPullNumber,
-					http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-						utils.MustWriteBytes(w, mock.MustMarshal(aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
-							Assignees: []*github.User{
-								{Login: github.String("john")},
-							},
-						})))
-					}),
-				),
+			codeReview: &pbe.CodeReview{
+				Assignees: []*pbe.ExternalUser{
+					{
+						Login: "john",
+					},
+				},
 			},
 			inputAssignees: aladino.BuildArrayValue([]aladino.Value{
 				aladino.BuildStringValue("john"),
@@ -100,7 +88,7 @@ func TestAssignAssignees(t *testing.T) {
 
 	for _, test := range tests {
 		isAssigneesRequestPerformed := false
-		mockedEnv := aladino.MockDefaultEnv(
+		mockedEnv := aladino.MockDefaultEnvWithCodeReview(
 			t,
 			append(
 				[]mock.MockBackendOption{
@@ -115,6 +103,7 @@ func TestAssignAssignees(t *testing.T) {
 				test.clientOptions...,
 			),
 			nil,
+			aladino.GetDefaultMockCodeReviewDetailsWith(test.codeReview),
 			aladino.MockBuiltIns(),
 			nil,
 		)

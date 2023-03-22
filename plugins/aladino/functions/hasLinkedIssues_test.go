@@ -9,8 +9,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/google/go-github/v49/github"
-	"github.com/migueleliasweb/go-github-mock/src/mock"
+	pbe "github.com/reviewpad/api/go/entities"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/reviewpad/reviewpad/v4/utils"
@@ -36,7 +35,7 @@ func TestHasLinkedIssues_WhenRequestFails(t *testing.T) {
 }
 
 func TestHasLinkedIssues_WhenHasLinkedIssues(t *testing.T) {
-	mockedPrNum := 6
+	mockedPrNum := int64(6)
 	mockedPrOwner := "foobar"
 	mockedPrRepoName := "default-mock-repo"
 	mockedAuthorLogin := "john"
@@ -46,28 +45,19 @@ func TestHasLinkedIssues_WhenHasLinkedIssues(t *testing.T) {
 		mockedPrRepoName,
 		mockedPrOwner,
 	)
-	mockedPullRequest := aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
-		Number: github.Int(mockedPrNum),
-		User:   &github.User{Login: github.String(mockedAuthorLogin)},
-		Base: &github.PullRequestBranch{
-			Repo: &github.Repository{
-				Owner: &github.User{
-					Login: github.String(mockedPrOwner),
-				},
-				Name: github.String(mockedPrRepoName),
+	mockedCodeReview := aladino.GetDefaultMockCodeReviewDetailsWith(&pbe.CodeReview{
+		Number: mockedPrNum,
+		Author: &pbe.ExternalUser{Login: mockedAuthorLogin},
+		Base: &pbe.Branch{
+			Repo: &pbe.Repository{
+				Owner: mockedPrOwner,
+				Name:  mockedPrRepoName,
 			},
 		},
 	})
-	mockedEnv := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnvWithCodeReview(
 		t,
-		[]mock.MockBackendOption{
-			mock.WithRequestMatchHandler(
-				mock.GetReposPullsByOwnerByRepoByPullNumber,
-				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					utils.MustWriteBytes(w, mock.MustMarshal(mockedPullRequest))
-				}),
-			),
-		},
+		nil,
 		func(w http.ResponseWriter, req *http.Request) {
 			query := utils.MustRead(req.Body)
 			switch query {
@@ -86,6 +76,7 @@ func TestHasLinkedIssues_WhenHasLinkedIssues(t *testing.T) {
 				)
 			}
 		},
+		mockedCodeReview,
 		aladino.MockBuiltIns(),
 		nil,
 	)
@@ -98,7 +89,7 @@ func TestHasLinkedIssues_WhenHasLinkedIssues(t *testing.T) {
 }
 
 func TestHasLinkedIssues_WhenNoLinkedIssues(t *testing.T) {
-	mockedPrNum := 6
+	mockedPrNum := int64(6)
 	mockedPrOwner := "foobar"
 	mockedPrRepoName := "default-mock-repo"
 	mockedAuthorLogin := "john"
@@ -108,28 +99,19 @@ func TestHasLinkedIssues_WhenNoLinkedIssues(t *testing.T) {
 		mockedPrRepoName,
 		mockedPrOwner,
 	)
-	mockedPullRequest := aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
-		Number: github.Int(mockedPrNum),
-		User:   &github.User{Login: github.String(mockedAuthorLogin)},
-		Base: &github.PullRequestBranch{
-			Repo: &github.Repository{
-				Owner: &github.User{
-					Login: github.String(mockedPrOwner),
-				},
-				Name: github.String(mockedPrRepoName),
+	mockedCodeReview := aladino.GetDefaultMockCodeReviewDetailsWith(&pbe.CodeReview{
+		Number: mockedPrNum,
+		Author: &pbe.ExternalUser{Login: mockedAuthorLogin},
+		Base: &pbe.Branch{
+			Repo: &pbe.Repository{
+				Owner: mockedPrOwner,
+				Name:  mockedPrRepoName,
 			},
 		},
 	})
-	mockedEnv := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnvWithCodeReview(
 		t,
-		[]mock.MockBackendOption{
-			mock.WithRequestMatchHandler(
-				mock.GetReposPullsByOwnerByRepoByPullNumber,
-				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					utils.MustWriteBytes(w, mock.MustMarshal(mockedPullRequest))
-				}),
-			),
-		},
+		nil,
 		func(w http.ResponseWriter, req *http.Request) {
 			query := utils.MustRead(req.Body)
 			switch query {
@@ -148,6 +130,7 @@ func TestHasLinkedIssues_WhenNoLinkedIssues(t *testing.T) {
 				)
 			}
 		},
+		mockedCodeReview,
 		aladino.MockBuiltIns(),
 		nil,
 	)

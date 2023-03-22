@@ -8,8 +8,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/google/go-github/v49/github"
-	"github.com/migueleliasweb/go-github-mock/src/mock"
+	pbe "github.com/reviewpad/api/go/entities"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
@@ -37,8 +36,8 @@ func TestAddToProject_WhenRequestFails(t *testing.T) {
 
 func TestAddToProject(t *testing.T) {
 	prNodeId := "PR_nodeId"
-	mockedPullRequest := aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
-		NodeID: &prNodeId,
+	mockedCodeReview := aladino.GetDefaultMockCodeReviewDetailsWith(&pbe.CodeReview{
+		Id: prNodeId,
 	})
 	mockedGetProjectQuery := `{
         "query":"query($name: String! $repositoryName: String! $repositoryOwner: String!) {
@@ -195,16 +194,9 @@ func TestAddToProject(t *testing.T) {
 
 	for _, testCase := range gqlTestCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			mockedEnv := aladino.MockDefaultEnv(
+			mockedEnv := aladino.MockDefaultEnvWithCodeReview(
 				t,
-				[]mock.MockBackendOption{
-					mock.WithRequestMatchHandler(
-						mock.GetReposPullsByOwnerByRepoByPullNumber,
-						http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-							utils.MustWriteBytes(w, mock.MustMarshal(mockedPullRequest))
-						}),
-					),
-				},
+				nil,
 				func(res http.ResponseWriter, req *http.Request) {
 					query := utils.MinifyQuery(utils.MustRead(req.Body))
 					switch query {
@@ -218,6 +210,7 @@ func TestAddToProject(t *testing.T) {
 						utils.MustWrite(res, testCase.updateProjectV2ItemFieldValueBody)
 					}
 				},
+				mockedCodeReview,
 				aladino.MockBuiltIns(),
 				nil,
 			)
