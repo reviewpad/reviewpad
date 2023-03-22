@@ -81,7 +81,7 @@ func TestEval_WhenGitHubRequestsFail(t *testing.T) {
 		},
 	}
 
-	codehostClient := aladino.GetDefaultCodeHostClient(t)
+	codehostClient := aladino.GetDefaultCodeHostClient(t, aladino.GetDefaultMockReview(), nil)
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
@@ -250,7 +250,7 @@ func TestEvalCommand(t *testing.T) {
 		},
 	}
 
-	codehostClient := aladino.GetDefaultCodeHostClient(t)
+	codehostClient := aladino.GetDefaultCodeHostClient(t, aladino.GetDefaultMockReview(), nil)
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
@@ -413,7 +413,7 @@ func TestEvalConfigurationFile(t *testing.T) {
 		},
 	}
 
-	codehostClient := aladino.GetDefaultCodeHostClient(t)
+	codehostClient := aladino.GetDefaultCodeHostClient(t, aladino.GetDefaultMockReview(), nil)
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {

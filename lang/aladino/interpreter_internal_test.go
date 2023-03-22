@@ -12,12 +12,9 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/golang/mock/gomock"
 	"github.com/google/go-github/v49/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	pbe "github.com/reviewpad/api/go/entities"
-	api_mocks "github.com/reviewpad/api/go/mocks"
-	"github.com/reviewpad/reviewpad/v4/codehost"
 	"github.com/reviewpad/reviewpad/v4/engine"
 	"github.com/reviewpad/reviewpad/v4/handler"
 	"github.com/reviewpad/reviewpad/v4/utils"
@@ -702,20 +699,7 @@ func TestNewInterpreter_WhenNewEvalEnvFails(t *testing.T) {
 	ctx := context.Background()
 	mockErr := errors.New("mock error")
 
-	hostsClient := api_mocks.NewMockHostsClient(gomock.NewController(t))
-
-	hostsClient.EXPECT().
-		GetCodeReview(gomock.Any(), gomock.Any(), gomock.Any()).
-		AnyTimes().
-		Return(nil, mockErr)
-
-	codehostClient := &codehost.CodeHostClient{
-		HostInfo: &codehost.HostInfo{
-			Host:    pbe.Host_GITHUB,
-			HostUri: "https://github.com",
-		},
-		CodehostClient: hostsClient,
-	}
+	codehostClient := GetDefaultCodeHostClient(t, nil, mockErr)
 
 	// TODO: Ideally, we should not have nil arguments in the call to NewInterpreter
 	gotInterpreter, err := NewInterpreter(

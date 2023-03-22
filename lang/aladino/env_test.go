@@ -9,11 +9,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/golang/mock/gomock"
 	pbe "github.com/reviewpad/api/go/entities"
-	api_mocks "github.com/reviewpad/api/go/mocks"
-	pbs "github.com/reviewpad/api/go/services"
-	"github.com/reviewpad/reviewpad/v4/codehost"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v4/handler"
@@ -37,28 +33,13 @@ func TestNewTypeEnv_WithDefaultEnv(t *testing.T) {
 }
 
 func TestNewEvalEnv_WhenNewFileFails(t *testing.T) {
-	hostsClient := api_mocks.NewMockHostsClient(gomock.NewController(t))
-
-	hostsClient.EXPECT().
-		GetCodeReview(gomock.Any(), gomock.Any(), gomock.Any()).
-		AnyTimes().
-		Return(&pbs.GetCodeReviewReply{
-			Review: aladino.GetDefaultMockCodeReviewDetailsWith(&pbe.CodeReview{
-				Files: []*pbe.CommitFile{
-					{
-						Patch: "@@a",
-					},
-				},
-			}),
-		}, nil)
-
-	codehostClient := &codehost.CodeHostClient{
-		HostInfo: &codehost.HostInfo{
-			Host:    pbe.Host_GITHUB,
-			HostUri: "https://github.com",
+	codehostClient := aladino.GetDefaultCodeHostClient(t, aladino.GetDefaultMockCodeReviewDetailsWith(&pbe.CodeReview{
+		Files: []*pbe.CommitFile{
+			{
+				Patch: "@@a",
+			},
 		},
-		CodehostClient: hostsClient,
-	}
+	}), nil)
 
 	ctx := context.Background()
 	targetEntity := &handler.TargetEntity{
@@ -88,8 +69,6 @@ func TestNewEvalEnv(t *testing.T) {
 	fileName := "default-mock-repo/file1.ts"
 	patch := "@@ -2,9 +2,11 @@ package main\n- func previous1() {\n+ func new1() {\n+\nreturn"
 
-	hostsClient := api_mocks.NewMockHostsClient(gomock.NewController(t))
-
 	mockedCodeReview := aladino.GetDefaultMockCodeReviewDetailsWith(&pbe.CodeReview{
 		Files: []*pbe.CommitFile{
 			{
@@ -99,20 +78,7 @@ func TestNewEvalEnv(t *testing.T) {
 		},
 	})
 
-	hostsClient.EXPECT().
-		GetCodeReview(gomock.Any(), gomock.Any(), gomock.Any()).
-		AnyTimes().
-		Return(&pbs.GetCodeReviewReply{
-			Review: mockedCodeReview,
-		}, nil)
-
-	codehostClient := &codehost.CodeHostClient{
-		HostInfo: &codehost.HostInfo{
-			Host:    pbe.Host_GITHUB,
-			HostUri: "https://github.com",
-		},
-		CodehostClient: hostsClient,
-	}
+	codehostClient := aladino.GetDefaultCodeHostClient(t, mockedCodeReview, nil)
 
 	ctx := context.Background()
 	mockedGithubClient := gh.NewGithubClient(nil, nil, nil)
@@ -168,20 +134,8 @@ func TestNewEvalEnv(t *testing.T) {
 
 func TestNewEvalEnv_WhenGetPullRequestFails(t *testing.T) {
 	mockErr := errors.New("mock error")
-	hostsClient := api_mocks.NewMockHostsClient(gomock.NewController(t))
 
-	hostsClient.EXPECT().
-		GetCodeReview(gomock.Any(), gomock.Any(), gomock.Any()).
-		AnyTimes().
-		Return(nil, mockErr)
-
-	codehostClient := &codehost.CodeHostClient{
-		HostInfo: &codehost.HostInfo{
-			Host:    pbe.Host_GITHUB,
-			HostUri: "https://github.com",
-		},
-		CodehostClient: hostsClient,
-	}
+	codehostClient := aladino.GetDefaultCodeHostClient(t, nil, mockErr)
 
 	ctx := context.Background()
 

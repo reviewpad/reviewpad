@@ -226,22 +226,7 @@ func MockDefaultEnv(
 	prRepoName := DefaultMockPrRepoName
 	prNum := DefaultMockPrNum
 	githubClient := MockDefaultGithubClient(ghApiClientOptions, ghGraphQLHandler)
-	hostsClient := api_mocks.NewMockHostsClient(gomock.NewController(t))
-
-	hostsClient.EXPECT().
-		GetCodeReview(gomock.Any(), gomock.Any(), gomock.Any()).
-		AnyTimes().
-		Return(&pbs.GetCodeReviewReply{
-			Review: GetDefaultMockReview(),
-		}, nil)
-
-	codehostClient := &codehost.CodeHostClient{
-		HostInfo: &codehost.HostInfo{
-			Host:    pbe.Host_GITHUB,
-			HostUri: "https://github.com",
-		},
-		CodehostClient: hostsClient,
-	}
+	codehostClient := GetDefaultCodeHostClient(t, GetDefaultMockReview(), nil)
 
 	mockedEnv, err := mockEnvWith(prOwner, prRepoName, prNum, githubClient, codehostClient, eventPayload, builtIns, DefaultMockTargetEntity)
 	if err != nil {
@@ -264,22 +249,7 @@ func MockDefaultEnvWithTargetEntity(
 	prRepoName := DefaultMockPrRepoName
 	prNum := DefaultMockPrNum
 	githubClient := MockDefaultGithubClient(ghApiClientOptions, ghGraphQLHandler)
-	hostsClient := api_mocks.NewMockHostsClient(gomock.NewController(t))
-
-	hostsClient.EXPECT().
-		GetCodeReview(gomock.Any(), gomock.Any(), gomock.Any()).
-		AnyTimes().
-		Return(&pbs.GetCodeReviewReply{
-			Review: GetDefaultMockReview(),
-		}, nil)
-
-	codehostClient := &codehost.CodeHostClient{
-		HostInfo: &codehost.HostInfo{
-			Host:    pbe.Host_GITHUB,
-			HostUri: "https://github.com",
-		},
-		CodehostClient: hostsClient,
-	}
+	codehostClient := GetDefaultCodeHostClient(t, GetDefaultMockReview(), nil)
 
 	mockedEnv, err := mockEnvWith(prOwner, prRepoName, prNum, githubClient, codehostClient, eventPayload, builtIns, targetEntity)
 	if err != nil {
@@ -301,22 +271,7 @@ func MockDefaultEnvWithCodeReview(
 	prRepoName := DefaultMockPrRepoName
 	prNum := DefaultMockPrNum
 	githubClient := MockDefaultGithubClient(ghApiClientOptions, ghGraphQLHandler)
-	hostsClient := api_mocks.NewMockHostsClient(gomock.NewController(t))
-
-	hostsClient.EXPECT().
-		GetCodeReview(gomock.Any(), gomock.Any(), gomock.Any()).
-		AnyTimes().
-		Return(&pbs.GetCodeReviewReply{
-			Review: codeReview,
-		}, nil)
-
-	codehostClient := &codehost.CodeHostClient{
-		HostInfo: &codehost.HostInfo{
-			Host:    pbe.Host_GITHUB,
-			HostUri: "https://github.com",
-		},
-		CodehostClient: hostsClient,
-	}
+	codehostClient := GetDefaultCodeHostClient(t, codeReview, nil)
 
 	mockedEnv, err := mockEnvWith(prOwner, prRepoName, prNum, githubClient, codehostClient, eventPayload, builtIns, DefaultMockTargetEntity)
 	if err != nil {
@@ -501,22 +456,7 @@ func MockDefaultEnvWithTargetEntityAndCodeReview(
 	prRepoName := DefaultMockPrRepoName
 	prNum := DefaultMockPrNum
 	githubClient := MockDefaultGithubClient(ghApiClientOptions, ghGraphQLHandler)
-	hostsClient := api_mocks.NewMockHostsClient(gomock.NewController(t))
-
-	hostsClient.EXPECT().
-		GetCodeReview(gomock.Any(), gomock.Any(), gomock.Any()).
-		AnyTimes().
-		Return(&pbs.GetCodeReviewReply{
-			Review: codeReview,
-		}, nil)
-
-	codehostClient := &codehost.CodeHostClient{
-		HostInfo: &codehost.HostInfo{
-			Host:    pbe.Host_GITHUB,
-			HostUri: "https://github.com",
-		},
-		CodehostClient: hostsClient,
-	}
+	codehostClient := GetDefaultCodeHostClient(t, codeReview, nil)
 
 	mockedEnv, err := mockEnvWith(prOwner, prRepoName, prNum, githubClient, codehostClient, eventPayload, builtIns, targetEntity)
 	if err != nil {
@@ -544,15 +484,15 @@ func getDefaultMockCodereviewFileList() []*pbe.CommitFile {
 	}
 }
 
-func GetDefaultCodeHostClient(t *testing.T) *codehost.CodeHostClient {
+func GetDefaultCodeHostClient(t *testing.T, codeReview *pbe.CodeReview, err error) *codehost.CodeHostClient {
 	hostsClient := api_mocks.NewMockHostsClient(gomock.NewController(t))
 
 	hostsClient.EXPECT().
 		GetCodeReview(gomock.Any(), gomock.Any(), gomock.Any()).
 		AnyTimes().
 		Return(&pbs.GetCodeReviewReply{
-			Review: GetDefaultMockReview(),
-		}, nil)
+			Review: codeReview,
+		}, err)
 
 	return &codehost.CodeHostClient{
 		HostInfo: &codehost.HostInfo{
