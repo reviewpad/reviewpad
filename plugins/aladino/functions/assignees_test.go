@@ -7,7 +7,7 @@ package plugins_aladino_functions_test
 import (
 	"testing"
 
-	pbe "github.com/reviewpad/api/go/entities"
+	pbc "github.com/reviewpad/api/go/codehost"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
@@ -18,21 +18,22 @@ var assignees = plugins_aladino.PluginBuiltIns().Functions["assignees"].Code
 
 func TestAssignees(t *testing.T) {
 	assigneeLogin := "jane"
-	mockedCodeReview := aladino.GetDefaultMockCodeReviewDetailsWith(&pbe.CodeReview{
-		Assignees: []*pbe.ExternalUser{
+	mockedCodeReview := aladino.GetDefaultMockPullRequestDetailsWith(&pbc.PullRequest{
+		Assignees: []*pbc.User{
 			{Login: assigneeLogin},
 		},
 	})
-	mockedEnv := aladino.MockDefaultEnvWithCodeReview(
+	mockedEnv := aladino.MockDefaultEnvWithPullRequestAndFiles(
 		t,
 		nil,
 		nil,
 		mockedCodeReview,
+		aladino.GetDefaultPullRequestFileList(),
 		aladino.MockBuiltIns(),
 		nil,
 	)
 
-	mockedAssignees := mockedEnv.GetTarget().(*target.PullRequestTarget).CodeReview.Assignees
+	mockedAssignees := mockedEnv.GetTarget().(*target.PullRequestTarget).PullRequest.Assignees
 	wantAssigneesLogins := make([]aladino.Value, len(mockedAssignees))
 	for i, assignee := range mockedAssignees {
 		wantAssigneesLogins[i] = aladino.BuildStringValue(assignee.GetLogin())

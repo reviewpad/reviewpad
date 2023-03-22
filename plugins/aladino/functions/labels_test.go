@@ -7,7 +7,7 @@ package plugins_aladino_functions_test
 import (
 	"testing"
 
-	pbe "github.com/reviewpad/api/go/entities"
+	pbc "github.com/reviewpad/api/go/codehost"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -16,7 +16,7 @@ import (
 var labels = plugins_aladino.PluginBuiltIns().Functions["labels"].Code
 
 func TestLabels(t *testing.T) {
-	ghLabels := []*pbe.Label{
+	ghLabels := []*pbc.Label{
 		{
 			Name: "bug",
 			Id:   "1",
@@ -26,14 +26,15 @@ func TestLabels(t *testing.T) {
 			Id:   "2",
 		},
 	}
-	mockedCodeReview := aladino.GetDefaultMockCodeReviewDetailsWith(&pbe.CodeReview{
+	mockedCodeReview := aladino.GetDefaultMockPullRequestDetailsWith(&pbc.PullRequest{
 		Labels: ghLabels,
 	})
-	mockedEnv := aladino.MockDefaultEnvWithCodeReview(
+	mockedEnv := aladino.MockDefaultEnvWithPullRequestAndFiles(
 		t,
 		nil,
 		nil,
 		mockedCodeReview,
+		aladino.GetDefaultPullRequestFileList(),
 		aladino.MockBuiltIns(),
 		nil,
 	)

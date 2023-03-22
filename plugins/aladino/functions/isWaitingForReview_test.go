@@ -12,7 +12,7 @@ import (
 
 	"github.com/google/go-github/v49/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
-	pbe "github.com/reviewpad/api/go/entities"
+	pbc "github.com/reviewpad/api/go/codehost"
 	host "github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
@@ -24,7 +24,7 @@ var isWaitingForReview = plugins_aladino.PluginBuiltIns().Functions["isWaitingFo
 
 func TestIsWaitingForReview_WhenListCommitsRequestFails(t *testing.T) {
 	failMessage := "ListCommitsRequestFail"
-	mockedEnv := aladino.MockDefaultEnvWithCodeReview(
+	mockedEnv := aladino.MockDefaultEnvWithPullRequestAndFiles(
 		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
@@ -39,9 +39,10 @@ func TestIsWaitingForReview_WhenListCommitsRequestFails(t *testing.T) {
 			),
 		},
 		nil,
-		aladino.GetDefaultMockCodeReviewDetailsWith(&pbe.CodeReview{
-			RequestedReviewers: &pbe.RequestedReviewers{},
+		aladino.GetDefaultMockPullRequestDetailsWith(&pbc.PullRequest{
+			RequestedReviewers: &pbc.RequestedReviewers{},
 		}),
+		aladino.GetDefaultPullRequestFileList(),
 		aladino.MockBuiltIns(),
 		nil,
 	)
@@ -65,7 +66,7 @@ func TestIsWaitingForReview_WhenGetPullRequestLastPushDateRequestFails(t *testin
 		},
 	}}
 
-	mockedEnv := aladino.MockDefaultEnvWithCodeReview(
+	mockedEnv := aladino.MockDefaultEnvWithPullRequestAndFiles(
 		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
@@ -78,9 +79,10 @@ func TestIsWaitingForReview_WhenGetPullRequestLastPushDateRequestFails(t *testin
 		func(w http.ResponseWriter, req *http.Request) {
 			http.Error(w, failMessage, http.StatusNotFound)
 		},
-		aladino.GetDefaultMockCodeReviewDetailsWith(&pbe.CodeReview{
-			RequestedReviewers: &pbe.RequestedReviewers{},
+		aladino.GetDefaultMockPullRequestDetailsWith(&pbc.PullRequest{
+			RequestedReviewers: &pbc.RequestedReviewers{},
 		}),
+		aladino.GetDefaultPullRequestFileList(),
 		aladino.MockBuiltIns(),
 		nil,
 	)
@@ -104,13 +106,13 @@ func TestIsWaitingForReview_WhenListReviewsRequestFails(t *testing.T) {
 		},
 	}}
 
-	mockedCodeReview := aladino.GetDefaultMockCodeReviewDetailsWith(&pbe.CodeReview{
-		RequestedReviewers: &pbe.RequestedReviewers{},
+	mockedCodeReview := aladino.GetDefaultMockPullRequestDetailsWith(&pbc.PullRequest{
+		RequestedReviewers: &pbc.RequestedReviewers{},
 	})
 
-	mockedCodeReviewNumber := host.GetCodeReviewNumber(mockedCodeReview)
-	mockOwner := host.GetCodeReviewBaseOwnerName(mockedCodeReview)
-	mockRepo := host.GetCodeReviewBaseRepoName(mockedCodeReview)
+	mockedCodeReviewNumber := host.GetPullRequestNumber(mockedCodeReview)
+	mockOwner := host.GetPullRequestBaseOwnerName(mockedCodeReview)
+	mockRepo := host.GetPullRequestBaseRepoName(mockedCodeReview)
 
 	mockedPullRequestLastPushDateGQLQuery := fmt.Sprintf(`{
 		"query":"query($pullRequestNumber:Int! $repositoryName:String! $repositoryOwner:String!){
@@ -157,7 +159,7 @@ func TestIsWaitingForReview_WhenListReviewsRequestFails(t *testing.T) {
 		}
 	}`, mockedLastCommitDate.Format("2006-01-02T15:04:05Z07:00"))
 
-	mockedEnv := aladino.MockDefaultEnvWithCodeReview(
+	mockedEnv := aladino.MockDefaultEnvWithPullRequestAndFiles(
 		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
@@ -184,9 +186,10 @@ func TestIsWaitingForReview_WhenListReviewsRequestFails(t *testing.T) {
 				utils.MustWrite(w, mockedPullRequestLastPushDateGQLQueryBody)
 			}
 		},
-		aladino.GetDefaultMockCodeReviewDetailsWith(&pbe.CodeReview{
-			RequestedReviewers: &pbe.RequestedReviewers{},
+		aladino.GetDefaultMockPullRequestDetailsWith(&pbc.PullRequest{
+			RequestedReviewers: &pbc.RequestedReviewers{},
 		}),
+		aladino.GetDefaultPullRequestFileList(),
 		aladino.MockBuiltIns(),
 		nil,
 	)
@@ -200,7 +203,7 @@ func TestIsWaitingForReview_WhenListReviewsRequestFails(t *testing.T) {
 
 func TestIsWaitingForReview_WhenNoCommits(t *testing.T) {
 	mockedCommits := []*github.RepositoryCommit{}
-	mockedEnv := aladino.MockDefaultEnvWithCodeReview(
+	mockedEnv := aladino.MockDefaultEnvWithPullRequestAndFiles(
 		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
@@ -211,9 +214,10 @@ func TestIsWaitingForReview_WhenNoCommits(t *testing.T) {
 			),
 		},
 		nil,
-		aladino.GetDefaultMockCodeReviewDetailsWith(&pbe.CodeReview{
-			RequestedReviewers: &pbe.RequestedReviewers{},
+		aladino.GetDefaultMockPullRequestDetailsWith(&pbc.PullRequest{
+			RequestedReviewers: &pbc.RequestedReviewers{},
 		}),
+		aladino.GetDefaultPullRequestFileList(),
 		aladino.MockBuiltIns(),
 		nil,
 	)
@@ -229,29 +233,29 @@ func TestIsWaitingForReview_WhenNoCommits(t *testing.T) {
 func TestIsWaitingForReview_WhenHasNoReviews(t *testing.T) {
 	mockedLastCommitDate := time.Now()
 	tests := map[string]struct {
-		requestedReviewers []*pbe.ExternalUser
-		requestedTeams     []*pbe.Team
+		requestedReviewers []*pbc.User
+		requestedTeams     []*pbc.Team
 		wantValue          aladino.Value
 	}{
 		"from user": {
-			requestedReviewers: []*pbe.ExternalUser{{
+			requestedReviewers: []*pbc.User{{
 				Login: "john",
 			}},
-			requestedTeams: []*pbe.Team{},
+			requestedTeams: []*pbc.Team{},
 			wantValue:      aladino.BuildBoolValue(true),
 		},
 		"from team": {
-			requestedReviewers: []*pbe.ExternalUser{},
-			requestedTeams: []*pbe.Team{{
+			requestedReviewers: []*pbc.User{},
+			requestedTeams: []*pbc.Team{{
 				Name: "team",
 			}},
 			wantValue: aladino.BuildBoolValue(true),
 		},
 		"from user and team": {
-			requestedReviewers: []*pbe.ExternalUser{{
+			requestedReviewers: []*pbc.User{{
 				Login: "john",
 			}},
-			requestedTeams: []*pbe.Team{{
+			requestedTeams: []*pbc.Team{{
 				Name: "team",
 			}},
 			wantValue: aladino.BuildBoolValue(true),
@@ -260,7 +264,7 @@ func TestIsWaitingForReview_WhenHasNoReviews(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			mockedEnv := aladino.MockDefaultEnvWithCodeReview(
+			mockedEnv := aladino.MockDefaultEnvWithPullRequestAndFiles(
 				t,
 				[]mock.MockBackendOption{
 					mock.WithRequestMatchHandler(
@@ -285,12 +289,13 @@ func TestIsWaitingForReview_WhenHasNoReviews(t *testing.T) {
 					),
 				},
 				nil,
-				aladino.GetDefaultMockCodeReviewDetailsWith(&pbe.CodeReview{
-					RequestedReviewers: &pbe.RequestedReviewers{
+				aladino.GetDefaultMockPullRequestDetailsWith(&pbc.PullRequest{
+					RequestedReviewers: &pbc.RequestedReviewers{
 						Users: test.requestedReviewers,
 						Teams: test.requestedTeams,
 					},
 				}),
+				aladino.GetDefaultPullRequestFileList(),
 				aladino.MockBuiltIns(),
 				nil,
 			)
@@ -315,14 +320,14 @@ func TestIsWaitingForReview_WhenHasReviews(t *testing.T) {
 			},
 		},
 	}}
-	mockedCodeReview := aladino.GetDefaultMockCodeReviewDetailsWith(&pbe.CodeReview{
-		RequestedReviewers: &pbe.RequestedReviewers{},
-		Author:             &pbe.ExternalUser{Login: mockedAuthorLogin},
+	mockedCodeReview := aladino.GetDefaultMockPullRequestDetailsWith(&pbc.PullRequest{
+		RequestedReviewers: &pbc.RequestedReviewers{},
+		Author:             &pbc.User{Login: mockedAuthorLogin},
 	})
 
-	mockedCodeReviewNumber := host.GetCodeReviewNumber(mockedCodeReview)
-	mockOwner := host.GetCodeReviewBaseOwnerName(mockedCodeReview)
-	mockRepo := host.GetCodeReviewBaseRepoName(mockedCodeReview)
+	mockedCodeReviewNumber := host.GetPullRequestNumber(mockedCodeReview)
+	mockOwner := host.GetPullRequestBaseOwnerName(mockedCodeReview)
+	mockRepo := host.GetPullRequestBaseRepoName(mockedCodeReview)
 	mockedPullRequestLastPushDateGQLQuery := fmt.Sprintf(`{
 		"query":"query($pullRequestNumber:Int! $repositoryName:String! $repositoryOwner:String!){
 			repository(owner: $repositoryOwner, name: $repositoryName){
@@ -471,7 +476,7 @@ func TestIsWaitingForReview_WhenHasReviews(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			mockedEnv := aladino.MockDefaultEnvWithCodeReview(
+			mockedEnv := aladino.MockDefaultEnvWithPullRequestAndFiles(
 				t,
 				[]mock.MockBackendOption{
 					mock.WithRequestMatchHandler(
@@ -495,6 +500,7 @@ func TestIsWaitingForReview_WhenHasReviews(t *testing.T) {
 					}
 				},
 				mockedCodeReview,
+				aladino.GetDefaultPullRequestFileList(),
 				aladino.MockBuiltIns(),
 				nil,
 			)

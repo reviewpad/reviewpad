@@ -10,7 +10,7 @@ import (
 	"testing"
 
 	"github.com/migueleliasweb/go-github-mock/src/mock"
-	pbe "github.com/reviewpad/api/go/entities"
+	pbc "github.com/reviewpad/api/go/codehost"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -22,7 +22,7 @@ func TestAssignAssignees(t *testing.T) {
 	defaultAssignees := 10
 	tests := map[string]struct {
 		clientOptions               []mock.MockBackendOption
-		codeReview                  *pbe.CodeReview
+		codeReview                  *pbc.PullRequest
 		inputAssignees              aladino.Value
 		inputTotalRequiredAssignees aladino.Value
 		shouldAssign                bool
@@ -59,8 +59,8 @@ func TestAssignAssignees(t *testing.T) {
 			wantErr:                     fmt.Errorf("assignAssignees: total required assignees is invalid. please insert a number bigger than 0"),
 		},
 		"when the total required assignees is greater than the total of available assignees": {
-			codeReview: &pbe.CodeReview{
-				Assignees: []*pbe.ExternalUser{},
+			codeReview: &pbc.PullRequest{
+				Assignees: []*pbc.User{},
 			},
 			inputAssignees: aladino.BuildArrayValue([]aladino.Value{
 				aladino.BuildStringValue("john"),
@@ -70,8 +70,8 @@ func TestAssignAssignees(t *testing.T) {
 			shouldAssign:                true,
 		},
 		"when one of the required assignees is already an assignee": {
-			codeReview: &pbe.CodeReview{
-				Assignees: []*pbe.ExternalUser{
+			codeReview: &pbc.PullRequest{
+				Assignees: []*pbc.User{
 					{
 						Login: "john",
 					},
@@ -88,7 +88,7 @@ func TestAssignAssignees(t *testing.T) {
 
 	for _, test := range tests {
 		isAssigneesRequestPerformed := false
-		mockedEnv := aladino.MockDefaultEnvWithCodeReview(
+		mockedEnv := aladino.MockDefaultEnvWithPullRequestAndFiles(
 			t,
 			append(
 				[]mock.MockBackendOption{
@@ -103,7 +103,8 @@ func TestAssignAssignees(t *testing.T) {
 				test.clientOptions...,
 			),
 			nil,
-			aladino.GetDefaultMockCodeReviewDetailsWith(test.codeReview),
+			aladino.GetDefaultMockPullRequestDetailsWith(test.codeReview),
+			aladino.GetDefaultPullRequestFileList(),
 			aladino.MockBuiltIns(),
 			nil,
 		)

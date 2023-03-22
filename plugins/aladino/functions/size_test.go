@@ -7,7 +7,7 @@ package plugins_aladino_functions_test
 import (
 	"testing"
 
-	pbe "github.com/reviewpad/api/go/entities"
+	pbc "github.com/reviewpad/api/go/codehost"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -37,7 +37,7 @@ func TestSize_WhenRegexMatchFails(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			changes := int64(3)
-			mockedCodeReviewFileList := []*pbe.CommitFile{
+			mockedCodeReviewFileList := []*pbc.File{
 				{
 					Filename:     "reviewpad.yml",
 					ChangesCount: changes,
@@ -49,17 +49,17 @@ func TestSize_WhenRegexMatchFails(t *testing.T) {
 			}
 			additions := 6
 			deletions := 0
-			mockedCodeReview := aladino.GetDefaultMockCodeReviewDetailsWith(&pbe.CodeReview{
+			mockedCodeReview := aladino.GetDefaultMockPullRequestDetailsWith(&pbc.PullRequest{
 				AdditionsCount: int64(additions),
 				DeletionsCount: int64(deletions),
-				Files:          mockedCodeReviewFileList,
 			})
 
-			mockedEnv := aladino.MockDefaultEnvWithCodeReview(
+			mockedEnv := aladino.MockDefaultEnvWithPullRequestAndFiles(
 				t,
 				nil,
 				nil,
 				mockedCodeReview,
+				mockedCodeReviewFileList,
 				aladino.MockBuiltIns(),
 				nil,
 			)

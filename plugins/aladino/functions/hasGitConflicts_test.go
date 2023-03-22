@@ -37,11 +37,11 @@ func TestHasGitConflicts_WhenRequestFails(t *testing.T) {
 }
 
 func TestHasGitConflicts(t *testing.T) {
-	mockedCodeReview := aladino.GetDefaultMockReview()
+	mockedCodeReview := aladino.GetDefaultPullRequestDetails()
 
-	mockedCodeReviewNumber := host.GetCodeReviewNumber(mockedCodeReview)
-	mockOwner := host.GetCodeReviewBaseOwnerName(mockedCodeReview)
-	mockRepo := host.GetCodeReviewBaseRepoName(mockedCodeReview)
+	mockedCodeReviewNumber := host.GetPullRequestNumber(mockedCodeReview)
+	mockOwner := host.GetPullRequestBaseOwnerName(mockedCodeReview)
+	mockRepo := host.GetPullRequestBaseRepoName(mockedCodeReview)
 
 	mockedPullRequestQuery := fmt.Sprintf(`{
 	    "query": "query($pullRequestNumber:Int! $repositoryName:String! $repositoryOwner:String!) {

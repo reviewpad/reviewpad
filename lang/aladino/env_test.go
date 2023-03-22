@@ -9,7 +9,7 @@ import (
 	"errors"
 	"testing"
 
-	pbe "github.com/reviewpad/api/go/entities"
+	pbc "github.com/reviewpad/api/go/codehost"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v4/handler"
@@ -32,14 +32,41 @@ func TestNewTypeEnv_WithDefaultEnv(t *testing.T) {
 	assert.Equal(t, wantTypeEnv, gotTypeEnv)
 }
 
+func TestNewEvalEnv_WhenGetPullRequestFilesFails(t *testing.T) {
+	failMessage := "GetPullRequestFilesFail"
+	mockError := errors.New(failMessage)
+	codehostClient := aladino.GetDefaultCodeHostClientWithFiles(t, nil, mockError)
+	ctx := context.Background()
+
+	targetEntity := &handler.TargetEntity{
+		Owner:  aladino.DefaultMockPrOwner,
+		Repo:   aladino.DefaultMockPrRepoName,
+		Number: aladino.DefaultMockPrNum,
+		Kind:   handler.PullRequest,
+	}
+
+	env, err := aladino.NewEvalEnv(
+		ctx,
+		aladino.DefaultMockLogger,
+		false,
+		nil,
+		codehostClient,
+		aladino.DefaultMockCollector,
+		targetEntity,
+		nil,
+		aladino.MockBuiltIns(),
+	)
+
+	assert.Nil(t, env)
+	assert.Equal(t, err.Error(), failMessage)
+}
+
 func TestNewEvalEnv_WhenNewFileFails(t *testing.T) {
-	codehostClient := aladino.GetDefaultCodeHostClient(t, aladino.GetDefaultMockCodeReviewDetailsWith(&pbe.CodeReview{
-		Files: []*pbe.CommitFile{
-			{
-				Patch: "@@a",
-			},
+	codehostClient := aladino.GetDefaultCodeHostClientWithFiles(t, []*pbc.File{
+		{
+			Patch: "@@a",
 		},
-	}), nil)
+	}, nil)
 
 	ctx := context.Background()
 	targetEntity := &handler.TargetEntity{
@@ -69,16 +96,14 @@ func TestNewEvalEnv(t *testing.T) {
 	fileName := "default-mock-repo/file1.ts"
 	patch := "@@ -2,9 +2,11 @@ package main\n- func previous1() {\n+ func new1() {\n+\nreturn"
 
-	mockedCodeReview := aladino.GetDefaultMockCodeReviewDetailsWith(&pbe.CodeReview{
-		Files: []*pbe.CommitFile{
-			{
-				Filename: fileName,
-				Patch:    patch,
-			},
-		},
-	})
+	mockedCodeReview := aladino.GetDefaultPullRequestDetails()
 
-	codehostClient := aladino.GetDefaultCodeHostClient(t, mockedCodeReview, nil)
+	mockedCodehostClient := aladino.GetDefaultCodeHostClientWithFiles(t, []*pbc.File{
+		{
+			Filename: fileName,
+			Patch:    patch,
+		},
+	}, nil)
 
 	ctx := context.Background()
 	mockedGithubClient := gh.NewGithubClient(nil, nil, nil)
@@ -88,14 +113,14 @@ func TestNewEvalEnv(t *testing.T) {
 		aladino.DefaultMockLogger,
 		false,
 		mockedGithubClient,
-		codehostClient,
+		mockedCodehostClient,
 		aladino.DefaultMockCollector,
 		aladino.DefaultMockTargetEntity,
 		nil,
 		aladino.MockBuiltIns(),
 	)
 
-	mockedTarget, _ := target.NewPullRequestTarget(ctx, aladino.DefaultMockTargetEntity, mockedGithubClient, mockedCodeReview)
+	mockedTarget, _ := target.NewPullRequestTarget(ctx, aladino.DefaultMockTargetEntity, mockedGithubClient, mockedCodehostClient, mockedCodeReview)
 
 	wantEnv := &aladino.BaseEnv{
 		Ctx:          ctx,
@@ -135,7 +160,7 @@ func TestNewEvalEnv(t *testing.T) {
 func TestNewEvalEnv_WhenGetPullRequestFails(t *testing.T) {
 	mockErr := errors.New("mock error")
 
-	codehostClient := aladino.GetDefaultCodeHostClient(t, nil, mockErr)
+	codehostClient := aladino.GetDefaultCodeHostClient(t, nil, nil, mockErr, nil)
 
 	ctx := context.Background()
 

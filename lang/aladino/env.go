@@ -6,6 +6,7 @@ package aladino
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/reviewpad/reviewpad/v4/codehost"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
@@ -156,12 +157,12 @@ func NewEvalEnv(
 
 		input.Target = target.NewIssueTarget(ctx, targetEntity, githubClient, issue)
 	case handler.PullRequest:
-		pullRequest, err := codeHostClient.GetCodeReview(ctx, targetEntity)
+		pullRequest, err := codeHostClient.GetPullRequest(ctx, fmt.Sprintf("%s/%s", targetEntity.Owner, targetEntity.Repo), int64(targetEntity.Number))
 		if err != nil {
 			return nil, err
 		}
 
-		pullRequestTarget, err := target.NewPullRequestTarget(ctx, targetEntity, githubClient, pullRequest)
+		pullRequestTarget, err := target.NewPullRequestTarget(ctx, targetEntity, githubClient, codeHostClient, pullRequest)
 		if err != nil {
 			return nil, err
 		}

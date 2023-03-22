@@ -21,11 +21,11 @@ func HasGitConflicts() *aladino.BuiltInFunction {
 }
 
 func hasGitConflictsCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
-	pullRequest := e.GetTarget().(*target.PullRequestTarget).CodeReview
+	pullRequest := e.GetTarget().(*target.PullRequestTarget).PullRequest
 
-	prNum := host.GetCodeReviewNumber(pullRequest)
-	repoOwner := host.GetCodeReviewBaseOwnerName(pullRequest)
-	repoName := host.GetCodeReviewBaseRepoName(pullRequest)
+	prNum := host.GetPullRequestNumber(pullRequest)
+	repoOwner := host.GetPullRequestBaseOwnerName(pullRequest)
+	repoName := host.GetPullRequestBaseRepoName(pullRequest)
 	var pullRequestQuery struct {
 		Repository struct {
 			PullRequest struct {

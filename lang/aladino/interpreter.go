@@ -195,7 +195,7 @@ func (i *Interpreter) ReportMetrics() error {
 	prNum := targetEntity.Number
 	repo := targetEntity.Repo
 	ctx := i.Env.GetCtx()
-	pr := i.Env.GetTarget().(*target.PullRequestTarget).CodeReview
+	pr := i.Env.GetTarget().(*target.PullRequestTarget).PullRequest
 
 	if !pr.IsMerged {
 		return nil

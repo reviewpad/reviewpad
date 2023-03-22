@@ -11,7 +11,7 @@ import (
 	"github.com/google/go-github/v49/github"
 	"github.com/gorilla/mux"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
-	pbe "github.com/reviewpad/api/go/entities"
+	pbc "github.com/reviewpad/api/go/codehost"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/reviewpad/reviewpad/v4/utils"
@@ -24,7 +24,7 @@ func TestRemoveLabels_WhenDeleteLabelRequestFails(t *testing.T) {
 	defaultLabel := "default-label"
 	failMessage := "DeleteLabelsFail"
 
-	mockedEnv := aladino.MockDefaultEnvWithCodeReview(
+	mockedEnv := aladino.MockDefaultEnvWithPullRequestAndFiles(
 		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
@@ -43,14 +43,15 @@ func TestRemoveLabels_WhenDeleteLabelRequestFails(t *testing.T) {
 			),
 		},
 		nil,
-		aladino.GetDefaultMockCodeReviewDetailsWith(&pbe.CodeReview{
-			Labels: []*pbe.Label{
+		aladino.GetDefaultMockPullRequestDetailsWith(&pbc.PullRequest{
+			Labels: []*pbc.Label{
 				{
 					Id:   "1234",
 					Name: "defaultLabel",
 				},
 			},
 		}),
+		aladino.GetDefaultPullRequestFileList(),
 		aladino.MockBuiltIns(),
 		nil,
 	)
@@ -66,7 +67,7 @@ func TestRemoveLabels_WhenDeleteLabelRequestFails(t *testing.T) {
 func TestRemoveLabels_WhenLabelDoesNotExist(t *testing.T) {
 	defaultLabel := "default-label"
 
-	mockedEnv := aladino.MockDefaultEnvWithCodeReview(
+	mockedEnv := aladino.MockDefaultEnvWithPullRequestAndFiles(
 		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
@@ -83,14 +84,15 @@ func TestRemoveLabels_WhenLabelDoesNotExist(t *testing.T) {
 			),
 		},
 		nil,
-		aladino.GetDefaultMockCodeReviewDetailsWith(&pbe.CodeReview{
-			Labels: []*pbe.Label{
+		aladino.GetDefaultMockPullRequestDetailsWith(&pbc.PullRequest{
+			Labels: []*pbc.Label{
 				{
 					Id:   "1234",
 					Name: defaultLabel,
 				},
 			},
 		}),
+		aladino.GetDefaultPullRequestFileList(),
 		aladino.MockBuiltIns(),
 		nil,
 	)
@@ -141,7 +143,7 @@ func TestRemoveLabels(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			mockedEnv := aladino.MockDefaultEnvWithCodeReview(
+			mockedEnv := aladino.MockDefaultEnvWithPullRequestAndFiles(
 				t,
 				[]mock.MockBackendOption{
 					mock.WithRequestMatchHandler(
@@ -154,14 +156,15 @@ func TestRemoveLabels(t *testing.T) {
 					),
 				},
 				nil,
-				aladino.GetDefaultMockCodeReviewDetailsWith(&pbe.CodeReview{
-					Labels: []*pbe.Label{
+				aladino.GetDefaultMockPullRequestDetailsWith(&pbc.PullRequest{
+					Labels: []*pbc.Label{
 						{
 							Id:   "1234",
 							Name: labelAInIssue,
 						},
 					},
 				}),
+				aladino.GetDefaultPullRequestFileList(),
 				aladino.MockBuiltIns(),
 				nil,
 			)

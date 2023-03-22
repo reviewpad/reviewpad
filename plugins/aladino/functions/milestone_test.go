@@ -7,7 +7,7 @@ package plugins_aladino_functions_test
 import (
 	"testing"
 
-	pbe "github.com/reviewpad/api/go/entities"
+	pbc "github.com/reviewpad/api/go/codehost"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -17,16 +17,17 @@ var milestone = plugins_aladino.PluginBuiltIns().Functions["milestone"].Code
 
 func TestMilestone(t *testing.T) {
 	milestoneTitle := "v1.0"
-	mockedCodeReview := aladino.GetDefaultMockCodeReviewDetailsWith(&pbe.CodeReview{
-		Milestone: &pbe.Milestone{
+	mockedCodeReview := aladino.GetDefaultMockPullRequestDetailsWith(&pbc.PullRequest{
+		Milestone: &pbc.Milestone{
 			Title: milestoneTitle,
 		},
 	})
-	mockedEnv := aladino.MockDefaultEnvWithCodeReview(
+	mockedEnv := aladino.MockDefaultEnvWithPullRequestAndFiles(
 		t,
 		nil,
 		nil,
 		mockedCodeReview,
+		aladino.GetDefaultPullRequestFileList(),
 		aladino.MockBuiltIns(),
 		nil,
 	)

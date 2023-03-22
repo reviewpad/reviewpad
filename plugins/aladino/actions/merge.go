@@ -7,7 +7,7 @@ package plugins_aladino_actions
 import (
 	"fmt"
 
-	pbe "github.com/reviewpad/api/go/entities"
+	pbc "github.com/reviewpad/api/go/codehost"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v4/handler"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
@@ -25,7 +25,7 @@ func mergeCode(e aladino.Env, args []aladino.Value) error {
 	t := e.GetTarget().(*target.PullRequestTarget)
 	log := e.GetLogger().WithField("builtin", "merge")
 
-	if t.CodeReview.Status != pbe.CodeReviewStatus_OPEN || t.CodeReview.IsDraft {
+	if t.PullRequest.Status != pbc.PullRequestStatus_OPEN || t.PullRequest.IsDraft {
 		log.Infof("skipping action because pull request is not open or is a draft")
 		return nil
 	}

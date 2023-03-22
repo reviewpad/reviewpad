@@ -7,7 +7,7 @@ package plugins_aladino_functions_test
 import (
 	"testing"
 
-	pbe "github.com/reviewpad/api/go/entities"
+	pbc "github.com/reviewpad/api/go/codehost"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -16,29 +16,30 @@ import (
 var requestedReviewers = plugins_aladino.PluginBuiltIns().Functions["requestedReviewers"].Code
 
 func TestRequestedReviewers(t *testing.T) {
-	mockedRequestedReviewers := &pbe.RequestedReviewers{
-		Users: []*pbe.ExternalUser{
+	mockedRequestedReviewers := &pbc.RequestedReviewers{
+		Users: []*pbc.User{
 			{
 				Login: "mary",
 			},
 		},
-		Teams: []*pbe.Team{
+		Teams: []*pbc.Team{
 			{
-				Alias: "reviewpad",
+				Slug: "reviewpad",
 			},
 		},
 	}
-	mockedCodeReview := aladino.GetDefaultMockCodeReviewDetailsWith(&pbe.CodeReview{
-		Author: &pbe.ExternalUser{
+	mockedCodeReview := aladino.GetDefaultMockPullRequestDetailsWith(&pbc.PullRequest{
+		Author: &pbc.User{
 			Login: "john",
 		},
 		RequestedReviewers: mockedRequestedReviewers,
 	})
-	mockedEnv := aladino.MockDefaultEnvWithCodeReview(
+	mockedEnv := aladino.MockDefaultEnvWithPullRequestAndFiles(
 		t,
 		nil,
 		nil,
 		mockedCodeReview,
+		aladino.GetDefaultPullRequestFileList(),
 		aladino.MockBuiltIns(),
 		nil,
 	)

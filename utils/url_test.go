@@ -8,7 +8,7 @@ import (
 	"errors"
 	"testing"
 
-	pbe "github.com/reviewpad/api/go/entities"
+	pbc "github.com/reviewpad/api/go/codehost"
 	"github.com/reviewpad/reviewpad/v4/utils"
 	"github.com/stretchr/testify/assert"
 )
@@ -16,14 +16,14 @@ import (
 func TestValidateUrl(t *testing.T) {
 	tests := map[string]struct {
 		url              string
-		expectedBranch   *pbe.Branch
+		expectedBranch   *pbc.Branch
 		expectedFilePath string
 		expectedErr      error
 	}{
 		"valid blob": {
 			url: "https://github.com/reviewpad/.github/blob/main/reviewpad-models/common.yml",
-			expectedBranch: &pbe.Branch{
-				Repo: &pbe.Repository{
+			expectedBranch: &pbc.Branch{
+				Repo: &pbc.Repository{
 					Owner: "reviewpad",
 					Name:  ".github",
 				},

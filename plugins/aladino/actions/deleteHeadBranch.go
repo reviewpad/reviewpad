@@ -27,16 +27,16 @@ func deleteHeadBranch(e aladino.Env, args []aladino.Value) error {
 	owner := targetEntity.Owner
 	repo := targetEntity.Repo
 
-	if !target.CodeReview.IsMerged && target.CodeReview.ClosedAt == nil {
+	if !target.PullRequest.IsMerged && target.PullRequest.ClosedAt == nil {
 		return nil
 	}
 
-	if target.CodeReview.Head.Repo.IsFork {
+	if target.PullRequest.Head.Repo.IsFork {
 		e.GetLogger().Warnln("$deleteHeadBranch built-in action doesn't work across forks")
 		return nil
 	}
 
-	ref := "heads/" + target.CodeReview.Head.Name
+	ref := "heads/" + target.PullRequest.Head.Name
 
 	refExists, err := e.GetGithubClient().RefExists(ctx, owner, repo, "refs/"+ref)
 	if err != nil {

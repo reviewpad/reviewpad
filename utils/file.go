@@ -9,7 +9,7 @@ import (
 	"context"
 	"strings"
 
-	pbe "github.com/reviewpad/api/go/entities"
+	pbc "github.com/reviewpad/api/go/codehost"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/sirupsen/logrus"
 )
@@ -34,7 +34,7 @@ func FileExt(fp string) string {
 // then we download both files using the filePath and check their contents.
 // This strategy assumes that the file path exists in the head branch.
 // Otherwise, we download the pull request files and check the filePath exists in them.
-func ReviewpadFileChanged(ctx context.Context, githubClient *gh.GithubClient, filePath string, pullRequest *pbe.CodeReview) (bool, error) {
+func ReviewpadFileChanged(ctx context.Context, githubClient *gh.GithubClient, filePath string, pullRequest *pbc.PullRequest) (bool, error) {
 	if pullRequest.ChangedFilesCount > pullRequestFileLimit {
 		rawHeadFile, err := githubClient.DownloadContents(ctx, filePath, pullRequest.Head)
 		if err != nil {
@@ -73,7 +73,7 @@ func ReviewpadFileChanged(ctx context.Context, githubClient *gh.GithubClient, fi
 	return false, nil
 }
 
-func DownloadReviewpadFileFromGitHub(ctx context.Context, logger *logrus.Entry, githubClient *gh.GithubClient, filePath string, branch *pbe.Branch) (*bytes.Buffer, error) {
+func DownloadReviewpadFileFromGitHub(ctx context.Context, logger *logrus.Entry, githubClient *gh.GithubClient, filePath string, branch *pbc.Branch) (*bytes.Buffer, error) {
 	reviewpadFileContent, err := githubClient.DownloadContents(ctx, filePath, branch)
 	if err != nil {
 		return nil, err

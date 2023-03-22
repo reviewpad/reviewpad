@@ -13,7 +13,7 @@ import (
 
 	"github.com/google/go-github/v49/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
-	pbe "github.com/reviewpad/api/go/entities"
+	pbc "github.com/reviewpad/api/go/codehost"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/reviewpad/reviewpad/v4/utils"
@@ -83,11 +83,11 @@ func TestAssignReviewer_WhenAuthorIsInListOfReviewers(t *testing.T) {
 	wantReviewers := []string{
 		reviewerLogin,
 	}
-	mockedCodeReview := aladino.GetDefaultMockCodeReviewDetailsWith(&pbe.CodeReview{
-		Author:             &pbe.ExternalUser{Login: authorLogin},
-		RequestedReviewers: &pbe.RequestedReviewers{},
+	mockedCodeReview := aladino.GetDefaultMockPullRequestDetailsWith(&pbc.PullRequest{
+		Author:             &pbc.User{Login: authorLogin},
+		RequestedReviewers: &pbc.RequestedReviewers{},
 	})
-	mockedEnv := aladino.MockDefaultEnvWithCodeReview(
+	mockedEnv := aladino.MockDefaultEnvWithPullRequestAndFiles(
 		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatch(
@@ -130,6 +130,7 @@ func TestAssignReviewer_WhenAuthorIsInListOfReviewers(t *testing.T) {
 			`)
 		},
 		mockedCodeReview,
+		aladino.GetDefaultPullRequestFileList(),
 		aladino.MockBuiltIns(),
 		nil,
 	)
@@ -155,14 +156,14 @@ func TestAssignReviewer_WhenTotalRequiredReviewersIsMoreThanTotalAvailableReview
 	reviewerLogin := "mary"
 	authorLogin := "john"
 	totalRequiredReviewers := 2
-	mockedCodeReview := aladino.GetDefaultMockCodeReviewDetailsWith(&pbe.CodeReview{
-		Author:             &pbe.ExternalUser{Login: authorLogin},
-		RequestedReviewers: &pbe.RequestedReviewers{},
+	mockedCodeReview := aladino.GetDefaultMockPullRequestDetailsWith(&pbc.PullRequest{
+		Author:             &pbc.User{Login: authorLogin},
+		RequestedReviewers: &pbc.RequestedReviewers{},
 	})
 	wantReviewers := []string{
 		reviewerLogin,
 	}
-	mockedEnv := aladino.MockDefaultEnvWithCodeReview(
+	mockedEnv := aladino.MockDefaultEnvWithPullRequestAndFiles(
 		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatch(
@@ -205,6 +206,7 @@ func TestAssignReviewer_WhenTotalRequiredReviewersIsMoreThanTotalAvailableReview
 			`)
 		},
 		mockedCodeReview,
+		aladino.GetDefaultPullRequestFileList(),
 		aladino.MockBuiltIns(),
 		nil,
 	)
@@ -267,9 +269,9 @@ func TestAssignReviewer_WhenPullRequestAlreadyHasReviews(t *testing.T) {
 	wantReviewers := []string{
 		reviewerLogin,
 	}
-	mockedPullRequest := aladino.GetDefaultMockCodeReviewDetailsWith(&pbe.CodeReview{
-		Author:             &pbe.ExternalUser{Login: authorLogin},
-		RequestedReviewers: &pbe.RequestedReviewers{},
+	mockedPullRequest := aladino.GetDefaultMockPullRequestDetailsWith(&pbc.PullRequest{
+		Author:             &pbc.User{Login: authorLogin},
+		RequestedReviewers: &pbc.RequestedReviewers{},
 	})
 	mockedEnv := aladino.MockDefaultEnv(
 		t,
@@ -355,11 +357,11 @@ func TestAssignReviewer_WhenPullRequestAlreadyHasApproval(t *testing.T) {
 	wantReviewers := []string{}
 	time := time.Date(2022, 1, 1, 1, 1, 1, 1, time.UTC)
 
-	mockedCodeReview := aladino.GetDefaultMockCodeReviewDetailsWith(&pbe.CodeReview{
-		Author:             &pbe.ExternalUser{Login: authorLogin},
-		RequestedReviewers: &pbe.RequestedReviewers{},
+	mockedCodeReview := aladino.GetDefaultMockPullRequestDetailsWith(&pbc.PullRequest{
+		Author:             &pbc.User{Login: authorLogin},
+		RequestedReviewers: &pbc.RequestedReviewers{},
 	})
-	mockedEnv := aladino.MockDefaultEnvWithCodeReview(
+	mockedEnv := aladino.MockDefaultEnvWithPullRequestAndFiles(
 		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatch(
@@ -412,6 +414,7 @@ func TestAssignReviewer_WhenPullRequestAlreadyHasApproval(t *testing.T) {
 			`)
 		},
 		mockedCodeReview,
+		aladino.GetDefaultPullRequestFileList(),
 		aladino.MockBuiltIns(),
 		nil,
 	)
@@ -439,17 +442,17 @@ func TestAssignReviewer_WhenPullRequestAlreadyHasRequestedReviewers(t *testing.T
 	wantReviewers := []string{
 		reviewerB,
 	}
-	mockedCodeReview := aladino.GetDefaultMockCodeReviewDetailsWith(&pbe.CodeReview{
-		Author: &pbe.ExternalUser{Login: authorLogin},
-		RequestedReviewers: &pbe.RequestedReviewers{
-			Users: []*pbe.ExternalUser{
+	mockedCodeReview := aladino.GetDefaultMockPullRequestDetailsWith(&pbc.PullRequest{
+		Author: &pbc.User{Login: authorLogin},
+		RequestedReviewers: &pbc.RequestedReviewers{
+			Users: []*pbc.User{
 				{
 					Login: reviewerA,
 				},
 			},
 		},
 	})
-	mockedEnv := aladino.MockDefaultEnvWithCodeReview(
+	mockedEnv := aladino.MockDefaultEnvWithPullRequestAndFiles(
 		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatch(
@@ -492,6 +495,7 @@ func TestAssignReviewer_WhenPullRequestAlreadyHasRequestedReviewers(t *testing.T
 			`)
 		},
 		mockedCodeReview,
+		aladino.GetDefaultPullRequestFileList(),
 		aladino.MockBuiltIns(),
 		nil,
 	)
@@ -521,19 +525,19 @@ func TestAssignReviewer_HasNoAvailableReviewers(t *testing.T) {
 	authorLogin := "john"
 	reviewerLogin := "mary"
 	totalRequiredReviewers := 1
-	mockedCodeReview := aladino.GetDefaultMockCodeReviewDetailsWith(&pbe.CodeReview{
-		Author: &pbe.ExternalUser{
+	mockedCodeReview := aladino.GetDefaultMockPullRequestDetailsWith(&pbc.PullRequest{
+		Author: &pbc.User{
 			Login: authorLogin,
 		},
-		RequestedReviewers: &pbe.RequestedReviewers{
-			Users: []*pbe.ExternalUser{
+		RequestedReviewers: &pbc.RequestedReviewers{
+			Users: []*pbc.User{
 				{
 					Login: reviewerLogin,
 				},
 			},
 		},
 	})
-	mockedEnv := aladino.MockDefaultEnvWithCodeReview(
+	mockedEnv := aladino.MockDefaultEnvWithPullRequestAndFiles(
 		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatch(
@@ -572,6 +576,7 @@ func TestAssignReviewer_HasNoAvailableReviewers(t *testing.T) {
 			`)
 		},
 		mockedCodeReview,
+		aladino.GetDefaultPullRequestFileList(),
 		aladino.MockBuiltIns(),
 		nil,
 	)
@@ -595,10 +600,10 @@ func TestAssignReviewer_WhenPullRequestAlreadyApproved(t *testing.T) {
 	var isRequestReviewersRequestPerformed bool
 	authorLogin := "john"
 	reviewerA := "mary"
-	mockedCodeReview := aladino.GetDefaultMockCodeReviewDetailsWith(&pbe.CodeReview{
-		Author: &pbe.ExternalUser{Login: authorLogin},
-		RequestedReviewers: &pbe.RequestedReviewers{
-			Users: []*pbe.ExternalUser{
+	mockedCodeReview := aladino.GetDefaultMockPullRequestDetailsWith(&pbc.PullRequest{
+		Author: &pbc.User{Login: authorLogin},
+		RequestedReviewers: &pbc.RequestedReviewers{
+			Users: []*pbc.User{
 				{Login: reviewerA},
 			},
 		},
@@ -615,7 +620,7 @@ func TestAssignReviewer_WhenPullRequestAlreadyApproved(t *testing.T) {
 			SubmittedAt: &time,
 		},
 	}
-	mockedEnv := aladino.MockDefaultEnvWithCodeReview(
+	mockedEnv := aladino.MockDefaultEnvWithPullRequestAndFiles(
 		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatch(
@@ -654,6 +659,7 @@ func TestAssignReviewer_WhenPullRequestAlreadyApproved(t *testing.T) {
 			`)
 		},
 		mockedCodeReview,
+		aladino.GetDefaultPullRequestFileList(),
 		aladino.MockBuiltIns(),
 		nil,
 	)
@@ -947,15 +953,15 @@ func TestAssignReviewer_ReRequest(t *testing.T) {
 			isRequestReviewersRequestPerformed := false
 			mockedAuthorLogin := "john"
 			mockedReviews := test.mockedReviews()
-			mockedCodeReview := aladino.GetDefaultMockCodeReviewDetailsWith(&pbe.CodeReview{
-				Author: &pbe.ExternalUser{Login: mockedAuthorLogin},
-				RequestedReviewers: &pbe.RequestedReviewers{
-					Users: []*pbe.ExternalUser{
+			mockedCodeReview := aladino.GetDefaultMockPullRequestDetailsWith(&pbc.PullRequest{
+				Author: &pbc.User{Login: mockedAuthorLogin},
+				RequestedReviewers: &pbc.RequestedReviewers{
+					Users: []*pbc.User{
 						{Login: mockedReviewerLogin},
 					},
 				},
 			})
-			mockedEnv := aladino.MockDefaultEnvWithCodeReview(
+			mockedEnv := aladino.MockDefaultEnvWithPullRequestAndFiles(
 				t,
 				[]mock.MockBackendOption{
 					mock.WithRequestMatch(
@@ -974,6 +980,7 @@ func TestAssignReviewer_ReRequest(t *testing.T) {
 					utils.MustWrite(w, test.lastPushDateResponse)
 				},
 				mockedCodeReview,
+				aladino.GetDefaultPullRequestFileList(),
 				aladino.MockBuiltIns(),
 				nil,
 			)
@@ -1052,11 +1059,11 @@ func TestAssignReviewer_WithPolicy(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			requestedReviewers := []string{}
 			mockedAuthorLogin := "john"
-			mockedCodeReview := aladino.GetDefaultMockCodeReviewDetailsWith(&pbe.CodeReview{
-				Author:             &pbe.ExternalUser{Login: mockedAuthorLogin},
-				RequestedReviewers: &pbe.RequestedReviewers{},
+			mockedCodeReview := aladino.GetDefaultMockPullRequestDetailsWith(&pbc.PullRequest{
+				Author:             &pbc.User{Login: mockedAuthorLogin},
+				RequestedReviewers: &pbc.RequestedReviewers{},
 			})
-			mockedEnv := aladino.MockDefaultEnvWithCodeReview(
+			mockedEnv := aladino.MockDefaultEnvWithPullRequestAndFiles(
 				t,
 				append(
 					[]mock.MockBackendOption{
@@ -1102,6 +1109,7 @@ func TestAssignReviewer_WithPolicy(t *testing.T) {
 					`)
 				},
 				mockedCodeReview,
+				aladino.GetDefaultPullRequestFileList(),
 				aladino.MockBuiltIns(),
 				nil,
 			)
@@ -1132,10 +1140,10 @@ func TestAssignReviewer_WhenPullRequestAlreadyApprovedBy2Reviewers(t *testing.T)
 	authorLogin := "john"
 	reviewerA := "mary"
 	reviewerB := "steve"
-	mockedCodeReview := aladino.GetDefaultMockCodeReviewDetailsWith(&pbe.CodeReview{
-		Author: &pbe.ExternalUser{Login: authorLogin},
-		RequestedReviewers: &pbe.RequestedReviewers{
-			Users: []*pbe.ExternalUser{
+	mockedCodeReview := aladino.GetDefaultMockPullRequestDetailsWith(&pbc.PullRequest{
+		Author: &pbc.User{Login: authorLogin},
+		RequestedReviewers: &pbc.RequestedReviewers{
+			Users: []*pbc.User{
 				{Login: reviewerA},
 			},
 		},
@@ -1156,7 +1164,7 @@ func TestAssignReviewer_WhenPullRequestAlreadyApprovedBy2Reviewers(t *testing.T)
 			User:  &github.User{Login: github.String(reviewerB)},
 		},
 	}
-	mockedEnv := aladino.MockDefaultEnvWithCodeReview(
+	mockedEnv := aladino.MockDefaultEnvWithPullRequestAndFiles(
 		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatch(
@@ -1195,6 +1203,7 @@ func TestAssignReviewer_WhenPullRequestAlreadyApprovedBy2Reviewers(t *testing.T)
 			`)
 		},
 		mockedCodeReview,
+		aladino.GetDefaultPullRequestFileList(),
 		aladino.MockBuiltIns(),
 		nil,
 	)

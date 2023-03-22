@@ -21,7 +21,7 @@ func ReviewerStatus() *aladino.BuiltInFunction {
 func reviewerStatusCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
 	reviewerLogin := args[0].(*aladino.StringValue)
 
-	pullRequest := e.GetTarget().(*target.PullRequestTarget).CodeReview
+	pullRequest := e.GetTarget().(*target.PullRequestTarget).PullRequest
 	prNum := pullRequest.Number
 	owner := pullRequest.GetBase().GetRepo().GetOwner()
 	repo := pullRequest.GetBase().GetRepo().GetName()

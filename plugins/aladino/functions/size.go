@@ -24,7 +24,7 @@ func sizeCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
 	filePatternsRegex := args[0].(*aladino.ArrayValue)
 
 	if len(filePatternsRegex.Vals) == 0 {
-		size := e.GetTarget().(*target.PullRequestTarget).CodeReview.AdditionsCount + e.GetTarget().(*target.PullRequestTarget).CodeReview.DeletionsCount
+		size := e.GetTarget().(*target.PullRequestTarget).PullRequest.AdditionsCount + e.GetTarget().(*target.PullRequestTarget).PullRequest.DeletionsCount
 		return aladino.BuildIntValue(int(size)), nil
 	}
 

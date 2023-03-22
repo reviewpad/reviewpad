@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/google/go-github/v49/github"
-	pbe "github.com/reviewpad/api/go/entities"
+	pbc "github.com/reviewpad/api/go/codehost"
 	"github.com/shurcooL/githubv4"
 )
 
@@ -172,24 +172,24 @@ type CompareBaseAndHeadQuery struct {
 	} `graphql:"repository(owner: $owner, name: $name)"`
 }
 
-func GetCodeReviewHeadOwnerName(codeReview *pbe.CodeReview) string {
-	return codeReview.Head.Repo.Owner
+func GetPullRequestHeadOwnerName(pullRequest *pbc.PullRequest) string {
+	return pullRequest.Head.Repo.Owner
 }
 
-func GetCodeReviewHeadRepoName(codeReview *pbe.CodeReview) string {
-	return codeReview.Head.Repo.Name
+func GetPullRequestHeadRepoName(pullRequest *pbc.PullRequest) string {
+	return pullRequest.Head.Repo.Name
 }
 
-func GetCodeReviewBaseOwnerName(codeReview *pbe.CodeReview) string {
-	return codeReview.Base.Repo.Owner
+func GetPullRequestBaseOwnerName(pullRequest *pbc.PullRequest) string {
+	return pullRequest.Base.Repo.Owner
 }
 
-func GetCodeReviewBaseRepoName(codeReview *pbe.CodeReview) string {
-	return codeReview.Base.Repo.Name
+func GetPullRequestBaseRepoName(pullRequest *pbc.PullRequest) string {
+	return pullRequest.Base.Repo.Name
 }
 
-func GetCodeReviewNumber(codeReview *pbe.CodeReview) int64 {
-	return codeReview.Number
+func GetPullRequestNumber(pullRequest *pbc.PullRequest) int64 {
+	return pullRequest.Number
 }
 
 func (c *GithubClient) GetPullRequestFiles(ctx context.Context, owner string, repo string, number int) ([]*github.CommitFile, error) {

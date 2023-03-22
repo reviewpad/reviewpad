@@ -20,7 +20,7 @@ func IsWaitingForReview() *aladino.BuiltInFunction {
 }
 
 func isWaitingForReviewCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
-	pullRequest := e.GetTarget().(*target.PullRequestTarget).CodeReview
+	pullRequest := e.GetTarget().(*target.PullRequestTarget).PullRequest
 	requestedUsers := pullRequest.RequestedReviewers.Users
 	requestedTeams := pullRequest.RequestedReviewers.Teams
 	log := e.GetLogger().WithField("builtin", "isWaitingForReview")

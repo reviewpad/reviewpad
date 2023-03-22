@@ -14,7 +14,7 @@ import (
 
 	"github.com/google/go-github/v49/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
-	pbe "github.com/reviewpad/api/go/entities"
+	pbc "github.com/reviewpad/api/go/codehost"
 	"github.com/reviewpad/reviewpad/v4/engine"
 	"github.com/reviewpad/reviewpad/v4/handler"
 	"github.com/reviewpad/reviewpad/v4/utils"
@@ -519,21 +519,22 @@ func TestExecStatement(t *testing.T) {
 }
 
 func TestReport_WhenFindReportCommentFails(t *testing.T) {
-	mockedCodeReview := GetDefaultMockCodeReviewDetailsWith(&pbe.CodeReview{
-		Author: &pbe.ExternalUser{Login: "foobar"},
-		Base: &pbe.Branch{
-			Repo: &pbe.Repository{
+	mockedCodeReview := GetDefaultMockPullRequestDetailsWith(&pbc.PullRequest{
+		Author: &pbc.User{Login: "foobar"},
+		Base: &pbc.Branch{
+			Repo: &pbc.Repository{
 				Owner: "foobar",
 				Name:  "default-mock-repo",
 			},
 			Name: "master",
 		},
 	})
-	mockedEnv := MockDefaultEnvWithCodeReview(
+	mockedEnv := MockDefaultEnvWithPullRequestAndFiles(
 		t,
 		nil,
 		nil,
 		mockedCodeReview,
+		GetDefaultPullRequestFileList(),
 		MockBuiltIns(),
 		nil,
 	)
@@ -699,7 +700,7 @@ func TestNewInterpreter_WhenNewEvalEnvFails(t *testing.T) {
 	ctx := context.Background()
 	mockErr := errors.New("mock error")
 
-	codehostClient := GetDefaultCodeHostClient(t, nil, mockErr)
+	codehostClient := GetDefaultCodeHostClient(t, nil, nil, mockErr, nil)
 
 	// TODO: Ideally, we should not have nil arguments in the call to NewInterpreter
 	gotInterpreter, err := NewInterpreter(

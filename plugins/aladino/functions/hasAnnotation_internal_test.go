@@ -12,8 +12,8 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/google/go-github/v49/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
+	pbc "github.com/reviewpad/api/go/codehost"
 	"github.com/reviewpad/api/go/entities"
-	pbe "github.com/reviewpad/api/go/entities"
 	"github.com/reviewpad/api/go/services"
 	"github.com/reviewpad/api/go/services_mocks"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
@@ -96,9 +96,9 @@ func TestHasAnnotationCode_WhenGetSymbolsFromPatchFails(t *testing.T) {
 	mockedPatch := ""
 	mockedBlobId := "1234"
 
-	mockedCodeReview := aladino.GetDefaultMockCodeReviewDetailsWith(&pbe.CodeReview{
-		Head: &pbe.Branch{
-			Repo: &pbe.Repository{
+	mockedCodeReview := aladino.GetDefaultMockPullRequestDetailsWith(&pbc.PullRequest{
+		Head: &pbc.Branch{
+			Repo: &pbc.Repository{
 				Owner: mockedPRRepoOwner,
 				Uri:   mockedPRUrl,
 				Name:  mockedPRRepoName,
@@ -106,26 +106,27 @@ func TestHasAnnotationCode_WhenGetSymbolsFromPatchFails(t *testing.T) {
 			Name: "new-topic",
 			Sha:  mockedHeadSHA,
 		},
-		Base: &pbe.Branch{
-			Repo: &pbe.Repository{
+		Base: &pbc.Branch{
+			Repo: &pbc.Repository{
 				Owner: mockedPRRepoOwner,
 				Uri:   mockedPRUrl,
 				Name:  mockedPRRepoName,
 			},
 			Name: "master",
 		},
-		Files: []*pbe.CommitFile{
-			{
-				Sha:      mockedBlobId,
-				Filename: mockedPatchFileRelativeName,
-				Patch:    mockedPatch,
-			},
-		},
 	})
+
+	mockedFiles := []*pbc.File{
+		{
+			Sha:      mockedBlobId,
+			Filename: mockedPatchFileRelativeName,
+			Patch:    mockedPatch,
+		},
+	}
 
 	failMessage := "DownloadContents"
 
-	mockedEnv := aladino.MockDefaultEnvWithCodeReview(
+	mockedEnv := aladino.MockDefaultEnvWithPullRequestAndFiles(
 		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
@@ -141,6 +142,7 @@ func TestHasAnnotationCode_WhenGetSymbolsFromPatchFails(t *testing.T) {
 		},
 		nil,
 		mockedCodeReview,
+		mockedFiles,
 		aladino.MockBuiltIns(),
 		nil,
 	)
@@ -189,9 +191,9 @@ func TestHasAnnotationCode(t *testing.T) {
 			mockedPatch := ""
 			mockedBlobId := "1234"
 
-			mockedCodeReview := aladino.GetDefaultMockCodeReviewDetailsWith(&pbe.CodeReview{
-				Head: &pbe.Branch{
-					Repo: &pbe.Repository{
+			mockedCodeReview := aladino.GetDefaultMockPullRequestDetailsWith(&pbc.PullRequest{
+				Head: &pbc.Branch{
+					Repo: &pbc.Repository{
 						Owner: mockedPRRepoOwner,
 						Uri:   mockedPRUrl,
 						Name:  mockedPRRepoName,
@@ -199,22 +201,23 @@ func TestHasAnnotationCode(t *testing.T) {
 					Name: "new-topic",
 					Sha:  mockedHeadSHA,
 				},
-				Base: &pbe.Branch{
-					Repo: &pbe.Repository{
+				Base: &pbc.Branch{
+					Repo: &pbc.Repository{
 						Owner: mockedPRRepoOwner,
 						Uri:   mockedPRUrl,
 						Name:  mockedPRRepoName,
 					},
 					Name: "master",
 				},
-				Files: []*pbe.CommitFile{
-					{
-						Sha:      mockedBlobId,
-						Filename: mockedPatchFileRelativeName,
-						Patch:    mockedPatch,
-					},
-				},
 			})
+
+			mockedFiles := []*pbc.File{
+				{
+					Sha:      mockedBlobId,
+					Filename: mockedPatchFileRelativeName,
+					Patch:    mockedPatch,
+				},
+			}
 
 			mockedSymbols := &entities.Symbols{
 				Files: map[string]*entities.File{},
@@ -252,7 +255,7 @@ func TestHasAnnotationCode(t *testing.T) {
 				},
 			}
 
-			mockedEnv := aladino.MockDefaultEnvWithCodeReview(
+			mockedEnv := aladino.MockDefaultEnvWithPullRequestAndFiles(
 				t,
 				[]mock.MockBackendOption{
 					mock.WithRequestMatchHandler(
@@ -277,6 +280,7 @@ func TestHasAnnotationCode(t *testing.T) {
 				},
 				nil,
 				mockedCodeReview,
+				mockedFiles,
 				mockBuiltIns,
 				nil,
 			)

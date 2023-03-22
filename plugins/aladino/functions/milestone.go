@@ -19,7 +19,7 @@ func Milestone() *aladino.BuiltInFunction {
 }
 
 func milestoneCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
-	pullRequest := e.GetTarget().(*target.PullRequestTarget).CodeReview
+	pullRequest := e.GetTarget().(*target.PullRequestTarget).PullRequest
 	milestoneTitle := pullRequest.GetMilestone().GetTitle()
 	return aladino.BuildStringValue(milestoneTitle), nil
 }

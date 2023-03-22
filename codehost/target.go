@@ -8,7 +8,7 @@ import (
 	"errors"
 	"time"
 
-	pbe "github.com/reviewpad/api/go/entities"
+	pbc "github.com/reviewpad/api/go/codehost"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/reviewpad/reviewpad/v4/handler"
 )
@@ -22,7 +22,7 @@ type Target interface {
 	AddLabels(labels []string) error
 	Close(comment string, stateReason string) error
 	Comment(comment string) error
-	GetAssignees() []*pbe.ExternalUser
+	GetAssignees() []*pbc.User
 	GetAvailableAssignees() ([]*User, error)
 	GetAuthor() (*User, error)
 	GetCommentCount() int64
@@ -30,12 +30,12 @@ type Target interface {
 	GetCreatedAt() string
 	GetUpdatedAt() string
 	GetDescription() string
-	GetLabels() []*pbe.Label
+	GetLabels() []*pbc.Label
 	GetLinkedProjects() ([]gh.GQLProjectV2Item, error)
 	GetNodeID() string
 	GetProjectByName(name string) (*Project, error)
 	GetProjectFieldsByProjectNumber(projectNumber uint64) ([]*ProjectField, error)
-	GetState() pbe.CodeReviewStatus
+	GetState() pbc.PullRequestStatus
 	GetTargetEntity() *handler.TargetEntity
 	GetTitle() string
 	IsLinkedToProject(title string) (bool, error)

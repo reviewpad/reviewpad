@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"testing"
 
-	pbe "github.com/reviewpad/api/go/entities"
+	pbc "github.com/reviewpad/api/go/codehost"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/reviewpad/reviewpad/v4/utils"
@@ -73,7 +73,7 @@ func TestHasUnaddressedThreads(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		mockedEnv := aladino.MockDefaultEnvWithCodeReview(
+		mockedEnv := aladino.MockDefaultEnvWithPullRequestAndFiles(
 			t,
 			nil,
 			func(w http.ResponseWriter, req *http.Request) {
@@ -97,15 +97,16 @@ func TestHasUnaddressedThreads(t *testing.T) {
 					)
 				}
 			},
-			aladino.GetDefaultMockCodeReviewDetailsWith(&pbe.CodeReview{
+			aladino.GetDefaultMockPullRequestDetailsWith(&pbc.PullRequest{
 				Number: aladino.DefaultMockPrNum,
-				Base: &pbe.Branch{
-					Repo: &pbe.Repository{
+				Base: &pbc.Branch{
+					Repo: &pbc.Repository{
 						Owner: aladino.DefaultMockPrOwner,
 						Name:  aladino.DefaultMockPrRepoName,
 					},
 				},
 			}),
+			aladino.GetDefaultPullRequestFileList(),
 			aladino.MockBuiltIns(),
 			nil,
 		)

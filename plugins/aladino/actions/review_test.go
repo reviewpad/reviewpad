@@ -12,7 +12,7 @@ import (
 
 	"github.com/google/go-github/v49/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
-	pbe "github.com/reviewpad/api/go/entities"
+	pbc "github.com/reviewpad/api/go/codehost"
 	host "github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
@@ -84,11 +84,11 @@ func TestReview_WhenLatestReviewRequestFails(t *testing.T) {
 
 func TestReview_WhenLastPushDateRequestFails(t *testing.T) {
 	failMessage := "GetPullRequestLastPushDate"
-	mockedCodeReview := aladino.GetDefaultMockReview()
+	mockedCodeReview := aladino.GetDefaultPullRequestDetails()
 
-	mockedCodeReviewNumber := host.GetCodeReviewNumber(mockedCodeReview)
-	mockOwner := host.GetCodeReviewBaseOwnerName(mockedCodeReview)
-	mockRepo := host.GetCodeReviewBaseRepoName(mockedCodeReview)
+	mockedCodeReviewNumber := host.GetPullRequestNumber(mockedCodeReview)
+	mockOwner := host.GetPullRequestBaseOwnerName(mockedCodeReview)
+	mockRepo := host.GetPullRequestBaseRepoName(mockedCodeReview)
 
 	mockedAuthenticatedUserLoginGQLQuery := `{"query":"{viewer{login}}"}`
 	mockedAuthenticatedUserLoginGQLQueryBody := `{
@@ -167,11 +167,11 @@ func TestReview_WhenLastPushDateRequestFails(t *testing.T) {
 
 func TestReview_WhenPostReviewRequestFail(t *testing.T) {
 	failMessage := "PostReviewRequestFail"
-	mockedCodeReview := aladino.GetDefaultMockReview()
+	mockedCodeReview := aladino.GetDefaultPullRequestDetails()
 
-	mockedCodeReviewNumber := host.GetCodeReviewNumber(mockedCodeReview)
-	mockOwner := host.GetCodeReviewBaseOwnerName(mockedCodeReview)
-	mockRepo := host.GetCodeReviewBaseRepoName(mockedCodeReview)
+	mockedCodeReviewNumber := host.GetPullRequestNumber(mockedCodeReview)
+	mockOwner := host.GetPullRequestBaseOwnerName(mockedCodeReview)
+	mockRepo := host.GetPullRequestBaseRepoName(mockedCodeReview)
 
 	mockedLatestReviewFromReviewerGQLQuery := fmt.Sprintf(`{
 		"query":"query($author:String!$pullRequestNumber:Int!$repositoryName:String!$repositoryOwner:String!){
@@ -307,11 +307,11 @@ func TestReview_WhenPostReviewRequestFail(t *testing.T) {
 }
 
 func TestReview(t *testing.T) {
-	mockedCodeReview := aladino.GetDefaultMockReview()
+	mockedCodeReview := aladino.GetDefaultPullRequestDetails()
 
-	mockedCodeReviewNumber := host.GetCodeReviewNumber(mockedCodeReview)
-	mockOwner := host.GetCodeReviewBaseOwnerName(mockedCodeReview)
-	mockRepo := host.GetCodeReviewBaseRepoName(mockedCodeReview)
+	mockedCodeReviewNumber := host.GetPullRequestNumber(mockedCodeReview)
+	mockOwner := host.GetPullRequestBaseOwnerName(mockedCodeReview)
+	mockRepo := host.GetPullRequestBaseRepoName(mockedCodeReview)
 
 	mockedLatestReviewFromReviewerGQLQuery := fmt.Sprintf(`{
 		"query":"query($author:String!$pullRequestNumber:Int!$repositoryName:String!$repositoryOwner:String!){
@@ -382,11 +382,11 @@ func TestReview(t *testing.T) {
 		inputReviewBody                            string
 		wantReview                                 *github.PullRequestReview
 		wantErr                                    error
-		codeReview                                 *pbe.CodeReview
+		codeReview                                 *pbc.PullRequest
 	}{
 		"when pull request is closed": {
-			codeReview: &pbe.CodeReview{
-				Status: pbe.CodeReviewStatus_CLOSED,
+			codeReview: &pbc.PullRequest{
+				Status: pbc.PullRequestStatus_CLOSED,
 			},
 			clientOptions:    []mock.MockBackendOption{},
 			inputReviewEvent: "COMMENT",
@@ -576,7 +576,7 @@ func TestReview(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			mockedEnv := aladino.MockDefaultEnvWithCodeReview(
+			mockedEnv := aladino.MockDefaultEnvWithPullRequestAndFiles(
 				t,
 				append(
 					[]mock.MockBackendOption{
@@ -614,7 +614,8 @@ func TestReview(t *testing.T) {
 						utils.MustWrite(w, test.mockedLastPullRequestPushDateGQLQueryBody)
 					}
 				},
-				aladino.GetDefaultMockCodeReviewDetailsWith(test.codeReview),
+				aladino.GetDefaultMockPullRequestDetailsWith(test.codeReview),
+				aladino.GetDefaultPullRequestFileList(),
 				aladino.MockBuiltIns(),
 				nil,
 			)

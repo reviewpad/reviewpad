@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"testing"
 
-	pbe "github.com/reviewpad/api/go/entities"
+	pbc "github.com/reviewpad/api/go/codehost"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/reviewpad/reviewpad/v4/utils"
@@ -45,17 +45,17 @@ func TestHasLinkedIssues_WhenHasLinkedIssues(t *testing.T) {
 		mockedPrRepoName,
 		mockedPrOwner,
 	)
-	mockedCodeReview := aladino.GetDefaultMockCodeReviewDetailsWith(&pbe.CodeReview{
+	mockedCodeReview := aladino.GetDefaultMockPullRequestDetailsWith(&pbc.PullRequest{
 		Number: mockedPrNum,
-		Author: &pbe.ExternalUser{Login: mockedAuthorLogin},
-		Base: &pbe.Branch{
-			Repo: &pbe.Repository{
+		Author: &pbc.User{Login: mockedAuthorLogin},
+		Base: &pbc.Branch{
+			Repo: &pbc.Repository{
 				Owner: mockedPrOwner,
 				Name:  mockedPrRepoName,
 			},
 		},
 	})
-	mockedEnv := aladino.MockDefaultEnvWithCodeReview(
+	mockedEnv := aladino.MockDefaultEnvWithPullRequestAndFiles(
 		t,
 		nil,
 		func(w http.ResponseWriter, req *http.Request) {
@@ -77,6 +77,7 @@ func TestHasLinkedIssues_WhenHasLinkedIssues(t *testing.T) {
 			}
 		},
 		mockedCodeReview,
+		aladino.GetDefaultPullRequestFileList(),
 		aladino.MockBuiltIns(),
 		nil,
 	)
@@ -99,17 +100,17 @@ func TestHasLinkedIssues_WhenNoLinkedIssues(t *testing.T) {
 		mockedPrRepoName,
 		mockedPrOwner,
 	)
-	mockedCodeReview := aladino.GetDefaultMockCodeReviewDetailsWith(&pbe.CodeReview{
+	mockedCodeReview := aladino.GetDefaultMockPullRequestDetailsWith(&pbc.PullRequest{
 		Number: mockedPrNum,
-		Author: &pbe.ExternalUser{Login: mockedAuthorLogin},
-		Base: &pbe.Branch{
-			Repo: &pbe.Repository{
+		Author: &pbc.User{Login: mockedAuthorLogin},
+		Base: &pbc.Branch{
+			Repo: &pbc.Repository{
 				Owner: mockedPrOwner,
 				Name:  mockedPrRepoName,
 			},
 		},
 	})
-	mockedEnv := aladino.MockDefaultEnvWithCodeReview(
+	mockedEnv := aladino.MockDefaultEnvWithPullRequestAndFiles(
 		t,
 		nil,
 		func(w http.ResponseWriter, req *http.Request) {
@@ -131,6 +132,7 @@ func TestHasLinkedIssues_WhenNoLinkedIssues(t *testing.T) {
 			}
 		},
 		mockedCodeReview,
+		aladino.GetDefaultPullRequestFileList(),
 		aladino.MockBuiltIns(),
 		nil,
 	)

@@ -12,8 +12,8 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/google/go-github/v49/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
+	pbc "github.com/reviewpad/api/go/codehost"
 	"github.com/reviewpad/api/go/entities"
-	pbe "github.com/reviewpad/api/go/entities"
 	"github.com/reviewpad/api/go/services"
 	"github.com/reviewpad/api/go/services_mocks"
 	"github.com/reviewpad/reviewpad/v4/codehost"
@@ -48,7 +48,7 @@ func TestGetBlocks(t *testing.T) {
  	}
  	return
 `
-	ghFile := &pbe.CommitFile{
+	ghFile := &pbc.File{
 		Patch:    patchData,
 		Filename: fileName,
 	}
@@ -93,42 +93,43 @@ func TestGetSymbolsFromPatch_WhenDownloadContentsFails(t *testing.T) {
 	// Since the patch is simply passed around, it can be an empty string
 	mockedPatch := ""
 	mockedBlobId := "1234"
-	codeReview := &pbe.CodeReview{
+	codeReview := &pbc.PullRequest{
 		Number:   6,
 		IsMerged: true,
-		Base: &pbe.Branch{
+		Base: &pbc.Branch{
 			Name: "master",
-			Repo: &pbe.Repository{
+			Repo: &pbc.Repository{
 				Name:  mockedPRRepoName,
 				Owner: mockedPRRepoOwner,
 				Uri:   fmt.Sprintf("https://github.com/%s/%s", mockedPRRepoOwner, mockedPRRepoName),
 			},
 		},
-		Head: &pbe.Branch{
+		Head: &pbc.Branch{
 			Name: "new-topic",
 			Sha:  mockedHeadSHA,
-			Repo: &pbe.Repository{
+			Repo: &pbc.Repository{
 				Name:  mockedPRRepoName,
 				Owner: mockedPRRepoOwner,
 				Uri:   fmt.Sprintf("https://github.com/%s/%s", mockedPRRepoName, mockedPRRepoOwner),
 			},
 		},
-		RequestedReviewers: &pbe.RequestedReviewers{
-			Users: []*pbe.ExternalUser{},
-			Teams: []*pbe.Team{},
+		RequestedReviewers: &pbc.RequestedReviewers{
+			Users: []*pbc.User{},
+			Teams: []*pbc.Team{},
 		},
-		Files: []*pbe.CommitFile{
-			{
-				Sha:      mockedBlobId,
-				Filename: mockedPatchFileRelativeName,
-				Patch:    mockedPatch,
-			},
+	}
+
+	mockedFiles := []*pbc.File{
+		{
+			Sha:      mockedBlobId,
+			Filename: mockedPatchFileRelativeName,
+			Patch:    mockedPatch,
 		},
 	}
 
 	failMessage := "DownloadContents"
 
-	mockedEnv := aladino.MockDefaultEnvWithCodeReview(
+	mockedEnv := aladino.MockDefaultEnvWithPullRequestAndFiles(
 		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
@@ -144,6 +145,7 @@ func TestGetSymbolsFromPatch_WhenDownloadContentsFails(t *testing.T) {
 		},
 		nil,
 		codeReview,
+		mockedFiles,
 		aladino.MockBuiltIns(),
 		nil,
 	)
@@ -170,9 +172,9 @@ func TestGetSymbolsFromPatch_WhenSemanticServiceNotFound(t *testing.T) {
 	mockedPatch := ""
 	mockedBlobId := "1234"
 
-	mockedCodeReview := aladino.GetDefaultMockCodeReviewDetailsWith(&pbe.CodeReview{
-		Head: &pbe.Branch{
-			Repo: &pbe.Repository{
+	mockedCodeReview := aladino.GetDefaultMockPullRequestDetailsWith(&pbc.PullRequest{
+		Head: &pbc.Branch{
+			Repo: &pbc.Repository{
 				Owner: mockedPRRepoOwner,
 				Uri:   mockedPRUrl,
 				Name:  mockedPRRepoName,
@@ -180,26 +182,27 @@ func TestGetSymbolsFromPatch_WhenSemanticServiceNotFound(t *testing.T) {
 			Name: "new-topic",
 			Sha:  mockedHeadSHA,
 		},
-		Base: &pbe.Branch{
-			Repo: &pbe.Repository{
+		Base: &pbc.Branch{
+			Repo: &pbc.Repository{
 				Owner: mockedPRRepoOwner,
 				Uri:   mockedPRUrl,
 				Name:  mockedPRRepoName,
 			},
 			Name: "master",
 		},
-		Files: []*pbe.CommitFile{
-			{
-				Sha:      mockedBlobId,
-				Filename: mockedPatchFileRelativeName,
-				Patch:    mockedPatch,
-			},
-		},
 	})
+
+	mockedFiles := []*pbc.File{
+		{
+			Sha:      mockedBlobId,
+			Filename: mockedPatchFileRelativeName,
+			Patch:    mockedPatch,
+		},
+	}
 
 	failMessage := "semantic service not found"
 
-	mockedEnv := aladino.MockDefaultEnvWithCodeReview(
+	mockedEnv := aladino.MockDefaultEnvWithPullRequestAndFiles(
 		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
@@ -224,6 +227,7 @@ func TestGetSymbolsFromPatch_WhenSemanticServiceNotFound(t *testing.T) {
 		},
 		nil,
 		mockedCodeReview,
+		mockedFiles,
 		aladino.MockBuiltIns(),
 		nil,
 	)
@@ -255,9 +259,9 @@ func TestGetSymbolsFromPatch_WhenGetSymbolsRequestFails(t *testing.T) {
 	mockedPatch := ""
 	mockedBlobId := "1234"
 
-	mockedCodeReview := aladino.GetDefaultMockCodeReviewDetailsWith(&pbe.CodeReview{
-		Head: &pbe.Branch{
-			Repo: &pbe.Repository{
+	mockedCodeReview := aladino.GetDefaultMockPullRequestDetailsWith(&pbc.PullRequest{
+		Head: &pbc.Branch{
+			Repo: &pbc.Repository{
 				Owner: mockedPRRepoOwner,
 				Uri:   mockedPRUrl,
 				Name:  mockedPRRepoName,
@@ -265,22 +269,23 @@ func TestGetSymbolsFromPatch_WhenGetSymbolsRequestFails(t *testing.T) {
 			Name: "new-topic",
 			Sha:  mockedHeadSHA,
 		},
-		Base: &pbe.Branch{
-			Repo: &pbe.Repository{
+		Base: &pbc.Branch{
+			Repo: &pbc.Repository{
 				Owner: mockedPRRepoOwner,
 				Uri:   mockedPRUrl,
 				Name:  mockedPRRepoName,
 			},
 			Name: "master",
 		},
-		Files: []*pbe.CommitFile{
-			{
-				Sha:      mockedBlobId,
-				Filename: mockedPatchFileRelativeName,
-				Patch:    mockedPatch,
-			},
-		},
 	})
+
+	mockedFiles := []*pbc.File{
+		{
+			Sha:      mockedBlobId,
+			Filename: mockedPatchFileRelativeName,
+			Patch:    mockedPatch,
+		},
+	}
 
 	failMessage := "GetSymbolsRequest"
 
@@ -302,7 +307,7 @@ func TestGetSymbolsFromPatch_WhenGetSymbolsRequestFails(t *testing.T) {
 		},
 	}
 
-	mockedEnv := aladino.MockDefaultEnvWithCodeReview(
+	mockedEnv := aladino.MockDefaultEnvWithPullRequestAndFiles(
 		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
@@ -327,6 +332,7 @@ func TestGetSymbolsFromPatch_WhenGetSymbolsRequestFails(t *testing.T) {
 		},
 		nil,
 		mockedCodeReview,
+		mockedFiles,
 		mockBuiltIns,
 		nil,
 	)
@@ -357,9 +363,9 @@ func TestGetSymbolsFromPatch(t *testing.T) {
 	mockedPatch := ""
 	mockedBlobId := "1234"
 
-	mockedCodeReview := aladino.GetDefaultMockCodeReviewDetailsWith(&pbe.CodeReview{
-		Head: &pbe.Branch{
-			Repo: &pbe.Repository{
+	mockedCodeReview := aladino.GetDefaultMockPullRequestDetailsWith(&pbc.PullRequest{
+		Head: &pbc.Branch{
+			Repo: &pbc.Repository{
 				Owner: mockedPRRepoOwner,
 				Uri:   mockedPRUrl,
 				Name:  mockedPRRepoName,
@@ -367,22 +373,23 @@ func TestGetSymbolsFromPatch(t *testing.T) {
 			Name: "new-topic",
 			Sha:  mockedHeadSHA,
 		},
-		Base: &pbe.Branch{
-			Repo: &pbe.Repository{
+		Base: &pbc.Branch{
+			Repo: &pbc.Repository{
 				Owner: mockedPRRepoOwner,
 				Uri:   mockedPRUrl,
 				Name:  mockedPRRepoName,
 			},
 			Name: "master",
 		},
-		Files: []*pbe.CommitFile{
-			{
-				Sha:      mockedBlobId,
-				Filename: mockedPatchFileRelativeName,
-				Patch:    mockedPatch,
-			},
-		},
 	})
+
+	mockedFiles := []*pbc.File{
+		{
+			Sha:      mockedBlobId,
+			Filename: mockedPatchFileRelativeName,
+			Patch:    mockedPatch,
+		},
+	}
 
 	mockedSymbols := &entities.Symbols{
 		Files: map[string]*entities.File{},
@@ -420,7 +427,7 @@ func TestGetSymbolsFromPatch(t *testing.T) {
 		},
 	}
 
-	mockedEnv := aladino.MockDefaultEnvWithCodeReview(
+	mockedEnv := aladino.MockDefaultEnvWithPullRequestAndFiles(
 		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
@@ -445,6 +452,7 @@ func TestGetSymbolsFromPatch(t *testing.T) {
 		},
 		nil,
 		mockedCodeReview,
+		mockedFiles,
 		mockBuiltIns,
 		nil,
 	)
@@ -571,7 +579,7 @@ func TestGetSymbolsFromFileInBranch_WhenGetSymbolsRequestFails(t *testing.T) {
 		nil,
 	)
 
-	githubMockedCommitFile := &pbe.CommitFile{
+	githubMockedCommitFile := &pbc.File{
 		Sha:      mockedBlobId,
 		Filename: mockedPatchFileRelativeName,
 		Patch:    mockedPatch,
@@ -581,8 +589,8 @@ func TestGetSymbolsFromFileInBranch_WhenGetSymbolsRequestFails(t *testing.T) {
 		Repr: githubMockedCommitFile,
 	}
 
-	mockedBranch := &pbe.Branch{
-		Repo: &pbe.Repository{
+	mockedBranch := &pbc.Branch{
+		Repo: &pbc.Repository{
 			Owner: mockedPRRepoOwner,
 			Uri:   mockedPRUrl,
 			Name:  mockedPRRepoName,
@@ -725,7 +733,7 @@ func TestGetSymbolsFromFileInBranch(t *testing.T) {
 		mockBuiltIns,
 		nil,
 	)
-	githubMockedCommitFile := &pbe.CommitFile{
+	githubMockedCommitFile := &pbc.File{
 		Sha:      mockedBlobId,
 		Filename: mockedPatchFileRelativeName,
 		Patch:    mockedPatch,
@@ -735,8 +743,8 @@ func TestGetSymbolsFromFileInBranch(t *testing.T) {
 		Repr: githubMockedCommitFile,
 	}
 
-	mockedBranch := &pbe.Branch{
-		Repo: &pbe.Repository{
+	mockedBranch := &pbc.Branch{
+		Repo: &pbc.Repository{
 			Owner: mockedPRRepoOwner,
 			Uri:   mockedPRUrl,
 			Name:  mockedPRRepoName,
@@ -774,9 +782,9 @@ func TestGetSymbolsFromHeadByPatch(t *testing.T) {
 	mockedPatch := ""
 	mockedBlobId := "1234"
 
-	mockedCodeReview := aladino.GetDefaultMockCodeReviewDetailsWith(&pbe.CodeReview{
-		Head: &pbe.Branch{
-			Repo: &pbe.Repository{
+	mockedCodeReview := aladino.GetDefaultMockPullRequestDetailsWith(&pbc.PullRequest{
+		Head: &pbc.Branch{
+			Repo: &pbc.Repository{
 				Owner: mockedPRRepoOwner,
 				Uri:   mockedPRUrl,
 				Name:  mockedPRRepoName,
@@ -784,22 +792,23 @@ func TestGetSymbolsFromHeadByPatch(t *testing.T) {
 			Name: "new-topic",
 			Sha:  mockedHeadSHA,
 		},
-		Base: &pbe.Branch{
-			Repo: &pbe.Repository{
+		Base: &pbc.Branch{
+			Repo: &pbc.Repository{
 				Owner: mockedPRRepoOwner,
 				Uri:   mockedPRUrl,
 				Name:  mockedPRRepoName,
 			},
 			Name: "master",
 		},
-		Files: []*pbe.CommitFile{
-			{
-				Sha:      mockedBlobId,
-				Filename: mockedPatchFileRelativeName,
-				Patch:    mockedPatch,
-			},
-		},
 	})
+
+	mockedFiles := []*pbc.File{
+		{
+			Sha:      mockedBlobId,
+			Filename: mockedPatchFileRelativeName,
+			Patch:    mockedPatch,
+		},
+	}
 
 	mockedSymbols := &entities.Symbols{
 		Files: map[string]*entities.File{},
@@ -837,7 +846,7 @@ func TestGetSymbolsFromHeadByPatch(t *testing.T) {
 		},
 	}
 
-	mockedEnv := aladino.MockDefaultEnvWithCodeReview(
+	mockedEnv := aladino.MockDefaultEnvWithPullRequestAndFiles(
 		t,
 		[]mock.MockBackendOption{
 			mock.WithRequestMatchHandler(
@@ -862,6 +871,7 @@ func TestGetSymbolsFromHeadByPatch(t *testing.T) {
 		},
 		nil,
 		mockedCodeReview,
+		mockedFiles,
 		mockBuiltIns,
 		nil,
 	)

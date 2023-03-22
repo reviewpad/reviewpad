@@ -7,7 +7,7 @@ package plugins_aladino_actions
 import (
 	"fmt"
 
-	pbe "github.com/reviewpad/api/go/entities"
+	pbc "github.com/reviewpad/api/go/codehost"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v4/handler"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
@@ -26,12 +26,12 @@ func reviewCode(e aladino.Env, args []aladino.Value) error {
 
 	log := e.GetLogger().WithField("builtin", "review")
 
-	if t.CodeReview.IsDraft {
+	if t.PullRequest.IsDraft {
 		log.Infof("skipping review because the pull request is in draft")
 		return nil
 	}
 
-	if t.CodeReview.Status == pbe.CodeReviewStatus_CLOSED {
+	if t.PullRequest.Status == pbc.PullRequestStatus_CLOSED {
 		log.Infof("skipping review because the pull request is closed")
 		return nil
 	}

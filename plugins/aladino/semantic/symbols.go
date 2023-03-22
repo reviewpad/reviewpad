@@ -9,8 +9,8 @@ import (
 	"strconv"
 	"strings"
 
+	pbc "github.com/reviewpad/api/go/codehost"
 	"github.com/reviewpad/api/go/entities"
-	pbe "github.com/reviewpad/api/go/entities"
 	api "github.com/reviewpad/api/go/services"
 	"github.com/reviewpad/reviewpad/v4/codehost"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
@@ -23,8 +23,8 @@ func GetSymbolsFromPatch(e aladino.Env) (map[string]*entities.Symbols, error) {
 
 	res := make(map[string]*entities.Symbols)
 
-	head := pullRequest.CodeReview.GetHead()
-	base := pullRequest.CodeReview.GetBase()
+	head := pullRequest.PullRequest.GetHead()
+	base := pullRequest.PullRequest.GetBase()
 	url := head.Repo.Uri
 	patch := pullRequest.Patch
 
@@ -75,7 +75,7 @@ func GetSymbolsFromPatch(e aladino.Env) (map[string]*entities.Symbols, error) {
 
 func GetSymbolsFromHeadByPatch(e aladino.Env, patch target.Patch) (*entities.Symbols, map[string]string, error) {
 	pullRequest := e.GetTarget().(*target.PullRequestTarget)
-	head := pullRequest.CodeReview.GetHead()
+	head := pullRequest.PullRequest.GetHead()
 
 	res := &entities.Symbols{
 		Files:   make(map[string]*entities.File),
@@ -85,7 +85,7 @@ func GetSymbolsFromHeadByPatch(e aladino.Env, patch target.Patch) (*entities.Sym
 	files := make(map[string]string)
 
 	for fp, commitFile := range patch {
-		if commitFile.Repr.Status == pbe.CommitFile_REMOVED {
+		if commitFile.Repr.Status == pbc.File_REMOVED {
 			// in this case, the file is not in the head branch
 			continue
 		}
@@ -104,7 +104,7 @@ func GetSymbolsFromHeadByPatch(e aladino.Env, patch target.Patch) (*entities.Sym
 
 func GetSymbolsFromBaseByPatch(e aladino.Env, patch target.Patch) (*entities.Symbols, map[string]string, error) {
 	pullRequest := e.GetTarget().(*target.PullRequestTarget)
-	base := pullRequest.CodeReview.GetBase()
+	base := pullRequest.PullRequest.GetBase()
 
 	res := &entities.Symbols{
 		Files:   make(map[string]*entities.File),
@@ -114,7 +114,7 @@ func GetSymbolsFromBaseByPatch(e aladino.Env, patch target.Patch) (*entities.Sym
 	files := make(map[string]string)
 
 	for fp, commitFile := range patch {
-		if commitFile.Repr.GetStatus() == pbe.CommitFile_ADDED {
+		if commitFile.Repr.GetStatus() == pbc.File_ADDED {
 			// in this case, the file is not in the base branch
 			continue
 		}
@@ -141,7 +141,7 @@ func joinSymbols(current *entities.Symbols, new *entities.Symbols) {
 	}
 }
 
-func GetSymbolsFromFileInBranch(e aladino.Env, commitFile *codehost.File, branch *pbe.Branch) (*entities.Symbols, string, error) {
+func GetSymbolsFromFileInBranch(e aladino.Env, commitFile *codehost.File, branch *pbc.Branch) (*entities.Symbols, string, error) {
 	fp := commitFile.Repr.GetFilename()
 
 	blob, err := e.GetGithubClient().DownloadContents(e.GetCtx(), fp, branch)

@@ -21,7 +21,7 @@ func IsUpdatedWithBaseBranch() *aladino.BuiltInFunction {
 }
 
 func isUpdatedWithBaseBranchCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
-	pullRequest := e.GetTarget().(*target.PullRequestTarget).CodeReview
+	pullRequest := e.GetTarget().(*target.PullRequestTarget).PullRequest
 	targetEntity := e.GetTarget().GetTargetEntity()
 
 	headBehindBy, err := e.GetGithubClient().GetHeadBehindBy(

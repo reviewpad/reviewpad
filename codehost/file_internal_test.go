@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"testing"
 
-	pbe "github.com/reviewpad/api/go/entities"
+	pbc "github.com/reviewpad/api/go/codehost"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -23,7 +23,7 @@ return
 
 func TestAppendToDiff(t *testing.T) {
 	fileName := "default-mock-repo/file1.ts"
-	mockedFile := &pbe.CommitFile{
+	mockedFile := &pbc.File{
 		Patch:    getTestPatch(),
 		Filename: fileName,
 	}
@@ -72,7 +72,7 @@ func TestAppendToDiff(t *testing.T) {
 
 func TestNewFile_WhenErrorInFilePatch(t *testing.T) {
 	fileName := "default-mock-repo/file1.ts"
-	mockedFile := &pbe.CommitFile{
+	mockedFile := &pbc.File{
 		Patch:    "@@",
 		Filename: fileName,
 	}
@@ -85,7 +85,7 @@ func TestNewFile_WhenErrorInFilePatch(t *testing.T) {
 
 func TestNewFile(t *testing.T) {
 	fileName := "default-mock-repo/file1.ts"
-	mockedFile := &pbe.CommitFile{
+	mockedFile := &pbc.File{
 		Patch:    getTestPatch(),
 		Filename: fileName,
 	}
@@ -104,7 +104,7 @@ func TestNewFile(t *testing.T) {
 func TestQuery_WhenCompileFails(t *testing.T) {
 	fileName := "default-mock-repo/file1.ts"
 	mockedFile := &File{
-		Repr: &pbe.CommitFile{
+		Repr: &pbc.File{
 			Patch:    getTestPatch(),
 			Filename: fileName,
 		},
@@ -120,7 +120,7 @@ func TestQuery_WhenCompileFails(t *testing.T) {
 func TestQuery_WhenFound(t *testing.T) {
 	fileName := "default-mock-repo/file1.ts"
 	mockedFile := &File{
-		Repr: &pbe.CommitFile{
+		Repr: &pbc.File{
 			Patch:    getTestPatch(),
 			Filename: fileName,
 		},
@@ -136,7 +136,7 @@ func TestQuery_WhenFound(t *testing.T) {
 func TestQuery_WhenNotFound(t *testing.T) {
 	fileName := "default-mock-repo/file1.ts"
 	mockedFile := &File{
-		Repr: &pbe.CommitFile{
+		Repr: &pbc.File{
 			Patch:    getTestPatch(),
 			Filename: fileName,
 		},

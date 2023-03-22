@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"testing"
 
-	pbe "github.com/reviewpad/api/go/entities"
+	pbc "github.com/reviewpad/api/go/codehost"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
@@ -36,7 +36,7 @@ func TestAddToProject_WhenRequestFails(t *testing.T) {
 
 func TestAddToProject(t *testing.T) {
 	prNodeId := "PR_nodeId"
-	mockedCodeReview := aladino.GetDefaultMockCodeReviewDetailsWith(&pbe.CodeReview{
+	mockedCodeReview := aladino.GetDefaultMockPullRequestDetailsWith(&pbc.PullRequest{
 		Id: prNodeId,
 	})
 	mockedGetProjectQuery := `{
@@ -194,7 +194,7 @@ func TestAddToProject(t *testing.T) {
 
 	for _, testCase := range gqlTestCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			mockedEnv := aladino.MockDefaultEnvWithCodeReview(
+			mockedEnv := aladino.MockDefaultEnvWithPullRequestAndFiles(
 				t,
 				nil,
 				func(res http.ResponseWriter, req *http.Request) {
@@ -211,6 +211,7 @@ func TestAddToProject(t *testing.T) {
 					}
 				},
 				mockedCodeReview,
+				aladino.GetDefaultPullRequestFileList(),
 				aladino.MockBuiltIns(),
 				nil,
 			)

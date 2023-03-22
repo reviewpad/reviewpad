@@ -27,7 +27,7 @@ func rebaseCode(e aladino.Env, args []aladino.Value) error {
 	githubToken := e.GetGithubClient().GetToken()
 	log := e.GetLogger().WithField("builtin", "rebase")
 	t := e.GetTarget().(*target.PullRequestTarget)
-	pr := t.CodeReview
+	pr := t.PullRequest
 
 	if !pr.IsRebaseable {
 		return errors.New("the pull request is not rebaseable")

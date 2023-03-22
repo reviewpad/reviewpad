@@ -7,7 +7,7 @@ package plugins_aladino_functions_test
 import (
 	"testing"
 
-	pbe "github.com/reviewpad/api/go/entities"
+	pbc "github.com/reviewpad/api/go/codehost"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -44,31 +44,30 @@ func TestChanged(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			mockedCodeReview := aladino.GetDefaultMockCodeReviewDetailsWith(&pbe.CodeReview{
-				Files: []*pbe.CommitFile{
-					{
-						Filename: "src/file.go",
-					},
-					{
-						Filename: "test/main.go",
-					},
-					{
-						Filename: "docs/main.md",
-					},
-					{
-						Filename: "src/pkg/client.go",
-					},
-					{
-						Filename: "src/pkg/client_test.go",
-					},
+			mockedFiles := []*pbc.File{
+				{
+					Filename: "src/file.go",
 				},
-			})
+				{
+					Filename: "test/main.go",
+				},
+				{
+					Filename: "docs/main.md",
+				},
+				{
+					Filename: "src/pkg/client.go",
+				},
+				{
+					Filename: "src/pkg/client_test.go",
+				},
+			}
 
-			mockedEnv := aladino.MockDefaultEnvWithCodeReview(
+			mockedEnv := aladino.MockDefaultEnvWithPullRequestAndFiles(
 				t,
 				nil,
 				nil,
-				mockedCodeReview,
+				aladino.GetDefaultPullRequestDetails(),
+				mockedFiles,
 				aladino.MockBuiltIns(),
 				nil,
 			)

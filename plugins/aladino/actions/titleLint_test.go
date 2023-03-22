@@ -7,7 +7,7 @@ package plugins_aladino_actions_test
 import (
 	"testing"
 
-	pbe "github.com/reviewpad/api/go/entities"
+	pbc "github.com/reviewpad/api/go/codehost"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -22,13 +22,14 @@ func TestTitleLint(t *testing.T) {
 		wantErr              string
 	}{
 		"when type is empty": {
-			env: aladino.MockDefaultEnvWithCodeReview(
+			env: aladino.MockDefaultEnvWithPullRequestAndFiles(
 				t,
 				nil,
 				nil,
-				aladino.GetDefaultMockCodeReviewDetailsWith(&pbe.CodeReview{
+				aladino.GetDefaultMockPullRequestDetailsWith(&pbc.PullRequest{
 					Title: ": an amazing feature",
 				}),
+				aladino.GetDefaultPullRequestFileList(),
 				aladino.MockBuiltIns(),
 				nil,
 			),
@@ -39,13 +40,14 @@ func TestTitleLint(t *testing.T) {
 			},
 		},
 		"when title is unconventional": {
-			env: aladino.MockDefaultEnvWithCodeReview(
+			env: aladino.MockDefaultEnvWithPullRequestAndFiles(
 				t,
 				nil,
 				nil,
-				aladino.GetDefaultMockCodeReviewDetailsWith(&pbe.CodeReview{
+				aladino.GetDefaultMockPullRequestDetailsWith(&pbc.PullRequest{
 					Title: "An Amazing Feature",
 				}),
+				aladino.GetDefaultPullRequestFileList(),
 				aladino.MockBuiltIns(),
 				nil,
 			),
@@ -56,26 +58,28 @@ func TestTitleLint(t *testing.T) {
 			},
 		},
 		"when title is conventional": {
-			env: aladino.MockDefaultEnvWithCodeReview(
+			env: aladino.MockDefaultEnvWithPullRequestAndFiles(
 				t,
 				nil,
 				nil,
-				aladino.GetDefaultMockCodeReviewDetailsWith(&pbe.CodeReview{
+				aladino.GetDefaultMockPullRequestDetailsWith(&pbc.PullRequest{
 					Title: "feat: an amazing feature",
 				}),
+				aladino.GetDefaultPullRequestFileList(),
 				aladino.MockBuiltIns(),
 				nil,
 			),
 			wantReportedMessages: map[aladino.Severity][]string{},
 		},
 		"when title is conventional with scope": {
-			env: aladino.MockDefaultEnvWithCodeReview(
+			env: aladino.MockDefaultEnvWithPullRequestAndFiles(
 				t,
 				nil,
 				nil,
-				aladino.GetDefaultMockCodeReviewDetailsWith(&pbe.CodeReview{
+				aladino.GetDefaultMockPullRequestDetailsWith(&pbc.PullRequest{
 					Title: "feat(api): an amazing feature",
 				}),
+				aladino.GetDefaultPullRequestFileList(),
 				aladino.MockBuiltIns(),
 				nil,
 			),

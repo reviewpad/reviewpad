@@ -7,7 +7,7 @@ package plugins_aladino_functions_test
 import (
 	"testing"
 
-	pbe "github.com/reviewpad/api/go/entities"
+	pbc "github.com/reviewpad/api/go/codehost"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -17,12 +17,12 @@ var filesPath = plugins_aladino.PluginBuiltIns().Functions["filesPath"].Code
 
 func TestFilesPath(t *testing.T) {
 	tests := map[string]struct {
-		files      []*pbe.CommitFile
+		files      []*pbc.File
 		wantResult aladino.Value
 		wantErr    error
 	}{
 		"when successful": {
-			files: []*pbe.CommitFile{
+			files: []*pbc.File{
 				{
 					Filename: "go.mod",
 				},
@@ -32,7 +32,7 @@ func TestFilesPath(t *testing.T) {
 			}),
 		},
 		"when successful with nil file": {
-			files: []*pbe.CommitFile{
+			files: []*pbc.File{
 				{
 					Filename: "go.mod",
 				},
@@ -43,7 +43,7 @@ func TestFilesPath(t *testing.T) {
 			}),
 		},
 		"when successful with empty file name": {
-			files: []*pbe.CommitFile{
+			files: []*pbc.File{
 				{
 					Filename: "go.sum",
 				},
@@ -59,13 +59,12 @@ func TestFilesPath(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			mockedEnv := aladino.MockDefaultEnvWithCodeReview(
+			mockedEnv := aladino.MockDefaultEnvWithPullRequestAndFiles(
 				t,
 				nil,
 				nil,
-				aladino.GetDefaultMockCodeReviewDetailsWith(&pbe.CodeReview{
-					Files: test.files,
-				}),
+				aladino.GetDefaultPullRequestDetails(),
+				test.files,
 				aladino.MockBuiltIns(),
 				nil,
 			)

@@ -16,9 +16,10 @@ import (
 	"github.com/google/go-github/v49/github"
 	"github.com/hasura/go-graphql-client"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
+	pbc "github.com/reviewpad/api/go/codehost"
 	pbe "github.com/reviewpad/api/go/entities"
-	api_mocks "github.com/reviewpad/api/go/mocks"
 	pbs "github.com/reviewpad/api/go/services"
+	api_mocks "github.com/reviewpad/api/go/services_mocks"
 	"github.com/reviewpad/reviewpad/v4/codehost"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/reviewpad/reviewpad/v4/collector"
@@ -226,7 +227,7 @@ func MockDefaultEnv(
 	prRepoName := DefaultMockPrRepoName
 	prNum := DefaultMockPrNum
 	githubClient := MockDefaultGithubClient(ghApiClientOptions, ghGraphQLHandler)
-	codehostClient := GetDefaultCodeHostClient(t, GetDefaultMockReview(), nil)
+	codehostClient := GetDefaultCodeHostClient(t, GetDefaultPullRequestDetails(), GetDefaultPullRequestFileList(), nil, nil)
 
 	mockedEnv, err := mockEnvWith(prOwner, prRepoName, prNum, githubClient, codehostClient, eventPayload, builtIns, DefaultMockTargetEntity)
 	if err != nil {
@@ -249,7 +250,7 @@ func MockDefaultEnvWithTargetEntity(
 	prRepoName := DefaultMockPrRepoName
 	prNum := DefaultMockPrNum
 	githubClient := MockDefaultGithubClient(ghApiClientOptions, ghGraphQLHandler)
-	codehostClient := GetDefaultCodeHostClient(t, GetDefaultMockReview(), nil)
+	codehostClient := GetDefaultCodeHostClient(t, GetDefaultPullRequestDetails(), GetDefaultPullRequestFileList(), nil, nil)
 
 	mockedEnv, err := mockEnvWith(prOwner, prRepoName, prNum, githubClient, codehostClient, eventPayload, builtIns, targetEntity)
 	if err != nil {
@@ -259,11 +260,12 @@ func MockDefaultEnvWithTargetEntity(
 	return mockedEnv
 }
 
-func MockDefaultEnvWithCodeReview(
+func MockDefaultEnvWithPullRequestAndFiles(
 	t *testing.T,
 	ghApiClientOptions []mock.MockBackendOption,
 	ghGraphQLHandler func(http.ResponseWriter, *http.Request),
-	codeReview *pbe.CodeReview,
+	pullRequest *pbc.PullRequest,
+	files []*pbc.File,
 	builtIns *BuiltIns,
 	eventPayload interface{},
 ) Env {
@@ -271,7 +273,7 @@ func MockDefaultEnvWithCodeReview(
 	prRepoName := DefaultMockPrRepoName
 	prNum := DefaultMockPrNum
 	githubClient := MockDefaultGithubClient(ghApiClientOptions, ghGraphQLHandler)
-	codehostClient := GetDefaultCodeHostClient(t, codeReview, nil)
+	codehostClient := GetDefaultCodeHostClient(t, pullRequest, files, nil, nil)
 
 	mockedEnv, err := mockEnvWith(prOwner, prRepoName, prNum, githubClient, codehostClient, eventPayload, builtIns, DefaultMockTargetEntity)
 	if err != nil {
@@ -281,20 +283,20 @@ func MockDefaultEnvWithCodeReview(
 	return mockedEnv
 }
 
-func GetDefaultMockReview() *pbe.CodeReview {
+func GetDefaultPullRequestDetails() *pbc.PullRequest {
 	prNum := DefaultMockPrNum
 	prOwner := DefaultMockPrOwner
 	prRepoName := DefaultMockPrRepoName
 	prUrl := fmt.Sprintf("https://api.github.com/repos/%v/%v/pulls/%v", prOwner, prRepoName, prNum)
 	prDate := DefaultMockPrDate
 
-	return &pbe.CodeReview{
+	return &pbc.PullRequest{
 		Id: "test",
-		Author: &pbe.ExternalUser{
+		Author: &pbc.User{
 			Login: "john",
 		},
-		Status: pbe.CodeReviewStatus_OPEN,
-		Assignees: []*pbe.ExternalUser{
+		Status: pbc.PullRequestStatus_OPEN,
+		Assignees: []*pbc.User{
 			{
 				Login: "jane",
 			},
@@ -306,10 +308,10 @@ func GetDefaultMockReview() *pbe.CodeReview {
 		CommentsCount: 6,
 		CommitsCount:  5,
 		Number:        int64(prNum),
-		Milestone: &pbe.Milestone{
+		Milestone: &pbc.Milestone{
 			Title: "v1.0",
 		},
-		Labels: []*pbe.Label{
+		Labels: []*pbc.Label{
 			{
 				Id:   "1",
 				Name: "enhancement",
@@ -319,156 +321,127 @@ func GetDefaultMockReview() *pbe.CodeReview {
 				Name: "large",
 			},
 		},
-		Head: &pbe.Branch{
-			Repo: &pbe.Repository{
+		Head: &pbc.Branch{
+			Repo: &pbc.Repository{
 				Owner: prOwner,
 				Uri:   prUrl,
 				Name:  prRepoName,
 			},
 			Name: "new-topic",
 		},
-		Base: &pbe.Branch{
-			Repo: &pbe.Repository{
+		Base: &pbc.Branch{
+			Repo: &pbc.Repository{
 				Owner: prOwner,
 				Uri:   prUrl,
 				Name:  prRepoName,
 			},
 			Name: "master",
 		},
-		RequestedReviewers: &pbe.RequestedReviewers{
-			Users: []*pbe.ExternalUser{
+		RequestedReviewers: &pbc.RequestedReviewers{
+			Users: []*pbc.User{
 				{
 					Login: "jane",
 				},
 			},
 		},
-		IsMerged: true,
-		Files:    getDefaultMockCodereviewFileList(),
-		Raw:      `{"id":1234,"number":6,"state":"open","title":"Amazing new feature","body":"Please pull these awesome changes in!","created_at":"2009-11-17T20:34:58.651387237Z","labels":[{"id":1,"name":"enhancement"},{"id":2,"name":"large"}],"user":{"login":"john"},"merged":true,"comments":6,"commits":5,"url":"https://foo.bar","assignees":[{"login":"jane"}],"milestone":{"title":"v1.0"},"node_id":"test","requested_reviewers":[{"login":"jane"}],"head":{"ref":"new-topic","repo":{"owner":{"login":"foobar"},"name":"default-mock-repo","url":"https://api.github.com/repos/foobar/default-mock-repo/pulls/6"}},"base":{"ref":"master","repo":{"owner":{"login":"foobar"},"name":"default-mock-repo","url":"https://api.github.com/repos/foobar/default-mock-repo/pulls/6"}}}`,
+		IsMerged:        true,
+		RawRestResponse: `{"id":1234,"number":6,"state":"open","title":"Amazing new feature","body":"Please pull these awesome changes in!","created_at":"2009-11-17T20:34:58.651387237Z","labels":[{"id":1,"name":"enhancement"},{"id":2,"name":"large"}],"user":{"login":"john"},"merged":true,"comments":6,"commits":5,"url":"https://foo.bar","assignees":[{"login":"jane"}],"milestone":{"title":"v1.0"},"node_id":"test","requested_reviewers":[{"login":"jane"}],"head":{"ref":"new-topic","repo":{"owner":{"login":"foobar"},"name":"default-mock-repo","url":"https://api.github.com/repos/foobar/default-mock-repo/pulls/6"}},"base":{"ref":"master","repo":{"owner":{"login":"foobar"},"name":"default-mock-repo","url":"https://api.github.com/repos/foobar/default-mock-repo/pulls/6"}}}`,
 	}
 }
 
-func GetDefaultMockCodeReviewDetailsWith(codeReview *pbe.CodeReview) *pbe.CodeReview {
-	defaultCodeReview := GetDefaultMockReview()
+func GetDefaultMockPullRequestDetailsWith(pullRequest *pbc.PullRequest) *pbc.PullRequest {
+	defaultCodeReview := GetDefaultPullRequestDetails()
 
-	if codeReview == nil {
+	if pullRequest == nil {
 		return defaultCodeReview
 	}
 
-	if codeReview.Author != nil {
-		defaultCodeReview.Author = codeReview.Author
+	if pullRequest.Author != nil {
+		defaultCodeReview.Author = pullRequest.Author
 	}
 
-	if codeReview.Number != 0 {
-		defaultCodeReview.Number = codeReview.Number
+	if pullRequest.Number != 0 {
+		defaultCodeReview.Number = pullRequest.Number
 	}
 
-	if codeReview.Head != nil {
-		defaultCodeReview.Head = codeReview.Head
+	if pullRequest.Head != nil {
+		defaultCodeReview.Head = pullRequest.Head
 	}
 
-	if codeReview.Base != nil {
-		defaultCodeReview.Base = codeReview.Base
+	if pullRequest.Base != nil {
+		defaultCodeReview.Base = pullRequest.Base
 	}
 
-	if codeReview.Assignees != nil {
-		defaultCodeReview.Assignees = codeReview.Assignees
+	if pullRequest.Assignees != nil {
+		defaultCodeReview.Assignees = pullRequest.Assignees
 	}
 
-	if codeReview.CommitsCount != 0 {
-		defaultCodeReview.CommitsCount = codeReview.CommitsCount
+	if pullRequest.CommitsCount != 0 {
+		defaultCodeReview.CommitsCount = pullRequest.CommitsCount
 	}
 
-	if codeReview.Labels != nil {
-		defaultCodeReview.Labels = codeReview.Labels
+	if pullRequest.Labels != nil {
+		defaultCodeReview.Labels = pullRequest.Labels
 	}
 
-	if codeReview.Milestone != nil {
-		defaultCodeReview.Milestone = codeReview.Milestone
+	if pullRequest.Milestone != nil {
+		defaultCodeReview.Milestone = pullRequest.Milestone
 	}
 
-	if codeReview.RequestedReviewers != nil {
-		defaultCodeReview.RequestedReviewers = codeReview.RequestedReviewers
+	if pullRequest.RequestedReviewers != nil {
+		defaultCodeReview.RequestedReviewers = pullRequest.RequestedReviewers
 	}
 
-	if codeReview.AdditionsCount != 0 {
-		defaultCodeReview.AdditionsCount = codeReview.AdditionsCount
+	if pullRequest.AdditionsCount != 0 {
+		defaultCodeReview.AdditionsCount = pullRequest.AdditionsCount
 	}
 
-	if codeReview.DeletionsCount != 0 {
-		defaultCodeReview.DeletionsCount = codeReview.DeletionsCount
+	if pullRequest.DeletionsCount != 0 {
+		defaultCodeReview.DeletionsCount = pullRequest.DeletionsCount
 	}
 
-	if codeReview.Title != "" {
-		defaultCodeReview.Title = codeReview.Title
+	if pullRequest.Title != "" {
+		defaultCodeReview.Title = pullRequest.Title
 	}
 
-	if codeReview.Description != "" {
-		defaultCodeReview.Description = codeReview.Description
+	if pullRequest.Description != "" {
+		defaultCodeReview.Description = pullRequest.Description
 	}
 
-	if codeReview.IsDraft != defaultCodeReview.IsDraft {
-		defaultCodeReview.IsDraft = codeReview.IsDraft
+	if pullRequest.IsDraft != defaultCodeReview.IsDraft {
+		defaultCodeReview.IsDraft = pullRequest.IsDraft
 	}
 
-	if codeReview.Id != "" {
-		defaultCodeReview.Id = codeReview.Id
+	if pullRequest.Id != "" {
+		defaultCodeReview.Id = pullRequest.Id
 	}
 
-	if codeReview.UpdatedAt != nil {
-		defaultCodeReview.UpdatedAt = codeReview.UpdatedAt
+	if pullRequest.UpdatedAt != nil {
+		defaultCodeReview.UpdatedAt = pullRequest.UpdatedAt
 	}
 
-	if codeReview.IsRebaseable != defaultCodeReview.IsRebaseable {
-		defaultCodeReview.IsRebaseable = codeReview.IsRebaseable
+	if pullRequest.IsRebaseable != defaultCodeReview.IsRebaseable {
+		defaultCodeReview.IsRebaseable = pullRequest.IsRebaseable
 	}
 
-	if codeReview.IsMerged != defaultCodeReview.IsMerged {
-		defaultCodeReview.IsMerged = codeReview.IsMerged
+	if pullRequest.IsMerged != defaultCodeReview.IsMerged {
+		defaultCodeReview.IsMerged = pullRequest.IsMerged
 	}
 
-	if codeReview.ClosedAt != nil {
-		defaultCodeReview.ClosedAt = codeReview.ClosedAt
+	if pullRequest.ClosedAt != nil {
+		defaultCodeReview.ClosedAt = pullRequest.ClosedAt
 	}
 
-	if codeReview.Status != defaultCodeReview.Status {
-		defaultCodeReview.Status = codeReview.Status
-	}
-
-	if codeReview.Files != nil {
-		defaultCodeReview.Files = codeReview.Files
+	if pullRequest.Status != defaultCodeReview.Status {
+		defaultCodeReview.Status = pullRequest.Status
 	}
 
 	return defaultCodeReview
 }
 
-// MockDefaultEnvWithTargetEntity mocks an Aladino Env with default values, a custom TargetEntity and a custom code review.
-func MockDefaultEnvWithTargetEntityAndCodeReview(
-	t *testing.T,
-	ghApiClientOptions []mock.MockBackendOption,
-	ghGraphQLHandler func(http.ResponseWriter, *http.Request),
-	codeReview *pbe.CodeReview,
-	builtIns *BuiltIns,
-	eventPayload interface{},
-	targetEntity *handler.TargetEntity,
-) Env {
-	prOwner := DefaultMockPrOwner
+func GetDefaultPullRequestFileList() []*pbc.File {
 	prRepoName := DefaultMockPrRepoName
-	prNum := DefaultMockPrNum
-	githubClient := MockDefaultGithubClient(ghApiClientOptions, ghGraphQLHandler)
-	codehostClient := GetDefaultCodeHostClient(t, codeReview, nil)
-
-	mockedEnv, err := mockEnvWith(prOwner, prRepoName, prNum, githubClient, codehostClient, eventPayload, builtIns, targetEntity)
-	if err != nil {
-		t.Fatalf("[MockDefaultEnvWithTargetEntity] failed to create mock env: %v", err)
-	}
-
-	return mockedEnv
-}
-
-func getDefaultMockCodereviewFileList() []*pbe.CommitFile {
-	prRepoName := DefaultMockPrRepoName
-	return []*pbe.CommitFile{
+	return []*pbc.File{
 		{
 			Filename: fmt.Sprintf("%v/file1.ts", prRepoName),
 			Patch:    "@@ -2,9 +2,11 @@ package main\n- func previous1() {\n+ func new1() {\n+\nreturn",
@@ -484,14 +457,47 @@ func getDefaultMockCodereviewFileList() []*pbe.CommitFile {
 	}
 }
 
-func GetDefaultCodeHostClient(t *testing.T, codeReview *pbe.CodeReview, err error) *codehost.CodeHostClient {
+func GetDefaultCodeHostClient(t *testing.T, pullRequest *pbc.PullRequest, files []*pbc.File, pullRequestErr error, fileErr error) *codehost.CodeHostClient {
 	hostsClient := api_mocks.NewMockHostsClient(gomock.NewController(t))
 
 	hostsClient.EXPECT().
-		GetCodeReview(gomock.Any(), gomock.Any(), gomock.Any()).
+		GetPullRequest(gomock.Any(), gomock.Any(), gomock.Any()).
 		AnyTimes().
-		Return(&pbs.GetCodeReviewReply{
-			Review: codeReview,
+		Return(&pbs.GetPullRequestReply{
+			PullRequest: pullRequest,
+		}, pullRequestErr)
+
+	hostsClient.EXPECT().
+		GetPullRequestFiles(gomock.Any(), gomock.Any(), gomock.Any()).
+		AnyTimes().
+		Return(&pbs.GetPullRequestFilesReply{
+			Files: files,
+		}, nil)
+
+	return &codehost.CodeHostClient{
+		HostInfo: &codehost.HostInfo{
+			Host:    pbe.Host_GITHUB,
+			HostUri: "https://github.com",
+		},
+		CodehostClient: hostsClient,
+	}
+}
+
+func GetDefaultCodeHostClientWithFiles(t *testing.T, files []*pbc.File, err error) *codehost.CodeHostClient {
+	hostsClient := api_mocks.NewMockHostsClient(gomock.NewController(t))
+
+	hostsClient.EXPECT().
+		GetPullRequest(gomock.Any(), gomock.Any(), gomock.Any()).
+		AnyTimes().
+		Return(&pbs.GetPullRequestReply{
+			PullRequest: GetDefaultPullRequestDetails(),
+		}, nil)
+
+	hostsClient.EXPECT().
+		GetPullRequestFiles(gomock.Any(), gomock.Any(), gomock.Any()).
+		AnyTimes().
+		Return(&pbs.GetPullRequestFilesReply{
+			Files: files,
 		}, err)
 
 	return &codehost.CodeHostClient{

@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/google/go-github/v49/github"
-	pbe "github.com/reviewpad/api/go/entities"
+	pbc "github.com/reviewpad/api/go/codehost"
 	"github.com/reviewpad/reviewpad/v4/codehost"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/reviewpad/reviewpad/v4/handler"
@@ -82,12 +82,12 @@ func (t *IssueTarget) Close(comment string, stateReason string) error {
 	return nil
 }
 
-func (t *IssueTarget) GetLabels() []*pbe.Label {
+func (t *IssueTarget) GetLabels() []*pbc.Label {
 	issue := t.issue
-	labels := make([]*pbe.Label, len(issue.Labels))
+	labels := make([]*pbc.Label, len(issue.Labels))
 
 	for i, label := range issue.Labels {
-		labels[i] = &pbe.Label{
+		labels[i] = &pbc.Label{
 			Id:   label.GetNodeID(),
 			Name: label.GetName(),
 		}
@@ -121,12 +121,12 @@ func (t *IssueTarget) GetProjectByName(name string) (*codehost.Project, error) {
 	}, nil
 }
 
-func (t *IssueTarget) GetAssignees() []*pbe.ExternalUser {
+func (t *IssueTarget) GetAssignees() []*pbc.User {
 	issue := t.issue
-	assignees := make([]*pbe.ExternalUser, len(issue.Assignees))
+	assignees := make([]*pbc.User, len(issue.Assignees))
 
 	for i, assignee := range issue.Assignees {
-		assignees[i] = &pbe.ExternalUser{
+		assignees[i] = &pbc.User{
 			Login: *assignee.Login,
 		}
 	}
@@ -183,8 +183,8 @@ func (t *IssueTarget) GetDescription() string {
 	return t.issue.GetBody()
 }
 
-func (t *IssueTarget) GetState() pbe.CodeReviewStatus {
-	return pbe.CodeReviewStatus(pbe.CodeReviewStatus_value[strings.ToUpper(t.issue.GetState())])
+func (t *IssueTarget) GetState() pbc.PullRequestStatus {
+	return pbc.PullRequestStatus(pbc.PullRequestStatus_value[strings.ToUpper(t.issue.GetState())])
 }
 
 func (t *IssueTarget) GetTitle() string {

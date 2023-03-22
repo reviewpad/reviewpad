@@ -8,11 +8,11 @@ import (
 	"fmt"
 	"regexp"
 
-	pbe "github.com/reviewpad/api/go/entities"
+	pbc "github.com/reviewpad/api/go/codehost"
 )
 
 type File struct {
-	Repr *pbe.CommitFile
+	Repr *pbc.File
 	Diff []*diffBlock
 }
 
@@ -36,7 +36,7 @@ func (f *File) AppendToDiff(
 	})
 }
 
-func NewFile(file *pbe.CommitFile) (*File, error) {
+func NewFile(file *pbc.File) (*File, error) {
 	diffBlocks, err := parseFilePatch(file.GetPatch())
 	if err != nil {
 		return nil, fmt.Errorf("error in file patch %s: %v", file.GetFilename(), err)

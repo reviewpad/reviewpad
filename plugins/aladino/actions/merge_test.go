@@ -10,7 +10,7 @@ import (
 	"testing"
 
 	"github.com/migueleliasweb/go-github-mock/src/mock"
-	pbe "github.com/reviewpad/api/go/entities"
+	pbc "github.com/reviewpad/api/go/codehost"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/reviewpad/reviewpad/v4/utils"
@@ -103,15 +103,16 @@ func TestMerge_WhenMergeMethodIsProvided(t *testing.T) {
 func TestMerge_WhenMergeIsOnDraftPullRequest(t *testing.T) {
 	wantMergeMethod := "rebase"
 
-	mockedCodeReview := aladino.GetDefaultMockCodeReviewDetailsWith(&pbe.CodeReview{
-		Status:  pbe.CodeReviewStatus_OPEN,
+	mockedCodeReview := aladino.GetDefaultMockPullRequestDetailsWith(&pbc.PullRequest{
+		Status:  pbc.PullRequestStatus_OPEN,
 		IsDraft: true,
 	})
-	mockedEnv := aladino.MockDefaultEnvWithCodeReview(
+	mockedEnv := aladino.MockDefaultEnvWithPullRequestAndFiles(
 		t,
 		nil,
 		nil,
 		mockedCodeReview,
+		aladino.GetDefaultPullRequestFileList(),
 		aladino.MockBuiltIns(),
 		nil,
 	)
@@ -125,14 +126,15 @@ func TestMerge_WhenMergeIsOnDraftPullRequest(t *testing.T) {
 func TestMerge_WhenMergeIsClosedPullRequest(t *testing.T) {
 	wantMergeMethod := "rebase"
 
-	mockedCodeReview := aladino.GetDefaultMockCodeReviewDetailsWith(&pbe.CodeReview{
-		Status: pbe.CodeReviewStatus_CLOSED,
+	mockedCodeReview := aladino.GetDefaultMockPullRequestDetailsWith(&pbc.PullRequest{
+		Status: pbc.PullRequestStatus_CLOSED,
 	})
-	mockedEnv := aladino.MockDefaultEnvWithCodeReview(
+	mockedEnv := aladino.MockDefaultEnvWithPullRequestAndFiles(
 		t,
 		nil,
 		nil,
 		mockedCodeReview,
+		aladino.GetDefaultPullRequestFileList(),
 		aladino.MockBuiltIns(),
 		nil,
 	)

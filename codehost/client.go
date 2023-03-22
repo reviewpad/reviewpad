@@ -6,13 +6,12 @@ package codehost
 
 import (
 	"context"
-	"fmt"
 
+	pbc "github.com/reviewpad/api/go/codehost"
 	pbe "github.com/reviewpad/api/go/entities"
 	api "github.com/reviewpad/api/go/services"
 	"github.com/reviewpad/go-lib/host"
 	"github.com/reviewpad/go-lib/uri"
-	"github.com/reviewpad/reviewpad/v4/handler"
 )
 
 const RequestIDKey = "request-id"
@@ -54,7 +53,7 @@ func (c *CodeHostClient) PostGeneralComment(ctx context.Context, slug, repoID, r
 		ExternalReviewId: reviewID,
 		ReviewNumber:     reviewNum,
 		AccessToken:      c.Token,
-		Comment: &pbe.ReviewComment{
+		Comment: &pbc.ReviewComment{
 			Body: body,
 		},
 	}
@@ -64,19 +63,36 @@ func (c *CodeHostClient) PostGeneralComment(ctx context.Context, slug, repoID, r
 	return err
 }
 
-func (c *CodeHostClient) GetCodeReview(ctx context.Context, targetEntity *handler.TargetEntity) (*pbe.CodeReview, error) {
-	req := &api.GetCodeReviewRequest{
-		AccessToken:  c.Token,
-		Slug:         fmt.Sprintf("%s/%s", targetEntity.Owner, targetEntity.Repo),
-		Host:         c.HostInfo.Host,
-		HostUri:      c.HostInfo.HostUri,
-		ReviewNumber: int32(targetEntity.Number),
+func (c *CodeHostClient) GetPullRequest(ctx context.Context, slug string, number int64) (*pbc.PullRequest, error) {
+	req := &api.GetPullRequestRequest{
+		AccessToken: c.Token,
+		Slug:        slug,
+		Host:        c.HostInfo.Host,
+		HostUri:     c.HostInfo.HostUri,
+		Number:      number,
 	}
 
-	resp, err := c.CodehostClient.GetCodeReview(ctx, req)
+	resp, err := c.CodehostClient.GetPullRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
 
-	return resp.Review, nil
+	return resp.PullRequest, nil
+}
+
+func (c *CodeHostClient) GetPullRequestFiles(ctx context.Context, slug string, number int64) ([]*pbc.File, error) {
+	req := &api.GetPullRequestFilesRequest{
+		AccessToken: c.Token,
+		Slug:        slug,
+		Host:        c.HostInfo.Host,
+		HostUri:     c.HostInfo.HostUri,
+		Number:      number,
+	}
+
+	resp, err := c.CodehostClient.GetPullRequestFiles(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp.Files, nil
 }

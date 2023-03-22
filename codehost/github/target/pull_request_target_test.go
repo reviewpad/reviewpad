@@ -19,11 +19,11 @@ import (
 )
 
 func TestGetLatestReviewFromReviewer(t *testing.T) {
-	mockedCodeReview := aladino.GetDefaultMockReview()
+	mockedCodeReview := aladino.GetDefaultPullRequestDetails()
 
-	mockedCodeReviewNumber := host.GetCodeReviewNumber(mockedCodeReview)
-	mockOwner := host.GetCodeReviewBaseOwnerName(mockedCodeReview)
-	mockRepo := host.GetCodeReviewBaseRepoName(mockedCodeReview)
+	mockedCodeReviewNumber := host.GetPullRequestNumber(mockedCodeReview)
+	mockOwner := host.GetPullRequestBaseOwnerName(mockedCodeReview)
+	mockRepo := host.GetPullRequestBaseRepoName(mockedCodeReview)
 
 	mockedLatestReviewFromReviewerGQLQuery := fmt.Sprintf(`{
 		"query":"query($author:String!$pullRequestNumber:Int!$repositoryName:String!$repositoryOwner:String!){
@@ -145,11 +145,11 @@ func TestGetLatestReviewFromReviewer(t *testing.T) {
 }
 
 func TestGetLatestApprovedReviews(t *testing.T) {
-	mockedCodeReview := aladino.GetDefaultMockReview()
+	mockedCodeReview := aladino.GetDefaultPullRequestDetails()
 
-	mockedCodeReviewNumber := host.GetCodeReviewNumber(mockedCodeReview)
-	mockOwner := host.GetCodeReviewBaseOwnerName(mockedCodeReview)
-	mockRepo := host.GetCodeReviewBaseRepoName(mockedCodeReview)
+	mockedCodeReviewNumber := host.GetPullRequestNumber(mockedCodeReview)
+	mockOwner := host.GetPullRequestBaseOwnerName(mockedCodeReview)
+	mockRepo := host.GetPullRequestBaseRepoName(mockedCodeReview)
 
 	mockedLatestReviewsGQLQuery := fmt.Sprintf(`{
 		"query":"query($pullRequestNumber:Int!$repositoryName:String!$repositoryOwner:String!){

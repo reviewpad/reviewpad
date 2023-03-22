@@ -269,7 +269,7 @@ func TestGetPullRequestComments_WhenListCommentsRequestFails(t *testing.T) {
 		nil,
 	)
 
-	mockedCodeReview := aladino.GetDefaultMockReview()
+	mockedCodeReview := aladino.GetDefaultPullRequestDetails()
 	comments, err := mockedGithubClient.GetComments(
 		context.Background(),
 		mockedCodeReview.Base.Repo.Owner,
@@ -296,7 +296,7 @@ func TestGetPullRequestComments(t *testing.T) {
 		nil,
 	)
 
-	mockedCodeReview := aladino.GetDefaultMockReview()
+	mockedCodeReview := aladino.GetDefaultPullRequestDetails()
 	gotComments, err := mockedGithubClient.GetComments(
 		context.Background(),
 		mockedCodeReview.Base.Repo.Owner,
@@ -328,7 +328,7 @@ func TestGetPullRequestFiles(t *testing.T) {
 		nil,
 	)
 
-	mockedCodeReview := aladino.GetDefaultMockReview()
+	mockedCodeReview := aladino.GetDefaultPullRequestDetails()
 	gotFiles, err := mockedGithubClient.GetPullRequestFiles(
 		context.Background(),
 		mockedCodeReview.Base.Repo.Owner,
@@ -358,7 +358,7 @@ func TestGetPullRequestReviewers_WhenListReviewersRequestFails(t *testing.T) {
 		nil,
 	)
 
-	mockedCodeReview := aladino.GetDefaultMockReview()
+	mockedCodeReview := aladino.GetDefaultPullRequestDetails()
 	reviewers, err := mockedGithubClient.GetPullRequestReviewers(
 		context.Background(),
 		mockedCodeReview.Base.Repo.Owner,
@@ -390,7 +390,7 @@ func TestGetPullRequestReviewers(t *testing.T) {
 		nil,
 	)
 
-	mockedCodeReview := aladino.GetDefaultMockReview()
+	mockedCodeReview := aladino.GetDefaultPullRequestDetails()
 	gotReviewers, err := mockedGithubClient.GetPullRequestReviewers(
 		context.Background(),
 		mockedCodeReview.Base.Repo.Owner,
@@ -421,7 +421,7 @@ func TestGetRepoCollaborators_WhenListCollaboratorsRequestFails(t *testing.T) {
 		nil,
 	)
 
-	mockedCodeReview := aladino.GetDefaultMockReview()
+	mockedCodeReview := aladino.GetDefaultPullRequestDetails()
 	collaborators, err := mockedGithubClient.GetRepoCollaborators(
 		context.Background(),
 		mockedCodeReview.Base.Repo.Owner,
@@ -446,7 +446,7 @@ func TestGetRepoCollaborators(t *testing.T) {
 		nil,
 	)
 
-	mockedCodeReview := aladino.GetDefaultMockReview()
+	mockedCodeReview := aladino.GetDefaultPullRequestDetails()
 	gotCollaborators, err := mockedGithubClient.GetRepoCollaborators(
 		context.Background(),
 		mockedCodeReview.Base.Repo.Owner,
@@ -475,7 +475,7 @@ func TestGetIssuesAvailableAssignees_WhenListAssigneesRequestFails(t *testing.T)
 		nil,
 	)
 
-	mockedCodeReview := aladino.GetDefaultMockReview()
+	mockedCodeReview := aladino.GetDefaultPullRequestDetails()
 	gotAssignees, err := mockedGithubClient.GetIssuesAvailableAssignees(
 		context.Background(),
 		mockedCodeReview.GetAuthor().GetLogin(),
@@ -500,7 +500,7 @@ func TestGetIssuesAvailableAssignees(t *testing.T) {
 		nil,
 	)
 
-	mockedCodeReview := aladino.GetDefaultMockReview()
+	mockedCodeReview := aladino.GetDefaultPullRequestDetails()
 	gotAssignees, err := mockedGithubClient.GetIssuesAvailableAssignees(
 		context.Background(),
 		mockedCodeReview.GetAuthor().GetLogin(),
@@ -529,7 +529,7 @@ func TestGetPullRequestCommits_WhenListCommistsRequestFails(t *testing.T) {
 		nil,
 	)
 
-	mockedCodeReview := aladino.GetDefaultMockReview()
+	mockedCodeReview := aladino.GetDefaultPullRequestDetails()
 	gotCommits, err := mockedGithubClient.GetPullRequestCommits(
 		context.Background(),
 		mockedCodeReview.GetAuthor().GetLogin(),
@@ -559,7 +559,7 @@ func TestGetPullRequestCommits(t *testing.T) {
 		nil,
 	)
 
-	mockedCodeReview := aladino.GetDefaultMockReview()
+	mockedCodeReview := aladino.GetDefaultPullRequestDetails()
 	gotCommits, err := mockedGithubClient.GetPullRequestCommits(
 		context.Background(),
 		mockedCodeReview.GetAuthor().GetLogin(),
@@ -590,7 +590,7 @@ func TestGetPullRequestReviews(t *testing.T) {
 		nil,
 	)
 
-	mockedCodeReview := aladino.GetDefaultMockReview()
+	mockedCodeReview := aladino.GetDefaultPullRequestDetails()
 	gotReviews, err := mockedGithubClient.GetPullRequestReviews(
 		context.Background(),
 		mockedCodeReview.GetAuthor().GetLogin(),
@@ -620,7 +620,7 @@ func TestGetPullRequestReviews_WhenRequestFails(t *testing.T) {
 		nil,
 	)
 
-	mockedCodeReview := aladino.GetDefaultMockReview()
+	mockedCodeReview := aladino.GetDefaultPullRequestDetails()
 	gotReviews, err := mockedGithubClient.GetPullRequestReviews(
 		context.Background(),
 		mockedCodeReview.GetAuthor().GetLogin(),
@@ -713,11 +713,11 @@ func TestGetPullRequestLastPushDate_WhenRequestFails(t *testing.T) {
 }
 
 func TestGetPullRequestLastPushDate(t *testing.T) {
-	mockedCodeReview := aladino.GetDefaultMockReview()
+	mockedCodeReview := aladino.GetDefaultPullRequestDetails()
 
-	mockedCodeReviewNumber := host.GetCodeReviewNumber(mockedCodeReview)
-	mockOwner := host.GetCodeReviewBaseOwnerName(mockedCodeReview)
-	mockRepo := host.GetCodeReviewBaseRepoName(mockedCodeReview)
+	mockedCodeReviewNumber := host.GetPullRequestNumber(mockedCodeReview)
+	mockOwner := host.GetPullRequestBaseOwnerName(mockedCodeReview)
+	mockRepo := host.GetPullRequestBaseRepoName(mockedCodeReview)
 
 	mockedGQLQuery := fmt.Sprintf(`{
 		"query":"query($pullRequestNumber:Int! $repositoryName:String! $repositoryOwner:String!){
@@ -978,7 +978,7 @@ func TestGetIssueTimeline_WhenListIssueTimelineRequestFails(t *testing.T) {
 		nil,
 	)
 
-	mockedCodeReview := aladino.GetDefaultMockReview()
+	mockedCodeReview := aladino.GetDefaultPullRequestDetails()
 	gotTimeline, err := mockedGithubClient.GetIssueTimeline(
 		context.Background(),
 		mockedCodeReview.GetBase().GetRepo().GetOwner(),
@@ -1015,7 +1015,7 @@ func TestGetIssueTimeLine(t *testing.T) {
 		nil,
 	)
 
-	mockedCodeReview := aladino.GetDefaultMockReview()
+	mockedCodeReview := aladino.GetDefaultPullRequestDetails()
 	gotTimeline, err := mockedGithubClient.GetIssueTimeline(
 		context.Background(),
 		mockedCodeReview.GetBase().GetRepo().GetOwner(),
@@ -1046,7 +1046,7 @@ func TestGetCheckRunsForRef_WhenListCheckRunsForRefRequestFails(t *testing.T) {
 		nil,
 	)
 
-	mockedCodeReview := aladino.GetDefaultMockReview()
+	mockedCodeReview := aladino.GetDefaultPullRequestDetails()
 	gotCheckRuns, err := mockedGithubClient.GetCheckRunsForRef(
 		context.Background(),
 		mockedCodeReview.GetBase().GetRepo().GetOwner(),
@@ -1085,7 +1085,7 @@ func TestGetCheckRunsForRef(t *testing.T) {
 		nil,
 	)
 
-	mockedCodeReview := aladino.GetDefaultMockReview()
+	mockedCodeReview := aladino.GetDefaultPullRequestDetails()
 	gotCheckRuns, err := mockedGithubClient.GetCheckRunsForRef(
 		context.Background(),
 		mockedCodeReview.GetBase().GetRepo().GetOwner(),
