@@ -13,6 +13,7 @@ env:
   INPUT_CODEHOST_SERVICE: localhost:9000
 
 jobs:
+  # more information on how to use aws ecr with github action services https://github.com/aws-actions/amazon-ecr-login#using-an-image-as-a-service
   login-to-amazon-ecr:
     runs-on: ubuntu-latest
     steps:
@@ -28,8 +29,8 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v1
     outputs:
       registry: ${{ steps.login-ecr.outputs.registry }}
-      docker_username: ${{ steps.login-ecr.outputs.docker_username_123456789012_dkr_ecr_us_east_1_amazonaws_com }}
-      docker_password: ${{ steps.login-ecr.outputs.docker_password_123456789012_dkr_ecr_us_east_1_amazonaws_com }}
+      docker_username: ${{ steps.login-ecr.outputs.docker_username_766192842184_dkr_ecr_eu_central_1_amazonaws_com }}
+      docker_password: ${{ steps.login-ecr.outputs.docker_password_766192842184_dkr_ecr_eu_central_1_amazonaws_com }}
 
   build:
     runs-on: ubuntu-latest
