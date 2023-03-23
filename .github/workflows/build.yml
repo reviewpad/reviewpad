@@ -13,10 +13,37 @@ env:
   INPUT_CODEHOST_SERVICE: localhost:9000
 
 jobs:
+  login-to-amazon-ecr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+            aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            aws-region: eu-central-1
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+    outputs:
+      registry: ${{ steps.login-ecr.outputs.registry }}
+      docker_username: ${{ steps.login-ecr.outputs.docker_username_123456789012_dkr_ecr_us_east_1_amazonaws_com }}
+      docker_password: ${{ steps.login-ecr.outputs.docker_password_123456789012_dkr_ecr_us_east_1_amazonaws_com }}
+
   build:
     runs-on: ubuntu-latest
     container:
       image: reviewpad/ci:latest
+    services:
+      codehost-service:
+        image: ${{ needs.login-to-amazon-ecr.outputs.registry }}/codeatlas/hostsservice:latest
+        credentials:
+          username: ${{ needs.login-to-amazon-ecr.outputs.docker_username }}
+          password: ${{ needs.login-to-amazon-ecr.outputs.docker_password }}
+        ports:
+          - '9000:9000'
+          
     steps:
       - name: Set up git config
         run: git config --global url."https://${{ secrets.REVIEWPAD_TOKEN }}:@github.com/".insteadOf "https://github.com/"
@@ -50,22 +77,6 @@ jobs:
         with:
           path: "coverage.lcov"
           min_coverage: 70
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-            aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-            aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-            aws-region: eu-central-1
-
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
-
-      - name: Run codehost service
-        run: |
-          docker pull 766192842184.dkr.ecr.eu-central-1.amazonaws.com/codeatlas/hostsservice:latest
-          docker run -p 9000:9000 -d 766192842184.dkr.ecr.eu-central-1.amazonaws.com/codeatlas/hostsservice:latest
 
       - name: Integration tests
         run: task integration-test
