@@ -18,7 +18,7 @@ const RequestIDKey = "request-id"
 
 type CodeHostClient struct {
 	HostInfo       *HostInfo
-	CodehostClient api.HostsClient
+	CodehostClient api.HostClient
 	Token          string
 }
 

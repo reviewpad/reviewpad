@@ -458,7 +458,7 @@ func GetDefaultPullRequestFileList() []*pbc.File {
 }
 
 func GetDefaultCodeHostClient(t *testing.T, pullRequest *pbc.PullRequest, files []*pbc.File, pullRequestErr error, fileErr error) *codehost.CodeHostClient {
-	hostsClient := api_mocks.NewMockHostsClient(gomock.NewController(t))
+	hostsClient := api_mocks.NewMockHostClient(gomock.NewController(t))
 
 	hostsClient.EXPECT().
 		GetPullRequest(gomock.Any(), gomock.Any(), gomock.Any()).
@@ -484,7 +484,7 @@ func GetDefaultCodeHostClient(t *testing.T, pullRequest *pbc.PullRequest, files 
 }
 
 func GetDefaultCodeHostClientWithFiles(t *testing.T, files []*pbc.File, err error) *codehost.CodeHostClient {
-	hostsClient := api_mocks.NewMockHostsClient(gomock.NewController(t))
+	hostsClient := api_mocks.NewMockHostClient(gomock.NewController(t))
 
 	hostsClient.EXPECT().
 		GetPullRequest(gomock.Any(), gomock.Any(), gomock.Any()).

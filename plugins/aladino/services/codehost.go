@@ -17,11 +17,11 @@ const (
 	CODEHOST_SERVICE_ENDPOINT = "INPUT_CODEHOST_SERVICE"
 )
 
-func NewCodeHostServiceWithConfig(endpoint string) (services.HostsClient, *grpc.ClientConn, error) {
+func NewCodeHostServiceWithConfig(endpoint string) (services.HostClient, *grpc.ClientConn, error) {
 	return clients.NewCodeHostClient(endpoint)
 }
 
-func NewCodeHostService() (services.HostsClient, *grpc.ClientConn, error) {
+func NewCodeHostService() (services.HostClient, *grpc.ClientConn, error) {
 	codehostEndpoint := os.Getenv(CODEHOST_SERVICE_ENDPOINT)
 
 	return NewCodeHostServiceWithConfig(codehostEndpoint)
