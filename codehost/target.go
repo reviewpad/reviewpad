@@ -58,17 +58,6 @@ type Comment struct {
 	Body string
 }
 
-type Label struct {
-	ID   int64
-	Name string
-}
-
-type TargetReview struct {
-	ID    int64
-	State string
-	User  *User
-}
-
 type Reviewers struct {
 	Users []User
 	Teams []Team
