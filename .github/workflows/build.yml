@@ -10,6 +10,7 @@ env:
   LD_LIBRARY_PATH: /usr/local/lib
   INPUT_SEMANTIC_SERVICE: 0.0.0.0:3006
   INPUT_ROBIN_SERVICE: 0.0.0.0:3011
+  INPUT_CODEHOST_SERVICE: localhost:9000
 
 jobs:
   build:
@@ -72,4 +73,3 @@ jobs:
           GITHUB_INTEGRATION_TEST_TOKEN: ${{ secrets.REVIEWPAD_INTEGRATION_TESTS_TOKEN }}
           GITHUB_INTEGRATION_TEST_REPO_OWNER: reviewpad
           GITHUB_INTEGRATION_TEST_REPO_NAME: reviewpad-integration-test
-          INPUT_CODEHOST_SERVICE: localhost:9000
