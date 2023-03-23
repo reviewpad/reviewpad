@@ -50,9 +50,26 @@ jobs:
           path: "coverage.lcov"
           min_coverage: 70
 
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+            aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            aws-region: eu-central-1
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Run codehost service
+        run: |
+          docker pull 766192842184.dkr.ecr.eu-central-1.amazonaws.com/codeatlas/hostsservice:latest
+          docker run -p 9000:9000 -d 766192842184.dkr.ecr.eu-central-1.amazonaws.com/codeatlas/hostsservice:latest
+
       - name: Integration tests
         run: task integration-test
         env:
           GITHUB_INTEGRATION_TEST_TOKEN: ${{ secrets.REVIEWPAD_INTEGRATION_TESTS_TOKEN }}
           GITHUB_INTEGRATION_TEST_REPO_OWNER: reviewpad
           GITHUB_INTEGRATION_TEST_REPO_NAME: reviewpad-integration-test
+          INPUT_CODEHOST_SERVICE: localhost:9000
