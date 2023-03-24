@@ -10,7 +10,7 @@ env:
   LD_LIBRARY_PATH: /usr/local/lib
   INPUT_SEMANTIC_SERVICE: 0.0.0.0:3006
   INPUT_ROBIN_SERVICE: 0.0.0.0:3011
-  INPUT_CODEHOST_SERVICE: localhost:9000
+  INPUT_CODEHOST_SERVICE: codehost-service:9000
 
 jobs:
   # more information on how to use aws ecr with github action services https://github.com/aws-actions/amazon-ecr-login#using-an-image-as-a-service
