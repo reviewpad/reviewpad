@@ -11,6 +11,7 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"log"
 	"os"
 	"testing"
 
@@ -325,6 +326,7 @@ func TestIntegration(t *testing.T) {
 			for i, file := range test.reviewpadFiles {
 				exitStatus, _, err := reviewpad.Run(ctxReq, logger, githubClient, codeHostClient, collector, targetEntity, eventDetails, file, false, false)
 				assert.Equal(test.wantErr, err)
+				log.Println(err.Error())
 				assert.Equal(test.exitStatus[i], exitStatus)
 			}
 
