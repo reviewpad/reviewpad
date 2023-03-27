@@ -12,6 +12,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/google/go-github/v49/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
+	pbc "github.com/reviewpad/api/go/codehost"
 	"github.com/reviewpad/api/go/entities"
 	"github.com/reviewpad/api/go/services"
 	"github.com/reviewpad/api/go/services_mocks"
@@ -88,31 +89,6 @@ func TestHasAnnotationCode_WhenGetSymbolsFromPatchFails(t *testing.T) {
 	mockedPRRepoName := "test"
 	mockedPRUrl := fmt.Sprintf("https://api.github.com/repos/%v/%v/pulls/6", mockedPRRepoOwner, mockedPRRepoName)
 	mockedHeadSHA := "abc123"
-
-	mockedPullRequest := &github.PullRequest{
-		Head: &github.PullRequestBranch{
-			Repo: &github.Repository{
-				Owner: &github.User{
-					Login: github.String(mockedPRRepoOwner),
-				},
-				URL:  github.String(mockedPRUrl),
-				Name: github.String(mockedPRRepoName),
-			},
-			Ref: github.String("new-topic"),
-			SHA: github.String(mockedHeadSHA),
-		},
-		Base: &github.PullRequestBranch{
-			Repo: &github.Repository{
-				Owner: &github.User{
-					Login: github.String(mockedPRRepoOwner),
-				},
-				URL:  github.String(mockedPRUrl),
-				Name: github.String(mockedPRRepoName),
-			},
-			Ref: github.String("master"),
-		},
-	}
-
 	mockedPatchFilePath := "test"
 	mockedPatchFileRelativeName := fmt.Sprintf("%v/crawler.go", mockedPatchFilePath)
 
@@ -120,31 +96,39 @@ func TestHasAnnotationCode_WhenGetSymbolsFromPatchFails(t *testing.T) {
 	mockedPatch := ""
 	mockedBlobId := "1234"
 
-	mockedPullRequestFileList := []*github.CommitFile{
+	mockedCodeReview := aladino.GetDefaultMockPullRequestDetailsWith(&pbc.PullRequest{
+		Head: &pbc.Branch{
+			Repo: &pbc.Repository{
+				Owner: mockedPRRepoOwner,
+				Uri:   mockedPRUrl,
+				Name:  mockedPRRepoName,
+			},
+			Name: "new-topic",
+			Sha:  mockedHeadSHA,
+		},
+		Base: &pbc.Branch{
+			Repo: &pbc.Repository{
+				Owner: mockedPRRepoOwner,
+				Uri:   mockedPRUrl,
+				Name:  mockedPRRepoName,
+			},
+			Name: "master",
+		},
+	})
+
+	mockedFiles := []*pbc.File{
 		{
-			SHA:      github.String(mockedBlobId),
-			Filename: github.String(mockedPatchFileRelativeName),
-			Patch:    github.String(mockedPatch),
+			Sha:      mockedBlobId,
+			Filename: mockedPatchFileRelativeName,
+			Patch:    mockedPatch,
 		},
 	}
 
 	failMessage := "DownloadContents"
 
-	mockedEnv := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnvWithPullRequestAndFiles(
 		t,
 		[]mock.MockBackendOption{
-			mock.WithRequestMatchHandler(
-				mock.GetReposPullsByOwnerByRepoByPullNumber,
-				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					utils.MustWriteBytes(w, mock.MustMarshal(mockedPullRequest))
-				}),
-			),
-			mock.WithRequestMatchHandler(
-				mock.GetReposPullsFilesByOwnerByRepoByPullNumber,
-				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					utils.MustWriteBytes(w, mock.MustMarshal(mockedPullRequestFileList))
-				}),
-			),
 			mock.WithRequestMatchHandler(
 				mock.GetReposContentsByOwnerByRepoByPath,
 				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -157,6 +141,8 @@ func TestHasAnnotationCode_WhenGetSymbolsFromPatchFails(t *testing.T) {
 			),
 		},
 		nil,
+		mockedCodeReview,
+		mockedFiles,
 		aladino.MockBuiltIns(),
 		nil,
 	)
@@ -195,30 +181,6 @@ func TestHasAnnotationCode(t *testing.T) {
 			mockedPRUrl := fmt.Sprintf("https://api.github.com/repos/%v/%v/pulls/6", mockedPRRepoOwner, mockedPRRepoName)
 			mockedHeadSHA := "abc123"
 
-			mockedPullRequest := &github.PullRequest{
-				Head: &github.PullRequestBranch{
-					Repo: &github.Repository{
-						Owner: &github.User{
-							Login: github.String(mockedPRRepoOwner),
-						},
-						URL:  github.String(mockedPRUrl),
-						Name: github.String(mockedPRRepoName),
-					},
-					Ref: github.String("new-topic"),
-					SHA: github.String(mockedHeadSHA),
-				},
-				Base: &github.PullRequestBranch{
-					Repo: &github.Repository{
-						Owner: &github.User{
-							Login: github.String(mockedPRRepoOwner),
-						},
-						URL:  github.String(mockedPRUrl),
-						Name: github.String(mockedPRRepoName),
-					},
-					Ref: github.String("master"),
-				},
-			}
-
 			mockedPatchFilePath := "test"
 			mockedPatchFileName := "crawler.go"
 			mockedPatchFileRelativeName := fmt.Sprintf("%v/crawler.go", mockedPatchFilePath)
@@ -229,11 +191,31 @@ func TestHasAnnotationCode(t *testing.T) {
 			mockedPatch := ""
 			mockedBlobId := "1234"
 
-			mockedPullRequestFileList := []*github.CommitFile{
+			mockedCodeReview := aladino.GetDefaultMockPullRequestDetailsWith(&pbc.PullRequest{
+				Head: &pbc.Branch{
+					Repo: &pbc.Repository{
+						Owner: mockedPRRepoOwner,
+						Uri:   mockedPRUrl,
+						Name:  mockedPRRepoName,
+					},
+					Name: "new-topic",
+					Sha:  mockedHeadSHA,
+				},
+				Base: &pbc.Branch{
+					Repo: &pbc.Repository{
+						Owner: mockedPRRepoOwner,
+						Uri:   mockedPRUrl,
+						Name:  mockedPRRepoName,
+					},
+					Name: "master",
+				},
+			})
+
+			mockedFiles := []*pbc.File{
 				{
-					SHA:      github.String(mockedBlobId),
-					Filename: github.String(mockedPatchFileRelativeName),
-					Patch:    github.String(mockedPatch),
+					Sha:      mockedBlobId,
+					Filename: mockedPatchFileRelativeName,
+					Patch:    mockedPatch,
 				},
 			}
 
@@ -273,21 +255,9 @@ func TestHasAnnotationCode(t *testing.T) {
 				},
 			}
 
-			mockedEnv := aladino.MockDefaultEnv(
+			mockedEnv := aladino.MockDefaultEnvWithPullRequestAndFiles(
 				t,
 				[]mock.MockBackendOption{
-					mock.WithRequestMatchHandler(
-						mock.GetReposPullsByOwnerByRepoByPullNumber,
-						http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-							utils.MustWriteBytes(w, mock.MustMarshal(mockedPullRequest))
-						}),
-					),
-					mock.WithRequestMatchHandler(
-						mock.GetReposPullsFilesByOwnerByRepoByPullNumber,
-						http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-							utils.MustWriteBytes(w, mock.MustMarshal(mockedPullRequestFileList))
-						}),
-					),
 					mock.WithRequestMatchHandler(
 						mock.GetReposContentsByOwnerByRepoByPath,
 						http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
@@ -309,6 +279,8 @@ func TestHasAnnotationCode(t *testing.T) {
 					),
 				},
 				nil,
+				mockedCodeReview,
+				mockedFiles,
 				mockBuiltIns,
 				nil,
 			)

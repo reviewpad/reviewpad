@@ -5,14 +5,11 @@
 package plugins_aladino_functions_test
 
 import (
-	"net/http"
 	"testing"
 
-	"github.com/google/go-github/v49/github"
-	"github.com/migueleliasweb/go-github-mock/src/mock"
+	pbc "github.com/reviewpad/api/go/codehost"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
-	"github.com/reviewpad/reviewpad/v4/utils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -20,15 +17,14 @@ var filesPath = plugins_aladino.PluginBuiltIns().Functions["filesPath"].Code
 
 func TestFilesPath(t *testing.T) {
 	tests := map[string]struct {
-		files      *[]*github.CommitFile
+		files      []*pbc.File
 		wantResult aladino.Value
 		wantErr    error
 	}{
 		"when successful": {
-			files: &[]*github.CommitFile{
+			files: []*pbc.File{
 				{
-					Filename: github.String("go.mod"),
-					Patch:    nil,
+					Filename: "go.mod",
 				},
 			},
 			wantResult: aladino.BuildArrayValue([]aladino.Value{
@@ -36,10 +32,9 @@ func TestFilesPath(t *testing.T) {
 			}),
 		},
 		"when successful with nil file": {
-			files: &[]*github.CommitFile{
+			files: []*pbc.File{
 				{
-					Filename: github.String("go.mod"),
-					Patch:    nil,
+					Filename: "go.mod",
 				},
 				nil,
 			},
@@ -47,14 +42,13 @@ func TestFilesPath(t *testing.T) {
 				aladino.BuildStringValue("go.mod"),
 			}),
 		},
-		"when successful with nil file name": {
-			files: &[]*github.CommitFile{
+		"when successful with empty file name": {
+			files: []*pbc.File{
 				{
-					Filename: github.String("go.sum"),
-					Patch:    nil,
+					Filename: "go.sum",
 				},
 				{
-					Filename: nil,
+					Filename: "",
 				},
 			},
 			wantResult: aladino.BuildArrayValue([]aladino.Value{
@@ -65,17 +59,12 @@ func TestFilesPath(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			mockedEnv := aladino.MockDefaultEnv(
+			mockedEnv := aladino.MockDefaultEnvWithPullRequestAndFiles(
 				t,
-				[]mock.MockBackendOption{
-					mock.WithRequestMatchHandler(
-						mock.GetReposPullsFilesByOwnerByRepoByPullNumber,
-						http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-							utils.MustWriteBytes(w, mock.MustMarshal(test.files))
-						}),
-					),
-				},
 				nil,
+				nil,
+				aladino.GetDefaultPullRequestDetails(),
+				test.files,
 				aladino.MockBuiltIns(),
 				nil,
 			)

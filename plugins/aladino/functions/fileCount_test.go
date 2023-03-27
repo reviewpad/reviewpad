@@ -5,42 +5,35 @@
 package plugins_aladino_functions_test
 
 import (
-	"net/http"
 	"testing"
 
-	"github.com/google/go-github/v49/github"
-	"github.com/migueleliasweb/go-github-mock/src/mock"
+	pbc "github.com/reviewpad/api/go/codehost"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
-	"github.com/reviewpad/reviewpad/v4/utils"
 	"github.com/stretchr/testify/assert"
 )
 
 var fileCount = plugins_aladino.PluginBuiltIns().Functions["fileCount"].Code
 
 func TestFileCount(t *testing.T) {
-	mockedPullRequestFileList := &[]*github.CommitFile{
+	mockedFiles := []*pbc.File{
 		{
-			Filename: github.String("default-mock-repo/file1.ts"),
-			Patch:    nil,
+			Filename: "default-mock-repo/file1.ts",
+			Patch:    "",
 		},
 	}
-	mockedEnv := aladino.MockDefaultEnv(
+
+	mockedEnv := aladino.MockDefaultEnvWithPullRequestAndFiles(
 		t,
-		[]mock.MockBackendOption{
-			mock.WithRequestMatchHandler(
-				mock.GetReposPullsFilesByOwnerByRepoByPullNumber,
-				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					utils.MustWriteBytes(w, mock.MustMarshal(mockedPullRequestFileList))
-				}),
-			),
-		},
 		nil,
+		nil,
+		aladino.GetDefaultPullRequestDetails(),
+		mockedFiles,
 		aladino.MockBuiltIns(),
 		nil,
 	)
 
-	wantFileCount := aladino.BuildIntValue(len(*mockedPullRequestFileList))
+	wantFileCount := aladino.BuildIntValue(len(mockedFiles))
 
 	args := []aladino.Value{}
 	gotFileCount, err := fileCount(mockedEnv, args)

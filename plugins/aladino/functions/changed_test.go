@@ -5,14 +5,11 @@
 package plugins_aladino_functions_test
 
 import (
-	"net/http"
 	"testing"
 
-	"github.com/google/go-github/v49/github"
-	"github.com/migueleliasweb/go-github-mock/src/mock"
+	pbc "github.com/reviewpad/api/go/codehost"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
-	"github.com/reviewpad/reviewpad/v4/utils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -47,35 +44,30 @@ func TestChanged(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			mockedPullRequestFileList := []*github.CommitFile{
+			mockedFiles := []*pbc.File{
 				{
-					Filename: github.String("src/file.go"),
+					Filename: "src/file.go",
 				},
 				{
-					Filename: github.String("test/main.go"),
+					Filename: "test/main.go",
 				},
 				{
-					Filename: github.String("docs/main.md"),
+					Filename: "docs/main.md",
 				},
 				{
-					Filename: github.String("src/pkg/client.go"),
+					Filename: "src/pkg/client.go",
 				},
 				{
-					Filename: github.String("src/pkg/client_test.go"),
+					Filename: "src/pkg/client_test.go",
 				},
 			}
 
-			mockedEnv := aladino.MockDefaultEnv(
+			mockedEnv := aladino.MockDefaultEnvWithPullRequestAndFiles(
 				t,
-				[]mock.MockBackendOption{
-					mock.WithRequestMatchHandler(
-						mock.GetReposPullsFilesByOwnerByRepoByPullNumber,
-						http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-							utils.MustWriteBytes(w, mock.MustMarshal(mockedPullRequestFileList))
-						}),
-					),
-				},
 				nil,
+				nil,
+				aladino.GetDefaultPullRequestDetails(),
+				mockedFiles,
 				aladino.MockBuiltIns(),
 				nil,
 			)

@@ -5,14 +5,11 @@
 package plugins_aladino_functions_test
 
 import (
-	"net/http"
 	"testing"
 
-	"github.com/google/go-github/v49/github"
-	"github.com/migueleliasweb/go-github-mock/src/mock"
+	pbc "github.com/reviewpad/api/go/codehost"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
-	"github.com/reviewpad/reviewpad/v4/utils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -20,23 +17,17 @@ var hasFileName = plugins_aladino.PluginBuiltIns().Functions["hasFileName"].Code
 
 func TestHasFileName_WhenTrue(t *testing.T) {
 	defaultMockPrFileName := "default-mock-repo/file1.ts"
-	mockedPullRequestFileList := &[]*github.CommitFile{
+	mockedPullRequestFileList := []*pbc.File{
 		{
-			Filename: github.String(defaultMockPrFileName),
-			Patch:    nil,
+			Filename: defaultMockPrFileName,
 		},
 	}
-	mockedEnv := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnvWithPullRequestAndFiles(
 		t,
-		[]mock.MockBackendOption{
-			mock.WithRequestMatchHandler(
-				mock.GetReposPullsFilesByOwnerByRepoByPullNumber,
-				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					utils.MustWriteBytes(w, mock.MustMarshal(mockedPullRequestFileList))
-				}),
-			),
-		},
 		nil,
+		nil,
+		aladino.GetDefaultPullRequestDetails(),
+		mockedPullRequestFileList,
 		aladino.MockBuiltIns(),
 		nil,
 	)
@@ -52,23 +43,17 @@ func TestHasFileName_WhenTrue(t *testing.T) {
 
 func TestHasFileName_WhenFalse(t *testing.T) {
 	defaultMockPrFileName := "default-mock-repo/file1.ts"
-	mockedPullRequestFileList := &[]*github.CommitFile{
+	mockedPullRequestFileList := []*pbc.File{
 		{
-			Filename: github.String("default-mock-repo/file2.ts"),
-			Patch:    nil,
+			Filename: "default-mock-repo/file2.ts",
 		},
 	}
-	mockedEnv := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnvWithPullRequestAndFiles(
 		t,
-		[]mock.MockBackendOption{
-			mock.WithRequestMatchHandler(
-				mock.GetReposPullsFilesByOwnerByRepoByPullNumber,
-				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					utils.MustWriteBytes(w, mock.MustMarshal(mockedPullRequestFileList))
-				}),
-			),
-		},
 		nil,
+		nil,
+		aladino.GetDefaultPullRequestDetails(),
+		mockedPullRequestFileList,
 		aladino.MockBuiltIns(),
 		nil,
 	)

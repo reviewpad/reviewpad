@@ -6,7 +6,6 @@ package plugins_aladino_functions
 
 import (
 	"github.com/google/go-github/v49/github"
-	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v4/handler"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
@@ -22,20 +21,20 @@ func IsWaitingForReview() *aladino.BuiltInFunction {
 
 func isWaitingForReviewCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
 	pullRequest := e.GetTarget().(*target.PullRequestTarget).PullRequest
-	requestedUsers := pullRequest.RequestedReviewers
-	requestedTeams := pullRequest.RequestedTeams
+	requestedUsers := pullRequest.RequestedReviewers.Users
+	requestedTeams := pullRequest.RequestedReviewers.Teams
 	log := e.GetLogger().WithField("builtin", "isWaitingForReview")
 
 	if len(requestedUsers) > 0 || len(requestedTeams) > 0 {
 		return aladino.BuildBoolValue(true), nil
 	}
 
-	prNum := gh.GetPullRequestNumber(pullRequest)
-	owner := gh.GetPullRequestBaseOwnerName(pullRequest)
-	repo := gh.GetPullRequestBaseRepoName(pullRequest)
-	author := pullRequest.GetUser().GetLogin()
+	prNum := pullRequest.GetNumber()
+	owner := pullRequest.GetBase().GetRepo().GetOwner()
+	repo := pullRequest.GetBase().GetRepo().GetName()
+	author := pullRequest.GetAuthor().GetLogin()
 
-	commits, err := e.GetGithubClient().GetPullRequestCommits(e.GetCtx(), owner, repo, prNum)
+	commits, err := e.GetGithubClient().GetPullRequestCommits(e.GetCtx(), owner, repo, int(prNum))
 	if err != nil {
 		return nil, err
 	}
@@ -45,12 +44,12 @@ func isWaitingForReviewCode(e aladino.Env, _ []aladino.Value) (aladino.Value, er
 		return aladino.BuildBoolValue(false), nil
 	}
 
-	lastPushedDate, err := e.GetGithubClient().GetPullRequestLastPushDate(e.GetCtx(), owner, repo, prNum)
+	lastPushedDate, err := e.GetGithubClient().GetPullRequestLastPushDate(e.GetCtx(), owner, repo, int(prNum))
 	if err != nil {
 		return nil, err
 	}
 
-	reviews, err := e.GetGithubClient().GetPullRequestReviews(e.GetCtx(), owner, repo, prNum)
+	reviews, err := e.GetGithubClient().GetPullRequestReviews(e.GetCtx(), owner, repo, int(prNum))
 	if err != nil {
 		return nil, err
 	}

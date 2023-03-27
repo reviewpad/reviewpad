@@ -20,7 +20,6 @@ import (
 var comment = plugins_aladino.PluginBuiltIns().Actions["comment"].Code
 
 func TestComment(t *testing.T) {
-	t.Skip("FIXME: skipping for now")
 	rawComment := "Lorem Ipsum"
 	gotComment := ""
 

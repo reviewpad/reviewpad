@@ -24,10 +24,10 @@ func TestGetProjectV2ByName_WhenRequestFails(t *testing.T) {
 		},
 	)
 
-	mockedPullRequest := aladino.GetDefaultMockPullRequestDetails()
+	mockedCodeReview := aladino.GetDefaultPullRequestDetails()
 
-	mockOwner := host.GetPullRequestBaseOwnerName(mockedPullRequest)
-	mockRepo := host.GetPullRequestBaseRepoName(mockedPullRequest)
+	mockOwner := host.GetPullRequestBaseOwnerName(mockedCodeReview)
+	mockRepo := host.GetPullRequestBaseRepoName(mockedCodeReview)
 	mockProjectName := "reviewpad"
 
 	project, err := mockedGithubClient.GetProjectV2ByName(context.Background(), mockOwner, mockRepo, mockProjectName)
@@ -78,10 +78,10 @@ func TestGetProjectV2ByName_WhenProjectNotFound(t *testing.T) {
 			}
 		},
 	)
-	mockedPullRequest := aladino.GetDefaultMockPullRequestDetails()
+	mockedCodeReview := aladino.GetDefaultPullRequestDetails()
 
-	mockOwner := host.GetPullRequestBaseOwnerName(mockedPullRequest)
-	mockRepo := host.GetPullRequestBaseRepoName(mockedPullRequest)
+	mockOwner := host.GetPullRequestBaseOwnerName(mockedCodeReview)
+	mockRepo := host.GetPullRequestBaseRepoName(mockedCodeReview)
 	mockProjectName := "reviewpad"
 
 	project, err := mockedGithubClient.GetProjectV2ByName(context.Background(), mockOwner, mockRepo, mockProjectName)
@@ -133,10 +133,10 @@ func TestGetProjectV2ByName_WhenProjectFound(t *testing.T) {
 			}
 		},
 	)
-	mockedPullRequest := aladino.GetDefaultMockPullRequestDetails()
+	mockedCodeReview := aladino.GetDefaultPullRequestDetails()
 
-	mockOwner := host.GetPullRequestBaseOwnerName(mockedPullRequest)
-	mockRepo := host.GetPullRequestBaseRepoName(mockedPullRequest)
+	mockOwner := host.GetPullRequestBaseOwnerName(mockedCodeReview)
+	mockRepo := host.GetPullRequestBaseRepoName(mockedCodeReview)
 	mockProjectName := "reviewpad"
 
 	project, err := mockedGithubClient.GetProjectV2ByName(context.Background(), mockOwner, mockRepo, mockProjectName)
@@ -153,10 +153,10 @@ func TestGetProjectFieldsByProjectNumber_WhenRequestFails(t *testing.T) {
 			http.Error(w, "404 Not Found", http.StatusNotFound)
 		},
 	)
-	mockedPullRequest := aladino.GetDefaultMockPullRequestDetails()
+	mockedCodeReview := aladino.GetDefaultPullRequestDetails()
 
-	mockOwner := host.GetPullRequestBaseOwnerName(mockedPullRequest)
-	mockRepo := host.GetPullRequestBaseRepoName(mockedPullRequest)
+	mockOwner := host.GetPullRequestBaseOwnerName(mockedCodeReview)
+	mockRepo := host.GetPullRequestBaseRepoName(mockedCodeReview)
 	mockProjectNumber := 1
 	mockRetryCount := 1
 
@@ -225,10 +225,10 @@ func TestGetProjectFieldsByProjectNumber_WhenProjectNotFound(t *testing.T) {
 			}
 		},
 	)
-	mockedPullRequest := aladino.GetDefaultMockPullRequestDetails()
+	mockedCodeReview := aladino.GetDefaultPullRequestDetails()
 
-	mockOwner := host.GetPullRequestBaseOwnerName(mockedPullRequest)
-	mockRepo := host.GetPullRequestBaseRepoName(mockedPullRequest)
+	mockOwner := host.GetPullRequestBaseOwnerName(mockedCodeReview)
+	mockRepo := host.GetPullRequestBaseRepoName(mockedCodeReview)
 	mockProjectNumber := 1
 	mockRetryCount := 1
 
@@ -318,10 +318,10 @@ func TestGetProjectFieldsByProjectNumber_WhenRetrySuccessful(t *testing.T) {
 			}
 		},
 	)
-	mockedPullRequest := aladino.GetDefaultMockPullRequestDetails()
+	mockedCodeReview := aladino.GetDefaultPullRequestDetails()
 
-	mockOwner := host.GetPullRequestBaseOwnerName(mockedPullRequest)
-	mockRepo := host.GetPullRequestBaseRepoName(mockedPullRequest)
+	mockOwner := host.GetPullRequestBaseOwnerName(mockedCodeReview)
+	mockRepo := host.GetPullRequestBaseRepoName(mockedCodeReview)
 	mockProjectNumber := 1
 	mockRetryCount := 2
 
@@ -383,10 +383,10 @@ func TestGetProjectV2ByName_WhenSeveralProjectsFound(t *testing.T) {
 			}
 		},
 	)
-	mockedPullRequest := aladino.GetDefaultMockPullRequestDetails()
+	mockedCodeReview := aladino.GetDefaultPullRequestDetails()
 
-	mockOwner := host.GetPullRequestBaseOwnerName(mockedPullRequest)
-	mockRepo := host.GetPullRequestBaseRepoName(mockedPullRequest)
+	mockOwner := host.GetPullRequestBaseOwnerName(mockedCodeReview)
+	mockRepo := host.GetPullRequestBaseRepoName(mockedCodeReview)
 
 	project, err := mockedGithubClient.GetProjectV2ByName(context.Background(), mockOwner, mockRepo, mockProjectName)
 

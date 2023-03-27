@@ -21,10 +21,5 @@ func Base() *aladino.BuiltInFunction {
 func baseCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
 	t := e.GetTarget().(*target.PullRequestTarget)
 
-	base, err := t.GetBase()
-	if err != nil {
-		return nil, err
-	}
-
-	return aladino.BuildStringValue(base), nil
+	return aladino.BuildStringValue(t.GetBase()), nil
 }

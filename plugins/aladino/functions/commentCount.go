@@ -18,10 +18,5 @@ func CommentCount() *aladino.BuiltInFunction {
 }
 
 func commentCountCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
-	commentCount, err := e.GetTarget().GetCommentCount()
-	if err != nil {
-		return nil, err
-	}
-
-	return aladino.BuildIntValue(commentCount), nil
+	return aladino.BuildIntValue(int(e.GetTarget().GetCommentCount())), nil
 }

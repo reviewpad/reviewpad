@@ -11,6 +11,7 @@ import (
 	"github.com/google/go-github/v49/github"
 	"github.com/gorilla/mux"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
+	pbc "github.com/reviewpad/api/go/codehost"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/reviewpad/reviewpad/v4/utils"
@@ -23,22 +24,9 @@ func TestRemoveLabels_WhenDeleteLabelRequestFails(t *testing.T) {
 	defaultLabel := "default-label"
 	failMessage := "DeleteLabelsFail"
 
-	mockedEnv := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnvWithPullRequestAndFiles(
 		t,
 		[]mock.MockBackendOption{
-			mock.WithRequestMatchHandler(
-				mock.GetReposPullsByOwnerByRepoByPullNumber,
-				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					utils.MustWriteBytes(w, mock.MustMarshal(aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
-						Labels: []*github.Label{
-							{
-								ID:   github.Int64(1234),
-								Name: github.String(defaultLabel),
-							},
-						},
-					})))
-				}),
-			),
 			mock.WithRequestMatchHandler(
 				mock.DeleteReposIssuesLabelsByOwnerByRepoByIssueNumberByName,
 				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -55,6 +43,15 @@ func TestRemoveLabels_WhenDeleteLabelRequestFails(t *testing.T) {
 			),
 		},
 		nil,
+		aladino.GetDefaultMockPullRequestDetailsWith(&pbc.PullRequest{
+			Labels: []*pbc.Label{
+				{
+					Id:   "1234",
+					Name: "defaultLabel",
+				},
+			},
+		}),
+		aladino.GetDefaultPullRequestFileList(),
 		aladino.MockBuiltIns(),
 		nil,
 	)
@@ -70,22 +67,9 @@ func TestRemoveLabels_WhenDeleteLabelRequestFails(t *testing.T) {
 func TestRemoveLabels_WhenLabelDoesNotExist(t *testing.T) {
 	defaultLabel := "default-label"
 
-	mockedEnv := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnvWithPullRequestAndFiles(
 		t,
 		[]mock.MockBackendOption{
-			mock.WithRequestMatchHandler(
-				mock.GetReposPullsByOwnerByRepoByPullNumber,
-				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					utils.MustWriteBytes(w, mock.MustMarshal(aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
-						Labels: []*github.Label{
-							{
-								ID:   github.Int64(1234),
-								Name: github.String(defaultLabel),
-							},
-						},
-					})))
-				}),
-			),
 			mock.WithRequestMatchHandler(
 				mock.DeleteReposIssuesLabelsByOwnerByRepoByIssueNumberByName,
 				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -100,6 +84,15 @@ func TestRemoveLabels_WhenLabelDoesNotExist(t *testing.T) {
 			),
 		},
 		nil,
+		aladino.GetDefaultMockPullRequestDetailsWith(&pbc.PullRequest{
+			Labels: []*pbc.Label{
+				{
+					Id:   "1234",
+					Name: defaultLabel,
+				},
+			},
+		}),
+		aladino.GetDefaultPullRequestFileList(),
 		aladino.MockBuiltIns(),
 		nil,
 	)
@@ -150,22 +143,9 @@ func TestRemoveLabels(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			mockedEnv := aladino.MockDefaultEnv(
+			mockedEnv := aladino.MockDefaultEnvWithPullRequestAndFiles(
 				t,
 				[]mock.MockBackendOption{
-					mock.WithRequestMatchHandler(
-						mock.GetReposPullsByOwnerByRepoByPullNumber,
-						http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-							utils.MustWriteBytes(w, mock.MustMarshal(aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
-								Labels: []*github.Label{
-									{
-										ID:   github.Int64(1234),
-										Name: github.String(labelAInIssue),
-									},
-								},
-							})))
-						}),
-					),
 					mock.WithRequestMatchHandler(
 						mock.DeleteReposIssuesLabelsByOwnerByRepoByIssueNumberByName,
 						http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -176,6 +156,15 @@ func TestRemoveLabels(t *testing.T) {
 					),
 				},
 				nil,
+				aladino.GetDefaultMockPullRequestDetailsWith(&pbc.PullRequest{
+					Labels: []*pbc.Label{
+						{
+							Id:   "1234",
+							Name: labelAInIssue,
+						},
+					},
+				}),
+				aladino.GetDefaultPullRequestFileList(),
 				aladino.MockBuiltIns(),
 				nil,
 			)

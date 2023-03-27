@@ -19,7 +19,7 @@ require (
 	github.com/migueleliasweb/go-github-mock v0.0.16
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/ohler55/ojg v1.18.1
-	github.com/reviewpad/api/go v0.0.0-20230315194758-19fbca20bf06
+	github.com/reviewpad/api/go v0.0.0-20230322183213-051f881da2ec
 	github.com/reviewpad/go-conventionalcommits v0.10.0
 	github.com/reviewpad/go-lib v0.0.0-20230314182417-85626ff59194
 	github.com/shurcooL/githubv4 v0.0.0-20230305132112-efb623903184
@@ -30,6 +30,7 @@ require (
 	golang.org/x/exp v0.0.0-20230314191032-db074128a8ec
 	golang.org/x/oauth2 v0.6.0
 	google.golang.org/grpc v1.53.0
+	google.golang.org/protobuf v1.30.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
@@ -54,6 +55,5 @@ require (
 	golang.org/x/text v0.8.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20230306155012-7f2fa6fef1f4 // indirect
-	google.golang.org/protobuf v1.29.1 // indirect
 	nhooyr.io/websocket v1.8.7 // indirect
 )

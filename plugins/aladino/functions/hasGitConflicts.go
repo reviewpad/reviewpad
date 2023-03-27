@@ -26,7 +26,6 @@ func hasGitConflictsCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error
 	prNum := host.GetPullRequestNumber(pullRequest)
 	repoOwner := host.GetPullRequestBaseOwnerName(pullRequest)
 	repoName := host.GetPullRequestBaseRepoName(pullRequest)
-
 	var pullRequestQuery struct {
 		Repository struct {
 			PullRequest struct {

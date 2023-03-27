@@ -21,5 +21,5 @@ func IsMerged() *aladino.BuiltInFunction {
 func isMergedCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
 	pullRequest := e.GetTarget().(*target.PullRequestTarget).PullRequest
 
-	return aladino.BuildBoolValue(pullRequest.GetMerged()), nil
+	return aladino.BuildBoolValue(pullRequest.IsMerged), nil
 }

@@ -7,8 +7,7 @@ package plugins_aladino_functions_test
 import (
 	"testing"
 
-	"github.com/google/go-github/v49/github"
-	"github.com/migueleliasweb/go-github-mock/src/mock"
+	pbc "github.com/reviewpad/api/go/codehost"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -18,29 +17,19 @@ var isMerged = plugins_aladino.PluginBuiltIns().Functions["isMerged"].Code
 
 func TestIsMerged(t *testing.T) {
 	tests := map[string]struct {
-		backendOptions []mock.MockBackendOption
-		wantResult     aladino.Value
-		wantErr        error
+		codeReview *pbc.PullRequest
+		wantResult aladino.Value
+		wantErr    error
 	}{
 		"when pull request is merged": {
-			backendOptions: []mock.MockBackendOption{
-				mock.WithRequestMatch(
-					mock.GetReposPullsByOwnerByRepoByPullNumber,
-					aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
-						Merged: github.Bool(true),
-					}),
-				),
+			codeReview: &pbc.PullRequest{
+				IsMerged: true,
 			},
 			wantResult: aladino.BuildBoolValue(true),
 		},
 		"when pull request is not merged": {
-			backendOptions: []mock.MockBackendOption{
-				mock.WithRequestMatch(
-					mock.GetReposPullsByOwnerByRepoByPullNumber,
-					aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
-						Merged: github.Bool(false),
-					}),
-				),
+			codeReview: &pbc.PullRequest{
+				IsMerged: false,
 			},
 			wantResult: aladino.BuildBoolValue(false),
 		},
@@ -48,10 +37,12 @@ func TestIsMerged(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			mockedEnv := aladino.MockDefaultEnv(
+			mockedEnv := aladino.MockDefaultEnvWithPullRequestAndFiles(
 				t,
-				test.backendOptions,
 				nil,
+				nil,
+				aladino.GetDefaultMockPullRequestDetailsWith(test.codeReview),
+				aladino.GetDefaultPullRequestFileList(),
 				aladino.MockBuiltIns(),
 				nil,
 			)

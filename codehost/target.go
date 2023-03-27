@@ -8,6 +8,7 @@ import (
 	"errors"
 	"time"
 
+	pbc "github.com/reviewpad/api/go/codehost"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/reviewpad/reviewpad/v4/handler"
 )
@@ -21,20 +22,20 @@ type Target interface {
 	AddLabels(labels []string) error
 	Close(comment string, stateReason string) error
 	Comment(comment string) error
-	GetAssignees() ([]*User, error)
+	GetAssignees() []*pbc.User
 	GetAvailableAssignees() ([]*User, error)
 	GetAuthor() (*User, error)
-	GetCommentCount() (int, error)
+	GetCommentCount() int64
 	GetComments() ([]*Comment, error)
-	GetCreatedAt() (string, error)
-	GetUpdatedAt() (string, error)
-	GetDescription() (string, error)
-	GetLabels() []*Label
+	GetCreatedAt() string
+	GetUpdatedAt() string
+	GetDescription() string
+	GetLabels() []*pbc.Label
 	GetLinkedProjects() ([]gh.GQLProjectV2Item, error)
 	GetNodeID() string
 	GetProjectByName(name string) (*Project, error)
 	GetProjectFieldsByProjectNumber(projectNumber uint64) ([]*ProjectField, error)
-	GetState() string
+	GetState() pbc.PullRequestStatus
 	GetTargetEntity() *handler.TargetEntity
 	GetTitle() string
 	IsLinkedToProject(title string) (bool, error)
@@ -55,17 +56,6 @@ type Team struct {
 
 type Comment struct {
 	Body string
-}
-
-type Label struct {
-	ID   int64
-	Name string
-}
-
-type TargetReview struct {
-	ID    int64
-	State string
-	User  *User
 }
 
 type Reviewers struct {

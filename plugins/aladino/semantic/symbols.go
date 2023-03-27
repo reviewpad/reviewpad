@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/google/go-github/v49/github"
+	pbc "github.com/reviewpad/api/go/codehost"
 	"github.com/reviewpad/api/go/entities"
 	api "github.com/reviewpad/api/go/services"
 	"github.com/reviewpad/reviewpad/v4/codehost"
@@ -25,10 +25,10 @@ func GetSymbolsFromPatch(e aladino.Env) (map[string]*entities.Symbols, error) {
 
 	head := pullRequest.PullRequest.GetHead()
 	base := pullRequest.PullRequest.GetBase()
-	url := head.GetRepo().GetURL()
+	url := head.Repo.Uri
 	patch := pullRequest.Patch
 
-	lastCommit := head.SHA
+	lastCommit := head.Sha
 
 	for fp, commitFile := range patch {
 		blob, err := e.GetGithubClient().DownloadContents(e.GetCtx(), fp, head)
@@ -56,10 +56,10 @@ func GetSymbolsFromPatch(e aladino.Env) (map[string]*entities.Symbols, error) {
 		semanticClient := service.(api.SemanticClient)
 		req := &api.GetSymbolsRequest{
 			Uri:      url,
-			CommitId: *lastCommit,
+			CommitId: lastCommit,
 			Filepath: fp,
 			Blob:     blob,
-			BlobId:   *commitFile.Repr.SHA,
+			BlobId:   commitFile.Repr.Sha,
 			Diff:     &entities.ResolveFileDiff{Blocks: blocks},
 		}
 		reply, err := semanticClient.GetSymbols(e.GetCtx(), req)
@@ -85,7 +85,7 @@ func GetSymbolsFromHeadByPatch(e aladino.Env, patch target.Patch) (*entities.Sym
 	files := make(map[string]string)
 
 	for fp, commitFile := range patch {
-		if commitFile.Repr.GetStatus() == "removed" {
+		if commitFile.Repr.Status == pbc.File_REMOVED {
 			// in this case, the file is not in the head branch
 			continue
 		}
@@ -114,7 +114,7 @@ func GetSymbolsFromBaseByPatch(e aladino.Env, patch target.Patch) (*entities.Sym
 	files := make(map[string]string)
 
 	for fp, commitFile := range patch {
-		if commitFile.Repr.GetStatus() == "added" {
+		if commitFile.Repr.GetStatus() == pbc.File_ADDED {
 			// in this case, the file is not in the base branch
 			continue
 		}
@@ -141,7 +141,7 @@ func joinSymbols(current *entities.Symbols, new *entities.Symbols) {
 	}
 }
 
-func GetSymbolsFromFileInBranch(e aladino.Env, commitFile *codehost.File, branch *github.PullRequestBranch) (*entities.Symbols, string, error) {
+func GetSymbolsFromFileInBranch(e aladino.Env, commitFile *codehost.File, branch *pbc.Branch) (*entities.Symbols, string, error) {
 	fp := commitFile.Repr.GetFilename()
 
 	blob, err := e.GetGithubClient().DownloadContents(e.GetCtx(), fp, branch)
@@ -162,11 +162,11 @@ func GetSymbolsFromFileInBranch(e aladino.Env, commitFile *codehost.File, branch
 
 	semanticClient := service.(api.SemanticClient)
 	req := &api.GetSymbolsRequest{
-		Uri:      branch.GetRepo().GetURL(),
-		CommitId: branch.GetSHA(),
+		Uri:      branch.Repo.Uri,
+		CommitId: branch.Sha,
 		Filepath: fp,
 		Blob:     blob,
-		BlobId:   commitFile.Repr.GetSHA(),
+		BlobId:   commitFile.Repr.Sha,
 		Diff:     &entities.ResolveFileDiff{Blocks: blocks},
 	}
 	reply, err := semanticClient.GetSymbols(e.GetCtx(), req)

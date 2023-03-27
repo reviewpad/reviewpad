@@ -19,11 +19,11 @@ import (
 )
 
 func TestGetLatestReviewFromReviewer(t *testing.T) {
-	mockedPullRequest := aladino.GetDefaultMockPullRequestDetails()
+	mockedCodeReview := aladino.GetDefaultPullRequestDetails()
 
-	mockedPullRequestNumber := host.GetPullRequestNumber(mockedPullRequest)
-	mockOwner := host.GetPullRequestBaseOwnerName(mockedPullRequest)
-	mockRepo := host.GetPullRequestBaseRepoName(mockedPullRequest)
+	mockedCodeReviewNumber := host.GetPullRequestNumber(mockedCodeReview)
+	mockOwner := host.GetPullRequestBaseOwnerName(mockedCodeReview)
+	mockRepo := host.GetPullRequestBaseRepoName(mockedCodeReview)
 
 	mockedLatestReviewFromReviewerGQLQuery := fmt.Sprintf(`{
 		"query":"query($author:String!$pullRequestNumber:Int!$repositoryName:String!$repositoryOwner:String!){
@@ -46,7 +46,7 @@ func TestGetLatestReviewFromReviewer(t *testing.T) {
 			"repositoryName":"%s",
 			"repositoryOwner":"%s"
 		}
-	}`, mockedPullRequestNumber, mockRepo, mockOwner)
+	}`, mockedCodeReviewNumber, mockRepo, mockOwner)
 
 	reviewSubmissionTime, err := time.Parse(time.RFC3339, "2011-01-26T19:01:12Z")
 	if err != nil {
@@ -145,11 +145,11 @@ func TestGetLatestReviewFromReviewer(t *testing.T) {
 }
 
 func TestGetLatestApprovedReviews(t *testing.T) {
-	mockedPullRequest := aladino.GetDefaultMockPullRequestDetails()
+	mockedCodeReview := aladino.GetDefaultPullRequestDetails()
 
-	mockedPullRequestNumber := host.GetPullRequestNumber(mockedPullRequest)
-	mockOwner := host.GetPullRequestBaseOwnerName(mockedPullRequest)
-	mockRepo := host.GetPullRequestBaseRepoName(mockedPullRequest)
+	mockedCodeReviewNumber := host.GetPullRequestNumber(mockedCodeReview)
+	mockOwner := host.GetPullRequestBaseOwnerName(mockedCodeReview)
+	mockRepo := host.GetPullRequestBaseRepoName(mockedCodeReview)
 
 	mockedLatestReviewsGQLQuery := fmt.Sprintf(`{
 		"query":"query($pullRequestNumber:Int!$repositoryName:String!$repositoryOwner:String!){
@@ -169,7 +169,7 @@ func TestGetLatestApprovedReviews(t *testing.T) {
 			"repositoryName":"%s",
 			"repositoryOwner":"%s"
 		}
-	}`, mockedPullRequestNumber, mockRepo, mockOwner)
+	}`, mockedCodeReviewNumber, mockRepo, mockOwner)
 
 	tests := map[string]struct {
 		ghGraphQLHandler      func(http.ResponseWriter, *http.Request)

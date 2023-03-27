@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/google/go-github/v49/github"
+	pbc "github.com/reviewpad/api/go/codehost"
 	"github.com/shurcooL/githubv4"
 )
 
@@ -171,24 +172,24 @@ type CompareBaseAndHeadQuery struct {
 	} `graphql:"repository(owner: $owner, name: $name)"`
 }
 
-func GetPullRequestHeadOwnerName(pullRequest *github.PullRequest) string {
-	return pullRequest.Head.Repo.Owner.GetLogin()
+func GetPullRequestHeadOwnerName(pullRequest *pbc.PullRequest) string {
+	return pullRequest.Head.Repo.Owner
 }
 
-func GetPullRequestHeadRepoName(pullRequest *github.PullRequest) string {
-	return pullRequest.Head.Repo.GetName()
+func GetPullRequestHeadRepoName(pullRequest *pbc.PullRequest) string {
+	return pullRequest.Head.Repo.Name
 }
 
-func GetPullRequestBaseOwnerName(pullRequest *github.PullRequest) string {
-	return pullRequest.Base.Repo.Owner.GetLogin()
+func GetPullRequestBaseOwnerName(pullRequest *pbc.PullRequest) string {
+	return pullRequest.Base.Repo.Owner
 }
 
-func GetPullRequestBaseRepoName(pullRequest *github.PullRequest) string {
-	return pullRequest.Base.Repo.GetName()
+func GetPullRequestBaseRepoName(pullRequest *pbc.PullRequest) string {
+	return pullRequest.Base.Repo.Name
 }
 
-func GetPullRequestNumber(pullRequest *github.PullRequest) int {
-	return pullRequest.GetNumber()
+func GetPullRequestNumber(pullRequest *pbc.PullRequest) int64 {
+	return pullRequest.Number
 }
 
 func (c *GithubClient) GetPullRequestFiles(ctx context.Context, owner string, repo string, number int) ([]*github.CommitFile, error) {
