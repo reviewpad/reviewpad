@@ -31,18 +31,12 @@ func DefaultPluginConfig() (*PluginConfig, error) {
 		return nil, err
 	}
 
-	codehostClient, codehostConnection, err := services.NewCodeHostService()
-	if err != nil {
-		return nil, err
-	}
-
 	services := map[string]interface{}{
 		services.SEMANTIC_SERVICE_KEY: semanticClient,
 		services.ROBIN_SERVICE_KEY:    robinClient,
-		services.CODEHOST_SERVICE_KEY: codehostClient,
 	}
 
-	connections = append(connections, semanticConnection, robinConnection, codehostConnection)
+	connections = append(connections, semanticConnection, robinConnection)
 
 	config := &PluginConfig{
 		Services:        services,

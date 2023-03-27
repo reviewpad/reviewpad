@@ -13,16 +13,20 @@ import (
 	"regexp"
 
 	"github.com/google/uuid"
+	"github.com/reviewpad/api/go/clients"
 	"github.com/reviewpad/reviewpad/v4"
 	"github.com/reviewpad/reviewpad/v4/codehost"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/reviewpad/reviewpad/v4/collector"
 	"github.com/reviewpad/reviewpad/v4/handler"
-	plugins_aladino_services "github.com/reviewpad/reviewpad/v4/plugins/aladino/services"
 	"github.com/reviewpad/reviewpad/v4/utils"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc/metadata"
+)
+
+const (
+	CODEHOST_SERVICE_ENDPOINT = "INPUT_CODEHOST_SERVICE"
 )
 
 func init() {
@@ -134,7 +138,7 @@ func run() error {
 	md := metadata.Pairs(codehost.RequestIDKey, requestID)
 	ctxReq := metadata.NewOutgoingContext(ctx, md)
 
-	codehostClient, codehostConnection, err := plugins_aladino_services.NewCodeHostService()
+	codehostClient, codehostConnection, err := clients.NewCodeHostClient(os.Getenv(CODEHOST_SERVICE_ENDPOINT))
 	if err != nil {
 		return fmt.Errorf("error creating codehost client. Details %v", err.Error())
 	}
