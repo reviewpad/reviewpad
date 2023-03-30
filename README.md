@@ -282,4 +282,4 @@ If you need any assistance, please join [discord](https://reviewpad.com/discord)
 
 Reviewpad is available under the GNU Lesser General Public License v3.0 license.
 
-See [LICENSE](./LICENSE) for the full license text.
+See [LICENSE](./LICENSE.md) for the full license text.
