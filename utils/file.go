@@ -9,7 +9,7 @@ import (
 	"context"
 	"strings"
 
-	"github.com/google/go-github/v49/github"
+	pbc "github.com/reviewpad/api/go/codehost"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/sirupsen/logrus"
 )
@@ -34,8 +34,8 @@ func FileExt(fp string) string {
 // then we download both files using the filePath and check their contents.
 // This strategy assumes that the file path exists in the head branch.
 // Otherwise, we download the pull request files and check the filePath exists in them.
-func ReviewpadFileChanged(ctx context.Context, githubClient *gh.GithubClient, filePath string, pullRequest *github.PullRequest) (bool, error) {
-	if *pullRequest.ChangedFiles > pullRequestFileLimit {
+func ReviewpadFileChanged(ctx context.Context, githubClient *gh.GithubClient, filePath string, pullRequest *pbc.PullRequest) (bool, error) {
+	if pullRequest.ChangedFilesCount > pullRequestFileLimit {
 		rawHeadFile, err := githubClient.DownloadContents(ctx, filePath, pullRequest.Head)
 		if err != nil {
 			if strings.HasPrefix(err.Error(), "no file named") {
@@ -56,10 +56,10 @@ func ReviewpadFileChanged(ctx context.Context, githubClient *gh.GithubClient, fi
 		return !bytes.Equal(rawBaseFile, rawHeadFile), nil
 	}
 
-	branchRepoOwner := *pullRequest.Base.Repo.Owner.Login
-	branchRepoName := *pullRequest.Base.Repo.Name
+	branchRepoOwner := pullRequest.Base.Repo.Owner
+	branchRepoName := pullRequest.Base.Repo.Name
 
-	files, err := githubClient.GetPullRequestFiles(ctx, branchRepoOwner, branchRepoName, *pullRequest.Number)
+	files, err := githubClient.GetPullRequestFiles(ctx, branchRepoOwner, branchRepoName, int(pullRequest.Number))
 	if err != nil {
 		return false, err
 	}
@@ -73,7 +73,7 @@ func ReviewpadFileChanged(ctx context.Context, githubClient *gh.GithubClient, fi
 	return false, nil
 }
 
-func DownloadReviewpadFileFromGitHub(ctx context.Context, logger *logrus.Entry, githubClient *gh.GithubClient, filePath string, branch *github.PullRequestBranch) (*bytes.Buffer, error) {
+func DownloadReviewpadFileFromGitHub(ctx context.Context, logger *logrus.Entry, githubClient *gh.GithubClient, filePath string, branch *pbc.Branch) (*bytes.Buffer, error) {
 	reviewpadFileContent, err := githubClient.DownloadContents(ctx, filePath, branch)
 	if err != nil {
 		return nil, err

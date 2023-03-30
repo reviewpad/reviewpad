@@ -5,34 +5,26 @@
 package plugins_aladino_functions_test
 
 import (
-	"net/http"
 	"testing"
 
-	"github.com/google/go-github/v49/github"
-	"github.com/migueleliasweb/go-github-mock/src/mock"
+	pbc "github.com/reviewpad/api/go/codehost"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
-	"github.com/reviewpad/reviewpad/v4/utils"
 	"github.com/stretchr/testify/assert"
 )
 
 var isDraft = plugins_aladino.PluginBuiltIns().Functions["isDraft"].Code
 
 func TestIsDraft_WhenTrue(t *testing.T) {
-	mockedPullRequest := aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
-		Draft: github.Bool(true),
+	mockedCodeReview := aladino.GetDefaultMockPullRequestDetailsWith(&pbc.PullRequest{
+		IsDraft: true,
 	})
-	mockedEnv := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnvWithPullRequestAndFiles(
 		t,
-		[]mock.MockBackendOption{
-			mock.WithRequestMatchHandler(
-				mock.GetReposPullsByOwnerByRepoByPullNumber,
-				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					utils.MustWriteBytes(w, mock.MustMarshal(mockedPullRequest))
-				}),
-			),
-		},
 		nil,
+		nil,
+		mockedCodeReview,
+		aladino.GetDefaultPullRequestFileList(),
 		aladino.MockBuiltIns(),
 		nil,
 	)
@@ -47,19 +39,9 @@ func TestIsDraft_WhenTrue(t *testing.T) {
 }
 
 func TestIsDraft_WhenFalse(t *testing.T) {
-	mockedPullRequest := aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
-		Draft: github.Bool(false),
-	})
 	mockedEnv := aladino.MockDefaultEnv(
 		t,
-		[]mock.MockBackendOption{
-			mock.WithRequestMatchHandler(
-				mock.GetReposPullsByOwnerByRepoByPullNumber,
-				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					utils.MustWriteBytes(w, mock.MustMarshal(mockedPullRequest))
-				}),
-			),
-		},
+		nil,
 		nil,
 		aladino.MockBuiltIns(),
 		nil,

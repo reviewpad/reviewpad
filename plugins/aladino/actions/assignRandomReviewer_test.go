@@ -11,6 +11,7 @@ import (
 
 	"github.com/google/go-github/v49/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
+	pbc "github.com/reviewpad/api/go/codehost"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/reviewpad/reviewpad/v4/utils"
@@ -119,18 +120,12 @@ func TestAssignRandomReviewer_ShouldFilterPullRequestAuthor(t *testing.T) {
 	selectedReviewers := []string{}
 	authorLogin := "maria"
 	assigneeLogin := "peter"
-	mockedPullRequest := aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
-		User: &github.User{Login: github.String(authorLogin)},
+	mockedCodeReview := aladino.GetDefaultMockPullRequestDetailsWith(&pbc.PullRequest{
+		Author: &pbc.User{Login: authorLogin},
 	})
-	mockedEnv := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnvWithPullRequestAndFiles(
 		t,
 		[]mock.MockBackendOption{
-			mock.WithRequestMatchHandler(
-				mock.GetReposPullsByOwnerByRepoByPullNumber,
-				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					utils.MustWriteBytes(w, mock.MustMarshal(mockedPullRequest))
-				}),
-			),
 			mock.WithRequestMatch(
 				mock.GetReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
 				github.Reviewers{},
@@ -155,6 +150,8 @@ func TestAssignRandomReviewer_ShouldFilterPullRequestAuthor(t *testing.T) {
 			),
 		},
 		nil,
+		mockedCodeReview,
+		aladino.GetDefaultPullRequestFileList(),
 		aladino.MockBuiltIns(),
 		nil,
 	)
@@ -168,18 +165,12 @@ func TestAssignRandomReviewer_ShouldFilterPullRequestAuthor(t *testing.T) {
 
 func TestAssignRandomReviewer_WhenThereIsNoUsers(t *testing.T) {
 	authorLogin := "maria"
-	mockedPullRequest := aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
-		User: &github.User{Login: github.String(authorLogin)},
+	mockedCodeReview := aladino.GetDefaultMockPullRequestDetailsWith(&pbc.PullRequest{
+		Author: &pbc.User{Login: authorLogin},
 	})
-	mockedEnv := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnvWithPullRequestAndFiles(
 		t,
 		[]mock.MockBackendOption{
-			mock.WithRequestMatchHandler(
-				mock.GetReposPullsByOwnerByRepoByPullNumber,
-				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					utils.MustWriteBytes(w, mock.MustMarshal(mockedPullRequest))
-				}),
-			),
 			mock.WithRequestMatch(
 				mock.GetReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
 				github.Reviewers{},
@@ -192,6 +183,8 @@ func TestAssignRandomReviewer_WhenThereIsNoUsers(t *testing.T) {
 			),
 		},
 		nil,
+		mockedCodeReview,
+		aladino.GetDefaultPullRequestFileList(),
 		aladino.MockBuiltIns(),
 		nil,
 	)

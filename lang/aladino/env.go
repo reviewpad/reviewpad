@@ -6,6 +6,7 @@ package aladino
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/reviewpad/reviewpad/v4/codehost"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
@@ -32,6 +33,7 @@ type Env interface {
 	GetBuiltIns() *BuiltIns
 	GetBuiltInsReportedMessages() map[Severity][]string
 	GetGithubClient() *gh.GithubClient
+	GetCodeHostClient() *codehost.CodeHostClient
 	GetCollector() collector.Collector
 	GetCtx() context.Context
 	GetDryRun() bool
@@ -46,6 +48,7 @@ type BaseEnv struct {
 	BuiltIns                 *BuiltIns
 	BuiltInsReportedMessages map[Severity][]string
 	GithubClient             *gh.GithubClient
+	CodeHostClient           *codehost.CodeHostClient
 	Collector                collector.Collector
 	Ctx                      context.Context
 	DryRun                   bool
@@ -100,6 +103,10 @@ func (e *BaseEnv) GetLogger() *logrus.Entry {
 	return e.Logger
 }
 
+func (e *BaseEnv) GetCodeHostClient() *codehost.CodeHostClient {
+	return e.CodeHostClient
+}
+
 func NewTypeEnv(e Env) TypeEnv {
 	builtInsType := make(map[string]Type)
 	for builtInName, builtInFunction := range e.GetBuiltIns().Functions {
@@ -118,6 +125,7 @@ func NewEvalEnv(
 	logger *logrus.Entry,
 	dryRun bool,
 	githubClient *gh.GithubClient,
+	codeHostClient *codehost.CodeHostClient,
 	collector collector.Collector,
 	targetEntity *handler.TargetEntity,
 	eventPayload interface{},
@@ -137,6 +145,7 @@ func NewEvalEnv(
 		RegisterMap:              registerMap,
 		Report:                   report,
 		Logger:                   logger,
+		CodeHostClient:           codeHostClient,
 	}
 
 	switch targetEntity.Kind {
@@ -148,12 +157,12 @@ func NewEvalEnv(
 
 		input.Target = target.NewIssueTarget(ctx, targetEntity, githubClient, issue)
 	case handler.PullRequest:
-		pullRequest, _, err := githubClient.GetPullRequest(ctx, targetEntity.Owner, targetEntity.Repo, targetEntity.Number)
+		pullRequest, err := codeHostClient.GetPullRequest(ctx, fmt.Sprintf("%s/%s", targetEntity.Owner, targetEntity.Repo), int64(targetEntity.Number))
 		if err != nil {
 			return nil, err
 		}
 
-		pullRequestTarget, err := target.NewPullRequestTarget(ctx, targetEntity, githubClient, pullRequest)
+		pullRequestTarget, err := target.NewPullRequestTarget(ctx, targetEntity, githubClient, codeHostClient, pullRequest)
 		if err != nil {
 			return nil, err
 		}

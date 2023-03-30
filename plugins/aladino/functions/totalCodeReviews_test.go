@@ -18,8 +18,8 @@ import (
 var totalCodeReviews = plugins_aladino.PluginBuiltIns().Functions["totalCodeReviews"].Code
 
 func TestTotalCodeReviews_WhenRequestFails(t *testing.T) {
-	mockedPullRequest := aladino.GetDefaultMockPullRequestDetails()
-	author := mockedPullRequest.GetUser().GetLogin()
+	mockedCodeReview := aladino.GetDefaultPullRequestDetails()
+	author := mockedCodeReview.Author.Login
 
 	mockedEnv := aladino.MockDefaultEnv(
 		t,
@@ -39,8 +39,8 @@ func TestTotalCodeReviews_WhenRequestFails(t *testing.T) {
 }
 
 func TestTotalCodeReviews(t *testing.T) {
-	mockedPullRequest := aladino.GetDefaultMockPullRequestDetails()
-	author := mockedPullRequest.GetUser().GetLogin()
+	mockedCodeReview := aladino.GetDefaultPullRequestDetails()
+	author := mockedCodeReview.Author.Login
 	codeReviewsNum := 80
 
 	mockedTotalPullRequestReviewContributionsQuery := fmt.Sprintf(`{

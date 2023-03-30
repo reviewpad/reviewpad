@@ -20,6 +20,5 @@ func Comment() *aladino.BuiltInAction {
 func commentCode(e aladino.Env, args []aladino.Value) error {
 	t := e.GetTarget()
 	commentBody := args[0].(*aladino.StringValue).Val
-
 	return t.Comment(commentBody)
 }

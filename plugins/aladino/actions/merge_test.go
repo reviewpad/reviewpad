@@ -9,8 +9,8 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/google/go-github/v49/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
+	pbc "github.com/reviewpad/api/go/codehost"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/reviewpad/reviewpad/v4/utils"
@@ -24,19 +24,9 @@ type MergeRequestPostBody struct {
 }
 
 func TestMerge_WhenMergeMethodIsUnsupported(t *testing.T) {
-	mockedPullRequest := aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
-		State: github.String("open"),
-	})
 	mockedEnv := aladino.MockDefaultEnv(
 		t,
-		[]mock.MockBackendOption{
-			mock.WithRequestMatchHandler(
-				mock.GetReposPullsByOwnerByRepoByPullNumber,
-				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					utils.MustWriteBytes(w, mock.MustMarshal(mockedPullRequest))
-				}),
-			),
-		},
+		nil,
 		nil,
 		aladino.MockBuiltIns(),
 		nil,
@@ -52,11 +42,6 @@ func TestMerge_WhenNoMergeMethodIsProvided(t *testing.T) {
 	wantMergeMethod := "merge"
 	var gotMergeMethod string
 
-	mockedPullRequest := aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
-		State:  github.String("open"),
-		Merged: github.Bool(false),
-	})
-
 	mockedEnv := aladino.MockDefaultEnv(
 		t,
 		[]mock.MockBackendOption{
@@ -69,12 +54,6 @@ func TestMerge_WhenNoMergeMethodIsProvided(t *testing.T) {
 					utils.MustUnmarshal(rawBody, &body)
 
 					gotMergeMethod = body.MergeMethod
-				}),
-			),
-			mock.WithRequestMatchHandler(
-				mock.GetReposPullsByOwnerByRepoByPullNumber,
-				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					utils.MustWriteBytes(w, mock.MustMarshal(mockedPullRequest))
 				}),
 			),
 		},
@@ -94,11 +73,6 @@ func TestMerge_WhenMergeMethodIsProvided(t *testing.T) {
 	wantMergeMethod := "rebase"
 	var gotMergeMethod string
 
-	mockedPullRequest := aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
-		State:  github.String("open"),
-		Merged: github.Bool(false),
-	})
-
 	mockedEnv := aladino.MockDefaultEnv(
 		t,
 		[]mock.MockBackendOption{
@@ -111,12 +85,6 @@ func TestMerge_WhenMergeMethodIsProvided(t *testing.T) {
 					utils.MustUnmarshal(rawBody, &body)
 
 					gotMergeMethod = body.MergeMethod
-				}),
-			),
-			mock.WithRequestMatchHandler(
-				mock.GetReposPullsByOwnerByRepoByPullNumber,
-				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					utils.MustWriteBytes(w, mock.MustMarshal(mockedPullRequest))
 				}),
 			),
 		},
@@ -135,21 +103,16 @@ func TestMerge_WhenMergeMethodIsProvided(t *testing.T) {
 func TestMerge_WhenMergeIsOnDraftPullRequest(t *testing.T) {
 	wantMergeMethod := "rebase"
 
-	mockedPullRequest := aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
-		State: github.String("open"),
-		Draft: github.Bool(true),
+	mockedCodeReview := aladino.GetDefaultMockPullRequestDetailsWith(&pbc.PullRequest{
+		Status:  pbc.PullRequestStatus_OPEN,
+		IsDraft: true,
 	})
-	mockedEnv := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnvWithPullRequestAndFiles(
 		t,
-		[]mock.MockBackendOption{
-			mock.WithRequestMatchHandler(
-				mock.GetReposPullsByOwnerByRepoByPullNumber,
-				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					utils.MustWriteBytes(w, mock.MustMarshal(mockedPullRequest))
-				}),
-			),
-		},
 		nil,
+		nil,
+		mockedCodeReview,
+		aladino.GetDefaultPullRequestFileList(),
 		aladino.MockBuiltIns(),
 		nil,
 	)
@@ -163,20 +126,15 @@ func TestMerge_WhenMergeIsOnDraftPullRequest(t *testing.T) {
 func TestMerge_WhenMergeIsClosedPullRequest(t *testing.T) {
 	wantMergeMethod := "rebase"
 
-	mockedPullRequest := aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
-		State: github.String("closed"),
+	mockedCodeReview := aladino.GetDefaultMockPullRequestDetailsWith(&pbc.PullRequest{
+		Status: pbc.PullRequestStatus_CLOSED,
 	})
-	mockedEnv := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnvWithPullRequestAndFiles(
 		t,
-		[]mock.MockBackendOption{
-			mock.WithRequestMatchHandler(
-				mock.GetReposPullsByOwnerByRepoByPullNumber,
-				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					utils.MustWriteBytes(w, mock.MustMarshal(mockedPullRequest))
-				}),
-			),
-		},
 		nil,
+		nil,
+		mockedCodeReview,
+		aladino.GetDefaultPullRequestFileList(),
 		aladino.MockBuiltIns(),
 		nil,
 	)

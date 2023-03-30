@@ -21,10 +21,5 @@ func Head() *aladino.BuiltInFunction {
 func headCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
 	pullRequest := e.GetTarget().(*target.PullRequestTarget)
 
-	head, err := pullRequest.GetHead()
-	if err != nil {
-		return nil, err
-	}
-
-	return aladino.BuildStringValue(head), nil
+	return aladino.BuildStringValue(pullRequest.GetHead()), nil
 }

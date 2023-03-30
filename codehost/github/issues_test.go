@@ -23,10 +23,10 @@ func TestGetLinkedProjects_WhenRequestFails(t *testing.T) {
 		},
 	)
 
-	mockedPullRequest := aladino.GetDefaultMockPullRequestDetails()
+	mockedCodeReview := aladino.GetDefaultPullRequestDetails()
 
-	mockOwner := host.GetPullRequestBaseOwnerName(mockedPullRequest)
-	mockRepo := host.GetPullRequestBaseRepoName(mockedPullRequest)
+	mockOwner := host.GetPullRequestBaseOwnerName(mockedCodeReview)
+	mockRepo := host.GetPullRequestBaseRepoName(mockedCodeReview)
 	mockIssuerNumber := 10
 
 	projects, err := mockedGithubClient.GetLinkedProjectsForIssue(context.Background(), mockOwner, mockRepo, mockIssuerNumber, 3)
@@ -80,10 +80,10 @@ func TestGetLinkedProjects_WhenProjectItemsNotFound(t *testing.T) {
 			}
 		},
 	)
-	mockedPullRequest := aladino.GetDefaultMockPullRequestDetails()
+	mockedCodeReview := aladino.GetDefaultPullRequestDetails()
 
-	mockOwner := host.GetPullRequestBaseOwnerName(mockedPullRequest)
-	mockRepo := host.GetPullRequestBaseRepoName(mockedPullRequest)
+	mockOwner := host.GetPullRequestBaseOwnerName(mockedCodeReview)
+	mockRepo := host.GetPullRequestBaseRepoName(mockedCodeReview)
 	mockIssuerNumber := 10
 
 	projects, err := mockedGithubClient.GetLinkedProjectsForIssue(context.Background(), mockOwner, mockRepo, mockIssuerNumber, 3)
@@ -149,10 +149,10 @@ func TestGetLinkedProjects_WhenProjectFound(t *testing.T) {
 			}
 		},
 	)
-	mockedPullRequest := aladino.GetDefaultMockPullRequestDetails()
+	mockedCodeReview := aladino.GetDefaultPullRequestDetails()
 
-	mockOwner := host.GetPullRequestBaseOwnerName(mockedPullRequest)
-	mockRepo := host.GetPullRequestBaseRepoName(mockedPullRequest)
+	mockOwner := host.GetPullRequestBaseOwnerName(mockedCodeReview)
+	mockRepo := host.GetPullRequestBaseRepoName(mockedCodeReview)
 	mockIssuerNumber := 10
 
 	gotProjects, err := mockedGithubClient.GetLinkedProjectsForIssue(context.Background(), mockOwner, mockRepo, mockIssuerNumber, 3)

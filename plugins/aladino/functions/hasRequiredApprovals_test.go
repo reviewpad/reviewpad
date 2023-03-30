@@ -16,11 +16,11 @@ import (
 var hasRequiredApprovals = plugins_aladino.PluginBuiltIns().Functions["hasRequiredApprovals"].Code
 
 func TestHasRequiredApprovals_WhenErrorOccurs(t *testing.T) {
-	mockedPullRequest := aladino.GetDefaultMockPullRequestDetails()
+	mockedCodeReview := aladino.GetDefaultPullRequestDetails()
 
-	mockedPullRequestNumber := host.GetPullRequestNumber(mockedPullRequest)
-	mockOwner := host.GetPullRequestBaseOwnerName(mockedPullRequest)
-	mockRepo := host.GetPullRequestBaseRepoName(mockedPullRequest)
+	mockedCodeReviewNumber := host.GetPullRequestNumber(mockedCodeReview)
+	mockOwner := host.GetPullRequestBaseOwnerName(mockedCodeReview)
+	mockRepo := host.GetPullRequestBaseRepoName(mockedCodeReview)
 
 	mockedLatestReviewsGQLQuery := fmt.Sprintf(`{
 		"query":"query($pullRequestNumber:Int!$repositoryName:String!$repositoryOwner:String!){
@@ -40,7 +40,7 @@ func TestHasRequiredApprovals_WhenErrorOccurs(t *testing.T) {
 			"repositoryName":"%s",
 			"repositoryOwner":"%s"
 		}
-	}`, mockedPullRequestNumber, mockRepo, mockOwner)
+	}`, mockedCodeReviewNumber, mockRepo, mockOwner)
 
 	tests := map[string]struct {
 		ghGraphQLHandler          func(http.ResponseWriter, *http.Request)
@@ -78,11 +78,11 @@ func TestHasRequiredApprovals_WhenErrorOccurs(t *testing.T) {
 }
 
 func TestHasRequiredApprovals(t *testing.T) {
-	mockedPullRequest := aladino.GetDefaultMockPullRequestDetails()
+	mockedCodeReview := aladino.GetDefaultPullRequestDetails()
 
-	mockedPullRequestNumber := host.GetPullRequestNumber(mockedPullRequest)
-	mockOwner := host.GetPullRequestBaseOwnerName(mockedPullRequest)
-	mockRepo := host.GetPullRequestBaseRepoName(mockedPullRequest)
+	mockedCodeReviewNumber := host.GetPullRequestNumber(mockedCodeReview)
+	mockOwner := host.GetPullRequestBaseOwnerName(mockedCodeReview)
+	mockRepo := host.GetPullRequestBaseRepoName(mockedCodeReview)
 
 	mockedLatestReviewsGQLQuery := fmt.Sprintf(`{
 		"query":"query($pullRequestNumber:Int!$repositoryName:String!$repositoryOwner:String!){
@@ -102,7 +102,7 @@ func TestHasRequiredApprovals(t *testing.T) {
 			"repositoryName":"%s",
 			"repositoryOwner":"%s"
 		}
-	}`, mockedPullRequestNumber, mockRepo, mockOwner)
+	}`, mockedCodeReviewNumber, mockRepo, mockOwner)
 
 	tests := map[string]struct {
 		clientOptions             []mock.MockBackendOption

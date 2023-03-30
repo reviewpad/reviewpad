@@ -7,8 +7,7 @@ package plugins_aladino_actions_test
 import (
 	"testing"
 
-	"github.com/google/go-github/v49/github"
-	"github.com/migueleliasweb/go-github-mock/src/mock"
+	pbc "github.com/reviewpad/api/go/codehost"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -23,17 +22,14 @@ func TestTitleLint(t *testing.T) {
 		wantErr              string
 	}{
 		"when type is empty": {
-			env: aladino.MockDefaultEnv(
+			env: aladino.MockDefaultEnvWithPullRequestAndFiles(
 				t,
-				[]mock.MockBackendOption{
-					mock.WithRequestMatch(
-						mock.GetReposPullsByOwnerByRepoByPullNumber,
-						aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
-							Title: github.String(": an amazing feature"),
-						}),
-					),
-				},
 				nil,
+				nil,
+				aladino.GetDefaultMockPullRequestDetailsWith(&pbc.PullRequest{
+					Title: ": an amazing feature",
+				}),
+				aladino.GetDefaultPullRequestFileList(),
 				aladino.MockBuiltIns(),
 				nil,
 			),
@@ -44,17 +40,14 @@ func TestTitleLint(t *testing.T) {
 			},
 		},
 		"when title is unconventional": {
-			env: aladino.MockDefaultEnv(
+			env: aladino.MockDefaultEnvWithPullRequestAndFiles(
 				t,
-				[]mock.MockBackendOption{
-					mock.WithRequestMatch(
-						mock.GetReposPullsByOwnerByRepoByPullNumber,
-						aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
-							Title: github.String("An Amazing Feature"),
-						}),
-					),
-				},
 				nil,
+				nil,
+				aladino.GetDefaultMockPullRequestDetailsWith(&pbc.PullRequest{
+					Title: "An Amazing Feature",
+				}),
+				aladino.GetDefaultPullRequestFileList(),
 				aladino.MockBuiltIns(),
 				nil,
 			),
@@ -65,34 +58,28 @@ func TestTitleLint(t *testing.T) {
 			},
 		},
 		"when title is conventional": {
-			env: aladino.MockDefaultEnv(
+			env: aladino.MockDefaultEnvWithPullRequestAndFiles(
 				t,
-				[]mock.MockBackendOption{
-					mock.WithRequestMatch(
-						mock.GetReposPullsByOwnerByRepoByPullNumber,
-						aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
-							Title: github.String("feat: an amazing feature"),
-						}),
-					),
-				},
 				nil,
+				nil,
+				aladino.GetDefaultMockPullRequestDetailsWith(&pbc.PullRequest{
+					Title: "feat: an amazing feature",
+				}),
+				aladino.GetDefaultPullRequestFileList(),
 				aladino.MockBuiltIns(),
 				nil,
 			),
 			wantReportedMessages: map[aladino.Severity][]string{},
 		},
 		"when title is conventional with scope": {
-			env: aladino.MockDefaultEnv(
+			env: aladino.MockDefaultEnvWithPullRequestAndFiles(
 				t,
-				[]mock.MockBackendOption{
-					mock.WithRequestMatch(
-						mock.GetReposPullsByOwnerByRepoByPullNumber,
-						aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
-							Title: github.String("feat(api): an amazing feature"),
-						}),
-					),
-				},
 				nil,
+				nil,
+				aladino.GetDefaultMockPullRequestDetailsWith(&pbc.PullRequest{
+					Title: "feat(api): an amazing feature",
+				}),
+				aladino.GetDefaultPullRequestFileList(),
 				aladino.MockBuiltIns(),
 				nil,
 			),

@@ -26,19 +26,17 @@ func DefaultPluginConfig() (*PluginConfig, error) {
 		return nil, err
 	}
 
-	connections = append(connections, semanticConnection)
-
 	robinClient, robinConnection, err := services.NewRobinService()
 	if err != nil {
 		return nil, err
 	}
 
-	connections = append(connections, robinConnection)
-
 	services := map[string]interface{}{
 		services.SEMANTIC_SERVICE_KEY: semanticClient,
 		services.ROBIN_SERVICE_KEY:    robinClient,
 	}
+
+	connections = append(connections, semanticConnection, robinConnection)
 
 	config := &PluginConfig{
 		Services:        services,

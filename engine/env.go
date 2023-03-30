@@ -15,7 +15,6 @@ import (
 
 type GroupKind string
 type GroupType string
-
 type ExitStatus int
 
 const GroupKindDeveloper GroupKind = "developer"

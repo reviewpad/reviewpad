@@ -9,7 +9,6 @@ import (
 	"sort"
 
 	"github.com/reviewpad/reviewpad/v4/codehost"
-	"github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v4/handler"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
@@ -92,10 +91,7 @@ func assignReviewerCode(e aladino.Env, args []aladino.Value) error {
 	}
 
 	// Skip current requested reviewers if mention on the provided reviewers list
-	currentRequestedReviewers, err := target.GetRequestedReviewers()
-	if err != nil {
-		return err
-	}
+	currentRequestedReviewers := target.GetRequestedReviewers()
 
 	for _, requestedReviewer := range currentRequestedReviewers {
 		for _, availableReviewer := range availableReviewers {
@@ -156,7 +152,7 @@ func getReviewersUsingPolicyRoundRobin(e aladino.Env, availableReviewers []aladi
 
 	// Use pull request number as a starting point to select reviewers
 	pullRequest := e.GetTarget().(*target.PullRequestTarget).PullRequest
-	prNum := github.GetPullRequestNumber(pullRequest)
+	prNum := int(pullRequest.GetNumber())
 	startPos := (prNum - 1) * totalRequiredReviewers
 
 	if startPos < 0 {

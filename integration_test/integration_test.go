@@ -15,15 +15,19 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
+	pbe "github.com/reviewpad/api/go/entities"
 	"github.com/reviewpad/reviewpad/v4"
+	"github.com/reviewpad/reviewpad/v4/codehost"
 	"github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/reviewpad/reviewpad/v4/engine"
 	"github.com/reviewpad/reviewpad/v4/handler"
+	plugins_aladino_services "github.com/reviewpad/reviewpad/v4/plugins/aladino/services"
 	"github.com/reviewpad/reviewpad/v4/utils"
 	"github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"google.golang.org/grpc/metadata"
 )
 
 const (
@@ -299,10 +303,27 @@ func TestIntegration(t *testing.T) {
 				EventAction: "opened",
 			}
 
+			requestID := uuid.New().String()
+			md := metadata.Pairs(codehost.RequestIDKey, requestID)
+			ctxReq := metadata.NewOutgoingContext(ctx, md)
+
+			codehostClient, codehostConnection, err := plugins_aladino_services.NewCodeHostService()
+			require.Nil(err)
+			defer codehostConnection.Close()
+
+			codeHostClient := &codehost.CodeHostClient{
+				Token: githubToken,
+				HostInfo: &codehost.HostInfo{
+					Host:    pbe.Host_GITHUB,
+					HostUri: "https://github.com",
+				},
+				CodehostClient: codehostClient,
+			}
+
 			// execute the reviewpad files one by one and
 			// ensure there are no errors and exit statuses match
 			for i, file := range test.reviewpadFiles {
-				exitStatus, _, err := reviewpad.Run(ctx, logger, githubClient, collector, targetEntity, eventDetails, file, false, false)
+				exitStatus, _, err := reviewpad.Run(ctxReq, logger, githubClient, codeHostClient, collector, targetEntity, eventDetails, file, false, false)
 				assert.Equal(test.wantErr, err)
 				assert.Equal(test.exitStatus[i], exitStatus)
 			}

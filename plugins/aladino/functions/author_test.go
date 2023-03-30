@@ -5,14 +5,11 @@
 package plugins_aladino_functions_test
 
 import (
-	"net/http"
 	"testing"
 
-	"github.com/google/go-github/v49/github"
-	"github.com/migueleliasweb/go-github-mock/src/mock"
+	pbc "github.com/reviewpad/api/go/codehost"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
-	"github.com/reviewpad/reviewpad/v4/utils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -20,20 +17,15 @@ var author = plugins_aladino.PluginBuiltIns().Functions["author"].Code
 
 func TestAuthor(t *testing.T) {
 	authorLogin := "john"
-	mockedPullRequest := aladino.GetDefaultMockPullRequestDetailsWith(&github.PullRequest{
-		User: &github.User{Login: github.String(authorLogin)},
+	mockedCodeReview := aladino.GetDefaultMockPullRequestDetailsWith(&pbc.PullRequest{
+		Author: &pbc.User{Login: authorLogin},
 	})
-	mockedEnv := aladino.MockDefaultEnv(
+	mockedEnv := aladino.MockDefaultEnvWithPullRequestAndFiles(
 		t,
-		[]mock.MockBackendOption{
-			mock.WithRequestMatchHandler(
-				mock.GetReposPullsByOwnerByRepoByPullNumber,
-				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					utils.MustWriteBytes(w, mock.MustMarshal(mockedPullRequest))
-				}),
-			),
-		},
 		nil,
+		nil,
+		mockedCodeReview,
+		aladino.GetDefaultPullRequestFileList(),
 		aladino.MockBuiltIns(),
 		nil,
 	)

@@ -4,24 +4,22 @@ import (
 	"errors"
 	"regexp"
 
-	"github.com/google/go-github/v49/github"
+	pbc "github.com/reviewpad/api/go/codehost"
 )
 
-func ValidateUrl(fileUrl string) (*github.PullRequestBranch, string, error) {
+func ValidateUrl(fileUrl string) (*pbc.Branch, string, error) {
 	re := regexp.MustCompile(`^https:\/\/github\.com\/([^/]+)/([^/]+)/blob/([^/]+)/(.+)$`)
 	result := re.FindStringSubmatch(fileUrl)
 	if len(result) != 5 {
 		return nil, "", errors.New("fatal: url must be a link to a GitHub blob, e.g. https://github.com/reviewpad/action/blob/main/main.go")
 	}
 
-	branch := &github.PullRequestBranch{
-		Repo: &github.Repository{
-			Owner: &github.User{
-				Login: github.String(result[1]),
-			},
-			Name: github.String(result[2]),
+	branch := &pbc.Branch{
+		Repo: &pbc.Repository{
+			Owner: result[1],
+			Name:  result[2],
 		},
-		Ref: github.String(result[3]),
+		Name: result[3],
 	}
 
 	return branch, result[4], nil

@@ -20,12 +20,7 @@ func LastEventAt() *aladino.BuiltInFunction {
 }
 
 func lastEventAtCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
-	updatedAt, err := e.GetTarget().GetUpdatedAt()
-	if err != nil {
-		return nil, err
-	}
-
-	updatedAtTime, err := time.Parse("2006-01-02 15:04:05.999999999 -0700 MST", updatedAt)
+	updatedAtTime, err := time.Parse("2006-01-02 15:04:05.999999999 -0700 MST", e.GetTarget().GetUpdatedAt())
 	if err != nil {
 		return nil, err
 	}

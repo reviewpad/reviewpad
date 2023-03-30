@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/reviewpad/reviewpad/v4/codehost"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v4/collector"
@@ -196,7 +197,7 @@ func (i *Interpreter) ReportMetrics() error {
 	ctx := i.Env.GetCtx()
 	pr := i.Env.GetTarget().(*target.PullRequestTarget).PullRequest
 
-	if !*pr.Merged {
+	if !pr.IsMerged {
 		return nil
 	}
 
@@ -208,13 +209,13 @@ func (i *Interpreter) ReportMetrics() error {
 	}
 
 	if firstCommitDate != nil {
-		report.WriteString(fmt.Sprintf("**💻 Coding Time**: %s", utils.ReadableTimeDiff(*firstCommitDate, *pr.CreatedAt)))
+		report.WriteString(fmt.Sprintf("**💻 Coding Time**: %s", utils.ReadableTimeDiff(*firstCommitDate, pr.CreatedAt.AsTime())))
 	}
 
-	if firstReviewDate != nil && firstReviewDate.Before(*pr.MergedAt) {
-		report.WriteString(fmt.Sprintf("\n**🛻 Pickup Time**: %s", utils.ReadableTimeDiff(*pr.CreatedAt, *firstReviewDate)))
+	if firstReviewDate != nil && firstReviewDate.Before(pr.MergedAt.AsTime()) {
+		report.WriteString(fmt.Sprintf("\n**🛻 Pickup Time**: %s", utils.ReadableTimeDiff(pr.CreatedAt.AsTime(), *firstReviewDate)))
 
-		report.WriteString(fmt.Sprintf("\n**👀 Review Time**: %s", utils.ReadableTimeDiff(*firstReviewDate, *pr.MergedAt)))
+		report.WriteString(fmt.Sprintf("\n**👀 Review Time**: %s", utils.ReadableTimeDiff(*firstReviewDate, pr.MergedAt.AsTime())))
 	}
 
 	if report.Len() > 0 {
@@ -247,12 +248,13 @@ func NewInterpreter(
 	logger *logrus.Entry,
 	dryRun bool,
 	githubClient *gh.GithubClient,
+	codeHostClient *codehost.CodeHostClient,
 	collector collector.Collector,
 	targetEntity *handler.TargetEntity,
 	eventPayload interface{},
 	builtIns *BuiltIns,
 ) (engine.Interpreter, error) {
-	evalEnv, err := NewEvalEnv(ctx, logger, dryRun, githubClient, collector, targetEntity, eventPayload, builtIns)
+	evalEnv, err := NewEvalEnv(ctx, logger, dryRun, githubClient, codeHostClient, collector, targetEntity, eventPayload, builtIns)
 	if err != nil {
 		return nil, err
 	}

@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/google/go-github/v49/github"
+	"github.com/reviewpad/reviewpad/v4/codehost"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/reviewpad/reviewpad/v4/collector"
 	"github.com/reviewpad/reviewpad/v4/cookbook"
@@ -306,6 +307,7 @@ func Run(
 	ctx context.Context,
 	log *logrus.Entry,
 	gitHubClient *gh.GithubClient,
+	codeHostClient *codehost.CodeHostClient,
 	collector collector.Collector,
 	targetEntity *handler.TargetEntity,
 	eventDetails *handler.EventDetails,
@@ -320,7 +322,7 @@ func Run(
 
 	defer config.CleanupPluginConfig()
 
-	aladinoInterpreter, err := aladino.NewInterpreter(ctx, log, dryRun, gitHubClient, collector, targetEntity, eventDetails.Payload, plugins_aladino.PluginBuiltInsWithConfig(config))
+	aladinoInterpreter, err := aladino.NewInterpreter(ctx, log, dryRun, gitHubClient, codeHostClient, collector, targetEntity, eventDetails.Payload, plugins_aladino.PluginBuiltInsWithConfig(config))
 	if err != nil {
 		return engine.ExitStatusFailure, nil, err
 	}
