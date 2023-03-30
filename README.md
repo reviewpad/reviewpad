@@ -26,6 +26,8 @@ In Reviewpad, you can automate actions over the pull requests and issues such as
 2. Add or remove [labels](https://docs.reviewpad.com/use-cases/automated-labelling/);
 3. Specify [reviewer assignments](https://docs.reviewpad.com/use-cases/reviewer-assignment);
 4. Automate [close/merge actions](https://docs.reviewpad.com/use-cases/auto-merge);
+5. [Block the merge action](https://docs.reviewpad.com/use-cases/blocking-merge);
+6. Automatically [summarize pull requests](https://docs.reviewpad.com/guides/built-ins#summarize);
 
 As an example, the following workflow:
 
@@ -39,7 +41,7 @@ workflows:
     - name: ship
       description: Ship process - bypass the review and merge with rebase
       if:
-          - rule: $hasFileExtensions([".md"])
+          - $hasFileExtensions([".md"])
       then:
           - $addLabel("ship")
           - $merge()
