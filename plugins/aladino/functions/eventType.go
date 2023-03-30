@@ -22,6 +22,10 @@ func EventType() *aladino.BuiltInFunction {
 
 func eventTypeCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
 	pullRequestEvent := e.GetEventPayload()
+	if pullRequestEvent == nil {
+		return aladino.BuildStringValue(""), nil
+	}
+
 	if reflect.TypeOf(pullRequestEvent).String() != "*github.PullRequestEvent" {
 		return aladino.BuildStringValue(""), nil
 	}

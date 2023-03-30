@@ -17,7 +17,7 @@ import (
 
 func RobinPrompt() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, nil),
+		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType(), aladino.BuildStringType()}, nil),
 		Code:           robinPromptCode,
 		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest, handler.Issue},
 	}
@@ -27,6 +27,7 @@ func robinPromptCode(e aladino.Env, args []aladino.Value) error {
 	target := e.GetTarget()
 	targetEntity := target.GetTargetEntity()
 	prompt := args[0].(*aladino.StringValue).Val
+	model := args[1].(*aladino.StringValue).Val
 
 	service, ok := e.GetBuiltIns().Services[plugins_aladino_services.ROBIN_SERVICE_KEY]
 	if !ok {
@@ -43,7 +44,8 @@ func robinPromptCode(e aladino.Env, args []aladino.Value) error {
 			Kind:   converter.ToEntityKind(targetEntity.Kind),
 			Number: int32(targetEntity.Number),
 		},
-		Act: false,
+		Act:   false,
+		Model: model,
 	}
 
 	resp, err := robinClient.Prompt(e.GetCtx(), req)

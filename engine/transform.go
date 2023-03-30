@@ -137,6 +137,10 @@ func addEmptyFilterToHasCodeWithoutSemanticChanges(str string) string {
 	return strings.ReplaceAll(str, "$hasCodeWithoutSemanticChanges()", "$hasCodeWithoutSemanticChanges([])")
 }
 
+func summarizeAlias(str string) string {
+	return strings.ReplaceAll(str, "$summarize()", `$robinSummarize("default", "openai-gpt-4")`)
+}
+
 func transformAladinoExpression(str string) string {
 	transformedActionStr := str
 
@@ -155,6 +159,7 @@ func transformAladinoExpression(str string) string {
 		addDefaultHasAnyCheckRunCompleted,
 		addDefaultsToRequestedAssignees,
 		addEmptyFilterToHasCodeWithoutSemanticChanges,
+		summarizeAlias,
 	}
 
 	for i := range transformations {

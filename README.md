@@ -45,7 +45,7 @@ workflows:
           - $merge()
 ```
 
-Automatically adds a label `ship` and merges pull requests that only change `.md` files.
+Automatically adds the label `ship` and merges all pull requests that only change `.md` files.
 
 You can execute Reviewpad through the CLI or install Reviewpad [GitHub App](https://github.com/marketplace/reviewpad).
 
@@ -67,7 +67,7 @@ Conceptually, the packages are divided into four categories:
     - Process the YML file to determine which workflows are enabled. The outcome of this phase is a program with the actions that will be executed over the pull request.
     - Execution of the synthesised program.
 2. [Aladino Language](https://docs.reviewpad.com/guides/aladino/specification): This is the language that is used in the `spec` property of the rules and also the actions of the workflows. The engine of Reviewpad is not specific to Aladino - this means that it is possible to add the support for a new language such as `Javascript` or `Golang` in these specifications.
-3. Plugins: The plugin package contains the built-in functions and actions that act as an abstraction to the 3rd party services such as GitHub, Jira, etc. This package is specific to each supported specification language. In the case of `plugins/aladino`, it contains the implementations of the [built-ins](https://docs.reviewpad.com/guides/built-ins) of the team edition.
+3. Plugins: The plugin package contains the built-in functions and actions that act as an abstraction to the 3rd party services such as GitHub, Jira, etc. This package is specific to each supported specification language. In the case of `plugins/aladino`, it contains the implementations of the [built-ins](https://docs.reviewpad.com/guides/built-ins).
 4. Utilities: packages such as the collector and the fmtio that provide utilities that are used in multiple places.
 
 ## Development
@@ -92,7 +92,7 @@ We use [Taskfile](https://taskfile.dev/). To compile the packages simply run:
 task build
 ```
 
-To generate the CLI of the team edition run:
+To generate the CLI run:
 
 ```sh
 task build-cli
