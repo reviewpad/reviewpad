@@ -16,17 +16,19 @@ import (
 
 	"github.com/google/uuid"
 	pbe "github.com/reviewpad/api/go/entities"
+	"github.com/reviewpad/api/go/services"
 	"github.com/reviewpad/reviewpad/v4"
 	"github.com/reviewpad/reviewpad/v4/codehost"
 	"github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/reviewpad/reviewpad/v4/engine"
 	"github.com/reviewpad/reviewpad/v4/handler"
-	plugins_aladino_services "github.com/reviewpad/reviewpad/v4/plugins/aladino/services"
 	"github.com/reviewpad/reviewpad/v4/utils"
 	"github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
 )
 
@@ -307,9 +309,14 @@ func TestIntegration(t *testing.T) {
 			md := metadata.Pairs(codehost.RequestIDKey, requestID)
 			ctxReq := metadata.NewOutgoingContext(ctx, md)
 
-			codehostClient, codehostConnection, err := plugins_aladino_services.NewCodeHostService()
+			defaultOptions := grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(419430400))
+			transportCredentials := grpc.WithTransportCredentials(insecure.NewCredentials())
+
+			codehostConnection, err := grpc.Dial(os.Getenv("INPUT_CODEHOST_SERVICE"), transportCredentials, defaultOptions)
 			require.Nil(err)
 			defer codehostConnection.Close()
+
+			codehostClient := services.NewHostClient(codehostConnection)
 
 			codeHostClient := &codehost.CodeHostClient{
 				Token: githubToken,
