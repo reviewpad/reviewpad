@@ -50,8 +50,8 @@ func robinSummarizeCode(e aladino.Env, args []aladino.Value) error {
 
 	resp, err := robinClient.Summarize(e.GetCtx(), req)
 	if err != nil {
-		return err
+		return fmt.Errorf("summarize failed - please contact us on [Discord](https://reviewpad.com/discord)")
 	}
 
-	return target.Comment(fmt.Sprintf("**AI-Generated Pull Request Summary**: %s", resp.Summary))
+	return target.Comment(fmt.Sprintf("**AI-Generated Summary**: %s", resp.Summary))
 }
