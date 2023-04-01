@@ -16,21 +16,11 @@ func EventType() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
 		Type:           aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildStringType()),
 		Code:           eventTypeCode,
-		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest},
+		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest, handler.Issue},
 	}
 }
 
-func eventTypeCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
-	pullRequestEvent := e.GetEventPayload()
-	if pullRequestEvent == nil {
-		return aladino.BuildStringValue(""), nil
-	}
-
-	if reflect.TypeOf(pullRequestEvent).String() != "*github.PullRequestEvent" {
-		return aladino.BuildStringValue(""), nil
-	}
-
-	pullRequestEventPayload := pullRequestEvent.(*github.PullRequestEvent)
+func eventTypePullRequest(pullRequestEventPayload *github.PullRequestEvent) (aladino.Value, error) {
 	if pullRequestEventPayload == nil {
 		return aladino.BuildStringValue(""), nil
 	}
@@ -40,4 +30,32 @@ func eventTypeCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
 	}
 
 	return aladino.BuildStringValue(*pullRequestEventPayload.Action), nil
+}
+
+func eventTypeIssue(issuePayload *github.IssuesEvent) (aladino.Value, error) {
+	if issuePayload == nil {
+		return aladino.BuildStringValue(""), nil
+	}
+
+	if issuePayload.Action == nil {
+		return aladino.BuildStringValue(""), nil
+	}
+
+	return aladino.BuildStringValue(*issuePayload.Action), nil
+}
+
+func eventTypeCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
+	pullRequestEvent := e.GetEventPayload()
+	if pullRequestEvent == nil {
+		return aladino.BuildStringValue(""), nil
+	}
+
+	switch reflect.TypeOf(pullRequestEvent).String() {
+	case "*github.PullRequestEvent":
+		return eventTypePullRequest(pullRequestEvent.(*github.PullRequestEvent))
+	case "*github.IssuesEvent":
+		return eventTypeIssue(pullRequestEvent.(*github.IssuesEvent))
+	default:
+		return aladino.BuildStringValue(""), nil
+	}
 }
