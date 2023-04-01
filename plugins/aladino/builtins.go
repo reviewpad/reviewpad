@@ -164,6 +164,7 @@ func PluginBuiltInsWithConfig(config *PluginConfig) *aladino.BuiltIns {
 			"removeLabels":              actions.RemoveLabels(),
 			"review":                    actions.Review(),
 			"robinPrompt":               actions.RobinPrompt(),
+			"robinRawPrompt":            actions.RobinRawPrompt(),
 			"robinSummarize":            actions.RobinSummarize(),
 			"setProjectField":           actions.SetProjectField(),
 			"titleLint":                 actions.TitleLint(),
