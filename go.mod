@@ -24,7 +24,7 @@ require (
 	github.com/reviewpad/go-lib v0.0.0-20230320213934-e6b45aa7e806
 	github.com/shurcooL/githubv4 v0.0.0-20230305132112-efb623903184
 	github.com/sirupsen/logrus v1.9.0
-	github.com/spf13/cobra v1.6.1
+	github.com/spf13/cobra v1.7.0
 	github.com/stretchr/testify v1.8.2
 	github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80
 	golang.org/x/exp v0.0.0-20230321023759-10a507213a29
