@@ -7,7 +7,6 @@ package plugins_aladino_functions
 import (
 	"github.com/bmatcuk/doublestar/v4"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
-	_ "github.com/reviewpad/reviewpad/v4/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v4/handler"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
