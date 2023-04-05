@@ -175,7 +175,7 @@ pipelines:
       # Otherwise, we need to wait for the build to pass.
       - actions:
           - $review("REQUEST_CHANGES", "The build is failing. Please fix it before continuing.")
-        until: $hasFileExtensions([".md"]) || $checkRunConclusion("pr-build") != "failure"
+        until: $hasFileExtensions([".md"]) || $checkRunConclusion("pr-build") == "success"
       - actions:
           - $approve("Pull request is in ship mode and the build is green.")
           - $merge("rebase")
@@ -193,7 +193,7 @@ pipelines:
         until: $isUpdatedWithBaseBranch() && $hasLinearHistory()
       - actions:
           - $review("REQUEST_CHANGES", "The build is failing. Please fix it before continuing.")
-        until: $checkRunConclusion("pr-build") != "failure"
+        until: $checkRunConclusion("pr-build") == "success"
       - actions:
           - $assignReviewer($group("owners"), 1)
         until: $hasRequiredApprovals(1, $group("owners"))
