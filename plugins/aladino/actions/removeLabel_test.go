@@ -48,7 +48,7 @@ func TestRemoveLabel_WhenLabelIsNotAppliedToPullRequest(t *testing.T) {
 	err := removeLabel(mockedEnv, args)
 
 	assert.Nil(t, err)
-	assert.False(t, isLabelRemoved, "The label should not be removed")
+	assert.True(t, isLabelRemoved, "The label should be removed")
 }
 
 func TestRemoveLabel_WhenLabelIsAppliedToPullRequestAndLabelIsInEnvironment(t *testing.T) {
