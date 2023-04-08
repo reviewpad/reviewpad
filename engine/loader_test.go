@@ -398,6 +398,14 @@ func TestLoad(t *testing.T) {
 			),
 			wantErr: "loader: cyclic extends dependency",
 		},
+		"when the file has multiple inline actions": {
+			inputReviewpadFilePath: "testdata/loader/process/reviewpad_with_multiple_inline_actions.yml",
+			wantReviewpadFilePath:  "testdata/loader/process/reviewpad_with_multiple_inline_actions_after_processing.yml",
+		},
+		"when the file has multiple pipelines with compact actions": {
+			inputReviewpadFilePath: "testdata/loader/process/reviewpad_with_multiple_pipelines_with_inline_actions.yml",
+			wantReviewpadFilePath:  "testdata/loader/process/reviewpad_with_multiple_pipelines_with_inline_actions_after_processing.yml",
+		},
 	}
 
 	for name, test := range tests {

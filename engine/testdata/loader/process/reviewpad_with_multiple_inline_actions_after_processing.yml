@@ -1,0 +1,33 @@
+# Copyright 2022 Explore.dev Unipessoal Lda. All Rights Reserved.
+# Use of this source code is governed by a license that can be
+# found in the LICENSE file.
+
+api-version: reviewpad.com/v3.x
+
+rules:
+  - name: '$size() <= 30'
+    kind: patch
+    spec: '$size() <= 30'
+  - name: '$size() <= 50'
+    kind: patch
+    spec: '$size() <= 50'
+  - name: '$size() >= 90'
+    kind: patch
+    spec: '$size() >= 90'
+
+workflows:
+  - name: test-inline-action
+    if: 
+      - rule: '$size() <= 30'
+    then: 
+      - '$addLabel("critical")'
+  - name: test-inline-action-2
+    if: 
+      - rule: '$size() <= 50'
+    then: 
+      - '$addLabel("large")'
+  - name: test-inline-action-3
+    if:
+      - rule: '$size() >= 90'
+    then:
+      - $addLabel("very-large")

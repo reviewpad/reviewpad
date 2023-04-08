@@ -42,13 +42,13 @@ pipelines:
 				Trigger:     "$size() <= 30",
 				Stages: []PadStage{
 					{
-						Actions: []string{
+						NonNormalizedActions: []any{
 							"$assignReviewer([\"marcelosousa\"])",
 						},
 						Until: "$reviewerStatus(\"marcelosousa\") == \"APPROVED\"",
 					},
 					{
-						Actions: []string{
+						NonNormalizedActions: []any{
 							"$assignReviewer([\"ferreiratiago\"])",
 						},
 					},
