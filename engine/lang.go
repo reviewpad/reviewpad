@@ -100,13 +100,14 @@ func (p PadLabel) equals(o PadLabel) bool {
 }
 
 type PadWorkflow struct {
-	Name               string                     `yaml:"name"`
-	On                 []handler.TargetEntityKind `yaml:"on"`
-	Description        string                     `yaml:"description"`
-	AlwaysRun          bool                       `yaml:"always-run"`
-	Rules              []PadWorkflowRule          `yaml:"-"`
-	Actions            []string                   `yaml:"then"`
-	NonNormalizedRules []interface{}              `yaml:"if"`
+	Name                 string                     `yaml:"name"`
+	On                   []handler.TargetEntityKind `yaml:"on"`
+	Description          string                     `yaml:"description"`
+	AlwaysRun            bool                       `yaml:"always-run"`
+	Rules                []PadWorkflowRule          `yaml:"-"`
+	Actions              []string                   `yaml:"-"`
+	NonNormalizedRules   any                        `yaml:"if"`
+	NonNormalizedActions any                        `yaml:"then"`
 }
 
 func (p PadWorkflow) equals(o PadWorkflow) bool {
@@ -218,8 +219,9 @@ type PadPipeline struct {
 }
 
 type PadStage struct {
-	Actions []string `yaml:"actions"`
-	Until   string   `yaml:"until"`
+	Actions              []string `yaml:"-"`
+	NonNormalizedActions any      `yaml:"actions"`
+	Until                string   `yaml:"until"`
 }
 
 func (p PadPipeline) equals(o PadPipeline) bool {
