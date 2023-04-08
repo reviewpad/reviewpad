@@ -107,6 +107,8 @@ func mapReviewStateToEvent(reviewState string) (string, error) {
 		return "REQUEST_CHANGES", nil
 	case "APPROVED":
 		return "APPROVE", nil
+	case "DISMISSED":
+		return "DISMISSED", nil
 	default:
 		return "", fmt.Errorf("review: unsupported review state %v", reviewState)
 	}
