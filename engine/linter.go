@@ -131,9 +131,9 @@ func lintWorkflows(log *logrus.Entry, rules []PadRule, padWorkflows []PadWorkflo
 			}
 		}
 
-		if len(workflow.Rules) == 0 {
-			return fmt.Errorf("workflow '%v 'does not have rules", workflow.Name)
-		}
+		// We are not checking if the workflow has any rules because
+		// it is now possible for a workflow to have a run block without
+		// any rules
 
 		for _, rule := range workflow.Rules {
 			ruleName := rule.Rule
