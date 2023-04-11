@@ -193,6 +193,15 @@ func EvalConfigurationFile(file *ReviewpadFile, env *Env) (*Program, error) {
 		} else {
 			workflowLog.Infof("no rules activated")
 		}
+
+		for _, run := range workflow.Runs {
+			runActions, err := getActionsFromRunBlock(interpreter, &run, rules)
+			if err != nil {
+				return nil, err
+			}
+
+			program.append(runActions)
+		}
 	}
 
 	// pipelines should only run on pull requests
@@ -234,4 +243,54 @@ func EvalConfigurationFile(file *ReviewpadFile, env *Env) (*Program, error) {
 	}
 
 	return program, nil
+}
+
+func getActionsFromRunBlock(interpreter Interpreter, run *PadWorkflowRunBlock, rules map[string]PadRule) ([]string, error) {
+	if run == nil {
+		return nil, nil
+	}
+
+	// if the run block was just a simple string
+	// there is no rule to evaluate, so just return the actions
+	if run.If == nil {
+		return run.Actions, nil
+	}
+
+	for _, rule := range run.If {
+		ruleName := rule.Rule
+		ruleDefinition := rules[ruleName]
+
+		activated, err := interpreter.EvalExpr(ruleDefinition.Kind, ruleDefinition.Spec)
+		if err != nil {
+			return nil, err
+		}
+
+		if activated {
+			if len(run.Then) > 0 {
+				return getActionsFromRunBlocks(interpreter, run.Then, rules)
+			}
+
+			return run.Actions, nil
+		}
+
+		if run.Else != nil {
+			return getActionsFromRunBlocks(interpreter, run.Else, rules)
+		}
+	}
+
+	return nil, nil
+}
+
+func getActionsFromRunBlocks(interpreter Interpreter, runs []PadWorkflowRunBlock, rules map[string]PadRule) ([]string, error) {
+	actions := []string{}
+	for _, run := range runs {
+		runActions, err := getActionsFromRunBlock(interpreter, &run, rules)
+		if err != nil {
+			return nil, err
+		}
+
+		actions = append(actions, runActions...)
+	}
+
+	return actions, nil
 }

@@ -233,6 +233,7 @@ func transform(file *ReviewpadFile) *ReviewpadFile {
 			Rules:       transformedRules,
 			Actions:     transformedActions,
 			AlwaysRun:   workflow.AlwaysRun,
+			Runs:        workflow.Runs,
 		})
 	}
 

@@ -74,14 +74,20 @@ func processWorkflow(workflow PadWorkflow, currentRules []PadRule) (*PadWorkflow
 
 	wf.Actions = actions
 
-	rules, workflowRules, err := normalizeRules(workflow.NonNormalizedRules, currentRules)
+	compactRules, workflowRules, err := normalizeRules(workflow.NonNormalizedRules, currentRules)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	runs, runRules, err := processRun(workflow.NonNormalizedRun, append(currentRules, compactRules...))
 	if err != nil {
 		return nil, nil, err
 	}
 
 	wf.Rules = workflowRules
+	wf.Runs = runs
 
-	return wf, rules, nil
+	return wf, append(compactRules, runRules...), nil
 }
 
 func decodeRule(rule string) *PadRule {
@@ -139,6 +145,8 @@ func normalizeRules(rawRule any, currentRules []PadRule) ([]PadRule, []PadWorkfl
 
 		workflowRule = decodedWorkflowRule
 		rule = decodeRule(decodedWorkflowRule.Rule)
+	case nil:
+		return nil, nil, nil
 	default:
 		return nil, nil, fmt.Errorf("unknown rule type %T", r)
 	}
@@ -180,4 +188,79 @@ func normalizeActions(nonNormalizedActions any) ([]string, error) {
 	}
 
 	return actions, nil
+}
+
+func processRun(run any, currentRules []PadRule) ([]PadWorkflowRunBlock, []PadRule, error) {
+	rules := []PadRule{}
+
+	switch val := run.(type) {
+	case string:
+		return []PadWorkflowRunBlock{
+			{
+				Actions: []string{val},
+			},
+		}, rules, nil
+	case map[string]any:
+		mapBlock := PadWorkflowRunBlock{}
+		if ruleBlock, ok := val["if"]; ok {
+			processedRules, processedWorkflowRules, err := normalizeRules(ruleBlock, currentRules)
+			if err != nil {
+				return nil, nil, err
+			}
+
+			rules = append(rules, processedRules...)
+			mapBlock.If = processedWorkflowRules
+		}
+
+		if thenBlock, ok := val["then"]; ok {
+			thenBlocks, thenRules, err := processRun(thenBlock, append(currentRules, rules...))
+			if err != nil {
+				return nil, nil, err
+			}
+
+			rules = append(rules, thenRules...)
+			mapBlock.Then = thenBlocks
+		}
+
+		if elseBlock, ok := val["else"]; ok {
+			elseBlocks, elseRules, err := processRun(elseBlock, append(currentRules, rules...))
+			if err != nil {
+				return nil, nil, err
+			}
+
+			rules = append(rules, elseRules...)
+			mapBlock.Else = elseBlocks
+		}
+
+		return []PadWorkflowRunBlock{
+			mapBlock,
+		}, rules, nil
+	case []any:
+		blocks := []PadWorkflowRunBlock{}
+		rules := []PadRule{}
+		for _, item := range val {
+			switch itemVal := item.(type) {
+			case string:
+				// If the item is a string, add it as an action to a new block
+				blocks = append(blocks, PadWorkflowRunBlock{
+					Actions: []string{itemVal},
+				})
+			case map[string]any:
+				// If the item is a map, parse it as a new PadWorkflowRunBlock
+				childBlock, blockRules, err := processRun(itemVal, append(currentRules, rules...))
+				if err != nil {
+					return nil, nil, err
+				}
+				blocks = append(blocks, childBlock...)
+				rules = append(rules, blockRules...)
+			default:
+				return nil, nil, fmt.Errorf("expected string or map, got %T", item)
+			}
+		}
+		return blocks, rules, nil
+	case nil:
+		return nil, nil, nil
+	default:
+		return nil, nil, fmt.Errorf("unknown run type: %T", run)
+	}
 }
