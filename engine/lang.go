@@ -106,7 +106,7 @@ type PadWorkflow struct {
 	AlwaysRun            bool                       `yaml:"always-run"`
 	Rules                []PadWorkflowRule          `yaml:"-"`
 	Actions              []string                   `yaml:"-"`
-	Run                  *PadWorkflowRunBlock       `yaml:"-"`
+	Runs                 []PadWorkflowRunBlock      `yaml:"-"`
 	NonNormalizedRules   any                        `yaml:"if"`
 	NonNormalizedActions any                        `yaml:"then"`
 	NonNormalizedRun     any                        `yaml:"run"`
@@ -114,8 +114,8 @@ type PadWorkflow struct {
 
 type PadWorkflowRunBlock struct {
 	If      []PadWorkflowRule
-	Then    *PadWorkflowRunBlock
-	Else    *PadWorkflowRunBlock
+	Then    []PadWorkflowRunBlock
+	Else    []PadWorkflowRunBlock
 	Actions []string
 }
 
