@@ -434,6 +434,9 @@ func TestEvalConfigurationFile(t *testing.T) {
 			inputReviewpadFilePath: "testdata/exec/reviewpad_with_single_conditional_run.yml",
 			wantProgram: engine.BuildProgram(
 				[]*engine.Statement{
+					engine.BuildStatement(`$assignRandomReviewer()`),
+					engine.BuildStatement(`$fail("failing for reason")`),
+					engine.BuildStatement(`$comment("old workflow style")`),
 					engine.BuildStatement(`$comment("reviewpad")`),
 				},
 			),

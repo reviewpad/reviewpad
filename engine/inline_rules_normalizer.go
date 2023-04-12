@@ -79,7 +79,7 @@ func processWorkflow(workflow PadWorkflow, currentRules []PadRule) (*PadWorkflow
 		return nil, nil, err
 	}
 
-	runs, runRules, err := processRun(workflow.NonNormalizedRun, append(currentRules, compactRules...))
+	runs, runRules, err := normalizeRun(workflow.NonNormalizedRun, append(currentRules, compactRules...))
 	if err != nil {
 		return nil, nil, err
 	}
@@ -190,7 +190,7 @@ func normalizeActions(nonNormalizedActions any) ([]string, error) {
 	return actions, nil
 }
 
-func processRun(run any, currentRules []PadRule) ([]PadWorkflowRunBlock, []PadRule, error) {
+func normalizeRun(run any, currentRules []PadRule) ([]PadWorkflowRunBlock, []PadRule, error) {
 	rules := []PadRule{}
 
 	switch val := run.(type) {
@@ -225,7 +225,7 @@ func processRun(run any, currentRules []PadRule) ([]PadWorkflowRunBlock, []PadRu
 		}
 
 		if thenBlock, ok := val["then"]; ok {
-			thenBlocks, thenRules, err := processRun(thenBlock, append(currentRules, rules...))
+			thenBlocks, thenRules, err := normalizeRun(thenBlock, append(currentRules, rules...))
 			if err != nil {
 				return nil, nil, err
 			}
@@ -235,7 +235,7 @@ func processRun(run any, currentRules []PadRule) ([]PadWorkflowRunBlock, []PadRu
 		}
 
 		if elseBlock, ok := val["else"]; ok {
-			elseBlocks, elseRules, err := processRun(elseBlock, append(currentRules, rules...))
+			elseBlocks, elseRules, err := normalizeRun(elseBlock, append(currentRules, rules...))
 			if err != nil {
 				return nil, nil, err
 			}
@@ -267,7 +267,7 @@ func processRun(run any, currentRules []PadRule) ([]PadWorkflowRunBlock, []PadRu
 				})
 			case map[string]any:
 				// If the item is a map, parse it as a new PadWorkflowRunBlock
-				childBlock, blockRules, err := processRun(itemVal, append(currentRules, rules...))
+				childBlock, blockRules, err := normalizeRun(itemVal, append(currentRules, rules...))
 				if err != nil {
 					return nil, nil, err
 				}
