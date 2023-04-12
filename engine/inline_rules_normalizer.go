@@ -43,7 +43,7 @@ func inlineModificator(file *ReviewpadFile) (*ReviewpadFile, error) {
 
 	for _, pipeline := range reviewpadFile.Pipelines {
 		for _, stage := range pipeline.Stages {
-			actions, err := processCompactActions(stage.NonNormalizedActions)
+			actions, err := normalizeActions(stage.NonNormalizedActions)
 			if err != nil {
 				return nil, err
 			}
@@ -66,14 +66,14 @@ func processWorkflow(workflow PadWorkflow, currentRules []PadRule) (*PadWorkflow
 		On:          workflow.On,
 	}
 
-	actions, err := processCompactActions(workflow.NonNormalizedActions)
+	actions, err := normalizeActions(workflow.NonNormalizedActions)
 	if err != nil {
 		return nil, nil, err
 	}
 
 	wf.Actions = actions
 
-	rules, workflowRules, err := processCompactRules(workflow.NonNormalizedRules, currentRules)
+	rules, workflowRules, err := normalizeRules(workflow.NonNormalizedRules, currentRules)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -97,21 +97,28 @@ func decodeWorkflowRule(rule map[string]any) (*PadWorkflowRule, error) {
 	return workflowRule, err
 }
 
-func processCompactRules(rawRule any, currentRules []PadRule) ([]PadRule, []PadWorkflowRule, error) {
+func normalizeRules(rawRule any, currentRules []PadRule) ([]PadRule, []PadWorkflowRule, error) {
 	var rule *PadRule
 	var workflowRule *PadWorkflowRule
 	var rules []PadRule
 	var workflowRules []PadWorkflowRule
 
 	switch r := rawRule.(type) {
+	// a rule can be a plain string which can be an inline rule
+	// or a name of a predefined rules
+	// - '$size() < 10'
+	// - small
 	case string:
 		rule = decodeRule(r)
 		workflowRule = &PadWorkflowRule{
 			Rule: rule.Name,
 		}
+	// we can also have a list of rules in the format
+	// - '$size() < 10'
+	// - small
 	case []any:
 		for _, ru := range r {
-			processedRules, processedWorkflowRules, err := processCompactRules(ru, currentRules)
+			processedRules, processedWorkflowRules, err := normalizeRules(ru, currentRules)
 			if err != nil {
 				return nil, nil, err
 			}
@@ -119,6 +126,10 @@ func processCompactRules(rawRule any, currentRules []PadRule) ([]PadRule, []PadW
 			rules = append(rules, processedRules...)
 			workflowRules = append(workflowRules, processedWorkflowRules...)
 		}
+	// we can also specify a rule as map with extra actions like
+	// - rule: small
+	//   extra-actions:
+	//		- $comment("small")
 	case map[string]any:
 		decodedWorkflowRule, err := decodeWorkflowRule(r)
 		if err != nil {
@@ -131,14 +142,12 @@ func processCompactRules(rawRule any, currentRules []PadRule) ([]PadRule, []PadW
 		return nil, nil, fmt.Errorf("unknown rule type %T", r)
 	}
 
-	// we need to check rule is not nil if we are processing a list of rules
 	if rule != nil {
 		if _, exists := findRule(currentRules, rule.Name); !exists {
 			rules = append(rules, *rule)
 		}
 	}
 
-	// we need to check workflowRule is not nil if we are processing a list of rules
 	if workflowRule != nil {
 		workflowRules = append(workflowRules, *workflowRule)
 	}
@@ -146,21 +155,23 @@ func processCompactRules(rawRule any, currentRules []PadRule) ([]PadRule, []PadW
 	return rules, workflowRules, nil
 }
 
-func processCompactActions(nonNormalizedActions any) ([]string, error) {
-	actions := []string{}
+func normalizeActions(nonNormalizedActions any) ([]string, error) {
+	var actions []string
 
 	switch action := nonNormalizedActions.(type) {
 	case string:
 		actions = append(actions, action)
 	case []any:
 		for _, rawAction := range action {
-			processedActions, err := processCompactActions(rawAction)
+			processedActions, err := normalizeActions(rawAction)
 			if err != nil {
 				return nil, err
 			}
 
 			actions = append(actions, processedActions...)
 		}
+	// we might have a workflow that doesn't have any actions
+	// but only has extra actions in the workflows
 	case nil:
 		return nil, nil
 	default:
