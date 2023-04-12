@@ -155,7 +155,7 @@ func TestGetLatestApprovedReviews(t *testing.T) {
 		"query":"query($pullRequestNumber:Int!$repositoryName:String!$repositoryOwner:String!){
 			repository(owner:$repositoryOwner,name:$repositoryName){
 				pullRequest(number:$pullRequestNumber){
-					latestReviews(last:100){
+					latestReviews: latestOpinionatedReviews(last:100){
 						nodes{
 							author{login},
 							state

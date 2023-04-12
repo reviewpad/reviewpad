@@ -526,7 +526,7 @@ func (target *PullRequestTarget) GetLatestApprovedReviews() ([]string, error) {
 						}
 						State githubv4.String
 					}
-				} `graphql:"latestReviews(last: 100)"`
+				} `graphql:"latestReviews: latestOpinionatedReviews(last: 100)"`
 			} `graphql:"pullRequest(number: $pullRequestNumber)"`
 		} `graphql:"repository(owner: $repositoryOwner, name: $repositoryName)"`
 	}
