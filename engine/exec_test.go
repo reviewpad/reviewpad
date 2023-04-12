@@ -411,6 +411,59 @@ func TestEvalConfigurationFile(t *testing.T) {
 			),
 			targetEntity: engine.DefaultMockTargetEntity,
 		},
+		"when run is a single action": {
+			inputReviewpadFilePath: "testdata/exec/reviewpad_with_string_run.yml",
+			wantProgram: engine.BuildProgram(
+				[]*engine.Statement{
+					engine.BuildStatement(`$comment("reviewpad")`),
+				},
+			),
+			targetEntity: engine.DefaultMockTargetEntity,
+		},
+		"when run is a list of actions": {
+			inputReviewpadFilePath: "testdata/exec/reviewpad_with_list_of_actions_run.yml",
+			wantProgram: engine.BuildProgram(
+				[]*engine.Statement{
+					engine.BuildStatement(`$comment("reviewpad")`),
+					engine.BuildStatement(`$addLabel("test-label")`),
+				},
+			),
+			targetEntity: engine.DefaultMockTargetEntity,
+		},
+		"when run is a single conditional": {
+			inputReviewpadFilePath: "testdata/exec/reviewpad_with_single_conditional_run.yml",
+			wantProgram: engine.BuildProgram(
+				[]*engine.Statement{
+					engine.BuildStatement(`$comment("reviewpad")`),
+				},
+			),
+			targetEntity: engine.DefaultMockTargetEntity,
+		},
+		"when run is a single conditional with else": {
+			inputReviewpadFilePath: "testdata/exec/reviewpad_with_single_conditional_run_else.yml",
+			wantProgram: engine.BuildProgram(
+				[]*engine.Statement{
+					engine.BuildStatement(`$comment("else")`),
+				},
+			),
+			targetEntity: engine.DefaultMockTargetEntity,
+		},
+		"when run is a combination": {
+			inputReviewpadFilePath: "testdata/exec/reviewpad_with_combination_run.yml",
+			wantProgram: engine.BuildProgram(
+				[]*engine.Statement{
+					engine.BuildStatement(`$comment("reviewpad")`),
+					engine.BuildStatement(`$addLabel("label")`),
+					engine.BuildStatement(`$removeLabel("remove-label")`),
+					engine.BuildStatement(`$assignRandomReviewer()`),
+					engine.BuildStatement(`$info("reviewpad supports nested conditions")`),
+					engine.BuildStatement(`$comment("combination-run-2")`),
+					engine.BuildStatement(`$addLabel("bug")`),
+					engine.BuildStatement(`$addLabel("documentation")`),
+				},
+			),
+			targetEntity: engine.DefaultMockTargetEntity,
+		},
 	}
 
 	codehostClient := aladino.GetDefaultCodeHostClient(t, aladino.GetDefaultPullRequestDetails(), aladino.GetDefaultPullRequestFileList(), nil, nil)

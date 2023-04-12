@@ -1,0 +1,42 @@
+# Copyright (C) 2023 Explore.dev, Unipessoal Lda - All Rights Reserved
+# Use of this source code is governed by a license that can be
+# found in the LICENSE file.
+
+rules:
+  - name: tautology
+    spec: 'false'
+
+workflows:
+  - name: combination-run
+    run:
+      - $comment("reviewpad")
+      - if: tautology
+        then:
+          - $comment("reviewpad")
+          - $addLabel("reviewpad")
+        else:
+          if: 'true'
+          then:
+            - $addLabel("label")
+            - $removeLabel("remove-label")
+      - $assignRandomReviewer()
+      - $info("reviewpad supports nested conditions")
+
+  - name: combination-run-2
+    run:
+      - if:
+        - rule: 'true'
+        then:
+          - if: 'true'
+            then:
+              - $comment("combination-run-2")
+            else:
+              - $comment("combination-run-2-else")
+          - if: 'false'
+            then:
+              - $comment("combination-run-2-then-false")
+            else:
+              - $addLabel("bug")
+              - $addLabel("documentation")
+            
+          
