@@ -194,12 +194,24 @@ func processRun(run any, currentRules []PadRule) ([]PadWorkflowRunBlock, []PadRu
 	rules := []PadRule{}
 
 	switch val := run.(type) {
+	// a run block can be a simple string such as
+	// run: $comment("hello world")
 	case string:
 		return []PadWorkflowRunBlock{
 			{
 				Actions: []string{val},
 			},
 		}, rules, nil
+	// when a run block is a map we treat it as a conditional block
+	// we extract the if, then and else blocks and process them
+	// the if block is processed as a list of rules
+	// the then and else blocks are processed as a list of run blocks
+	// run:
+	//   if: true
+	//   then:
+	//     - $comment("hello world")
+	//   else:
+	//     - $comment("goodbye world")
 	case map[string]any:
 		mapBlock := PadWorkflowRunBlock{}
 		if ruleBlock, ok := val["if"]; ok {
@@ -235,6 +247,14 @@ func processRun(run any, currentRules []PadRule) ([]PadWorkflowRunBlock, []PadRu
 		return []PadWorkflowRunBlock{
 			mapBlock,
 		}, rules, nil
+	// when a run block is a list we treat it as a list of run blocks
+	// each item in the list can be a string or a map
+	// which are processed as a single run block or a conditional block
+	// run:
+	//   - $comment("hello world")
+	//   - if: true
+	//     then: $comment("hello world")
+	//     else: $comment("goodbye world")
 	case []any:
 		blocks := []PadWorkflowRunBlock{}
 		rules := []PadRule{}
@@ -258,6 +278,7 @@ func processRun(run any, currentRules []PadRule) ([]PadWorkflowRunBlock, []PadRu
 			}
 		}
 		return blocks, rules, nil
+	// the run block is not a required field so if it's not present we return nil
 	case nil:
 		return nil, nil, nil
 	default:
