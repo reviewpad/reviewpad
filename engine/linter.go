@@ -157,6 +157,34 @@ func lintWorkflows(log *logrus.Entry, rules []PadRule, padWorkflows []PadWorkflo
 		}
 
 		workflowsName = append(workflowsName, workflow.Name)
+
+		for _, run := range workflow.Runs {
+			if err := validateWorkflowRun(&run, &workflow); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func validateWorkflowRun(run *PadWorkflowRunBlock, workflow *PadWorkflow) error {
+	if (run.Then == nil || len(run.Then) == 0) && (len(run.Actions) == 0 || run.Actions == nil) {
+		return fmt.Errorf("workflow '%v' has a run block without a 'then' block and no actions", workflow.Name)
+	}
+
+	for _, thenRun := range run.Then {
+		err := validateWorkflowRun(&thenRun, workflow)
+		if err != nil {
+			return err
+		}
+	}
+
+	for _, elseRun := range run.Else {
+		err := validateWorkflowRun(&elseRun, workflow)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
