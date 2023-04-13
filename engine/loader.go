@@ -168,7 +168,7 @@ func Load(ctx context.Context, logger *logrus.Entry, githubClient *gh.GithubClie
 		return nil, err
 	}
 
-	file, err = normalize(file, inlineRulesNormalizer())
+	file, err = normalize(file, inlineNormalizer())
 	if err != nil {
 		return nil, err
 	}

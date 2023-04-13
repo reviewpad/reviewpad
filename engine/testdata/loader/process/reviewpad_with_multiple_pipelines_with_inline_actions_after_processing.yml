@@ -1,0 +1,24 @@
+# Copyright 2022 Explore.dev Unipessoal Lda. All Rights Reserved.
+# Use of this source code is governed by a license that can be
+# found in the LICENSE file.
+
+pipelines:
+  - name: renovate-bot
+    trigger: $author() == "renovate[bot]"
+    stages:
+      - actions: 
+          - $assignAssignees($group("owners"), 1)
+        until: $assignees() != []
+      - actions:
+          - $comment("Pull request is not up to date with the base branch. Reviewpad will rebase it for you. Please wait for the rebase to complete.")
+          - $rebase()
+        until: $isUpdatedWithBaseBranch() && $hasLinearHistory()
+      - actions:
+          - $review("REQUEST_CHANGES", "The build is failing. Please fix it before continuing.")
+        until: $checkRunConclusion("pr-build") == "success"
+      - actions: 
+          - $assignReviewer($group("owners"), 1)
+        until: $hasRequiredApprovals(1, $group("owners"))
+      - actions:
+          - $approve("Pull request is ready to be merged. Reviewpad will merge it for you. Please wait for the merge to complete.")
+          - $merge("rebase")
