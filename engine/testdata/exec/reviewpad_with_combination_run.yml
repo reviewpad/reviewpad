@@ -38,5 +38,3 @@ workflows:
             else:
               - $addLabel("bug")
               - $addLabel("documentation")
-            
-          

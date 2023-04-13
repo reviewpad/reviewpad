@@ -191,7 +191,7 @@ func normalizeActions(nonNormalizedActions any) ([]string, error) {
 }
 
 func normalizeRun(run any, currentRules []PadRule) ([]PadWorkflowRunBlock, []PadRule, error) {
-	rules := []PadRule{}
+	var rules []PadRule
 
 	switch val := run.(type) {
 	// a run block can be a simple string such as

@@ -113,9 +113,9 @@ func lintGroups(log *logrus.Entry, padGroups []PadGroup) error {
 
 // Validations:
 // - Workflow has unique name
-// - Workflow has rules
 // - Workflow has non empty rules
 // - Workflow has only known rules
+// - Workflow run block has a then block or actions
 func lintWorkflows(log *logrus.Entry, rules []PadRule, padWorkflows []PadWorkflow) error {
 	workflowsName := make([]string, 0)
 	workflowHasExtraActions := false
@@ -130,10 +130,6 @@ func lintWorkflows(log *logrus.Entry, rules []PadRule, padWorkflows []PadWorkflo
 				return fmt.Errorf("workflow with the name '%v' already exists", workflow.Name)
 			}
 		}
-
-		// We are not checking if the workflow has any rules because
-		// it is now possible for a workflow to have a run block without
-		// any rules
 
 		for _, rule := range workflow.Rules {
 			ruleName := rule.Rule
