@@ -256,8 +256,8 @@ func normalizeRun(run any, currentRules []PadRule) ([]PadWorkflowRunBlock, []Pad
 	//     then: $comment("hello world")
 	//     else: $comment("goodbye world")
 	case []any:
-		blocks := []PadWorkflowRunBlock{}
-		rules := []PadRule{}
+		var blocks []PadWorkflowRunBlock
+		var rules []PadRule
 		for _, item := range val {
 			switch itemVal := item.(type) {
 			case string:
