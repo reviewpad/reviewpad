@@ -3,14 +3,14 @@
 # found in the LICENSE file.
 
 rules:
-  - name: tautology
+  - name: false-rule
     spec: 'false'
 
 workflows:
   - name: combination-run
     run:
       - $comment("reviewpad")
-      - if: tautology
+      - if: false-rule
         then:
           - $comment("reviewpad")
           - $addLabel("reviewpad")
