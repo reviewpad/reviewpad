@@ -67,7 +67,7 @@ func (c *GithubClient) GetGitBlame(ctx context.Context, owner, name, commitSHA s
 		"objectExpression": commitSHA,
 	}
 
-	rawResponse, err := c.GetRawClientGraphQL().ExecRaw(ctx, graphQLQuery, gitBlameQueryVariables)
+	rawResponse, err := c.GetRawClientGraphQL().WithDebug(true).ExecRaw(ctx, graphQLQuery, gitBlameQueryVariables)
 	if err != nil {
 		return nil, fmt.Errorf("error executing blame query: %s", err.Error())
 	}
