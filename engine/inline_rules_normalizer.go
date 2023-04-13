@@ -42,7 +42,7 @@ func inlineModificator(file *ReviewpadFile) (*ReviewpadFile, error) {
 	}
 
 	for _, pipeline := range reviewpadFile.Pipelines {
-		for _, stage := range pipeline.Stages {
+		for i, stage := range pipeline.Stages {
 			actions, err := normalizeActions(stage.NonNormalizedActions)
 			if err != nil {
 				return nil, err
@@ -50,6 +50,7 @@ func inlineModificator(file *ReviewpadFile) (*ReviewpadFile, error) {
 
 			stage.Actions = actions
 			stage.NonNormalizedActions = nil
+			pipeline.Stages[i] = stage
 		}
 	}
 
