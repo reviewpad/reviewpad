@@ -106,8 +106,17 @@ type PadWorkflow struct {
 	AlwaysRun            bool                       `yaml:"always-run"`
 	Rules                []PadWorkflowRule          `yaml:"-"`
 	Actions              []string                   `yaml:"-"`
+	Runs                 []PadWorkflowRunBlock      `yaml:"-"`
 	NonNormalizedRules   any                        `yaml:"if"`
 	NonNormalizedActions any                        `yaml:"then"`
+	NonNormalizedRun     any                        `yaml:"run"`
+}
+
+type PadWorkflowRunBlock struct {
+	If      []PadWorkflowRule
+	Then    []PadWorkflowRunBlock
+	Else    []PadWorkflowRunBlock
+	Actions []string
 }
 
 func (p PadWorkflow) equals(o PadWorkflow) bool {

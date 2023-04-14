@@ -1,0 +1,9 @@
+# Copyright (C) 2023 Explore.dev, Unipessoal Lda - All Rights Reserved
+# Use of this source code is governed by a license that can be
+# found in the LICENSE file.
+
+workflows:
+  - name: list-of-actions-run
+    run:
+      - $comment("reviewpad")
+      - $addLabel("test-label")

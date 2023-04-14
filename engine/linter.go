@@ -113,9 +113,9 @@ func lintGroups(log *logrus.Entry, padGroups []PadGroup) error {
 
 // Validations:
 // - Workflow has unique name
-// - Workflow has rules
 // - Workflow has non empty rules
 // - Workflow has only known rules
+// - Workflow run block has a then block or actions
 func lintWorkflows(log *logrus.Entry, rules []PadRule, padWorkflows []PadWorkflow) error {
 	workflowsName := make([]string, 0)
 	workflowHasExtraActions := false
@@ -129,10 +129,6 @@ func lintWorkflows(log *logrus.Entry, rules []PadRule, padWorkflows []PadWorkflo
 			if workflowName == workflow.Name {
 				return fmt.Errorf("workflow with the name '%v' already exists", workflow.Name)
 			}
-		}
-
-		if len(workflow.Rules) == 0 {
-			return fmt.Errorf("workflow '%v 'does not have rules", workflow.Name)
 		}
 
 		for _, rule := range workflow.Rules {
@@ -157,6 +153,34 @@ func lintWorkflows(log *logrus.Entry, rules []PadRule, padWorkflows []PadWorkflo
 		}
 
 		workflowsName = append(workflowsName, workflow.Name)
+
+		for _, run := range workflow.Runs {
+			if err := validateWorkflowRun(&run, &workflow); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func validateWorkflowRun(run *PadWorkflowRunBlock, workflow *PadWorkflow) error {
+	if (run.Then == nil || len(run.Then) == 0) && (len(run.Actions) == 0 || run.Actions == nil) {
+		return fmt.Errorf("workflow '%v' has a run block without a 'then' block and no actions", workflow.Name)
+	}
+
+	for _, thenRun := range run.Then {
+		err := validateWorkflowRun(&thenRun, workflow)
+		if err != nil {
+			return err
+		}
+	}
+
+	for _, elseRun := range run.Else {
+		err := validateWorkflowRun(&elseRun, workflow)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

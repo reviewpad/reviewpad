@@ -74,14 +74,20 @@ func processWorkflow(workflow PadWorkflow, currentRules []PadRule) (*PadWorkflow
 
 	wf.Actions = actions
 
-	rules, workflowRules, err := normalizeRules(workflow.NonNormalizedRules, currentRules)
+	compactRules, workflowRules, err := normalizeRules(workflow.NonNormalizedRules, currentRules)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	runs, runRules, err := normalizeRun(workflow.NonNormalizedRun, append(currentRules, compactRules...))
 	if err != nil {
 		return nil, nil, err
 	}
 
 	wf.Rules = workflowRules
+	wf.Runs = runs
 
-	return wf, rules, nil
+	return wf, append(compactRules, runRules...), nil
 }
 
 func decodeRule(rule string) *PadRule {
@@ -139,6 +145,8 @@ func normalizeRules(rawRule any, currentRules []PadRule) ([]PadRule, []PadWorkfl
 
 		workflowRule = decodedWorkflowRule
 		rule = decodeRule(decodedWorkflowRule.Rule)
+	case nil:
+		return nil, nil, nil
 	default:
 		return nil, nil, fmt.Errorf("unknown rule type %T", r)
 	}
@@ -180,4 +188,100 @@ func normalizeActions(nonNormalizedActions any) ([]string, error) {
 	}
 
 	return actions, nil
+}
+
+func normalizeRun(run any, currentRules []PadRule) ([]PadWorkflowRunBlock, []PadRule, error) {
+	var rules []PadRule
+
+	switch val := run.(type) {
+	// a run block can be a simple string such as
+	// run: $comment("hello world")
+	case string:
+		return []PadWorkflowRunBlock{
+			{
+				Actions: []string{val},
+			},
+		}, rules, nil
+	// when a run block is a map we treat it as a conditional block
+	// we extract the if, then and else blocks and process them
+	// the if block is processed as a list of rules
+	// the then and else blocks are processed as a list of run blocks
+	// run:
+	//   if: true
+	//   then:
+	//     - $comment("hello world")
+	//   else:
+	//     - $comment("goodbye world")
+	case map[string]any:
+		mapBlock := PadWorkflowRunBlock{}
+		if ruleBlock, ok := val["if"]; ok {
+			processedRules, processedWorkflowRules, err := normalizeRules(ruleBlock, currentRules)
+			if err != nil {
+				return nil, nil, err
+			}
+
+			rules = append(rules, processedRules...)
+			mapBlock.If = processedWorkflowRules
+		}
+
+		if thenBlock, ok := val["then"]; ok {
+			thenBlocks, thenRules, err := normalizeRun(thenBlock, append(currentRules, rules...))
+			if err != nil {
+				return nil, nil, err
+			}
+
+			rules = append(rules, thenRules...)
+			mapBlock.Then = thenBlocks
+		}
+
+		if elseBlock, ok := val["else"]; ok {
+			elseBlocks, elseRules, err := normalizeRun(elseBlock, append(currentRules, rules...))
+			if err != nil {
+				return nil, nil, err
+			}
+
+			rules = append(rules, elseRules...)
+			mapBlock.Else = elseBlocks
+		}
+
+		return []PadWorkflowRunBlock{
+			mapBlock,
+		}, rules, nil
+	// when a run block is a list we treat it as a list of run blocks
+	// each item in the list can be a string or a map
+	// which are processed as a single run block or a conditional block
+	// run:
+	//   - $comment("hello world")
+	//   - if: true
+	//     then: $comment("hello world")
+	//     else: $comment("goodbye world")
+	case []any:
+		var blocks []PadWorkflowRunBlock
+		var rules []PadRule
+		for _, item := range val {
+			switch itemVal := item.(type) {
+			case string:
+				// If the item is a string, add it as an action to a new block
+				blocks = append(blocks, PadWorkflowRunBlock{
+					Actions: []string{itemVal},
+				})
+			case map[string]any:
+				// If the item is a map, parse it as a new PadWorkflowRunBlock
+				childBlock, blockRules, err := normalizeRun(itemVal, append(currentRules, rules...))
+				if err != nil {
+					return nil, nil, err
+				}
+				blocks = append(blocks, childBlock...)
+				rules = append(rules, blockRules...)
+			default:
+				return nil, nil, fmt.Errorf("expected string or map, got %T", item)
+			}
+		}
+		return blocks, rules, nil
+	// the run block is not a required field so if it's not present we return nil
+	case nil:
+		return nil, nil, nil
+	default:
+		return nil, nil, fmt.Errorf("unknown run type: %T", run)
+	}
 }
