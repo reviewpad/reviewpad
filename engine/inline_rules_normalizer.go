@@ -67,25 +67,32 @@ func processWorkflow(workflow PadWorkflow, currentRules []PadRule) (*PadWorkflow
 		On:          workflow.On,
 	}
 
-	// since the top level if ... then ... else block can be interpreted as a run block
-	// we are converting it to a run block and then prepending it to the rest of the runs
-	workflowRun, workflowRules, err := normalizeRun(map[string]any{
-		"if":   workflow.NonNormalizedRules,
-		"then": workflow.NonNormalizedActions,
-		"else": workflow.NonNormalizedElse,
-	}, currentRules)
+	runs, runRules, err := normalizeRun(workflow.NonNormalizedRun, currentRules)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	runs, runRules, err := normalizeRun(workflow.NonNormalizedRun, append(currentRules, workflowRules...))
-	if err != nil {
-		return nil, nil, err
+	// process only if the workflow has an if ... then ... else block
+	// since there might be cases where the workflow only has a run block
+	if workflow.NonNormalizedRules != nil {
+		// since the top level if ... then ... else block can be interpreted as a run block
+		// we are converting it to a run block and then prepending it to the rest of the runs
+		workflowRun, workflowRules, err := normalizeRun(map[string]any{
+			"if":   workflow.NonNormalizedRules,
+			"then": workflow.NonNormalizedActions,
+			"else": workflow.NonNormalizedElse,
+		}, append(currentRules, runRules...))
+		if err != nil {
+			return nil, nil, err
+		}
+
+		runs = append(workflowRun, runs...)
+		runRules = append(workflowRules, runRules...)
 	}
 
-	wf.Runs = append(workflowRun, runs...)
+	wf.Runs = runs
 
-	return wf, append(workflowRules, runRules...), nil
+	return wf, runRules, nil
 }
 
 func decodeRule(rule string) *PadRule {
