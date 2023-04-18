@@ -8,6 +8,7 @@ rules:
 
 workflows:
   - name: combination-run
+    always-run: true
     run:
       - $comment("reviewpad")
       - if: false-rule
@@ -23,6 +24,7 @@ workflows:
       - $info("reviewpad supports nested conditions")
 
   - name: combination-run-2
+    always-run: true
     run:
       - if:
         - rule: 'true'
