@@ -147,9 +147,6 @@ func EvalConfigurationFile(file *ReviewpadFile, env *Env) (*Program, error) {
 			continue
 		}
 
-		ruleActivatedQueue := make([]PadWorkflowRule, 0)
-		ruleDefinitionQueue := make(map[string]PadRule)
-
 		shouldRun := false
 		for _, eventKind := range workflow.On {
 			if eventKind == env.TargetEntity.Kind {
@@ -163,44 +160,19 @@ func EvalConfigurationFile(file *ReviewpadFile, env *Env) (*Program, error) {
 			continue
 		}
 
-		for _, rule := range workflow.Rules {
-			ruleName := rule.Rule
-			ruleDefinition := rules[ruleName]
-
-			activated, err := interpreter.EvalExpr(ruleDefinition.Kind, ruleDefinition.Spec)
-			if err != nil {
-				return nil, err
-			}
-
-			if activated {
-				ruleActivatedQueue = append(ruleActivatedQueue, rule)
-				ruleDefinitionQueue[ruleName] = ruleDefinition
-
-				workflowLog.Infof("rule '%v' activated", ruleName)
-			}
-		}
-
-		if len(ruleActivatedQueue) > 0 {
-			program.append(workflow.Actions)
-
-			for _, activatedRule := range ruleActivatedQueue {
-				program.append(activatedRule.ExtraActions)
-			}
-
-			if !workflow.AlwaysRun {
-				triggeredExclusiveWorkflow = true
-			}
-		} else {
-			workflowLog.Infof("no rules activated")
-		}
-
 		for _, run := range workflow.Runs {
 			runActions, err := getActionsFromRunBlock(interpreter, &run, rules)
 			if err != nil {
 				return nil, err
 			}
 
-			program.append(runActions)
+			if len(runActions) > 0 {
+				if !workflow.AlwaysRun {
+					triggeredExclusiveWorkflow = true
+				}
+
+				program.append(runActions)
+			}
 		}
 	}
 
@@ -289,7 +261,7 @@ func getActionsFromRunBlocks(interpreter Interpreter, runs []PadWorkflowRunBlock
 			return nil, err
 		}
 
-		actions = append(actions, append(extraActions, runActions...)...)
+		actions = append(actions, append(runActions, extraActions...)...)
 	}
 
 	return actions, nil
