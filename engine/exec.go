@@ -267,21 +267,21 @@ func getActionsFromRunBlock(interpreter Interpreter, run *PadWorkflowRunBlock, r
 
 		if activated {
 			if len(run.Then) > 0 {
-				return getActionsFromRunBlocks(interpreter, run.Then, rules)
+				return getActionsFromRunBlocks(interpreter, run.Then, rules, rule.ExtraActions)
 			}
 
 			return run.Actions, nil
 		}
 
 		if run.Else != nil {
-			return getActionsFromRunBlocks(interpreter, run.Else, rules)
+			return getActionsFromRunBlocks(interpreter, run.Else, rules, nil)
 		}
 	}
 
 	return nil, nil
 }
 
-func getActionsFromRunBlocks(interpreter Interpreter, runs []PadWorkflowRunBlock, rules map[string]PadRule) ([]string, error) {
+func getActionsFromRunBlocks(interpreter Interpreter, runs []PadWorkflowRunBlock, rules map[string]PadRule, extraActions []string) ([]string, error) {
 	actions := []string{}
 	for _, run := range runs {
 		runActions, err := getActionsFromRunBlock(interpreter, &run, rules)
@@ -289,7 +289,7 @@ func getActionsFromRunBlocks(interpreter Interpreter, runs []PadWorkflowRunBlock
 			return nil, err
 		}
 
-		actions = append(actions, runActions...)
+		actions = append(actions, append(extraActions, runActions...)...)
 	}
 
 	return actions, nil
