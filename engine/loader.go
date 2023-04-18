@@ -207,24 +207,6 @@ func transform(file *ReviewpadFile) *ReviewpadFile {
 			transformRunBlock(run, transformAladinoExpression)
 		}
 
-		var transformedRules []PadWorkflowRule
-		for _, rule := range workflow.Rules {
-			var transformedExtraActions []string
-			for _, extraAction := range rule.ExtraActions {
-				transformedExtraActions = append(transformedExtraActions, transformAladinoExpression(extraAction))
-			}
-
-			transformedRules = append(transformedRules, PadWorkflowRule{
-				Rule:         rule.Rule,
-				ExtraActions: transformedExtraActions,
-			})
-		}
-
-		var transformedActions []string
-		for _, action := range workflow.Actions {
-			transformedActions = append(transformedActions, transformAladinoExpression(action))
-		}
-
 		transformedOn := []handler.TargetEntityKind{handler.PullRequest}
 		if len(workflow.On) > 0 {
 			transformedOn = workflow.On
@@ -234,8 +216,6 @@ func transform(file *ReviewpadFile) *ReviewpadFile {
 			Name:        workflow.Name,
 			On:          transformedOn,
 			Description: workflow.Description,
-			Rules:       transformedRules,
-			Actions:     transformedActions,
 			AlwaysRun:   workflow.AlwaysRun,
 			Runs:        workflow.Runs,
 		})
