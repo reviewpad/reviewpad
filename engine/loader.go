@@ -203,6 +203,10 @@ func transform(file *ReviewpadFile) *ReviewpadFile {
 
 	var transformedWorkflows []PadWorkflow
 	for _, workflow := range file.Workflows {
+		for _, run := range workflow.Runs {
+			transformRunBlock(run, transformAladinoExpression)
+		}
+
 		var transformedRules []PadWorkflowRule
 		for _, rule := range workflow.Rules {
 			var transformedExtraActions []string
@@ -410,4 +414,24 @@ func processExtends(ctx context.Context, logger *logrus.Entry, githubClient *gh.
 	extendedFile.Extends = []string{}
 
 	return extendedFile, nil
+}
+
+func transformRunBlock(block PadWorkflowRunBlock, actionFunc func(action string) string) {
+	for _, rule := range block.If {
+		for i, extraAction := range rule.ExtraActions {
+			rule.ExtraActions[i] = actionFunc(extraAction)
+		}
+	}
+
+	for i, action := range block.Actions {
+		block.Actions[i] = actionFunc(action)
+	}
+
+	for _, thenBlock := range block.Then {
+		transformRunBlock(thenBlock, actionFunc)
+	}
+
+	for _, elseBlock := range block.Else {
+		transformRunBlock(elseBlock, actionFunc)
+	}
 }
