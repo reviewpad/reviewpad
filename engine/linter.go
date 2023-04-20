@@ -165,6 +165,8 @@ func lintWorkflows(log *logrus.Entry, rules []PadRule, padWorkflows []PadWorkflo
 }
 
 func validateWorkflowRun(run *PadWorkflowRunBlock, workflow *PadWorkflow) error {
+	var hasActions = run.Actions != nil && len(run.Actions) > 0
+	var hasThenActions = run.Then != nil && len(run.Then) > 0
 	var hasExtraActions bool
 	for _, rule := range run.If {
 		hasExtraActions = len(rule.ExtraActions) > 0
@@ -173,7 +175,10 @@ func validateWorkflowRun(run *PadWorkflowRunBlock, workflow *PadWorkflow) error 
 		}
 	}
 
-	if (run.Then == nil || len(run.Then) == 0) && (len(run.Actions) == 0 || run.Actions == nil) && !hasExtraActions {
+	// Old style workflow if/then/else are converted to new run block format.
+	// The old style workflow allows if blocks to have extra actions.
+	// Because of this, a run block can have extra actions.
+	if !hasThenActions && !hasActions && !hasExtraActions {
 		return fmt.Errorf("workflow '%v' has a run block without a 'then' block, no actions and no extra actions", workflow.Name)
 	}
 
