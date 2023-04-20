@@ -242,7 +242,7 @@ func getActionsFromRunBlock(interpreter Interpreter, run *PadWorkflowRunBlock, r
 				return getActionsFromRunBlocks(interpreter, run.Then, rules, rule.ExtraActions)
 			}
 
-			return run.Actions, nil
+			return append(run.Actions, rule.ExtraActions...), nil
 		}
 
 		if run.Else != nil {
