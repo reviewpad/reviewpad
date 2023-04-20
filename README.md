@@ -285,3 +285,8 @@ If you need any assistance, please join [discord](https://reviewpad.com/discord)
 Reviewpad is available under the GNU Lesser General Public License v3.0 license.
 
 See [LICENSE](./LICENSE.md) for the full license text.
+
+## Compliance
+
+<a href="https://drata.com/soc-2?utm_source=soc2badge" target="_blank"><img src="https://cdn.drata.com/badge/soc2-light.png" height="120" /></a>
+
