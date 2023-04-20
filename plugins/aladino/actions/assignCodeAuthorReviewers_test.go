@@ -12,6 +12,7 @@ import (
 
 	"github.com/google/go-github/v49/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
+	pbc "github.com/reviewpad/api/go/codehost"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/reviewpad/reviewpad/v4/utils"
@@ -61,6 +62,7 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 		mockBackendOptions  []mock.MockBackendOption
 		graphQLHandler      http.HandlerFunc
 		reviewRequestedFrom []string
+		mockedFileList      []*pbc.File
 	}{
 		"when the pull request is already assigned reviewers": {
 			totalReviewers:    1,
@@ -78,6 +80,7 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 					},
 				),
 			},
+			mockedFileList: aladino.GetDefaultPullRequestFileList(),
 		},
 		"when error getting git blame information": {
 			totalReviewers:    1,
@@ -97,10 +100,14 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 					},
 				),
 			},
+			mockedFileList: []*pbc.File{{
+				Patch:    "@@ -2,9 +2,11 @@ package main\n- func previous() {\n+ func new() {\n+\nreturn",
+				Filename: "default-mock-repo/file1.ts",
+			}},
 			graphQLHandler: func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(http.StatusForbidden)
 			},
-			wantErr: fmt.Errorf("error getting authors from git blame: error executing blame query: Message: 403 Forbidden; body: \"\", Locations: [], Extensions: map[code:request_error internal:map[request:map[body:{\"query\":\"query($owner: String!, $name: String!, $objectExpression: String!) {\\n\\t\\trepository(owner: $owner, name: $name) {\\n\\t\\t\\tobject(expression: $objectExpression) {\\n\\t\\t\\t\\t... on Commit {\\n\\t\\t\\t\\t\\tblame0: blame(path: \\\"default-mock-repo/file1.ts\\\") {\\n\\t\\t\\tranges {\\n\\t\\t\\t\\tstartingLine\\n\\t\\t\\t\\tendingLine\\n\\t\\t\\t\\tage\\n\\t\\t\\t\\tcommit {\\n\\t\\t\\t\\t\\tauthor {\\n\\t\\t\\t\\t\\t\\tuser {\\n\\t\\t\\t\\t\\t\\t\\tlogin\\n\\t\\t\\t\\t\\t\\t}\\n\\t\\t\\t\\t\\t}\\n\\t\\t\\t\\t}\\n\\t\\t\\t}\\n\\t\\t}\\n\\t\\tblame1: blame(path: \\\"default-mock-repo/file2.ts\\\") {\\n\\t\\t\\tranges {\\n\\t\\t\\t\\tstartingLine\\n\\t\\t\\t\\tendingLine\\n\\t\\t\\t\\tage\\n\\t\\t\\t\\tcommit {\\n\\t\\t\\t\\t\\tauthor {\\n\\t\\t\\t\\t\\t\\tuser {\\n\\t\\t\\t\\t\\t\\t\\tlogin\\n\\t\\t\\t\\t\\t\\t}\\n\\t\\t\\t\\t\\t}\\n\\t\\t\\t\\t}\\n\\t\\t\\t}\\n\\t\\t}\\n\\t\\tblame2: blame(path: \\\"default-mock-repo/file3.ts\\\") {\\n\\t\\t\\tranges {\\n\\t\\t\\t\\tstartingLine\\n\\t\\t\\t\\tendingLine\\n\\t\\t\\t\\tage\\n\\t\\t\\t\\tcommit {\\n\\t\\t\\t\\t\\tauthor {\\n\\t\\t\\t\\t\\t\\tuser {\\n\\t\\t\\t\\t\\t\\t\\tlogin\\n\\t\\t\\t\\t\\t\\t}\\n\\t\\t\\t\\t\\t}\\n\\t\\t\\t\\t}\\n\\t\\t\\t}\\n\\t\\t}\\n\\t\\t\\n\\t\\t\\t\\t}\\n\\t\\t\\t}\\n\\t\\t}\\n\\t}\",\"variables\":{\"name\":\"default-mock-repo\",\"objectExpression\":\"\",\"owner\":\"foobar\"}}\n headers:map[Content-Type:[application/json]]]]]"),
+			wantErr: fmt.Errorf("error getting authors from git blame: error executing blame query: Message: 403 Forbidden; body: \"\", Locations: [], Extensions: map[code:request_error internal:map[request:map[body:{\"query\":\"query($owner: String!, $name: String!, $objectExpression: String!) {\\n\\t\\trepository(owner: $owner, name: $name) {\\n\\t\\t\\tobject(expression: $objectExpression) {\\n\\t\\t\\t\\t... on Commit {\\n\\t\\t\\t\\t\\tblame0: blame(path: \\\"default-mock-repo/file1.ts\\\") {\\n\\t\\t\\tranges {\\n\\t\\t\\t\\tstartingLine\\n\\t\\t\\t\\tendingLine\\n\\t\\t\\t\\tage\\n\\t\\t\\t\\tcommit {\\n\\t\\t\\t\\t\\tauthor {\\n\\t\\t\\t\\t\\t\\tuser {\\n\\t\\t\\t\\t\\t\\t\\tlogin\\n\\t\\t\\t\\t\\t\\t}\\n\\t\\t\\t\\t\\t}\\n\\t\\t\\t\\t}\\n\\t\\t\\t}\\n\\t\\t}\\n\\t\\t\\n\\t\\t\\t\\t}\\n\\t\\t\\t}\\n\\t\\t}\\n\\t}\",\"variables\":{\"name\":\"default-mock-repo\",\"objectExpression\":\"\",\"owner\":\"foobar\"}}\n headers:map[Content-Type:[application/json]]]]]"),
 		},
 		"when no blame information is found": {
 			totalReviewers:    1,
@@ -130,7 +137,8 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 					},
 				),
 			},
-			wantErr: fmt.Errorf("error getting authors from git blame: no blame information found"),
+			mockedFileList: aladino.GetDefaultPullRequestFileList(),
+			wantErr:        fmt.Errorf("error getting authors from git blame: no blame information found"),
 		},
 		"when get open pull requests as reviewer query fails": {
 			totalReviewers:    1,
@@ -211,7 +219,8 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 					},
 				),
 			},
-			wantErr: fmt.Errorf("error getting open pull requests as reviewer: non-200 OK status code: 400 Bad Request body: \"\""),
+			mockedFileList: aladino.GetDefaultPullRequestFileList(),
+			wantErr:        fmt.Errorf("error getting open pull requests as reviewer: non-200 OK status code: 400 Bad Request body: \"\""),
 		},
 		"when all files are owned by bot": {
 			totalReviewers:    1,
@@ -315,6 +324,7 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 					}),
 				),
 			},
+			mockedFileList:      aladino.GetDefaultPullRequestFileList(),
 			reviewRequestedFrom: []string{"test"},
 		},
 		"when all files are owned pull request author": {
@@ -425,6 +435,7 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 					}),
 				),
 			},
+			mockedFileList:      aladino.GetDefaultPullRequestFileList(),
 			reviewRequestedFrom: []string{"jane"},
 		},
 		"when all code owners are handling too many open pull requests": {
@@ -595,6 +606,7 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 					}),
 				),
 			},
+			mockedFileList:      aladino.GetDefaultPullRequestFileList(),
 			reviewRequestedFrom: []string{"test"},
 		},
 		"when first code owner is available": {
@@ -760,6 +772,7 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 					}),
 				),
 			},
+			mockedFileList:      aladino.GetDefaultPullRequestFileList(),
 			reviewRequestedFrom: []string{"jack"},
 		},
 		"when first code owner is excluded": {
@@ -911,6 +924,7 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 					}),
 				),
 			},
+			mockedFileList:      aladino.GetDefaultPullRequestFileList(),
 			reviewRequestedFrom: []string{"jane", "james"},
 		},
 		"when code owner isn't an available assignee": {
@@ -1081,6 +1095,7 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 					}),
 				),
 			},
+			mockedFileList:      aladino.GetDefaultPullRequestFileList(),
 			reviewRequestedFrom: []string{"test"},
 		},
 		"when all code authors are handling too many open pull requests with one eligible available assignees": {
@@ -1235,6 +1250,7 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 					}),
 				),
 			},
+			mockedFileList:      aladino.GetDefaultPullRequestFileList(),
 			reviewRequestedFrom: []string{"james"},
 		},
 	}
@@ -1242,7 +1258,15 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			reviewRequestedFrom = nil
-			env := aladino.MockDefaultEnv(t, test.mockBackendOptions, test.graphQLHandler, nil, nil)
+			env := aladino.MockDefaultEnvWithPullRequestAndFiles(
+				t,
+				test.mockBackendOptions,
+				test.graphQLHandler,
+				aladino.GetDefaultPullRequestDetails(),
+				test.mockedFileList,
+				nil,
+				nil,
+			)
 
 			err := assignCodeAuthorReviewer(env, []aladino.Value{aladino.BuildIntValue(test.totalReviewers), test.excludedReviewers, aladino.BuildIntValue(test.maxReviews)})
 

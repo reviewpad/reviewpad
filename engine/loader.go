@@ -203,22 +203,8 @@ func transform(file *ReviewpadFile) *ReviewpadFile {
 
 	var transformedWorkflows []PadWorkflow
 	for _, workflow := range file.Workflows {
-		var transformedRules []PadWorkflowRule
-		for _, rule := range workflow.Rules {
-			var transformedExtraActions []string
-			for _, extraAction := range rule.ExtraActions {
-				transformedExtraActions = append(transformedExtraActions, transformAladinoExpression(extraAction))
-			}
-
-			transformedRules = append(transformedRules, PadWorkflowRule{
-				Rule:         rule.Rule,
-				ExtraActions: transformedExtraActions,
-			})
-		}
-
-		var transformedActions []string
-		for _, action := range workflow.Actions {
-			transformedActions = append(transformedActions, transformAladinoExpression(action))
+		for _, run := range workflow.Runs {
+			transformRunBlock(run, transformAladinoExpression)
 		}
 
 		transformedOn := []handler.TargetEntityKind{handler.PullRequest}
@@ -230,8 +216,6 @@ func transform(file *ReviewpadFile) *ReviewpadFile {
 			Name:        workflow.Name,
 			On:          transformedOn,
 			Description: workflow.Description,
-			Rules:       transformedRules,
-			Actions:     transformedActions,
 			AlwaysRun:   workflow.AlwaysRun,
 			Runs:        workflow.Runs,
 		})
@@ -410,4 +394,24 @@ func processExtends(ctx context.Context, logger *logrus.Entry, githubClient *gh.
 	extendedFile.Extends = []string{}
 
 	return extendedFile, nil
+}
+
+func transformRunBlock(block PadWorkflowRunBlock, actionFunc func(action string) string) {
+	for _, rule := range block.If {
+		for i, extraAction := range rule.ExtraActions {
+			rule.ExtraActions[i] = actionFunc(extraAction)
+		}
+	}
+
+	for i, action := range block.Actions {
+		block.Actions[i] = actionFunc(action)
+	}
+
+	for _, thenBlock := range block.Then {
+		transformRunBlock(thenBlock, actionFunc)
+	}
+
+	for _, elseBlock := range block.Else {
+		transformRunBlock(elseBlock, actionFunc)
+	}
 }

@@ -109,6 +109,7 @@ type PadWorkflow struct {
 	Runs                 []PadWorkflowRunBlock      `yaml:"-"`
 	NonNormalizedRules   any                        `yaml:"if"`
 	NonNormalizedActions any                        `yaml:"then"`
+	NonNormalizedElse    any                        `yaml:"else"`
 	NonNormalizedRun     any                        `yaml:"run"`
 }
 

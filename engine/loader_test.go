@@ -131,13 +131,21 @@ func TestLoadWithAST(t *testing.T) {
 				On: []handler.TargetEntityKind{
 					"pull_request",
 				},
-				Rules: []engine.PadWorkflowRule{
+				Runs: []engine.PadWorkflowRunBlock{
 					{
-						Rule: "is-medium",
+						If: []engine.PadWorkflowRule{
+							{
+								Rule: "is-medium",
+							},
+						},
+						Then: []engine.PadWorkflowRunBlock{
+							{
+								Actions: []string{
+									"$addLabel(\"medium\")",
+								},
+							},
+						},
 					},
-				},
-				Actions: []string{
-					"$addLabel(\"medium\")",
 				},
 			},
 			{
@@ -146,13 +154,21 @@ func TestLoadWithAST(t *testing.T) {
 				On: []handler.TargetEntityKind{
 					"pull_request",
 				},
-				Rules: []engine.PadWorkflowRule{
+				Runs: []engine.PadWorkflowRunBlock{
 					{
-						Rule: "$isElementOf($author(), $group(\"owners\"))",
+						If: []engine.PadWorkflowRule{
+							{
+								Rule: "$isElementOf($author(), $group(\"owners\"))",
+							},
+						},
+						Then: []engine.PadWorkflowRunBlock{
+							{
+								Actions: []string{
+									"$info(\"bob has authored a PR\")",
+								},
+							},
+						},
 					},
-				},
-				Actions: []string{
-					"$info(\"bob has authored a PR\")",
 				},
 			},
 			{
@@ -161,13 +177,21 @@ func TestLoadWithAST(t *testing.T) {
 				On: []handler.TargetEntityKind{
 					"pull_request",
 				},
-				Rules: []engine.PadWorkflowRule{
+				Runs: []engine.PadWorkflowRunBlock{
 					{
-						Rule: "true",
+						If: []engine.PadWorkflowRule{
+							{
+								Rule: "true",
+							},
+						},
+						Then: []engine.PadWorkflowRunBlock{
+							{
+								Actions: []string{
+									"$titleLint()",
+								},
+							},
+						},
 					},
-				},
-				Actions: []string{
-					"$titleLint()",
 				},
 			},
 			{
@@ -176,13 +200,21 @@ func TestLoadWithAST(t *testing.T) {
 				On: []handler.TargetEntityKind{
 					"pull_request",
 				},
-				Rules: []engine.PadWorkflowRule{
+				Runs: []engine.PadWorkflowRunBlock{
 					{
-						Rule: "is-small",
+						If: []engine.PadWorkflowRule{
+							{
+								Rule: "is-small",
+							},
+						},
+						Then: []engine.PadWorkflowRunBlock{
+							{
+								Actions: []string{
+									"$addLabel(\"small\")",
+								},
+							},
+						},
 					},
-				},
-				Actions: []string{
-					"$addLabel(\"small\")",
 				},
 			},
 		},
