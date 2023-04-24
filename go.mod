@@ -22,7 +22,7 @@ require (
 	github.com/reviewpad/api/go v0.0.0-20230405092855-fe855effe314
 	github.com/reviewpad/go-conventionalcommits v0.10.0
 	github.com/reviewpad/go-lib v0.0.0-20230403181754-44291294617f
-	github.com/shurcooL/githubv4 v0.0.0-20230305132112-efb623903184
+	github.com/shurcooL/githubv4 6cea62ecd5a9
 	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/cobra v1.7.0
 	github.com/stretchr/testify v1.8.2
