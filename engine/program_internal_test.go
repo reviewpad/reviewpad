@@ -15,7 +15,6 @@ func TestAppend(t *testing.T) {
 	workflow := PadWorkflow{
 		Name:        "test-workflow-A",
 		Description: "Testing workflow",
-		AlwaysRun:   true,
 		Rules: []PadWorkflowRule{
 			{Rule: "test-rule-A"},
 		},

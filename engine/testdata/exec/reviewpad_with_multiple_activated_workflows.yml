@@ -16,7 +16,6 @@ workflows:
     then:
       - $addLabel("activated-workflow-a")
   - name: activated-workflow-b
-    always-run: true
     if:
       - rule: tautology
     then:

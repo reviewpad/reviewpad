@@ -103,7 +103,6 @@ type PadWorkflow struct {
 	Name                 string                     `yaml:"name"`
 	On                   []handler.TargetEntityKind `yaml:"on"`
 	Description          string                     `yaml:"description"`
-	AlwaysRun            bool                       `yaml:"always-run"`
 	Rules                []PadWorkflowRule          `yaml:"-"`
 	Actions              []string                   `yaml:"-"`
 	Runs                 []PadWorkflowRunBlock      `yaml:"-"`
@@ -152,10 +151,6 @@ func (p PadWorkflow) equals(o PadWorkflow) bool {
 	}
 
 	if len(p.Actions) != len(o.Actions) {
-		return false
-	}
-
-	if p.AlwaysRun != o.AlwaysRun {
 		return false
 	}
 

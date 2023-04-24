@@ -45,7 +45,6 @@ var mockedReviewpadFile = &ReviewpadFile{
 		{
 			Name:        "test",
 			Description: "Test process",
-			AlwaysRun:   true,
 			Rules: []PadWorkflowRule{
 				{
 					Rule:         "tautology",
@@ -309,7 +308,6 @@ func TestEquals_WhenPadWorkflowAreEqual(t *testing.T) {
 	padWorkflow := PadWorkflow{
 		Name:        "test",
 		Description: "Test process",
-		AlwaysRun:   true,
 		Rules: []PadWorkflowRule{
 			{
 				Rule:         "tautology",
@@ -324,7 +322,6 @@ func TestEquals_WhenPadWorkflowAreEqual(t *testing.T) {
 	otherPadWorkflow := PadWorkflow{
 		Name:        "test",
 		Description: "Test process",
-		AlwaysRun:   true,
 		Rules: []PadWorkflowRule{
 			{
 				Rule:         "tautology",
@@ -343,7 +340,6 @@ func TestEquals_WhenPadWorkflowHaveDiffName(t *testing.T) {
 	padWorkflow := PadWorkflow{
 		Name:        "test#1",
 		Description: "Test process",
-		AlwaysRun:   true,
 		Rules: []PadWorkflowRule{
 			{
 				Rule:         "tautology",
@@ -358,7 +354,6 @@ func TestEquals_WhenPadWorkflowHaveDiffName(t *testing.T) {
 	otherPadWorkflow := PadWorkflow{
 		Name:        "test#2",
 		Description: "Test process",
-		AlwaysRun:   true,
 		Rules: []PadWorkflowRule{
 			{
 				Rule:         "tautology",
@@ -377,7 +372,6 @@ func TestEquals_WhenPadWorkflowsHaveDiffDescription(t *testing.T) {
 	padWorkflow := PadWorkflow{
 		Name:        "test",
 		Description: "Test process #1",
-		AlwaysRun:   true,
 		Rules: []PadWorkflowRule{
 			{
 				Rule:         "tautology",
@@ -392,7 +386,6 @@ func TestEquals_WhenPadWorkflowsHaveDiffDescription(t *testing.T) {
 	otherPadWorkflow := PadWorkflow{
 		Name:        "test",
 		Description: "Test process #2",
-		AlwaysRun:   true,
 		Rules: []PadWorkflowRule{
 			{
 				Rule:         "tautology",
@@ -411,7 +404,6 @@ func TestEquals_WhenPadWorkflowsHaveDiffRulesLength(t *testing.T) {
 	padWorkflow := PadWorkflow{
 		Name:        "test",
 		Description: "Test process",
-		AlwaysRun:   true,
 		Rules: []PadWorkflowRule{
 			{
 				Rule:         "tautology",
@@ -426,7 +418,6 @@ func TestEquals_WhenPadWorkflowsHaveDiffRulesLength(t *testing.T) {
 	otherPadWorkflow := PadWorkflow{
 		Name:        "test",
 		Description: "Test process",
-		AlwaysRun:   true,
 		Rules: []PadWorkflowRule{
 			{
 				Rule:         "tautology",
@@ -449,7 +440,6 @@ func TestEquals_WhenPadWorkflowsHaveDiffRules(t *testing.T) {
 	padWorkflow := PadWorkflow{
 		Name:        "test",
 		Description: "Test process",
-		AlwaysRun:   true,
 		Rules: []PadWorkflowRule{
 			{
 				Rule:         "tautology#1",
@@ -464,7 +454,6 @@ func TestEquals_WhenPadWorkflowsHaveDiffRules(t *testing.T) {
 	otherPadWorkflow := PadWorkflow{
 		Name:        "test",
 		Description: "Test process",
-		AlwaysRun:   true,
 		Rules: []PadWorkflowRule{
 			{
 				Rule:         "tautology#2",
@@ -483,7 +472,6 @@ func TestEquals_WhenPadWorkflowsHaveDiffActionsLength(t *testing.T) {
 	padWorkflow := PadWorkflow{
 		Name:        "test",
 		Description: "Test process",
-		AlwaysRun:   true,
 		Rules: []PadWorkflowRule{
 			{
 				Rule:         "tautology",
@@ -498,7 +486,6 @@ func TestEquals_WhenPadWorkflowsHaveDiffActionsLength(t *testing.T) {
 	otherPadWorkflow := PadWorkflow{
 		Name:        "test",
 		Description: "Test process",
-		AlwaysRun:   true,
 		Rules: []PadWorkflowRule{
 			{
 				Rule:         "tautology",
@@ -518,7 +505,6 @@ func TestEquals_WhenPadWorkflowsHaveDiffActions(t *testing.T) {
 	padWorkflow := PadWorkflow{
 		Name:        "test",
 		Description: "Test process",
-		AlwaysRun:   true,
 		Rules: []PadWorkflowRule{
 			{
 				Rule:         "tautology",
@@ -533,7 +519,6 @@ func TestEquals_WhenPadWorkflowsHaveDiffActions(t *testing.T) {
 	otherPadWorkflow := PadWorkflow{
 		Name:        "test",
 		Description: "Test process",
-		AlwaysRun:   true,
 		Rules: []PadWorkflowRule{
 			{
 				Rule:         "tautology",
@@ -542,40 +527,6 @@ func TestEquals_WhenPadWorkflowsHaveDiffActions(t *testing.T) {
 		},
 		Actions: []string{
 			"$action2()",
-		},
-	}
-
-	assert.False(t, padWorkflow.equals(otherPadWorkflow))
-}
-
-func TestEquals_WhenPadWorkflowsHaveDiffAlwaysRun(t *testing.T) {
-	padWorkflow := PadWorkflow{
-		Name:        "test",
-		Description: "Test process",
-		AlwaysRun:   true,
-		Rules: []PadWorkflowRule{
-			{
-				Rule:         "tautology",
-				ExtraActions: []string{},
-			},
-		},
-		Actions: []string{
-			"$action()",
-		},
-	}
-
-	otherPadWorkflow := PadWorkflow{
-		Name:        "test",
-		Description: "Test process",
-		AlwaysRun:   false,
-		Rules: []PadWorkflowRule{
-			{
-				Rule:         "tautology",
-				ExtraActions: []string{},
-			},
-		},
-		Actions: []string{
-			"$action()",
 		},
 	}
 
@@ -870,7 +821,6 @@ func TestEquals_WhenReviewpadFilesHaveDiffNumberOfWorkflows(t *testing.T) {
 		{
 			Name:        "test",
 			Description: "Test process",
-			AlwaysRun:   true,
 			Rules: []PadWorkflowRule{
 				{
 					Rule:         "tautology",
@@ -884,7 +834,6 @@ func TestEquals_WhenReviewpadFilesHaveDiffNumberOfWorkflows(t *testing.T) {
 		{
 			Name:        "test#2",
 			Description: "Test process x2",
-			AlwaysRun:   true,
 			Rules: []PadWorkflowRule{
 				{
 					Rule:         "test-rule",
@@ -910,7 +859,6 @@ func TestEquals_WhenReviewpadFilesHaveDiffWorkflows(t *testing.T) {
 		{
 			Name:        "test#2",
 			Description: "Test process x2",
-			AlwaysRun:   true,
 			Rules: []PadWorkflowRule{
 				{
 					Rule:         "test-rule",
@@ -1157,7 +1105,6 @@ func TestAppendWorkflows_WhenReviewpadFileHasNoWorkflows(t *testing.T) {
 		{
 			Name:        "test",
 			Description: "Test process",
-			AlwaysRun:   true,
 			Rules: []PadWorkflowRule{
 				{
 					Rule:         "tautology",
@@ -1183,7 +1130,6 @@ func TestAppendWorkflows_WhenReviewpadFileHasWorkflows(t *testing.T) {
 		{
 			Name:        "test#2",
 			Description: "Test process",
-			AlwaysRun:   true,
 			Rules: []PadWorkflowRule{
 				{
 					Rule:         "tautology",
@@ -1202,7 +1148,6 @@ func TestAppendWorkflows_WhenReviewpadFileHasWorkflows(t *testing.T) {
 		{
 			Name:        "test#2",
 			Description: "Test process",
-			AlwaysRun:   true,
 			Rules: []PadWorkflowRule{
 				{
 					Rule:         "tautology",
@@ -1216,7 +1161,6 @@ func TestAppendWorkflows_WhenReviewpadFileHasWorkflows(t *testing.T) {
 		{
 			Name:        "test",
 			Description: "Test process",
-			AlwaysRun:   true,
 			Rules: []PadWorkflowRule{
 				{
 					Rule:         "tautology",

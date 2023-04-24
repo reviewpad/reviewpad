@@ -216,7 +216,6 @@ func transform(file *ReviewpadFile) *ReviewpadFile {
 			Name:        workflow.Name,
 			On:          transformedOn,
 			Description: workflow.Description,
-			AlwaysRun:   workflow.AlwaysRun,
 			Runs:        workflow.Runs,
 		})
 	}
