@@ -5,13 +5,11 @@
 workflows:
   - name: old-workflow-style
     if: 'true'
-    always-run: true
     then:
        - $assignRandomReviewer()
        - $fail("failing for reason")
        - $comment("old workflow style")
   - name: single-conditional-run
-    always-run: true
     run:
       if: 'true'
       then: $comment("reviewpad")

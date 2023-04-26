@@ -2,7 +2,6 @@ api-version: reviewpad.com/v3.x
 
 workflows:
   - name: merge
-    always-run: true
     if:
       - '!$isMerged()'
     then:

@@ -61,7 +61,6 @@ func processWorkflow(workflow PadWorkflow, currentRules []PadRule) (*PadWorkflow
 	wf := &PadWorkflow{
 		Name:        workflow.Name,
 		Description: workflow.Description,
-		AlwaysRun:   workflow.AlwaysRun,
 		Rules:       workflow.Rules,
 		Actions:     workflow.Actions,
 		On:          workflow.On,
