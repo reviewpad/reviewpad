@@ -19,16 +19,13 @@ import (
 const (
 	PullRequest TargetEntityKind = "pull_request"
 	Issue       TargetEntityKind = "issue"
+	Repository  TargetEntityKind = "repository"
 )
 
 type TargetEntityKind string
 
 func (entityType TargetEntityKind) String() string {
-	switch entityType {
-	case Issue:
-		return "issues"
-	}
-	return "pull"
+	return string(entityType)
 }
 
 type TargetEntity struct {
@@ -351,6 +348,22 @@ func processPushEvent(log *logrus.Entry, token string, e *github.PushEvent) ([]*
 			})
 		}
 	}
+
+	// since the push event is not necessarily tied to a pull request, for example when you push into a default branch
+	// we also need to add the repo as a target so we can handle push events that are not tied to a pull request
+	repoTarget := &TargetEntity{
+		Kind:        Repository,
+		Owner:       e.GetRepo().GetOwner().GetLogin(),
+		Repo:        e.GetRepo().GetName(),
+		AccountType: e.GetRepo().GetOwner().GetType(),
+		Visibility:  "public",
+	}
+
+	if e.GetRepo().GetPrivate() {
+		repoTarget.Visibility = "private"
+	}
+
+	targets = append(targets, repoTarget)
 
 	log.Infof("found events %v", targets)
 
