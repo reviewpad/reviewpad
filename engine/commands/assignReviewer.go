@@ -42,6 +42,7 @@ func AssignReviewerCmd() *cobra.Command {
 	return assignReviewerCmd
 }
 
+// AssignReviewer function assumes all validation is done by the Args function.
 func AssignReviewer(cmd *cobra.Command, args []string) error {
 	totalRequiredReviewers := uint64(1)
 
