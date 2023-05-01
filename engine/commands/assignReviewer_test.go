@@ -26,10 +26,6 @@ func TestAssignReviewer(t *testing.T) {
 			},
 			wantErr: errors.New("accepts 1 arg(s), received 2"),
 		},
-		"when missing required arguments": {
-			args:    []string{},
-			wantErr: errors.New("accepts 1 arg(s), received 0"),
-		},
 		"when total required reviewers is not a number": {
 			args: []string{
 				"a",
@@ -41,6 +37,10 @@ func TestAssignReviewer(t *testing.T) {
 				"0",
 			},
 			wantErr: errors.New("invalid argument: 0, number of reviewers must be greater than 0"),
+		},
+		"when total required reviewers is not provided": {
+			args:       []string{},
+			wantAction: `$assignCodeAuthorReviewers(1, [], 0)`,
 		},
 	}
 

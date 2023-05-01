@@ -223,6 +223,29 @@ func TestEvalCommand(t *testing.T) {
 				},
 			},
 		},
+		"when assign reviewer has no total required reviewers provided": {
+			wantProgram: engine.BuildProgram(
+				[]*engine.Statement{
+					engine.BuildStatement(`$assignCodeAuthorReviewers(1, [], 0)`),
+				},
+			),
+			targetEntity: &handler.TargetEntity{
+				Kind:   engine.DefaultMockTargetEntity.Kind,
+				Number: engine.DefaultMockTargetEntity.Number,
+				Owner:  engine.DefaultMockTargetEntity.Owner,
+				Repo:   engine.DefaultMockTargetEntity.Repo,
+			},
+			eventDetails: &handler.EventDetails{
+				EventName:   "issue_comment",
+				EventAction: "created",
+				Payload: &github.IssueCommentEvent{
+					Comment: &github.IssueComment{
+						ID:   github.Int64(1),
+						Body: github.String("/reviewpad assign-reviewers"),
+					},
+				},
+			},
+		},
 	}
 
 	codehostClient := aladino.GetDefaultCodeHostClient(t, aladino.GetDefaultPullRequestDetails(), aladino.GetDefaultPullRequestFileList(), nil, nil)

@@ -19,12 +19,14 @@ func AssignReviewerCmd() *cobra.Command {
 		SilenceUsage:  true,
 		SilenceErrors: true,
 		Args: func(cmd *cobra.Command, args []string) error {
-			if len(args) != 1 {
+			if len(args) > 1 {
 				return fmt.Errorf("accepts 1 arg(s), received %d", len(args))
 			}
 
-			if _, err := strconv.ParseUint(args[0], 10, 64); err != nil {
-				return fmt.Errorf("invalid argument: %s, number of reviewers must be a number", args[0])
+			if len(args) == 1 {
+				if _, err := strconv.ParseUint(args[0], 10, 64); err != nil {
+					return fmt.Errorf("invalid argument: %s, number of reviewers must be a number", args[0])
+				}
 			}
 
 			return nil
@@ -36,9 +38,14 @@ func AssignReviewerCmd() *cobra.Command {
 }
 
 func AssignReviewer(cmd *cobra.Command, args []string) error {
-	totalRequiredReviewers, err := strconv.ParseUint(args[0], 10, 64)
-	if err != nil {
-		return err
+	var err error
+	totalRequiredReviewers := uint64(1)
+
+	if len(args) == 1 {
+		totalRequiredReviewers, err = strconv.ParseUint(args[0], 10, 64)
+		if err != nil {
+			return err
+		}
 	}
 
 	if totalRequiredReviewers == 0 {
