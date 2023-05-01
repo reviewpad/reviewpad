@@ -24,7 +24,7 @@ func TestAssignReviewer(t *testing.T) {
 				"john",
 				"jane",
 			},
-			wantErr: errors.New("accepts 1 arg(s), received 2"),
+			wantErr: errors.New("accepts 1 arg, received 2"),
 		},
 		"when total required reviewers is not a number": {
 			args: []string{

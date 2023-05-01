@@ -148,7 +148,7 @@ func TestEvalCommand(t *testing.T) {
 					&github.IssueComment{},
 				),
 			},
-			wantErr: "accepts 1 arg(s), received 4",
+			wantErr: "accepts 1 arg, received 4",
 		},
 		"when invalid total required reviewers arg": {
 			targetEntity: &handler.TargetEntity{

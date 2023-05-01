@@ -20,12 +20,17 @@ func AssignReviewerCmd() *cobra.Command {
 		SilenceErrors: true,
 		Args: func(cmd *cobra.Command, args []string) error {
 			if len(args) > 1 {
-				return fmt.Errorf("accepts 1 arg(s), received %d", len(args))
+				return fmt.Errorf("accepts 1 arg, received %d", len(args))
 			}
 
 			if len(args) == 1 {
-				if _, err := strconv.ParseUint(args[0], 10, 64); err != nil {
+				totalRequiredReviewers, err := strconv.ParseUint(args[0], 10, 64)
+				if err != nil {
 					return fmt.Errorf("invalid argument: %s, number of reviewers must be a number", args[0])
+				}
+
+				if totalRequiredReviewers == 0 {
+					return fmt.Errorf("invalid argument: %d, number of reviewers must be greater than 0", totalRequiredReviewers)
 				}
 			}
 
@@ -38,18 +43,10 @@ func AssignReviewerCmd() *cobra.Command {
 }
 
 func AssignReviewer(cmd *cobra.Command, args []string) error {
-	var err error
 	totalRequiredReviewers := uint64(1)
 
 	if len(args) == 1 {
-		totalRequiredReviewers, err = strconv.ParseUint(args[0], 10, 64)
-		if err != nil {
-			return err
-		}
-	}
-
-	if totalRequiredReviewers == 0 {
-		return fmt.Errorf("invalid argument: %d, number of reviewers must be greater than 0", totalRequiredReviewers)
+		totalRequiredReviewers, _ = strconv.ParseUint(args[0], 10, 64)
 	}
 
 	action := fmt.Sprintf(`$assignCodeAuthorReviewers(%d, [], 0)`, totalRequiredReviewers)
