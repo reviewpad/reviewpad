@@ -150,6 +150,79 @@ func TestEvalCommand(t *testing.T) {
 			},
 			wantErr: "accepts 1 arg(s), received 4",
 		},
+		"when invalid total required reviewers arg": {
+			targetEntity: &handler.TargetEntity{
+				Kind:   engine.DefaultMockTargetEntity.Kind,
+				Number: engine.DefaultMockTargetEntity.Number,
+				Owner:  engine.DefaultMockTargetEntity.Owner,
+				Repo:   engine.DefaultMockTargetEntity.Repo,
+			},
+			eventDetails: &handler.EventDetails{
+				EventName:   "issue_comment",
+				EventAction: "created",
+				Payload: &github.IssueCommentEvent{
+					Comment: &github.IssueComment{
+						ID:   github.Int64(1),
+						Body: github.String("/reviewpad assign-reviewers reviewpad"),
+					},
+				},
+			},
+			clientOptions: []mock.MockBackendOption{
+				mock.WithRequestMatch(
+					mock.PostReposIssuesCommentsByOwnerByRepoByIssueNumber,
+					&github.IssueComment{},
+				),
+			},
+			wantErr: "invalid argument: reviewpad, number of reviewers must be a number",
+		},
+		"when total required reviewers arg is 0": {
+			targetEntity: &handler.TargetEntity{
+				Kind:   engine.DefaultMockTargetEntity.Kind,
+				Number: engine.DefaultMockTargetEntity.Number,
+				Owner:  engine.DefaultMockTargetEntity.Owner,
+				Repo:   engine.DefaultMockTargetEntity.Repo,
+			},
+			eventDetails: &handler.EventDetails{
+				EventName:   "issue_comment",
+				EventAction: "created",
+				Payload: &github.IssueCommentEvent{
+					Comment: &github.IssueComment{
+						ID:   github.Int64(1),
+						Body: github.String("/reviewpad assign-reviewers 0"),
+					},
+				},
+			},
+			clientOptions: []mock.MockBackendOption{
+				mock.WithRequestMatch(
+					mock.PostReposIssuesCommentsByOwnerByRepoByIssueNumber,
+					&github.IssueComment{},
+				),
+			},
+			wantErr: "invalid argument: 0, number of reviewers must be greater than 0",
+		},
+		"when assign reviewer has 1 total required reviewer": {
+			wantProgram: engine.BuildProgram(
+				[]*engine.Statement{
+					engine.BuildStatement(`$assignCodeAuthorReviewers(1, [], 0)`),
+				},
+			),
+			targetEntity: &handler.TargetEntity{
+				Kind:   engine.DefaultMockTargetEntity.Kind,
+				Number: engine.DefaultMockTargetEntity.Number,
+				Owner:  engine.DefaultMockTargetEntity.Owner,
+				Repo:   engine.DefaultMockTargetEntity.Repo,
+			},
+			eventDetails: &handler.EventDetails{
+				EventName:   "issue_comment",
+				EventAction: "created",
+				Payload: &github.IssueCommentEvent{
+					Comment: &github.IssueComment{
+						ID:   github.Int64(1),
+						Body: github.String("/reviewpad assign-reviewers 1"),
+					},
+				},
+			},
+		},
 	}
 
 	codehostClient := aladino.GetDefaultCodeHostClient(t, aladino.GetDefaultPullRequestDetails(), aladino.GetDefaultPullRequestFileList(), nil, nil)
