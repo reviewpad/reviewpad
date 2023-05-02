@@ -167,7 +167,7 @@ func EvalConfigurationFile(file *ReviewpadFile, env *Env) (*Program, error) {
 			}
 
 			if len(runActions) > 0 {
-				if !workflow.AlwaysRun {
+				if !workflow.AlwaysRun && !workflow.RunUsed {
 					triggeredExclusiveWorkflow = true
 				}
 
