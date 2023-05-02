@@ -142,7 +142,7 @@ func EvalConfigurationFile(file *ReviewpadFile, env *Env) (*Program, error) {
 		log.Infof("evaluating workflow '%v'", workflow.Name)
 		workflowLog := log.WithField("workflow", workflow.Name)
 
-		if !workflow.AlwaysRun && triggeredExclusiveWorkflow {
+		if (!workflow.AlwaysRun && !workflow.RunUsed) && triggeredExclusiveWorkflow {
 			workflowLog.Infof("skipping workflow because it is not always run and another workflow has been triggered")
 			continue
 		}

@@ -72,6 +72,11 @@ func processWorkflow(workflow PadWorkflow, currentRules []PadRule) (*PadWorkflow
 		return nil, nil, err
 	}
 
+	// the run property was used
+	if len(runs) > 0 {
+		wf.RunUsed = true
+	}
+
 	// process only if the workflow has an if ... then ... else block
 	// since there might be cases where the workflow only has a run block
 	if workflow.NonNormalizedRules != nil {
