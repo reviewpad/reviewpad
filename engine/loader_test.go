@@ -126,7 +126,8 @@ func TestLoadWithAST(t *testing.T) {
 		},
 		Workflows: []engine.PadWorkflow{
 			{
-				Name: "add-label-with-medium-size",
+				Name:      "add-label-with-medium-size",
+				AlwaysRun: false,
 				On: []handler.TargetEntityKind{
 					"pull_request",
 				},
@@ -148,7 +149,8 @@ func TestLoadWithAST(t *testing.T) {
 				},
 			},
 			{
-				Name: "info-owners",
+				Name:      "info-owners",
+				AlwaysRun: false,
 				On: []handler.TargetEntityKind{
 					"pull_request",
 				},
@@ -170,7 +172,8 @@ func TestLoadWithAST(t *testing.T) {
 				},
 			},
 			{
-				Name: "check-title",
+				Name:      "check-title",
+				AlwaysRun: false,
 				On: []handler.TargetEntityKind{
 					"pull_request",
 				},
@@ -192,7 +195,8 @@ func TestLoadWithAST(t *testing.T) {
 				},
 			},
 			{
-				Name: "add-label-with-small-size",
+				Name:      "add-label-with-small-size",
+				AlwaysRun: false,
 				On: []handler.TargetEntityKind{
 					"pull_request",
 				},

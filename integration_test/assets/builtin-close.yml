@@ -2,6 +2,7 @@ api-version: reviewpad.com/v3.x
 
 workflows:
   - name: closed-for-unmet-requirements
+    always-run: true
     if:
       - 'true'
     then:

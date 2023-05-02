@@ -400,6 +400,15 @@ func TestEvalConfigurationFile(t *testing.T) {
 			),
 			targetEntity: engine.DefaultMockTargetEntity,
 		},
+		"when workflow is skipped": {
+			inputReviewpadFilePath: "testdata/exec/reviewpad_with_skipped_workflow.yml",
+			wantProgram: engine.BuildProgram(
+				[]*engine.Statement{
+					engine.BuildStatement(`$addLabel("activated-workflow")`),
+				},
+			),
+			targetEntity: engine.DefaultMockTargetEntity,
+		},
 		"when run is a single action": {
 			inputReviewpadFilePath: "testdata/exec/reviewpad_with_string_run.yml",
 			wantProgram: engine.BuildProgram(
