@@ -29,6 +29,8 @@ func robinSummarizeCode(e aladino.Env, args []aladino.Value) error {
 	summaryMode := args[0].(*aladino.StringValue).Val
 	model := args[1].(*aladino.StringValue).Val
 
+	log := e.GetLogger().WithField("builtin", "summarize")
+
 	service, ok := e.GetBuiltIns().Services[plugins_aladino_services.ROBIN_SERVICE_KEY]
 	if !ok {
 		return fmt.Errorf("robin service not found")
@@ -50,6 +52,7 @@ func robinSummarizeCode(e aladino.Env, args []aladino.Value) error {
 
 	resp, err := robinClient.Summarize(e.GetCtx(), req)
 	if err != nil {
+		log.Infof("summarize failed with %v", err)
 		return fmt.Errorf("summarize failed - please contact us on [Discord](https://reviewpad.com/discord)")
 	}
 
