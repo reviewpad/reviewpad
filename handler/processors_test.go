@@ -752,7 +752,12 @@ func TestProcessEvent(t *testing.T) {
 				Token:     github.String("test-token"),
 				EventPayload: buildPayload([]byte(`{
 					"repository": {
-						"full_name": "reviewpad/reviewpad"
+						"full_name": "reviewpad/reviewpad",
+						"owner": {
+							"login": "reviewpad",
+							"type": "Organization"
+						},
+						"name": "reviewpad"
 					},
 					"ref": "refs/heads/main"
 				}`)),
@@ -766,12 +771,24 @@ func TestProcessEvent(t *testing.T) {
 					AccountType: "Organization",
 					Visibility:  "public",
 				},
+				{
+					Kind:        handler.Repository,
+					Owner:       owner,
+					Repo:        repo,
+					AccountType: "Organization",
+					Visibility:  "public",
+				},
 			},
 			wantEventDetails: &handler.EventDetails{
 				EventName: "push",
 				Payload: &github.PushEvent{
 					Repo: &github.PushEventRepository{
 						FullName: github.String("reviewpad/reviewpad"),
+						Name:     github.String("reviewpad"),
+						Owner: &github.User{
+							Login: github.String("reviewpad"),
+							Type:  github.String("Organization"),
+						},
 					},
 					Ref: github.String("refs/heads/main"),
 				},
@@ -783,17 +800,37 @@ func TestProcessEvent(t *testing.T) {
 				Token:     github.String("test-token"),
 				EventPayload: buildPayload([]byte(`{
 					"repository": {
-						"full_name": "reviewpad/reviewpad"
+						"full_name": "reviewpad/reviewpad",
+						"private": true,
+						"owner": {
+							"login": "reviewpad",
+							"type": "Organization"
+						},
+						"name": "reviewpad"
 					},
 					"ref": "refs/heads/master"
 				}`)),
 			},
-			wantTargets: []*handler.TargetEntity{},
+			wantTargets: []*handler.TargetEntity{
+				{
+					Kind:        handler.Repository,
+					Owner:       owner,
+					Repo:        repo,
+					AccountType: "Organization",
+					Visibility:  "private",
+				},
+			},
 			wantEventDetails: &handler.EventDetails{
 				EventName: "push",
 				Payload: &github.PushEvent{
 					Repo: &github.PushEventRepository{
 						FullName: github.String("reviewpad/reviewpad"),
+						Name:     github.String("reviewpad"),
+						Private:  github.Bool(true),
+						Owner: &github.User{
+							Login: github.String("reviewpad"),
+							Type:  github.String("Organization"),
+						},
 					},
 					Ref: github.String("refs/heads/master"),
 				},
