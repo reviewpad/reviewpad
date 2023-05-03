@@ -113,7 +113,7 @@ workflows:
     always-run: true
     run:
       # When review strategy is "ask", assign a reviewer to the pull request.
-      - if: ($rule("review-strategy:ask") || $rule("is external contribution")) && $assignees() == [] && author() != "renovate[bot]"
+      - if: $assignees() == [] && $author() != "renovate[bot]" && ($rule("review-strategy:ask") || $rule("is external contribution"))
         then: $assignCodeAuthorReviewers(1, $group("reviewers to ignore"), 2)
       # When review strategy is "show", remind about the pull request in the meeting.
       - if: $isMerged() && $rule("review-strategy:show") && $isElementOf($author(), $group("maintainers"))
