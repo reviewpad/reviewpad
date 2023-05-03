@@ -25,7 +25,13 @@ const (
 type TargetEntityKind string
 
 func (entityType TargetEntityKind) String() string {
-	return string(entityType)
+	switch entityType {
+	case Issue:
+		return "issues"
+	case Repository:
+		return "repository"
+	}
+	return "pull"
 }
 
 type TargetEntity struct {
