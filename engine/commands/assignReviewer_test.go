@@ -24,84 +24,23 @@ func TestAssignReviewer(t *testing.T) {
 				"john",
 				"jane",
 			},
-			wantErr: errors.New("accepts 1 arg(s), received 2"),
+			wantErr: errors.New("accepts 1 arg, received 2"),
 		},
-		"when list of reviewers has invalid github username": {
+		"when total required reviewers is not a number": {
 			args: []string{
-				"john2,jane-",
+				"a",
 			},
-			wantErr: errors.New("reviewers must be a list of comma separated valid github usernames"),
+			wantErr: errors.New("invalid argument: a, number of reviewers must be a number"),
 		},
-		"when review policy is invalid": {
+		"when total required reviewers 0": {
 			args: []string{
-				"jane,john",
-				"--total-reviewers=1",
-				"--review-policy=unknown",
+				"0",
 			},
-			wantErr: errors.New("invalid review policy specified: unknown"),
+			wantErr: errors.New("invalid argument: 0, number of reviewers must be greater than 0"),
 		},
-		"when number of reviewers is not a number": {
-			args: []string{
-				"john,jane,john2,jane27",
-				"--total-reviewers=z",
-			},
-			wantErr: errors.New("invalid argument \"z\" for \"-t, --total-reviewers\" flag: strconv.ParseUint: parsing \"z\": invalid syntax"),
-		},
-		"when missing number of reviewers and policy": {
-			args: []string{
-				"john",
-			},
-			wantAction: `$assignReviewer(["john"], 1, "reviewpad")`,
-		},
-		"when missing policy": {
-			args: []string{
-				"john-123,jane",
-				"--total-reviewers=5",
-			},
-			wantAction: `$assignReviewer(["john-123","jane"], 5, "reviewpad")`,
-		},
-		"when only one reviewer is provided": {
-			args: []string{
-				"john-123-jane",
-				"--total-reviewers=1",
-				"--review-policy=reviewpad",
-			},
-			wantAction: `$assignReviewer(["john-123-jane"], 1, "reviewpad")`,
-		},
-		"when only two reviewers are provided": {
-			args: []string{
-				"jane,john",
-				"--total-reviewers",
-				"2",
-				"--review-policy",
-				"random",
-			},
-			wantAction: `$assignReviewer(["jane","john"], 2, "random")`,
-		},
-		"when number of provided reviewers is greater than requested reviewers": {
-			args: []string{
-				"jane,john",
-				"--total-reviewers=1",
-				"--review-policy",
-				"round-robin",
-			},
-			wantAction: `$assignReviewer(["jane","john"], 1, "round-robin")`,
-		},
-		"when number of provided reviewers is less than requested reviewers": {
-			args: []string{
-				"jane,john,jane123",
-				"--total-reviewers",
-				"5",
-				"--review-policy=round-robin",
-			},
-			wantAction: `$assignReviewer(["jane","john","jane123"], 5, "round-robin")`,
-		},
-		"when missing number of reviewers": {
-			args: []string{
-				"jane,john,jane123",
-				"--review-policy=reviewpad",
-			},
-			wantAction: `$assignReviewer(["jane","john","jane123"], 3, "reviewpad")`,
+		"when total required reviewers is not provided": {
+			args:       []string{},
+			wantAction: `$assignCodeAuthorReviewers(1, [], 0)`,
 		},
 	}
 
