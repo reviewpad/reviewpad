@@ -138,7 +138,7 @@ func TestEvalCommand(t *testing.T) {
 				Payload: &github.IssueCommentEvent{
 					Comment: &github.IssueComment{
 						ID:   github.Int64(1),
-						Body: github.String("/reviewpad assign-reviewers john, jane, 1 random"),
+						Body: github.String("/reviewpad assign-reviewer john, jane, 1 random"),
 					},
 				},
 			},
@@ -163,7 +163,7 @@ func TestEvalCommand(t *testing.T) {
 				Payload: &github.IssueCommentEvent{
 					Comment: &github.IssueComment{
 						ID:   github.Int64(1),
-						Body: github.String("/reviewpad assign-reviewers reviewpad"),
+						Body: github.String("/reviewpad assign-reviewer reviewpad"),
 					},
 				},
 			},
@@ -188,7 +188,7 @@ func TestEvalCommand(t *testing.T) {
 				Payload: &github.IssueCommentEvent{
 					Comment: &github.IssueComment{
 						ID:   github.Int64(1),
-						Body: github.String("/reviewpad assign-reviewers 0"),
+						Body: github.String("/reviewpad assign-reviewer 0"),
 					},
 				},
 			},
@@ -218,7 +218,7 @@ func TestEvalCommand(t *testing.T) {
 				Payload: &github.IssueCommentEvent{
 					Comment: &github.IssueComment{
 						ID:   github.Int64(1),
-						Body: github.String("/reviewpad assign-reviewers 1"),
+						Body: github.String("/reviewpad assign-reviewer 1"),
 					},
 				},
 			},
@@ -241,7 +241,7 @@ func TestEvalCommand(t *testing.T) {
 				Payload: &github.IssueCommentEvent{
 					Comment: &github.IssueComment{
 						ID:   github.Int64(1),
-						Body: github.String("/reviewpad assign-reviewers"),
+						Body: github.String("/reviewpad assign-reviewer"),
 					},
 				},
 			},
