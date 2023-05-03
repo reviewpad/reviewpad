@@ -88,9 +88,7 @@ workflows:
         # Having assignees means that the pull request is already being assigned to someone.
         # Therefore, we are ready to verify if the code is critical or not.
         - if: $assignees() == [] && ($hasAnnotation("critical") || $hasFileName("runner.go"))
-          then:
-            - $addLabel("critical")
-            - $assignReviewer($group("owners"), 1)
+          then: $addLabel("critical")
 
   # Create awareness when some parts of the code are being modified.
   - name: awareness
