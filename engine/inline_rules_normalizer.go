@@ -72,9 +72,10 @@ func processWorkflow(workflow PadWorkflow, currentRules []PadRule) (*PadWorkflow
 		return nil, nil, err
 	}
 
-	// the run property was used
+	// To provide backward compatibility we assume that
+	// having the run property is the same as always-run.
 	if len(runs) > 0 {
-		wf.RunUsed = true
+		wf.AlwaysRun = true
 	}
 
 	// process only if the workflow has an if ... then ... else block
