@@ -28,6 +28,9 @@ groups:
     description: Official maintainers
     spec: '["marcelosousa", "ferreiratiago", "shay2025", "zolamk"]'
 
+  - name: reviewpad bots
+    spec: '["reviewpad-stage[bot]", "reviewpad[bot]"]'
+
 rules:
   - name: is renovate bot
     description: Author is Renovate Bot
@@ -40,6 +43,10 @@ rules:
   - name: has reviewers
     description: Pull request has reviewers
     spec: $length($append($reviewers(), $requestedReviewers())) > 0
+
+  - name: all reviews from bots
+    description: All reviews are from bots
+    spec: '$all($reviewers(), ($r: String => $isElementOf($r, $group("reviewpad bots"))))'
 
   - name: touches plugin functions
     description: Modifies the plugin functions
@@ -62,7 +69,7 @@ workflows:
   - name: attention set
     always-run: true
     run:
-      - if: $isWaitingForReview()
+      - if: $isWaitingForReview() && !$rule("all reviews from bots")
         then: $addLabel("waiting-review")
         else: $removeLabel("waiting-review")
       - if: $hasUnaddressedThreads()
