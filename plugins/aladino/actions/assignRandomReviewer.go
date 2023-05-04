@@ -5,8 +5,6 @@
 package plugins_aladino_actions
 
 import (
-	"fmt"
-
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v4/handler"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
@@ -23,6 +21,7 @@ func AssignRandomReviewer() *aladino.BuiltInAction {
 
 func assignRandomReviewerCode(e aladino.Env, _ []aladino.Value) error {
 	t := e.GetTarget().(*target.PullRequestTarget)
+	log := e.GetLogger().WithField("builtin", "assignRandomReviewer")
 
 	reviewers, err := t.GetReviewers()
 	if err != nil {
@@ -53,7 +52,8 @@ func assignRandomReviewerCode(e aladino.Env, _ []aladino.Value) error {
 	}
 
 	if len(filteredGhUsers) == 0 {
-		return fmt.Errorf("can't assign a random user because there is no users")
+		log.Warnf("can't assign a random user because there is no users")
+		return nil
 	}
 
 	lucky := utils.GenerateRandom(len(filteredGhUsers))

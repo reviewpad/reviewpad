@@ -164,6 +164,7 @@ func TestAssignRandomReviewer_ShouldFilterPullRequestAuthor(t *testing.T) {
 }
 
 func TestAssignRandomReviewer_WhenThereIsNoUsers(t *testing.T) {
+	selectedReviewers := []string{}
 	authorLogin := "maria"
 	mockedCodeReview := aladino.GetDefaultMockPullRequestDetailsWith(&pbc.PullRequest{
 		Author: &pbc.User{Login: authorLogin},
@@ -181,6 +182,17 @@ func TestAssignRandomReviewer_WhenThereIsNoUsers(t *testing.T) {
 					{Login: github.String(authorLogin)},
 				},
 			),
+			mock.WithRequestMatchHandler(
+				mock.PostReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					rawBody, _ := io.ReadAll(r.Body)
+					body := ReviewersRequestPostBody{}
+
+					utils.MustUnmarshal(rawBody, &body)
+
+					selectedReviewers = body.Reviewers
+				}),
+			),
 		},
 		nil,
 		mockedCodeReview,
@@ -192,5 +204,6 @@ func TestAssignRandomReviewer_WhenThereIsNoUsers(t *testing.T) {
 	args := []aladino.Value{}
 	err := assignRandomReviewer(mockedEnv, args)
 
-	assert.EqualError(t, err, "can't assign a random user because there is no users")
+	assert.Nil(t, err)
+	assert.ElementsMatch(t, []string{}, selectedReviewers)
 }
