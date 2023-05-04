@@ -37,6 +37,10 @@ rules:
     description: Author is not a Reviewpad core contributor
     spec: '!$isElementOf($author(), $group("maintainers"))'
 
+  - name: has reviewers
+    description: Pull request has reviewers
+    spec: $length($append($reviewers(), $requestedReviewers())) > 0
+
   - name: touches plugin functions
     description: Modifies the plugin functions
     spec: $hasFilePattern("plugins/aladino/functions/**")
@@ -111,7 +115,7 @@ workflows:
     always-run: true
     run:
       # When review strategy is "ask", assign a reviewer to the pull request.
-      - if: $assignees() == [] && $author() != "renovate[bot]" && ($rule("review-strategy:ask") || $rule("is external contribution"))
+      - if: $assignees() == [] && $author() != "renovate[bot]" && !$rule("has reviewers") && ($rule("review-strategy:ask") || $rule("is external contribution"))
         then: $assignCodeAuthorReviewers(1, $group("reviewers to ignore"), 2)
       # When review strategy is "show", remind about the pull request in the meeting.
       - if: $isMerged() && $rule("review-strategy:show") && $isElementOf($author(), $group("maintainers"))
@@ -150,9 +154,6 @@ pipelines:
           - $warn("The build is failing. Closing pull request.")
           - $close()
         until: $checkRunConclusion("pr-build") == "success"
-      - actions:
-          - $assignReviewer($group("owners"), 1)
-        until: $hasRequiredApprovals(1, $group("owners"))
       - actions:
           - $approve("Pull request is ready to be merged. Reviewpad will merge it for you. Please wait for the merge to complete.")
           - $merge("rebase")
