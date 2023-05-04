@@ -2,6 +2,7 @@ api-version: reviewpad.com/v3.x
 
 workflows:
   - name: delete-head-branch
+    always-run: true
     if:
       - 'true'
     then:

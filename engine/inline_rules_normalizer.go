@@ -61,6 +61,7 @@ func processWorkflow(workflow PadWorkflow, currentRules []PadRule) (*PadWorkflow
 	wf := &PadWorkflow{
 		Name:        workflow.Name,
 		Description: workflow.Description,
+		AlwaysRun:   workflow.AlwaysRun,
 		Rules:       workflow.Rules,
 		Actions:     workflow.Actions,
 		On:          workflow.On,
@@ -69,6 +70,12 @@ func processWorkflow(workflow PadWorkflow, currentRules []PadRule) (*PadWorkflow
 	runs, runRules, err := normalizeRun(workflow.NonNormalizedRun, currentRules)
 	if err != nil {
 		return nil, nil, err
+	}
+
+	// To provide backward compatibility we assume that
+	// having the run property is the same as always-run.
+	if len(runs) > 0 {
+		wf.AlwaysRun = true
 	}
 
 	// process only if the workflow has an if ... then ... else block

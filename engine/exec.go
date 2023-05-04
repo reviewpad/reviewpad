@@ -134,10 +134,18 @@ func EvalConfigurationFile(file *ReviewpadFile, env *Env) (*Program, error) {
 		rules[rule.Name] = rule
 	}
 
+	// triggeredExclusiveWorkflow is a control variable to denote if a workflow `always-run: false` has been triggered.
+	triggeredExclusiveWorkflow := false
+
 	// process workflows
 	for _, workflow := range file.Workflows {
 		log.Infof("evaluating workflow '%v'", workflow.Name)
 		workflowLog := log.WithField("workflow", workflow.Name)
+
+		if !workflow.AlwaysRun && triggeredExclusiveWorkflow {
+			workflowLog.Infof("skipping workflow because it is not always run and another workflow has been triggered")
+			continue
+		}
 
 		shouldRun := false
 		for _, eventKind := range workflow.On {
@@ -159,6 +167,10 @@ func EvalConfigurationFile(file *ReviewpadFile, env *Env) (*Program, error) {
 			}
 
 			if len(runActions) > 0 {
+				if !workflow.AlwaysRun {
+					triggeredExclusiveWorkflow = true
+				}
+
 				program.append(runActions)
 			}
 		}

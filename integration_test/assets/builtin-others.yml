@@ -10,6 +10,7 @@ labels:
 
 workflows:
   - name: add-label-with-size
+    always-run: true
     if:
       - rule: $size() <= 30
         extra-actions:
@@ -22,6 +23,7 @@ workflows:
           - '$addLabel("large")'
 
   - name: lint-commits
+    always-run: true
     if:
       - rule: 'true'
         extra-actions:
@@ -29,108 +31,126 @@ workflows:
           - '$titleLint()'
 
   - name: label-requires-approval
+    always-run: true
     if:
       - $approvalsCount() == 0
     then:
       - $addLabel("requires-approval")
 
   - name: assign-assignees
+    always-run: true
     if:
       - $length($assignees()) == 0
     then:
       - $assignAssignees([$author()])
 
   - name: check-base
+    always-run: true
     if:
       - $base() != "development"
     then:
       - $warn("Please open all pull requests again the development branch first")
 
   - name: check-head
+    always-run: true
     if:
       - '!$any(["feat", "fix"], ($prefix: String => $startsWith($head(), $prefix)))'
     then:
       - $error("Please user proper branch naming")
 
   - name: check-description
+    always-run: true
     if:
       - $description() == ""
     then:
       - $error("Please add description")
 
   - name: has-code-pattern
+    always-run: true
     if:
       - $hasCodePattern("necessary")
     then:
       - $addLabel("necessary")
 
   - name: has-file-extensions
+    always-run: true
     if:
       - $hasFileExtensions([".md", "", ".go"])
     then:
       - $addLabel("markdown")
 
   - name: has-file-name
+    always-run: true
     if:
       - $hasFileName("README.md")
     then:
       - $addLabel("readme")
 
   - name: has-file-pattern
+    always-run: true
     if:
       - $hasFilePattern("utils/*.go")
     then:
       - $addLabel("modifies-utilities")
 
   - name: has-linked-issues
+    always-run: true
     if:
       - '!$hasLinkedIssues()'
     then:
       - $warn("Please link issue to pull request")
 
   - name: has-required-approvals
+    always-run: true
     if:
       - '!$hasRequiredApprovals(2, $organization())'
     then:
       - $review("COMMENT", "We will do this instead")
 
   - name: is-binary
+    always-run: true
     if:
       - $isBinary("hello-world")
     then:
       - $addLabel("is-binary")
 
   - name: is-linked-to-project
+    always-run: true
     if:
       - '!$isLinkedToProject("integration test project")'
     then:
       - $addToProject("[INTEGRATION TESTS] Reviewpad", "todo")
 
   - name: is-draft
+    always-run: true
     if:
       - $isDraft()
     then:
       - $setProjectField("[INTEGRATION TESTS] Reviewpad", "status", "In Progress")
 
   - name: review
+    always-run: true
     if:
       - $length($requestedReviewers()) == 0
     then:
       - $assignTeamReviewer(["integration-test"])
 
   - name: is-waiting-for-review
+    always-run: true
     if:
       - $isWaitingForReview()
     then:
       - $addLabel("waiting-for-review")
 
   - name: all-integration-test-team-members-are-organization-members
+    always-run: true
     if:
       - '$all($team("integration-test"), ($member: String => $isElementOf($member, $organization())))'
     then:
       - $comment("All integration test team members are members of the organization")
 
   - name: remove-labels
+    always-run: true
     if:
       - $isElementOf("bug", $labels())
     then:
@@ -138,30 +158,35 @@ workflows:
       - $removeLabel("documentation")
 
   - name: pull-request-count-by
+    always-run: true
     if:
       - $pullRequestCountBy($author(), "all") > 0
     then:
       - '$commentOnce($sprintf("Thank you so much for pull request %d", [$totalCreatedPullRequests($author())]))'
 
   - name: has-git-conflicts
+    always-run: true
     if:
       - $hasGitConflicts()
     then:
       - $addLabel("has-conflicts")
 
   - name: has-linear-history-trigger-workflow
+    always-run: true
     if:
       - $hasLinearHistory()
     then:
       - $triggerWorkflow("log.yaml")
 
   - name: reviewer-status
+    always-run: true
     if:
       - '!$any($reviewers(), ($r: String => $reviewerStatus($r) == "APPROVED"))'
     then:
       - '$warn("Pull request hasnt been approved by anybody")'
 
   - name: has-binary-file
+    always-run: true
     if:
       - $hasBinaryFile()
     then:
@@ -169,6 +194,7 @@ workflows:
       - $error("Please don't add any binary file into the repository")
 
   - name: pull-request-info
+    always-run: true
     if:
       - 'true'
     then:
