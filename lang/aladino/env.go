@@ -7,6 +7,7 @@ package aladino
 import (
 	"context"
 	"fmt"
+	"sync"
 
 	"github.com/reviewpad/reviewpad/v4/codehost"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
@@ -42,6 +43,10 @@ type Env interface {
 	GetReport() *Report
 	GetTarget() codehost.Target
 	GetLogger() *logrus.Entry
+	GetExecWaitGroup() *sync.WaitGroup
+	GetExecMutex() *sync.Mutex
+	GetExecFatalErrorOccurred() error
+	SetExecFatalErrorOccurred(error)
 }
 
 type BaseEnv struct {
@@ -57,6 +62,9 @@ type BaseEnv struct {
 	Report                   *Report
 	Target                   codehost.Target
 	Logger                   *logrus.Entry
+	ExecWaitGroup            *sync.WaitGroup
+	ExecMutex                *sync.Mutex
+	ExecFatalErrorOccurred   error
 }
 
 func (e *BaseEnv) GetBuiltIns() *BuiltIns {
@@ -107,6 +115,22 @@ func (e *BaseEnv) GetCodeHostClient() *codehost.CodeHostClient {
 	return e.CodeHostClient
 }
 
+func (e *BaseEnv) GetExecWaitGroup() *sync.WaitGroup {
+	return e.ExecWaitGroup
+}
+
+func (e *BaseEnv) GetExecMutex() *sync.Mutex {
+	return e.ExecMutex
+}
+
+func (e *BaseEnv) GetExecFatalErrorOccurred() error {
+	return e.ExecFatalErrorOccurred
+}
+
+func (e *BaseEnv) SetExecFatalErrorOccurred(err error) {
+	e.ExecFatalErrorOccurred = err
+}
+
 func NewTypeEnv(e Env) TypeEnv {
 	builtInsType := make(map[string]Type)
 	for builtInName, builtInFunction := range e.GetBuiltIns().Functions {
@@ -134,6 +158,9 @@ func NewEvalEnv(
 	registerMap := RegisterMap(make(map[string]Value))
 	report := &Report{Actions: make([]string, 0)}
 
+	var wg sync.WaitGroup
+	var mu sync.Mutex
+
 	input := &BaseEnv{
 		BuiltIns:                 builtIns,
 		BuiltInsReportedMessages: make(map[Severity][]string),
@@ -146,6 +173,8 @@ func NewEvalEnv(
 		Report:                   report,
 		Logger:                   logger,
 		CodeHostClient:           codeHostClient,
+		ExecWaitGroup:            &wg,
+		ExecMutex:                &mu,
 	}
 
 	switch targetEntity.Kind {

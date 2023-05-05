@@ -399,6 +399,67 @@ func TestExecProgram(t *testing.T) {
 	assert.Equal(t, wantVal, gotVal)
 }
 
+func TestExecAsyncProgram(t *testing.T) {
+	builtIns := &BuiltIns{
+		Actions: map[string]*BuiltInAction{
+			"robin": {
+				Type: BuildFunctionType([]Type{BuildStringType()}, nil),
+				Code: func(e Env, args []Value) error {
+					return fmt.Errorf("robin error")
+				},
+				SupportedKinds:    []handler.TargetEntityKind{handler.PullRequest},
+				RunAsynchronously: true,
+			},
+		},
+	}
+
+	mockedEnv := MockDefaultEnv(
+		t,
+		[]mock.MockBackendOption{
+			mock.WithRequestMatch(
+				mock.GetReposLabelsByOwnerByRepoByName,
+				&github.Label{},
+			),
+			mock.WithRequestMatch(
+				mock.PostReposIssuesLabelsByOwnerByRepoByIssueNumber,
+				[]*github.Label{
+					{Name: github.String("test")},
+				},
+			),
+			mock.WithRequestMatchHandler(mock.EndpointPattern{
+				Pattern: "/repos/foobar/default-mock-repo/statuses/",
+				Method:  "POST",
+			}, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				utils.MustWrite(w, `{}`)
+			})),
+		},
+		nil,
+		builtIns,
+		nil,
+	)
+
+	mockedInterpreter := &Interpreter{
+		Env: mockedEnv,
+	}
+
+	statCode := "$robin(\"test\")"
+
+	statement := engine.BuildStatement(statCode)
+	program := engine.BuildProgram([]*engine.Statement{statement})
+
+	exitStatus, err := mockedInterpreter.ExecProgram(program)
+
+	gotVal := mockedEnv.GetReport()
+
+	wantVal := &Report{
+		Actions: []string{statCode},
+	}
+
+	assert.EqualError(t, err, "robin error")
+	assert.Equal(t, engine.ExitStatusFailure, exitStatus)
+	assert.Equal(t, wantVal, gotVal)
+}
+
 func TestExecStatement_WhenParseFails(t *testing.T) {
 	mockedEnv := MockDefaultEnv(t, nil, nil, MockBuiltIns(), nil)
 

@@ -111,22 +111,39 @@ func (i *Interpreter) EvalExpr(kind, expr string) (bool, error) {
 func (i *Interpreter) ExecProgram(program *engine.Program) (engine.ExitStatus, error) {
 	i.Env.GetLogger().Info("executing program")
 
+	retStatus := engine.ExitStatusSuccess
+	var retErr error
+
 	for _, statement := range program.GetProgramStatements() {
 		err := i.ExecStatement(statement)
 		if err != nil {
-			return engine.ExitStatusFailure, err
+			retStatus = engine.ExitStatusFailure
+			retErr = err
+			break
 		}
 
 		hasFatalError := len(i.Env.GetBuiltInsReportedMessages()[SEVERITY_FATAL]) > 0
 		if hasFatalError {
 			i.Env.GetLogger().Info("execution stopped")
-			return engine.ExitStatusFailure, nil
+			retStatus = engine.ExitStatusFailure
+			retErr = nil
+			break
 		}
+	}
+
+	i.Env.GetExecWaitGroup().Wait()
+
+	if retStatus == engine.ExitStatusFailure {
+		return retStatus, retErr
+	}
+
+	if i.Env.GetExecFatalErrorOccurred() != nil {
+		return engine.ExitStatusFailure, i.Env.GetExecFatalErrorOccurred()
 	}
 
 	i.Env.GetLogger().Info("execution done")
 
-	return engine.ExitStatusSuccess, nil
+	return retStatus, retErr
 }
 
 func (i *Interpreter) ExecStatement(statement *engine.Statement) error {

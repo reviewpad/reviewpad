@@ -19,10 +19,11 @@ type BuiltInFunction struct {
 }
 
 type BuiltInAction struct {
-	Type           Type
-	Code           func(e Env, args []Value) error
-	Disabled       bool
-	SupportedKinds []handler.TargetEntityKind
+	Type              Type
+	Code              func(e Env, args []Value) error
+	Disabled          bool
+	SupportedKinds    []handler.TargetEntityKind
+	RunAsynchronously bool
 }
 
 func MergeAladinoBuiltIns(builtInsList ...*BuiltIns) *BuiltIns {
