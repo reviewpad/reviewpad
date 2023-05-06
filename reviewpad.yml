@@ -32,6 +32,12 @@ groups:
     spec: '["reviewpad-stage[bot]", "reviewpad[bot]"]'
 
 rules:
+  # This rule is used to block pull request from being merged.
+  # It is used on extended reviewpad common.yml configuration.
+  - name: should block pull request
+    description: The pull request should be blocked
+    spec: $isElementOf("do-not-merge", $labels()) || !$isElementOf($author(), $group("maitainers"))
+
   - name: is renovate bot
     description: Author is Renovate Bot
     spec: $author() == "renovate[bot]"
@@ -67,7 +73,6 @@ rules:
 workflows:
   # Define who needs to pay attention to the pull request
   - name: attention set
-    always-run: true
     run:
       - if: $isWaitingForReview() && !$rule("all reviews from bots")
         then: $addLabel("waiting-review")
@@ -87,14 +92,12 @@ workflows:
 
   # Bind the pull request to the github project
   - name: add to github project
-    always-run: true
     run:
       - if: '!$hasLinkedIssues() && !$isLinkedToProject("Reviewpad")'
         then: $addToProject("Reviewpad", "In Review")
 
   # When changing critical code, we need to make sure that the reviewer is aware of it.
   - name: changes to critical code
-    always-run: true
     run:
         # Having assignees means that the pull request is already being assigned to someone.
         # Therefore, we are ready to verify if the code is critical or not.
@@ -103,7 +106,6 @@ workflows:
 
   # Create awareness when some parts of the code are being modified.
   - name: awareness
-    always-run: true
     run:
       - if: $rule("touches plugin functions") || $rule("touches plugin actions")
         then:
@@ -119,7 +121,6 @@ workflows:
   # The review strategy can be "ship", "show" or "ask".
   - name: assign reviewer based on review strategy
     description: Assign a reviewer to a pull request depending on the review strategy.
-    always-run: true
     run:
       # When review strategy is "ask", assign a reviewer to the pull request.
       - if: $assignees() == [] && $author() != "renovate[bot]" && !$rule("has reviewers") && ($rule("review-strategy:ask") || $rule("is external contribution"))
