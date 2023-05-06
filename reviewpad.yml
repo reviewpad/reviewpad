@@ -83,7 +83,6 @@ workflows:
 
   # Welcome external contributors
   - name: external contribution
-    always-run: true
     run:
       - if: $rule("is external contribution")
         then: $addLabel("external-contribution")
