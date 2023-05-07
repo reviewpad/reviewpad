@@ -176,6 +176,7 @@ func TestProcessEvent(t *testing.T) {
 						},
 					},
 					Head: &github.PullRequestBranch{
+						Ref: github.String("refs/heads/feat"),
 						SHA: github.String("4bf24cc72f3a62423927a0ac8d70febad7c78e0g"),
 					},
 				},
@@ -193,6 +194,7 @@ func TestProcessEvent(t *testing.T) {
 						},
 					},
 					Head: &github.PullRequestBranch{
+						Ref: github.String("refs/heads/bug"),
 						SHA: github.String("4bf24cc72f3a62423927a0ac8d70febad7c78e0k"),
 					},
 				},
@@ -759,7 +761,7 @@ func TestProcessEvent(t *testing.T) {
 						},
 						"name": "reviewpad"
 					},
-					"ref": "refs/heads/main"
+					"ref": "refs/heads/feat"
 				}`)),
 			},
 			wantTargets: []*handler.TargetEntity{
@@ -790,7 +792,7 @@ func TestProcessEvent(t *testing.T) {
 							Type:  github.String("Organization"),
 						},
 					},
-					Ref: github.String("refs/heads/main"),
+					Ref: github.String("refs/heads/feat"),
 				},
 			},
 		},
@@ -808,7 +810,7 @@ func TestProcessEvent(t *testing.T) {
 						},
 						"name": "reviewpad"
 					},
-					"ref": "refs/heads/master"
+					"ref": "refs/heads/docs"
 				}`)),
 			},
 			wantTargets: []*handler.TargetEntity{
@@ -832,7 +834,7 @@ func TestProcessEvent(t *testing.T) {
 							Type:  github.String("Organization"),
 						},
 					},
-					Ref: github.String("refs/heads/master"),
+					Ref: github.String("refs/heads/docs"),
 				},
 			},
 		},

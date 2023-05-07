@@ -343,7 +343,7 @@ func processPushEvent(log *logrus.Entry, token string, e *github.PushEvent) ([]*
 
 	targets := make([]*TargetEntity, 0)
 	for _, pr := range prs {
-		if pr.Base.GetRef() == e.GetRef() {
+		if pr.GetHead().GetRef() == e.GetRef() {
 			targets = append(targets, &TargetEntity{
 				Kind:        PullRequest,
 				Number:      *pr.Number,
