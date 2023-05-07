@@ -176,7 +176,7 @@ func TestProcessEvent(t *testing.T) {
 						},
 					},
 					Head: &github.PullRequestBranch{
-						Ref: github.String("refs/heads/feat"),
+						Ref: github.String("feat"),
 						SHA: github.String("4bf24cc72f3a62423927a0ac8d70febad7c78e0g"),
 					},
 				},
@@ -194,7 +194,7 @@ func TestProcessEvent(t *testing.T) {
 						},
 					},
 					Head: &github.PullRequestBranch{
-						Ref: github.String("refs/heads/bug"),
+						Ref: github.String("bug"),
 						SHA: github.String("4bf24cc72f3a62423927a0ac8d70febad7c78e0k"),
 					},
 				},
