@@ -36,7 +36,7 @@ rules:
   # It is used on extended reviewpad common.yml configuration.
   - name: should block pull request
     description: The pull request should be blocked
-    spec: $isElementOf("do-not-merge", $labels()) || !$isElementOf($author(), $group("maitainers"))
+    spec: $isElementOf("do-not-merge", $labels()) || !$isElementOf($author(), $group("maintainers"))
 
   - name: is renovate bot
     description: Author is Renovate Bot
