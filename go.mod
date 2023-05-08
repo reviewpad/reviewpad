@@ -19,7 +19,7 @@ require (
 	github.com/migueleliasweb/go-github-mock v0.0.16
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/ohler55/ojg v1.18.4
-	github.com/reviewpad/api/go v0.0.0-20230405092855-fe855effe314
+	github.com/reviewpad/api/go afa8ae763c20
 	github.com/reviewpad/go-conventionalcommits v0.10.0
 	github.com/reviewpad/go-lib v0.0.0-20230403181754-44291294617f
 	github.com/shurcooL/githubv4 v0.0.0-20230305132112-efb623903184
