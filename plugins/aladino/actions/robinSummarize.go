@@ -17,9 +17,10 @@ import (
 
 func RobinSummarize() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType(), aladino.BuildStringType()}, nil),
-		Code:           robinSummarizeCode,
-		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest, handler.Issue},
+		Type:              aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType(), aladino.BuildStringType()}, nil),
+		Code:              robinSummarizeCode,
+		SupportedKinds:    []handler.TargetEntityKind{handler.PullRequest, handler.Issue},
+		RunAsynchronously: true,
 	}
 }
 

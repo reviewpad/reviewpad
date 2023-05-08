@@ -60,6 +60,18 @@ func (fc *FunctionCall) exec(env Env) error {
 
 	for _, supportedKind := range action.SupportedKinds {
 		if entityKind == supportedKind {
+			if action.RunAsynchronously {
+				env.GetExecWaitGroup().Add(1)
+				go func() {
+					defer env.GetExecWaitGroup().Done()
+
+					err := action.Code(env, args)
+					if err != nil {
+						env.SetExecFatalErrorOccurred(err)
+					}
+				}()
+				return nil
+			}
 			return action.Code(env, args)
 		}
 	}
