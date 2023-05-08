@@ -44,7 +44,6 @@ type Env interface {
 	GetTarget() codehost.Target
 	GetLogger() *logrus.Entry
 	GetExecWaitGroup() *sync.WaitGroup
-	GetExecMutex() *sync.Mutex
 	GetExecFatalErrorOccurred() error
 	SetExecFatalErrorOccurred(error)
 }
@@ -119,15 +118,15 @@ func (e *BaseEnv) GetExecWaitGroup() *sync.WaitGroup {
 	return e.ExecWaitGroup
 }
 
-func (e *BaseEnv) GetExecMutex() *sync.Mutex {
-	return e.ExecMutex
-}
-
 func (e *BaseEnv) GetExecFatalErrorOccurred() error {
+	e.ExecMutex.Lock()
+	defer e.ExecMutex.Unlock()
 	return e.ExecFatalErrorOccurred
 }
 
 func (e *BaseEnv) SetExecFatalErrorOccurred(err error) {
+	e.ExecMutex.Lock()
+	defer e.ExecMutex.Unlock()
 	e.ExecFatalErrorOccurred = err
 }
 

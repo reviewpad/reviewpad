@@ -67,9 +67,7 @@ func (fc *FunctionCall) exec(env Env) error {
 
 					err := action.Code(env, args)
 					if err != nil {
-						env.GetExecMutex().Lock()
 						env.SetExecFatalErrorOccurred(err)
-						env.GetExecMutex().Unlock()
 					}
 				}()
 				return nil
