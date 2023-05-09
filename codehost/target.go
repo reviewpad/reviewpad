@@ -9,8 +9,8 @@ import (
 	"time"
 
 	pbc "github.com/reviewpad/api/go/codehost"
+	"github.com/reviewpad/go-lib/entities"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
-	"github.com/reviewpad/reviewpad/v4/handler"
 )
 
 var (
@@ -36,7 +36,7 @@ type Target interface {
 	GetProjectByName(name string) (*Project, error)
 	GetProjectFieldsByProjectNumber(projectNumber uint64) ([]*ProjectField, error)
 	GetState() pbc.PullRequestStatus
-	GetTargetEntity() *handler.TargetEntity
+	GetTargetEntity() *entities.TargetEntity
 	GetTitle() string
 	IsLinkedToProject(title string) (bool, error)
 	RemoveLabel(labelName string) error

@@ -7,9 +7,9 @@ package recipes
 import (
 	"context"
 
-	"github.com/reviewpad/reviewpad/v4/handler"
+	"github.com/reviewpad/go-lib/entities"
 )
 
 type Recipe interface {
-	Run(context context.Context, targetEntity handler.TargetEntity) error
+	Run(context context.Context, targetEntity entities.TargetEntity) error
 }

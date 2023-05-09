@@ -11,10 +11,10 @@ import (
 	"strings"
 
 	pbc "github.com/reviewpad/api/go/codehost"
+	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/codehost"
 	"github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
-	"github.com/reviewpad/reviewpad/v4/handler"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	"golang.org/x/exp/slices"
 )
@@ -27,7 +27,7 @@ func AssignCodeAuthorReviewers() *aladino.BuiltInAction {
 			aladino.BuildIntType(),
 		}, nil),
 		Code:           assignCodeAuthorReviewersCode,
-		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest},
+		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 	}
 }
 

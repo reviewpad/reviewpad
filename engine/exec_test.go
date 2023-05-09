@@ -12,10 +12,10 @@ import (
 
 	"github.com/google/go-github/v52/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
+	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/codehost"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/reviewpad/reviewpad/v4/engine"
-	"github.com/reviewpad/reviewpad/v4/handler"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	"github.com/reviewpad/reviewpad/v4/utils"
 	"github.com/sirupsen/logrus"
@@ -120,19 +120,19 @@ func TestEvalCommand(t *testing.T) {
 		inputContext      context.Context
 		inputGitHubClient *gh.GithubClient
 		clientOptions     []mock.MockBackendOption
-		targetEntity      *handler.TargetEntity
-		eventDetails      *handler.EventDetails
+		targetEntity      *entities.TargetEntity
+		eventDetails      *entities.EventDetails
 		wantProgram       *engine.Program
 		wantErr           string
 	}{
 		"when invalid assign reviewer command": {
-			targetEntity: &handler.TargetEntity{
+			targetEntity: &entities.TargetEntity{
 				Kind:   engine.DefaultMockTargetEntity.Kind,
 				Number: engine.DefaultMockTargetEntity.Number,
 				Owner:  engine.DefaultMockTargetEntity.Owner,
 				Repo:   engine.DefaultMockTargetEntity.Repo,
 			},
-			eventDetails: &handler.EventDetails{
+			eventDetails: &entities.EventDetails{
 				EventName:   "issue_comment",
 				EventAction: "created",
 				Payload: &github.IssueCommentEvent{
@@ -151,13 +151,13 @@ func TestEvalCommand(t *testing.T) {
 			wantErr: "accepts 1 arg, received 4",
 		},
 		"when invalid total required reviewers arg": {
-			targetEntity: &handler.TargetEntity{
+			targetEntity: &entities.TargetEntity{
 				Kind:   engine.DefaultMockTargetEntity.Kind,
 				Number: engine.DefaultMockTargetEntity.Number,
 				Owner:  engine.DefaultMockTargetEntity.Owner,
 				Repo:   engine.DefaultMockTargetEntity.Repo,
 			},
-			eventDetails: &handler.EventDetails{
+			eventDetails: &entities.EventDetails{
 				EventName:   "issue_comment",
 				EventAction: "created",
 				Payload: &github.IssueCommentEvent{
@@ -176,13 +176,13 @@ func TestEvalCommand(t *testing.T) {
 			wantErr: "invalid argument: reviewpad, number of reviewers must be a number",
 		},
 		"when total required reviewers arg is 0": {
-			targetEntity: &handler.TargetEntity{
+			targetEntity: &entities.TargetEntity{
 				Kind:   engine.DefaultMockTargetEntity.Kind,
 				Number: engine.DefaultMockTargetEntity.Number,
 				Owner:  engine.DefaultMockTargetEntity.Owner,
 				Repo:   engine.DefaultMockTargetEntity.Repo,
 			},
-			eventDetails: &handler.EventDetails{
+			eventDetails: &entities.EventDetails{
 				EventName:   "issue_comment",
 				EventAction: "created",
 				Payload: &github.IssueCommentEvent{
@@ -206,13 +206,13 @@ func TestEvalCommand(t *testing.T) {
 					engine.BuildStatement(`$assignCodeAuthorReviewers(1, [], 0)`),
 				},
 			),
-			targetEntity: &handler.TargetEntity{
+			targetEntity: &entities.TargetEntity{
 				Kind:   engine.DefaultMockTargetEntity.Kind,
 				Number: engine.DefaultMockTargetEntity.Number,
 				Owner:  engine.DefaultMockTargetEntity.Owner,
 				Repo:   engine.DefaultMockTargetEntity.Repo,
 			},
-			eventDetails: &handler.EventDetails{
+			eventDetails: &entities.EventDetails{
 				EventName:   "issue_comment",
 				EventAction: "created",
 				Payload: &github.IssueCommentEvent{
@@ -229,13 +229,13 @@ func TestEvalCommand(t *testing.T) {
 					engine.BuildStatement(`$assignCodeAuthorReviewers(1, [], 0)`),
 				},
 			),
-			targetEntity: &handler.TargetEntity{
+			targetEntity: &entities.TargetEntity{
 				Kind:   engine.DefaultMockTargetEntity.Kind,
 				Number: engine.DefaultMockTargetEntity.Number,
 				Owner:  engine.DefaultMockTargetEntity.Owner,
 				Repo:   engine.DefaultMockTargetEntity.Repo,
 			},
-			eventDetails: &handler.EventDetails{
+			eventDetails: &entities.EventDetails{
 				EventName:   "issue_comment",
 				EventAction: "created",
 				Payload: &github.IssueCommentEvent{
@@ -281,8 +281,8 @@ func TestEvalConfigurationFile(t *testing.T) {
 		inputContext           context.Context
 		inputGitHubClient      *gh.GithubClient
 		clientOptions          []mock.MockBackendOption
-		targetEntity           *handler.TargetEntity
-		eventDetails           *handler.EventDetails
+		targetEntity           *entities.TargetEntity
+		eventDetails           *entities.EventDetails
 		wantProgram            *engine.Program
 		wantErr                string
 	}{

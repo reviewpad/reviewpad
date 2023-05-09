@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/ohler55/ojg"
-	"github.com/reviewpad/reviewpad/v4/handler"
+	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -18,14 +18,14 @@ import (
 var selectFromContext = plugins_aladino.PluginBuiltIns().Functions["selectFromContext"].Code
 
 func TestSelectFromContext(t *testing.T) {
-	mockIssueTargetEntity := &handler.TargetEntity{
-		Kind:   handler.Issue,
+	mockIssueTargetEntity := &entities.TargetEntity{
+		Kind:   entities.Issue,
 		Owner:  "test",
 		Repo:   "test",
 		Number: 1,
 	}
 	tests := map[string]struct {
-		targetEntity *handler.TargetEntity
+		targetEntity *entities.TargetEntity
 		path         string
 		wantErr      error
 		wantRes      aladino.Value

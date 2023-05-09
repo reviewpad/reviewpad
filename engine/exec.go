@@ -10,8 +10,8 @@ import (
 	"strings"
 
 	"github.com/mattn/go-shellwords"
+	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/engine/commands"
-	"github.com/reviewpad/reviewpad/v4/handler"
 	"github.com/sirupsen/logrus"
 )
 
@@ -177,7 +177,7 @@ func EvalConfigurationFile(file *ReviewpadFile, env *Env) (*Program, error) {
 	}
 
 	// pipelines should only run on pull requests
-	if env.TargetEntity.Kind == handler.PullRequest {
+	if env.TargetEntity.Kind == entities.PullRequest {
 		// process pipelines
 		for _, pipeline := range file.Pipelines {
 			log.Infof("evaluating pipeline '%v':", pipeline.Name)

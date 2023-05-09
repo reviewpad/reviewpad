@@ -7,7 +7,7 @@ package engine
 import (
 	"reflect"
 
-	"github.com/reviewpad/reviewpad/v4/handler"
+	"github.com/reviewpad/go-lib/entities"
 )
 
 const (
@@ -100,17 +100,17 @@ func (p PadLabel) equals(o PadLabel) bool {
 }
 
 type PadWorkflow struct {
-	Name                 string                     `yaml:"name"`
-	On                   []handler.TargetEntityKind `yaml:"on"`
-	Description          string                     `yaml:"description"`
-	AlwaysRun            bool                       `yaml:"always-run"`
-	Rules                []PadWorkflowRule          `yaml:"-"`
-	Actions              []string                   `yaml:"-"`
-	Runs                 []PadWorkflowRunBlock      `yaml:"-"`
-	NonNormalizedRules   any                        `yaml:"if"`
-	NonNormalizedActions any                        `yaml:"then"`
-	NonNormalizedElse    any                        `yaml:"else"`
-	NonNormalizedRun     any                        `yaml:"run"`
+	Name                 string                      `yaml:"name"`
+	On                   []entities.TargetEntityKind `yaml:"on"`
+	Description          string                      `yaml:"description"`
+	AlwaysRun            bool                        `yaml:"always-run"`
+	Rules                []PadWorkflowRule           `yaml:"-"`
+	Actions              []string                    `yaml:"-"`
+	Runs                 []PadWorkflowRunBlock       `yaml:"-"`
+	NonNormalizedRules   any                         `yaml:"if"`
+	NonNormalizedActions any                         `yaml:"then"`
+	NonNormalizedElse    any                         `yaml:"else"`
+	NonNormalizedRun     any                         `yaml:"run"`
 }
 
 type PadWorkflowRunBlock struct {

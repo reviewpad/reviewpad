@@ -11,9 +11,9 @@ import (
 
 	"github.com/google/go-github/v52/github"
 	pbc "github.com/reviewpad/api/go/codehost"
+	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/codehost"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
-	"github.com/reviewpad/reviewpad/v4/handler"
 	"github.com/shurcooL/githubv4"
 )
 
@@ -21,7 +21,7 @@ type IssueTarget struct {
 	*CommonTarget
 
 	ctx          context.Context
-	targetEntity *handler.TargetEntity
+	targetEntity *entities.TargetEntity
 	githubClient *gh.GithubClient
 	issue        *github.Issue
 }
@@ -29,7 +29,7 @@ type IssueTarget struct {
 // ensure IssueTarget conforms to Target interface
 var _ codehost.Target = (*IssueTarget)(nil)
 
-func NewIssueTarget(ctx context.Context, targetEntity *handler.TargetEntity, githubClient *gh.GithubClient, issue *github.Issue) *IssueTarget {
+func NewIssueTarget(ctx context.Context, targetEntity *entities.TargetEntity, githubClient *gh.GithubClient, issue *github.Issue) *IssueTarget {
 	return &IssueTarget{
 		NewCommonTarget(ctx, targetEntity, githubClient),
 		ctx,

@@ -8,8 +8,8 @@ import (
 	"fmt"
 
 	"github.com/google/go-github/v52/github"
+	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
-	"github.com/reviewpad/reviewpad/v4/handler"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
@@ -20,7 +20,7 @@ func HasAnyCheckRunCompleted() *aladino.BuiltInFunction {
 			aladino.BuildArrayOfType(aladino.BuildStringType()),
 		}, aladino.BuildBoolType()),
 		Code:           hasAnyCheckRunCompleted,
-		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest},
+		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 	}
 }
 

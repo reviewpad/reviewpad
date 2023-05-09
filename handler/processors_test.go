@@ -13,6 +13,7 @@ import (
 
 	"github.com/google/go-github/v52/github"
 	"github.com/jarcoal/httpmock"
+	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/handler"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	"github.com/reviewpad/reviewpad/v4/utils"
@@ -267,8 +268,8 @@ func TestProcessEvent(t *testing.T) {
 
 	tests := map[string]struct {
 		event            *handler.ActionEvent
-		wantTargets      []*handler.TargetEntity
-		wantEventDetails *handler.EventDetails
+		wantTargets      []*entities.TargetEntity
+		wantEventDetails *entities.EventDetails
 		wantPayload      interface{}
 		wantErr          error
 	}{
@@ -293,9 +294,9 @@ func TestProcessEvent(t *testing.T) {
 					}
 				}`)),
 			},
-			wantTargets: []*handler.TargetEntity{
+			wantTargets: []*entities.TargetEntity{
 				{
-					Kind:        handler.PullRequest,
+					Kind:        entities.PullRequest,
 					Number:      130,
 					Owner:       owner,
 					Repo:        repo,
@@ -303,7 +304,7 @@ func TestProcessEvent(t *testing.T) {
 					Visibility:  "public",
 				},
 			},
-			wantEventDetails: &handler.EventDetails{
+			wantEventDetails: &entities.EventDetails{
 				EventName:   "pull_request",
 				EventAction: "opened",
 				Payload: &github.PullRequestEvent{
@@ -345,9 +346,9 @@ func TestProcessEvent(t *testing.T) {
 					}
 				}`)),
 			},
-			wantTargets: []*handler.TargetEntity{
+			wantTargets: []*entities.TargetEntity{
 				{
-					Kind:        handler.PullRequest,
+					Kind:        entities.PullRequest,
 					Number:      130,
 					Owner:       owner,
 					Repo:        repo,
@@ -355,7 +356,7 @@ func TestProcessEvent(t *testing.T) {
 					Visibility:  "public",
 				},
 			},
-			wantEventDetails: &handler.EventDetails{
+			wantEventDetails: &entities.EventDetails{
 				EventName:   "pull_request_target",
 				EventAction: "opened",
 				Payload: &github.PullRequestTargetEvent{
@@ -397,9 +398,9 @@ func TestProcessEvent(t *testing.T) {
 					}
 				}`)),
 			},
-			wantTargets: []*handler.TargetEntity{
+			wantTargets: []*entities.TargetEntity{
 				{
-					Kind:        handler.PullRequest,
+					Kind:        entities.PullRequest,
 					Number:      130,
 					Owner:       owner,
 					Repo:        repo,
@@ -407,7 +408,7 @@ func TestProcessEvent(t *testing.T) {
 					Visibility:  "public",
 				},
 			},
-			wantEventDetails: &handler.EventDetails{
+			wantEventDetails: &entities.EventDetails{
 				EventName:   "pull_request_review",
 				EventAction: "opened",
 				Payload: &github.PullRequestReviewEvent{
@@ -447,9 +448,9 @@ func TestProcessEvent(t *testing.T) {
 					}
 				}`)),
 			},
-			wantTargets: []*handler.TargetEntity{
+			wantTargets: []*entities.TargetEntity{
 				{
-					Kind:        handler.PullRequest,
+					Kind:        entities.PullRequest,
 					Number:      130,
 					Owner:       owner,
 					Repo:        repo,
@@ -457,7 +458,7 @@ func TestProcessEvent(t *testing.T) {
 					Visibility:  "public",
 				},
 			},
-			wantEventDetails: &handler.EventDetails{
+			wantEventDetails: &entities.EventDetails{
 				EventName:   "pull_request_review_comment",
 				EventAction: "created",
 				Payload: &github.PullRequestReviewCommentEvent{
@@ -483,9 +484,9 @@ func TestProcessEvent(t *testing.T) {
 				Token:      github.String("test-token"),
 				Repository: github.String("reviewpad/reviewpad"),
 			},
-			wantTargets: []*handler.TargetEntity{
+			wantTargets: []*entities.TargetEntity{
 				{
-					Kind:        handler.PullRequest,
+					Kind:        entities.PullRequest,
 					Number:      130,
 					Owner:       owner,
 					Repo:        repo,
@@ -493,7 +494,7 @@ func TestProcessEvent(t *testing.T) {
 					Visibility:  "public",
 				},
 				{
-					Kind:        handler.PullRequest,
+					Kind:        entities.PullRequest,
 					Number:      aladino.DefaultMockPrNum,
 					Owner:       owner,
 					Repo:        repo,
@@ -501,7 +502,7 @@ func TestProcessEvent(t *testing.T) {
 					Visibility:  "public",
 				},
 			},
-			wantEventDetails: &handler.EventDetails{
+			wantEventDetails: &entities.EventDetails{
 				EventName: "schedule",
 			},
 		},
@@ -522,9 +523,9 @@ func TestProcessEvent(t *testing.T) {
 					}
 				}`)),
 			},
-			wantTargets: []*handler.TargetEntity{
+			wantTargets: []*entities.TargetEntity{
 				{
-					Kind:        handler.PullRequest,
+					Kind:        entities.PullRequest,
 					Number:      aladino.DefaultMockPrNum,
 					Owner:       owner,
 					Repo:        repo,
@@ -532,7 +533,7 @@ func TestProcessEvent(t *testing.T) {
 					Visibility:  "public",
 				},
 			},
-			wantEventDetails: &handler.EventDetails{
+			wantEventDetails: &entities.EventDetails{
 				EventName:   "workflow_run",
 				EventAction: "completed",
 				Payload: &github.WorkflowRunEvent{
@@ -566,8 +567,8 @@ func TestProcessEvent(t *testing.T) {
 					}
 				}`)),
 			},
-			wantTargets: []*handler.TargetEntity{},
-			wantEventDetails: &handler.EventDetails{
+			wantTargets: []*entities.TargetEntity{},
+			wantEventDetails: &entities.EventDetails{
 				EventName:   "workflow_run",
 				EventAction: "completed",
 				Payload: &github.WorkflowRunEvent{
@@ -603,15 +604,15 @@ func TestProcessEvent(t *testing.T) {
 					}
 				}`)),
 			},
-			wantTargets: []*handler.TargetEntity{
+			wantTargets: []*entities.TargetEntity{
 				{
-					Kind:   handler.Issue,
+					Kind:   entities.Issue,
 					Number: 130,
 					Owner:  owner,
 					Repo:   owner,
 				},
 			},
-			wantEventDetails: &handler.EventDetails{
+			wantEventDetails: &entities.EventDetails{
 				EventName:   "issues",
 				EventAction: "opened",
 				Payload: &github.IssuesEvent{
@@ -651,15 +652,15 @@ func TestProcessEvent(t *testing.T) {
 					}
 				}`)),
 			},
-			wantTargets: []*handler.TargetEntity{
+			wantTargets: []*entities.TargetEntity{
 				{
-					Kind:   handler.Issue,
+					Kind:   entities.Issue,
 					Number: 130,
 					Owner:  owner,
 					Repo:   repo,
 				},
 			},
-			wantEventDetails: &handler.EventDetails{
+			wantEventDetails: &entities.EventDetails{
 				EventName:   "issue_comment",
 				EventAction: "opened",
 				Payload: &github.IssueCommentEvent{
@@ -697,9 +698,9 @@ func TestProcessEvent(t *testing.T) {
 					"sha": "4bf24cc72f3a62423927a0ac8d70febad7c78e0g"
 				}`)),
 			},
-			wantTargets: []*handler.TargetEntity{
+			wantTargets: []*entities.TargetEntity{
 				{
-					Kind:        handler.PullRequest,
+					Kind:        entities.PullRequest,
 					Number:      aladino.DefaultMockPrNum,
 					Owner:       owner,
 					Repo:        repo,
@@ -707,7 +708,7 @@ func TestProcessEvent(t *testing.T) {
 					Visibility:  "public",
 				},
 			},
-			wantEventDetails: &handler.EventDetails{
+			wantEventDetails: &entities.EventDetails{
 				EventName: "status",
 				Payload: &github.StatusEvent{
 					Repo: &github.Repository{
@@ -734,8 +735,8 @@ func TestProcessEvent(t *testing.T) {
 					"sha": "4bf24cc72f3a62423927a0ac8d70febad7c78e0a"
 				}`)),
 			},
-			wantTargets: []*handler.TargetEntity{},
-			wantEventDetails: &handler.EventDetails{
+			wantTargets: []*entities.TargetEntity{},
+			wantEventDetails: &entities.EventDetails{
 				EventName: "status",
 				Payload: &github.StatusEvent{
 					Repo: &github.Repository{
@@ -764,9 +765,9 @@ func TestProcessEvent(t *testing.T) {
 					"ref": "refs/heads/feat"
 				}`)),
 			},
-			wantTargets: []*handler.TargetEntity{
+			wantTargets: []*entities.TargetEntity{
 				{
-					Kind:        handler.PullRequest,
+					Kind:        entities.PullRequest,
 					Number:      aladino.DefaultMockPrNum,
 					Owner:       owner,
 					Repo:        repo,
@@ -774,14 +775,14 @@ func TestProcessEvent(t *testing.T) {
 					Visibility:  "public",
 				},
 				{
-					Kind:        handler.Repository,
+					Kind:        entities.Repository,
 					Owner:       owner,
 					Repo:        repo,
 					AccountType: "Organization",
 					Visibility:  "public",
 				},
 			},
-			wantEventDetails: &handler.EventDetails{
+			wantEventDetails: &entities.EventDetails{
 				EventName: "push",
 				Payload: &github.PushEvent{
 					Repo: &github.PushEventRepository{
@@ -813,16 +814,16 @@ func TestProcessEvent(t *testing.T) {
 					"ref": "refs/heads/docs"
 				}`)),
 			},
-			wantTargets: []*handler.TargetEntity{
+			wantTargets: []*entities.TargetEntity{
 				{
-					Kind:        handler.Repository,
+					Kind:        entities.Repository,
 					Owner:       owner,
 					Repo:        repo,
 					AccountType: "Organization",
 					Visibility:  "private",
 				},
 			},
-			wantEventDetails: &handler.EventDetails{
+			wantEventDetails: &entities.EventDetails{
 				EventName: "push",
 				Payload: &github.PushEvent{
 					Repo: &github.PushEventRepository{
@@ -860,7 +861,7 @@ func TestProcessEvent(t *testing.T) {
 					]
 				}`)),
 			},
-			wantTargets: []*handler.TargetEntity{
+			wantTargets: []*entities.TargetEntity{
 				{
 					Repo:        "testrepo",
 					Owner:       "testowner",
@@ -874,7 +875,7 @@ func TestProcessEvent(t *testing.T) {
 					Visibility:  "public",
 				},
 			},
-			wantEventDetails: &handler.EventDetails{
+			wantEventDetails: &entities.EventDetails{
 				EventName:   "installation",
 				EventAction: "created",
 				Payload: &github.InstallationEvent{
@@ -938,7 +939,7 @@ func TestProcessEvent(t *testing.T) {
 					]
 				}`)),
 			},
-			wantTargets: []*handler.TargetEntity{
+			wantTargets: []*entities.TargetEntity{
 				{
 					Repo:        "testrepo",
 					Owner:       "testowner",
@@ -952,7 +953,7 @@ func TestProcessEvent(t *testing.T) {
 					Visibility:  "public",
 				},
 			},
-			wantEventDetails: &handler.EventDetails{
+			wantEventDetails: &entities.EventDetails{
 				EventName:   "installation_repositories",
 				EventAction: "added",
 				Payload: &github.InstallationRepositoriesEvent{
@@ -997,7 +998,7 @@ func TestProcessEvent(t *testing.T) {
 					]
 				}`)),
 			},
-			wantTargets: []*handler.TargetEntity{
+			wantTargets: []*entities.TargetEntity{
 				{
 					Repo:        "testrepo",
 					Owner:       "testowner",
@@ -1011,7 +1012,7 @@ func TestProcessEvent(t *testing.T) {
 					Visibility:  "private",
 				},
 			},
-			wantEventDetails: &handler.EventDetails{
+			wantEventDetails: &entities.EventDetails{
 				EventName:   "installation_repositories",
 				EventAction: "removed",
 				Payload: &github.InstallationRepositoriesEvent{
@@ -1059,9 +1060,9 @@ func TestProcessEvent(t *testing.T) {
 					}
 				}`)),
 			},
-			wantTargets: []*handler.TargetEntity{
+			wantTargets: []*entities.TargetEntity{
 				{
-					Kind:        handler.PullRequest,
+					Kind:        entities.PullRequest,
 					Owner:       "reviewpad",
 					Repo:        "reviewpad",
 					Number:      1,
@@ -1069,7 +1070,7 @@ func TestProcessEvent(t *testing.T) {
 					Visibility:  "public",
 				},
 			},
-			wantEventDetails: &handler.EventDetails{
+			wantEventDetails: &entities.EventDetails{
 				EventName:   "check_run",
 				EventAction: "rerequested",
 				Payload: &github.CheckRunEvent{
@@ -1114,9 +1115,9 @@ func TestProcessEvent(t *testing.T) {
 					}
 				}`)),
 			},
-			wantTargets: []*handler.TargetEntity{
+			wantTargets: []*entities.TargetEntity{
 				{
-					Kind:        handler.PullRequest,
+					Kind:        entities.PullRequest,
 					Owner:       "reviewpad",
 					Repo:        "reviewpad",
 					Number:      6,
@@ -1124,7 +1125,7 @@ func TestProcessEvent(t *testing.T) {
 					Visibility:  "public",
 				},
 			},
-			wantEventDetails: &handler.EventDetails{
+			wantEventDetails: &entities.EventDetails{
 				EventName:   "check_run",
 				EventAction: "created",
 				Payload: &github.CheckRunEvent{
@@ -1167,15 +1168,15 @@ func TestProcessEvent(t *testing.T) {
 					}
 				}`)),
 			},
-			wantTargets: []*handler.TargetEntity{
+			wantTargets: []*entities.TargetEntity{
 				{
-					Kind:   handler.PullRequest,
+					Kind:   entities.PullRequest,
 					Owner:  "reviewpad",
 					Repo:   "reviewpad",
 					Number: 1,
 				},
 			},
-			wantEventDetails: &handler.EventDetails{
+			wantEventDetails: &entities.EventDetails{
 				EventName:   "check_suite",
 				EventAction: "rerequested",
 				Payload: &github.CheckSuiteEvent{
@@ -1218,9 +1219,9 @@ func TestProcessEvent(t *testing.T) {
 					}
 				}`)),
 			},
-			wantTargets: []*handler.TargetEntity{
+			wantTargets: []*entities.TargetEntity{
 				{
-					Kind:        handler.PullRequest,
+					Kind:        entities.PullRequest,
 					Owner:       "reviewpad",
 					Repo:        "reviewpad",
 					Number:      6,
@@ -1228,7 +1229,7 @@ func TestProcessEvent(t *testing.T) {
 					Visibility:  "public",
 				},
 			},
-			wantEventDetails: &handler.EventDetails{
+			wantEventDetails: &entities.EventDetails{
 				EventName:   "check_suite",
 				EventAction: "created",
 				Payload: &github.CheckSuiteEvent{

@@ -17,11 +17,11 @@ import (
 	"github.com/google/uuid"
 	pbe "github.com/reviewpad/api/go/entities"
 	"github.com/reviewpad/api/go/services"
+	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4"
 	"github.com/reviewpad/reviewpad/v4/codehost"
 	"github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/reviewpad/reviewpad/v4/engine"
-	"github.com/reviewpad/reviewpad/v4/handler"
 	"github.com/reviewpad/reviewpad/v4/utils"
 	"github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
@@ -293,14 +293,14 @@ func TestIntegration(t *testing.T) {
 				require.Nil(err)
 			}
 
-			targetEntity := &handler.TargetEntity{
-				Kind:   handler.PullRequest,
+			targetEntity := &entities.TargetEntity{
+				Kind:   entities.PullRequest,
 				Owner:  repoOwner,
 				Repo:   repoName,
 				Number: integrationTestMutation.CreatePullRequest.PullRequest.Number,
 			}
 
-			eventDetails := &handler.EventDetails{
+			eventDetails := &entities.EventDetails{
 				EventName:   "pull_request",
 				EventAction: "opened",
 			}

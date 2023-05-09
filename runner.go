@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/google/go-github/v52/github"
+	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/codehost"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/reviewpad/reviewpad/v4/collector"
@@ -114,7 +115,7 @@ func runReviewpadCommandDryRun(
 	logger *logrus.Entry,
 	collector collector.Collector,
 	gitHubClient *gh.GithubClient,
-	targetEntity *handler.TargetEntity,
+	targetEntity *entities.TargetEntity,
 	reviewpadFile *engine.ReviewpadFile,
 	env *engine.Env,
 ) (engine.ExitStatus, *engine.Program, error) {
@@ -159,7 +160,7 @@ func runReviewpadCommand(
 	logger *logrus.Entry,
 	collector collector.Collector,
 	gitHubClient *gh.GithubClient,
-	targetEntity *handler.TargetEntity,
+	targetEntity *entities.TargetEntity,
 	env *engine.Env,
 	aladinoInterpreter engine.Interpreter,
 	command string,
@@ -209,8 +210,8 @@ func runReviewpadFile(
 	logger *logrus.Entry,
 	collector collector.Collector,
 	gitHubClient *gh.GithubClient,
-	targetEntity *handler.TargetEntity,
-	eventDetails *handler.EventDetails,
+	targetEntity *entities.TargetEntity,
+	eventDetails *entities.EventDetails,
 	reviewpadFile *engine.ReviewpadFile,
 	dryRun bool,
 	safeMode bool,
@@ -309,8 +310,8 @@ func Run(
 	gitHubClient *gh.GithubClient,
 	codeHostClient *codehost.CodeHostClient,
 	collector collector.Collector,
-	targetEntity *handler.TargetEntity,
-	eventDetails *handler.EventDetails,
+	targetEntity *entities.TargetEntity,
+	eventDetails *entities.EventDetails,
 	reviewpadFile *engine.ReviewpadFile,
 	dryRun bool,
 	safeMode bool,
