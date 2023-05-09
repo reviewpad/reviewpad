@@ -50,6 +50,18 @@ func assignCodeAuthorReviewersCode(env aladino.Env, args []aladino.Value) error 
 		return nil
 	}
 
+	// since github removes users from the requested reviewers list
+	// after they've submitted a review, we need to check here that
+	// there are no there are no reviews submitted as well
+	reviews, err := pr.GetReviews()
+	if err != nil {
+		return fmt.Errorf("error getting reviews: %s", err)
+	}
+
+	if len(reviews) > 0 {
+		return nil
+	}
+
 	// Fetch all available assignees to which the pull request may be assigned to
 	// in order to avoid assigning a reviewer that is not available.
 	availableAssignees, err := pr.GetAvailableAssignees()

@@ -82,6 +82,31 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 			},
 			mockedFileList: aladino.GetDefaultPullRequestFileList(),
 		},
+		"when the pull request already has reviews": {
+			totalReviewers:    1,
+			maxReviews:        3,
+			excludedReviewers: aladino.BuildArrayValue([]aladino.Value{}),
+			mockBackendOptions: []mock.MockBackendOption{
+				mock.WithRequestMatch(
+					mock.GetReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
+					&github.Reviewers{},
+				),
+				mock.WithRequestMatch(
+					mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
+					[]*github.PullRequestReview{
+						{
+							ID:    github.Int64(1),
+							Body:  github.String("body"),
+							State: github.String("APPROVED"),
+							User: &github.User{
+								Login: github.String("test"),
+							},
+						},
+					},
+				),
+			},
+			mockedFileList: aladino.GetDefaultPullRequestFileList(),
+		},
 		"when error getting git blame information": {
 			totalReviewers:    1,
 			maxReviews:        3,
@@ -98,6 +123,10 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 							Login: github.String("test"),
 						},
 					},
+				),
+				mock.WithRequestMatch(
+					mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
+					[]*github.PullRequestReview{},
 				),
 			},
 			mockedFileList: []*pbc.File{{
@@ -135,6 +164,10 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 							Login: github.String("test"),
 						},
 					},
+				),
+				mock.WithRequestMatch(
+					mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
+					[]*github.PullRequestReview{},
 				),
 			},
 			mockedFileList: aladino.GetDefaultPullRequestFileList(),
@@ -218,6 +251,10 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 						},
 					},
 				),
+				mock.WithRequestMatch(
+					mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
+					[]*github.PullRequestReview{},
+				),
 			},
 			mockedFileList: aladino.GetDefaultPullRequestFileList(),
 			wantErr:        fmt.Errorf("error getting open pull requests as reviewer: non-200 OK status code: 400 Bad Request body: \"\""),
@@ -300,6 +337,10 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 					mock.GetReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
 					&github.Reviewers{},
 					&github.Reviewers{},
+				),
+				mock.WithRequestMatch(
+					mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
+					[]*github.PullRequestReview{},
 				),
 				mock.WithRequestMatch(
 					mock.GetReposAssigneesByOwnerByRepo,
@@ -405,6 +446,10 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 					mock.GetReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
 					&github.Reviewers{},
 					&github.Reviewers{},
+				),
+				mock.WithRequestMatch(
+					mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
+					[]*github.PullRequestReview{},
 				),
 				mock.WithRequestMatch(
 					mock.GetReposAssigneesByOwnerByRepo,
@@ -584,6 +629,10 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 					&github.Reviewers{},
 				),
 				mock.WithRequestMatch(
+					mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
+					[]*github.PullRequestReview{},
+				),
+				mock.WithRequestMatch(
 					mock.GetReposAssigneesByOwnerByRepo,
 					[]*github.User{
 						{
@@ -749,6 +798,10 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 					&github.Reviewers{},
 				),
 				mock.WithRequestMatch(
+					mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
+					[]*github.PullRequestReview{},
+				),
+				mock.WithRequestMatch(
 					mock.GetReposAssigneesByOwnerByRepo,
 					[]*github.User{
 						{
@@ -896,6 +949,10 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 				mock.WithRequestMatch(
 					mock.GetReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
 					&github.Reviewers{},
+				),
+				mock.WithRequestMatch(
+					mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
+					[]*github.PullRequestReview{},
 				),
 				mock.WithRequestMatch(
 					mock.GetReposAssigneesByOwnerByRepo,
@@ -1073,6 +1130,10 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 					&github.Reviewers{},
 				),
 				mock.WithRequestMatch(
+					mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
+					[]*github.PullRequestReview{},
+				),
+				mock.WithRequestMatch(
 					mock.GetReposAssigneesByOwnerByRepo,
 					[]*github.User{
 						{
@@ -1220,6 +1281,10 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 					mock.GetReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
 					&github.Reviewers{},
 					&github.Reviewers{},
+				),
+				mock.WithRequestMatch(
+					mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
+					[]*github.PullRequestReview{},
 				),
 				mock.WithRequestMatch(
 					mock.GetReposAssigneesByOwnerByRepo,
