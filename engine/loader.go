@@ -12,7 +12,7 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/google/go-github/v49/github"
+	"github.com/google/go-github/v52/github"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/reviewpad/reviewpad/v4/handler"
 	"github.com/reviewpad/reviewpad/v4/utils"

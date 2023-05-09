@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/google/go-github/v49/github"
+	"github.com/google/go-github/v52/github"
 	"github.com/tomnomnom/linkheader"
 )
 

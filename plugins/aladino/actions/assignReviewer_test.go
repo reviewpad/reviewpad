@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/google/go-github/v49/github"
+	"github.com/google/go-github/v52/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	pbc "github.com/reviewpad/api/go/codehost"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
@@ -292,7 +292,7 @@ func TestAssignReviewer_WhenPullRequestAlreadyHasReviews(t *testing.T) {
 							Login: github.String(reviewerLogin),
 						},
 						State:       github.String("COMMENTED"),
-						SubmittedAt: &time,
+						SubmittedAt: &github.Timestamp{Time: time},
 					},
 				},
 			),
@@ -374,7 +374,7 @@ func TestAssignReviewer_WhenPullRequestAlreadyHasApproval(t *testing.T) {
 							Login: github.String(reviewerLogin),
 						},
 						State:       github.String("APPROVED"),
-						SubmittedAt: &time,
+						SubmittedAt: &github.Timestamp{Time: time},
 					},
 				},
 			),
@@ -617,7 +617,7 @@ func TestAssignReviewer_WhenPullRequestAlreadyApproved(t *testing.T) {
 			State:       &reviewState,
 			Body:        github.String(""),
 			User:        &github.User{Login: github.String(reviewerA)},
-			SubmittedAt: &time,
+			SubmittedAt: &github.Timestamp{Time: time},
 		},
 	}
 	mockedEnv := aladino.MockDefaultEnvWithPullRequestAndFiles(
@@ -694,7 +694,7 @@ func TestAssignReviewer_ReRequest(t *testing.T) {
 						ID:          github.Int64(1),
 						State:       github.String("APPROVED"),
 						Body:        github.String(""),
-						SubmittedAt: &time,
+						SubmittedAt: &github.Timestamp{Time: time},
 						User:        &github.User{Login: github.String(mockedReviewerLogin)},
 					},
 				}
@@ -729,7 +729,7 @@ func TestAssignReviewer_ReRequest(t *testing.T) {
 						ID:          github.Int64(1),
 						State:       github.String("COMMENTED"),
 						Body:        github.String(""),
-						SubmittedAt: &time,
+						SubmittedAt: &github.Timestamp{Time: time},
 						User:        &github.User{Login: github.String(mockedReviewerLogin)},
 					},
 				}
@@ -764,7 +764,7 @@ func TestAssignReviewer_ReRequest(t *testing.T) {
 						ID:          github.Int64(1),
 						State:       github.String("CHANGES_REQUESTED"),
 						Body:        github.String(""),
-						SubmittedAt: &time,
+						SubmittedAt: &github.Timestamp{Time: time},
 						User:        &github.User{Login: github.String(mockedReviewerLogin)},
 					},
 				}
@@ -800,14 +800,14 @@ func TestAssignReviewer_ReRequest(t *testing.T) {
 						ID:          github.Int64(1),
 						State:       github.String("APPROVED"),
 						Body:        github.String(""),
-						SubmittedAt: &timeApproved,
+						SubmittedAt: &github.Timestamp{Time: timeApproved},
 						User:        &github.User{Login: github.String(mockedReviewerLogin)},
 					},
 					{
 						ID:          github.Int64(2),
 						State:       github.String("CHANGES_REQUESTED"),
 						Body:        github.String(""),
-						SubmittedAt: &timeRequestedChanges,
+						SubmittedAt: &github.Timestamp{Time: timeRequestedChanges},
 						User:        &github.User{Login: github.String(mockedReviewerLogin)},
 					},
 				}
@@ -843,14 +843,14 @@ func TestAssignReviewer_ReRequest(t *testing.T) {
 						ID:          github.Int64(1),
 						State:       github.String("CHANGES_REQUESTED"),
 						Body:        github.String(""),
-						SubmittedAt: &timeRequestedChanges,
+						SubmittedAt: &github.Timestamp{Time: timeRequestedChanges},
 						User:        &github.User{Login: github.String(mockedReviewerLogin)},
 					},
 					{
 						ID:          github.Int64(2),
 						State:       github.String("APPROVED"),
 						Body:        github.String(""),
-						SubmittedAt: &timeApproved,
+						SubmittedAt: &github.Timestamp{Time: timeApproved},
 						User:        &github.User{Login: github.String(mockedReviewerLogin)},
 					},
 				}
@@ -885,7 +885,7 @@ func TestAssignReviewer_ReRequest(t *testing.T) {
 						ID:          github.Int64(1),
 						State:       github.String("CHANGES_REQUESTED"),
 						Body:        github.String(""),
-						SubmittedAt: &timeRequestedChanges,
+						SubmittedAt: &github.Timestamp{Time: timeRequestedChanges},
 						User:        &github.User{Login: github.String(mockedReviewerLogin)},
 					},
 				}
@@ -920,7 +920,7 @@ func TestAssignReviewer_ReRequest(t *testing.T) {
 						ID:          github.Int64(1),
 						State:       github.String("CHANGES_REQUESTED"),
 						Body:        github.String(""),
-						SubmittedAt: &timeRequestedChanges,
+						SubmittedAt: &github.Timestamp{Time: timeRequestedChanges},
 						User:        &github.User{Login: github.String(mockedReviewerLogin)},
 					},
 				}

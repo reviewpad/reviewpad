@@ -13,7 +13,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/google/go-github/v49/github"
+	"github.com/google/go-github/v52/github"
 	"github.com/jarcoal/httpmock"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	host "github.com/reviewpad/reviewpad/v4/codehost/github"
@@ -997,12 +997,12 @@ func TestGetIssueTimeLine(t *testing.T) {
 		{
 			ID:        github.Int64(6430295168),
 			Event:     github.String("locked"),
-			CreatedAt: &nonLastEventDate,
+			CreatedAt: &github.Timestamp{Time: nonLastEventDate},
 		},
 		{
 			ID:        github.Int64(6430296748),
 			Event:     github.String("labeled"),
-			CreatedAt: &lastEventDate,
+			CreatedAt: &github.Timestamp{Time: lastEventDate},
 		},
 	}
 	mockedGithubClient := aladino.MockDefaultGithubClient(

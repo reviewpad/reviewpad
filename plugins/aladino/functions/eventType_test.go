@@ -7,7 +7,7 @@ package plugins_aladino_functions_test
 import (
 	"testing"
 
-	"github.com/google/go-github/v49/github"
+	"github.com/google/go-github/v52/github"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/stretchr/testify/assert"

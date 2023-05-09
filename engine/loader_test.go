@@ -11,7 +11,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/google/go-github/v49/github"
+	"github.com/google/go-github/v52/github"
 	"github.com/jarcoal/httpmock"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
@@ -329,7 +329,7 @@ func TestLoad(t *testing.T) {
 					mock.WithRequestMatchHandler(
 						mock.GetReposContentsByOwnerByRepoByPath,
 						http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-							w.WriteHeader(http.StatusInternalServerError)
+							w.WriteHeader(http.StatusNotFound)
 							engine.MustWriteBytes(w, mock.MustMarshal(github.ErrorResponse{
 								Response: &http.Response{
 									StatusCode: 404,

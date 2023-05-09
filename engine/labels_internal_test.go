@@ -11,7 +11,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/google/go-github/v49/github"
+	"github.com/google/go-github/v52/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/reviewpad/v4/utils"
 	"github.com/stretchr/testify/assert"
@@ -207,12 +207,7 @@ func TestCheckLabelExists(t *testing.T) {
 				mock.WithRequestMatchHandler(
 					mock.GetReposLabelsByOwnerByRepoByName,
 					http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-						w.WriteHeader(http.StatusInternalServerError)
-						MustWriteBytes(w, mock.MustMarshal(github.ErrorResponse{
-							Response: &http.Response{
-								StatusCode: 404,
-							},
-						}))
+						w.WriteHeader(http.StatusNotFound)
 					}),
 				),
 			},

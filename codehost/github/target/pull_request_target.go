@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/google/go-github/v49/github"
+	"github.com/google/go-github/v52/github"
 	pbc "github.com/reviewpad/api/go/codehost"
 	"github.com/reviewpad/reviewpad/v4/codehost"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
@@ -191,7 +191,7 @@ func (t *PullRequestTarget) GetReviews() ([]*codehost.Review, error) {
 			ID:          *ghPrReview.ID,
 			Body:        *ghPrReview.Body,
 			State:       *ghPrReview.State,
-			SubmittedAt: ghPrReview.SubmittedAt,
+			SubmittedAt: ghPrReview.SubmittedAt.GetTime(),
 			User: &codehost.User{
 				Login: *ghPrReview.User.Login,
 			},

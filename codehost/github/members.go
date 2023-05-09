@@ -7,7 +7,7 @@ package github
 import (
 	"context"
 
-	"github.com/google/go-github/v49/github"
+	"github.com/google/go-github/v52/github"
 )
 
 func (c *GithubClient) ListOrganizationMembers(ctx context.Context, org string, opts *github.ListMembersOptions) ([]*github.User, *github.Response, error) {
