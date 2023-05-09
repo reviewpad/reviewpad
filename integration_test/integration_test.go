@@ -17,6 +17,7 @@ import (
 	"github.com/google/uuid"
 	pbe "github.com/reviewpad/api/go/entities"
 	"github.com/reviewpad/api/go/services"
+	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4"
 	"github.com/reviewpad/reviewpad/v4/codehost"
 	"github.com/reviewpad/reviewpad/v4/codehost/github"
@@ -294,13 +295,13 @@ func TestIntegration(t *testing.T) {
 			}
 
 			targetEntity := &entities.TargetEntity{
-				Kind:   handler.PullRequest,
+				Kind:   entities.PullRequest,
 				Owner:  repoOwner,
 				Repo:   repoName,
 				Number: integrationTestMutation.CreatePullRequest.PullRequest.Number,
 			}
 
-			eventDetails := &handler.EventDetails{
+			eventDetails := &entities.EventDetails{
 				EventName:   "pull_request",
 				EventAction: "opened",
 			}
