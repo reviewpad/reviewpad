@@ -13,8 +13,8 @@ import (
 	"net/http"
 
 	"github.com/google/go-github/v52/github"
+	"github.com/reviewpad/go-lib/entities"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
-	"github.com/reviewpad/reviewpad/v4/handler"
 	"github.com/reviewpad/reviewpad/v4/utils"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
@@ -207,7 +207,7 @@ func transform(file *ReviewpadFile) *ReviewpadFile {
 			transformRunBlock(run, transformAladinoExpression)
 		}
 
-		transformedOn := []handler.TargetEntityKind{handler.PullRequest}
+		transformedOn := []entities.TargetEntityKind{entities.PullRequest}
 		if len(workflow.On) > 0 {
 			transformedOn = workflow.On
 		}

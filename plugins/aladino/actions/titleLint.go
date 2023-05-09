@@ -9,7 +9,7 @@ import (
 
 	"github.com/reviewpad/go-conventionalcommits"
 	"github.com/reviewpad/go-conventionalcommits/parser"
-	"github.com/reviewpad/reviewpad/v4/handler"
+	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
@@ -17,7 +17,7 @@ func TitleLint() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
 		Type:           aladino.BuildFunctionType([]aladino.Type{}, nil),
 		Code:           titleLintCode,
-		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest},
+		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 	}
 }
 

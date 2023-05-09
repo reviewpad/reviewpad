@@ -7,10 +7,10 @@ package plugins_aladino_actions
 import (
 	"fmt"
 
-	"github.com/reviewpad/api/go/entities"
+	api_entities "github.com/reviewpad/api/go/entities"
 	api "github.com/reviewpad/api/go/services"
 	converter "github.com/reviewpad/go-lib/converters"
-	"github.com/reviewpad/reviewpad/v4/handler"
+	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino_services "github.com/reviewpad/reviewpad/v4/plugins/aladino/services"
 )
@@ -19,7 +19,7 @@ func RobinRawPrompt() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
 		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType(), aladino.BuildStringType(), aladino.BuildStringType()}, nil),
 		Code:           robinRawPromptCode,
-		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest, handler.Issue},
+		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest, entities.Issue},
 	}
 }
 
@@ -40,7 +40,7 @@ func robinRawPromptCode(e aladino.Env, args []aladino.Value) error {
 		SystemPrompt: systemPrompt,
 		UserPrompt:   userPrompt,
 		Token:        e.GetGithubClient().GetToken(),
-		Target: &entities.TargetEntity{
+		Target: &api_entities.TargetEntity{
 			Owner:  targetEntity.Owner,
 			Repo:   targetEntity.Repo,
 			Kind:   converter.ToEntityKind(targetEntity.Kind),

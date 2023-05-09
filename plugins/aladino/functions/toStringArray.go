@@ -8,7 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/reviewpad/reviewpad/v4/handler"
+	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
@@ -16,7 +16,7 @@ func ToStringArray() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
 		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, aladino.BuildArrayOfType(aladino.BuildStringType())),
 		Code:           toStringArray,
-		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest, handler.Issue},
+		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest, entities.Issue},
 	}
 }
 

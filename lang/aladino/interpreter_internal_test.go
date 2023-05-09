@@ -15,8 +15,8 @@ import (
 	"github.com/google/go-github/v52/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	pbc "github.com/reviewpad/api/go/codehost"
+	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/engine"
-	"github.com/reviewpad/reviewpad/v4/handler"
 	"github.com/reviewpad/reviewpad/v4/utils"
 	"github.com/stretchr/testify/assert"
 )
@@ -120,7 +120,7 @@ func TestEvalGroup(t *testing.T) {
 				Code: func(e Env, args []Value) (Value, error) {
 					return BuildArrayValue([]Value{BuildStringValue(devName)}), nil
 				},
-				SupportedKinds: []handler.TargetEntityKind{handler.PullRequest},
+				SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 			},
 		},
 	}
@@ -347,7 +347,7 @@ func TestExecProgram(t *testing.T) {
 				Code: func(e Env, args []Value) error {
 					return nil
 				},
-				SupportedKinds: []handler.TargetEntityKind{handler.PullRequest},
+				SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 			},
 		},
 	}
@@ -407,7 +407,7 @@ func TestExecAsyncProgram(t *testing.T) {
 				Code: func(e Env, args []Value) error {
 					return fmt.Errorf("robin error")
 				},
-				SupportedKinds:    []handler.TargetEntityKind{handler.PullRequest},
+				SupportedKinds:    []entities.TargetEntityKind{entities.PullRequest},
 				RunAsynchronously: true,
 			},
 		},
@@ -482,7 +482,7 @@ func TestExecStatement_WhenTypeCheckExecFails(t *testing.T) {
 				Code: func(e Env, args []Value) error {
 					return nil
 				},
-				SupportedKinds: []handler.TargetEntityKind{handler.PullRequest},
+				SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 			},
 		},
 	}
@@ -509,7 +509,7 @@ func TestExecStatement_WhenActionExecFails(t *testing.T) {
 				Code: func(e Env, args []Value) (Value, error) {
 					return BuildArrayValue([]Value{BuildStringValue(devName)}), nil
 				},
-				SupportedKinds: []handler.TargetEntityKind{handler.PullRequest},
+				SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 			},
 		},
 	}
@@ -535,7 +535,7 @@ func TestExecStatement(t *testing.T) {
 				Code: func(e Env, args []Value) error {
 					return nil
 				},
-				SupportedKinds: []handler.TargetEntityKind{handler.PullRequest},
+				SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 			},
 		},
 	}

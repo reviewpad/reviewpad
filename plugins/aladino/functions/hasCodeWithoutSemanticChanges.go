@@ -6,9 +6,9 @@ package plugins_aladino_functions
 
 import (
 	doublestar "github.com/bmatcuk/doublestar/v4"
+	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/codehost"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
-	"github.com/reviewpad/reviewpad/v4/handler"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	semantic "github.com/reviewpad/reviewpad/v4/plugins/aladino/semantic"
 )
@@ -20,7 +20,7 @@ func HasCodeWithoutSemanticChanges() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
 		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildArrayOfType(aladino.BuildStringType())}, aladino.BuildBoolType()),
 		Code:           hasCodeWithoutSemanticChanges,
-		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest},
+		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 	}
 }
 

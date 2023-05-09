@@ -4,7 +4,7 @@
 
 package aladino
 
-import "github.com/reviewpad/reviewpad/v4/handler"
+import "github.com/reviewpad/go-lib/entities"
 
 type BuiltIns struct {
 	Functions map[string]*BuiltInFunction
@@ -15,14 +15,14 @@ type BuiltIns struct {
 type BuiltInFunction struct {
 	Type           Type
 	Code           func(e Env, args []Value) (Value, error)
-	SupportedKinds []handler.TargetEntityKind
+	SupportedKinds []entities.TargetEntityKind
 }
 
 type BuiltInAction struct {
 	Type              Type
 	Code              func(e Env, args []Value) error
 	Disabled          bool
-	SupportedKinds    []handler.TargetEntityKind
+	SupportedKinds    []entities.TargetEntityKind
 	RunAsynchronously bool
 }
 

@@ -9,12 +9,12 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/codehost"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v4/collector"
 	"github.com/reviewpad/reviewpad/v4/engine"
-	"github.com/reviewpad/reviewpad/v4/handler"
 	"github.com/reviewpad/reviewpad/v4/utils"
 	"github.com/sirupsen/logrus"
 )
@@ -267,7 +267,7 @@ func NewInterpreter(
 	githubClient *gh.GithubClient,
 	codeHostClient *codehost.CodeHostClient,
 	collector collector.Collector,
-	targetEntity *handler.TargetEntity,
+	targetEntity *entities.TargetEntity,
 	eventPayload interface{},
 	builtIns *BuiltIns,
 ) (engine.Interpreter, error) {

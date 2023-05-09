@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"regexp"
 
-	"github.com/reviewpad/reviewpad/v4/handler"
+	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
@@ -16,7 +16,7 @@ func MatchString() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
 		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType(), aladino.BuildStringType()}, aladino.BuildBoolType()),
 		Code:           matchStringCode,
-		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest, handler.Issue},
+		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest, entities.Issue},
 	}
 }
 

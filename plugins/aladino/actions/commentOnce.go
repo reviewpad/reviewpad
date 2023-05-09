@@ -8,7 +8,7 @@ import (
 	"crypto/sha256"
 	"fmt"
 
-	"github.com/reviewpad/reviewpad/v4/handler"
+	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
@@ -18,7 +18,7 @@ func CommentOnce() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
 		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, nil),
 		Code:           commentOnceCode,
-		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest, handler.Issue},
+		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest, entities.Issue},
 	}
 }
 

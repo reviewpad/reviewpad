@@ -6,7 +6,7 @@ package plugins_aladino_functions
 
 import (
 	"github.com/google/go-github/v52/github"
-	"github.com/reviewpad/reviewpad/v4/handler"
+	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
@@ -14,7 +14,7 @@ func IssueCountBy() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
 		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType(), aladino.BuildStringType()}, aladino.BuildIntType()),
 		Code:           issueCountByCode,
-		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest, handler.Issue},
+		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest, entities.Issue},
 	}
 }
 

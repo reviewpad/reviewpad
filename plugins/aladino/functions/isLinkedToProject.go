@@ -5,7 +5,7 @@
 package plugins_aladino_functions
 
 import (
-	"github.com/reviewpad/reviewpad/v4/handler"
+	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
@@ -13,7 +13,7 @@ func IsLinkedToProject() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
 		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, aladino.BuildBoolType()),
 		Code:           isLinkedToProject,
-		SupportedKinds: []handler.TargetEntityKind{handler.Issue, handler.PullRequest},
+		SupportedKinds: []entities.TargetEntityKind{entities.Issue, entities.PullRequest},
 	}
 }
 

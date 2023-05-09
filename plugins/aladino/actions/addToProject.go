@@ -7,8 +7,8 @@ package plugins_aladino_actions
 import (
 	"strings"
 
+	"github.com/reviewpad/go-lib/entities"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
-	"github.com/reviewpad/reviewpad/v4/handler"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
@@ -16,7 +16,7 @@ func AddToProject() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
 		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType(), aladino.BuildStringType()}, aladino.BuildStringType()),
 		Code:           addToProjectCode,
-		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest, handler.Issue},
+		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest, entities.Issue},
 	}
 }
 

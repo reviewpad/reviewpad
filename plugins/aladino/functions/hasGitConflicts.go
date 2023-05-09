@@ -5,9 +5,9 @@
 package plugins_aladino_functions
 
 import (
+	"github.com/reviewpad/go-lib/entities"
 	host "github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
-	"github.com/reviewpad/reviewpad/v4/handler"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	"github.com/shurcooL/githubv4"
 )
@@ -16,7 +16,7 @@ func HasGitConflicts() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
 		Type:           aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildBoolType()),
 		Code:           hasGitConflictsCode,
-		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest},
+		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 	}
 }
 

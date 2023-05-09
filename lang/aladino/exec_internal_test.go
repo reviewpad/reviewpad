@@ -7,7 +7,7 @@ package aladino
 import (
 	"testing"
 
-	"github.com/reviewpad/reviewpad/v4/handler"
+	"github.com/reviewpad/go-lib/entities"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -100,7 +100,7 @@ func TestExec_WhenActionIsEnabled(t *testing.T) {
 					isBuiltInCalled = true
 					return nil
 				},
-				SupportedKinds: []handler.TargetEntityKind{handler.PullRequest},
+				SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 			},
 		},
 	}
@@ -131,7 +131,7 @@ func TestExec_WhenActionIsDisabled(t *testing.T) {
 					return nil
 				},
 				Disabled:       true,
-				SupportedKinds: []handler.TargetEntityKind{handler.PullRequest},
+				SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 			},
 		},
 	}

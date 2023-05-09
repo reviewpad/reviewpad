@@ -10,19 +10,19 @@ import (
 	"strings"
 
 	"github.com/google/go-github/v52/github"
+	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/codehost"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
-	"github.com/reviewpad/reviewpad/v4/handler"
 	"github.com/shurcooL/githubv4"
 )
 
 type CommonTarget struct {
 	ctx          context.Context
-	targetEntity *handler.TargetEntity
+	targetEntity *entities.TargetEntity
 	githubClient *gh.GithubClient
 }
 
-func NewCommonTarget(ctx context.Context, targetEntity *handler.TargetEntity, githubClient *gh.GithubClient) *CommonTarget {
+func NewCommonTarget(ctx context.Context, targetEntity *entities.TargetEntity, githubClient *gh.GithubClient) *CommonTarget {
 	return &CommonTarget{
 		ctx,
 		targetEntity,
@@ -134,7 +134,7 @@ func (t *CommonTarget) GetProjectFieldsByProjectNumber(projectNumber uint64) ([]
 	return fields, nil
 }
 
-func (t *CommonTarget) GetTargetEntity() *handler.TargetEntity {
+func (t *CommonTarget) GetTargetEntity() *entities.TargetEntity {
 	return t.targetEntity
 }
 

@@ -8,9 +8,9 @@ import (
 	"fmt"
 	"sort"
 
+	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/codehost"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
-	"github.com/reviewpad/reviewpad/v4/handler"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	"github.com/reviewpad/reviewpad/v4/utils"
 )
@@ -26,7 +26,7 @@ func AssignReviewer() *aladino.BuiltInAction {
 			nil,
 		),
 		Code:           assignReviewerCode,
-		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest},
+		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 	}
 }
 

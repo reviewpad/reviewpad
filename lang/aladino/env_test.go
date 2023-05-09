@@ -10,9 +10,9 @@ import (
 	"testing"
 
 	pbc "github.com/reviewpad/api/go/codehost"
+	"github.com/reviewpad/go-lib/entities"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
-	"github.com/reviewpad/reviewpad/v4/handler"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	"github.com/stretchr/testify/assert"
 )
@@ -38,11 +38,11 @@ func TestNewEvalEnv_WhenGetPullRequestFilesFails(t *testing.T) {
 	codehostClient := aladino.GetDefaultCodeHostClientWithFiles(t, nil, mockError)
 	ctx := context.Background()
 
-	targetEntity := &handler.TargetEntity{
+	targetEntity := &entities.TargetEntity{
 		Owner:  aladino.DefaultMockPrOwner,
 		Repo:   aladino.DefaultMockPrRepoName,
 		Number: aladino.DefaultMockPrNum,
-		Kind:   handler.PullRequest,
+		Kind:   entities.PullRequest,
 	}
 
 	env, err := aladino.NewEvalEnv(
@@ -69,11 +69,11 @@ func TestNewEvalEnv_WhenNewFileFails(t *testing.T) {
 	}, nil)
 
 	ctx := context.Background()
-	targetEntity := &handler.TargetEntity{
+	targetEntity := &entities.TargetEntity{
 		Owner:  aladino.DefaultMockPrOwner,
 		Repo:   aladino.DefaultMockPrRepoName,
 		Number: aladino.DefaultMockPrNum,
-		Kind:   handler.PullRequest,
+		Kind:   entities.PullRequest,
 	}
 
 	env, err := aladino.NewEvalEnv(
@@ -164,11 +164,11 @@ func TestNewEvalEnv_WhenGetPullRequestFails(t *testing.T) {
 
 	ctx := context.Background()
 
-	targetEntity := &handler.TargetEntity{
+	targetEntity := &entities.TargetEntity{
 		Owner:  aladino.DefaultMockPrOwner,
 		Repo:   aladino.DefaultMockPrRepoName,
 		Number: aladino.DefaultMockPrNum,
-		Kind:   handler.PullRequest,
+		Kind:   entities.PullRequest,
 	}
 
 	env, err := aladino.NewEvalEnv(

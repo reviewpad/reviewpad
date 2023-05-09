@@ -12,7 +12,7 @@ import (
 
 	"github.com/google/go-github/v52/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
-	"github.com/reviewpad/reviewpad/v4/handler"
+	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/reviewpad/reviewpad/v4/utils"
@@ -97,11 +97,11 @@ func TestClose_WhenCloseRequestFails(t *testing.T) {
 				},
 				aladino.MockBuiltIns(),
 				nil,
-				&handler.TargetEntity{
+				&entities.TargetEntity{
 					Owner:  aladino.DefaultMockPrOwner,
 					Repo:   aladino.DefaultMockPrRepoName,
 					Number: aladino.DefaultMockPrNum,
-					Kind:   handler.Issue,
+					Kind:   entities.Issue,
 				},
 			),
 			inputStateReason: "completed",
@@ -220,11 +220,11 @@ func TestClose_WhenCommentRequestFails(t *testing.T) {
 				},
 				aladino.MockBuiltIns(),
 				nil,
-				&handler.TargetEntity{
+				&entities.TargetEntity{
 					Owner:  aladino.DefaultMockPrOwner,
 					Repo:   aladino.DefaultMockPrRepoName,
 					Number: aladino.DefaultMockPrNum,
-					Kind:   handler.Issue,
+					Kind:   entities.Issue,
 				},
 			),
 			inputComment: "test",
@@ -391,11 +391,11 @@ func TestClose(t *testing.T) {
 				},
 				aladino.MockBuiltIns(),
 				nil,
-				&handler.TargetEntity{
+				&entities.TargetEntity{
 					Owner:  aladino.DefaultMockPrOwner,
 					Repo:   aladino.DefaultMockPrRepoName,
 					Number: aladino.DefaultMockPrNum,
-					Kind:   handler.Issue,
+					Kind:   entities.Issue,
 				},
 			),
 			inputComment:     "done",
@@ -441,11 +441,11 @@ func TestClose(t *testing.T) {
 				},
 				aladino.MockBuiltIns(),
 				nil,
-				&handler.TargetEntity{
+				&entities.TargetEntity{
 					Owner:  aladino.DefaultMockPrOwner,
 					Repo:   aladino.DefaultMockPrRepoName,
 					Number: aladino.DefaultMockPrNum,
-					Kind:   handler.Issue,
+					Kind:   entities.Issue,
 				},
 			),
 			inputComment:     "wont do",
@@ -479,11 +479,11 @@ func TestClose(t *testing.T) {
 				},
 				aladino.MockBuiltIns(),
 				nil,
-				&handler.TargetEntity{
+				&entities.TargetEntity{
 					Owner:  aladino.DefaultMockPrOwner,
 					Repo:   aladino.DefaultMockPrRepoName,
 					Number: aladino.DefaultMockPrNum,
-					Kind:   handler.Issue,
+					Kind:   entities.Issue,
 				},
 			),
 			inputStateReason: "completed",
@@ -516,11 +516,11 @@ func TestClose(t *testing.T) {
 				},
 				aladino.MockBuiltIns(),
 				nil,
-				&handler.TargetEntity{
+				&entities.TargetEntity{
 					Owner:  aladino.DefaultMockPrOwner,
 					Repo:   aladino.DefaultMockPrRepoName,
 					Number: aladino.DefaultMockPrNum,
-					Kind:   handler.Issue,
+					Kind:   entities.Issue,
 				},
 			),
 			inputStateReason: "not_planned",

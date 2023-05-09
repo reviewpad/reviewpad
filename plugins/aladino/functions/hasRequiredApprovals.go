@@ -7,8 +7,8 @@ package plugins_aladino_functions
 import (
 	"fmt"
 
+	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
-	"github.com/reviewpad/reviewpad/v4/handler"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	"github.com/reviewpad/reviewpad/v4/utils"
 )
@@ -23,7 +23,7 @@ func HasRequiredApprovals() *aladino.BuiltInFunction {
 			aladino.BuildBoolType(),
 		),
 		Code:           hasRequiredApprovalsCode,
-		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest},
+		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 	}
 }
 

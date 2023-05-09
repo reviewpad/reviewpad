@@ -293,7 +293,7 @@ func TestIntegration(t *testing.T) {
 				require.Nil(err)
 			}
 
-			targetEntity := &handler.TargetEntity{
+			targetEntity := &entities.TargetEntity{
 				Kind:   handler.PullRequest,
 				Owner:  repoOwner,
 				Repo:   repoName,

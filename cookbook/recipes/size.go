@@ -8,9 +8,9 @@ import (
 	"context"
 
 	"github.com/google/go-github/v52/github"
+	"github.com/reviewpad/go-lib/entities"
 	reviewpadGitHub "github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/reviewpad/reviewpad/v4/cookbook/ingredients"
-	"github.com/reviewpad/reviewpad/v4/handler"
 	"github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/exp/slices"
@@ -63,7 +63,7 @@ type targetDetailsQueryForSize struct {
 	} `graphql:"repository(owner: $owner, name: $repo)"`
 }
 
-func getTargetDetailsForSize(ctx context.Context, gitHubClient *reviewpadGitHub.GithubClient, targetEntity *handler.TargetEntity) (*targetDetailsForSize, error) {
+func getTargetDetailsForSize(ctx context.Context, gitHubClient *reviewpadGitHub.GithubClient, targetEntity *entities.TargetEntity) (*targetDetailsForSize, error) {
 	var targetDetails targetDetailsQueryForSize
 	labels := make([]string, 0)
 	hasNextPage := true
@@ -101,7 +101,7 @@ func NewSizeRecipe(logger *logrus.Entry, gitHubClient *reviewpadGitHub.GithubCli
 	}
 }
 
-func (r *Size) Run(ctx context.Context, targetEntity handler.TargetEntity) error {
+func (r *Size) Run(ctx context.Context, targetEntity entities.TargetEntity) error {
 	targetDetails, err := getTargetDetailsForSize(ctx, r.gitHubClient, &targetEntity)
 	if err != nil {
 		return err

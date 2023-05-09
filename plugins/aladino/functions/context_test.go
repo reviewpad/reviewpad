@@ -7,7 +7,7 @@ package plugins_aladino_functions_test
 import (
 	"testing"
 
-	"github.com/reviewpad/reviewpad/v4/handler"
+	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/reviewpad/reviewpad/v4/utils"
@@ -107,7 +107,7 @@ func TestContext(t *testing.T) {
 	assert.Nil(t, err)
 
 	tests := map[string]struct {
-		targetEntity *handler.TargetEntity
+		targetEntity *entities.TargetEntity
 		wantErr      error
 		wantRes      aladino.Value
 	}{
@@ -116,8 +116,8 @@ func TestContext(t *testing.T) {
 			wantRes:      aladino.BuildStringValue(mockPRJSON),
 		},
 		"when issue": {
-			targetEntity: &handler.TargetEntity{
-				Kind:   handler.Issue,
+			targetEntity: &entities.TargetEntity{
+				Kind:   entities.Issue,
 				Owner:  "test",
 				Repo:   "test",
 				Number: 1,

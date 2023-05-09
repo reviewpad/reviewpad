@@ -6,8 +6,8 @@ package plugins_aladino_functions
 
 import (
 	"github.com/google/go-github/v52/github"
+	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
-	"github.com/reviewpad/reviewpad/v4/handler"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
@@ -15,7 +15,7 @@ func IsWaitingForReview() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
 		Type:           aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildBoolType()),
 		Code:           isWaitingForReviewCode,
-		SupportedKinds: []handler.TargetEntityKind{handler.PullRequest},
+		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 	}
 }
 

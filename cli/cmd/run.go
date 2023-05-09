@@ -14,6 +14,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/reviewpad/api/go/clients"
+	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4"
 	"github.com/reviewpad/reviewpad/v4/codehost"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
@@ -63,12 +64,12 @@ func parseEvent(rawEvent string) (*handler.ActionEvent, error) {
 	return ev, nil
 }
 
-func toTargetEntityKind(entityType string) (handler.TargetEntityKind, error) {
+func toTargetEntityKind(entityType string) (entities.TargetEntityKind, error) {
 	switch entityType {
 	case "issues":
-		return handler.Issue, nil
+		return entities.Issue, nil
 	case "pull":
-		return handler.PullRequest, nil
+		return entities.PullRequest, nil
 	default:
 		return "", fmt.Errorf("unknown entity type %s", entityType)
 	}

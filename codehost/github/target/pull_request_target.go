@@ -11,9 +11,9 @@ import (
 
 	"github.com/google/go-github/v52/github"
 	pbc "github.com/reviewpad/api/go/codehost"
+	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/codehost"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
-	"github.com/reviewpad/reviewpad/v4/handler"
 	"github.com/shurcooL/githubv4"
 )
 
@@ -55,7 +55,7 @@ func getPullRequestPatch(ctx context.Context, pullRequest *pbc.PullRequest, code
 	return Patch(patchMap), nil
 }
 
-func NewPullRequestTarget(ctx context.Context, targetEntity *handler.TargetEntity, githubClient *gh.GithubClient, codehostClient *codehost.CodeHostClient, pr *pbc.PullRequest) (*PullRequestTarget, error) {
+func NewPullRequestTarget(ctx context.Context, targetEntity *entities.TargetEntity, githubClient *gh.GithubClient, codehostClient *codehost.CodeHostClient, pr *pbc.PullRequest) (*PullRequestTarget, error) {
 	patch, err := getPullRequestPatch(ctx, pr, codehostClient)
 	if err != nil {
 		return nil, err
