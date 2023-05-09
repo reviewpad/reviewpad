@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/google/go-github/v49/github"
+	"github.com/google/go-github/v52/github"
 	"github.com/gorilla/mux"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	pbc "github.com/reviewpad/api/go/codehost"
@@ -73,7 +73,7 @@ func TestRemoveLabels_WhenLabelDoesNotExist(t *testing.T) {
 			mock.WithRequestMatchHandler(
 				mock.DeleteReposIssuesLabelsByOwnerByRepoByIssueNumberByName,
 				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					w.WriteHeader(http.StatusInternalServerError)
+					w.WriteHeader(http.StatusNotFound)
 					utils.MustWriteBytes(w, mock.MustMarshal(github.ErrorResponse{
 						Response: &http.Response{
 							StatusCode: 404,

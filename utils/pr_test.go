@@ -7,7 +7,7 @@ package utils_test
 import (
 	"testing"
 
-	"github.com/google/go-github/v49/github"
+	"github.com/google/go-github/v52/github"
 	"github.com/reviewpad/reviewpad/v4/handler"
 	"github.com/reviewpad/reviewpad/v4/utils"
 	"github.com/stretchr/testify/assert"

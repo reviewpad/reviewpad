@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/google/go-github/v49/github"
+	"github.com/google/go-github/v52/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	pbc "github.com/reviewpad/api/go/codehost"
 	host "github.com/reviewpad/reviewpad/v4/codehost/github"
@@ -61,7 +61,7 @@ func TestIsWaitingForReview_WhenGetPullRequestLastPushDateRequestFails(t *testin
 	mockedCommits := []*github.RepositoryCommit{{
 		Commit: &github.Commit{
 			Committer: &github.CommitAuthor{
-				Date: &mockedLastCommitDate,
+				Date: &github.Timestamp{Time: mockedLastCommitDate},
 			},
 		},
 	}}
@@ -101,7 +101,7 @@ func TestIsWaitingForReview_WhenListReviewsRequestFails(t *testing.T) {
 	mockedCommits := []*github.RepositoryCommit{{
 		Commit: &github.Commit{
 			Committer: &github.CommitAuthor{
-				Date: &mockedLastCommitDate,
+				Date: &github.Timestamp{Time: mockedLastCommitDate},
 			},
 		},
 	}}
@@ -274,7 +274,7 @@ func TestIsWaitingForReview_WhenHasNoReviews(t *testing.T) {
 								[]*github.RepositoryCommit{{
 									Commit: &github.Commit{
 										Committer: &github.CommitAuthor{
-											Date: &mockedLastCommitDate,
+											Date: &github.Timestamp{Time: mockedLastCommitDate},
 										},
 									},
 								}},
@@ -316,7 +316,7 @@ func TestIsWaitingForReview_WhenHasReviews(t *testing.T) {
 	mockedCommits := []*github.RepositoryCommit{{
 		Commit: &github.Commit{
 			Committer: &github.CommitAuthor{
-				Date: &mockedLastCommitDate,
+				Date: &github.Timestamp{Time: mockedLastCommitDate},
 			},
 		},
 	}}
@@ -399,7 +399,7 @@ func TestIsWaitingForReview_WhenHasReviews(t *testing.T) {
 					Login: github.String("user"),
 				},
 				State:       github.String("CHANGES_REQUESTED"),
-				SubmittedAt: &mockedCreateDateBeforeLastCommitDate,
+				SubmittedAt: &github.Timestamp{Time: mockedCreateDateBeforeLastCommitDate},
 			}},
 			wantValue: aladino.BuildBoolValue(true),
 		},
@@ -409,7 +409,7 @@ func TestIsWaitingForReview_WhenHasReviews(t *testing.T) {
 					Login: github.String("user"),
 				},
 				State:       github.String("COMMENTED"),
-				SubmittedAt: &mockedCreateDateBeforeLastCommitDate,
+				SubmittedAt: &github.Timestamp{Time: mockedCreateDateBeforeLastCommitDate},
 			}},
 			wantValue: aladino.BuildBoolValue(true),
 		},
@@ -419,7 +419,7 @@ func TestIsWaitingForReview_WhenHasReviews(t *testing.T) {
 					Login: github.String("user"),
 				},
 				State:       github.String("APPROVED"),
-				SubmittedAt: &mockedCreateDateBeforeLastCommitDate,
+				SubmittedAt: &github.Timestamp{Time: mockedCreateDateBeforeLastCommitDate},
 			}},
 			wantValue: aladino.BuildBoolValue(false),
 		},
@@ -429,7 +429,7 @@ func TestIsWaitingForReview_WhenHasReviews(t *testing.T) {
 					Login: github.String("user"),
 				},
 				State:       github.String("CHANGES_REQUESTED"),
-				SubmittedAt: &mockedCreateDateAfterLastCommitDate,
+				SubmittedAt: &github.Timestamp{Time: mockedCreateDateAfterLastCommitDate},
 			}},
 			wantValue: aladino.BuildBoolValue(false),
 		},
@@ -439,7 +439,7 @@ func TestIsWaitingForReview_WhenHasReviews(t *testing.T) {
 					Login: github.String("user"),
 				},
 				State:       github.String("COMMENTED"),
-				SubmittedAt: &mockedCreateDateAfterLastCommitDate,
+				SubmittedAt: &github.Timestamp{Time: mockedCreateDateAfterLastCommitDate},
 			}},
 			wantValue: aladino.BuildBoolValue(false),
 		},
@@ -449,7 +449,7 @@ func TestIsWaitingForReview_WhenHasReviews(t *testing.T) {
 					Login: github.String("user"),
 				},
 				State:       github.String("APPROVED"),
-				SubmittedAt: &mockedCreateDateAfterLastCommitDate,
+				SubmittedAt: &github.Timestamp{Time: mockedCreateDateAfterLastCommitDate},
 			}},
 			wantValue: aladino.BuildBoolValue(false),
 		},
@@ -460,14 +460,14 @@ func TestIsWaitingForReview_WhenHasReviews(t *testing.T) {
 						Login: github.String("user"),
 					},
 					State:       github.String("CHANGES_REQUESTED"),
-					SubmittedAt: &mockedCreateDateBeforeLastCommitDate,
+					SubmittedAt: &github.Timestamp{Time: mockedCreateDateBeforeLastCommitDate},
 				},
 				{
 					User: &github.User{
 						Login: github.String("user"),
 					},
 					State:       github.String("APPROVED"),
-					SubmittedAt: &mockedCreateDateAfterLastCommitDate,
+					SubmittedAt: &github.Timestamp{Time: mockedCreateDateAfterLastCommitDate},
 				},
 			},
 			wantValue: aladino.BuildBoolValue(false),

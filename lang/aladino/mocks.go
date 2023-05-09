@@ -13,7 +13,7 @@ import (
 	"time"
 
 	"github.com/golang/mock/gomock"
-	"github.com/google/go-github/v49/github"
+	"github.com/google/go-github/v52/github"
 	"github.com/hasura/go-graphql-client"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	pbc "github.com/reviewpad/api/go/codehost"
@@ -67,7 +67,7 @@ func GetDefaultMockIssueDetails() *github.Issue {
 		Title:     github.String("Found a bug"),
 		Body:      github.String("I'm having a problem with this"),
 		URL:       github.String("https://foo.bar"),
-		CreatedAt: &issueDate,
+		CreatedAt: &github.Timestamp{Time: issueDate},
 		Comments:  github.Int(6),
 		Number:    github.Int(issueNum),
 		Milestone: &github.Milestone{

@@ -10,7 +10,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/google/go-github/v49/github"
+	"github.com/google/go-github/v52/github"
 	pbc "github.com/reviewpad/api/go/codehost"
 	"github.com/shurcooL/githubv4"
 )

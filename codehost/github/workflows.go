@@ -7,7 +7,7 @@ package github
 import (
 	"context"
 
-	"github.com/google/go-github/v49/github"
+	"github.com/google/go-github/v52/github"
 )
 
 func (c *GithubClient) TriggerWorkflowByFileName(ctx context.Context, owner, repo, branch, workflowFileName string) (*github.Response, error) {

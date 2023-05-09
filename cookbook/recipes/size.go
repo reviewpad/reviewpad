@@ -7,7 +7,7 @@ package recipes
 import (
 	"context"
 
-	"github.com/google/go-github/v49/github"
+	"github.com/google/go-github/v52/github"
 	reviewpadGitHub "github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/reviewpad/reviewpad/v4/cookbook/ingredients"
 	"github.com/reviewpad/reviewpad/v4/handler"

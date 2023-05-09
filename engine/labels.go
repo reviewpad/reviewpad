@@ -10,7 +10,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/google/go-github/v49/github"
+	"github.com/google/go-github/v52/github"
 )
 
 func validateLabelColor(label *PadLabel) error {

@@ -5,7 +5,7 @@
 package plugins_aladino_functions
 
 import (
-	"github.com/google/go-github/v49/github"
+	"github.com/google/go-github/v52/github"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v4/handler"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
@@ -64,7 +64,7 @@ func isWaitingForReviewCode(e aladino.Env, _ []aladino.Value) (aladino.Value, er
 
 		lastUserReview, ok := lastReviewByUser[userLogin]
 		if ok {
-			if review.GetSubmittedAt().After(lastUserReview.GetSubmittedAt()) {
+			if review.GetSubmittedAt().After(lastUserReview.GetSubmittedAt().Time) {
 				lastReviewByUser[userLogin] = review
 			}
 		} else {

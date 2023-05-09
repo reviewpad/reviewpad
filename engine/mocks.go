@@ -12,7 +12,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/google/go-github/v49/github"
+	"github.com/google/go-github/v52/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/reviewpad/reviewpad/v4/collector"
@@ -57,7 +57,7 @@ func GetDefaultMockPullRequestDetails() *github.PullRequest {
 		User:      &github.User{Login: github.String("john")},
 		Title:     github.String("Amazing new feature"),
 		Body:      github.String("Please pull these awesome changes in!"),
-		CreatedAt: &prDate,
+		CreatedAt: &github.Timestamp{Time: prDate},
 		Number:    github.Int(prNum),
 		URL:       github.String(prUrl),
 		Head: &github.PullRequestBranch{
