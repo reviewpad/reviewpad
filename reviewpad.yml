@@ -11,12 +11,6 @@ labels:
   critical:
     description: Modifications to critical changes
     color: "#294b75"
-  waiting-review:
-    description: Pull request is waiting for review
-    color: "#cccc00"
-  requires-author-attention:
-    description: Pull request requires author attention
-    color: "#b20000"
 
 groups:
   - name: owners
@@ -28,31 +22,12 @@ groups:
     description: Official maintainers
     spec: '["marcelosousa", "ferreiratiago", "shay2025", "zolamk"]'
 
-  - name: reviewpad bots
-    spec: '["reviewpad-stage[bot]", "reviewpad[bot]"]'
-
 rules:
   # This rule is used to block pull request from being merged.
   # It is used on extended reviewpad common.yml configuration.
   - name: should block pull request
     description: The pull request should be blocked
     spec: $isElementOf("do-not-merge", $labels()) || !$isElementOf($author(), $group("maintainers"))
-
-  - name: is renovate bot
-    description: Author is Renovate Bot
-    spec: $author() == "renovate[bot]"
-
-  - name: is external contribution
-    description: Author is not a Reviewpad core contributor
-    spec: '!$isElementOf($author(), $group("maintainers"))'
-
-  - name: has reviewers
-    description: Pull request has reviewers
-    spec: $length($append($reviewers(), $requestedReviewers())) > 0
-
-  - name: all reviews from bots
-    description: All reviews are from bots
-    spec: '$all($reviewers(), ($r: String => $isElementOf($r, $group("reviewpad bots"))))'
 
   - name: touches plugin functions
     description: Modifies the plugin functions
@@ -71,67 +46,43 @@ rules:
     spec: ($rule("touches plugin actions") || $rule("touches plugin functions")) && !$hasFileName("plugins/aladino/builtins.go")
 
 workflows:
-  # Define who needs to pay attention to the pull request
-  - name: attention set
-    run:
-      - if: $isWaitingForReview() && !$rule("all reviews from bots")
-        then: $addLabel("waiting-review")
-        else: $removeLabel("waiting-review")
-      - if: $hasUnaddressedThreads()
-        then: $addLabel("requires-author-attention")
-        else: $removeLabel("requires-author-attention")
-
-  # Welcome external contributors
   - name: external contribution
     run:
-      - if: $rule("is external contribution")
-        then: $addLabel("external-contribution")
-      - if: $rule("is external contribution") && !$rule("is renovate bot")
-        then: $info($sprintf("@%s thanks for your contribution!", [$author()]))
+      - if: '!$isElementOf($author(), $group("maintainers"))'
+        then:
+          - $addLabel("external-contribution")
+          - if: $author() != "renovate[bot]"
+            then: $info($sprintf("@%s thanks for your contribution!", [$author()]))
 
-  # Bind the pull request to the github project
-  - name: add to github project
+  - name: link to GitHub project
     run:
-      - if: '!$hasLinkedIssues() && !$isLinkedToProject("Reviewpad")'
+      - if: $rule("is ready") && !$hasLinkedIssues() && !$isLinkedToProject("Reviewpad")
         then: $addToProject("Reviewpad", "In Review")
 
-  # When changing critical code, we need to make sure that the reviewer is aware of it.
   - name: changes to critical code
     run:
-        # Having assignees means that the pull request is already being assigned to someone.
-        # Therefore, we are ready to verify if the code is critical or not.
-        - if: $assignees() == [] && ($hasAnnotation("critical") || $hasFileName("runner.go"))
-          then: $addLabel("critical")
-
-  # Create awareness when some parts of the code are being modified.
-  - name: awareness
-    run:
-      - if: $rule("touches plugin functions") || $rule("touches plugin actions")
+      - if: $rule("is ready")
         then:
-          - $addLabel("plugins")
-          - $info("If you are adding or updating a built-in, please do not forget to update the [docs](https://github.com/reviewpad/docs)")
-      - if: $rule("touches plugin functions and actions")
-        then: $warn("It looks like you modified both functions and actions. Is that intentional?")
-      - if: $rule("touches plugin functions or actions and not builtins")
-        then: $info("If you have added a new function or action do not forget to include it in the built-in list!")
+          - if: $hasAnnotation("critical") || $hasFileName("runner.go")
+            then: $addLabel("critical")
 
-  # Assign a reviewer to the pull request.
-  # This is done based on the review strategy.
-  # The review strategy can be "ship", "show" or "ask".
-  - name: assign reviewer based on review strategy
-    description: Assign a reviewer to a pull request depending on the review strategy.
+  - name: awareness
+    description: Create awareness when some parts of the code are being modified.
     run:
-      # When review strategy is "ask", assign a reviewer to the pull request.
-      - if: $assignees() == [] && $author() != "renovate[bot]" && !$rule("has reviewers") && ($rule("review-strategy:ask") || $rule("is external contribution"))
-        then: $assignCodeAuthorReviewers(1, $group("reviewers to ignore"), 2)
-      # When review strategy is "show", remind about the pull request in the meeting.
-      - if: $isMerged() && $rule("review-strategy:show") && $isElementOf($author(), $group("maintainers"))
-        then: $commentOnce($sprintf("@%v please add this pull request to the meeting agenda where pull requests with the `show` strategy are reviewed", [$author()]))
-      # When review strategy is "ship", there is nothing to do.
+      - if: $rule("is ready")
+        then:
+          - if: $rule("touches plugin functions") || $rule("touches plugin actions")
+            then:
+              - $addLabel("plugins")
+              - $info("If you are adding or updating a built-in, please do not forget to update the [docs](https://github.com/reviewpad/docs)")
+          - if: $rule("touches plugin functions and actions")
+            then: $warn("It looks like you modified both functions and actions. Is that intentional?")
+          - if: $rule("touches plugin functions or actions and not builtins")
+            then: $info("If you have added a new function or action do not forget to include it in the built-in list!")
 
 pipelines:
-  # When the pull request touches the LICENSE file.
   - name: license
+    description: Pull request that touches the LICENSE file
     trigger: $hasFileName("LICENSE")
     stages:
       - actions:
@@ -146,8 +97,8 @@ pipelines:
           - $addLabel("modifies-license")
           - $assignReviewer($group("owners"), 1)
 
-  # When the pull request is from renovate bot.
   - name: renovate-bot
+    description: Pull request from renovate bot
     trigger: $author() == "renovate[bot]"
     stages:
       - actions:
@@ -158,9 +109,12 @@ pipelines:
           - $rebase()
         until: $isUpdatedWithBaseBranch() && $hasLinearHistory()
       - actions:
-          - $warn("The build is failing. Closing pull request.")
+          - $commentOnce("Some checks are still running. Closing the pull request.")
           - $close()
-        until: $checkRunConclusion("pr-build") == "success"
+        until: '!$hasAnyCheckRunCompleted([], ["failure"])'
+      - actions:
+          - $info("Reviewpad is waiting for all checks to complete with success.")
+        until: $haveAllChecksRunCompleted(["reviewpad"], "success")
       - actions:
           - $approve("Pull request is ready to be merged. Reviewpad will merge it for you. Please wait for the merge to complete.")
           - $merge("rebase")
