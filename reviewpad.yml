@@ -27,7 +27,7 @@ rules:
   # It is used on extended reviewpad common.yml configuration.
   - name: should block pull request
     description: The pull request should be blocked
-    spec: $isElementOf("do-not-merge", $labels()) || !$isElementOf($author(), $group("maintainers"))
+    spec: $isElementOf("do-not-merge", $labels()) || !$isElementOf($author(), $group("maintainers")) || $hasFileName("LICENSE")
 
   - name: touches plugin functions
     description: Modifies the plugin functions
@@ -65,6 +65,11 @@ workflows:
         then:
           - if: $hasAnnotation("critical") || $hasFileName("runner.go")
             then: $addLabel("critical")
+
+  - name: test
+    run:
+      - if: $author() == "renovate[bot]"
+        then: $info("This is a pull request from renovate bot.")
 
   - name: awareness
     description: Create awareness when some parts of the code are being modified.
@@ -115,4 +120,4 @@ pipelines:
       - actions:
           - $assignAssignees($group("owners"), 1)
           - $approve("Pull request is ready to be merged. Reviewpad will merge it for you. Please wait for the merge to complete.")
-          - $merge("rebase")
+          - $merge("squash")
