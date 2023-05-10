@@ -121,14 +121,6 @@ func (i *Interpreter) ExecProgram(program *engine.Program) (engine.ExitStatus, e
 			retErr = err
 			break
 		}
-
-		hasFatalError := len(i.Env.GetBuiltInsReportedMessages()[SEVERITY_FATAL]) > 0
-		if hasFatalError {
-			i.Env.GetLogger().Info("execution stopped")
-			retStatus = engine.ExitStatusFailure
-			retErr = nil
-			break
-		}
 	}
 
 	i.Env.GetExecWaitGroup().Wait()
