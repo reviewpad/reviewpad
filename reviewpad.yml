@@ -51,7 +51,7 @@ workflows:
       - if: '!$isElementOf($author(), $group("maintainers"))'
         then:
           - $addLabel("external-contribution")
-          - if: $author() != "renovate[bot]"
+          - if: $author() != "renovate"
             then: $info($sprintf("@%s thanks for your contribution!", [$author()]))
 
   - name: link to GitHub project
@@ -104,7 +104,7 @@ pipelines:
 
   - name: renovate-bot
     description: Pull request from renovate bot
-    trigger: $author() == "renovate[bot]"
+    trigger: $author() == "renovate"
     stages:
       - actions:
           - $comment("Pull request is not up to date with the base branch. Reviewpad will rebase it for you. Please wait for the rebase to complete.")
