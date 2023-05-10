@@ -7,6 +7,7 @@ package plugins_aladino_actions
 import (
 	"fmt"
 
+	"github.com/google/go-github/v52/github"
 	pbc "github.com/reviewpad/api/go/codehost"
 	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
@@ -23,6 +24,7 @@ func Merge() *aladino.BuiltInAction {
 
 func mergeCode(e aladino.Env, args []aladino.Value) error {
 	t := e.GetTarget().(*target.PullRequestTarget)
+	targetEntity := e.GetTarget().GetTargetEntity()
 	log := e.GetLogger().WithField("builtin", "merge")
 
 	if t.PullRequest.Status != pbc.PullRequestStatus_OPEN || t.PullRequest.IsDraft {
@@ -32,6 +34,15 @@ func mergeCode(e aladino.Env, args []aladino.Value) error {
 
 	mergeMethod, err := parseMergeMethod(args)
 	if err != nil {
+		return err
+	}
+
+	if e.GetCheckRunID() != nil {
+		e.SetCheckRunUpdated(true)
+		_, _, err := e.GetGithubClient().GetClientREST().Checks.UpdateCheckRun(e.GetCtx(), targetEntity.Owner, targetEntity.Repo, *e.GetCheckRunID(), github.UpdateCheckRunOptions{
+			Status:     github.String("completed"),
+			Conclusion: github.String("success"),
+		})
 		return err
 	}
 
