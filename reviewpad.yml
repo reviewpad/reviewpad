@@ -68,8 +68,8 @@ workflows:
 
   - name: test
     run:
-      - if: $author() == "renovate[bot]"
-        then: $info("This is a pull request from renovate bot.")
+      - if: "true"
+        then: $sprintf("Hello, %s!", [$author()])
 
   - name: awareness
     description: Create awareness when some parts of the code are being modified.
