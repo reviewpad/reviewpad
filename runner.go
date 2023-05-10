@@ -117,7 +117,7 @@ func runReviewpadCommandDryRun(
 	targetEntity *entities.TargetEntity,
 	reviewpadFile *engine.ReviewpadFile,
 	env *engine.Env,
-) (engine.ExitStatus, *engine.Program, error) {
+) (engine.ExitStatus, *engine.Program, bool, error) {
 	err := collector.Collect("Trigger Command", map[string]interface{}{
 		"project": fmt.Sprintf("%s/%s", targetEntity.Owner, targetEntity.Repo),
 		"command": "dry-run",
@@ -135,23 +135,23 @@ func runReviewpadCommandDryRun(
 			logger.WithError(err).Errorf("error creating comment to report error on command execution")
 		}
 
-		return engine.ExitStatusFailure, nil, err
+		return engine.ExitStatusFailure, nil, false, err
 	}
 
 	program, err := engine.EvalConfigurationFile(reviewpadFile, env)
 	if err != nil {
 		logErrorAndCollect(logger, collector, "error evaluating configuration file", err)
-		return engine.ExitStatusFailure, nil, err
+		return engine.ExitStatusFailure, nil, false, err
 	}
 
 	report := aladino.BuildDryRunExecutionReport(program)
 
 	err = createCommentWithReviewpadCommandExecutionSuccess(env, report)
 	if err != nil {
-		return engine.ExitStatusFailure, program, fmt.Errorf("error on creating report comment %v", err.(*github.ErrorResponse).Message)
+		return engine.ExitStatusFailure, program, false, fmt.Errorf("error on creating report comment %v", err.(*github.ErrorResponse).Message)
 	}
 
-	return engine.ExitStatusSuccess, program, nil
+	return engine.ExitStatusSuccess, program, false, nil
 }
 
 func runReviewpadCommand(
@@ -163,7 +163,7 @@ func runReviewpadCommand(
 	env *engine.Env,
 	aladinoInterpreter engine.Interpreter,
 	command string,
-) (engine.ExitStatus, *engine.Program, error) {
+) (engine.ExitStatus, *engine.Program, bool, error) {
 	err := collector.Collect("Trigger Command", map[string]interface{}{
 		"project": fmt.Sprintf("%s/%s", targetEntity.Owner, targetEntity.Repo),
 		"command": command,
@@ -179,10 +179,10 @@ func runReviewpadCommand(
 		err = createCommentWithReviewpadCommandEvaluationError(env, err)
 		if err != nil {
 			logger.WithError(err).Errorf("error creating comment to report error on command execution")
-			return engine.ExitStatusFailure, nil, err
+			return engine.ExitStatusFailure, nil, false, err
 		}
 
-		return engine.ExitStatusFailure, nil, err
+		return engine.ExitStatusFailure, nil, false, err
 	}
 
 	exitStatus, err := aladinoInterpreter.ExecProgram(program)
@@ -194,7 +194,7 @@ func runReviewpadCommand(
 			logger.WithError(err).Errorf("error creating comment to report error on command execution")
 		}
 
-		return engine.ExitStatusFailure, nil, err
+		return engine.ExitStatusFailure, nil, false, err
 	}
 
 	err = collector.Collect("Completed Command Execution", map[string]interface{}{})
@@ -202,7 +202,7 @@ func runReviewpadCommand(
 		logger.WithError(err).Errorf("error collecting completed command execution")
 	}
 
-	return exitStatus, program, nil
+	return exitStatus, program, false, nil
 }
 
 func runReviewpadFile(
@@ -269,7 +269,7 @@ func runReviewpadFile(
 		env.Logger.WithError(err).Errorf("error collecting completed analysis")
 	}
 
-	return exitStatus, program, nil
+	return exitStatus, program, aladinoInterpreter.GetCheckRunUpdated(), nil
 }
 
 func Run(
@@ -284,22 +284,22 @@ func Run(
 	checkRunId *int64,
 	dryRun bool,
 	safeMode bool,
-) (engine.ExitStatus, *engine.Program, error) {
+) (engine.ExitStatus, *engine.Program, bool, error) {
 	config, err := plugins_aladino.DefaultPluginConfig()
 	if err != nil {
-		return engine.ExitStatusFailure, nil, err
+		return engine.ExitStatusFailure, nil, false, err
 	}
 
 	defer config.CleanupPluginConfig()
 
 	aladinoInterpreter, err := aladino.NewInterpreter(ctx, log, dryRun, gitHubClient, codeHostClient, collector, targetEntity, eventDetails.Payload, plugins_aladino.PluginBuiltInsWithConfig(config), checkRunId)
 	if err != nil {
-		return engine.ExitStatusFailure, nil, err
+		return engine.ExitStatusFailure, nil, false, err
 	}
 
 	env, err := engine.NewEvalEnv(ctx, log, dryRun, gitHubClient, collector, targetEntity, aladinoInterpreter, eventDetails)
 	if err != nil {
-		return engine.ExitStatusFailure, nil, err
+		return engine.ExitStatusFailure, nil, false, err
 	}
 
 	if utils.IsReviewpadCommand(env.EventDetails) {

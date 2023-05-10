@@ -252,6 +252,10 @@ func (i *Interpreter) ReportMetrics() error {
 	return nil
 }
 
+func (i *Interpreter) GetCheckRunUpdated() bool {
+	return i.Env.GetCheckRunUpdated()
+}
+
 func NewInterpreter(
 	ctx context.Context,
 	logger *logrus.Entry,

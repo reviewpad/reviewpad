@@ -47,6 +47,8 @@ type Env interface {
 	GetExecFatalErrorOccurred() error
 	SetExecFatalErrorOccurred(error)
 	GetCheckRunID() *int64
+	SetCheckRunUpdated(bool)
+	GetCheckRunUpdated() bool
 }
 
 type BaseEnv struct {
@@ -66,6 +68,7 @@ type BaseEnv struct {
 	ExecMutex                *sync.Mutex
 	ExecFatalErrorOccurred   error
 	CheckRunID               *int64
+	CheckRunUpdated          bool
 }
 
 func (e *BaseEnv) GetBuiltIns() *BuiltIns {
@@ -118,6 +121,14 @@ func (e *BaseEnv) GetCodeHostClient() *codehost.CodeHostClient {
 
 func (e *BaseEnv) GetExecWaitGroup() *sync.WaitGroup {
 	return e.ExecWaitGroup
+}
+
+func (e *BaseEnv) SetCheckRunUpdated(updated bool) {
+	e.CheckRunUpdated = updated
+}
+
+func (e *BaseEnv) GetCheckRunUpdated() bool {
+	return e.CheckRunUpdated
 }
 
 func (e *BaseEnv) GetExecFatalErrorOccurred() error {

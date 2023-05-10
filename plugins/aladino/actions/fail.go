@@ -25,6 +25,7 @@ func failCode(e aladino.Env, args []aladino.Value) error {
 	e.GetBuiltInsReportedMessages()[aladino.SEVERITY_FATAL] = append(e.GetBuiltInsReportedMessages()[aladino.SEVERITY_FATAL], failMessage)
 
 	if e.GetCheckRunID() != nil {
+		e.SetCheckRunUpdated(true)
 		_, _, err := e.GetGithubClient().GetClientREST().Checks.UpdateCheckRun(e.GetCtx(), targetEntity.Owner, targetEntity.Repo, *e.GetCheckRunID(), github.UpdateCheckRunOptions{
 			Status:     github.String("completed"),
 			Conclusion: github.String("failure"),
