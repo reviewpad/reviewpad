@@ -27,7 +27,7 @@ rules:
   # It is used on extended reviewpad common.yml configuration.
   - name: should block pull request
     description: The pull request should be blocked
-    spec: $isElementOf("do-not-merge", $labels()) || !$isElementOf($author(), $group("maintainers"))
+    spec: $isElementOf("do-not-merge", $labels()) || !$isElementOf($author(), $group("maintainers")) || $hasFileName("LICENSE")
 
   - name: touches plugin functions
     description: Modifies the plugin functions
@@ -51,7 +51,7 @@ workflows:
       - if: '!$isElementOf($author(), $group("maintainers"))'
         then:
           - $addLabel("external-contribution")
-          - if: $author() != "renovate[bot]"
+          - if: $author() != "renovate"
             then: $info($sprintf("@%s thanks for your contribution!", [$author()]))
 
   - name: link to GitHub project
@@ -99,7 +99,7 @@ pipelines:
 
   - name: renovate-bot
     description: Pull request from renovate bot
-    trigger: $author() == "renovate[bot]"
+    trigger: $author() == "renovate"
     stages:
       - actions:
           - $comment("Pull request is not up to date with the base branch. Reviewpad will rebase it for you. Please wait for the rebase to complete.")
@@ -115,4 +115,4 @@ pipelines:
       - actions:
           - $assignAssignees($group("owners"), 1)
           - $approve("Pull request is ready to be merged. Reviewpad will merge it for you. Please wait for the merge to complete.")
-          - $merge("rebase")
+          - $merge("squash")
