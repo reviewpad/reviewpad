@@ -102,9 +102,6 @@ pipelines:
     trigger: $author() == "renovate[bot]"
     stages:
       - actions:
-          - $assignAssignees($group("owners"), 1)
-        until: $assignees() != []
-      - actions:
           - $comment("Pull request is not up to date with the base branch. Reviewpad will rebase it for you. Please wait for the rebase to complete.")
           - $rebase()
         until: $isUpdatedWithBaseBranch() && $hasLinearHistory()
@@ -116,5 +113,6 @@ pipelines:
           - $info("Reviewpad is waiting for all checks to complete with success.")
         until: $haveAllChecksRunCompleted(["reviewpad"], "success")
       - actions:
+          - $assignAssignees($group("owners"), 1)
           - $approve("Pull request is ready to be merged. Reviewpad will merge it for you. Please wait for the merge to complete.")
           - $merge("rebase")
