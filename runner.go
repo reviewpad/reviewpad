@@ -281,6 +281,7 @@ func Run(
 	targetEntity *entities.TargetEntity,
 	eventDetails *entities.EventDetails,
 	reviewpadFile *engine.ReviewpadFile,
+	checkRunId *int64,
 	dryRun bool,
 	safeMode bool,
 ) (engine.ExitStatus, *engine.Program, error) {
@@ -291,7 +292,7 @@ func Run(
 
 	defer config.CleanupPluginConfig()
 
-	aladinoInterpreter, err := aladino.NewInterpreter(ctx, log, dryRun, gitHubClient, codeHostClient, collector, targetEntity, eventDetails.Payload, plugins_aladino.PluginBuiltInsWithConfig(config))
+	aladinoInterpreter, err := aladino.NewInterpreter(ctx, log, dryRun, gitHubClient, codeHostClient, collector, targetEntity, eventDetails.Payload, plugins_aladino.PluginBuiltInsWithConfig(config), checkRunId)
 	if err != nil {
 		return engine.ExitStatusFailure, nil, err
 	}

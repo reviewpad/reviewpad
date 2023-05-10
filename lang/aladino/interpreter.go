@@ -270,8 +270,9 @@ func NewInterpreter(
 	targetEntity *entities.TargetEntity,
 	eventPayload interface{},
 	builtIns *BuiltIns,
+	checkRunID *int64,
 ) (engine.Interpreter, error) {
-	evalEnv, err := NewEvalEnv(ctx, logger, dryRun, githubClient, codeHostClient, collector, targetEntity, eventPayload, builtIns)
+	evalEnv, err := NewEvalEnv(ctx, logger, dryRun, githubClient, codeHostClient, collector, targetEntity, eventPayload, builtIns, checkRunID)
 	if err != nil {
 		return nil, err
 	}

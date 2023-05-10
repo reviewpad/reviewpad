@@ -46,6 +46,7 @@ type Env interface {
 	GetExecWaitGroup() *sync.WaitGroup
 	GetExecFatalErrorOccurred() error
 	SetExecFatalErrorOccurred(error)
+	GetCheckRunID() *int64
 }
 
 type BaseEnv struct {
@@ -64,6 +65,7 @@ type BaseEnv struct {
 	ExecWaitGroup            *sync.WaitGroup
 	ExecMutex                *sync.Mutex
 	ExecFatalErrorOccurred   error
+	CheckRunID               *int64
 }
 
 func (e *BaseEnv) GetBuiltIns() *BuiltIns {
@@ -130,6 +132,10 @@ func (e *BaseEnv) SetExecFatalErrorOccurred(err error) {
 	e.ExecFatalErrorOccurred = err
 }
 
+func (e *BaseEnv) GetCheckRunID() *int64 {
+	return e.CheckRunID
+}
+
 func NewTypeEnv(e Env) TypeEnv {
 	builtInsType := make(map[string]Type)
 	for builtInName, builtInFunction := range e.GetBuiltIns().Functions {
@@ -153,6 +159,7 @@ func NewEvalEnv(
 	targetEntity *entities.TargetEntity,
 	eventPayload interface{},
 	builtIns *BuiltIns,
+	checkRunID *int64,
 ) (Env, error) {
 	registerMap := RegisterMap(make(map[string]Value))
 	report := &Report{Actions: make([]string, 0)}
@@ -174,6 +181,7 @@ func NewEvalEnv(
 		CodeHostClient:           codeHostClient,
 		ExecWaitGroup:            &wg,
 		ExecMutex:                &mu,
+		CheckRunID:               checkRunID,
 	}
 
 	switch targetEntity.Kind {
