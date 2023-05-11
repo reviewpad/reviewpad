@@ -37,7 +37,7 @@ func mergeCode(e aladino.Env, args []aladino.Value) error {
 		return err
 	}
 
-	if e.GetCheckRunID() != nil && len(e.GetBuiltInsReportedMessages()[aladino.SEVERITY_FATAL]) > 0 {
+	if e.GetCheckRunID() != nil && len(e.GetBuiltInsReportedMessages()[aladino.SEVERITY_FATAL]) == 0 {
 		e.SetCheckRunConclusion("success")
 		_, _, err := e.GetGithubClient().GetClientREST().Checks.UpdateCheckRun(e.GetCtx(), targetEntity.Owner, targetEntity.Repo, *e.GetCheckRunID(), github.UpdateCheckRunOptions{
 			Name:       "reviewpad",
