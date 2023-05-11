@@ -42,7 +42,7 @@ type Interpreter interface {
 	ExecStatement(statement *Statement) error
 	Report(mode string, safeMode bool) error
 	ReportMetrics() error
-	GetCheckRunUpdated() bool
+	GetCheckRunConclusion() string
 }
 
 type Env struct {

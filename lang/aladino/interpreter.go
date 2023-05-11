@@ -252,8 +252,8 @@ func (i *Interpreter) ReportMetrics() error {
 	return nil
 }
 
-func (i *Interpreter) GetCheckRunUpdated() bool {
-	return i.Env.GetCheckRunUpdated()
+func (i *Interpreter) GetCheckRunConclusion() string {
+	return i.Env.GetCheckRunConclusion()
 }
 
 func NewInterpreter(
