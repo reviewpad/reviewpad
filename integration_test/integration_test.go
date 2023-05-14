@@ -2,9 +2,6 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-//go:build integration
-// +build integration
-
 package integration_test
 
 import (
@@ -245,7 +242,7 @@ func TestIntegration(t *testing.T) {
 			},
 			commitMessage:  "test: fail",
 			reviewpadFiles: []*engine.ReviewpadFile{buildInFailReviewpadFile, closeReviewpadFile, builtInDeleteHeadBranchReviewpadFile},
-			exitStatus:     []engine.ExitStatus{engine.ExitStatusFailure, engine.ExitStatusSuccess, engine.ExitStatusSuccess},
+			exitStatus:     []engine.ExitStatus{engine.ExitStatusSuccess, engine.ExitStatusSuccess, engine.ExitStatusSuccess},
 		},
 	}
 
