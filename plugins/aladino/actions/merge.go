@@ -47,9 +47,9 @@ func mergeCode(e aladino.Env, args []aladino.Value) error {
 		return err
 	}
 
-	err = t.Merge(mergeMethod)
-	if err != nil {
-		e.GetLogger().WithError(err).Warnln("failed to merge pull request")
+	mergeErr := t.Merge(mergeMethod)
+	if mergeErr != nil {
+		e.GetLogger().WithError(mergeErr).Warnln("failed to merge pull request")
 	}
 
 	return nil
