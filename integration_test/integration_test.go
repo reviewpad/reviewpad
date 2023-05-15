@@ -2,6 +2,9 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
+//go:build integration
+// +build integration
+
 package integration_test
 
 import (
