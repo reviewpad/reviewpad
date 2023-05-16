@@ -43,6 +43,10 @@ func mergeCode(e aladino.Env, args []aladino.Value) error {
 			Name:       "reviewpad",
 			Status:     github.String("completed"),
 			Conclusion: github.String("success"),
+			Output: &github.CheckRunOutput{
+				Title:   github.String("Reviewpad about to merge"),
+				Summary: github.String("Reviewpad is about to merge this pull request."),
+			},
 		})
 		return err
 	}
