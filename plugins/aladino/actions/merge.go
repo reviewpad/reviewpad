@@ -48,7 +48,9 @@ func mergeCode(e aladino.Env, args []aladino.Value) error {
 				Summary: github.String("Reviewpad is about to merge this pull request."),
 			},
 		})
-		return err
+		if err != nil {
+			return err
+		}
 	}
 
 	mergeErr := t.Merge(mergeMethod)
