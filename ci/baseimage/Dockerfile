@@ -25,6 +25,10 @@ RUN echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/doc
 
 RUN apt-get update && apt-get -y install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
+RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
+    unzip -o awscliv2.zip && \
+    ./aws/install
+
 # Install libgit2
 RUN curl -OL https://github.com/libgit2/libgit2/archive/refs/tags/${LIBGIT2_ZIP} && \
     unzip -o $LIBGIT2_ZIP -d /tmp && \
