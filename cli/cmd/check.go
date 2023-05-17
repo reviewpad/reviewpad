@@ -9,10 +9,10 @@ import (
 	"context"
 	"os"
 
+	log "github.com/reviewpad/go-lib/logrus"
 	"github.com/reviewpad/reviewpad/v4"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
-	"github.com/reviewpad/reviewpad/v4/utils"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -30,7 +30,7 @@ var checkCmd = &cobra.Command{
 			return err
 		}
 
-		log := utils.NewLogger(logLevel)
+		log := log.NewLogger(logLevel)
 		ctx := context.Background()
 		githubClient := gh.NewGithubClientFromToken(ctx, token)
 

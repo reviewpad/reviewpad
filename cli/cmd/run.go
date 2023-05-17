@@ -15,12 +15,12 @@ import (
 	"github.com/google/uuid"
 	"github.com/reviewpad/api/go/clients"
 	"github.com/reviewpad/go-lib/entities"
+	log "github.com/reviewpad/go-lib/logrus"
 	"github.com/reviewpad/reviewpad/v4"
 	"github.com/reviewpad/reviewpad/v4/codehost"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/reviewpad/reviewpad/v4/collector"
 	"github.com/reviewpad/reviewpad/v4/handler"
-	"github.com/reviewpad/reviewpad/v4/utils"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc/metadata"
@@ -81,7 +81,7 @@ func run() error {
 		return err
 	}
 
-	log := utils.NewLogger(logLevel)
+	log := log.NewLogger(logLevel)
 
 	var event *handler.ActionEvent
 
