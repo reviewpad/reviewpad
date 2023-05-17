@@ -13,6 +13,7 @@ import (
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
+// FailCheckStatus is a built-in action that fails the check run with a message without failing reviewpad.
 func FailCheckStatus() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
 		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, nil),
