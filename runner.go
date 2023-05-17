@@ -16,7 +16,6 @@ import (
 	"github.com/reviewpad/reviewpad/v4/codehost"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/reviewpad/reviewpad/v4/collector"
-	"github.com/reviewpad/reviewpad/v4/cookbook"
 	"github.com/reviewpad/reviewpad/v4/engine"
 	"github.com/reviewpad/reviewpad/v4/handler"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
@@ -207,31 +206,25 @@ func runReviewpadCommand(
 }
 
 func runReviewpadFile(
-	logger *logrus.Entry,
-	collector collector.Collector,
-	gitHubClient *gh.GithubClient,
-	targetEntity *entities.TargetEntity,
-	eventDetails *entities.EventDetails,
-	reviewpadFile *engine.ReviewpadFile,
-	dryRun bool,
-	safeMode bool,
 	env *engine.Env,
 	aladinoInterpreter engine.Interpreter,
+	reviewpadFile *engine.ReviewpadFile,
+	safeMode bool,
 ) (engine.ExitStatus, *engine.Program, error) {
-	if safeMode && !dryRun {
+	if safeMode && !env.DryRun {
 		return engine.ExitStatusFailure, nil, fmt.Errorf("when reviewpad is running in safe mode, it must also run in dry-run")
 	}
 
 	program, err := engine.EvalConfigurationFile(reviewpadFile, env)
 	if err != nil {
-		logErrorAndCollect(logger, collector, "error evaluating configuration file", err)
+		logErrorAndCollect(env.Logger, env.Collector, "error evaluating configuration file", err)
 		return engine.ExitStatusFailure, nil, err
 	}
 
-	err = collector.Collect("Trigger Analysis", map[string]interface{}{
-		"project":        fmt.Sprintf("%s/%s", targetEntity.Owner, targetEntity.Repo),
+	err = env.Collector.Collect("Trigger Analysis", map[string]interface{}{
+		"project":        fmt.Sprintf("%s/%s", env.TargetEntity.Owner, env.TargetEntity.Repo),
 		"mode":           reviewpadFile.Mode,
-		"author":         handler.GetEventSender(eventDetails.Payload),
+		"author":         handler.GetEventSender(env.EventDetails.Payload),
 		"ignoreErrors":   reviewpadFile.IgnoreErrors,
 		"metricsOnMerge": reviewpadFile.MetricsOnMerge,
 		"totalImports":   len(reviewpadFile.Imports),
@@ -244,61 +237,36 @@ func runReviewpadFile(
 		"totalRecipes":   len(reviewpadFile.Recipes),
 	})
 	if err != nil {
-		logger.WithError(err).Errorf("error collecting trigger analysis")
+		env.Logger.WithError(err).Errorf("error collecting trigger analysis")
 	}
 
 	exitStatus, err := aladinoInterpreter.ExecProgram(program)
 	if err != nil {
-		logErrorAndCollect(logger, collector, "error executing configuration file", err)
+		logErrorAndCollect(env.Logger, env.Collector, "error executing configuration file", err)
 		return engine.ExitStatusFailure, nil, err
 	}
 
-	// TODO: this should be done in the interpreter
-	cookbook := cookbook.NewCookbook(logger, gitHubClient)
-	for name, active := range reviewpadFile.Recipes {
-		if *active {
-			recipe, errRecipe := cookbook.GetRecipe(name)
-			if errRecipe != nil {
-				logErrorAndCollect(logger, collector, "error getting recipe", err)
-				return engine.ExitStatusFailure, nil, err
-			}
-
-			err = collector.Collect("Ran Recipe", map[string]interface{}{
-				"recipe": name,
-			})
-			if err != nil {
-				logger.WithError(err).Errorf("error collecting ran recipe")
-			}
-
-			err = recipe.Run(env.Ctx, *targetEntity)
-			if err != nil {
-				logErrorAndCollect(logger, collector, "error running recipe", err)
-				return engine.ExitStatusFailure, nil, err
-			}
-		}
-	}
-
-	if safeMode || !dryRun {
+	if safeMode || !env.DryRun {
 		err = aladinoInterpreter.Report(reviewpadFile.Mode, safeMode)
 		if err != nil {
-			logErrorAndCollect(logger, collector, "error reporting results", err)
+			logErrorAndCollect(env.Logger, env.Collector, "error reporting results", err)
 			return engine.ExitStatusFailure, nil, err
 		}
 	}
 
-	if utils.IsPullRequestReadyForReportMetrics(eventDetails) {
+	if utils.IsPullRequestReadyForReportMetrics(env.EventDetails) {
 		if reviewpadFile.MetricsOnMerge != nil && *reviewpadFile.MetricsOnMerge {
 			err = aladinoInterpreter.ReportMetrics()
 			if err != nil {
-				logErrorAndCollect(logger, collector, "error reporting metrics", err)
+				logErrorAndCollect(env.Logger, env.Collector, "error reporting metrics", err)
 				return engine.ExitStatusFailure, nil, err
 			}
 		}
 	}
 
-	err = collector.Collect("Completed Analysis", map[string]interface{}{})
+	err = env.Collector.Collect("Completed Analysis", map[string]interface{}{})
 	if err != nil {
-		logger.WithError(err).Errorf("error collecting completed analysis")
+		env.Logger.WithError(err).Errorf("error collecting completed analysis")
 	}
 
 	return exitStatus, program, nil
@@ -340,11 +308,11 @@ func Run(
 		}
 
 		if utils.IsReviewpadCommandRun(command) {
-			return runReviewpadFile(log, collector, gitHubClient, targetEntity, eventDetails, reviewpadFile, dryRun, safeMode, env, aladinoInterpreter)
+			return runReviewpadFile(env, aladinoInterpreter, reviewpadFile, safeMode)
 		}
 
 		return runReviewpadCommand(ctx, log, collector, gitHubClient, targetEntity, env, aladinoInterpreter, command)
 	} else {
-		return runReviewpadFile(log, collector, gitHubClient, targetEntity, eventDetails, reviewpadFile, dryRun, safeMode, env, aladinoInterpreter)
+		return runReviewpadFile(env, aladinoInterpreter, reviewpadFile, safeMode)
 	}
 }
