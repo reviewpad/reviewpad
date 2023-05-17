@@ -5,10 +5,6 @@
 package plugins_aladino_actions
 
 import (
-	"fmt"
-	"strings"
-
-	"github.com/google/go-github/v52/github"
 	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
@@ -22,31 +18,9 @@ func Fail() *aladino.BuiltInAction {
 }
 
 func failCode(e aladino.Env, args []aladino.Value) error {
-	targetEntity := e.GetTarget().GetTargetEntity()
 	failMessage := args[0].(*aladino.StringValue).Val
 
 	e.GetBuiltInsReportedMessages()[aladino.SEVERITY_FATAL] = append(e.GetBuiltInsReportedMessages()[aladino.SEVERITY_FATAL], failMessage)
-
-	if e.GetCheckRunID() != nil {
-		e.SetCheckRunConclusion("failure")
-
-		summary := strings.Builder{}
-
-		for _, msg := range e.GetBuiltInsReportedMessages()[aladino.SEVERITY_FATAL] {
-			summary.WriteString(fmt.Sprintf("- %s\n", msg))
-		}
-
-		_, _, err := e.GetGithubClient().GetClientREST().Checks.UpdateCheckRun(e.GetCtx(), targetEntity.Owner, targetEntity.Repo, *e.GetCheckRunID(), github.UpdateCheckRunOptions{
-			Name:       "reviewpad",
-			Status:     github.String("completed"),
-			Conclusion: github.String("failure"),
-			Output: &github.CheckRunOutput{
-				Title:   github.String("Reviewpad policy failed"),
-				Summary: github.String(summary.String()),
-			},
-		})
-		return err
-	}
 
 	return nil
 }

@@ -20,6 +20,7 @@ import (
 type Severity int
 
 const (
+	SEVERITY_FAIL    Severity = 0
 	SEVERITY_FATAL   Severity = 1
 	SEVERITY_ERROR   Severity = 2
 	SEVERITY_WARNING Severity = 3
