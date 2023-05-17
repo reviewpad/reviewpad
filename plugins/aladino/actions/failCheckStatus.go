@@ -32,7 +32,7 @@ func failCheckStatusCode(e aladino.Env, args []aladino.Value) error {
 
 		summary := strings.Builder{}
 
-		for _, msg := range e.GetBuiltInsReportedMessages()[aladino.SEVERITY_FATAL] {
+		for _, msg := range e.GetBuiltInsReportedMessages()[aladino.SEVERITY_FAIL] {
 			summary.WriteString(fmt.Sprintf("- %s\n", msg))
 		}
 

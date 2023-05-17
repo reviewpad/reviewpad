@@ -47,6 +47,8 @@ func severityToString(sev Severity) string {
 		return ":warning: Warnings"
 	case SEVERITY_INFO:
 		return ":information_source: Messages"
+	case SEVERITY_FAIL:
+		return ":x: Failures"
 	default:
 		return "Fatal"
 	}
