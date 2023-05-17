@@ -11,6 +11,7 @@ import (
 	api "github.com/reviewpad/api/go/services"
 	converter "github.com/reviewpad/go-lib/converters"
 	"github.com/reviewpad/go-lib/entities"
+	lib_http "github.com/reviewpad/go-lib/http"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino_services "github.com/reviewpad/reviewpad/v4/plugins/aladino/services"
 )
@@ -54,7 +55,7 @@ func robinSummarizeCode(e aladino.Env, args []aladino.Value) error {
 	resp, err := robinClient.Summarize(e.GetCtx(), req)
 	if err != nil {
 		log.Infof("summarize failed with %v", err)
-		return fmt.Errorf("summarize failed - please contact us on [Discord](https://reviewpad.com/discord)")
+		return fmt.Errorf("summarize failed on request %v - please contact us on [Discord](https://reviewpad.com/discord)", lib_http.InRequestID(e.GetCtx()))
 	}
 
 	return target.Comment(fmt.Sprintf("**AI-Generated Summary**: %s", resp.Summary))
