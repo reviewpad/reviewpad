@@ -21,7 +21,7 @@ require (
 	github.com/ohler55/ojg v1.18.5
 	github.com/reviewpad/api/go v0.0.0-20230509102823-c5df0c5f5560
 	github.com/reviewpad/go-conventionalcommits v0.10.0
-	github.com/reviewpad/go-lib v0.0.0-20230509103428-beeeb3f1e84e
+	github.com/reviewpad/go-lib v0.0.0-20230517091020-57df919c06fa
 	github.com/shurcooL/githubv4 v0.0.0-20230424031643-6cea62ecd5a9
 	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/cobra v1.7.0
@@ -39,6 +39,7 @@ require (
 	github.com/aws/aws-sdk-go v1.44.259 // indirect
 	github.com/cloudflare/circl v1.3.3 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/go-errors/errors v1.4.2 // indirect
 	github.com/golang-jwt/jwt/v4 v4.5.0 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/go-github/v50 v50.2.0 // indirect

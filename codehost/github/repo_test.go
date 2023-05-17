@@ -12,8 +12,8 @@ import (
 	"time"
 
 	git "github.com/libgit2/git2go/v31"
+	log "github.com/reviewpad/go-lib/logrus"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
-	"github.com/reviewpad/reviewpad/v4/utils"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
@@ -23,7 +23,7 @@ const (
 )
 
 func TestCloneRepository_WhenNoPathProvided(t *testing.T) {
-	log := utils.NewLogger(logrus.DebugLevel)
+	log := log.NewLogger(logrus.DebugLevel)
 
 	t.Parallel()
 	repo := createTestRepo(t, false)
@@ -51,7 +51,7 @@ func TestCloneRepository_WhenNoPathProvided(t *testing.T) {
 }
 
 func TestCloneRepository_WhenPathProvided(t *testing.T) {
-	log := utils.NewLogger(logrus.DebugLevel)
+	log := log.NewLogger(logrus.DebugLevel)
 
 	t.Parallel()
 	repo := createTestRepo(t, false)
@@ -82,7 +82,7 @@ func TestCloneRepository_WhenPathProvided(t *testing.T) {
 }
 
 func TestCloneRepository_WithExternalHTTPUrl(t *testing.T) {
-	log := utils.NewLogger(logrus.DebugLevel)
+	log := log.NewLogger(logrus.DebugLevel)
 
 	path, err := os.MkdirTemp("", TestRepo)
 	defer os.RemoveAll(path)
@@ -96,7 +96,7 @@ func TestCloneRepository_WithExternalHTTPUrl(t *testing.T) {
 }
 
 func TestCheckoutBranch_BranchDoesNotExists(t *testing.T) {
-	log := utils.NewLogger(logrus.DebugLevel)
+	log := log.NewLogger(logrus.DebugLevel)
 
 	t.Parallel()
 	repo := createTestRepo(t, false)
@@ -110,7 +110,7 @@ func TestCheckoutBranch_BranchDoesNotExists(t *testing.T) {
 }
 
 func TestCheckoutBranch_BranchExists(t *testing.T) {
-	log := utils.NewLogger(logrus.DebugLevel)
+	log := log.NewLogger(logrus.DebugLevel)
 
 	t.Parallel()
 	remoteRepo := createTestRepo(t, false)
@@ -150,7 +150,7 @@ func TestCheckoutBranch_BranchExists(t *testing.T) {
 }
 
 func TestRebaseOnto_WhenOntoBranchDoesNotExist(t *testing.T) {
-	log := utils.NewLogger(logrus.DebugLevel)
+	log := log.NewLogger(logrus.DebugLevel)
 
 	repo := createTestRepo(t, false)
 	defer cleanupTestRepo(t, repo)
@@ -163,7 +163,7 @@ func TestRebaseOnto_WhenOntoBranchDoesNotExist(t *testing.T) {
 }
 
 func TestRebaseOnto(t *testing.T) {
-	log := utils.NewLogger(logrus.DebugLevel)
+	log := log.NewLogger(logrus.DebugLevel)
 
 	repo := createTestRepo(t, false)
 	defer cleanupTestRepo(t, repo)

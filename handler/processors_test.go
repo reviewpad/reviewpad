@@ -14,9 +14,9 @@ import (
 	"github.com/google/go-github/v52/github"
 	"github.com/jarcoal/httpmock"
 	"github.com/reviewpad/go-lib/entities"
+	log "github.com/reviewpad/go-lib/logrus"
 	"github.com/reviewpad/reviewpad/v4/handler"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
-	"github.com/reviewpad/reviewpad/v4/utils"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
@@ -27,7 +27,7 @@ func buildPayload(payload []byte) *json.RawMessage {
 }
 
 func TestParseEvent_Failure(t *testing.T) {
-	log := utils.NewLogger(logrus.DebugLevel)
+	log := log.NewLogger(logrus.DebugLevel)
 
 	event := `{"type": "ping",}`
 	gotEvent, err := handler.ParseEvent(log, event)
@@ -37,7 +37,7 @@ func TestParseEvent_Failure(t *testing.T) {
 }
 
 func TestParseEvent(t *testing.T) {
-	log := utils.NewLogger(logrus.DebugLevel)
+	log := log.NewLogger(logrus.DebugLevel)
 
 	event := `{"action": "ping"}`
 	wantEvent := &handler.ActionEvent{
@@ -53,7 +53,7 @@ func TestParseEvent(t *testing.T) {
 func TestProcessEvent_Failure(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
-	log := utils.NewLogger(logrus.DebugLevel)
+	log := log.NewLogger(logrus.DebugLevel)
 
 	owner := "reviewpad"
 	repo := "reviewpad"
@@ -156,7 +156,7 @@ func TestProcessEvent_Failure(t *testing.T) {
 func TestProcessEvent(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
-	log := utils.NewLogger(logrus.DebugLevel)
+	log := log.NewLogger(logrus.DebugLevel)
 
 	owner := "reviewpad"
 	repo := "reviewpad"
