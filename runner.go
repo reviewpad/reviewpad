@@ -205,19 +205,8 @@ func runReviewpadCommand(
 	return exitStatus, program, "", nil
 }
 
-func runReviewpadFile(
-	env *engine.Env,
-	aladinoInterpreter engine.Interpreter,
-	reviewpadFile *engine.ReviewpadFile,
-	safeMode bool,
-) (engine.ExitStatus, *engine.Program, error) {
-	program, err := engine.EvalConfigurationFile(reviewpadFile, env)
-	if err != nil {
-		logErrorAndCollect(env.Logger, env.Collector, "error evaluating configuration file", err)
-		return engine.ExitStatusFailure, nil, "", err
-	}
-
-	err = env.Collector.Collect("Trigger Analysis", map[string]interface{}{
+func runReviewpadFile(env *engine.Env, reviewpadFile *engine.ReviewpadFile, safeMode bool) (engine.ExitStatus, *engine.Program, error) {
+	err := env.Collector.Collect("Trigger Analysis", map[string]interface{}{
 		"project":        fmt.Sprintf("%s/%s", env.TargetEntity.Owner, env.TargetEntity.Repo),
 		"mode":           reviewpadFile.Mode,
 		"author":         handler.GetEventSender(env.EventDetails.Payload),
@@ -236,14 +225,14 @@ func runReviewpadFile(
 		env.Logger.WithError(err).Errorf("error collecting trigger analysis")
 	}
 
-	exitStatus, err := aladinoInterpreter.ExecProgram(program)
+	exitStatus, program, err := engine.ExecConfigurationFile(env, reviewpadFile)
 	if err != nil {
 		logErrorAndCollect(env.Logger, env.Collector, "error executing configuration file", err)
 		return engine.ExitStatusFailure, nil, aladinoInterpreter.GetCheckRunConclusion(), err
 	}
 
 	if safeMode || !env.DryRun {
-		err = aladinoInterpreter.Report(reviewpadFile.Mode, safeMode)
+		err = env.Interpreter.Report(reviewpadFile.Mode, safeMode)
 		if err != nil {
 			logErrorAndCollect(env.Logger, env.Collector, "error reporting results", err)
 			return engine.ExitStatusFailure, nil, aladinoInterpreter.GetCheckRunConclusion(), err
@@ -252,7 +241,7 @@ func runReviewpadFile(
 
 	if utils.IsPullRequestReadyForReportMetrics(env.EventDetails) {
 		if reviewpadFile.MetricsOnMerge != nil && *reviewpadFile.MetricsOnMerge {
-			err = aladinoInterpreter.ReportMetrics()
+			err = env.Interpreter.ReportMetrics()
 			if err != nil {
 				logErrorAndCollect(env.Logger, env.Collector, "error reporting metrics", err)
 				return engine.ExitStatusFailure, nil, aladinoInterpreter.GetCheckRunConclusion(), err
@@ -306,11 +295,11 @@ func Run(
 		}
 
 		if utils.IsReviewpadCommandRun(command) {
-			return runReviewpadFile(env, aladinoInterpreter, reviewpadFile, safeMode)
+			return runReviewpadFile(env, reviewpadFile, safeMode)
 		}
 
 		return runReviewpadCommand(ctx, log, collector, gitHubClient, targetEntity, env, aladinoInterpreter, command)
 	} else {
-		return runReviewpadFile(env, aladinoInterpreter, reviewpadFile, safeMode)
+		return runReviewpadFile(env, reviewpadFile, safeMode)
 	}
 }
