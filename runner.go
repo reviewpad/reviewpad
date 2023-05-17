@@ -210,11 +210,7 @@ func runReviewpadFile(
 	aladinoInterpreter engine.Interpreter,
 	reviewpadFile *engine.ReviewpadFile,
 	safeMode bool,
-) (engine.ExitStatus, *engine.Program, string, error) {
-	if safeMode && !env.DryRun {
-		return engine.ExitStatusFailure, nil, "", fmt.Errorf("when reviewpad is running in safe mode, it must also run in dry-run")
-	}
-
+) (engine.ExitStatus, *engine.Program, error) {
 	program, err := engine.EvalConfigurationFile(reviewpadFile, env)
 	if err != nil {
 		logErrorAndCollect(env.Logger, env.Collector, "error evaluating configuration file", err)
