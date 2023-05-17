@@ -303,6 +303,7 @@ func Run(
 	}
 
 	if utils.IsReviewpadCommand(env.EventDetails) {
+		// reviewpad-an: fixme: this is specific to github and only works for issues
 		command := eventDetails.Payload.(*github.IssueCommentEvent).GetComment().GetBody()
 		if utils.IsReviewpadCommandDryRun(command) {
 			return runReviewpadCommandDryRun(log, collector, gitHubClient, targetEntity, reviewpadFile, env)
