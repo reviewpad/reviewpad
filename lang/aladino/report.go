@@ -58,6 +58,10 @@ func buildCommentSection(comments map[Severity][]string) string {
 	var sb strings.Builder
 
 	for sev, list := range comments {
+		if sev == SEVERITY_FAIL {
+			continue
+		}
+
 		sb.WriteString(fmt.Sprintf("**%v**\n", severityToString(sev)))
 		for _, elem := range list {
 			sb.WriteString(fmt.Sprintf("* %v\n", elem))
