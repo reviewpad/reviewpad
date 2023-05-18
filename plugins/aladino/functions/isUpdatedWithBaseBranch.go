@@ -24,17 +24,15 @@ func isUpdatedWithBaseBranchCode(e aladino.Env, _ []aladino.Value) (aladino.Valu
 	pullRequest := e.GetTarget().(*target.PullRequestTarget).PullRequest
 	targetEntity := e.GetTarget().GetTargetEntity()
 
-	headBehindBy, err := e.GetGithubClient().GetHeadBehindBy(
+	pullRequestUpToDate, err := e.GetGithubClient().GetPullRequestUpToDate(
 		e.GetCtx(),
 		targetEntity.Owner,
 		targetEntity.Repo,
-		pullRequest.GetHead().GetRepo().GetOwner(),
-		pullRequest.GetHead().GetName(),
 		int(pullRequest.GetNumber()),
 	)
 	if err != nil {
-		return nil, fmt.Errorf("error getting head behind by information: %s", err.Error())
+		return nil, fmt.Errorf("error getting pull request outdated information: %s", err.Error())
 	}
 
-	return aladino.BuildBoolValue(headBehindBy == 0), nil
+	return aladino.BuildBoolValue(pullRequestUpToDate), nil
 }

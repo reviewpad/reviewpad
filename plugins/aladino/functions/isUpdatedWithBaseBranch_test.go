@@ -23,11 +23,11 @@ func TestIsUpdatedWithBaseBranch(t *testing.T) {
 		wantErr        error
 		wantIsUpdated  aladino.Value
 	}{
-		"when get head behind by query fails": {
+		"when get pull request update to date query fails": {
 			graphQLHandler: func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(http.StatusUnprocessableEntity)
 			},
-			wantErr: errors.New("error getting head behind by information: non-200 OK status code: 422 Unprocessable Entity body: \"\""),
+			wantErr: errors.New("error getting pull request outdated information: non-200 OK status code: 422 Unprocessable Entity body: \"\""),
 		},
 		"when head is behind": {
 			graphQLHandler: func(w http.ResponseWriter, r *http.Request) {
@@ -35,9 +35,16 @@ func TestIsUpdatedWithBaseBranch(t *testing.T) {
 					"data": {
 						"repository": {
 							"pullRequest": {
+								"baseRefOid": "oldBaseRefOid",
 								"baseRef": {
-									"compare": {
-										"behindBy": 1
+									"target": {
+										"history": {
+											"nodes": [
+												{
+													"oid": "baseRefOid"
+												}
+											]
+										}
 									}
 								}
 							}
@@ -53,9 +60,16 @@ func TestIsUpdatedWithBaseBranch(t *testing.T) {
 					"data": {
 						"repository": {
 							"pullRequest": {
+								"baseRefOid": "baseRefOid",
 								"baseRef": {
-									"compare": {
-										"behindBy": 0
+									"target": {
+										"history": {
+											"nodes": [
+												{
+													"oid": "baseRefOid"
+												}
+											]
+										}
 									}
 								}
 							}
