@@ -341,9 +341,9 @@ func ExecConfigurationFile(env *Env, file *ReviewpadFile) (ExitStatus, *Program,
 		}
 
 		for _, run := range workflow.Runs {
-			runActions, err := execStatement(interpreter, run, rules)
-			if err != nil {
-				return ExitStatusFailure, nil, err
+			retStatus, runActions, err := execStatement(interpreter, run, rules)
+			if err != nil || retStatus == ExitStatusFailure {
+				return retStatus, nil, err
 			}
 
 			if len(runActions) > 0 {
@@ -376,12 +376,9 @@ func ExecConfigurationFile(env *Env, file *ReviewpadFile) (ExitStatus, *Program,
 				for num, stage := range pipeline.Stages {
 					pipelineLog.Infof("evaluating pipeline stage '%v'", num)
 					if stage.Until == "" {
-						_, err := execActions(interpreter, stage.Actions)
-						if err != nil {
-							return ExitStatusFailure, nil, err
-						}
 						program.append(stage.Actions)
-						break
+						retStatus, err := execActions(interpreter, stage.Actions)
+						return retStatus, program, err
 					}
 
 					isDone, err := interpreter.EvalExpr("patch", stage.Until)
@@ -390,12 +387,9 @@ func ExecConfigurationFile(env *Env, file *ReviewpadFile) (ExitStatus, *Program,
 					}
 
 					if !isDone {
-						_, err := execActions(interpreter, stage.Actions)
-						if err != nil {
-							return ExitStatusFailure, nil, err
-						}
 						program.append(stage.Actions)
-						break
+						retStatus, err := execActions(interpreter, stage.Actions)
+						return retStatus, program, err
 					}
 				}
 			}
@@ -411,13 +405,13 @@ func execActions(interpreter Interpreter, actions []string) (ExitStatus, error) 
 	return interpreter.ExecProgram(program)
 }
 
-func execStatement(interpreter Interpreter, run PadWorkflowRunBlock, rules map[string]PadRule) ([]string, error) {
+func execStatement(interpreter Interpreter, run PadWorkflowRunBlock, rules map[string]PadRule) (ExitStatus, []string, error) {
 	// if the run block was just a simple string
 	// there is no rule to evaluate, so just return the actions
 	if run.If == nil {
 		// execute the actions
-		_, err := execActions(interpreter, run.Actions)
-		return run.Actions, err
+		retStatus, err := execActions(interpreter, run.Actions)
+		return retStatus, run.Actions, err
 	}
 
 	for _, rule := range run.If {
@@ -426,7 +420,7 @@ func execStatement(interpreter Interpreter, run PadWorkflowRunBlock, rules map[s
 
 		thenClause, err := interpreter.EvalExpr(ruleDefinition.Kind, ruleDefinition.Spec)
 		if err != nil {
-			return nil, err
+			return ExitStatusFailure, nil, err
 		}
 
 		if thenClause {
@@ -434,7 +428,7 @@ func execStatement(interpreter Interpreter, run PadWorkflowRunBlock, rules map[s
 				return execStatementBlock(interpreter, run.Then, rules, rule.ExtraActions)
 			}
 
-			return append(run.Actions, rule.ExtraActions...), nil
+			return ExitStatusSuccess, append(run.Actions, rule.ExtraActions...), nil
 		}
 
 		if run.Else != nil {
@@ -442,21 +436,21 @@ func execStatement(interpreter Interpreter, run PadWorkflowRunBlock, rules map[s
 		}
 	}
 
-	return nil, nil
+	return ExitStatusSuccess, nil, nil
 }
 
-func execStatementBlock(interpreter Interpreter, runs []PadWorkflowRunBlock, rules map[string]PadRule, extraActions []string) ([]string, error) {
+func execStatementBlock(interpreter Interpreter, runs []PadWorkflowRunBlock, rules map[string]PadRule, extraActions []string) (ExitStatus, []string, error) {
 	actions := []string{}
 	for _, run := range runs {
-		runActions, err := execStatement(interpreter, run, rules)
-		if err != nil {
-			return nil, err
+		retStatus, runActions, err := execStatement(interpreter, run, rules)
+		if err != nil || retStatus == ExitStatusFailure {
+			return retStatus, nil, err
 		}
 
 		actions = append(actions, append(runActions, extraActions...)...)
 	}
 
-	return actions, nil
+	return ExitStatusSuccess, actions, nil
 }
 
 func getActionsFromRunBlock(interpreter Interpreter, run *PadWorkflowRunBlock, rules map[string]PadRule) ([]string, error) {
