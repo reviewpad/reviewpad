@@ -32,6 +32,7 @@ func failCheckStatusCode(e aladino.Env, args []aladino.Value) error {
 		e.SetCheckRunConclusion("failure")
 
 		summary := strings.Builder{}
+		summary.WriteString("## Here are the reasons for Reviewpad's failure:\n\n")
 
 		for _, msg := range e.GetBuiltInsReportedMessages()[aladino.SEVERITY_FAIL] {
 			summary.WriteString(fmt.Sprintf("- %s\n", msg))
