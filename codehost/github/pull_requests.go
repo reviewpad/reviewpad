@@ -163,10 +163,17 @@ type LastFiftyOpenedPullRequestsQuery struct {
 type CompareBaseAndHeadQuery struct {
 	Repository struct {
 		PullRequest struct {
-			BaseRef struct {
-				Compare struct {
-					BehindBy int
-				} `graphql:"compare(headRef: $headRef)"`
+			BaseRefOID string
+			BaseRef    struct {
+				Target struct {
+					Commit struct {
+						History struct {
+							Nodes []struct {
+								OID string
+							}
+						} `graphql:"history(first: 1)"`
+					} `graphql:"... on Commit"`
+				} `graphql:"target"`
 			} `graphql:"baseRef"`
 		} `graphql:"pullRequest(number: $number)"`
 	} `graphql:"repository(owner: $owner, name: $name)"`
@@ -729,22 +736,19 @@ func (c *GithubClient) GetOpenPullRequestsAsReviewer(ctx context.Context, owner 
 	return totalOpenPRsAsReviewerByUser, nil
 }
 
-func (c *GithubClient) GetHeadBehindBy(ctx context.Context, owner, repo, prOwner, headBranch string, number int) (int, error) {
+func (c *GithubClient) GetPullRequestUpToDate(ctx context.Context, owner, repo string, number int) (bool, error) {
 	var compareBaseAndHeadQuery CompareBaseAndHeadQuery
 	compareBaseAndHeadQueryVariables := map[string]interface{}{
-		"owner": githubv4.String(owner),
-		"name":  githubv4.String(repo),
-		// We have to have the head ref in the format login:branch in order to support
-		// comparisons across forks
-		"headRef": githubv4.String(fmt.Sprintf("%s:%s", prOwner, headBranch)),
-		"number":  githubv4.Int(number),
+		"owner":  githubv4.String(owner),
+		"name":   githubv4.String(repo),
+		"number": githubv4.Int(number),
 	}
 
 	if err := c.GetClientGraphQL().Query(ctx, &compareBaseAndHeadQuery, compareBaseAndHeadQueryVariables); err != nil {
-		return 0, err
+		return false, err
 	}
 
-	return compareBaseAndHeadQuery.Repository.PullRequest.BaseRef.Compare.BehindBy, nil
+	return compareBaseAndHeadQuery.Repository.PullRequest.BaseRefOID == compareBaseAndHeadQuery.Repository.PullRequest.BaseRef.Target.Commit.History.Nodes[0].OID, nil
 }
 
 func isPullRequestReviewer(pullRequest PullRequestsQuery, username string) bool {
