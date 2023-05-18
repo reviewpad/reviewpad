@@ -356,9 +356,59 @@ func ExecConfigurationFile(env *Env, file *ReviewpadFile) (ExitStatus, *Program,
 		}
 	}
 
-	// TODO: process pipelines
+	// pipelines should only run on pull requests
+	if env.TargetEntity.Kind == entities.PullRequest {
+		// process pipelines
+		for _, pipeline := range file.Pipelines {
+			log.Infof("evaluating pipeline '%v':", pipeline.Name)
+			pipelineLog := log.WithField("pipeline", pipeline.Name)
+
+			var err error
+			activated := pipeline.Trigger == ""
+			if !activated {
+				activated, err = interpreter.EvalExpr("patch", pipeline.Trigger)
+				if err != nil {
+					return ExitStatusFailure, nil, err
+				}
+			}
+
+			if activated {
+				for num, stage := range pipeline.Stages {
+					pipelineLog.Infof("evaluating pipeline stage '%v'", num)
+					if stage.Until == "" {
+						_, err := execActions(interpreter, stage.Actions)
+						if err != nil {
+							return ExitStatusFailure, nil, err
+						}
+						program.append(stage.Actions)
+						break
+					}
+
+					isDone, err := interpreter.EvalExpr("patch", stage.Until)
+					if err != nil {
+						return ExitStatusFailure, nil, err
+					}
+
+					if !isDone {
+						_, err := execActions(interpreter, stage.Actions)
+						if err != nil {
+							return ExitStatusFailure, nil, err
+						}
+						program.append(stage.Actions)
+						break
+					}
+				}
+			}
+		}
+	}
 
 	return ExitStatusSuccess, program, nil
+}
+
+func execActions(interpreter Interpreter, actions []string) (ExitStatus, error) {
+	program := BuildProgram(make([]*Statement, 0))
+	program.append(actions)
+	return interpreter.ExecProgram(program)
 }
 
 func execStatement(interpreter Interpreter, run PadWorkflowRunBlock, rules map[string]PadRule) ([]string, error) {
@@ -366,9 +416,7 @@ func execStatement(interpreter Interpreter, run PadWorkflowRunBlock, rules map[s
 	// there is no rule to evaluate, so just return the actions
 	if run.If == nil {
 		// execute the actions
-		program := BuildProgram(make([]*Statement, 0))
-		program.append(run.Actions)
-		_, err := interpreter.ExecProgram(program)
+		_, err := execActions(interpreter, run.Actions)
 		return run.Actions, err
 	}
 
