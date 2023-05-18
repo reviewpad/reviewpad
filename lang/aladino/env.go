@@ -20,6 +20,7 @@ import (
 type Severity int
 
 const (
+	SEVERITY_FAIL    Severity = 0
 	SEVERITY_FATAL   Severity = 1
 	SEVERITY_ERROR   Severity = 2
 	SEVERITY_WARNING Severity = 3
@@ -46,6 +47,9 @@ type Env interface {
 	GetExecWaitGroup() *sync.WaitGroup
 	GetExecFatalErrorOccurred() error
 	SetExecFatalErrorOccurred(error)
+	GetCheckRunID() *int64
+	SetCheckRunConclusion(string)
+	GetCheckRunConclusion() string
 }
 
 type BaseEnv struct {
@@ -64,6 +68,8 @@ type BaseEnv struct {
 	ExecWaitGroup            *sync.WaitGroup
 	ExecMutex                *sync.Mutex
 	ExecFatalErrorOccurred   error
+	CheckRunID               *int64
+	CheckRunConclusion       string
 }
 
 func (e *BaseEnv) GetBuiltIns() *BuiltIns {
@@ -118,6 +124,14 @@ func (e *BaseEnv) GetExecWaitGroup() *sync.WaitGroup {
 	return e.ExecWaitGroup
 }
 
+func (e *BaseEnv) SetCheckRunConclusion(conclusion string) {
+	e.CheckRunConclusion = conclusion
+}
+
+func (e *BaseEnv) GetCheckRunConclusion() string {
+	return e.CheckRunConclusion
+}
+
 func (e *BaseEnv) GetExecFatalErrorOccurred() error {
 	e.ExecMutex.Lock()
 	defer e.ExecMutex.Unlock()
@@ -128,6 +142,10 @@ func (e *BaseEnv) SetExecFatalErrorOccurred(err error) {
 	e.ExecMutex.Lock()
 	defer e.ExecMutex.Unlock()
 	e.ExecFatalErrorOccurred = err
+}
+
+func (e *BaseEnv) GetCheckRunID() *int64 {
+	return e.CheckRunID
 }
 
 func NewTypeEnv(e Env) TypeEnv {
@@ -153,6 +171,7 @@ func NewEvalEnv(
 	targetEntity *entities.TargetEntity,
 	eventPayload interface{},
 	builtIns *BuiltIns,
+	checkRunID *int64,
 ) (Env, error) {
 	registerMap := RegisterMap(make(map[string]Value))
 	report := &Report{Actions: make([]string, 0)}
@@ -174,6 +193,7 @@ func NewEvalEnv(
 		CodeHostClient:           codeHostClient,
 		ExecWaitGroup:            &wg,
 		ExecMutex:                &mu,
+		CheckRunID:               checkRunID,
 	}
 
 	switch targetEntity.Kind {

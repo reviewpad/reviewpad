@@ -7,6 +7,7 @@ package plugins_aladino_actions
 import (
 	"fmt"
 
+	"github.com/google/go-github/v52/github"
 	pbc "github.com/reviewpad/api/go/codehost"
 	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
@@ -23,6 +24,7 @@ func Merge() *aladino.BuiltInAction {
 
 func mergeCode(e aladino.Env, args []aladino.Value) error {
 	t := e.GetTarget().(*target.PullRequestTarget)
+	targetEntity := e.GetTarget().GetTargetEntity()
 	log := e.GetLogger().WithField("builtin", "merge")
 
 	if t.PullRequest.Status != pbc.PullRequestStatus_OPEN || t.PullRequest.IsDraft {
@@ -35,7 +37,32 @@ func mergeCode(e aladino.Env, args []aladino.Value) error {
 		return err
 	}
 
-	return t.Merge(mergeMethod)
+	if len(e.GetBuiltInsReportedMessages()[aladino.SEVERITY_FAIL]) > 0 {
+		return nil
+	}
+
+	if e.GetCheckRunID() != nil {
+		e.SetCheckRunConclusion("success")
+		_, _, err := e.GetGithubClient().GetClientREST().Checks.UpdateCheckRun(e.GetCtx(), targetEntity.Owner, targetEntity.Repo, *e.GetCheckRunID(), github.UpdateCheckRunOptions{
+			Name:       "reviewpad",
+			Status:     github.String("completed"),
+			Conclusion: github.String("success"),
+			Output: &github.CheckRunOutput{
+				Title:   github.String("Reviewpad about to merge"),
+				Summary: github.String("Reviewpad is about to merge this pull request."),
+			},
+		})
+		if err != nil {
+			return err
+		}
+	}
+
+	mergeErr := t.Merge(mergeMethod)
+	if mergeErr != nil {
+		e.GetLogger().WithError(mergeErr).Warnln("failed to merge pull request")
+	}
+
+	return nil
 }
 
 func parseMergeMethod(args []aladino.Value) (string, error) {

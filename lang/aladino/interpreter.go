@@ -190,6 +190,9 @@ func (i *Interpreter) Report(mode string, safeMode bool) error {
 
 	reportComments := env.GetBuiltInsReportedMessages()
 
+	// Since fail messages aren't supposed to be reported, we remove them from the report
+	delete(reportComments, SEVERITY_FAIL)
+
 	if mode == engine.SILENT_MODE && len(reportComments) == 0 && !safeMode {
 		if comment != nil {
 			return DeleteReportComment(env, *comment.ID)
@@ -260,6 +263,10 @@ func (i *Interpreter) ReportMetrics() error {
 	return nil
 }
 
+func (i *Interpreter) GetCheckRunConclusion() string {
+	return i.Env.GetCheckRunConclusion()
+}
+
 func NewInterpreter(
 	ctx context.Context,
 	logger *logrus.Entry,
@@ -270,8 +277,9 @@ func NewInterpreter(
 	targetEntity *entities.TargetEntity,
 	eventPayload interface{},
 	builtIns *BuiltIns,
+	checkRunID *int64,
 ) (engine.Interpreter, error) {
-	evalEnv, err := NewEvalEnv(ctx, logger, dryRun, githubClient, codeHostClient, collector, targetEntity, eventPayload, builtIns)
+	evalEnv, err := NewEvalEnv(ctx, logger, dryRun, githubClient, codeHostClient, collector, targetEntity, eventPayload, builtIns, checkRunID)
 	if err != nil {
 		return nil, err
 	}
