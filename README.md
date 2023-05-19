@@ -16,7 +16,7 @@ To start using Reviewpad, check out our [website](https://reviewpad.com).
 
 ## What is Reviewpad?
 
-Reviewpad is service to automate pull request and issues workflows.
+Reviewpad is a service to automate pull requests and issues workflows.
 
 The workflows are specified in a YML-based configuration language described in the [official documentation](https://docs.reviewpad.com/guides/syntax).
 
@@ -40,11 +40,11 @@ labels:
 workflows:
     - name: ship
       description: Ship process - bypass the review and merge with rebase
-      if:
-          - $hasFileExtensions([".md"])
-      then:
-          - $addLabel("ship")
-          - $merge()
+      run:
+          - if: $hasFileExtensions([".md"])
+            then:
+                - $addLabel("ship")
+                - $merge()
 ```
 
 Automatically adds the label `ship` and merges all pull requests that only change `.md` files.
@@ -55,7 +55,7 @@ You can execute Reviewpad through the CLI or install Reviewpad [GitHub App](http
 
 This repository generates two artifacts:
 
-1. CLI [cli](cli/main.go) that runs reviewpad open source edition.
+1. CLI [cli](cli/main.go) that runs Reviewpad open source edition.
 2. Reviewpad library packages:
     - github.com/reviewpad/reviewpad/collector
     - github.com/reviewpad/reviewpad/engine
@@ -65,12 +65,12 @@ This repository generates two artifacts:
 
 Conceptually, the packages are divided into four categories:
 
-1. Engine: The engine is the package responsible of processing the YML file. This process is divided into two stages:
+1. Engine: The engine is the package responsible for processing the YML file. This process is divided into two stages:
     - Process the YML file to determine which workflows are enabled. The outcome of this phase is a program with the actions that will be executed over the pull request.
     - Execution of the synthesised program.
-2. [Aladino Language](https://docs.reviewpad.com/guides/aladino/specification): This is the language that is used in the `spec` property of the rules and also the actions of the workflows. The engine of Reviewpad is not specific to Aladino - this means that it is possible to add the support for a new language such as `Javascript` or `Golang` in these specifications.
+2. [Aladino Language](https://docs.reviewpad.com/guides/aladino/specification): This is the language that is used in the `spec` property of the rules and also the actions of the workflows. The engine of Reviewpad is not specific to Aladino - this means that it is possible to add support for a new language such as `Javascript` or `Golang` in these specifications.
 3. Plugins: The plugin package contains the built-in functions and actions that act as an abstraction to the 3rd party services such as GitHub, Jira, etc. This package is specific to each supported specification language. In the case of `plugins/aladino`, it contains the implementations of the [built-ins](https://docs.reviewpad.com/guides/built-ins).
-4. Utilities: packages such as the collector and the fmtio that provide utilities that are used in multiple places.
+4. Utilities: packages, such as the collector, that provide utilities that are used in multiple places.
 
 ## Development
 
@@ -100,7 +100,7 @@ To generate the CLI run:
 task build-cli
 ```
 
-This command generate the binary `reviewpad-cli` which you can run to try Reviewpad directly.
+This command generates the binary `reviewpad-cli` which you can run to try Reviewpad directly.
 
 The CLI has the following argument list:
 
@@ -124,7 +124,7 @@ Flags:
 Use "reviewpad-cli [command] --help" for more information about a command.
 ```
 
-### Running tests
+### Running unit tests
 
 Run the tests with:
 
@@ -167,7 +167,7 @@ go tool cover -func coverage.out | grep total:
 
 ### Running integration tests
 
-The integration tests run reviewpad on an actual repository and pull request. The repository that the integration tests are running on needs to have the following:
+The integration tests run Reviewpad on an actual repository and pull request. The repository where the integration tests run requires the following setup:
 
 - At least one milestone;
 - At least 3 labels named `bug`, `documentation`, `wontfix` (GitHub adds these labels to every new repository by default);
@@ -177,11 +177,11 @@ The integration tests run reviewpad on an actual repository and pull request. Th
 
 #### Required Environment Variables
 
-- `GITHUB_INTEGRATION_TEST_TOKEN` : GitHub access token used to setup tests and run reviewpad
+- `GITHUB_INTEGRATION_TEST_TOKEN` : GitHub access token used to setup tests and run Reviewpad
 - `GITHUB_INTEGRATION_TEST_REPO_OWNER` : The owner of the repository used to run integration tests on
 - `GITHUB_INTEGRATION_TEST_REPO_NAME` : The name of the repository used to run integration tests on
 
-After setting those variables, you can run the integration tests with:
+After setting these variables, you can run the integration tests with:
 
 ```
 task integration-test
@@ -192,7 +192,7 @@ task integration-test
 We strongly recommend using [VSCode](https://code.visualstudio.com/) with the following extensions:
 
 -   [Go](https://marketplace.visualstudio.com/items?itemName=golang.go) for Go language support.
--   [EditorConfig](https://marketplace.visualstudio.com/items?itemName=EditorConfig.EditorConfig) to helps maintaining consistent coding styles.
+-   [EditorConfig](https://marketplace.visualstudio.com/items?itemName=EditorConfig.EditorConfig) to helps to maintain consistent coding styles.
 -   [licenser](https://marketplace.visualstudio.com/items?itemName=ymotongpoo.licenser) for adding license headers.
 -   [YAML](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml) for enabling `reviewpad.yml` JSON schema.
 -   [JSON Parse & Stringify](https://marketplace.visualstudio.com/items?itemName=nextfaze.json-parse-stringify) for formatting JSON files.
@@ -211,7 +211,6 @@ Paste the following configuration:
     "yaml.schemas": {
         "https://raw.githubusercontent.com/reviewpad/schemas/main/latest/schema.json": [
             "reviewpad.yml",
-            "reviewpad.yaml",
         ]
     },
     // Go configuration
@@ -239,19 +238,25 @@ Add the following to your `.vscode/launch.json`.
             "mode": "debug",
             "args": [
                 "run",
-                // Flag to run on dry run (optional)
+                // Flag to run on dry run (optional. Default is false)
                 "-d",
-                // Flag to run on safe mode (optional)
+                // Flag to run on safe mode (optional. Default is false)
                 "-s",
-                // Absolute path to reviewpad.yml file to run
-                "-f=<PATH_TO_REVIEWPAD_FILE>",
-                // GitHub url to run the reviewpad.yml against to
-                "-u=<GITHUB_URL>",
-                // GiHub personal access token
-                // https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token
+                // Flag to define the log level (optional. Default is debug)
+                "-l=debug",
+                // GiHub personal access token.
+                // To generate a token, go to https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token.
                 "-t=<GIT_HUB_TOKEN>",
-                // Absolute path to JSON file with GitHub event
+                // Absolute path to reviewpad.yml file to run.
+                "-f=<PATH_TO_REVIEWPAD_FILE>",
+                // Absolute path to JSON file with GitHub event.
+                // This GitHub event defines the action that will run on the pull request / issue.
                 "-e=<PATH_TO_EVENT_JSON>"
+                // GitHub URL of the pull request / issue.
+                // The reviewpad.yml file provided with the -f flag will run against this pull request / issue.
+                // This URL should be same the URL of the pull request / issues in the GitHub event provided with the -e flag.
+                // For instance, if you are using a GitHub event of a comment on the pull request X, the -u flag should be the URL of the pull request X.
+                "-u=<GITHUB_URL>",
             ],
             "program": "${workspaceFolder}/cli/main.go"
         }
@@ -259,16 +264,21 @@ Add the following to your `.vscode/launch.json`.
 }
 ```
 
-For the argument `-e` you case use either a GitHub event from a Reviewpad GitHub Action run or a GitHub event from a Reviewpad GitHub App run.
+#### How to get the GitHub event (internal use only)
 
-#### Using a GitHub event from a Reviewpad GitHub App run
+The `-e` flag is mandatory to run the debugger.
 
-1. Navigate to the logs of the Reviewpad GitHub App run where you wish to copy the event from. You can use the following query to filter the events payload `{$.level=debug && $.msg="request received" }`.
+It represents the GitHub event that you wish to run the reviewpad.yml file against.
+
+To extract a GitHub event, you can use the following steps:
+
+1. Navigate to the logs of the Reviewpad GitHub App run where you wish to copy the event from. You can use the following query to filter the events payload `{$.level=debug && $.msg="request received" && $.request_received.delivery_id=<DELIVERY_ID> }`.
 2. Copy the content inside the property `body`.
 3. Paste the content inside a file (e.g. `my_event.json`) and save it under `cli > debugdata`.
 4. This content is an escape JSON string. Use the [JSON Parse & Stringify](https://marketplace.visualstudio.com/items?itemName=nextfaze.json-parse-stringify) extension to parse the content by pressing `Ctrl+Shift+P` and searching for `JSON: Parse Stringified JSON`.
-5. Rename the root properties `type` and `payload ` to `event_name` and `event` respectively.
-6. Update the argument `-e` to point to the full path of the file you just created.
+5. Rename the root property `eventType` to `event_name`.
+6. Rename the root property `eventPayload` to `event`.
+7. Update the argument `-e` to point to the full path of the file you just created.
 
 You can then run the debugger by pressing F5.
 
