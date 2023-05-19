@@ -262,7 +262,7 @@ Add the following to your `.vscode/launch.json`.
                 "INPUT_CODEHOST_SERVICE": "<CODEHOST_SERVICE_ENDPOINT>",
                 "INPUT_SEMANTIC_SERVICE": "<SEMANTIC_SERVICE_ENDPOINT>",
                 "INPUT_ROBIN_SERVICE": "<ROBIN_SERVICE_ENDPOINT>",
-            }
+            },
             "program": "${workspaceFolder}/cli/main.go"
         }
     ]
