@@ -205,7 +205,7 @@ func runReviewpadCommand(
 	return exitStatus, program, "", nil
 }
 
-func runReviewpadFile(env *engine.Env, reviewpadFile *engine.ReviewpadFile, safeMode bool) (engine.ExitStatus, *engine.Program, error) {
+func runReviewpadFile(env *engine.Env, reviewpadFile *engine.ReviewpadFile, safeMode bool) (engine.ExitStatus, *engine.Program, string, error) {
 	err := env.Collector.Collect("Trigger Analysis", map[string]interface{}{
 		"project":        fmt.Sprintf("%s/%s", env.TargetEntity.Owner, env.TargetEntity.Repo),
 		"mode":           reviewpadFile.Mode,
@@ -228,14 +228,14 @@ func runReviewpadFile(env *engine.Env, reviewpadFile *engine.ReviewpadFile, safe
 	exitStatus, program, err := engine.ExecConfigurationFile(env, reviewpadFile)
 	if err != nil {
 		logErrorAndCollect(env.Logger, env.Collector, "error executing configuration file", err)
-		return engine.ExitStatusFailure, nil, aladinoInterpreter.GetCheckRunConclusion(), err
+		return engine.ExitStatusFailure, nil, env.Interpreter.GetCheckRunConclusion(), err
 	}
 
 	if safeMode || !env.DryRun {
 		err = env.Interpreter.Report(reviewpadFile.Mode, safeMode)
 		if err != nil {
 			logErrorAndCollect(env.Logger, env.Collector, "error reporting results", err)
-			return engine.ExitStatusFailure, nil, aladinoInterpreter.GetCheckRunConclusion(), err
+			return engine.ExitStatusFailure, nil, env.Interpreter.GetCheckRunConclusion(), err
 		}
 	}
 
@@ -244,7 +244,7 @@ func runReviewpadFile(env *engine.Env, reviewpadFile *engine.ReviewpadFile, safe
 			err = env.Interpreter.ReportMetrics()
 			if err != nil {
 				logErrorAndCollect(env.Logger, env.Collector, "error reporting metrics", err)
-				return engine.ExitStatusFailure, nil, aladinoInterpreter.GetCheckRunConclusion(), err
+				return engine.ExitStatusFailure, nil, env.Interpreter.GetCheckRunConclusion(), err
 			}
 		}
 	}
@@ -254,7 +254,7 @@ func runReviewpadFile(env *engine.Env, reviewpadFile *engine.ReviewpadFile, safe
 		env.Logger.WithError(err).Errorf("error collecting completed analysis")
 	}
 
-	return exitStatus, program, aladinoInterpreter.GetCheckRunConclusion(), nil
+	return exitStatus, program, env.Interpreter.GetCheckRunConclusion(), nil
 }
 
 func Run(
