@@ -425,21 +425,27 @@ func execStatement(interpreter Interpreter, run PadWorkflowRunBlock, rules map[s
 
 		if thenClause {
 			if len(run.Then) > 0 {
-				return execStatementBlock(interpreter, run.Then, rules, rule.ExtraActions)
+				retStatus, actionsThen, err := execStatementBlock(interpreter, run.Then, rules)
+				if err != nil || retStatus == ExitStatusFailure {
+					return retStatus, nil, err
+				}
+
+				retExtraActionStatus, err := execActions(interpreter, rule.ExtraActions)
+				return retExtraActionStatus, append(actionsThen, rule.ExtraActions...), err
 			}
 
 			return ExitStatusSuccess, append(run.Actions, rule.ExtraActions...), nil
 		}
 
 		if run.Else != nil {
-			return execStatementBlock(interpreter, run.Else, rules, nil)
+			return execStatementBlock(interpreter, run.Else, rules)
 		}
 	}
 
 	return ExitStatusSuccess, nil, nil
 }
 
-func execStatementBlock(interpreter Interpreter, runs []PadWorkflowRunBlock, rules map[string]PadRule, extraActions []string) (ExitStatus, []string, error) {
+func execStatementBlock(interpreter Interpreter, runs []PadWorkflowRunBlock, rules map[string]PadRule) (ExitStatus, []string, error) {
 	actions := []string{}
 	for _, run := range runs {
 		retStatus, runActions, err := execStatement(interpreter, run, rules)
@@ -447,7 +453,7 @@ func execStatementBlock(interpreter Interpreter, runs []PadWorkflowRunBlock, rul
 			return retStatus, nil, err
 		}
 
-		actions = append(actions, append(runActions, extraActions...)...)
+		actions = runActions
 	}
 
 	return ExitStatusSuccess, actions, nil

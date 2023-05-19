@@ -1,0 +1,18 @@
+# Copyright 2022 Explore.dev Unipessoal Lda. All Rights Reserved.
+# Use of this source code is governed by a license that can be
+# found in the LICENSE file.
+
+api-version: reviewpad.com/v3.x
+
+workflows:
+  - name: basic-workflow
+    run:
+      - if:
+          - rule: "false"
+            extra-actions:
+              - $addLabel("extra-actions")
+        then:
+          - $addLabel("then-clause")
+        else:
+          - $addLabel("else-clause")
+      - $addLabel("after-if")
