@@ -424,17 +424,22 @@ func execStatement(interpreter Interpreter, run PadWorkflowRunBlock, rules map[s
 		}
 
 		if thenClause {
+			var actions []string
 			if len(run.Then) > 0 {
 				retStatus, actionsThen, err := execStatementBlock(interpreter, run.Then, rules)
 				if err != nil || retStatus == ExitStatusFailure {
 					return retStatus, nil, err
 				}
 
-				retExtraActionStatus, err := execActions(interpreter, rule.ExtraActions)
-				return retExtraActionStatus, append(actionsThen, rule.ExtraActions...), err
+				actions = actionsThen
 			}
 
-			return ExitStatusSuccess, append(run.Actions, rule.ExtraActions...), nil
+			if len(rule.ExtraActions) > 0 {
+				retExtraActionStatus, err := execActions(interpreter, rule.ExtraActions)
+				return retExtraActionStatus, append(actions, rule.ExtraActions...), err
+			}
+
+			return ExitStatusSuccess, actions, nil
 		}
 
 		if run.Else != nil {
