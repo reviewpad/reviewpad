@@ -5,12 +5,12 @@
 package cmd
 
 var (
-	dryRun        bool
-	eventFilePath string
-	token         string
-	mixpanelToken string
-	url           string
-	reviewpadFile string
-	safeModeRun   bool
-	logLevel      string
+	dryRun            bool
+	eventFilePath     string
+	token             string
+	mixpanelToken     string
+	url               string
+	reviewpadFilePath string
+	safeModeRun       bool
+	logLevel          string
 )

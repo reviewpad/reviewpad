@@ -16,7 +16,7 @@ var rootCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.PersistentFlags().StringVarP(&reviewpadFile, "file", "f", "", "input reviewpad file")
+	rootCmd.PersistentFlags().StringVarP(&reviewpadFilePath, "file", "f", "", "Input reviewpad file")
 	err := rootCmd.MarkPersistentFlagRequired("file")
 	if err != nil {
 		panic(err)

@@ -6,6 +6,7 @@ package codehost
 
 import (
 	"context"
+	"strings"
 
 	pbc "github.com/reviewpad/api/go/codehost"
 	pbe "github.com/reviewpad/api/go/entities"
@@ -33,7 +34,10 @@ func GetHostInfo(url string) (*HostInfo, error) {
 		return nil, err
 	}
 
-	hostId, err := host.StringToHost(uriData.Host)
+	hostParts := strings.Split(uriData.Host, ".")
+	hostName := hostParts[0]
+
+	hostId, err := host.StringToHost(hostName)
 	if err != nil {
 		return nil, err
 	}

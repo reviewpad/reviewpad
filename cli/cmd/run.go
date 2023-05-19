@@ -30,6 +30,14 @@ const (
 	CODEHOST_SERVICE_ENDPOINT = "INPUT_CODEHOST_SERVICE"
 )
 
+var runCmd = &cobra.Command{
+	Use:   "run",
+	Short: "Runs reviewpad",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		return run()
+	},
+}
+
 func init() {
 	rootCmd.AddCommand(runCmd)
 	runCmd.Flags().BoolVarP(&dryRun, "dry-run", "d", false, "Dry run mode")
@@ -51,27 +59,17 @@ func init() {
 	if err := runCmd.MarkFlagRequired("event-payload"); err != nil {
 		panic(err)
 	}
-}
 
-func parseEvent(rawEvent string) (*handler.ActionEvent, error) {
-	ev := &handler.ActionEvent{}
-
-	err := json.Unmarshal([]byte(rawEvent), ev)
-	if err != nil {
-		return nil, err
+	if endpoint := os.Getenv("INPUT_CODEHOST_SERVICE"); endpoint == "" {
+		panic("INPUT_CODEHOST_SERVICE env var is required")
 	}
 
-	return ev, nil
-}
+	if endpoint := os.Getenv("INPUT_SEMANTIC_SERVICE"); endpoint == "" {
+		panic("INPUT_SEMANTIC_SERVICE env var is required")
+	}
 
-func toTargetEntityKind(entityType string) (entities.TargetEntityKind, error) {
-	switch entityType {
-	case "issues":
-		return entities.Issue, nil
-	case "pull":
-		return entities.PullRequest, nil
-	default:
-		return "", fmt.Errorf("unknown entity type %s", entityType)
+	if endpoint := os.Getenv("INPUT_ROBIN_SERVICE"); endpoint == "" {
+		panic("INPUT_ROBIN_SERVICE env var is required")
 	}
 }
 
@@ -85,24 +83,20 @@ func run() error {
 
 	var event *handler.ActionEvent
 
-	if eventFilePath == "" {
-		log.Warn("[WARN] No event payload provided. Assuming empty event.")
-	} else {
-		content, readFileErr := os.ReadFile(eventFilePath)
-		if readFileErr != nil {
-			return readFileErr
-		}
-
-		rawEvent := string(content)
-		event, err = parseEvent(rawEvent)
-		if err != nil {
-			return err
-		}
-
-		event.Token = &token
+	eventFileContent, err := os.ReadFile(eventFilePath)
+	if err != nil {
+		return err
 	}
 
-	// FIXME: abstract to be code host agnostic
+	event, err = parseEvent(string(eventFileContent))
+	if err != nil {
+		return err
+	}
+
+	// Use the provided token
+	event.Token = &token
+
+	// FIXME: Abstract to be code host agnostic
 	gitHubDetailsRegex := regexp.MustCompile(`github\.com\/(.+)\/(.+)\/(\w+)\/(\d+)`)
 	gitHubEntityDetails := gitHubDetailsRegex.FindSubmatch([]byte(url))
 
@@ -119,13 +113,13 @@ func run() error {
 		log.Errorf("error creating new collector: %v", err)
 	}
 
-	data, err := os.ReadFile(reviewpadFile)
+	rawReviewpadFile, err := os.ReadFile(reviewpadFilePath)
 	if err != nil {
 		return fmt.Errorf("error reading reviewpad file. Details: %v", err.Error())
 	}
 
-	buf := bytes.NewBuffer(data)
-	file, err := reviewpad.Load(ctx, log, gitHubClient, buf)
+	bufRviewpadFile := bytes.NewBuffer(rawReviewpadFile)
+	reviewpadFile, err := reviewpad.Load(ctx, log, gitHubClient, bufRviewpadFile)
 	if err != nil {
 		return fmt.Errorf("error running reviewpad team edition. Details %v", err.Error())
 	}
@@ -158,7 +152,7 @@ func run() error {
 
 	for _, targetEntity := range targetEntities {
 		log.Infof("Processing entity %s/%s#%d", targetEntity.Owner, targetEntity.Repo, targetEntity.Number)
-		_, _, _, err = reviewpad.Run(ctxReq, log, gitHubClient, codeHostClient, collectorClient, targetEntity, eventDetails, file, nil, dryRun, safeModeRun)
+		_, _, _, err = reviewpad.Run(ctxReq, log, gitHubClient, codeHostClient, collectorClient, targetEntity, eventDetails, reviewpadFile, nil, dryRun, safeModeRun)
 		if err != nil {
 			return fmt.Errorf("error running reviewpad team edition. Details %v", err.Error())
 		}
@@ -167,10 +161,24 @@ func run() error {
 	return nil
 }
 
-var runCmd = &cobra.Command{
-	Use:   "run",
-	Short: "Runs reviewpad",
-	RunE: func(cmd *cobra.Command, args []string) error {
-		return run()
-	},
+func parseEvent(rawEvent string) (*handler.ActionEvent, error) {
+	event := &handler.ActionEvent{}
+
+	err := json.Unmarshal([]byte(rawEvent), event)
+	if err != nil {
+		return nil, err
+	}
+
+	return event, nil
+}
+
+func toTargetEntityKind(entityType string) (entities.TargetEntityKind, error) {
+	switch entityType {
+	case "issues":
+		return entities.Issue, nil
+	case "pull":
+		return entities.PullRequest, nil
+	default:
+		return "", fmt.Errorf("unknown entity type %s", entityType)
+	}
 }
