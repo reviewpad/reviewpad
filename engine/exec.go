@@ -161,7 +161,7 @@ func EvalConfigurationFile(file *ReviewpadFile, env *Env) (*Program, error) {
 		}
 
 		for _, run := range workflow.Runs {
-			runActions, err := getActionsFromRunBlock(interpreter, &run, rules)
+			runActions, err := getActionsFromRunBlock(interpreter, run, rules)
 			if err != nil {
 				return nil, err
 			}
@@ -217,11 +217,243 @@ func EvalConfigurationFile(file *ReviewpadFile, env *Env) (*Program, error) {
 	return program, nil
 }
 
-func getActionsFromRunBlock(interpreter Interpreter, run *PadWorkflowRunBlock, rules map[string]PadRule) ([]string, error) {
-	if run == nil {
-		return nil, nil
+// ExecConfigurationFile processes
+// Pre-condition Lint(file) == nil
+func ExecConfigurationFile(env *Env, file *ReviewpadFile) (ExitStatus, *Program, error) {
+	log := env.Logger
+	log.Infoln("exec configuration file")
+
+	interpreter := env.Interpreter
+
+	rules := make(map[string]PadRule)
+
+	log.WithFields(logrus.Fields{
+		"reviewpad_file": file,
+		"reviewpad_details": map[string]interface{}{
+			"project":        fmt.Sprintf(env.TargetEntity.Owner + "/" + env.TargetEntity.Repo),
+			"mode":           file.Mode,
+			"ignoreErrors":   file.IgnoreErrors,
+			"metricsOnMerge": file.MetricsOnMerge,
+			"totalImports":   len(file.Imports),
+			"totalExtends":   len(file.Extends),
+			"totalGroups":    len(file.Groups),
+			"totalLabels":    len(file.Labels),
+			"totalRules":     len(file.Rules),
+			"totalWorkflows": len(file.Workflows),
+			"totalPipelines": len(file.Pipelines),
+			"totalRecipes":   len(file.Recipes),
+		},
+	}).Debugln("reviewpad file")
+
+	// process labels
+	for labelKeyName, label := range file.Labels {
+		labelName := labelKeyName
+		// for backwards compatibility, a label has both a key and a name
+		if label.Name != "" {
+			labelName = label.Name
+		} else {
+			label.Name = labelName
+		}
+
+		if !env.DryRun {
+			ghLabel, err := checkLabelExists(env, labelName)
+			if err != nil {
+				return ExitStatusFailure, nil, err
+			}
+
+			if ghLabel != nil {
+				labelHasUpdates, errCheckUpdates := checkLabelHasUpdates(env, &label, ghLabel)
+				if errCheckUpdates != nil {
+					return ExitStatusFailure, nil, errCheckUpdates
+				}
+
+				if labelHasUpdates {
+					err = updateLabel(env, &labelName, &label)
+					if err != nil {
+						return ExitStatusFailure, nil, err
+					}
+				}
+			} else {
+				err = createLabel(env, &labelName, &label)
+				if err != nil {
+					return ExitStatusFailure, nil, err
+				}
+			}
+		}
+
+		err := interpreter.ProcessLabel(labelKeyName, labelName)
+		if err != nil {
+			return ExitStatusFailure, nil, err
+		}
 	}
 
+	// process groups
+	for _, group := range file.Groups {
+		err := interpreter.ProcessGroup(
+			group.Name,
+			GroupKind(group.Kind),
+			GroupType(group.Type),
+			group.Spec,
+			group.Param,
+			transformAladinoExpression(group.Where),
+		)
+		if err != nil {
+			return ExitStatusFailure, nil, err
+		}
+	}
+
+	// a program is a list of statements to be executed based on the command, workflow rules and actions.
+	program := BuildProgram(make([]*Statement, 0))
+
+	// process rules
+	for _, rule := range file.Rules {
+		err := interpreter.ProcessRule(rule.Name, rule.Spec)
+		if err != nil {
+			return ExitStatusFailure, nil, err
+		}
+		rules[rule.Name] = rule
+	}
+
+	// triggeredExclusiveWorkflow is a control variable to denote if a workflow `always-run: false` has been triggered.
+	triggeredExclusiveWorkflow := false
+
+	// process workflows
+	for _, workflow := range file.Workflows {
+		log.Infof("evaluating workflow '%v'", workflow.Name)
+		workflowLog := log.WithField("workflow", workflow.Name)
+
+		if !workflow.AlwaysRun && triggeredExclusiveWorkflow {
+			workflowLog.Infof("skipping workflow because it is not always run and another workflow has been triggered")
+			continue
+		}
+
+		shouldRun := false
+		for _, eventKind := range workflow.On {
+			if eventKind == env.TargetEntity.Kind {
+				shouldRun = true
+				break
+			}
+		}
+
+		if !shouldRun {
+			workflowLog.Infof("skipping workflow because event kind is '%v' and workflow is on '%v'", env.TargetEntity.Kind, workflow.On)
+			continue
+		}
+
+		for _, run := range workflow.Runs {
+			retStatus, runActions, err := execStatement(interpreter, run, rules)
+			if err != nil || retStatus == ExitStatusFailure {
+				return retStatus, nil, err
+			}
+
+			if len(runActions) > 0 {
+				if !workflow.AlwaysRun {
+					triggeredExclusiveWorkflow = true
+				}
+
+				program.append(runActions)
+			}
+		}
+	}
+
+	// pipelines should only run on pull requests
+	if env.TargetEntity.Kind == entities.PullRequest {
+		// process pipelines
+		for _, pipeline := range file.Pipelines {
+			log.Infof("evaluating pipeline '%v':", pipeline.Name)
+			pipelineLog := log.WithField("pipeline", pipeline.Name)
+
+			var err error
+			activated := pipeline.Trigger == ""
+			if !activated {
+				activated, err = interpreter.EvalExpr("patch", pipeline.Trigger)
+				if err != nil {
+					return ExitStatusFailure, nil, err
+				}
+			}
+
+			if activated {
+				for num, stage := range pipeline.Stages {
+					pipelineLog.Infof("evaluating pipeline stage '%v'", num)
+					if stage.Until == "" {
+						program.append(stage.Actions)
+						retStatus, err := execActions(interpreter, stage.Actions)
+						return retStatus, program, err
+					}
+
+					isDone, err := interpreter.EvalExpr("patch", stage.Until)
+					if err != nil {
+						return ExitStatusFailure, nil, err
+					}
+
+					if !isDone {
+						program.append(stage.Actions)
+						retStatus, err := execActions(interpreter, stage.Actions)
+						return retStatus, program, err
+					}
+				}
+			}
+		}
+	}
+
+	return ExitStatusSuccess, program, nil
+}
+
+func execActions(interpreter Interpreter, actions []string) (ExitStatus, error) {
+	program := BuildProgram(make([]*Statement, 0))
+	program.append(actions)
+	return interpreter.ExecProgram(program)
+}
+
+func execStatement(interpreter Interpreter, run PadWorkflowRunBlock, rules map[string]PadRule) (ExitStatus, []string, error) {
+	// if the run block was just a simple string
+	// there is no rule to evaluate, so just return the actions
+	if run.If == nil {
+		// execute the actions
+		retStatus, err := execActions(interpreter, run.Actions)
+		return retStatus, run.Actions, err
+	}
+
+	for _, rule := range run.If {
+		ruleName := rule.Rule
+		ruleDefinition := rules[ruleName]
+
+		thenClause, err := interpreter.EvalExpr(ruleDefinition.Kind, ruleDefinition.Spec)
+		if err != nil {
+			return ExitStatusFailure, nil, err
+		}
+
+		if thenClause {
+			if len(run.Then) > 0 {
+				return execStatementBlock(interpreter, run.Then, rules, rule.ExtraActions)
+			}
+
+			return ExitStatusSuccess, append(run.Actions, rule.ExtraActions...), nil
+		}
+
+		if run.Else != nil {
+			return execStatementBlock(interpreter, run.Else, rules, nil)
+		}
+	}
+
+	return ExitStatusSuccess, nil, nil
+}
+
+func execStatementBlock(interpreter Interpreter, runs []PadWorkflowRunBlock, rules map[string]PadRule, extraActions []string) (ExitStatus, []string, error) {
+	actions := []string{}
+	for _, run := range runs {
+		retStatus, runActions, err := execStatement(interpreter, run, rules)
+		if err != nil || retStatus == ExitStatusFailure {
+			return retStatus, nil, err
+		}
+
+		actions = append(actions, append(runActions, extraActions...)...)
+	}
+
+	return ExitStatusSuccess, actions, nil
+}
+
+func getActionsFromRunBlock(interpreter Interpreter, run PadWorkflowRunBlock, rules map[string]PadRule) ([]string, error) {
 	// if the run block was just a simple string
 	// there is no rule to evaluate, so just return the actions
 	if run.If == nil {
@@ -256,7 +488,7 @@ func getActionsFromRunBlock(interpreter Interpreter, run *PadWorkflowRunBlock, r
 func getActionsFromRunBlocks(interpreter Interpreter, runs []PadWorkflowRunBlock, rules map[string]PadRule, extraActions []string) ([]string, error) {
 	actions := []string{}
 	for _, run := range runs {
-		runActions, err := getActionsFromRunBlock(interpreter, &run, rules)
+		runActions, err := getActionsFromRunBlock(interpreter, run, rules)
 		if err != nil {
 			return nil, err
 		}

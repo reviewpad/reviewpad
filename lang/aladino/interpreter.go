@@ -163,6 +163,32 @@ func (i *Interpreter) ExecStatement(statement *engine.Statement) error {
 		if err != nil {
 			return err
 		}
+
+		// update the target
+		targetEntity := i.Env.GetTarget().GetTargetEntity()
+		githubClient := i.Env.GetGithubClient()
+		codeHostClient := i.Env.GetCodeHostClient()
+		ctx := i.Env.GetCtx()
+		switch targetEntity.Kind {
+		case entities.Issue:
+			issue, _, err := githubClient.GetIssue(ctx, targetEntity.Owner, targetEntity.Repo, targetEntity.Number)
+			if err != nil {
+				return err
+			}
+
+			i.Env.(*BaseEnv).Target = target.NewIssueTarget(ctx, targetEntity, githubClient, issue)
+		case entities.PullRequest:
+			pullRequest, err := codeHostClient.GetPullRequest(ctx, fmt.Sprintf("%s/%s", targetEntity.Owner, targetEntity.Repo), int64(targetEntity.Number))
+			if err != nil {
+				return err
+			}
+
+			pullRequestTarget, err := target.NewPullRequestTarget(ctx, targetEntity, githubClient, codeHostClient, pullRequest)
+			if err != nil {
+				return err
+			}
+			i.Env.(*BaseEnv).Target = pullRequestTarget
+		}
 	}
 
 	i.Env.GetReport().addToReport(statement)
