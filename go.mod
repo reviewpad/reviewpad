@@ -16,18 +16,18 @@ require (
 	github.com/jinzhu/copier v0.3.5
 	github.com/libgit2/git2go/v31 v31.7.9
 	github.com/mattn/go-shellwords v1.0.12
-	github.com/migueleliasweb/go-github-mock v0.0.17
+	github.com/migueleliasweb/go-github-mock v0.0.18
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/ohler55/ojg v1.18.5
-	github.com/reviewpad/api/go v0.0.0-20230509102823-c5df0c5f5560
+	github.com/reviewpad/api/go v0.0.0-20230516132435-28928ac3eaaa
 	github.com/reviewpad/go-conventionalcommits v0.10.0
 	github.com/reviewpad/go-lib v0.0.0-20230517091020-57df919c06fa
 	github.com/shurcooL/githubv4 v0.0.0-20230424031643-6cea62ecd5a9
-	github.com/sirupsen/logrus v1.9.0
+	github.com/sirupsen/logrus v1.9.2
 	github.com/spf13/cobra v1.7.0
-	github.com/stretchr/testify v1.8.2
+	github.com/stretchr/testify v1.8.3
 	github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80
-	golang.org/x/exp v0.0.0-20230425010034-47ecfdc1ba53
+	golang.org/x/exp v0.0.0-20230515195305-f3d0a9c9a5cc
 	golang.org/x/oauth2 v0.8.0
 	google.golang.org/grpc v1.55.0
 	google.golang.org/protobuf v1.30.0
@@ -35,14 +35,13 @@ require (
 )
 
 require (
-	github.com/ProtonMail/go-crypto v0.0.0-20230426101702-58e86b294756 // indirect
-	github.com/aws/aws-sdk-go v1.44.259 // indirect
+	github.com/ProtonMail/go-crypto v0.0.0-20230518184743-7afd39499903 // indirect
+	github.com/aws/aws-sdk-go v1.44.265 // indirect
 	github.com/cloudflare/circl v1.3.3 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/go-errors/errors v1.4.2 // indirect
 	github.com/golang-jwt/jwt/v4 v4.5.0 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
-	github.com/google/go-github/v50 v50.2.0 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/go-retryablehttp v0.7.2 // indirect
