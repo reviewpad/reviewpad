@@ -258,6 +258,11 @@ Add the following to your `.vscode/launch.json`.
                 // For instance, if you are using a GitHub event of a comment on the pull request X, the -u flag should be the URL of the pull request X.
                 "-u=<GITHUB_URL>",
             ],
+            "env": {
+                "INPUT_CODEHOST_SERVICE": "<CODEHOST_SERVICE_ENDPOINT>",
+                "INPUT_SEMANTIC_SERVICE": "<SEMANTIC_SERVICE_ENDPOINT>",
+                "INPUT_ROBIN_SERVICE": "<ROBIN_SERVICE_ENDPOINT>",
+            }
             "program": "${workspaceFolder}/cli/main.go"
         }
     ]
