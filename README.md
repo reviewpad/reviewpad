@@ -33,18 +33,18 @@ As an example, the following workflow:
 
 ```yml
 labels:
-    ship:
-        description: Ship mode
-        color: "#76dbbe"
+  ship:
+    description: Ship mode
+    color: "#76dbbe"
 
 workflows:
-    - name: ship
-      description: Ship process - bypass the review and merge with rebase
-      run:
-          - if: $hasFileExtensions([".md"])
-            then:
-                - $addLabel("ship")
-                - $merge()
+  - name: ship
+    description: Ship process - bypass the review and merge with rebase
+    run:
+      - if: $hasFileExtensions([".md"])
+        then:
+          - $addLabel("ship")
+          - $merge()
 ```
 
 Automatically adds the label `ship` and merges all pull requests that only change `.md` files.
