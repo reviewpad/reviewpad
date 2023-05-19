@@ -161,7 +161,7 @@ func EvalConfigurationFile(file *ReviewpadFile, env *Env) (*Program, error) {
 		}
 
 		for _, run := range workflow.Runs {
-			runActions, err := getActionsFromRunBlock(interpreter, &run, rules)
+			runActions, err := getActionsFromRunBlock(interpreter, run, rules)
 			if err != nil {
 				return nil, err
 			}
@@ -453,12 +453,7 @@ func execStatementBlock(interpreter Interpreter, runs []PadWorkflowRunBlock, rul
 	return ExitStatusSuccess, actions, nil
 }
 
-func getActionsFromRunBlock(interpreter Interpreter, run *PadWorkflowRunBlock, rules map[string]PadRule) ([]string, error) {
-	// QUESTION: why is this needed?
-	if run == nil {
-		return nil, nil
-	}
-
+func getActionsFromRunBlock(interpreter Interpreter, run PadWorkflowRunBlock, rules map[string]PadRule) ([]string, error) {
 	// if the run block was just a simple string
 	// there is no rule to evaluate, so just return the actions
 	if run.If == nil {
@@ -493,7 +488,7 @@ func getActionsFromRunBlock(interpreter Interpreter, run *PadWorkflowRunBlock, r
 func getActionsFromRunBlocks(interpreter Interpreter, runs []PadWorkflowRunBlock, rules map[string]PadRule, extraActions []string) ([]string, error) {
 	actions := []string{}
 	for _, run := range runs {
-		runActions, err := getActionsFromRunBlock(interpreter, &run, rules)
+		runActions, err := getActionsFromRunBlock(interpreter, run, rules)
 		if err != nil {
 			return nil, err
 		}
