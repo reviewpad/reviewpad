@@ -274,6 +274,106 @@ func TestEvalCommand(t *testing.T) {
 	}
 }
 
+func TestExecConfigurationFile(t *testing.T) {
+	logger := logrus.NewEntry(logrus.New())
+	tests := map[string]struct {
+		inputReviewpadFilePath string
+		inputContext           context.Context
+		inputGitHubClient      *gh.GithubClient
+		clientOptions          []mock.MockBackendOption
+		targetEntity           *entities.TargetEntity
+		eventDetails           *entities.EventDetails
+		wantProgram            *engine.Program
+		wantErr                string
+		wantExitStatus         engine.ExitStatus
+	}{
+		"reviewpad with workflow extra actions then": {
+			inputReviewpadFilePath: "testdata/exec/reviewpad_with_workflow_extra_actions_then.yml",
+			wantProgram: engine.BuildProgram(
+				[]*engine.Statement{
+					engine.BuildStatement(`$addLabel("then-clause")`),
+					engine.BuildStatement(`$addLabel("extra-actions")`),
+				},
+			),
+			targetEntity:   engine.DefaultMockTargetEntity,
+			wantExitStatus: engine.ExitStatusSuccess,
+		},
+		"reviewpad with workflow else": {
+			inputReviewpadFilePath: "testdata/exec/reviewpad_with_workflow_else.yml",
+			wantProgram: engine.BuildProgram(
+				[]*engine.Statement{
+					engine.BuildStatement(`$addLabel("else-clause")`),
+					engine.BuildStatement(`$addLabel("after-if")`),
+				},
+			),
+			targetEntity:   engine.DefaultMockTargetEntity,
+			wantExitStatus: engine.ExitStatusSuccess,
+		},
+	}
+
+	codehostClient := aladino.GetDefaultCodeHostClient(t, aladino.GetDefaultPullRequestDetails(), aladino.GetDefaultPullRequestFileList(), nil, nil)
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			mockedClient := engine.MockGithubClient(test.clientOptions)
+
+			builtInName := "addLabel"
+			builtIns := &aladino.BuiltIns{
+				Actions: map[string]*aladino.BuiltInAction{
+					builtInName: {
+						Type: aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, aladino.BuildArrayOfType(aladino.BuildStringType())),
+						Code: func(e aladino.Env, args []aladino.Value) error {
+							return nil
+						},
+						SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
+					},
+				},
+			}
+
+			dryRun := true
+			mockedAladinoInterpreter, err := aladino.NewInterpreter(
+				engine.DefaultMockCtx,
+				logger,
+				dryRun,
+				mockedClient,
+				codehostClient,
+				engine.DefaultMockCollector,
+				engine.DefaultMockTargetEntity,
+				engine.DefaultMockEventPayload,
+				builtIns,
+				nil,
+			)
+			if err != nil {
+				assert.FailNow(t, fmt.Sprintf("mockAladinoInterpreter: %v", err))
+			}
+
+			mockedEnv, err := engine.MockEnvWith(mockedClient, mockedAladinoInterpreter, test.targetEntity, test.eventDetails)
+			if err != nil {
+				assert.FailNow(t, fmt.Sprintf("engine MockEnvWith: %v", err))
+			}
+			mockedEnv.DryRun = dryRun
+
+			reviewpadFileData, err := utils.ReadFile(test.inputReviewpadFilePath)
+			if err != nil {
+				assert.FailNow(t, fmt.Sprintf("Error reading reviewpad file: %v", err))
+			}
+
+			reviewpadFile, err := engine.Load(test.inputContext, logger, test.inputGitHubClient, reviewpadFileData)
+			if err != nil {
+				assert.FailNow(t, fmt.Sprintf("Error parsing reviewpad file: %v", err))
+			}
+
+			gotExitStatus, gotProgram, gotErr := engine.ExecConfigurationFile(mockedEnv, reviewpadFile)
+
+			if gotErr != nil && gotErr.Error() != test.wantErr {
+				assert.FailNow(t, fmt.Sprintf("Eval() error = %v, wantErr %v", gotErr, test.wantErr))
+			}
+			assert.Equal(t, test.wantExitStatus, gotExitStatus)
+			assert.Equal(t, test.wantProgram, gotProgram)
+		})
+	}
+}
+
 func TestEvalConfigurationFile(t *testing.T) {
 	logger := logrus.NewEntry(logrus.New())
 	tests := map[string]struct {
