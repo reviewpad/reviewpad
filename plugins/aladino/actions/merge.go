@@ -24,7 +24,6 @@ func Merge() *aladino.BuiltInAction {
 
 func mergeCode(e aladino.Env, args []aladino.Value) error {
 	t := e.GetTarget().(*target.PullRequestTarget)
-	targetEntity := e.GetTarget().GetTargetEntity()
 	log := e.GetLogger().WithField("builtin", "merge")
 
 	if t.PullRequest.Status != pbc.PullRequestStatus_OPEN || t.PullRequest.IsDraft {
@@ -43,15 +42,7 @@ func mergeCode(e aladino.Env, args []aladino.Value) error {
 
 	if e.GetCheckRunID() != nil {
 		e.SetCheckRunConclusion("success")
-		_, _, err := e.GetGithubClient().GetClientREST().Checks.UpdateCheckRun(e.GetCtx(), targetEntity.Owner, targetEntity.Repo, *e.GetCheckRunID(), github.UpdateCheckRunOptions{
-			Name:       "reviewpad",
-			Status:     github.String("completed"),
-			Conclusion: github.String("success"),
-			Output: &github.CheckRunOutput{
-				Title:   github.String("Reviewpad about to merge"),
-				Summary: github.String("Reviewpad is about to merge this pull request."),
-			},
-		})
+		err := updateCheckRunWithSummary(e, "Reviewpad is about to merge this pull request")
 		if err != nil {
 			return err
 		}
@@ -59,10 +50,31 @@ func mergeCode(e aladino.Env, args []aladino.Value) error {
 
 	mergeErr := t.Merge(mergeMethod)
 	if mergeErr != nil {
+		if e.GetCheckRunID() != nil {
+			err := updateCheckRunWithSummary(e, "The merge cannot be completed due to non-compliance with certain GitHub branch protection rules")
+			if err != nil {
+				return err
+			}
+		}
+
 		e.GetLogger().WithError(mergeErr).Warnln("failed to merge pull request")
 	}
 
 	return nil
+}
+
+func updateCheckRunWithSummary(e aladino.Env, summary string) error {
+	targetEntity := e.GetTarget().GetTargetEntity()
+	_, _, err := e.GetGithubClient().GetClientREST().Checks.UpdateCheckRun(e.GetCtx(), targetEntity.Owner, targetEntity.Repo, *e.GetCheckRunID(), github.UpdateCheckRunOptions{
+		Name:       "reviewpad",
+		Status:     github.String("completed"),
+		Conclusion: github.String("success"),
+		Output: &github.CheckRunOutput{
+			Title:   github.String("Reviewpad about to merge"),
+			Summary: github.String(summary),
+		},
+	})
+	return err
 }
 
 func parseMergeMethod(args []aladino.Value) (string, error) {
