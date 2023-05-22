@@ -43,7 +43,7 @@ func failCheckStatusCode(e aladino.Env, args []aladino.Value) error {
 			Status:     github.String("completed"),
 			Conclusion: github.String("failure"),
 			Output: &github.CheckRunOutput{
-				Title:   github.String("Reviewpad policy failed"),
+				Title:   github.String("Reviewpad failed"),
 				Summary: github.String(summary.String()),
 			},
 		})
