@@ -1,9 +1,9 @@
 name: Qodana
 on:
   pull_request:
-  push:
-    branches:
-      - main
+#  push:
+#    branches:
+#      - main
 
 jobs:
   qodana:
