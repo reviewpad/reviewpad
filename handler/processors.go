@@ -127,6 +127,46 @@ func processIssueCommentEvent(log *logrus.Entry, e *github.IssueCommentEvent) ([
 		}, nil
 }
 
+func processDiscussionEvent(log *logrus.Entry, e *github.DiscussionEvent) ([]*entities.TargetEntity, *entities.EventDetails, error) {
+	log.Info("processing discussion event")
+	log.Infof("found discussion %v", *e.Discussion.Number)
+
+	return []*entities.TargetEntity{
+			{
+				Kind:        entities.Discussion,
+				Number:      *e.Discussion.Number,
+				Owner:       *e.Repo.Owner.Login,
+				Repo:        *e.Repo.Name,
+				AccountType: e.GetRepo().GetOwner().GetType(),
+				Visibility:  e.GetRepo().GetVisibility(),
+			},
+		}, &entities.EventDetails{
+			EventName:   "discussion",
+			EventAction: *e.Action,
+			Payload:     e,
+		}, nil
+}
+
+func processDiscussionCommentEvent(log *logrus.Entry, e *github.DiscussionCommentEvent) ([]*entities.TargetEntity, *entities.EventDetails, error) {
+	log.Info("processing discussion_comment event")
+	log.Infof("found discussion %v", *e.Discussion.Number)
+
+	return []*entities.TargetEntity{
+			{
+				Kind:        entities.Discussion,
+				Number:      *e.Discussion.Number,
+				Owner:       *e.Repo.Owner.Login,
+				Repo:        *e.Repo.Name,
+				AccountType: e.GetRepo().GetOwner().GetType(),
+				Visibility:  e.GetRepo().GetVisibility(),
+			},
+		}, &entities.EventDetails{
+			EventName:   "discussion_comment",
+			EventAction: *e.Action,
+			Payload:     e,
+		}, nil
+}
+
 func processPullRequestEvent(log *logrus.Entry, e *github.PullRequestEvent) ([]*entities.TargetEntity, *entities.EventDetails, error) {
 	log.Info("processing pull_request event")
 	log.Infof("found pull request %v", *e.PullRequest.Number)
@@ -584,7 +624,9 @@ func ProcessEvent(log *logrus.Entry, event *ActionEvent) ([]*entities.TargetEnti
 	case *github.DeploymentStatusEvent:
 		return processUnsupportedEvent(payload)
 	case *github.DiscussionEvent:
-		return processUnsupportedEvent(payload)
+		return processDiscussionEvent(log, payload)
+	case *github.DiscussionCommentEvent:
+		return processDiscussionCommentEvent(log, payload)
 	case *github.ForkEvent:
 		return processUnsupportedEvent(payload)
 	case *github.GitHubAppAuthorizationEvent:
