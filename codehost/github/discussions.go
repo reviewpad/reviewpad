@@ -127,7 +127,7 @@ func (c *GithubClient) GetDiscussionComments(ctx context.Context, owner, repo st
 		varGQLGetDiscussionCommentsQuery["afterCursor"] = githubv4.String(getDiscussionCommentsQuery.Repository.Discussion.Comments.PageInfo.EndCursor)
 	}
 
-	return comments, ErrDiscussionNotFound
+	return comments, nil
 }
 
 func (c *GithubClient) AddCommentToDiscussion(ctx context.Context, discussionID, body string) error {
