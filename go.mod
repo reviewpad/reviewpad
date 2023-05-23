@@ -19,9 +19,9 @@ require (
 	github.com/migueleliasweb/go-github-mock v0.0.18
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/ohler55/ojg v1.18.5
-	github.com/reviewpad/api/go v0.0.0-20230516132435-28928ac3eaaa
+	github.com/reviewpad/api/go v0.0.0-20230519182648-a6db32ab3994
 	github.com/reviewpad/go-conventionalcommits v0.10.0
-	github.com/reviewpad/go-lib v0.0.0-20230517091020-57df919c06fa
+	github.com/reviewpad/go-lib v0.0.0-20230523100931-3276b99f2619
 	github.com/shurcooL/githubv4 v0.0.0-20230424031643-6cea62ecd5a9
 	github.com/sirupsen/logrus v1.9.2
 	github.com/spf13/cobra v1.7.0
@@ -36,7 +36,7 @@ require (
 
 require (
 	github.com/ProtonMail/go-crypto v0.0.0-20230518184743-7afd39499903 // indirect
-	github.com/aws/aws-sdk-go v1.44.265 // indirect
+	github.com/aws/aws-sdk-go v1.44.266 // indirect
 	github.com/cloudflare/circl v1.3.3 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/go-errors/errors v1.4.2 // indirect
