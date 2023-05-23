@@ -6,8 +6,13 @@ package github
 
 import (
 	"context"
+	"errors"
 
 	"github.com/shurcooL/githubv4"
+)
+
+var (
+	ErrDiscussionNotFound = errors.New("discussion not found")
 )
 
 type AddReactionMutation struct {
@@ -26,6 +31,14 @@ type DiscussionComment struct {
 	ID          string
 	Body        string
 	AuthorLogin string
+}
+
+type GetDiscussionIDQuery struct {
+	Repository struct {
+		Discussion struct {
+			ID string
+		} `graphql:"discussion(number: $number)"`
+	} `graphql:"repository(owner: $owner, name: $name)"`
 }
 
 type GetDiscussionCommentsQuery struct {
@@ -51,6 +64,21 @@ type GetDiscussionCommentsQuery struct {
 			} `graphql:"comments(first: 50, after: $afterCursor)"`
 		} `graphql:"discussion(number: $number)"`
 	} `graphql:"repository(owner: $owner, name: $name)"`
+}
+
+func (c *GithubClient) GetDiscussionID(ctx context.Context, owner, repo string, discussionNum int) (string, error) {
+	var getDiscussionIDQuery GetDiscussionIDQuery
+	varGQLGetDiscussionIDQuery := map[string]interface{}{
+		"owner":  githubv4.String(owner),
+		"name":   githubv4.String(repo),
+		"number": githubv4.Int(discussionNum),
+	}
+
+	if err := c.clientGQL.Query(ctx, &getDiscussionIDQuery, varGQLGetDiscussionIDQuery); err != nil {
+		return "", err
+	}
+
+	return getDiscussionIDQuery.Repository.Discussion.ID, ErrDiscussionNotFound
 }
 
 // GetDiscussionComments returns the discussion comments for a given discussion number.
@@ -96,7 +124,7 @@ func (c *GithubClient) GetDiscussionComments(ctx context.Context, owner, repo st
 		varGQLGetDiscussionCommentsQuery["afterCursor"] = githubv4.String(getDiscussionCommentsQuery.Repository.Discussion.Comments.PageInfo.EndCursor)
 	}
 
-	return comments, ErrProjectItemNotFound
+	return comments, ErrDiscussionNotFound
 }
 
 func (c *GithubClient) AddReactionToDiscussionComment(ctx context.Context, subjectID string, reaction githubv4.ReactionContent) error {
