@@ -58,14 +58,11 @@ type GetDiscussionCommentsQuery struct {
 			Comments struct {
 				PageInfo PageInfo
 				Nodes    []struct {
-					DiscussionComment struct {
-						ID     string
-						Body   string
-						Author struct {
-							Login string
-						}
+					ID     string
+					Body   string
+					Author struct {
+						Login string
 					}
-					ID string
 				}
 			} `graphql:"comments(first: 50, after: $afterCursor)"`
 		} `graphql:"discussion(number: $number)"`
@@ -117,9 +114,9 @@ func (c *GithubClient) GetDiscussionComments(ctx context.Context, owner, repo st
 
 		for _, node := range getDiscussionCommentsQuery.Repository.Discussion.Comments.Nodes {
 			comments = append(comments, DiscussionComment{
-				ID:          node.DiscussionComment.ID,
-				Body:        node.DiscussionComment.Body,
-				AuthorLogin: node.DiscussionComment.Author.Login,
+				ID:          node.ID,
+				Body:        node.Body,
+				AuthorLogin: node.Author.Login,
 			})
 		}
 
