@@ -15,6 +15,12 @@ var (
 	ErrDiscussionNotFound = errors.New("discussion not found")
 )
 
+type AddDiscussionCommentMutation struct {
+	AddDiscussionComment struct {
+		ClientMutationID string
+	} `graphql:"addDiscussionComment(input: $input)"`
+}
+
 type AddReactionMutation struct {
 	AddReaction struct {
 		ClientMutationID string
@@ -125,6 +131,16 @@ func (c *GithubClient) GetDiscussionComments(ctx context.Context, owner, repo st
 	}
 
 	return comments, ErrDiscussionNotFound
+}
+
+func (c *GithubClient) AddCommentToDiscussion(ctx context.Context, discussionID, body string) error {
+	var addDiscussionCommentMutation AddDiscussionCommentMutation
+	addDiscussionCommentInput := githubv4.AddDiscussionCommentInput{
+		DiscussionID: discussionID,
+		Body:         githubv4.String(body),
+	}
+
+	return c.clientGQL.Mutate(ctx, &addDiscussionCommentMutation, addDiscussionCommentInput, nil)
 }
 
 func (c *GithubClient) AddReactionToDiscussionComment(ctx context.Context, subjectID string, reaction githubv4.ReactionContent) error {
