@@ -225,6 +225,44 @@ func normalizeRun(run any, currentRules []PadRule) ([]PadWorkflowRunBlock, []Pad
 	//     - $comment("goodbye world")
 	case map[string]any:
 		mapBlock := PadWorkflowRunBlock{}
+		if forEachBlock, ok := val["forEach"]; ok {
+			if _, ok := forEachBlock.(map[string]interface{}); !ok {
+				return nil, nil, fmt.Errorf("forEach block must be a map")
+			}
+
+			value, ok := forEachBlock.(map[string]interface{})["value"]
+			if !ok {
+				return nil, nil, fmt.Errorf("forEach block must contain a value")
+			}
+
+			in, ok := forEachBlock.(map[string]interface{})["in"]
+			if !ok {
+				return nil, nil, fmt.Errorf("forEach block must contain an in")
+			}
+
+			do, ok := forEachBlock.(map[string]interface{})["do"]
+			if !ok {
+				return nil, nil, fmt.Errorf("forEach block must contain a do")
+			}
+
+			processedDo, processedDoRules, err := normalizeRun(do, currentRules)
+			if err != nil {
+				return nil, nil, err
+			}
+
+			mapBlock.ForEach = &PadWorkflowRunForEachBlock{
+				Value: value.(string),
+				In:    in.(string),
+				Do:    processedDo,
+			}
+
+			rules = append(rules, processedDoRules...)
+
+			return []PadWorkflowRunBlock{
+				mapBlock,
+			}, rules, nil
+		}
+
 		if ruleBlock, ok := val["if"]; ok {
 			processedRules, processedWorkflowRules, err := normalizeRules(ruleBlock, currentRules)
 			if err != nil {

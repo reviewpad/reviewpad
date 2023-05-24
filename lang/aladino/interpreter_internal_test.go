@@ -93,7 +93,7 @@ func TestEvalGroup_WhenTypeInferenceFails(t *testing.T) {
 		assert.FailNow(t, fmt.Sprintf("parse failed %v", err))
 	}
 
-	_, err = evalGroup(mockedEnv, expr)
+	_, err = evalList(mockedEnv, expr)
 
 	assert.EqualError(t, err, "type inference failed")
 }
@@ -106,7 +106,7 @@ func TestEvalGroup_WhenExpressionIsNotValidGroup(t *testing.T) {
 		assert.FailNow(t, fmt.Sprintf("parse failed %v", err))
 	}
 
-	_, err = evalGroup(mockedEnv, expr)
+	_, err = evalList(mockedEnv, expr)
 
 	assert.EqualError(t, err, "expression is not a valid group")
 }
@@ -133,7 +133,7 @@ func TestEvalGroup(t *testing.T) {
 		assert.FailNow(t, fmt.Sprintf("parse failed %v", err))
 	}
 
-	gotVal, err := evalGroup(mockedEnv, expr)
+	gotVal, err := evalList(mockedEnv, expr)
 
 	wantVal := lang.BuildArrayValue([]lang.Value{lang.BuildStringValue(devName)})
 

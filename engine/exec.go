@@ -408,10 +408,20 @@ func execActions(interpreter Interpreter, actions []string) (ExitStatus, error) 
 func execStatement(interpreter Interpreter, run PadWorkflowRunBlock, rules map[string]PadRule) (ExitStatus, []string, error) {
 	// if the run block was just a simple string
 	// there is no rule to evaluate, so just return the actions
-	if run.If == nil {
+	if run.ForEach == nil && run.If == nil {
 		// execute the actions
 		retStatus, err := execActions(interpreter, run.Actions)
 		return retStatus, run.Actions, err
+	}
+
+	// if the run block has a for-each clause
+	if run.ForEach != nil {
+		err := interpreter.ProcessList(run.ForEach.Value, run.ForEach.In)
+		if err != nil {
+			return ExitStatusFailure, nil, err
+		}
+
+		return execStatementBlock(interpreter, run.ForEach.Do, rules)
 	}
 
 	for _, rule := range run.If {

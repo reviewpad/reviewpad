@@ -56,12 +56,28 @@ func (i *Interpreter) ProcessGroup(groupName string, kind engine.GroupKind, type
 		return fmt.Errorf("ProcessGroup:buildGroupAST: %v", err)
 	}
 
-	value, err := evalGroup(i.Env, exprAST)
+	value, err := evalList(i.Env, exprAST)
 	if err != nil {
-		return fmt.Errorf("ProcessGroup:evalGroup %v", err)
+		return fmt.Errorf("ProcessGroup:evalList %v", err)
 	}
 
 	i.Env.GetRegisterMap()[groupName] = value
+	return nil
+}
+
+func (i *Interpreter) ProcessList(listName, expr string) error {
+	exprAST, err := Parse(expr)
+	if err != nil {
+		return fmt.Errorf("ProcessList:Parse: %v", err)
+	}
+
+	value, err := evalList(i.Env, exprAST)
+	if err != nil {
+		return fmt.Errorf("ProcessList:evalList %v", err)
+	}
+
+	i.Env.GetRegisterMap()[listName] = value
+
 	return nil
 }
 

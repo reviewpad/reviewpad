@@ -43,6 +43,7 @@ type Interpreter interface {
 	Report(mode string, safeMode bool) error
 	ReportMetrics() error
 	GetCheckRunConclusion() string
+	ProcessList(name, expr string) error
 }
 
 type Env struct {

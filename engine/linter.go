@@ -165,6 +165,7 @@ func lintWorkflows(log *logrus.Entry, rules []PadRule, padWorkflows []PadWorkflo
 }
 
 func validateWorkflowRun(run *PadWorkflowRunBlock, workflow *PadWorkflow) error {
+	var hasForEachBlock = run.ForEach != nil
 	var hasActions = run.Actions != nil && len(run.Actions) > 0
 	var hasThenActions = run.Then != nil && len(run.Then) > 0
 	var hasExtraActions bool
@@ -178,8 +179,8 @@ func validateWorkflowRun(run *PadWorkflowRunBlock, workflow *PadWorkflow) error 
 	// Old style workflow if/then/else are converted to new run block format.
 	// The old style workflow allows if blocks to have extra actions.
 	// Because of this, a run block can have extra actions.
-	if !hasThenActions && !hasActions && !hasExtraActions {
-		return fmt.Errorf("workflow '%v' has a run block without a 'then' block, no actions and no extra actions", workflow.Name)
+	if !hasThenActions && !hasActions && !hasExtraActions && !hasForEachBlock {
+		return fmt.Errorf("workflow '%v' has a run block without a 'then' block, no actions, no extra actions or a for each block", workflow.Name)
 	}
 
 	for _, thenRun := range run.Then {

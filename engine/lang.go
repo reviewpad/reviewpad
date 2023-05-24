@@ -118,6 +118,13 @@ type PadWorkflowRunBlock struct {
 	Then    []PadWorkflowRunBlock
 	Else    []PadWorkflowRunBlock
 	Actions []string
+	ForEach *PadWorkflowRunForEachBlock
+}
+
+type PadWorkflowRunForEachBlock struct {
+	Value string
+	In    string
+	Do    []PadWorkflowRunBlock
 }
 
 func (p PadWorkflow) equals(o PadWorkflow) bool {
