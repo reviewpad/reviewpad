@@ -8,6 +8,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -503,8 +504,26 @@ func processCheckSuiteEvent(log *logrus.Entry, token string, event *github.Check
 
 		log.Infof("fetched %d pull requests", len(prs))
 
+		headSha := event.CheckSuite.GetHeadSHA()
+
+		if event.Sender.GetLogin() == "github-merge-queue[bot]" {
+			prInfo := strings.Split(event.GetCheckSuite().GetHeadBranch(), "/")[2]
+			prNumberInt, err := strconv.Atoi(strings.Split(prInfo, "-")[1])
+			if err != nil {
+				return nil, nil, fmt.Errorf("error converting pr number to int: %w", err)
+			}
+
+			// get the head sha from the pull request
+			for _, pr := range prs {
+				if pr.GetNumber() == prNumberInt {
+					headSha = pr.GetHead().GetSHA()
+					break
+				}
+			}
+		}
+
 		for _, pr := range prs {
-			if pr.GetHead().GetSHA() == event.CheckSuite.GetHeadSHA() {
+			if pr.GetHead().GetSHA() == headSha {
 				log.Infof("found pull request %v", pr.GetNumber())
 				return []*entities.TargetEntity{
 					{
