@@ -17,7 +17,7 @@ import (
 
 func TestGetDiscussionComments(t *testing.T) {
 	mockedGetDiscussionCommentsQuery := `{
-        "query": "query($afterCursor:String! $name:String! $number:Int! $owner:String!) {
+        "query": "query($afterCursor:String $name:String! $number:Int! $owner:String!) {
             repository(owner: $owner, name: $name) {
                 discussion(number: $number) {
                     id, 
@@ -42,7 +42,7 @@ func TestGetDiscussionComments(t *testing.T) {
             }
         }",
         "variables": {
-            "afterCursor": "",
+            "afterCursor": null,
             "name":"default-mock-repo",
             "number":82,
             "owner":"foobar"
