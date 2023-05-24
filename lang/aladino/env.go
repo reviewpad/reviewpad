@@ -159,6 +159,10 @@ func NewTypeEnv(e Env) TypeEnv {
 		builtInsType[builtInName] = builtInAction.Type
 	}
 
+	for valueName, value := range e.GetRegisterMap() {
+		builtInsType[valueName] = value.Type()
+	}
+
 	return TypeEnv(builtInsType)
 }
 
