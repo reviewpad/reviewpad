@@ -92,7 +92,7 @@ func (c *GithubClient) GetDiscussionComments(ctx context.Context, owner, repo st
 		"owner":       githubv4.String(owner),
 		"name":        githubv4.String(repo),
 		"number":      githubv4.Int(discussionNum),
-		"afterCursor": githubv4.String(""),
+		"afterCursor": (*githubv4.String)(nil),
 	}
 
 	comments := make([]DiscussionComment, 0)
