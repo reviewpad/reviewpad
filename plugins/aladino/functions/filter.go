@@ -6,6 +6,7 @@ package plugins_aladino_functions
 
 import (
 	"github.com/reviewpad/go-lib/entities"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
@@ -26,17 +27,17 @@ func Filter() *aladino.BuiltInFunction {
 	}
 }
 
-func filterCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
-	result := make([]aladino.Value, 0)
-	elems := args[0].(*aladino.ArrayValue).Vals
-	fn := args[1].(*aladino.FunctionValue).Fn
+func filterCode(e aladino.Env, args []lang.Value) (lang.Value, error) {
+	result := make([]lang.Value, 0)
+	elems := args[0].(*lang.ArrayValue).Vals
+	fn := args[1].(*lang.FunctionValue).Fn
 
 	for _, elem := range elems {
-		fnResult := fn([]aladino.Value{elem}).(*aladino.BoolValue).Val
+		fnResult := fn([]lang.Value{elem}).(*lang.BoolValue).Val
 		if fnResult {
 			result = append(result, elem)
 		}
 	}
 
-	return aladino.BuildArrayValue(result), nil
+	return lang.BuildArrayValue(result), nil
 }

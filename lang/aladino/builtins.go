@@ -4,7 +4,10 @@
 
 package aladino
 
-import "github.com/reviewpad/go-lib/entities"
+import (
+	"github.com/reviewpad/go-lib/entities"
+	"github.com/reviewpad/reviewpad/v4/lang"
+)
 
 type BuiltIns struct {
 	Functions map[string]*BuiltInFunction
@@ -14,13 +17,13 @@ type BuiltIns struct {
 
 type BuiltInFunction struct {
 	Type           Type
-	Code           func(e Env, args []Value) (Value, error)
+	Code           func(e Env, args []lang.Value) (lang.Value, error)
 	SupportedKinds []entities.TargetEntityKind
 }
 
 type BuiltInAction struct {
 	Type              Type
-	Code              func(e Env, args []Value) error
+	Code              func(e Env, args []lang.Value) error
 	Disabled          bool
 	SupportedKinds    []entities.TargetEntityKind
 	RunAsynchronously bool

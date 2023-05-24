@@ -6,6 +6,7 @@ package plugins_aladino_functions
 
 import (
 	"github.com/reviewpad/go-lib/entities"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
@@ -17,15 +18,15 @@ func IsElementOf() *aladino.BuiltInFunction {
 	}
 }
 
-func isElementOfCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
-	member := args[0].(*aladino.StringValue)
-	group := args[1].(*aladino.ArrayValue).Vals
+func isElementOfCode(e aladino.Env, args []lang.Value) (lang.Value, error) {
+	member := args[0].(*lang.StringValue)
+	group := args[1].(*lang.ArrayValue).Vals
 
 	for _, groupMember := range group {
 		if member.Equals(groupMember) {
-			return aladino.BuildBoolValue(true), nil
+			return lang.BuildBoolValue(true), nil
 		}
 	}
 
-	return aladino.BuildBoolValue(false), nil
+	return lang.BuildBoolValue(false), nil
 }

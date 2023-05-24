@@ -7,6 +7,7 @@ package plugins_aladino_functions
 import (
 	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
@@ -18,8 +19,8 @@ func IsMerged() *aladino.BuiltInFunction {
 	}
 }
 
-func isMergedCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
+func isMergedCode(e aladino.Env, _ []lang.Value) (lang.Value, error) {
 	pullRequest := e.GetTarget().(*target.PullRequestTarget).PullRequest
 
-	return aladino.BuildBoolValue(pullRequest.IsMerged), nil
+	return lang.BuildBoolValue(pullRequest.IsMerged), nil
 }

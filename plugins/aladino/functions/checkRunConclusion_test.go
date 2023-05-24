@@ -7,6 +7,7 @@ import (
 
 	"github.com/google/go-github/v52/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/reviewpad/reviewpad/v4/utils"
@@ -69,7 +70,7 @@ func TestCheckRunStatus_WhenRequestsFail(t *testing.T) {
 			nil,
 		)
 
-		args := []aladino.Value{aladino.BuildStringValue(checkName)}
+		args := []lang.Value{lang.BuildStringValue(checkName)}
 		gotStatus, err := checkRunConclusion(mockedEnv, args)
 
 		assert.Nil(t, gotStatus)
@@ -82,7 +83,7 @@ func TestCheckRunStatus(t *testing.T) {
 
 	tests := map[string]struct {
 		clientOptions []mock.MockBackendOption
-		wantStatus    aladino.Value
+		wantStatus    lang.Value
 	}{
 		"when there are no checks": {
 			clientOptions: []mock.MockBackendOption{
@@ -97,7 +98,7 @@ func TestCheckRunStatus(t *testing.T) {
 					}),
 				),
 			},
-			wantStatus: aladino.BuildStringValue(""),
+			wantStatus: lang.BuildStringValue(""),
 		},
 		"when check name is not found": {
 			clientOptions: []mock.MockBackendOption{
@@ -116,7 +117,7 @@ func TestCheckRunStatus(t *testing.T) {
 					}),
 				),
 			},
-			wantStatus: aladino.BuildStringValue(""),
+			wantStatus: lang.BuildStringValue(""),
 		},
 		"when check status is not completed": {
 			clientOptions: []mock.MockBackendOption{
@@ -136,7 +137,7 @@ func TestCheckRunStatus(t *testing.T) {
 					}),
 				),
 			},
-			wantStatus: aladino.BuildStringValue(""),
+			wantStatus: lang.BuildStringValue(""),
 		},
 		"when check conclusion is not set": {
 			clientOptions: []mock.MockBackendOption{
@@ -157,7 +158,7 @@ func TestCheckRunStatus(t *testing.T) {
 					}),
 				),
 			},
-			wantStatus: aladino.BuildStringValue(""),
+			wantStatus: lang.BuildStringValue(""),
 		},
 		"when check is eligible": {
 			clientOptions: []mock.MockBackendOption{
@@ -181,7 +182,7 @@ func TestCheckRunStatus(t *testing.T) {
 					}),
 				),
 			},
-			wantStatus: aladino.BuildStringValue("success"),
+			wantStatus: lang.BuildStringValue("success"),
 		},
 		"when there are multiple checks": {
 			clientOptions: []mock.MockBackendOption{
@@ -209,7 +210,7 @@ func TestCheckRunStatus(t *testing.T) {
 					}),
 				),
 			},
-			wantStatus: aladino.BuildStringValue("failure"),
+			wantStatus: lang.BuildStringValue("failure"),
 		},
 	}
 
@@ -232,7 +233,7 @@ func TestCheckRunStatus(t *testing.T) {
 			nil,
 		)
 
-		args := []aladino.Value{aladino.BuildStringValue(checkName)}
+		args := []lang.Value{lang.BuildStringValue(checkName)}
 		gotStatus, err := checkRunConclusion(mockedEnv, args)
 
 		assert.Nil(t, err)

@@ -13,6 +13,7 @@ import (
 	"github.com/google/go-github/v52/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	pbc "github.com/reviewpad/api/go/codehost"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/reviewpad/reviewpad/v4/utils"
@@ -57,7 +58,7 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 	tests := map[string]struct {
 		totalReviewers      int
 		maxReviews          int
-		excludedReviewers   *aladino.ArrayValue
+		excludedReviewers   *lang.ArrayValue
 		wantErr             error
 		mockBackendOptions  []mock.MockBackendOption
 		graphQLHandler      http.HandlerFunc
@@ -67,7 +68,7 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 		"when the pull request is already assigned reviewers": {
 			totalReviewers:    1,
 			maxReviews:        3,
-			excludedReviewers: aladino.BuildArrayValue([]aladino.Value{}),
+			excludedReviewers: lang.BuildArrayValue([]lang.Value{}),
 			mockBackendOptions: []mock.MockBackendOption{
 				mock.WithRequestMatch(
 					mock.GetReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
@@ -85,7 +86,7 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 		"when the pull request already has reviews": {
 			totalReviewers:    1,
 			maxReviews:        3,
-			excludedReviewers: aladino.BuildArrayValue([]aladino.Value{}),
+			excludedReviewers: lang.BuildArrayValue([]lang.Value{}),
 			mockBackendOptions: []mock.MockBackendOption{
 				mock.WithRequestMatch(
 					mock.GetReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
@@ -110,7 +111,7 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 		"when error getting git blame information": {
 			totalReviewers:    1,
 			maxReviews:        3,
-			excludedReviewers: aladino.BuildArrayValue([]aladino.Value{}),
+			excludedReviewers: lang.BuildArrayValue([]lang.Value{}),
 			mockBackendOptions: []mock.MockBackendOption{
 				mock.WithRequestMatch(
 					mock.GetReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
@@ -141,7 +142,7 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 		"when no blame information is found": {
 			totalReviewers:    1,
 			maxReviews:        3,
-			excludedReviewers: aladino.BuildArrayValue([]aladino.Value{}),
+			excludedReviewers: lang.BuildArrayValue([]lang.Value{}),
 			graphQLHandler: func(w http.ResponseWriter, r *http.Request) {
 				utils.MustWrite(w, `{
 					"data": {
@@ -176,7 +177,7 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 		"when get open pull requests as reviewer query fails": {
 			totalReviewers:    1,
 			maxReviews:        3,
-			excludedReviewers: aladino.BuildArrayValue([]aladino.Value{}),
+			excludedReviewers: lang.BuildArrayValue([]lang.Value{}),
 			graphQLHandler: func(w http.ResponseWriter, r *http.Request) {
 				graphQLQuery := utils.MustRead(r.Body)
 				if utils.MinifyQuery(getOpenPullRequestsAsReviewerQuery) == utils.MinifyQuery(graphQLQuery) {
@@ -262,7 +263,7 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 		"when all files are owned by bot": {
 			totalReviewers:    1,
 			maxReviews:        3,
-			excludedReviewers: aladino.BuildArrayValue([]aladino.Value{}),
+			excludedReviewers: lang.BuildArrayValue([]lang.Value{}),
 			graphQLHandler: func(w http.ResponseWriter, r *http.Request) {
 				graphQLQuery := utils.MustRead(r.Body)
 				if utils.MinifyQuery(getOpenPullRequestsAsReviewerQuery) == utils.MinifyQuery(graphQLQuery) {
@@ -371,7 +372,7 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 		"when all files are owned pull request author": {
 			totalReviewers:    1,
 			maxReviews:        3,
-			excludedReviewers: aladino.BuildArrayValue([]aladino.Value{}),
+			excludedReviewers: lang.BuildArrayValue([]lang.Value{}),
 			graphQLHandler: func(w http.ResponseWriter, r *http.Request) {
 				graphQLQuery := utils.MustRead(r.Body)
 				if utils.MinifyQuery(getOpenPullRequestsAsReviewerQuery) == utils.MinifyQuery(graphQLQuery) {
@@ -486,7 +487,7 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 		"when all code owners are handling too many open pull requests": {
 			totalReviewers:    1,
 			maxReviews:        1,
-			excludedReviewers: aladino.BuildArrayValue([]aladino.Value{}),
+			excludedReviewers: lang.BuildArrayValue([]lang.Value{}),
 			graphQLHandler: func(w http.ResponseWriter, r *http.Request) {
 				graphQLQuery := utils.MustRead(r.Body)
 				if utils.MinifyQuery(getOpenPullRequestsAsReviewerQuery) == utils.MinifyQuery(graphQLQuery) {
@@ -661,7 +662,7 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 		"when first code owner is available": {
 			totalReviewers:    1,
 			maxReviews:        1,
-			excludedReviewers: aladino.BuildArrayValue([]aladino.Value{}),
+			excludedReviewers: lang.BuildArrayValue([]lang.Value{}),
 			graphQLHandler: func(w http.ResponseWriter, r *http.Request) {
 				graphQLQuery := utils.MustRead(r.Body)
 				if utils.MinifyQuery(getOpenPullRequestsAsReviewerQuery) == utils.MinifyQuery(graphQLQuery) {
@@ -831,7 +832,7 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 		"when first code owner is excluded": {
 			totalReviewers:    3,
 			maxReviews:        3,
-			excludedReviewers: aladino.BuildArrayValue([]aladino.Value{aladino.BuildStringValue("jack")}),
+			excludedReviewers: lang.BuildArrayValue([]lang.Value{lang.BuildStringValue("jack")}),
 			graphQLHandler: func(w http.ResponseWriter, r *http.Request) {
 				graphQLQuery := utils.MustRead(r.Body)
 				if utils.MinifyQuery(getOpenPullRequestsAsReviewerQuery) == utils.MinifyQuery(graphQLQuery) {
@@ -987,7 +988,7 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 		"when code owner isn't an available assignee": {
 			totalReviewers:    1,
 			maxReviews:        1,
-			excludedReviewers: aladino.BuildArrayValue([]aladino.Value{aladino.BuildStringValue("jack")}),
+			excludedReviewers: lang.BuildArrayValue([]lang.Value{lang.BuildStringValue("jack")}),
 			graphQLHandler: func(w http.ResponseWriter, r *http.Request) {
 				graphQLQuery := utils.MustRead(r.Body)
 				if utils.MinifyQuery(getOpenPullRequestsAsReviewerQuery) == utils.MinifyQuery(graphQLQuery) {
@@ -1162,7 +1163,7 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 		"when all code authors are handling too many open pull requests with one eligible available assignees": {
 			totalReviewers:    3,
 			maxReviews:        1,
-			excludedReviewers: aladino.BuildArrayValue([]aladino.Value{}),
+			excludedReviewers: lang.BuildArrayValue([]lang.Value{}),
 			graphQLHandler: func(w http.ResponseWriter, r *http.Request) {
 				graphQLQuery := utils.MustRead(r.Body)
 				if utils.MinifyQuery(getOpenPullRequestsAsReviewerQuery) == utils.MinifyQuery(graphQLQuery) {
@@ -1333,7 +1334,7 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 				nil,
 			)
 
-			err := assignCodeAuthorReviewer(env, []aladino.Value{aladino.BuildIntValue(test.totalReviewers), test.excludedReviewers, aladino.BuildIntValue(test.maxReviews)})
+			err := assignCodeAuthorReviewer(env, []lang.Value{lang.BuildIntValue(test.totalReviewers), test.excludedReviewers, lang.BuildIntValue(test.maxReviews)})
 
 			assert.Equal(t, test.wantErr, err)
 			assert.Equal(t, test.reviewRequestedFrom, reviewRequestedFrom)

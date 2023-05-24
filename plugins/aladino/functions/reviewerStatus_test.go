@@ -10,6 +10,7 @@ import (
 
 	"github.com/google/go-github/v52/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -38,7 +39,7 @@ func TestReviewerStatus_WhenRequestFails(t *testing.T) {
 		nil,
 	)
 
-	args := []aladino.Value{aladino.BuildStringValue("mary")}
+	args := []lang.Value{lang.BuildStringValue("mary")}
 	gotReviewState, err := reviewerStatus(mockedEnv, args)
 
 	assert.Nil(t, gotReviewState)
@@ -64,9 +65,9 @@ func TestReviewerStatus_WhenUserIsNil(t *testing.T) {
 		nil,
 	)
 
-	wantReviewState := aladino.BuildStringValue("")
+	wantReviewState := lang.BuildStringValue("")
 
-	args := []aladino.Value{aladino.BuildStringValue("mary")}
+	args := []lang.Value{lang.BuildStringValue("mary")}
 	gotReviewState, err := reviewerStatus(mockedEnv, args)
 
 	assert.Nil(t, err)
@@ -94,9 +95,9 @@ func TestReviewerStatus_WhenStateIsNil(t *testing.T) {
 		nil,
 	)
 
-	wantReviewState := aladino.BuildStringValue("")
+	wantReviewState := lang.BuildStringValue("")
 
-	args := []aladino.Value{aladino.BuildStringValue("mary")}
+	args := []lang.Value{lang.BuildStringValue("mary")}
 	gotReviewState, err := reviewerStatus(mockedEnv, args)
 
 	assert.Nil(t, err)
@@ -125,9 +126,9 @@ func TestReviewerStatus_WhenStateUnknown(t *testing.T) {
 		nil,
 	)
 
-	wantReviewState := aladino.BuildStringValue("")
+	wantReviewState := lang.BuildStringValue("")
 
-	args := []aladino.Value{aladino.BuildStringValue("mary")}
+	args := []lang.Value{lang.BuildStringValue("mary")}
 	gotReviewState, err := reviewerStatus(mockedEnv, args)
 
 	assert.Nil(t, err)
@@ -162,9 +163,9 @@ func TestReviewerStatus_WhenStateCommented(t *testing.T) {
 		nil,
 	)
 
-	wantReviewState := aladino.BuildStringValue("COMMENTED")
+	wantReviewState := lang.BuildStringValue("COMMENTED")
 
-	args := []aladino.Value{aladino.BuildStringValue("mary")}
+	args := []lang.Value{lang.BuildStringValue("mary")}
 	gotReviewState, err := reviewerStatus(mockedEnv, args)
 
 	assert.Nil(t, err)
@@ -217,9 +218,9 @@ func TestReviewerStatus_WhenStateApproved(t *testing.T) {
 		nil,
 	)
 
-	wantReviewState := aladino.BuildStringValue("APPROVED")
+	wantReviewState := lang.BuildStringValue("APPROVED")
 
-	args := []aladino.Value{aladino.BuildStringValue("mary")}
+	args := []lang.Value{lang.BuildStringValue("mary")}
 	gotReviewState, err := reviewerStatus(mockedEnv, args)
 
 	assert.Nil(t, err)
@@ -266,9 +267,9 @@ func TestReviewerStatus_WhenStateRequestedChanges(t *testing.T) {
 		nil,
 	)
 
-	wantReviewState := aladino.BuildStringValue("CHANGES_REQUESTED")
+	wantReviewState := lang.BuildStringValue("CHANGES_REQUESTED")
 
-	args := []aladino.Value{aladino.BuildStringValue("mary")}
+	args := []lang.Value{lang.BuildStringValue("mary")}
 	gotReviewState, err := reviewerStatus(mockedEnv, args)
 
 	assert.Nil(t, err)

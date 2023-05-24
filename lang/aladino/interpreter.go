@@ -15,6 +15,7 @@ import (
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v4/collector"
 	"github.com/reviewpad/reviewpad/v4/engine"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/utils"
 	"github.com/sirupsen/logrus"
 )
@@ -36,7 +37,7 @@ func buildGroupAST(typeOf engine.GroupType, expr, paramExpr, whereExpr string) (
 	}
 }
 
-func evalGroup(env Env, expr Expr) (Value, error) {
+func evalGroup(env Env, expr Expr) (lang.Value, error) {
 	exprType, err := TypeInference(env, expr)
 	if err != nil {
 		return nil, err
@@ -71,7 +72,7 @@ func BuildInternalLabelID(id string) string {
 func (i *Interpreter) ProcessLabel(id, name string) error {
 	internalLabelID := BuildInternalLabelID(id)
 
-	i.Env.GetRegisterMap()[internalLabelID] = BuildStringValue(name)
+	i.Env.GetRegisterMap()[internalLabelID] = lang.BuildStringValue(name)
 	return nil
 }
 
@@ -82,7 +83,7 @@ func BuildInternalRuleName(name string) string {
 func (i *Interpreter) ProcessRule(name, spec string) error {
 	internalRuleName := BuildInternalRuleName(name)
 
-	i.Env.GetRegisterMap()[internalRuleName] = BuildStringValue(spec)
+	i.Env.GetRegisterMap()[internalRuleName] = lang.BuildStringValue(spec)
 	return nil
 }
 

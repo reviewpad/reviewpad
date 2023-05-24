@@ -10,6 +10,7 @@ import (
 
 	"github.com/google/go-github/v52/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/reviewpad/reviewpad/v4/utils"
@@ -39,7 +40,7 @@ func TestIssueCountBy_WhenListIssuesByRepoFails(t *testing.T) {
 		nil,
 	)
 
-	args := []aladino.Value{aladino.BuildStringValue(""), aladino.BuildStringValue("")}
+	args := []lang.Value{lang.BuildStringValue(""), lang.BuildStringValue("")}
 	gotTotal, err := issueCountBy(mockedEnv, args)
 
 	assert.Nil(t, gotTotal)
@@ -69,24 +70,24 @@ func TestIssueCountBy(t *testing.T) {
 	}
 
 	tests := map[string]struct {
-		args    []aladino.Value
+		args    []lang.Value
 		issues  []*github.Issue
-		wantVal aladino.Value
+		wantVal lang.Value
 	}{
 		"default values": {
-			args:    []aladino.Value{aladino.BuildStringValue(""), aladino.BuildStringValue("")},
+			args:    []lang.Value{lang.BuildStringValue(""), lang.BuildStringValue("")},
 			issues:  []*github.Issue{firstIssue, secondIssue, thirdIssue},
-			wantVal: aladino.BuildIntValue(2),
+			wantVal: lang.BuildIntValue(2),
 		},
 		"only open issues": {
-			args:    []aladino.Value{aladino.BuildStringValue(""), aladino.BuildStringValue("open")},
+			args:    []lang.Value{lang.BuildStringValue(""), lang.BuildStringValue("open")},
 			issues:  []*github.Issue{firstIssue, secondIssue},
-			wantVal: aladino.BuildIntValue(1),
+			wantVal: lang.BuildIntValue(1),
 		},
 		"only issues by steve": {
-			args:    []aladino.Value{aladino.BuildStringValue("steve"), aladino.BuildStringValue("")},
+			args:    []lang.Value{lang.BuildStringValue("steve"), lang.BuildStringValue("")},
 			issues:  []*github.Issue{thirdIssue},
-			wantVal: aladino.BuildIntValue(1),
+			wantVal: lang.BuildIntValue(1),
 		},
 	}
 

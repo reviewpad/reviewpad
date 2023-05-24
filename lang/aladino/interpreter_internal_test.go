@@ -17,6 +17,7 @@ import (
 	pbc "github.com/reviewpad/api/go/codehost"
 	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/engine"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/utils"
 	"github.com/stretchr/testify/assert"
 )
@@ -117,8 +118,8 @@ func TestEvalGroup(t *testing.T) {
 		Functions: map[string]*BuiltInFunction{
 			"group": {
 				Type: BuildFunctionType([]Type{BuildStringType()}, BuildArrayOfType(BuildStringType())),
-				Code: func(e Env, args []Value) (Value, error) {
-					return BuildArrayValue([]Value{BuildStringValue(devName)}), nil
+				Code: func(e Env, args []lang.Value) (lang.Value, error) {
+					return lang.BuildArrayValue([]lang.Value{lang.BuildStringValue(devName)}), nil
 				},
 				SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 			},
@@ -134,7 +135,7 @@ func TestEvalGroup(t *testing.T) {
 
 	gotVal, err := evalGroup(mockedEnv, expr)
 
-	wantVal := BuildArrayValue([]Value{BuildStringValue(devName)})
+	wantVal := lang.BuildArrayValue([]lang.Value{lang.BuildStringValue(devName)})
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantVal, gotVal)
@@ -205,8 +206,8 @@ func TestProcessGroup_WhenGroupTypeFilterIsNotSet(t *testing.T) {
 
 	gotVal := mockedEnv.GetRegisterMap()[groupName]
 
-	wantVal := BuildArrayValue([]Value{
-		BuildStringValue(devName),
+	wantVal := lang.BuildArrayValue([]lang.Value{
+		lang.BuildStringValue(devName),
 	})
 
 	assert.Nil(t, err)
@@ -237,7 +238,7 @@ func TestProcessLabel(t *testing.T) {
 	internalLabelID := fmt.Sprintf("@label:%v", labelID)
 	gotVal := mockedEnv.GetRegisterMap()[internalLabelID]
 
-	wantVal := BuildStringValue(labelName)
+	wantVal := lang.BuildStringValue(labelName)
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantVal, gotVal)
@@ -267,7 +268,7 @@ func TestProcessRule(t *testing.T) {
 	internalRuleName := fmt.Sprintf("@rule:%v", ruleName)
 	gotVal := mockedEnv.GetRegisterMap()[internalRuleName]
 
-	wantVal := BuildStringValue(spec)
+	wantVal := lang.BuildStringValue(spec)
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantVal, gotVal)
@@ -344,7 +345,7 @@ func TestExecProgram(t *testing.T) {
 		Actions: map[string]*BuiltInAction{
 			"addLabel": {
 				Type: BuildFunctionType([]Type{BuildStringType()}, nil),
-				Code: func(e Env, args []Value) error {
+				Code: func(e Env, args []lang.Value) error {
 					return nil
 				},
 				SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
@@ -404,7 +405,7 @@ func TestExecAsyncProgram(t *testing.T) {
 		Actions: map[string]*BuiltInAction{
 			"robin": {
 				Type: BuildFunctionType([]Type{BuildStringType()}, nil),
-				Code: func(e Env, args []Value) error {
+				Code: func(e Env, args []lang.Value) error {
 					return fmt.Errorf("robin error")
 				},
 				SupportedKinds:    []entities.TargetEntityKind{entities.PullRequest},
@@ -479,7 +480,7 @@ func TestExecStatement_WhenTypeCheckExecFails(t *testing.T) {
 		Actions: map[string]*BuiltInAction{
 			"addLabel": {
 				Type: BuildFunctionType([]Type{BuildStringType()}, nil),
-				Code: func(e Env, args []Value) error {
+				Code: func(e Env, args []lang.Value) error {
 					return nil
 				},
 				SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
@@ -506,8 +507,8 @@ func TestExecStatement_WhenActionExecFails(t *testing.T) {
 		Functions: map[string]*BuiltInFunction{
 			"author": {
 				Type: BuildFunctionType([]Type{}, BuildArrayOfType(BuildStringType())),
-				Code: func(e Env, args []Value) (Value, error) {
-					return BuildArrayValue([]Value{BuildStringValue(devName)}), nil
+				Code: func(e Env, args []lang.Value) (lang.Value, error) {
+					return lang.BuildArrayValue([]lang.Value{lang.BuildStringValue(devName)}), nil
 				},
 				SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 			},
@@ -532,7 +533,7 @@ func TestExecStatement(t *testing.T) {
 		Actions: map[string]*BuiltInAction{
 			"addLabel": {
 				Type: BuildFunctionType([]Type{BuildStringType()}, nil),
-				Code: func(e Env, args []Value) error {
+				Code: func(e Env, args []lang.Value) error {
 					return nil
 				},
 				SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},

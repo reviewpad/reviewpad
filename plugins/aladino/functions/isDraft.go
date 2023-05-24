@@ -7,6 +7,7 @@ package plugins_aladino_functions
 import (
 	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
@@ -18,9 +19,9 @@ func IsDraft() *aladino.BuiltInFunction {
 	}
 }
 
-func isDraftCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
+func isDraftCode(e aladino.Env, _ []lang.Value) (lang.Value, error) {
 	pullRequest := e.GetTarget().(*target.PullRequestTarget)
 
 	isDraft := pullRequest.IsDraft()
-	return aladino.BuildBoolValue(isDraft), nil
+	return lang.BuildBoolValue(isDraft), nil
 }

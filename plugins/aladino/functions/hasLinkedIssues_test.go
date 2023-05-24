@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	pbc "github.com/reviewpad/api/go/codehost"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/reviewpad/reviewpad/v4/utils"
@@ -29,7 +30,7 @@ func TestHasLinkedIssues_WhenRequestFails(t *testing.T) {
 		nil,
 	)
 
-	_, err := hasLinkedIssues(mockedEnv, []aladino.Value{})
+	_, err := hasLinkedIssues(mockedEnv, []lang.Value{})
 
 	assert.NotNil(t, err)
 }
@@ -82,8 +83,8 @@ func TestHasLinkedIssues_WhenHasLinkedIssues(t *testing.T) {
 		nil,
 	)
 
-	wantVal := aladino.BuildBoolValue(true)
-	gotVal, err := hasLinkedIssues(mockedEnv, []aladino.Value{})
+	wantVal := lang.BuildBoolValue(true)
+	gotVal, err := hasLinkedIssues(mockedEnv, []lang.Value{})
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantVal, gotVal)
@@ -137,8 +138,8 @@ func TestHasLinkedIssues_WhenNoLinkedIssues(t *testing.T) {
 		nil,
 	)
 
-	wantVal := aladino.BuildBoolValue(false)
-	gotVal, err := hasLinkedIssues(mockedEnv, []aladino.Value{})
+	wantVal := lang.BuildBoolValue(false)
+	gotVal, err := hasLinkedIssues(mockedEnv, []lang.Value{})
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantVal, gotVal)

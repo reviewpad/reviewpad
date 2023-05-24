@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/reviewpad/go-lib/entities"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
@@ -19,9 +20,9 @@ func Contains() *aladino.BuiltInFunction {
 	}
 }
 
-func containsCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
-	str := args[0].(*aladino.StringValue).Val
-	subString := args[1].(*aladino.StringValue).Val
+func containsCode(e aladino.Env, args []lang.Value) (lang.Value, error) {
+	str := args[0].(*lang.StringValue).Val
+	subString := args[1].(*lang.StringValue).Val
 
-	return aladino.BuildBoolValue(strings.Contains(str, subString)), nil
+	return lang.BuildBoolValue(strings.Contains(str, subString)), nil
 }

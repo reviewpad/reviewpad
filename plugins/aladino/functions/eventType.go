@@ -9,6 +9,7 @@ import (
 
 	"github.com/google/go-github/v52/github"
 	"github.com/reviewpad/go-lib/entities"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
@@ -20,34 +21,34 @@ func EventType() *aladino.BuiltInFunction {
 	}
 }
 
-func eventTypePullRequest(pullRequestEventPayload *github.PullRequestEvent) (aladino.Value, error) {
+func eventTypePullRequest(pullRequestEventPayload *github.PullRequestEvent) (lang.Value, error) {
 	if pullRequestEventPayload == nil {
-		return aladino.BuildStringValue(""), nil
+		return lang.BuildStringValue(""), nil
 	}
 
 	if pullRequestEventPayload.Action == nil {
-		return aladino.BuildStringValue(""), nil
+		return lang.BuildStringValue(""), nil
 	}
 
-	return aladino.BuildStringValue(*pullRequestEventPayload.Action), nil
+	return lang.BuildStringValue(*pullRequestEventPayload.Action), nil
 }
 
-func eventTypeIssue(issuePayload *github.IssuesEvent) (aladino.Value, error) {
+func eventTypeIssue(issuePayload *github.IssuesEvent) (lang.Value, error) {
 	if issuePayload == nil {
-		return aladino.BuildStringValue(""), nil
+		return lang.BuildStringValue(""), nil
 	}
 
 	if issuePayload.Action == nil {
-		return aladino.BuildStringValue(""), nil
+		return lang.BuildStringValue(""), nil
 	}
 
-	return aladino.BuildStringValue(*issuePayload.Action), nil
+	return lang.BuildStringValue(*issuePayload.Action), nil
 }
 
-func eventTypeCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
+func eventTypeCode(e aladino.Env, _ []lang.Value) (lang.Value, error) {
 	pullRequestEvent := e.GetEventPayload()
 	if pullRequestEvent == nil {
-		return aladino.BuildStringValue(""), nil
+		return lang.BuildStringValue(""), nil
 	}
 
 	switch reflect.TypeOf(pullRequestEvent).String() {
@@ -56,6 +57,6 @@ func eventTypeCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
 	case "*github.IssuesEvent":
 		return eventTypeIssue(pullRequestEvent.(*github.IssuesEvent))
 	default:
-		return aladino.BuildStringValue(""), nil
+		return lang.BuildStringValue(""), nil
 	}
 }

@@ -7,6 +7,7 @@ package plugins_aladino_actions
 import (
 	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
@@ -18,10 +19,10 @@ func TriggerWorkflow() *aladino.BuiltInAction {
 	}
 }
 
-func triggerWorkflowCode(e aladino.Env, args []aladino.Value) error {
+func triggerWorkflowCode(e aladino.Env, args []lang.Value) error {
 	t := e.GetTarget().(*target.PullRequestTarget)
 
-	fileName := args[0].(*aladino.StringValue).Val
+	fileName := args[0].(*lang.StringValue).Val
 
 	return t.TriggerWorkflowByFileName(fileName)
 }

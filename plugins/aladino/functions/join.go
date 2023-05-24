@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/reviewpad/go-lib/entities"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
@@ -20,21 +21,21 @@ func Join() *aladino.BuiltInFunction {
 	}
 }
 
-func joinCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
-	elementsArg := args[0].(*aladino.ArrayValue)
+func joinCode(e aladino.Env, args []lang.Value) (lang.Value, error) {
+	elementsArg := args[0].(*lang.ArrayValue)
 	if len(elementsArg.Vals) == 0 {
-		return aladino.BuildStringValue(""), nil
+		return lang.BuildStringValue(""), nil
 	}
 	var clearVals []string
-	separatorArg := args[1].(*aladino.StringValue)
+	separatorArg := args[1].(*lang.StringValue)
 	for _, val := range elementsArg.Vals {
 		switch v := val.(type) {
-		case *aladino.StringValue:
+		case *lang.StringValue:
 			clearVals = append(clearVals, v.Val)
 		default:
 			return nil, fmt.Errorf("join: invalid element of kind %v", v.Kind())
 		}
 	}
 
-	return aladino.BuildStringValue(strings.Join(clearVals, separatorArg.Val)), nil
+	return lang.BuildStringValue(strings.Join(clearVals, separatorArg.Val)), nil
 }

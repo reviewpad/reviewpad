@@ -11,6 +11,7 @@ import (
 	"github.com/google/go-github/v52/github"
 	"github.com/gorilla/mux"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -44,7 +45,7 @@ func TestRemoveLabel_WhenLabelIsNotAppliedToPullRequest(t *testing.T) {
 		nil,
 	)
 
-	args := []aladino.Value{aladino.BuildStringValue(wantLabel)}
+	args := []lang.Value{lang.BuildStringValue(wantLabel)}
 	err := removeLabel(mockedEnv, args)
 
 	assert.Nil(t, err)
@@ -78,9 +79,9 @@ func TestRemoveLabel_WhenLabelIsAppliedToPullRequestAndLabelIsInEnvironment(t *t
 	)
 
 	internalLabelID := aladino.BuildInternalLabelID(wantLabel)
-	mockedEnv.GetRegisterMap()[internalLabelID] = aladino.BuildStringValue(wantLabel)
+	mockedEnv.GetRegisterMap()[internalLabelID] = lang.BuildStringValue(wantLabel)
 
-	args := []aladino.Value{aladino.BuildStringValue(wantLabel)}
+	args := []lang.Value{lang.BuildStringValue(wantLabel)}
 	err := removeLabel(mockedEnv, args)
 
 	assert.Nil(t, err)
@@ -113,7 +114,7 @@ func TestRemoveLabel_WhenLabelIsAppliedToPullRequestAndLabelIsNotInEnvironment(t
 		nil,
 	)
 
-	args := []aladino.Value{aladino.BuildStringValue(wantLabel)}
+	args := []lang.Value{lang.BuildStringValue(wantLabel)}
 	err := removeLabel(mockedEnv, args)
 
 	assert.Nil(t, err)

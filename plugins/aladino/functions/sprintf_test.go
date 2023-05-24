@@ -7,6 +7,7 @@ package plugins_aladino_functions_test
 import (
 	"testing"
 
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -17,80 +18,80 @@ var sprintf = plugins_aladino.PluginBuiltIns().Functions["sprintf"].Code
 func TestSprintf(t *testing.T) {
 	tests := map[string]struct {
 		format     string
-		args       *aladino.ArrayValue
-		wantString *aladino.StringValue
+		args       *lang.ArrayValue
+		wantString *lang.StringValue
 		wantErr    error
 	}{
 		"when in default format": {
 			format: "Hello %v!",
-			args: aladino.BuildArrayValue([]aladino.Value{
-				aladino.BuildStringValue("world"),
+			args: lang.BuildArrayValue([]lang.Value{
+				lang.BuildStringValue("world"),
 			}),
-			wantString: aladino.BuildStringValue("Hello world!"),
+			wantString: lang.BuildStringValue("Hello world!"),
 		},
 		"when in string and quotation format": {
 			format: `Hello %q %s`,
-			args: aladino.BuildArrayValue([]aladino.Value{
-				aladino.BuildStringValue("world"),
-				aladino.BuildStringValue("again"),
+			args: lang.BuildArrayValue([]lang.Value{
+				lang.BuildStringValue("world"),
+				lang.BuildStringValue("again"),
 			}),
-			wantString: aladino.BuildStringValue(`Hello "world" again`),
+			wantString: lang.BuildStringValue(`Hello "world" again`),
 		},
 		"when there are extra args": {
 			format: "Hello %s",
-			args: aladino.BuildArrayValue([]aladino.Value{
-				aladino.BuildStringValue("earth"),
-				aladino.BuildStringValue("mars"),
-				aladino.BuildStringValue("venus"),
+			args: lang.BuildArrayValue([]lang.Value{
+				lang.BuildStringValue("earth"),
+				lang.BuildStringValue("mars"),
+				lang.BuildStringValue("venus"),
 			}),
-			wantString: aladino.BuildStringValue("Hello earth"),
+			wantString: lang.BuildStringValue("Hello earth"),
 		},
 		"when there are extra args with index formatting": {
 			format: "Hello %[1]s",
-			args: aladino.BuildArrayValue([]aladino.Value{
-				aladino.BuildStringValue("earth"),
-				aladino.BuildStringValue("mars"),
-				aladino.BuildStringValue("venus"),
+			args: lang.BuildArrayValue([]lang.Value{
+				lang.BuildStringValue("earth"),
+				lang.BuildStringValue("mars"),
+				lang.BuildStringValue("venus"),
 			}),
-			wantString: aladino.BuildStringValue("Hello earth"),
+			wantString: lang.BuildStringValue("Hello earth"),
 		},
 		"when empty format and args": {
 			format:     "",
-			args:       aladino.BuildArrayValue([]aladino.Value{}),
-			wantString: aladino.BuildStringValue(""),
+			args:       lang.BuildArrayValue([]lang.Value{}),
+			wantString: lang.BuildStringValue(""),
 		},
 		"when there is no formatting with args": {
 			format: "Hello world",
-			args: aladino.BuildArrayValue([]aladino.Value{
-				aladino.BuildStringValue("earth"),
-				aladino.BuildStringValue("mars"),
-				aladino.BuildStringValue("venus"),
+			args: lang.BuildArrayValue([]lang.Value{
+				lang.BuildStringValue("earth"),
+				lang.BuildStringValue("mars"),
+				lang.BuildStringValue("venus"),
 			}),
-			wantString: aladino.BuildStringValue("Hello world"),
+			wantString: lang.BuildStringValue("Hello world"),
 		},
 		"when formatting with numbers": {
 			format: "Hello %s, You've added %d comments",
-			args: aladino.BuildArrayValue([]aladino.Value{
-				aladino.BuildStringValue("test"),
-				aladino.BuildIntValue(10),
+			args: lang.BuildArrayValue([]lang.Value{
+				lang.BuildStringValue("test"),
+				lang.BuildIntValue(10),
 			}),
-			wantString: aladino.BuildStringValue("Hello test, You've added 10 comments"),
+			wantString: lang.BuildStringValue("Hello test, You've added 10 comments"),
 		},
 		"when formatting with numbers and booleans": {
 			format: "hello %s, You've added %d comments, profile is locked: %t",
-			args: aladino.BuildArrayValue([]aladino.Value{
-				aladino.BuildStringValue("test"),
-				aladino.BuildIntValue(10),
-				aladino.BuildBoolValue(true),
+			args: lang.BuildArrayValue([]lang.Value{
+				lang.BuildStringValue("test"),
+				lang.BuildIntValue(10),
+				lang.BuildBoolValue(true),
 			}),
-			wantString: aladino.BuildStringValue("hello test, You've added 10 comments, profile is locked: true"),
+			wantString: lang.BuildStringValue("hello test, You've added 10 comments, profile is locked: true"),
 		},
 	}
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
-			gotString, err := sprintf(mockedEnv, []aladino.Value{aladino.BuildStringValue(test.format), test.args})
+			gotString, err := sprintf(mockedEnv, []lang.Value{lang.BuildStringValue(test.format), test.args})
 
 			assert.Equal(t, test.wantErr, err)
 			assert.Equal(t, test.wantString, gotString)

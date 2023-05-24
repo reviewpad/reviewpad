@@ -10,6 +10,7 @@ import (
 
 	"github.com/google/go-github/v52/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/reviewpad/reviewpad/v4/utils"
@@ -21,10 +22,10 @@ var hasFilePattern = plugins_aladino.PluginBuiltIns().Functions["hasFilePattern"
 func TestHasFilePattern_WhenFileBadPattern(t *testing.T) {
 	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
 
-	args := []aladino.Value{aladino.BuildStringValue("[0-9")}
+	args := []lang.Value{lang.BuildStringValue("[0-9")}
 	gotVal, err := hasFilePattern(mockedEnv, args)
 
-	wantVal := aladino.BuildBoolValue(false)
+	wantVal := lang.BuildBoolValue(false)
 
 	assert.Equal(t, wantVal, gotVal)
 	assert.EqualError(t, err, "syntax error in pattern")
@@ -53,10 +54,10 @@ func TestHasFilePattern_WhenTrue(t *testing.T) {
 		nil,
 	)
 
-	args := []aladino.Value{aladino.BuildStringValue("default-mock-repo/**")}
+	args := []lang.Value{lang.BuildStringValue("default-mock-repo/**")}
 	gotVal, err := hasFilePattern(mockedEnv, args)
 
-	wantVal := aladino.BuildBoolValue(true)
+	wantVal := lang.BuildBoolValue(true)
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantVal, gotVal)
@@ -85,10 +86,10 @@ func TestHasFilePattern_WhenFalse(t *testing.T) {
 		nil,
 	)
 
-	args := []aladino.Value{aladino.BuildStringValue("default-mock-repo/test/**")}
+	args := []lang.Value{lang.BuildStringValue("default-mock-repo/test/**")}
 	gotVal, err := hasFilePattern(mockedEnv, args)
 
-	wantVal := aladino.BuildBoolValue(false)
+	wantVal := lang.BuildBoolValue(false)
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantVal, gotVal)

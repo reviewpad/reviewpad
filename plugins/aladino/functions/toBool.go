@@ -9,6 +9,7 @@ import (
 	"strconv"
 
 	"github.com/reviewpad/go-lib/entities"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
@@ -20,13 +21,13 @@ func ToBool() *aladino.BuiltInFunction {
 	}
 }
 
-func toBoolCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
-	str := args[0].(*aladino.StringValue).Val
+func toBoolCode(e aladino.Env, args []lang.Value) (lang.Value, error) {
+	str := args[0].(*lang.StringValue).Val
 
 	val, err := strconv.ParseBool(str)
 	if err != nil {
 		return nil, fmt.Errorf(`error converting "%s" to boolean: %w`, str, err)
 	}
 
-	return aladino.BuildBoolValue(val), nil
+	return lang.BuildBoolValue(val), nil
 }

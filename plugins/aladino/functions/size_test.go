@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	pbc "github.com/reviewpad/api/go/codehost"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -17,20 +18,20 @@ var size = plugins_aladino.PluginBuiltIns().Functions["size"].Code
 
 func TestSize_WhenRegexMatchFails(t *testing.T) {
 	tests := map[string]struct {
-		args    []aladino.Value
-		wantVal aladino.Value
+		args    []lang.Value
+		wantVal lang.Value
 	}{
 		"no exclusions": {
-			args:    []aladino.Value{aladino.BuildArrayValue([]aladino.Value{})},
-			wantVal: aladino.BuildIntValue(6),
+			args:    []lang.Value{lang.BuildArrayValue([]lang.Value{})},
+			wantVal: lang.BuildIntValue(6),
 		},
 		"exclude yml": {
-			args:    []aladino.Value{aladino.BuildArrayValue([]aladino.Value{aladino.BuildStringValue("*.yml")})},
-			wantVal: aladino.BuildIntValue(3),
+			args:    []lang.Value{lang.BuildArrayValue([]lang.Value{lang.BuildStringValue("*.yml")})},
+			wantVal: lang.BuildIntValue(3),
 		},
 		"invalid regex": {
-			args:    []aladino.Value{aladino.BuildArrayValue([]aladino.Value{aladino.BuildStringValue("*[.yml")})},
-			wantVal: aladino.BuildIntValue(6),
+			args:    []lang.Value{lang.BuildArrayValue([]lang.Value{lang.BuildStringValue("*[.yml")})},
+			wantVal: lang.BuildIntValue(6),
 		},
 	}
 

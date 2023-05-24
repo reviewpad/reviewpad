@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	pbc "github.com/reviewpad/api/go/codehost"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/reviewpad/reviewpad/v4/utils"
@@ -29,7 +30,7 @@ func TestHasUnaddressedThreads_WhenRequestFails(t *testing.T) {
 		nil,
 	)
 
-	_, err := hasUnaddressedThreads(mockedEnv, []aladino.Value{})
+	_, err := hasUnaddressedThreads(mockedEnv, []lang.Value{})
 
 	assert.NotNil(t, err)
 }
@@ -44,31 +45,31 @@ func TestHasUnaddressedThreads(t *testing.T) {
 
 	tests := map[string]struct {
 		reviewThreadsResponse string
-		wantVal               aladino.Value
+		wantVal               lang.Value
 	}{
 		"when none": {
 			reviewThreadsResponse: `[]`,
-			wantVal:               aladino.BuildFalseValue(),
+			wantVal:               lang.BuildFalseValue(),
 		},
 		"when unresolved": {
 			reviewThreadsResponse: `[{"isResolved":false, "isOutdated":false}]`,
-			wantVal:               aladino.BuildTrueValue(),
+			wantVal:               lang.BuildTrueValue(),
 		},
 		"when resolved": {
 			reviewThreadsResponse: `[{"isResolved":true, "isOutdated":false}]`,
-			wantVal:               aladino.BuildFalseValue(),
+			wantVal:               lang.BuildFalseValue(),
 		},
 		"when outdated": {
 			reviewThreadsResponse: `[{"isResolved":false, "isOutdated":true}]`,
-			wantVal:               aladino.BuildFalseValue(),
+			wantVal:               lang.BuildFalseValue(),
 		},
 		"when up to date": {
 			reviewThreadsResponse: `[{"isResolved":false, "isOutdated":false}]`,
-			wantVal:               aladino.BuildTrueValue(),
+			wantVal:               lang.BuildTrueValue(),
 		},
 		"when more than one thread": {
 			reviewThreadsResponse: `[{"isResolved":true, "isOutdated":true}, {"isResolved":true, "isOutdated":true}]`,
-			wantVal:               aladino.BuildFalseValue(),
+			wantVal:               lang.BuildFalseValue(),
 		},
 	}
 
@@ -112,7 +113,7 @@ func TestHasUnaddressedThreads(t *testing.T) {
 		)
 
 		t.Run(name, func(t *testing.T) {
-			gotVal, err := hasUnaddressedThreads(mockedEnv, []aladino.Value{})
+			gotVal, err := hasUnaddressedThreads(mockedEnv, []lang.Value{})
 
 			assert.Nil(t, err)
 			assert.Equal(t, test.wantVal, gotVal)

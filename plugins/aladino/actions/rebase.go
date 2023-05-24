@@ -12,6 +12,7 @@ import (
 	"github.com/reviewpad/go-lib/entities"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
@@ -23,7 +24,7 @@ func Rebase() *aladino.BuiltInAction {
 	}
 }
 
-func rebaseCode(e aladino.Env, args []aladino.Value) error {
+func rebaseCode(e aladino.Env, args []lang.Value) error {
 	githubToken := e.GetGithubClient().GetToken()
 	log := e.GetLogger().WithField("builtin", "rebase")
 	t := e.GetTarget().(*target.PullRequestTarget)

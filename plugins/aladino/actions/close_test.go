@@ -13,6 +13,7 @@ import (
 	"github.com/google/go-github/v52/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	"github.com/reviewpad/go-lib/entities"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/reviewpad/reviewpad/v4/utils"
@@ -111,7 +112,7 @@ func TestClose_WhenCloseRequestFails(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			args := []aladino.Value{aladino.BuildStringValue(""), aladino.BuildStringValue(test.inputStateReason)}
+			args := []lang.Value{lang.BuildStringValue(""), lang.BuildStringValue(test.inputStateReason)}
 			gotErr := close(test.mockedEnv, args)
 
 			assert.EqualError(t, gotErr, test.wantErr)
@@ -234,7 +235,7 @@ func TestClose_WhenCommentRequestFails(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			args := []aladino.Value{aladino.BuildStringValue(test.inputComment), aladino.BuildStringValue("completed")}
+			args := []lang.Value{lang.BuildStringValue(test.inputComment), lang.BuildStringValue("completed")}
 			gotErr := close(test.mockedEnv, args)
 
 			assert.Equal(t, test.wantErr, gotErr.(*github.ErrorResponse).Message)
@@ -531,7 +532,7 @@ func TestClose(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			args := []aladino.Value{aladino.BuildStringValue(test.inputComment), aladino.BuildStringValue(test.inputStateReason)}
+			args := []lang.Value{lang.BuildStringValue(test.inputComment), lang.BuildStringValue(test.inputStateReason)}
 			gotErr := close(test.mockedEnv, args)
 
 			assert.Equal(t, test.wantErr, gotErr)

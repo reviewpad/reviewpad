@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	host "github.com/reviewpad/reviewpad/v4/codehost/github"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/reviewpad/reviewpad/v4/utils"
@@ -29,7 +30,7 @@ func TestHasGitConflicts_WhenRequestFails(t *testing.T) {
 		nil,
 	)
 
-	args := []aladino.Value{}
+	args := []lang.Value{}
 	gotVal, gotErr := hasGitConflicts(mockedEnv, args)
 
 	assert.Nil(t, gotVal)
@@ -60,20 +61,20 @@ func TestHasGitConflicts(t *testing.T) {
 
 	tests := map[string]struct {
 		mockedPullRequestQueryBody string
-		wantVal                    aladino.Value
+		wantVal                    lang.Value
 		wantErr                    string
 	}{
 		"when pull request has git conflicts": {
 			mockedPullRequestQueryBody: pullRequestQueryBodyWith("CONFLICTING"),
-			wantVal:                    aladino.BuildBoolValue(true),
+			wantVal:                    lang.BuildBoolValue(true),
 		},
 		"when pull request has no git conflicts and is mergeable": {
 			mockedPullRequestQueryBody: pullRequestQueryBodyWith("MERGEABLE"),
-			wantVal:                    aladino.BuildBoolValue(false),
+			wantVal:                    lang.BuildBoolValue(false),
 		},
 		"when pull request has no git conflicts and is not mergeable": {
 			mockedPullRequestQueryBody: pullRequestQueryBodyWith("UNKNOWN"),
-			wantVal:                    aladino.BuildBoolValue(false),
+			wantVal:                    lang.BuildBoolValue(false),
 		},
 	}
 
@@ -93,7 +94,7 @@ func TestHasGitConflicts(t *testing.T) {
 				nil,
 			)
 
-			args := []aladino.Value{}
+			args := []lang.Value{}
 			gotVal, gotErr := hasGitConflicts(mockedEnv, args)
 
 			if gotErr != nil && gotErr.Error() != test.wantErr {

@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	pbc "github.com/reviewpad/api/go/codehost"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -36,9 +37,9 @@ func TestBase(t *testing.T) {
 		nil,
 	)
 
-	wantBase := aladino.BuildStringValue(baseRef)
+	wantBase := lang.BuildStringValue(baseRef)
 
-	args := []aladino.Value{}
+	args := []lang.Value{}
 	gotBase, err := base(mockedEnv, args)
 
 	assert.Nil(t, err)

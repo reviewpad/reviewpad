@@ -10,6 +10,7 @@ import (
 
 	"github.com/ohler55/ojg"
 	"github.com/reviewpad/go-lib/entities"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -28,7 +29,7 @@ func TestSelectFromContext(t *testing.T) {
 		targetEntity *entities.TargetEntity
 		path         string
 		wantErr      error
-		wantRes      aladino.Value
+		wantRes      lang.Value
 	}{
 		"when error parsing expression": {
 			targetEntity: aladino.DefaultMockTargetEntity,
@@ -38,77 +39,77 @@ func TestSelectFromContext(t *testing.T) {
 		"when success getting title for pull request": {
 			targetEntity: aladino.DefaultMockTargetEntity,
 			path:         "$.title",
-			wantRes:      aladino.BuildStringValue("Amazing new feature"),
+			wantRes:      lang.BuildStringValue("Amazing new feature"),
 		},
 		"when success getting title for issue": {
 			targetEntity: mockIssueTargetEntity,
 			path:         "$.title",
-			wantRes:      aladino.BuildStringValue("Found a bug"),
+			wantRes:      lang.BuildStringValue("Found a bug"),
 		},
 		"when success getting user login for pull request": {
 			targetEntity: aladino.DefaultMockTargetEntity,
 			path:         "$.user.login",
-			wantRes:      aladino.BuildStringValue("john"),
+			wantRes:      lang.BuildStringValue("john"),
 		},
 		"when success getting user login for issue": {
 			targetEntity: mockIssueTargetEntity,
 			path:         "$.user.login",
-			wantRes:      aladino.BuildStringValue("john"),
+			wantRes:      lang.BuildStringValue("john"),
 		},
 		"when success getting pull request assignees": {
 			targetEntity: aladino.DefaultMockTargetEntity,
 			path:         "$.assignees",
-			wantRes:      aladino.BuildStringValue(`[{"login":"jane"}]`),
+			wantRes:      lang.BuildStringValue(`[{"login":"jane"}]`),
 		},
 		"when success getting issue assignees": {
 			targetEntity: mockIssueTargetEntity,
 			path:         "$.assignees",
-			wantRes:      aladino.BuildStringValue(`[{"login":"jane"}]`),
+			wantRes:      lang.BuildStringValue(`[{"login":"jane"}]`),
 		},
 		"when success getting pull request body": {
 			targetEntity: aladino.DefaultMockTargetEntity,
 			path:         "$.body",
-			wantRes:      aladino.BuildStringValue("Please pull these awesome changes in!"),
+			wantRes:      lang.BuildStringValue("Please pull these awesome changes in!"),
 		},
 		"when success getting pull request merged": {
 			targetEntity: aladino.DefaultMockTargetEntity,
 			path:         "$.merged",
-			wantRes:      aladino.BuildStringValue("true"),
+			wantRes:      lang.BuildStringValue("true"),
 		},
 		"when success getting pull request comments": {
 			targetEntity: aladino.DefaultMockTargetEntity,
 			path:         "$.comments",
-			wantRes:      aladino.BuildStringValue("6"),
+			wantRes:      lang.BuildStringValue("6"),
 		},
 		"when success getting pull request milestone title": {
 			targetEntity: aladino.DefaultMockTargetEntity,
 			path:         "$.milestone.title",
-			wantRes:      aladino.BuildStringValue("v1.0"),
+			wantRes:      lang.BuildStringValue("v1.0"),
 		},
 		"when success getting pull request first label name": {
 			targetEntity: aladino.DefaultMockTargetEntity,
 			path:         "$.labels[0].name",
-			wantRes:      aladino.BuildStringValue("enhancement"),
+			wantRes:      lang.BuildStringValue("enhancement"),
 		},
 		"when success getting pull request head repo url": {
 			targetEntity: aladino.DefaultMockTargetEntity,
 			path:         "$.head.repo.url",
-			wantRes:      aladino.BuildStringValue("https://api.github.com/repos/foobar/default-mock-repo/pulls/6"),
+			wantRes:      lang.BuildStringValue("https://api.github.com/repos/foobar/default-mock-repo/pulls/6"),
 		},
 		"when success getting issue labels": {
 			targetEntity: mockIssueTargetEntity,
 			path:         "$.labels",
-			wantRes:      aladino.BuildStringValue(`[{"id":1,"name":"bug"}]`),
+			wantRes:      lang.BuildStringValue(`[{"id":1,"name":"bug"}]`),
 		},
 		"when success getting pull request reviewers": {
 			targetEntity: aladino.DefaultMockTargetEntity,
 			path:         "$.requested_reviewers",
-			wantRes:      aladino.BuildStringValue(`[{"login":"jane"}]`),
+			wantRes:      lang.BuildStringValue(`[{"login":"jane"}]`),
 		},
 		"when success getting all label names": {
 			targetEntity: aladino.DefaultMockTargetEntity,
 			path:         "$.labels[*].name",
-			wantRes:      aladino.BuildStringValue(`["enhancement","large"]`),
+			wantRes:      lang.BuildStringValue(`["enhancement","large"]`),
 		},
 	}
 
@@ -123,7 +124,7 @@ func TestSelectFromContext(t *testing.T) {
 				test.targetEntity,
 			)
 
-			res, err := selectFromContext(env, []aladino.Value{aladino.BuildStringValue(test.path)})
+			res, err := selectFromContext(env, []lang.Value{lang.BuildStringValue(test.path)})
 
 			// since ojg errors contain stack traces
 			// we are simplifying the error to make it easier to assert

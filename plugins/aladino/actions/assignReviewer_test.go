@@ -14,6 +14,7 @@ import (
 	"github.com/google/go-github/v52/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	pbc "github.com/reviewpad/api/go/codehost"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/reviewpad/reviewpad/v4/utils"
@@ -32,14 +33,14 @@ func TestAssignReviewer_WhenPolicyIsNotValid(t *testing.T) {
 	invalidPolicy := "INVALID_POLICY"
 	allowedPolicies := map[string]bool{"random": true, "round-robin": true, "reviewpad": true}
 
-	args := []aladino.Value{
-		aladino.BuildArrayValue(
-			[]aladino.Value{
-				aladino.BuildStringValue("jane"),
+	args := []lang.Value{
+		lang.BuildArrayValue(
+			[]lang.Value{
+				lang.BuildStringValue("jane"),
 			},
 		),
-		aladino.BuildIntValue(0),
-		aladino.BuildStringValue(invalidPolicy),
+		lang.BuildIntValue(0),
+		lang.BuildStringValue(invalidPolicy),
 	}
 	err := assignReviewer(mockedEnv, args)
 
@@ -49,14 +50,14 @@ func TestAssignReviewer_WhenPolicyIsNotValid(t *testing.T) {
 func TestAssignReviewer_WhenTotalRequiredReviewersIsZero(t *testing.T) {
 	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
 
-	args := []aladino.Value{
-		aladino.BuildArrayValue(
-			[]aladino.Value{
-				aladino.BuildStringValue("jane"),
+	args := []lang.Value{
+		lang.BuildArrayValue(
+			[]lang.Value{
+				lang.BuildStringValue("jane"),
 			},
 		),
-		aladino.BuildIntValue(0),
-		aladino.BuildStringValue("random"),
+		lang.BuildIntValue(0),
+		lang.BuildStringValue("random"),
 	}
 	err := assignReviewer(mockedEnv, args)
 
@@ -66,10 +67,10 @@ func TestAssignReviewer_WhenTotalRequiredReviewersIsZero(t *testing.T) {
 func TestAssignReviewer_WhenListOfReviewersIsEmpty(t *testing.T) {
 	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
 
-	args := []aladino.Value{
-		aladino.BuildArrayValue([]aladino.Value{}),
-		aladino.BuildIntValue(1),
-		aladino.BuildStringValue("random"),
+	args := []lang.Value{
+		lang.BuildArrayValue([]lang.Value{}),
+		lang.BuildIntValue(1),
+		lang.BuildStringValue("random"),
 	}
 	err := assignReviewer(mockedEnv, args)
 
@@ -135,15 +136,15 @@ func TestAssignReviewer_WhenAuthorIsInListOfReviewers(t *testing.T) {
 		nil,
 	)
 
-	args := []aladino.Value{
-		aladino.BuildArrayValue(
-			[]aladino.Value{
-				aladino.BuildStringValue(authorLogin),
-				aladino.BuildStringValue(reviewerLogin),
+	args := []lang.Value{
+		lang.BuildArrayValue(
+			[]lang.Value{
+				lang.BuildStringValue(authorLogin),
+				lang.BuildStringValue(reviewerLogin),
 			},
 		),
-		aladino.BuildIntValue(1),
-		aladino.BuildStringValue("random"),
+		lang.BuildIntValue(1),
+		lang.BuildStringValue("random"),
 	}
 	err := assignReviewer(mockedEnv, args)
 
@@ -211,14 +212,14 @@ func TestAssignReviewer_WhenTotalRequiredReviewersIsMoreThanTotalAvailableReview
 		nil,
 	)
 
-	args := []aladino.Value{
-		aladino.BuildArrayValue(
-			[]aladino.Value{
-				aladino.BuildStringValue(reviewerLogin),
+	args := []lang.Value{
+		lang.BuildArrayValue(
+			[]lang.Value{
+				lang.BuildStringValue(reviewerLogin),
 			},
 		),
-		aladino.BuildIntValue(totalRequiredReviewers),
-		aladino.BuildStringValue("random"),
+		lang.BuildIntValue(totalRequiredReviewers),
+		lang.BuildStringValue("random"),
 	}
 	err := assignReviewer(mockedEnv, args)
 
@@ -247,14 +248,14 @@ func TestAssignReviewer_WhenListReviewsRequestFails(t *testing.T) {
 		nil,
 	)
 
-	args := []aladino.Value{
-		aladino.BuildArrayValue(
-			[]aladino.Value{
-				aladino.BuildStringValue("jane"),
+	args := []lang.Value{
+		lang.BuildArrayValue(
+			[]lang.Value{
+				lang.BuildStringValue("jane"),
 			},
 		),
-		aladino.BuildIntValue(3),
-		aladino.BuildStringValue("random"),
+		lang.BuildIntValue(3),
+		lang.BuildStringValue("random"),
 	}
 	err := assignReviewer(mockedEnv, args)
 
@@ -335,14 +336,14 @@ func TestAssignReviewer_WhenPullRequestAlreadyHasReviews(t *testing.T) {
 		nil,
 	)
 
-	args := []aladino.Value{
-		aladino.BuildArrayValue(
-			[]aladino.Value{
-				aladino.BuildStringValue(reviewerLogin),
+	args := []lang.Value{
+		lang.BuildArrayValue(
+			[]lang.Value{
+				lang.BuildStringValue(reviewerLogin),
 			},
 		),
-		aladino.BuildIntValue(1),
-		aladino.BuildStringValue("random"),
+		lang.BuildIntValue(1),
+		lang.BuildStringValue("random"),
 	}
 	err := assignReviewer(mockedEnv, args)
 
@@ -419,14 +420,14 @@ func TestAssignReviewer_WhenPullRequestAlreadyHasApproval(t *testing.T) {
 		nil,
 	)
 
-	args := []aladino.Value{
-		aladino.BuildArrayValue(
-			[]aladino.Value{
-				aladino.BuildStringValue(reviewerLogin),
+	args := []lang.Value{
+		lang.BuildArrayValue(
+			[]lang.Value{
+				lang.BuildStringValue(reviewerLogin),
 			},
 		),
-		aladino.BuildIntValue(1),
-		aladino.BuildStringValue("random"),
+		lang.BuildIntValue(1),
+		lang.BuildStringValue("random"),
 	}
 	err := assignReviewer(mockedEnv, args)
 
@@ -500,15 +501,15 @@ func TestAssignReviewer_WhenPullRequestAlreadyHasRequestedReviewers(t *testing.T
 		nil,
 	)
 
-	args := []aladino.Value{
-		aladino.BuildArrayValue(
-			[]aladino.Value{
-				aladino.BuildStringValue(reviewerA),
-				aladino.BuildStringValue(reviewerB),
+	args := []lang.Value{
+		lang.BuildArrayValue(
+			[]lang.Value{
+				lang.BuildStringValue(reviewerA),
+				lang.BuildStringValue(reviewerB),
 			},
 		),
-		aladino.BuildIntValue(2),
-		aladino.BuildStringValue("random"),
+		lang.BuildIntValue(2),
+		lang.BuildStringValue("random"),
 	}
 	err := assignReviewer(mockedEnv, args)
 
@@ -581,14 +582,14 @@ func TestAssignReviewer_HasNoAvailableReviewers(t *testing.T) {
 		nil,
 	)
 
-	args := []aladino.Value{
-		aladino.BuildArrayValue(
-			[]aladino.Value{
-				aladino.BuildStringValue(reviewerLogin),
+	args := []lang.Value{
+		lang.BuildArrayValue(
+			[]lang.Value{
+				lang.BuildStringValue(reviewerLogin),
 			},
 		),
-		aladino.BuildIntValue(totalRequiredReviewers),
-		aladino.BuildStringValue("random"),
+		lang.BuildIntValue(totalRequiredReviewers),
+		lang.BuildStringValue("random"),
 	}
 	err := assignReviewer(mockedEnv, args)
 
@@ -664,14 +665,14 @@ func TestAssignReviewer_WhenPullRequestAlreadyApproved(t *testing.T) {
 		nil,
 	)
 
-	args := []aladino.Value{
-		aladino.BuildArrayValue(
-			[]aladino.Value{
-				aladino.BuildStringValue(reviewerA),
+	args := []lang.Value{
+		lang.BuildArrayValue(
+			[]lang.Value{
+				lang.BuildStringValue(reviewerA),
 			},
 		),
-		aladino.BuildIntValue(1),
-		aladino.BuildStringValue("random"),
+		lang.BuildIntValue(1),
+		lang.BuildStringValue("random"),
 	}
 	err := assignReviewer(mockedEnv, args)
 	assert.Nil(t, err)
@@ -984,14 +985,14 @@ func TestAssignReviewer_ReRequest(t *testing.T) {
 				aladino.MockBuiltIns(),
 				nil,
 			)
-			args := []aladino.Value{
-				aladino.BuildArrayValue(
-					[]aladino.Value{
-						aladino.BuildStringValue(mockedReviewerLogin),
+			args := []lang.Value{
+				lang.BuildArrayValue(
+					[]lang.Value{
+						lang.BuildStringValue(mockedReviewerLogin),
 					},
 				),
-				aladino.BuildIntValue(1),
-				aladino.BuildStringValue("random"),
+				lang.BuildIntValue(1),
+				lang.BuildStringValue("random"),
 			}
 			err := assignReviewer(mockedEnv, args)
 
@@ -1113,16 +1114,16 @@ func TestAssignReviewer_WithPolicy(t *testing.T) {
 				aladino.MockBuiltIns(),
 				nil,
 			)
-			args := []aladino.Value{
-				aladino.BuildArrayValue(
-					[]aladino.Value{
-						aladino.BuildStringValue(mockedReviewerALogin),
-						aladino.BuildStringValue(mockedReviewerBLogin),
-						aladino.BuildStringValue(mockedReviewerCLogin),
+			args := []lang.Value{
+				lang.BuildArrayValue(
+					[]lang.Value{
+						lang.BuildStringValue(mockedReviewerALogin),
+						lang.BuildStringValue(mockedReviewerBLogin),
+						lang.BuildStringValue(mockedReviewerCLogin),
 					},
 				),
-				aladino.BuildIntValue(1),
-				aladino.BuildStringValue(test.inputPolicy),
+				lang.BuildIntValue(1),
+				lang.BuildStringValue(test.inputPolicy),
 			}
 
 			gotErr := assignReviewer(mockedEnv, args)
@@ -1208,15 +1209,15 @@ func TestAssignReviewer_WhenPullRequestAlreadyApprovedBy2Reviewers(t *testing.T)
 		nil,
 	)
 
-	args := []aladino.Value{
-		aladino.BuildArrayValue(
-			[]aladino.Value{
-				aladino.BuildStringValue(reviewerA),
-				aladino.BuildStringValue(reviewerB),
+	args := []lang.Value{
+		lang.BuildArrayValue(
+			[]lang.Value{
+				lang.BuildStringValue(reviewerA),
+				lang.BuildStringValue(reviewerB),
 			},
 		),
-		aladino.BuildIntValue(1),
-		aladino.BuildStringValue("random"),
+		lang.BuildIntValue(1),
+		lang.BuildStringValue("random"),
 	}
 	err := assignReviewer(mockedEnv, args)
 	assert.Nil(t, err)

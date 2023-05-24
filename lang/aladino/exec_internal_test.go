@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/reviewpad/go-lib/entities"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -96,7 +97,7 @@ func TestExec_WhenActionIsEnabled(t *testing.T) {
 		Actions: map[string]*BuiltInAction{
 			builtInName: {
 				Type: BuildFunctionType([]Type{BuildStringType()}, BuildArrayOfType(BuildStringType())),
-				Code: func(e Env, args []Value) error {
+				Code: func(e Env, args []lang.Value) error {
 					isBuiltInCalled = true
 					return nil
 				},
@@ -126,7 +127,7 @@ func TestExec_WhenActionIsDisabled(t *testing.T) {
 		Actions: map[string]*BuiltInAction{
 			builtInName: {
 				Type: BuildFunctionType([]Type{BuildStringType()}, BuildArrayOfType(BuildStringType())),
-				Code: func(e Env, args []Value) error {
+				Code: func(e Env, args []lang.Value) error {
 					isBuiltInCalled = true
 					return nil
 				},

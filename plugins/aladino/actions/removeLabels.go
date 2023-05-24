@@ -8,6 +8,7 @@ import (
 	"fmt"
 
 	"github.com/reviewpad/go-lib/entities"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
@@ -19,23 +20,23 @@ func RemoveLabels() *aladino.BuiltInAction {
 	}
 }
 
-func removeLabelsCode(e aladino.Env, args []aladino.Value) error {
+func removeLabelsCode(e aladino.Env, args []lang.Value) error {
 	t := e.GetTarget()
 	log := e.GetLogger().WithField("builtin", "removeLabels")
 
-	labelsToRemove := args[0].(*aladino.ArrayValue).Vals
+	labelsToRemove := args[0].(*lang.ArrayValue).Vals
 	if len(labelsToRemove) == 0 {
 		return fmt.Errorf("removeLabels: no labels provided")
 	}
 
 	for _, label := range labelsToRemove {
-		labelID := label.(*aladino.StringValue).Val
+		labelID := label.(*lang.StringValue).Val
 		internalLabelID := aladino.BuildInternalLabelID(labelID)
 
 		var labelName string
 
 		if val, ok := e.GetRegisterMap()[internalLabelID]; ok {
-			labelName = val.(*aladino.StringValue).Val
+			labelName = val.(*lang.StringValue).Val
 		} else {
 			labelName = labelID
 			log.Warnf("the \"%v\" label was not found in the environment", labelID)

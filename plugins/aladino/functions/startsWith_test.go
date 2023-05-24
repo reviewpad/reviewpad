@@ -7,6 +7,7 @@ package plugins_aladino_functions_test
 import (
 	"testing"
 
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -17,11 +18,11 @@ var startsWith = plugins_aladino.PluginBuiltIns().Functions["startsWith"].Code
 func TestStarts_WhenTrue(t *testing.T) {
 	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
 
-	wantVal := aladino.BuildBoolValue(true)
+	wantVal := lang.BuildBoolValue(true)
 
-	args := []aladino.Value{
-		aladino.BuildStringValue("Title of a pull request"),
-		aladino.BuildStringValue("Title of"),
+	args := []lang.Value{
+		lang.BuildStringValue("Title of a pull request"),
+		lang.BuildStringValue("Title of"),
 	}
 
 	gotVal, err := startsWith(mockedEnv, args)
@@ -33,11 +34,11 @@ func TestStarts_WhenTrue(t *testing.T) {
 func TestStarts_WhenFalse(t *testing.T) {
 	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
 
-	wantVal := aladino.BuildBoolValue(false)
+	wantVal := lang.BuildBoolValue(false)
 
-	args := []aladino.Value{
-		aladino.BuildStringValue("Pull request title"),
-		aladino.BuildStringValue("Title"),
+	args := []lang.Value{
+		lang.BuildStringValue("Pull request title"),
+		lang.BuildStringValue("Title"),
 	}
 
 	gotVal, err := startsWith(mockedEnv, args)

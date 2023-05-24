@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/reviewpad/reviewpad/v4/engine"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
@@ -24,7 +25,7 @@ func TestNewEvalEnv(t *testing.T) {
 			Ctx:          ctx,
 			GithubClient: githubClient,
 			Collector:    collector,
-			RegisterMap:  aladino.RegisterMap(make(map[string]aladino.Value)),
+			RegisterMap:  aladino.RegisterMap(make(map[string]lang.Value)),
 			BuiltIns:     aladino.MockBuiltIns(),
 			Report:       &aladino.Report{Actions: make([]string, 0)},
 		},

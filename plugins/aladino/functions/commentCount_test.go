@@ -7,6 +7,7 @@ package plugins_aladino_functions_test
 import (
 	"testing"
 
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -15,11 +16,11 @@ import (
 var commentCount = plugins_aladino.PluginBuiltIns().Functions["commentCount"].Code
 
 func TestCommentCount(t *testing.T) {
-	wantCommentCount := aladino.BuildIntValue(6)
+	wantCommentCount := lang.BuildIntValue(6)
 
 	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
 
-	args := []aladino.Value{}
+	args := []lang.Value{}
 	gotCommentCount, err := commentCount(mockedEnv, args)
 
 	assert.Nil(t, err)

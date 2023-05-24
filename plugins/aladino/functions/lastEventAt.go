@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/reviewpad/go-lib/entities"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
@@ -19,11 +20,11 @@ func LastEventAt() *aladino.BuiltInFunction {
 	}
 }
 
-func lastEventAtCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
+func lastEventAtCode(e aladino.Env, args []lang.Value) (lang.Value, error) {
 	updatedAtTime, err := time.Parse("2006-01-02 15:04:05.999999999 -0700 MST", e.GetTarget().GetUpdatedAt())
 	if err != nil {
 		return nil, err
 	}
 
-	return aladino.BuildIntValue(int(updatedAtTime.Unix())), nil
+	return lang.BuildIntValue(int(updatedAtTime.Unix())), nil
 }

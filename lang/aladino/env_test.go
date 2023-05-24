@@ -13,6 +13,7 @@ import (
 	"github.com/reviewpad/go-lib/entities"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	"github.com/stretchr/testify/assert"
 )
@@ -129,7 +130,7 @@ func TestNewEvalEnv(t *testing.T) {
 		Ctx:          ctx,
 		GithubClient: mockedGithubClient,
 		Collector:    aladino.DefaultMockCollector,
-		RegisterMap:  aladino.RegisterMap(make(map[string]aladino.Value)),
+		RegisterMap:  aladino.RegisterMap(make(map[string]lang.Value)),
 		BuiltIns:     aladino.MockBuiltIns(),
 		Report:       &aladino.Report{Actions: make([]string, 0)},
 		// TODO: Mock an event

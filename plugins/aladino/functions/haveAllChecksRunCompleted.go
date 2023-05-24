@@ -8,6 +8,7 @@ import (
 	"github.com/google/go-github/v52/github"
 	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
@@ -23,10 +24,10 @@ func HaveAllChecksRunCompleted() *aladino.BuiltInFunction {
 	}
 }
 
-func haveAllChecksRunCompleted(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
-	checkRunsToIgnore := args[0].(*aladino.ArrayValue)
-	conclusion := args[1].(*aladino.StringValue)
-	checkConclusionsToIgnore := args[2].(*aladino.ArrayValue)
+func haveAllChecksRunCompleted(e aladino.Env, args []lang.Value) (lang.Value, error) {
+	checkRunsToIgnore := args[0].(*lang.ArrayValue)
+	conclusion := args[1].(*lang.StringValue)
+	checkConclusionsToIgnore := args[2].(*lang.ArrayValue)
 	pullRequest := e.GetTarget().(*target.PullRequestTarget)
 	owner := pullRequest.GetTargetEntity().Owner
 	repo := pullRequest.GetTargetEntity().Repo
@@ -38,7 +39,7 @@ func haveAllChecksRunCompleted(e aladino.Env, args []aladino.Value) (aladino.Val
 	}
 
 	if lastCommitSHA == "" {
-		return aladino.BuildBoolValue(false), nil
+		return lang.BuildBoolValue(false), nil
 	}
 
 	checkRuns, err := e.GetGithubClient().GetCheckRunsForRef(e.GetCtx(), owner, repo, number, lastCommitSHA, &github.ListCheckRunsOptions{})
@@ -51,12 +52,12 @@ func haveAllChecksRunCompleted(e aladino.Env, args []aladino.Value) (aladino.Val
 		"reviewpad": true,
 	}
 	for _, item := range checkRunsToIgnore.Vals {
-		ignoredRuns[item.(*aladino.StringValue).Val] = true
+		ignoredRuns[item.(*lang.StringValue).Val] = true
 	}
 
 	ignoredConclusions := map[string]bool{}
 	for _, ignoredConclusion := range checkConclusionsToIgnore.Vals {
-		ignoredConclusions[ignoredConclusion.(*aladino.StringValue).Val] = true
+		ignoredConclusions[ignoredConclusion.(*lang.StringValue).Val] = true
 	}
 
 	for _, checkRun := range checkRuns {
@@ -65,15 +66,15 @@ func haveAllChecksRunCompleted(e aladino.Env, args []aladino.Value) (aladino.Val
 		}
 
 		if checkRun.GetStatus() != "completed" {
-			return aladino.BuildBoolValue(false), nil
+			return lang.BuildBoolValue(false), nil
 		}
 
 		if conclusion.Val != "" && checkRun.GetConclusion() != conclusion.Val {
-			return aladino.BuildBoolValue(false), nil
+			return lang.BuildBoolValue(false), nil
 		}
 	}
 
-	return aladino.BuildBoolValue(true), nil
+	return lang.BuildBoolValue(true), nil
 }
 
 func isIgnoredCheckRun(checkRun *github.CheckRun, ignoredRuns, ignoredConclusions map[string]bool) bool {

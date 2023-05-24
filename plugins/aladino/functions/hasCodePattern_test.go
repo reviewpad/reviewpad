@@ -12,6 +12,7 @@ import (
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	pbc "github.com/reviewpad/api/go/codehost"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/reviewpad/reviewpad/v4/utils"
@@ -43,10 +44,10 @@ func TestHasCodePattern_WhenPullRequestPatchHasNilFile(t *testing.T) {
 
 	mockedEnv.GetTarget().(*target.PullRequestTarget).Patch[fileName] = nil
 
-	args := []aladino.Value{aladino.BuildStringValue("placeBet\\(.*\\)")}
+	args := []lang.Value{lang.BuildStringValue("placeBet\\(.*\\)")}
 	gotVal, err := hasCodePattern(mockedEnv, args)
 
-	wantVal := aladino.BuildBoolValue(false)
+	wantVal := lang.BuildBoolValue(false)
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantVal, gotVal)
@@ -55,7 +56,7 @@ func TestHasCodePattern_WhenPullRequestPatchHasNilFile(t *testing.T) {
 func TestHasCodePattern_WhenPatternIsInvalid(t *testing.T) {
 	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
 
-	args := []aladino.Value{aladino.BuildStringValue("a(")}
+	args := []lang.Value{lang.BuildStringValue("a(")}
 	gotVal, err := hasCodePattern(mockedEnv, args)
 
 	assert.Nil(t, gotVal)
@@ -77,10 +78,10 @@ func TestHasCodePattern(t *testing.T) {
 		nil,
 	)
 
-	args := []aladino.Value{aladino.BuildStringValue("new\\(.*\\)")}
+	args := []lang.Value{lang.BuildStringValue("new\\(.*\\)")}
 	gotVal, err := hasCodePattern(mockedEnv, args)
 
-	wantVal := aladino.BuildBoolValue(true)
+	wantVal := lang.BuildBoolValue(true)
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantVal, gotVal)

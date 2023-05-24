@@ -7,6 +7,7 @@ package plugins_aladino_actions
 import (
 	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	"github.com/reviewpad/reviewpad/v4/utils"
 )
@@ -19,7 +20,7 @@ func AssignRandomReviewer() *aladino.BuiltInAction {
 	}
 }
 
-func assignRandomReviewerCode(e aladino.Env, _ []aladino.Value) error {
+func assignRandomReviewerCode(e aladino.Env, _ []lang.Value) error {
 	t := e.GetTarget().(*target.PullRequestTarget)
 	log := e.GetLogger().WithField("builtin", "assignRandomReviewer")
 

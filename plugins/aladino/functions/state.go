@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/reviewpad/go-lib/entities"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
@@ -19,8 +20,8 @@ func State() *aladino.BuiltInFunction {
 	}
 }
 
-func stateCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
+func stateCode(e aladino.Env, args []lang.Value) (lang.Value, error) {
 	// We are lower casing the state because the enum values are in upper case
 	// and we don't want to break people's code.
-	return aladino.BuildStringValue(strings.ToLower(e.GetTarget().GetState().String())), nil
+	return lang.BuildStringValue(strings.ToLower(e.GetTarget().GetState().String())), nil
 }

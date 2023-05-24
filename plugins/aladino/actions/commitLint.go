@@ -10,6 +10,7 @@ import (
 	"github.com/reviewpad/go-conventionalcommits"
 	"github.com/reviewpad/go-conventionalcommits/parser"
 	"github.com/reviewpad/go-lib/entities"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
@@ -21,7 +22,7 @@ func CommitLint() *aladino.BuiltInAction {
 	}
 }
 
-func commitLintCode(e aladino.Env, _ []aladino.Value) error {
+func commitLintCode(e aladino.Env, _ []lang.Value) error {
 	entity := e.GetTarget().GetTargetEntity()
 
 	prNum := entity.Number

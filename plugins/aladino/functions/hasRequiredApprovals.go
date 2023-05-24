@@ -9,6 +9,7 @@ import (
 
 	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	"github.com/reviewpad/reviewpad/v4/utils"
 )
@@ -27,10 +28,10 @@ func HasRequiredApprovals() *aladino.BuiltInFunction {
 	}
 }
 
-func hasRequiredApprovalsCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
+func hasRequiredApprovalsCode(e aladino.Env, args []lang.Value) (lang.Value, error) {
 	pullRequest := e.GetTarget().(*target.PullRequestTarget)
-	totalRequiredApprovals := args[0].(*aladino.IntValue).Val
-	requiredApprovalsFrom := args[1].(*aladino.ArrayValue).Vals
+	totalRequiredApprovals := args[0].(*lang.IntValue).Val
+	requiredApprovalsFrom := args[1].(*lang.ArrayValue).Vals
 
 	if len(requiredApprovalsFrom) < totalRequiredApprovals {
 		return nil, fmt.Errorf("hasRequiredApprovals: the number of required approvals exceeds the number of members from the given list of required approvals")
@@ -43,10 +44,10 @@ func hasRequiredApprovalsCode(e aladino.Env, args []aladino.Value) (aladino.Valu
 
 	totalApprovedReviews := 0
 	for _, requiredApproval := range requiredApprovalsFrom {
-		if utils.ElementOf(approvedBy, requiredApproval.(*aladino.StringValue).Val) {
+		if utils.ElementOf(approvedBy, requiredApproval.(*lang.StringValue).Val) {
 			totalApprovedReviews++
 		}
 	}
 
-	return aladino.BuildBoolValue(totalApprovedReviews >= totalRequiredApprovals), nil
+	return lang.BuildBoolValue(totalApprovedReviews >= totalRequiredApprovals), nil
 }

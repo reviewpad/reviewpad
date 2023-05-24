@@ -7,6 +7,7 @@ package plugins_aladino_functions_test
 import (
 	"testing"
 
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -17,11 +18,11 @@ var contains = plugins_aladino.PluginBuiltIns().Functions["contains"].Code
 func TestContainsTrue(t *testing.T) {
 	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
 
-	wantVal := aladino.BuildBoolValue(true)
+	wantVal := lang.BuildBoolValue(true)
 
-	args := []aladino.Value{
-		aladino.BuildStringValue("A title of a pull request"),
-		aladino.BuildStringValue("title of"),
+	args := []lang.Value{
+		lang.BuildStringValue("A title of a pull request"),
+		lang.BuildStringValue("title of"),
 	}
 
 	gotVal, err := contains(mockedEnv, args)
@@ -33,11 +34,11 @@ func TestContainsTrue(t *testing.T) {
 func TestContainsFalse(t *testing.T) {
 	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
 
-	wantVal := aladino.BuildBoolValue(false)
+	wantVal := lang.BuildBoolValue(false)
 
-	args := []aladino.Value{
-		aladino.BuildStringValue("Pull request title"),
-		aladino.BuildStringValue("title of"),
+	args := []lang.Value{
+		lang.BuildStringValue("Pull request title"),
+		lang.BuildStringValue("title of"),
 	}
 
 	gotVal, err := contains(mockedEnv, args)

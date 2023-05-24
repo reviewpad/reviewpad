@@ -7,6 +7,7 @@ package plugins_aladino_functions
 import (
 	"github.com/google/go-github/v52/github"
 	"github.com/reviewpad/go-lib/entities"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
@@ -18,8 +19,8 @@ func Team() *aladino.BuiltInFunction {
 	}
 }
 
-func teamCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
-	teamSlug := args[0].(*aladino.StringValue).Val
+func teamCode(e aladino.Env, args []lang.Value) (lang.Value, error) {
+	teamSlug := args[0].(*lang.StringValue).Val
 	orgName := e.GetTarget().GetTargetEntity().Owner
 
 	members, _, err := e.GetGithubClient().ListTeamMembersBySlug(e.GetCtx(), orgName, teamSlug, &github.TeamListTeamMembersOptions{})
@@ -27,10 +28,10 @@ func teamCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
 		return nil, err
 	}
 
-	membersLogin := make([]aladino.Value, len(members))
+	membersLogin := make([]lang.Value, len(members))
 	for i, member := range members {
-		membersLogin[i] = aladino.BuildStringValue(*member.Login)
+		membersLogin[i] = lang.BuildStringValue(*member.Login)
 	}
 
-	return aladino.BuildArrayValue(membersLogin), nil
+	return lang.BuildArrayValue(membersLogin), nil
 }

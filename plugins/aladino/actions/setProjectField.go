@@ -6,6 +6,7 @@ package plugins_aladino_actions
 
 import (
 	"github.com/reviewpad/go-lib/entities"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
@@ -17,10 +18,10 @@ func SetProjectField() *aladino.BuiltInAction {
 	}
 }
 
-func setProjectField(e aladino.Env, args []aladino.Value) error {
-	projectTitle := args[0].(*aladino.StringValue).Val
-	fieldName := args[1].(*aladino.StringValue).Val
-	fieldValue := args[2].(*aladino.StringValue).Val
+func setProjectField(e aladino.Env, args []lang.Value) error {
+	projectTitle := args[0].(*lang.StringValue).Val
+	fieldName := args[1].(*lang.StringValue).Val
+	fieldValue := args[2].(*lang.StringValue).Val
 	target := e.GetTarget()
 
 	projectItems, err := target.GetLinkedProjects()

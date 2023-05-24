@@ -14,6 +14,7 @@ import (
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	pbc "github.com/reviewpad/api/go/codehost"
 	host "github.com/reviewpad/reviewpad/v4/codehost/github"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/reviewpad/reviewpad/v4/utils"
@@ -43,7 +44,7 @@ func TestReview_WhenAuthenticatedUserLoginRequestFails(t *testing.T) {
 		nil,
 	)
 
-	args := []aladino.Value{aladino.BuildStringValue("APPROVE"), aladino.BuildStringValue("test")}
+	args := []lang.Value{lang.BuildStringValue("APPROVE"), lang.BuildStringValue("test")}
 	gotErr := review(mockedEnv, args)
 
 	assert.EqualError(t, gotErr, fmt.Sprintf("non-200 OK status code: 404 Not Found body: \"%s\\n\"", failMessage))
@@ -76,7 +77,7 @@ func TestReview_WhenLatestReviewRequestFails(t *testing.T) {
 		nil,
 	)
 
-	args := []aladino.Value{aladino.BuildStringValue("APPROVE"), aladino.BuildStringValue("test")}
+	args := []lang.Value{lang.BuildStringValue("APPROVE"), lang.BuildStringValue("test")}
 	gotErr := review(mockedEnv, args)
 
 	assert.EqualError(t, gotErr, fmt.Sprintf("non-200 OK status code: 404 Not Found body: \"%s\\n\"", failMessage))
@@ -159,7 +160,7 @@ func TestReview_WhenLastPushDateRequestFails(t *testing.T) {
 		nil,
 	)
 
-	args := []aladino.Value{aladino.BuildStringValue("APPROVE"), aladino.BuildStringValue("test")}
+	args := []lang.Value{lang.BuildStringValue("APPROVE"), lang.BuildStringValue("test")}
 	gotErr := review(mockedEnv, args)
 
 	assert.EqualError(t, gotErr, fmt.Sprintf("non-200 OK status code: 404 Not Found body: \"%s\\n\"", failMessage))
@@ -300,7 +301,7 @@ func TestReview_WhenPostReviewRequestFail(t *testing.T) {
 		nil,
 	)
 
-	args := []aladino.Value{aladino.BuildStringValue("APPROVE"), aladino.BuildStringValue("test-2")}
+	args := []lang.Value{lang.BuildStringValue("APPROVE"), lang.BuildStringValue("test-2")}
 	gotErr := review(mockedEnv, args)
 
 	assert.Equal(t, gotErr.(*github.ErrorResponse).Message, failMessage)
@@ -620,7 +621,7 @@ func TestReview(t *testing.T) {
 				nil,
 			)
 
-			args := []aladino.Value{aladino.BuildStringValue(test.inputReviewEvent), aladino.BuildStringValue(test.inputReviewBody)}
+			args := []lang.Value{lang.BuildStringValue(test.inputReviewEvent), lang.BuildStringValue(test.inputReviewBody)}
 			gotErr := review(mockedEnv, args)
 
 			assert.Equal(t, test.wantErr, gotErr)

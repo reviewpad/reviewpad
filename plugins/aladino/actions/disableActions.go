@@ -6,6 +6,7 @@ package plugins_aladino_actions
 
 import (
 	"github.com/reviewpad/go-lib/entities"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
@@ -17,11 +18,11 @@ func DisableActions() *aladino.BuiltInAction {
 	}
 }
 
-func disableActionsCode(e aladino.Env, args []aladino.Value) error {
-	actionNames := args[0].(*aladino.ArrayValue).Vals
+func disableActionsCode(e aladino.Env, args []lang.Value) error {
+	actionNames := args[0].(*lang.ArrayValue).Vals
 
 	for _, actionName := range actionNames {
-		actionName := actionName.(*aladino.StringValue).Val
+		actionName := actionName.(*lang.StringValue).Val
 		e.GetBuiltIns().Actions[actionName].Disabled = true
 	}
 

@@ -9,6 +9,7 @@ import (
 	"fmt"
 
 	"github.com/reviewpad/go-lib/entities"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
@@ -20,18 +21,18 @@ func ToStringArray() *aladino.BuiltInFunction {
 	}
 }
 
-func toStringArray(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
-	str := args[0].(*aladino.StringValue).Val
+func toStringArray(e aladino.Env, args []lang.Value) (lang.Value, error) {
+	str := args[0].(*lang.StringValue).Val
 	arr := []string{}
-	elements := []aladino.Value{}
+	elements := []lang.Value{}
 
 	if err := json.Unmarshal([]byte(str), &arr); err != nil {
 		return nil, fmt.Errorf(`error converting "%s" to string array: %s`, str, err.Error())
 	}
 
 	for _, value := range arr {
-		elements = append(elements, aladino.BuildStringValue(value))
+		elements = append(elements, lang.BuildStringValue(value))
 	}
 
-	return aladino.BuildArrayValue(elements), nil
+	return lang.BuildArrayValue(elements), nil
 }

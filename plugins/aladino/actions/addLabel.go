@@ -6,6 +6,7 @@ package plugins_aladino_actions
 
 import (
 	"github.com/reviewpad/go-lib/entities"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
@@ -17,16 +18,16 @@ func AddLabel() *aladino.BuiltInAction {
 	}
 }
 
-func addLabelCode(e aladino.Env, args []aladino.Value) error {
+func addLabelCode(e aladino.Env, args []lang.Value) error {
 	t := e.GetTarget()
-	labelID := args[0].(*aladino.StringValue).Val
+	labelID := args[0].(*lang.StringValue).Val
 	internalLabelID := aladino.BuildInternalLabelID(labelID)
 	log := e.GetLogger().WithField("builtin", "addLabel")
 
 	var labelName string
 
 	if val, ok := e.GetRegisterMap()[internalLabelID]; ok {
-		labelName = val.(*aladino.StringValue).Val
+		labelName = val.(*lang.StringValue).Val
 	} else {
 		labelName = labelID
 		log.Warnf("the %v label was not found in the environment", labelID)

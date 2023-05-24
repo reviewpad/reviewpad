@@ -6,6 +6,8 @@ package aladino
 
 import (
 	"fmt"
+
+	"github.com/reviewpad/reviewpad/v4/lang"
 )
 
 type ExecExpr interface {
@@ -27,7 +29,7 @@ func TypeCheckExec(env Env, expr Expr) (ExecExpr, error) {
 }
 
 func (fc *FunctionCall) exec(env Env) error {
-	args := make([]Value, len(fc.arguments))
+	args := make([]lang.Value, len(fc.arguments))
 	for i, elem := range fc.arguments {
 		value, err := elem.Eval(env)
 

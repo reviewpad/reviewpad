@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	pbc "github.com/reviewpad/api/go/codehost"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -44,12 +45,12 @@ func TestRequestedReviewers(t *testing.T) {
 		nil,
 	)
 
-	wantRequestedReviewers := aladino.BuildArrayValue([]aladino.Value{
-		aladino.BuildStringValue("mary"),
-		aladino.BuildStringValue("reviewpad"),
+	wantRequestedReviewers := lang.BuildArrayValue([]lang.Value{
+		lang.BuildStringValue("mary"),
+		lang.BuildStringValue("reviewpad"),
 	})
 
-	args := []aladino.Value{}
+	args := []lang.Value{}
 	gotRequestedReviewers, err := requestedReviewers(mockedEnv, args)
 
 	assert.Nil(t, err)

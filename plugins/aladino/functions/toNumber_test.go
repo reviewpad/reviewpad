@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -20,7 +21,7 @@ var toNumber = plugins_aladino.PluginBuiltIns().Functions["toNumber"].Code
 func TestToNumber(t *testing.T) {
 	tests := map[string]struct {
 		str     string
-		wantRes aladino.Value
+		wantRes lang.Value
 		wantErr error
 	}{
 		"when empty": {
@@ -41,15 +42,15 @@ func TestToNumber(t *testing.T) {
 		},
 		"when zero": {
 			str:     "0",
-			wantRes: aladino.BuildIntValue(0),
+			wantRes: lang.BuildIntValue(0),
 		},
 		"when negative": {
 			str:     "-1",
-			wantRes: aladino.BuildIntValue(-1),
+			wantRes: lang.BuildIntValue(-1),
 		},
 		"when positive": {
 			str:     "1",
-			wantRes: aladino.BuildIntValue(1),
+			wantRes: lang.BuildIntValue(1),
 		},
 		"when positive overflows": {
 			str: "100000000000000000000000000000000000",
@@ -73,7 +74,7 @@ func TestToNumber(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			env := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
 
-			res, err := toNumber(env, []aladino.Value{aladino.BuildStringValue(test.str)})
+			res, err := toNumber(env, []lang.Value{lang.BuildStringValue(test.str)})
 
 			assert.Equal(t, test.wantRes, res)
 			assert.Equal(t, test.wantErr, err)

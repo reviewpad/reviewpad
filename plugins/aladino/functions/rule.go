@@ -8,6 +8,7 @@ import (
 	"fmt"
 
 	"github.com/reviewpad/go-lib/entities"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
@@ -19,18 +20,18 @@ func Rule() *aladino.BuiltInFunction {
 	}
 }
 
-func ruleCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
-	ruleName := args[0].(*aladino.StringValue).Val
+func ruleCode(e aladino.Env, args []lang.Value) (lang.Value, error) {
+	ruleName := args[0].(*lang.StringValue).Val
 
 	internalRuleName := aladino.BuildInternalRuleName(ruleName)
 
 	if spec, ok := e.GetRegisterMap()[internalRuleName]; ok {
-		specRaw := spec.(*aladino.StringValue).Val
+		specRaw := spec.(*lang.StringValue).Val
 		result, err := aladino.EvalExpr(e, "patch", specRaw)
 		if err != nil {
 			return nil, err
 		}
-		return aladino.BuildBoolValue(result), nil
+		return lang.BuildBoolValue(result), nil
 	}
 
 	return nil, fmt.Errorf("$rule: no rule with name %v in state %+q", ruleName, e.GetRegisterMap())

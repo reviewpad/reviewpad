@@ -9,6 +9,7 @@ import (
 	"regexp"
 
 	"github.com/reviewpad/go-lib/entities"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
@@ -32,9 +33,9 @@ func extractMatches(input string, reg *regexp.Regexp) []string {
 	return matches[0][1:]
 }
 
-func subMatchesString(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
-	pattern := args[0].(*aladino.StringValue).Val
-	str := args[1].(*aladino.StringValue).Val
+func subMatchesString(e aladino.Env, args []lang.Value) (lang.Value, error) {
+	pattern := args[0].(*lang.StringValue).Val
+	str := args[1].(*lang.StringValue).Val
 
 	reg, err := regexp.Compile(pattern)
 	if err != nil {
@@ -42,10 +43,10 @@ func subMatchesString(e aladino.Env, args []aladino.Value) (aladino.Value, error
 	}
 
 	matches := extractMatches(str, reg)
-	mValues := make([]aladino.Value, len(matches))
+	mValues := make([]lang.Value, len(matches))
 	for i, match := range matches {
-		mValues[i] = aladino.BuildStringValue(match)
+		mValues[i] = lang.BuildStringValue(match)
 	}
 
-	return aladino.BuildArrayValue(mValues), nil
+	return lang.BuildArrayValue(mValues), nil
 }

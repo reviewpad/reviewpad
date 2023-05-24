@@ -8,6 +8,7 @@ import (
 	"fmt"
 
 	"github.com/reviewpad/go-lib/entities"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
@@ -19,17 +20,17 @@ func AssignAssignees() *aladino.BuiltInAction {
 	}
 }
 
-func assignAssigneesCode(e aladino.Env, args []aladino.Value) error {
+func assignAssigneesCode(e aladino.Env, args []lang.Value) error {
 	t := e.GetTarget()
 
-	rawAvailableAssignees := args[0].(*aladino.ArrayValue).Vals
-	totalRequiredAssignees := args[1].(*aladino.IntValue).Val
+	rawAvailableAssignees := args[0].(*lang.ArrayValue).Vals
+	totalRequiredAssignees := args[1].(*lang.IntValue).Val
 
 	log := e.GetLogger().WithField("builtin", "assignAssignees")
 
 	availableAssignees := make([]string, len(rawAvailableAssignees))
 	for i, v := range rawAvailableAssignees {
-		availableAssignees[i] = v.(*aladino.StringValue).Val
+		availableAssignees[i] = v.(*lang.StringValue).Val
 	}
 
 	if len(availableAssignees) == 0 {

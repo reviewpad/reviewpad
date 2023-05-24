@@ -7,6 +7,7 @@ package plugins_aladino_functions
 import (
 	"github.com/google/go-github/v52/github"
 	"github.com/reviewpad/go-lib/entities"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
@@ -18,8 +19,8 @@ func TotalCreatedPullRequests() *aladino.BuiltInFunction {
 	}
 }
 
-func totalCreatedPullRequestsCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
-	devName := args[0].(*aladino.StringValue).Val
+func totalCreatedPullRequestsCode(e aladino.Env, args []lang.Value) (lang.Value, error) {
+	devName := args[0].(*lang.StringValue).Val
 
 	entity := e.GetTarget().GetTargetEntity()
 	owner := entity.Owner
@@ -40,5 +41,5 @@ func totalCreatedPullRequestsCode(e aladino.Env, args []aladino.Value) (aladino.
 		}
 	}
 
-	return aladino.BuildIntValue(count), nil
+	return lang.BuildIntValue(count), nil
 }

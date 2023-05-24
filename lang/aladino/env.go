@@ -14,6 +14,7 @@ import (
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v4/collector"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/sirupsen/logrus"
 )
 
@@ -29,7 +30,7 @@ const (
 
 type TypeEnv map[string]Type
 
-type RegisterMap map[string]Value
+type RegisterMap map[string]lang.Value
 
 type Env interface {
 	GetBuiltIns() *BuiltIns
@@ -173,7 +174,7 @@ func NewEvalEnv(
 	builtIns *BuiltIns,
 	checkRunID *int64,
 ) (Env, error) {
-	registerMap := RegisterMap(make(map[string]Value))
+	registerMap := RegisterMap(make(map[string]lang.Value))
 	report := &Report{Actions: make([]string, 0)}
 
 	var wg sync.WaitGroup

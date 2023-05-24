@@ -7,6 +7,7 @@ package aladino_test
 import (
 	"testing"
 
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	"github.com/stretchr/testify/assert"
 )
@@ -35,7 +36,7 @@ func TestEval_OnUnaryOp(t *testing.T) {
 
 	gotVal, err := unaryOp.Eval(mockedEnv)
 
-	wantVal := aladino.BuildFalseValue()
+	wantVal := lang.BuildFalseValue()
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantVal, gotVal)
@@ -93,7 +94,7 @@ func TestEval_OnBinaryOp_WhenTrue(t *testing.T) {
 
 	gotVal, err := binaryOp.Eval(mockedEnv)
 
-	wantVal := aladino.BuildTrueValue()
+	wantVal := lang.BuildTrueValue()
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantVal, gotVal)
@@ -109,7 +110,7 @@ func TestEval_OnBinaryOp_WhenFalse(t *testing.T) {
 
 	gotVal, err := binaryOp.Eval(mockedEnv)
 
-	wantVal := aladino.BuildFalseValue()
+	wantVal := lang.BuildFalseValue()
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantVal, gotVal)
@@ -124,11 +125,11 @@ func TestEval_OnVariable_WhenVariableIsRegistered(t *testing.T) {
 	}
 
 	variableName := "size"
-	mockedEnv.GetRegisterMap()[variableName] = aladino.BuildIntValue(0)
+	mockedEnv.GetRegisterMap()[variableName] = lang.BuildIntValue(0)
 
 	gotVal, err := variable.Eval(mockedEnv)
 
-	wantVal := aladino.BuildIntValue(0)
+	wantVal := lang.BuildIntValue(0)
 
 	// clean up
 	delete(mockedEnv.GetRegisterMap(), variableName)
@@ -161,7 +162,7 @@ func TestEval_OnVariable_WhenVariableIsABuiltIn(t *testing.T) {
 
 	gotVal, err := variable.Eval(mockedEnv)
 
-	wantVal := aladino.BuildIntValue(0)
+	wantVal := lang.BuildIntValue(0)
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantVal, gotVal)
@@ -177,7 +178,7 @@ func TestEval_OnBoolConst(t *testing.T) {
 
 	gotVal, err := boolConst.Eval(mockedEnv)
 
-	wantVal := aladino.BuildTrueValue()
+	wantVal := lang.BuildTrueValue()
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantVal, gotVal)
@@ -194,7 +195,7 @@ func TestEval_OnStringConst(t *testing.T) {
 
 	gotVal, err := strConst.Eval(mockedEnv)
 
-	wantVal := aladino.BuildStringValue(str)
+	wantVal := lang.BuildStringValue(str)
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantVal, gotVal)
@@ -210,7 +211,7 @@ func TestEval_OnIntConst(t *testing.T) {
 
 	gotVal, err := intConst.Eval(mockedEnv)
 
-	wantVal := aladino.BuildIntValue(1)
+	wantVal := lang.BuildIntValue(1)
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantVal, gotVal)
@@ -254,7 +255,7 @@ func TestEval_OnFunctionCall_WhenFunctionIsABuiltIn(t *testing.T) {
 
 	gotVal, err := fc.Eval(mockedEnv)
 
-	wantVal := aladino.BuildStringValue("hello")
+	wantVal := lang.BuildStringValue("hello")
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantVal, gotVal)
@@ -270,7 +271,7 @@ func TestEval_OnRecursiveFunctionCall_WhenFunctionIsABuiltIn(t *testing.T) {
 
 	gotVal, err := fc.Eval(mockedEnv)
 
-	wantVal := aladino.BuildStringValue("hello")
+	wantVal := lang.BuildStringValue("hello")
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantVal, gotVal)
@@ -288,7 +289,7 @@ func TestEval_OnLambda_WhenLambdaBodyEvalFails(t *testing.T) {
 
 	gotFn, err := lambda.Eval(mockedEnv)
 
-	gotVal := gotFn.(*aladino.FunctionValue).Fn([]aladino.Value{})
+	gotVal := gotFn.(*lang.FunctionValue).Fn([]lang.Value{})
 
 	assert.Nil(t, err)
 	assert.Nil(t, gotVal)
@@ -310,9 +311,9 @@ func TestEval_OnLambda(t *testing.T) {
 
 	gotFn, err := lambda.Eval(mockedEnv)
 
-	gotVal := gotFn.(*aladino.FunctionValue).Fn([]aladino.Value{aladino.BuildIntValue(0)})
+	gotVal := gotFn.(*lang.FunctionValue).Fn([]lang.Value{lang.BuildIntValue(0)})
 
-	wantVal := aladino.BuildTrueValue()
+	wantVal := lang.BuildTrueValue()
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantVal, gotVal)
@@ -330,7 +331,7 @@ func TestEval_OnTypedExpr(t *testing.T) {
 
 	gotVal, err := typedExpr.Eval(mockedEnv)
 
-	wantVal := aladino.BuildTrueValue()
+	wantVal := lang.BuildTrueValue()
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantVal, gotVal)
@@ -360,7 +361,7 @@ func TestEval_OnArray(t *testing.T) {
 
 	gotVal, err := array.Eval(mockedEnv)
 
-	wantVal := aladino.BuildArrayValue([]aladino.Value{aladino.BuildStringValue("a")})
+	wantVal := lang.BuildArrayValue([]lang.Value{lang.BuildStringValue("a")})
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantVal, gotVal)
@@ -390,7 +391,7 @@ func TestEval(t *testing.T) {
 
 	gotVal, err := aladino.Eval(mockedEnv, expr)
 
-	wantVal := aladino.BuildTrueValue()
+	wantVal := lang.BuildTrueValue()
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantVal, gotVal)
@@ -440,81 +441,81 @@ func TestEvalCondition_WhenConditionIsFalse(t *testing.T) {
 
 func TestEval_OnNotOp(t *testing.T) {
 	notOp := &aladino.NotOp{}
-	gotVal := notOp.Eval(aladino.BuildTrueValue())
+	gotVal := notOp.Eval(lang.BuildTrueValue())
 
-	wantVal := aladino.BuildFalseValue()
+	wantVal := lang.BuildFalseValue()
 
 	assert.Equal(t, wantVal, gotVal)
 }
 
 func TestEval_OnEqOp(t *testing.T) {
 	eqOp := &aladino.EqOp{}
-	gotVal := eqOp.Eval(aladino.BuildIntValue(1), aladino.BuildIntValue(1))
+	gotVal := eqOp.Eval(lang.BuildIntValue(1), lang.BuildIntValue(1))
 
-	wantVal := aladino.BuildTrueValue()
+	wantVal := lang.BuildTrueValue()
 
 	assert.Equal(t, wantVal, gotVal)
 }
 
 func TestEval_OnNeqOp(t *testing.T) {
 	neqOp := &aladino.NeqOp{}
-	gotVal := neqOp.Eval(aladino.BuildIntValue(1), aladino.BuildIntValue(2))
+	gotVal := neqOp.Eval(lang.BuildIntValue(1), lang.BuildIntValue(2))
 
-	wantVal := aladino.BuildTrueValue()
+	wantVal := lang.BuildTrueValue()
 
 	assert.Equal(t, wantVal, gotVal)
 }
 
 func TestEval_OnAndOp(t *testing.T) {
 	andOp := &aladino.AndOp{}
-	gotVal := andOp.Eval(aladino.BuildTrueValue(), aladino.BuildTrueValue())
+	gotVal := andOp.Eval(lang.BuildTrueValue(), lang.BuildTrueValue())
 
-	wantVal := aladino.BuildTrueValue()
+	wantVal := lang.BuildTrueValue()
 
 	assert.Equal(t, wantVal, gotVal)
 }
 
 func TestEval_OnOrOp(t *testing.T) {
 	orOp := &aladino.OrOp{}
-	gotVal := orOp.Eval(aladino.BuildTrueValue(), aladino.BuildTrueValue())
+	gotVal := orOp.Eval(lang.BuildTrueValue(), lang.BuildTrueValue())
 
-	wantVal := aladino.BuildTrueValue()
+	wantVal := lang.BuildTrueValue()
 
 	assert.Equal(t, wantVal, gotVal)
 }
 
 func TestEval_OnLessThanOp(t *testing.T) {
 	lessThanOp := &aladino.LessThanOp{}
-	gotVal := lessThanOp.Eval(aladino.BuildIntValue(1), aladino.BuildIntValue(2))
+	gotVal := lessThanOp.Eval(lang.BuildIntValue(1), lang.BuildIntValue(2))
 
-	wantVal := aladino.BuildTrueValue()
+	wantVal := lang.BuildTrueValue()
 
 	assert.Equal(t, wantVal, gotVal)
 }
 
 func TestEval_OnLessEqThanOp(t *testing.T) {
 	lessEqThanOp := &aladino.LessEqThanOp{}
-	gotVal := lessEqThanOp.Eval(aladino.BuildIntValue(1), aladino.BuildIntValue(2))
+	gotVal := lessEqThanOp.Eval(lang.BuildIntValue(1), lang.BuildIntValue(2))
 
-	wantVal := aladino.BuildTrueValue()
+	wantVal := lang.BuildTrueValue()
 
 	assert.Equal(t, wantVal, gotVal)
 }
 
 func TestEval_OnGreaterThanOp(t *testing.T) {
 	greaterThanOp := &aladino.GreaterThanOp{}
-	gotVal := greaterThanOp.Eval(aladino.BuildIntValue(3), aladino.BuildIntValue(2))
+	gotVal := greaterThanOp.Eval(lang.BuildIntValue(3), lang.BuildIntValue(2))
 
-	wantVal := aladino.BuildTrueValue()
+	wantVal := lang.BuildTrueValue()
 
 	assert.Equal(t, wantVal, gotVal)
 }
 
 func TestEval_OnGreaterEqThanOp(t *testing.T) {
 	greaterEqThanOp := &aladino.GreaterEqThanOp{}
-	gotVal := greaterEqThanOp.Eval(aladino.BuildIntValue(3), aladino.BuildIntValue(2))
+	gotVal := greaterEqThanOp.Eval(lang.BuildIntValue(3), lang.BuildIntValue(2))
 
-	wantVal := aladino.BuildTrueValue()
+	wantVal := lang.BuildTrueValue()
 
 	assert.Equal(t, wantVal, gotVal)
 }

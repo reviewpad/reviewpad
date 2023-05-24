@@ -7,6 +7,7 @@ package plugins_aladino_functions
 import (
 	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
@@ -18,7 +19,7 @@ func HasBinaryFile() *aladino.BuiltInFunction {
 	}
 }
 
-func hasBinaryFile(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
+func hasBinaryFile(e aladino.Env, _ []lang.Value) (lang.Value, error) {
 	target := e.GetTarget().(*target.PullRequestTarget)
 	headBranch := target.PullRequest.Head.Name
 
@@ -29,9 +30,9 @@ func hasBinaryFile(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
 		}
 
 		if isBinary {
-			return aladino.BuildBoolValue(true), nil
+			return lang.BuildBoolValue(true), nil
 		}
 	}
 
-	return aladino.BuildBoolValue(false), nil
+	return lang.BuildBoolValue(false), nil
 }

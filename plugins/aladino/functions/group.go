@@ -8,6 +8,7 @@ import (
 	"fmt"
 
 	"github.com/reviewpad/go-lib/entities"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
@@ -19,8 +20,8 @@ func Group() *aladino.BuiltInFunction {
 	}
 }
 
-func groupCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
-	groupName := args[0].(*aladino.StringValue).Val
+func groupCode(e aladino.Env, args []lang.Value) (lang.Value, error) {
+	groupName := args[0].(*lang.StringValue).Val
 
 	if val, ok := e.GetRegisterMap()[groupName]; ok {
 		return val, nil

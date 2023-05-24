@@ -7,6 +7,7 @@ package plugins_aladino_functions
 import (
 	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
@@ -18,9 +19,9 @@ func FilesPath() *aladino.BuiltInFunction {
 	}
 }
 
-func filesPathCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
+func filesPathCode(e aladino.Env, _ []lang.Value) (lang.Value, error) {
 	t := e.GetTarget().(*target.PullRequestTarget)
-	filesPath := make([]aladino.Value, 0)
+	filesPath := make([]lang.Value, 0)
 
 	for _, patchFile := range t.Patch {
 		if patchFile.Repr == nil {
@@ -33,8 +34,8 @@ func filesPathCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
 			continue
 		}
 
-		filesPath = append(filesPath, aladino.BuildStringValue(patchFile.Repr.Filename))
+		filesPath = append(filesPath, lang.BuildStringValue(patchFile.Repr.Filename))
 	}
 
-	return aladino.BuildArrayValue(filesPath), nil
+	return lang.BuildArrayValue(filesPath), nil
 }

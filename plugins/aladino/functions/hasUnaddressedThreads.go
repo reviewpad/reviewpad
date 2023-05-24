@@ -7,6 +7,7 @@ package plugins_aladino_functions
 import (
 	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
@@ -18,7 +19,7 @@ func HasUnaddressedThreads() *aladino.BuiltInFunction {
 	}
 }
 
-func hasUnaddressedThreadsCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
+func hasUnaddressedThreadsCode(e aladino.Env, _ []lang.Value) (lang.Value, error) {
 	pullRequest := e.GetTarget().(*target.PullRequestTarget)
 
 	reviewThreads, err := pullRequest.GetReviewThreads()
@@ -28,9 +29,9 @@ func hasUnaddressedThreadsCode(e aladino.Env, _ []aladino.Value) (aladino.Value,
 
 	for _, reviewThread := range reviewThreads {
 		if !reviewThread.IsResolved && !reviewThread.IsOutdated {
-			return aladino.BuildTrueValue(), nil
+			return lang.BuildTrueValue(), nil
 		}
 	}
 
-	return aladino.BuildFalseValue(), nil
+	return lang.BuildFalseValue(), nil
 }

@@ -11,6 +11,7 @@ import (
 
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	pbc "github.com/reviewpad/api/go/codehost"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -23,50 +24,50 @@ func TestAssignAssignees(t *testing.T) {
 	tests := map[string]struct {
 		clientOptions               []mock.MockBackendOption
 		codeReview                  *pbc.PullRequest
-		inputAssignees              aladino.Value
-		inputTotalRequiredAssignees aladino.Value
+		inputAssignees              lang.Value
+		inputTotalRequiredAssignees lang.Value
 		shouldAssign                bool
 		wantErr                     error
 	}{
 		"when list of assignees is empty": {
-			inputAssignees:              aladino.BuildArrayValue([]aladino.Value{}),
-			inputTotalRequiredAssignees: aladino.BuildIntValue(defaultAssignees),
+			inputAssignees:              lang.BuildArrayValue([]lang.Value{}),
+			inputTotalRequiredAssignees: lang.BuildIntValue(defaultAssignees),
 			wantErr:                     fmt.Errorf("assignAssignees: list of assignees can't be empty"),
 		},
 		"when list of assignees exceeds 10 users": {
-			inputAssignees: aladino.BuildArrayValue([]aladino.Value{
-				aladino.BuildStringValue("john"),
-				aladino.BuildStringValue("mary"),
-				aladino.BuildStringValue("jane"),
-				aladino.BuildStringValue("steve"),
-				aladino.BuildStringValue("peter"),
-				aladino.BuildStringValue("adam"),
-				aladino.BuildStringValue("nancy"),
-				aladino.BuildStringValue("susan"),
-				aladino.BuildStringValue("bob"),
-				aladino.BuildStringValue("michael"),
-				aladino.BuildStringValue("tom"),
+			inputAssignees: lang.BuildArrayValue([]lang.Value{
+				lang.BuildStringValue("john"),
+				lang.BuildStringValue("mary"),
+				lang.BuildStringValue("jane"),
+				lang.BuildStringValue("steve"),
+				lang.BuildStringValue("peter"),
+				lang.BuildStringValue("adam"),
+				lang.BuildStringValue("nancy"),
+				lang.BuildStringValue("susan"),
+				lang.BuildStringValue("bob"),
+				lang.BuildStringValue("michael"),
+				lang.BuildStringValue("tom"),
 			}),
-			inputTotalRequiredAssignees: aladino.BuildIntValue(11),
+			inputTotalRequiredAssignees: lang.BuildIntValue(11),
 			wantErr:                     fmt.Errorf("assignAssignees: can only assign up to 10 assignees"),
 		},
 		"when the total required assignees is an invalid number": {
-			inputAssignees: aladino.BuildArrayValue([]aladino.Value{
-				aladino.BuildStringValue("john"),
-				aladino.BuildStringValue("mary"),
+			inputAssignees: lang.BuildArrayValue([]lang.Value{
+				lang.BuildStringValue("john"),
+				lang.BuildStringValue("mary"),
 			}),
-			inputTotalRequiredAssignees: aladino.BuildIntValue(0),
+			inputTotalRequiredAssignees: lang.BuildIntValue(0),
 			wantErr:                     fmt.Errorf("assignAssignees: total required assignees is invalid. please insert a number bigger than 0"),
 		},
 		"when the total required assignees is greater than the total of available assignees": {
 			codeReview: &pbc.PullRequest{
 				Assignees: []*pbc.User{},
 			},
-			inputAssignees: aladino.BuildArrayValue([]aladino.Value{
-				aladino.BuildStringValue("john"),
-				aladino.BuildStringValue("mary"),
+			inputAssignees: lang.BuildArrayValue([]lang.Value{
+				lang.BuildStringValue("john"),
+				lang.BuildStringValue("mary"),
 			}),
-			inputTotalRequiredAssignees: aladino.BuildIntValue(3),
+			inputTotalRequiredAssignees: lang.BuildIntValue(3),
 			shouldAssign:                true,
 		},
 		"when one of the required assignees is already an assignee": {
@@ -77,11 +78,11 @@ func TestAssignAssignees(t *testing.T) {
 					},
 				},
 			},
-			inputAssignees: aladino.BuildArrayValue([]aladino.Value{
-				aladino.BuildStringValue("john"),
-				aladino.BuildStringValue("mary"),
+			inputAssignees: lang.BuildArrayValue([]lang.Value{
+				lang.BuildStringValue("john"),
+				lang.BuildStringValue("mary"),
 			}),
-			inputTotalRequiredAssignees: aladino.BuildIntValue(1),
+			inputTotalRequiredAssignees: lang.BuildIntValue(1),
 			shouldAssign:                true,
 		},
 	}
@@ -109,7 +110,7 @@ func TestAssignAssignees(t *testing.T) {
 			nil,
 		)
 
-		args := []aladino.Value{test.inputAssignees, test.inputTotalRequiredAssignees}
+		args := []lang.Value{test.inputAssignees, test.inputTotalRequiredAssignees}
 		gotErr := assignAssignees(mockedEnv, args)
 
 		assert.Equal(t, test.shouldAssign, isAssigneesRequestPerformed)

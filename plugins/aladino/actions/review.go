@@ -10,6 +10,7 @@ import (
 	pbc "github.com/reviewpad/api/go/codehost"
 	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
@@ -21,7 +22,7 @@ func Review() *aladino.BuiltInAction {
 	}
 }
 
-func reviewCode(e aladino.Env, args []aladino.Value) error {
+func reviewCode(e aladino.Env, args []lang.Value) error {
 	t := e.GetTarget().(*target.PullRequestTarget)
 
 	log := e.GetLogger().WithField("builtin", "review")
@@ -36,12 +37,12 @@ func reviewCode(e aladino.Env, args []aladino.Value) error {
 		return nil
 	}
 
-	reviewEvent, err := parseReviewEvent(args[0].(*aladino.StringValue).Val)
+	reviewEvent, err := parseReviewEvent(args[0].(*lang.StringValue).Val)
 	if err != nil {
 		return err
 	}
 
-	reviewBody, err := parseReviewBody(reviewEvent, args[1].(*aladino.StringValue).Val)
+	reviewBody, err := parseReviewBody(reviewEvent, args[1].(*lang.StringValue).Val)
 	if err != nil {
 		return err
 	}

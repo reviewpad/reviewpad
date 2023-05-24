@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	pbc "github.com/reviewpad/api/go/codehost"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -36,9 +37,9 @@ func TestHead(t *testing.T) {
 		nil,
 	)
 
-	wantHead := aladino.BuildStringValue(headRef)
+	wantHead := lang.BuildStringValue(headRef)
 
-	args := []aladino.Value{}
+	args := []lang.Value{}
 	gotHead, err := head(mockedEnv, args)
 
 	assert.Nil(t, err)

@@ -9,6 +9,7 @@ import (
 
 	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
@@ -20,7 +21,7 @@ func IsUpdatedWithBaseBranch() *aladino.BuiltInFunction {
 	}
 }
 
-func isUpdatedWithBaseBranchCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
+func isUpdatedWithBaseBranchCode(e aladino.Env, _ []lang.Value) (lang.Value, error) {
 	pullRequest := e.GetTarget().(*target.PullRequestTarget).PullRequest
 	targetEntity := e.GetTarget().GetTargetEntity()
 
@@ -34,5 +35,5 @@ func isUpdatedWithBaseBranchCode(e aladino.Env, _ []aladino.Value) (aladino.Valu
 		return nil, fmt.Errorf("error getting pull request outdated information: %s", err.Error())
 	}
 
-	return aladino.BuildBoolValue(pullRequestUpToDate), nil
+	return lang.BuildBoolValue(pullRequestUpToDate), nil
 }

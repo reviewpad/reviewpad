@@ -6,6 +6,7 @@ package plugins_aladino_functions
 
 import (
 	"github.com/reviewpad/go-lib/entities"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
@@ -17,16 +18,16 @@ func Comments() *aladino.BuiltInFunction {
 	}
 }
 
-func commentsCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
+func commentsCode(e aladino.Env, _ []lang.Value) (lang.Value, error) {
 	ghComments, err := e.GetTarget().GetComments()
 	if err != nil {
 		return nil, err
 	}
 
-	commentsBody := make([]aladino.Value, len(ghComments))
+	commentsBody := make([]lang.Value, len(ghComments))
 	for i, ghComment := range ghComments {
-		commentsBody[i] = aladino.BuildStringValue(ghComment.Body)
+		commentsBody[i] = lang.BuildStringValue(ghComment.Body)
 	}
 
-	return aladino.BuildArrayValue(commentsBody), nil
+	return lang.BuildArrayValue(commentsBody), nil
 }

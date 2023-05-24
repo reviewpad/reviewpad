@@ -9,6 +9,7 @@ import (
 
 	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	"github.com/reviewpad/reviewpad/v4/utils"
 )
@@ -21,12 +22,12 @@ func HasFileExtensions() *aladino.BuiltInFunction {
 	}
 }
 
-func hasFileExtensionsCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
-	argExtensions := args[0].(*aladino.ArrayValue)
+func hasFileExtensionsCode(e aladino.Env, args []lang.Value) (lang.Value, error) {
+	argExtensions := args[0].(*lang.ArrayValue)
 
 	extensionSet := make(map[string]bool, len(argExtensions.Vals))
 	for _, argExt := range argExtensions.Vals {
-		argStringVal := argExt.(*aladino.StringValue)
+		argStringVal := argExt.(*lang.StringValue)
 
 		normalizedStr := strings.ToLower(argStringVal.Val)
 		extensionSet[normalizedStr] = true
@@ -38,9 +39,9 @@ func hasFileExtensionsCode(e aladino.Env, args []aladino.Value) (aladino.Value, 
 		normalizedExt := strings.ToLower(fpExt)
 
 		if _, ok := extensionSet[normalizedExt]; !ok {
-			return aladino.BuildFalseValue(), nil
+			return lang.BuildFalseValue(), nil
 		}
 	}
 
-	return aladino.BuildTrueValue(), nil
+	return lang.BuildTrueValue(), nil
 }

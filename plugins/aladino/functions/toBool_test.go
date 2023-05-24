@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -20,7 +21,7 @@ var toBool = plugins_aladino.PluginBuiltIns().Functions["toBool"].Code
 func TestToBool(t *testing.T) {
 	tests := map[string]struct {
 		str     string
-		wantRes aladino.Value
+		wantRes lang.Value
 		wantErr error
 	}{
 		"when empty": {
@@ -33,51 +34,51 @@ func TestToBool(t *testing.T) {
 		},
 		"when 1": {
 			str:     "1",
-			wantRes: aladino.BuildBoolValue(true),
+			wantRes: lang.BuildBoolValue(true),
 		},
 		"when 0": {
 			str:     "0",
-			wantRes: aladino.BuildBoolValue(false),
+			wantRes: lang.BuildBoolValue(false),
 		},
 		"when t": {
 			str:     "t",
-			wantRes: aladino.BuildBoolValue(true),
+			wantRes: lang.BuildBoolValue(true),
 		},
 		"when f": {
 			str:     "f",
-			wantRes: aladino.BuildBoolValue(false),
+			wantRes: lang.BuildBoolValue(false),
 		},
 		"when T": {
 			str:     "T",
-			wantRes: aladino.BuildBoolValue(true),
+			wantRes: lang.BuildBoolValue(true),
 		},
 		"when F": {
 			str:     "F",
-			wantRes: aladino.BuildBoolValue(false),
+			wantRes: lang.BuildBoolValue(false),
 		},
 		"when TRUE": {
 			str:     "TRUE",
-			wantRes: aladino.BuildBoolValue(true),
+			wantRes: lang.BuildBoolValue(true),
 		},
 		"when FALSE": {
 			str:     "FALSE",
-			wantRes: aladino.BuildBoolValue(false),
+			wantRes: lang.BuildBoolValue(false),
 		},
 		"when true": {
 			str:     "true",
-			wantRes: aladino.BuildBoolValue(true),
+			wantRes: lang.BuildBoolValue(true),
 		},
 		"when false": {
 			str:     "false",
-			wantRes: aladino.BuildBoolValue(false),
+			wantRes: lang.BuildBoolValue(false),
 		},
 		"when True": {
 			str:     "True",
-			wantRes: aladino.BuildBoolValue(true),
+			wantRes: lang.BuildBoolValue(true),
 		},
 		"when False": {
 			str:     "False",
-			wantRes: aladino.BuildBoolValue(false),
+			wantRes: lang.BuildBoolValue(false),
 		},
 		"when other": {
 			str: "other",
@@ -93,7 +94,7 @@ func TestToBool(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			env := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
 
-			res, err := toBool(env, []aladino.Value{aladino.BuildStringValue(test.str)})
+			res, err := toBool(env, []lang.Value{lang.BuildStringValue(test.str)})
 
 			assert.Equal(t, test.wantRes, res)
 			assert.Equal(t, test.wantErr, err)

@@ -10,6 +10,7 @@ import (
 	"github.com/google/go-github/v52/github"
 	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
@@ -24,9 +25,9 @@ func HasAnyCheckRunCompleted() *aladino.BuiltInFunction {
 	}
 }
 
-func hasAnyCheckRunCompleted(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
-	checkRunsToIgnore := args[0].(*aladino.ArrayValue)
-	checkConclusions := args[1].(*aladino.ArrayValue)
+func hasAnyCheckRunCompleted(e aladino.Env, args []lang.Value) (lang.Value, error) {
+	checkRunsToIgnore := args[0].(*lang.ArrayValue)
+	checkConclusions := args[1].(*lang.ArrayValue)
 
 	pullRequest := e.GetTarget().(*target.PullRequestTarget)
 	owner := pullRequest.GetTargetEntity().Owner
@@ -39,7 +40,7 @@ func hasAnyCheckRunCompleted(e aladino.Env, args []aladino.Value) (aladino.Value
 	}
 
 	if lastCommitSHA == "" {
-		return aladino.BuildBoolValue(false), nil
+		return lang.BuildBoolValue(false), nil
 	}
 
 	checkRuns, err := e.GetGithubClient().GetCheckRunsForRef(e.GetCtx(), owner, repo, number, lastCommitSHA, &github.ListCheckRunsOptions{})
@@ -52,12 +53,12 @@ func hasAnyCheckRunCompleted(e aladino.Env, args []aladino.Value) (aladino.Value
 		"reviewpad": true,
 	}
 	for _, item := range checkRunsToIgnore.Vals {
-		checkRunIgnored[item.(*aladino.StringValue).Val] = true
+		checkRunIgnored[item.(*lang.StringValue).Val] = true
 	}
 
 	checkConclusionsConsidered := map[string]bool{}
 	for _, ignoredConclusion := range checkConclusions.Vals {
-		checkConclusionsConsidered[ignoredConclusion.(*aladino.StringValue).Val] = true
+		checkConclusionsConsidered[ignoredConclusion.(*lang.StringValue).Val] = true
 	}
 
 	for _, checkRun := range checkRuns {
@@ -71,13 +72,13 @@ func hasAnyCheckRunCompleted(e aladino.Env, args []aladino.Value) (aladino.Value
 
 		// If no conclusions are specified, we consider all check runs as valid
 		if len(checkConclusionsConsidered) == 0 {
-			return aladino.BuildBoolValue(true), nil
+			return lang.BuildBoolValue(true), nil
 		}
 
 		if checkConclusionsConsidered[checkRun.GetConclusion()] {
-			return aladino.BuildBoolValue(true), nil
+			return lang.BuildBoolValue(true), nil
 		}
 	}
 
-	return aladino.BuildBoolValue(false), nil
+	return lang.BuildBoolValue(false), nil
 }

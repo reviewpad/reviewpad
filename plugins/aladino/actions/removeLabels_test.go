@@ -12,6 +12,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	pbc "github.com/reviewpad/api/go/codehost"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/reviewpad/reviewpad/v4/utils"
@@ -58,7 +59,7 @@ func TestRemoveLabels_WhenDeleteLabelRequestFails(t *testing.T) {
 
 	wantErr := failMessage
 
-	inputLabels := []aladino.Value{aladino.BuildArrayValue([]aladino.Value{aladino.BuildStringValue(defaultLabel)})}
+	inputLabels := []lang.Value{lang.BuildArrayValue([]lang.Value{lang.BuildStringValue(defaultLabel)})}
 	gotErr := removeLabels(mockedEnv, inputLabels)
 
 	assert.Equal(t, wantErr, gotErr.(*github.ErrorResponse).Message)
@@ -97,7 +98,7 @@ func TestRemoveLabels_WhenLabelDoesNotExist(t *testing.T) {
 		nil,
 	)
 
-	inputLabels := []aladino.Value{aladino.BuildArrayValue([]aladino.Value{aladino.BuildStringValue(defaultLabel)})}
+	inputLabels := []lang.Value{lang.BuildArrayValue([]lang.Value{lang.BuildStringValue(defaultLabel)})}
 
 	gotErr := removeLabels(mockedEnv, inputLabels)
 
@@ -171,17 +172,17 @@ func TestRemoveLabels(t *testing.T) {
 
 			if test.labelExistsInLabelsSection {
 				for _, inputLabel := range test.inputLabels {
-					mockedEnv.GetRegisterMap()[aladino.BuildInternalLabelID(inputLabel)] = aladino.BuildStringValue(inputLabel)
+					mockedEnv.GetRegisterMap()[aladino.BuildInternalLabelID(inputLabel)] = lang.BuildStringValue(inputLabel)
 				}
 			}
 
-			labels := make([]aladino.Value, len(test.inputLabels))
+			labels := make([]lang.Value, len(test.inputLabels))
 
 			for i, inputLabel := range test.inputLabels {
-				labels[i] = aladino.BuildStringValue(inputLabel)
+				labels[i] = lang.BuildStringValue(inputLabel)
 			}
 
-			args := []aladino.Value{aladino.BuildArrayValue(labels)}
+			args := []lang.Value{lang.BuildArrayValue(labels)}
 			gotErr := removeLabels(mockedEnv, args)
 
 			if gotErr != nil && gotErr.Error() != test.wantErr {

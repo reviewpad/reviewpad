@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	pbc "github.com/reviewpad/api/go/codehost"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -30,9 +31,9 @@ func TestStatus(t *testing.T) {
 		nil,
 	)
 
-	wantState := aladino.BuildStringValue(prState)
+	wantState := lang.BuildStringValue(prState)
 
-	args := []aladino.Value{}
+	args := []lang.Value{}
 	gotState, err := state(mockedEnv, args)
 
 	assert.Nil(t, err)

@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/reviewpad/go-lib/entities"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
@@ -21,10 +22,10 @@ func ExtractMarkdownHeadingContent() *aladino.BuiltInFunction {
 	}
 }
 
-func extractMarkdownHeadingContent(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
-	input := args[0].(*aladino.StringValue).Val
-	headingTitle := args[1].(*aladino.StringValue).Val
-	headingLevel := args[2].(*aladino.IntValue).Val
+func extractMarkdownHeadingContent(e aladino.Env, args []lang.Value) (lang.Value, error) {
+	input := args[0].(*lang.StringValue).Val
+	headingTitle := args[1].(*lang.StringValue).Val
+	headingLevel := args[2].(*lang.IntValue).Val
 
 	if headingLevel < 1 || headingLevel > 6 {
 		return nil, fmt.Errorf("invalid heading level: %d", headingLevel)
@@ -40,5 +41,5 @@ func extractMarkdownHeadingContent(e aladino.Env, args []aladino.Value) (aladino
 
 	matches := extractMatches(input, reg)
 
-	return aladino.BuildStringValue(strings.Join(matches, "\n")), nil
+	return lang.BuildStringValue(strings.Join(matches, "\n")), nil
 }

@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -25,11 +26,11 @@ func (op *mockBinaryOperator) getOperator() string {
 	return "MOCK_BINARY_OPERATOR"
 }
 
-func (op *mockUnaryOperator) Eval(exprVal Value) Value {
+func (op *mockUnaryOperator) Eval(exprVal lang.Value) lang.Value {
 	return nil
 }
 
-func (op *mockBinaryOperator) Eval(lhs, rhs Value) Value {
+func (op *mockBinaryOperator) Eval(lhs, rhs lang.Value) lang.Value {
 	return nil
 }
 

@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -19,11 +20,11 @@ func TestGroup(t *testing.T) {
 	groupName := "techLeads"
 	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
 
-	wantGroup := aladino.BuildArrayValue([]aladino.Value{aladino.BuildStringValue("john"), aladino.BuildStringValue("arthur")})
+	wantGroup := lang.BuildArrayValue([]lang.Value{lang.BuildStringValue("john"), lang.BuildStringValue("arthur")})
 
 	mockedEnv.GetRegisterMap()[groupName] = wantGroup
 
-	args := []aladino.Value{aladino.BuildStringValue(groupName)}
+	args := []lang.Value{lang.BuildStringValue(groupName)}
 	gotGroup, err := group(mockedEnv, args)
 
 	assert.Nil(t, err)
@@ -37,7 +38,7 @@ func TestGroup_WhenGroupIsNonExisting(t *testing.T) {
 	// Make sure that the group 'techLeads' doesn't exist
 	delete(mockedEnv.GetRegisterMap(), groupName)
 
-	args := []aladino.Value{aladino.BuildStringValue(groupName)}
+	args := []lang.Value{lang.BuildStringValue(groupName)}
 	gotGroup, err := group(mockedEnv, args)
 
 	assert.Nil(t, gotGroup)

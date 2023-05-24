@@ -16,6 +16,7 @@ import (
 	"github.com/reviewpad/reviewpad/v4/codehost"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/reviewpad/reviewpad/v4/engine"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	"github.com/reviewpad/reviewpad/v4/utils"
 	"github.com/sirupsen/logrus"
@@ -322,7 +323,7 @@ func TestExecConfigurationFile(t *testing.T) {
 				Actions: map[string]*aladino.BuiltInAction{
 					builtInName: {
 						Type: aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, aladino.BuildArrayOfType(aladino.BuildStringType())),
-						Code: func(e aladino.Env, args []aladino.Value) error {
+						Code: func(e aladino.Env, args []lang.Value) error {
 							return nil
 						},
 						SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},

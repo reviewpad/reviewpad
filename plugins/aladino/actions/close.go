@@ -6,6 +6,7 @@ package plugins_aladino_actions
 
 import (
 	"github.com/reviewpad/go-lib/entities"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
@@ -17,9 +18,9 @@ func Close() *aladino.BuiltInAction {
 	}
 }
 
-func closeCode(e aladino.Env, args []aladino.Value) error {
-	comment := args[0].(*aladino.StringValue).Val
-	stateReason := args[1].(*aladino.StringValue).Val
+func closeCode(e aladino.Env, args []lang.Value) error {
+	comment := args[0].(*lang.StringValue).Val
+	stateReason := args[1].(*lang.StringValue).Val
 
 	return e.GetTarget().Close(comment, stateReason)
 }

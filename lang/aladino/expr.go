@@ -12,13 +12,14 @@ import (
 	"strings"
 	"time"
 
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/utils/report"
 )
 
 type Expr interface {
 	Kind() string
 	typeinfer(env TypeEnv) (Type, error)
-	Eval(Env) (Value, error)
+	Eval(Env) (lang.Value, error)
 	equals(Expr) bool
 }
 
@@ -47,7 +48,7 @@ const (
 
 type UnaryOperator interface {
 	getOperator() string
-	Eval(exprValue Value) Value
+	Eval(exprValue lang.Value) lang.Value
 }
 
 type NotOp struct{}
@@ -58,7 +59,7 @@ func (op *NotOp) getOperator() string { return NOT_OP }
 
 type BinaryOperator interface {
 	getOperator() string
-	Eval(lhs, rhs Value) Value
+	Eval(lhs, rhs lang.Value) lang.Value
 }
 
 type EqOp struct{}

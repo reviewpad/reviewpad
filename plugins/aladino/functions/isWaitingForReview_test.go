@@ -14,6 +14,7 @@ import (
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	pbc "github.com/reviewpad/api/go/codehost"
 	host "github.com/reviewpad/reviewpad/v4/codehost/github"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/reviewpad/reviewpad/v4/utils"
@@ -47,7 +48,7 @@ func TestIsWaitingForReview_WhenListCommitsRequestFails(t *testing.T) {
 		nil,
 	)
 
-	args := []aladino.Value{}
+	args := []lang.Value{}
 	gotValue, gotErr := isWaitingForReview(mockedEnv, args)
 
 	assert.Nil(t, gotValue)
@@ -87,7 +88,7 @@ func TestIsWaitingForReview_WhenGetPullRequestLastPushDateRequestFails(t *testin
 		nil,
 	)
 
-	args := []aladino.Value{}
+	args := []lang.Value{}
 	gotValue, gotErr := isWaitingForReview(mockedEnv, args)
 
 	assert.Nil(t, gotValue)
@@ -194,7 +195,7 @@ func TestIsWaitingForReview_WhenListReviewsRequestFails(t *testing.T) {
 		nil,
 	)
 
-	args := []aladino.Value{}
+	args := []lang.Value{}
 	gotValue, gotErr := isWaitingForReview(mockedEnv, args)
 
 	assert.Nil(t, gotValue)
@@ -221,10 +222,10 @@ func TestIsWaitingForReview_WhenNoCommits(t *testing.T) {
 		aladino.MockBuiltIns(),
 		nil,
 	)
-	args := []aladino.Value{}
+	args := []lang.Value{}
 	gotValue, err := isWaitingForReview(mockedEnv, args)
 
-	wantValue := aladino.BuildBoolValue(false)
+	wantValue := lang.BuildBoolValue(false)
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantValue, gotValue)
@@ -235,21 +236,21 @@ func TestIsWaitingForReview_WhenHasNoReviews(t *testing.T) {
 	tests := map[string]struct {
 		requestedReviewers []*pbc.User
 		requestedTeams     []*pbc.Team
-		wantValue          aladino.Value
+		wantValue          lang.Value
 	}{
 		"from user": {
 			requestedReviewers: []*pbc.User{{
 				Login: "john",
 			}},
 			requestedTeams: []*pbc.Team{},
-			wantValue:      aladino.BuildBoolValue(true),
+			wantValue:      lang.BuildBoolValue(true),
 		},
 		"from team": {
 			requestedReviewers: []*pbc.User{},
 			requestedTeams: []*pbc.Team{{
 				Name: "team",
 			}},
-			wantValue: aladino.BuildBoolValue(true),
+			wantValue: lang.BuildBoolValue(true),
 		},
 		"from user and team": {
 			requestedReviewers: []*pbc.User{{
@@ -258,7 +259,7 @@ func TestIsWaitingForReview_WhenHasNoReviews(t *testing.T) {
 			requestedTeams: []*pbc.Team{{
 				Name: "team",
 			}},
-			wantValue: aladino.BuildBoolValue(true),
+			wantValue: lang.BuildBoolValue(true),
 		},
 	}
 
@@ -299,7 +300,7 @@ func TestIsWaitingForReview_WhenHasNoReviews(t *testing.T) {
 				aladino.MockBuiltIns(),
 				nil,
 			)
-			args := []aladino.Value{}
+			args := []lang.Value{}
 			gotValue, err := isWaitingForReview(mockedEnv, args)
 
 			assert.Nil(t, err)
@@ -375,7 +376,7 @@ func TestIsWaitingForReview_WhenHasReviews(t *testing.T) {
 
 	tests := map[string]struct {
 		reviewers []*github.PullRequestReview
-		wantValue aladino.Value
+		wantValue lang.Value
 	}{
 		"from nil user": {
 			reviewers: []*github.PullRequestReview{{
@@ -383,7 +384,7 @@ func TestIsWaitingForReview_WhenHasReviews(t *testing.T) {
 					Login: nil,
 				},
 			}},
-			wantValue: aladino.BuildBoolValue(false),
+			wantValue: lang.BuildBoolValue(false),
 		},
 		"from author": {
 			reviewers: []*github.PullRequestReview{{
@@ -391,7 +392,7 @@ func TestIsWaitingForReview_WhenHasReviews(t *testing.T) {
 					Login: github.String(mockedAuthorLogin),
 				},
 			}},
-			wantValue: aladino.BuildBoolValue(false),
+			wantValue: lang.BuildBoolValue(false),
 		},
 		"from user but outdated CHANGES_REQUESTED": {
 			reviewers: []*github.PullRequestReview{{
@@ -401,7 +402,7 @@ func TestIsWaitingForReview_WhenHasReviews(t *testing.T) {
 				State:       github.String("CHANGES_REQUESTED"),
 				SubmittedAt: &github.Timestamp{Time: mockedCreateDateBeforeLastCommitDate},
 			}},
-			wantValue: aladino.BuildBoolValue(true),
+			wantValue: lang.BuildBoolValue(true),
 		},
 		"from user but outdated COMMENTED": {
 			reviewers: []*github.PullRequestReview{{
@@ -411,7 +412,7 @@ func TestIsWaitingForReview_WhenHasReviews(t *testing.T) {
 				State:       github.String("COMMENTED"),
 				SubmittedAt: &github.Timestamp{Time: mockedCreateDateBeforeLastCommitDate},
 			}},
-			wantValue: aladino.BuildBoolValue(true),
+			wantValue: lang.BuildBoolValue(true),
 		},
 		"from user but outdated APPROVED": {
 			reviewers: []*github.PullRequestReview{{
@@ -421,7 +422,7 @@ func TestIsWaitingForReview_WhenHasReviews(t *testing.T) {
 				State:       github.String("APPROVED"),
 				SubmittedAt: &github.Timestamp{Time: mockedCreateDateBeforeLastCommitDate},
 			}},
-			wantValue: aladino.BuildBoolValue(false),
+			wantValue: lang.BuildBoolValue(false),
 		},
 		"from user and up to date CHANGES_REQUESTED": {
 			reviewers: []*github.PullRequestReview{{
@@ -431,7 +432,7 @@ func TestIsWaitingForReview_WhenHasReviews(t *testing.T) {
 				State:       github.String("CHANGES_REQUESTED"),
 				SubmittedAt: &github.Timestamp{Time: mockedCreateDateAfterLastCommitDate},
 			}},
-			wantValue: aladino.BuildBoolValue(false),
+			wantValue: lang.BuildBoolValue(false),
 		},
 		"from user and up to date COMMENTED": {
 			reviewers: []*github.PullRequestReview{{
@@ -441,7 +442,7 @@ func TestIsWaitingForReview_WhenHasReviews(t *testing.T) {
 				State:       github.String("COMMENTED"),
 				SubmittedAt: &github.Timestamp{Time: mockedCreateDateAfterLastCommitDate},
 			}},
-			wantValue: aladino.BuildBoolValue(false),
+			wantValue: lang.BuildBoolValue(false),
 		},
 		"from user and up to date APPROVED": {
 			reviewers: []*github.PullRequestReview{{
@@ -451,7 +452,7 @@ func TestIsWaitingForReview_WhenHasReviews(t *testing.T) {
 				State:       github.String("APPROVED"),
 				SubmittedAt: &github.Timestamp{Time: mockedCreateDateAfterLastCommitDate},
 			}},
-			wantValue: aladino.BuildBoolValue(false),
+			wantValue: lang.BuildBoolValue(false),
 		},
 		"from user and more than one": {
 			reviewers: []*github.PullRequestReview{
@@ -470,7 +471,7 @@ func TestIsWaitingForReview_WhenHasReviews(t *testing.T) {
 					SubmittedAt: &github.Timestamp{Time: mockedCreateDateAfterLastCommitDate},
 				},
 			},
-			wantValue: aladino.BuildBoolValue(false),
+			wantValue: lang.BuildBoolValue(false),
 		},
 	}
 
@@ -504,7 +505,7 @@ func TestIsWaitingForReview_WhenHasReviews(t *testing.T) {
 				aladino.MockBuiltIns(),
 				nil,
 			)
-			args := []aladino.Value{}
+			args := []lang.Value{}
 			gotValue, err := isWaitingForReview(mockedEnv, args)
 
 			assert.Nil(t, err, "Expected no error")

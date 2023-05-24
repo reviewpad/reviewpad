@@ -16,6 +16,7 @@ import (
 	"github.com/reviewpad/api/go/entities"
 	"github.com/reviewpad/api/go/services"
 	"github.com/reviewpad/api/go/services_mocks"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino_services "github.com/reviewpad/reviewpad/v4/plugins/aladino/services"
 	"github.com/reviewpad/reviewpad/v4/utils"
@@ -147,7 +148,7 @@ func TestHasAnnotationCode_WhenGetSymbolsFromPatchFails(t *testing.T) {
 		nil,
 	)
 
-	args := []aladino.Value{aladino.BuildStringValue("critical")}
+	args := []lang.Value{lang.BuildStringValue("critical")}
 	gotVal, gotErr := hasAnnotationCode(mockedEnv, args)
 
 	assert.Nil(t, gotVal)
@@ -156,16 +157,16 @@ func TestHasAnnotationCode_WhenGetSymbolsFromPatchFails(t *testing.T) {
 
 func TestHasAnnotationCode(t *testing.T) {
 	tests := map[string]struct {
-		args    []aladino.Value
-		wantVal aladino.Value
+		args    []lang.Value
+		wantVal lang.Value
 	}{
 		"has annotation": {
-			args:    []aladino.Value{aladino.BuildStringValue("critical")},
-			wantVal: aladino.BuildTrueValue(),
+			args:    []lang.Value{lang.BuildStringValue("critical")},
+			wantVal: lang.BuildTrueValue(),
 		},
 		"does not have annotation": {
-			args:    []aladino.Value{aladino.BuildStringValue("foo")},
-			wantVal: aladino.BuildFalseValue(),
+			args:    []lang.Value{lang.BuildStringValue("foo")},
+			wantVal: lang.BuildFalseValue(),
 		},
 	}
 

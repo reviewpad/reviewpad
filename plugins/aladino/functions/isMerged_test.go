@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	pbc "github.com/reviewpad/api/go/codehost"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -18,20 +19,20 @@ var isMerged = plugins_aladino.PluginBuiltIns().Functions["isMerged"].Code
 func TestIsMerged(t *testing.T) {
 	tests := map[string]struct {
 		codeReview *pbc.PullRequest
-		wantResult aladino.Value
+		wantResult lang.Value
 		wantErr    error
 	}{
 		"when pull request is merged": {
 			codeReview: &pbc.PullRequest{
 				IsMerged: true,
 			},
-			wantResult: aladino.BuildBoolValue(true),
+			wantResult: lang.BuildBoolValue(true),
 		},
 		"when pull request is not merged": {
 			codeReview: &pbc.PullRequest{
 				IsMerged: false,
 			},
-			wantResult: aladino.BuildBoolValue(false),
+			wantResult: lang.BuildBoolValue(false),
 		},
 	}
 
@@ -47,7 +48,7 @@ func TestIsMerged(t *testing.T) {
 				nil,
 			)
 
-			res, err := isMerged(mockedEnv, []aladino.Value{})
+			res, err := isMerged(mockedEnv, []lang.Value{})
 
 			assert.Equal(t, test.wantErr, err)
 			assert.Equal(t, test.wantResult, res)

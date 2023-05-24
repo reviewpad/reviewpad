@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/reviewpad/go-lib/entities"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/reviewpad/reviewpad/v4/utils"
@@ -109,11 +110,11 @@ func TestContext(t *testing.T) {
 	tests := map[string]struct {
 		targetEntity *entities.TargetEntity
 		wantErr      error
-		wantRes      aladino.Value
+		wantRes      lang.Value
 	}{
 		"when pull request": {
 			targetEntity: aladino.DefaultMockTargetEntity,
-			wantRes:      aladino.BuildStringValue(mockPRJSON),
+			wantRes:      lang.BuildStringValue(mockPRJSON),
 		},
 		"when issue": {
 			targetEntity: &entities.TargetEntity{
@@ -122,7 +123,7 @@ func TestContext(t *testing.T) {
 				Repo:   "test",
 				Number: 1,
 			},
-			wantRes: aladino.BuildStringValue(mockIssueJSON),
+			wantRes: lang.BuildStringValue(mockIssueJSON),
 		},
 	}
 
@@ -137,7 +138,7 @@ func TestContext(t *testing.T) {
 				test.targetEntity,
 			)
 
-			res, err := context(env, []aladino.Value{})
+			res, err := context(env, []lang.Value{})
 
 			assert.Equal(t, test.wantErr, err)
 			assert.Equal(t, test.wantRes, res)

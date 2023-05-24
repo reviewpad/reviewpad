@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/google/go-github/v52/github"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -16,7 +17,7 @@ import (
 var eventType = plugins_aladino.PluginBuiltIns().Functions["eventType"].Code
 
 func TestEventType_WhenEventPayloadIsNotPullRequestEvent(t *testing.T) {
-	wantValue := aladino.BuildStringValue("")
+	wantValue := lang.BuildStringValue("")
 
 	eventPayload := &github.CheckRunEvent{}
 	mockedEnv := aladino.MockDefaultEnv(
@@ -27,7 +28,7 @@ func TestEventType_WhenEventPayloadIsNotPullRequestEvent(t *testing.T) {
 		eventPayload,
 	)
 
-	args := []aladino.Value{}
+	args := []lang.Value{}
 	gotValue, err := eventType(mockedEnv, args)
 
 	assert.Nil(t, err)
@@ -35,7 +36,7 @@ func TestEventType_WhenEventPayloadIsNotPullRequestEvent(t *testing.T) {
 }
 
 func TestEventType_WhenPullRequestEventIsNil(t *testing.T) {
-	wantValue := aladino.BuildStringValue("")
+	wantValue := lang.BuildStringValue("")
 
 	eventPayload := &github.PullRequestEvent{}
 	mockedEnv := aladino.MockDefaultEnv(
@@ -46,7 +47,7 @@ func TestEventType_WhenPullRequestEventIsNil(t *testing.T) {
 		eventPayload,
 	)
 
-	args := []aladino.Value{}
+	args := []lang.Value{}
 	gotValue, err := eventType(mockedEnv, args)
 
 	assert.Nil(t, err)
@@ -54,7 +55,7 @@ func TestEventType_WhenPullRequestEventIsNil(t *testing.T) {
 }
 
 func TestEventType_WhenPullRequestEventActionIsNil(t *testing.T) {
-	wantValue := aladino.BuildStringValue("")
+	wantValue := lang.BuildStringValue("")
 
 	eventPayload := &github.PullRequestEvent{
 		Action: nil,
@@ -67,7 +68,7 @@ func TestEventType_WhenPullRequestEventActionIsNil(t *testing.T) {
 		eventPayload,
 	)
 
-	args := []aladino.Value{}
+	args := []lang.Value{}
 	gotValue, err := eventType(mockedEnv, args)
 
 	assert.Nil(t, err)
@@ -75,7 +76,7 @@ func TestEventType_WhenPullRequestEventActionIsNil(t *testing.T) {
 }
 
 func TestEventType(t *testing.T) {
-	wantValue := aladino.BuildStringValue("synchronized")
+	wantValue := lang.BuildStringValue("synchronized")
 
 	eventPayload := &github.PullRequestEvent{
 		Action: github.String("synchronized"),
@@ -89,7 +90,7 @@ func TestEventType(t *testing.T) {
 		eventPayload,
 	)
 
-	args := []aladino.Value{}
+	args := []lang.Value{}
 	gotValue, err := eventType(mockedEnv, args)
 
 	assert.Nil(t, err)

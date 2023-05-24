@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/reviewpad/reviewpad/v4/utils"
@@ -21,7 +22,7 @@ func TestIsUpdatedWithBaseBranch(t *testing.T) {
 	tests := map[string]struct {
 		graphQLHandler http.HandlerFunc
 		wantErr        error
-		wantIsUpdated  aladino.Value
+		wantIsUpdated  lang.Value
 	}{
 		"when get pull request update to date query fails": {
 			graphQLHandler: func(w http.ResponseWriter, r *http.Request) {
@@ -52,7 +53,7 @@ func TestIsUpdatedWithBaseBranch(t *testing.T) {
 					}
 				}`)
 			},
-			wantIsUpdated: aladino.BuildBoolValue(false),
+			wantIsUpdated: lang.BuildBoolValue(false),
 		},
 		"when head is updated": {
 			graphQLHandler: func(w http.ResponseWriter, r *http.Request) {
@@ -77,7 +78,7 @@ func TestIsUpdatedWithBaseBranch(t *testing.T) {
 					}
 				}`)
 			},
-			wantIsUpdated: aladino.BuildBoolValue(true),
+			wantIsUpdated: lang.BuildBoolValue(true),
 		},
 	}
 

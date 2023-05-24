@@ -9,6 +9,7 @@ import (
 	"regexp"
 
 	"github.com/reviewpad/go-lib/entities"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
@@ -25,10 +26,10 @@ func Sprintf() *aladino.BuiltInFunction {
 	}
 }
 
-func sprintfCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
+func sprintfCode(e aladino.Env, args []lang.Value) (lang.Value, error) {
 	var clearVals []interface{}
-	format := args[0].(*aladino.StringValue).Val
-	vals := args[1].(*aladino.ArrayValue).Vals
+	format := args[0].(*lang.StringValue).Val
+	vals := args[1].(*lang.ArrayValue).Vals
 
 	verbs := verbsRegExp.FindAllString(format, -1)
 
@@ -38,14 +39,14 @@ func sprintfCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
 
 	for _, val := range vals {
 		switch v := val.(type) {
-		case *aladino.StringValue:
+		case *lang.StringValue:
 			clearVals = append(clearVals, v.Val)
-		case *aladino.IntValue:
+		case *lang.IntValue:
 			clearVals = append(clearVals, v.Val)
-		case *aladino.BoolValue:
+		case *lang.BoolValue:
 			clearVals = append(clearVals, v.Val)
 		}
 	}
 
-	return aladino.BuildStringValue(fmt.Sprintf(format, clearVals...)), nil
+	return lang.BuildStringValue(fmt.Sprintf(format, clearVals...)), nil
 }

@@ -6,6 +6,7 @@ package plugins_aladino_functions
 
 import (
 	"github.com/reviewpad/go-lib/entities"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
@@ -17,13 +18,13 @@ func IsLinkedToProject() *aladino.BuiltInFunction {
 	}
 }
 
-func isLinkedToProject(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
-	projectTitle := args[0].(*aladino.StringValue).Val
+func isLinkedToProject(e aladino.Env, args []lang.Value) (lang.Value, error) {
+	projectTitle := args[0].(*lang.StringValue).Val
 
 	result, err := e.GetTarget().IsLinkedToProject(projectTitle)
 	if err != nil {
 		return nil, err
 	}
 
-	return aladino.BuildBoolValue(result), nil
+	return lang.BuildBoolValue(result), nil
 }

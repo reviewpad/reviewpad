@@ -11,6 +11,7 @@ import (
 
 	"github.com/google/go-github/v52/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/reviewpad/reviewpad/v4/utils"
@@ -47,7 +48,7 @@ func TestAddLabel_WhenAddLabelToIssueRequestFails(t *testing.T) {
 		nil,
 	)
 
-	args := []aladino.Value{aladino.BuildStringValue(label)}
+	args := []lang.Value{lang.BuildStringValue(label)}
 	err := addLabel(mockedEnv, args)
 
 	assert.Equal(t, err.(*github.ErrorResponse).Message, failMessage)
@@ -83,9 +84,9 @@ func TestAddLabel_WhenLabelIsInEnvironment(t *testing.T) {
 		nil,
 	)
 	internalLabelID := aladino.BuildInternalLabelID(label)
-	mockedEnv.GetRegisterMap()[internalLabelID] = aladino.BuildStringValue(label)
+	mockedEnv.GetRegisterMap()[internalLabelID] = lang.BuildStringValue(label)
 
-	args := []aladino.Value{aladino.BuildStringValue(label)}
+	args := []lang.Value{lang.BuildStringValue(label)}
 	err := addLabel(mockedEnv, args)
 
 	assert.Nil(t, err)
@@ -122,7 +123,7 @@ func TestAddLabel_WhenLabelIsNotInEnvironment(t *testing.T) {
 		nil,
 	)
 
-	args := []aladino.Value{aladino.BuildStringValue(label)}
+	args := []lang.Value{lang.BuildStringValue(label)}
 	err := addLabel(mockedEnv, args)
 
 	assert.Nil(t, err)

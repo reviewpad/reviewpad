@@ -11,6 +11,7 @@ import (
 	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/codehost"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	"github.com/reviewpad/reviewpad/v4/utils"
 )
@@ -30,10 +31,10 @@ func AssignReviewer() *aladino.BuiltInAction {
 	}
 }
 
-func assignReviewerCode(e aladino.Env, args []aladino.Value) error {
-	availableReviewers := args[0].(*aladino.ArrayValue).Vals
-	totalRequiredReviewers := args[1].(*aladino.IntValue).Val
-	policy := args[2].(*aladino.StringValue).Val
+func assignReviewerCode(e aladino.Env, args []lang.Value) error {
+	availableReviewers := args[0].(*lang.ArrayValue).Vals
+	totalRequiredReviewers := args[1].(*lang.IntValue).Val
+	policy := args[2].(*lang.StringValue).Val
 	target := e.GetTarget().(*target.PullRequestTarget)
 	log := e.GetLogger().WithField("builtin", "assignReviewer")
 
@@ -77,7 +78,7 @@ func assignReviewerCode(e aladino.Env, args []aladino.Value) error {
 
 	// Re-request current reviewers only when last review status is not APPROVED
 	for _, availableReviewer := range availableReviewers {
-		userLogin := availableReviewer.(*aladino.StringValue).Val
+		userLogin := availableReviewer.(*lang.StringValue).Val
 		if codehost.HasReview(reviews, userLogin) {
 			lastReview := codehost.LastReview(reviews, userLogin)
 			if lastReview.State != "APPROVED" && lastReview.SubmittedAt.Before(lastPushDate) {
@@ -95,7 +96,7 @@ func assignReviewerCode(e aladino.Env, args []aladino.Value) error {
 
 	for _, requestedReviewer := range currentRequestedReviewers {
 		for _, availableReviewer := range availableReviewers {
-			if availableReviewer.(*aladino.StringValue).Val == requestedReviewer.Login {
+			if availableReviewer.(*lang.StringValue).Val == requestedReviewer.Login {
 				totalRequiredReviewers--
 				availableReviewers = filterReviewerFromReviewers(availableReviewers, requestedReviewer.Login)
 				break
@@ -124,22 +125,22 @@ func assignReviewerCode(e aladino.Env, args []aladino.Value) error {
 	return target.RequestReviewers(reviewers)
 }
 
-func filterReviewerFromReviewers(reviewers []aladino.Value, reviewer string) []aladino.Value {
-	var filteredReviewers []aladino.Value
+func filterReviewerFromReviewers(reviewers []lang.Value, reviewer string) []lang.Value {
+	var filteredReviewers []lang.Value
 	for _, r := range reviewers {
-		if r.(*aladino.StringValue).Val != reviewer {
+		if r.(*lang.StringValue).Val != reviewer {
 			filteredReviewers = append(filteredReviewers, r)
 		}
 	}
 	return filteredReviewers
 }
 
-func getReviewersUsingPolicyRandom(availableReviewers []aladino.Value, totalRequiredReviewers int) []string {
+func getReviewersUsingPolicyRandom(availableReviewers []lang.Value, totalRequiredReviewers int) []string {
 	reviewers := []string{}
 	for i := 0; i < totalRequiredReviewers; i++ {
 		selectedElementIndex := utils.GenerateRandom(len(availableReviewers))
 
-		selectedReviewer := availableReviewers[selectedElementIndex].(*aladino.StringValue).Val
+		selectedReviewer := availableReviewers[selectedElementIndex].(*lang.StringValue).Val
 		availableReviewers = filterReviewerFromReviewers(availableReviewers, selectedReviewer)
 
 		reviewers = append(reviewers, selectedReviewer)
@@ -147,7 +148,7 @@ func getReviewersUsingPolicyRandom(availableReviewers []aladino.Value, totalRequ
 	return reviewers
 }
 
-func getReviewersUsingPolicyRoundRobin(e aladino.Env, availableReviewers []aladino.Value, totalRequiredReviewers int) []string {
+func getReviewersUsingPolicyRoundRobin(e aladino.Env, availableReviewers []lang.Value, totalRequiredReviewers int) []string {
 	reviewers := []string{}
 
 	// Use pull request number as a starting point to select reviewers
@@ -162,19 +163,19 @@ func getReviewersUsingPolicyRoundRobin(e aladino.Env, availableReviewers []aladi
 	for i := 0; i < totalRequiredReviewers; i++ {
 		pos := (startPos + i) % len(availableReviewers)
 		selectedReviewer := availableReviewers[pos]
-		reviewers = append(reviewers, selectedReviewer.(*aladino.StringValue).Val)
+		reviewers = append(reviewers, selectedReviewer.(*lang.StringValue).Val)
 	}
 
 	return reviewers
 }
 
-func getReviewersUsingPolicyReviewpad(e aladino.Env, availableReviewers []aladino.Value, totalRequiredReviewers int) ([]string, error) {
+func getReviewersUsingPolicyReviewpad(e aladino.Env, availableReviewers []lang.Value, totalRequiredReviewers int) ([]string, error) {
 	reviewers := []string{}
 	reviewersMap := map[int][]string{}
 
 	for _, reviewer := range availableReviewers {
 		// Look for reviewers with less hanging PRs
-		query := fmt.Sprintf("is:open is:pr review-requested:%s", reviewer.(*aladino.StringValue).Val)
+		query := fmt.Sprintf("is:open is:pr review-requested:%s", reviewer.(*lang.StringValue).Val)
 		issues, _, err := e.GetGithubClient().GetClientREST().Search.Issues(e.GetCtx(), query, nil)
 		if err != nil {
 			return nil, err
@@ -182,9 +183,9 @@ func getReviewersUsingPolicyReviewpad(e aladino.Env, availableReviewers []aladin
 
 		r := reviewersMap[*issues.Total]
 		if len(r) == 0 {
-			reviewersMap[*issues.Total] = []string{reviewer.(*aladino.StringValue).Val}
+			reviewersMap[*issues.Total] = []string{reviewer.(*lang.StringValue).Val}
 		} else {
-			reviewersMap[*issues.Total] = append(r, reviewer.(*aladino.StringValue).Val)
+			reviewersMap[*issues.Total] = append(r, reviewer.(*lang.StringValue).Val)
 		}
 	}
 

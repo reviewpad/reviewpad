@@ -6,6 +6,7 @@ package plugins_aladino_functions
 
 import (
 	"github.com/reviewpad/go-lib/entities"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
@@ -17,18 +18,18 @@ func SelectFromContext() *aladino.BuiltInFunction {
 	}
 }
 
-func selectFromContext(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
-	path := args[0].(*aladino.StringValue)
+func selectFromContext(e aladino.Env, args []lang.Value) (lang.Value, error) {
+	path := args[0].(*lang.StringValue)
 
 	targetContext, err := contextCode(e, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	contextJSON, err := toJSONCode(e, []aladino.Value{targetContext})
+	contextJSON, err := toJSONCode(e, []lang.Value{targetContext})
 	if err != nil {
 		return nil, err
 	}
 
-	return selectFromJSONCode(e, []aladino.Value{contextJSON, path})
+	return selectFromJSONCode(e, []lang.Value{contextJSON, path})
 }

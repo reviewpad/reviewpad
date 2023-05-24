@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	pbc "github.com/reviewpad/api/go/codehost"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -18,7 +19,7 @@ var filesPath = plugins_aladino.PluginBuiltIns().Functions["filesPath"].Code
 func TestFilesPath(t *testing.T) {
 	tests := map[string]struct {
 		files      []*pbc.File
-		wantResult aladino.Value
+		wantResult lang.Value
 		wantErr    error
 	}{
 		"when successful": {
@@ -27,8 +28,8 @@ func TestFilesPath(t *testing.T) {
 					Filename: "go.mod",
 				},
 			},
-			wantResult: aladino.BuildArrayValue([]aladino.Value{
-				aladino.BuildStringValue("go.mod"),
+			wantResult: lang.BuildArrayValue([]lang.Value{
+				lang.BuildStringValue("go.mod"),
 			}),
 		},
 		"when successful with nil file": {
@@ -38,8 +39,8 @@ func TestFilesPath(t *testing.T) {
 				},
 				nil,
 			},
-			wantResult: aladino.BuildArrayValue([]aladino.Value{
-				aladino.BuildStringValue("go.mod"),
+			wantResult: lang.BuildArrayValue([]lang.Value{
+				lang.BuildStringValue("go.mod"),
 			}),
 		},
 		"when successful with empty file name": {
@@ -51,8 +52,8 @@ func TestFilesPath(t *testing.T) {
 					Filename: "",
 				},
 			},
-			wantResult: aladino.BuildArrayValue([]aladino.Value{
-				aladino.BuildStringValue("go.sum"),
+			wantResult: lang.BuildArrayValue([]lang.Value{
+				lang.BuildStringValue("go.sum"),
 			}),
 		},
 	}
@@ -69,7 +70,7 @@ func TestFilesPath(t *testing.T) {
 				nil,
 			)
 
-			res, err := filesPath(mockedEnv, []aladino.Value{})
+			res, err := filesPath(mockedEnv, []lang.Value{})
 
 			assert.Equal(t, test.wantErr, err)
 			assert.Equal(t, test.wantResult, res)

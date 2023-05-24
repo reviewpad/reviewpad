@@ -10,6 +10,7 @@ import (
 
 	"github.com/google/go-github/v52/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/reviewpad/reviewpad/v4/utils"
@@ -20,7 +21,7 @@ var workflowStatus = plugins_aladino.PluginBuiltIns().Functions["workflowStatus"
 
 func TestWorkflowStatus_WhenEventPayloadIsNotWorkflowRunEvent(t *testing.T) {
 	checkName := "test-workflow"
-	wantValue := aladino.BuildStringValue("")
+	wantValue := lang.BuildStringValue("")
 
 	eventPayload := &github.CheckRunEvent{}
 	mockedEnv := aladino.MockDefaultEnv(
@@ -31,7 +32,7 @@ func TestWorkflowStatus_WhenEventPayloadIsNotWorkflowRunEvent(t *testing.T) {
 		eventPayload,
 	)
 
-	args := []aladino.Value{aladino.BuildStringValue(checkName)}
+	args := []lang.Value{lang.BuildStringValue(checkName)}
 	gotValue, err := workflowStatus(mockedEnv, args)
 
 	assert.Nil(t, err)
@@ -40,7 +41,7 @@ func TestWorkflowStatus_WhenEventPayloadIsNotWorkflowRunEvent(t *testing.T) {
 
 func TestWorkflowStatus_WhenWorkflowRunIsNil(t *testing.T) {
 	checkName := "test-workflow"
-	wantValue := aladino.BuildStringValue("")
+	wantValue := lang.BuildStringValue("")
 
 	eventPayload := &github.WorkflowRunEvent{
 		WorkflowRun: nil,
@@ -53,7 +54,7 @@ func TestWorkflowStatus_WhenWorkflowRunIsNil(t *testing.T) {
 		eventPayload,
 	)
 
-	args := []aladino.Value{aladino.BuildStringValue(checkName)}
+	args := []lang.Value{lang.BuildStringValue(checkName)}
 	gotValue, err := workflowStatus(mockedEnv, args)
 
 	assert.Nil(t, err)
@@ -89,7 +90,7 @@ func TestWorkflowStatus_WhenListCheckRunsForRefRequestFails(t *testing.T) {
 		eventPayload,
 	)
 
-	args := []aladino.Value{aladino.BuildStringValue(checkName)}
+	args := []lang.Value{lang.BuildStringValue(checkName)}
 	gotValue, err := workflowStatus(mockedEnv, args)
 
 	assert.Nil(t, gotValue)
@@ -100,7 +101,7 @@ func TestWorkflowStatus_WhenCheckRunNotFoundDueToEmptyCheckRuns(t *testing.T) {
 	checkName := "test-workflow"
 	headSHA := "1234abc"
 
-	wantValue := aladino.BuildStringValue("")
+	wantValue := lang.BuildStringValue("")
 
 	eventPayload := &github.WorkflowRunEvent{
 		WorkflowRun: &github.WorkflowRun{
@@ -125,7 +126,7 @@ func TestWorkflowStatus_WhenCheckRunNotFoundDueToEmptyCheckRuns(t *testing.T) {
 		eventPayload,
 	)
 
-	args := []aladino.Value{aladino.BuildStringValue(checkName)}
+	args := []lang.Value{lang.BuildStringValue(checkName)}
 	gotValue, err := workflowStatus(mockedEnv, args)
 
 	assert.Nil(t, err)
@@ -136,7 +137,7 @@ func TestWorkflowStatus_WhenCheckRunIsMissingInNonEmptyCheckRuns(t *testing.T) {
 	checkName := "test-workflow"
 	headSHA := "1234abc"
 
-	wantValue := aladino.BuildStringValue("")
+	wantValue := lang.BuildStringValue("")
 
 	eventPayload := &github.WorkflowRunEvent{
 		WorkflowRun: &github.WorkflowRun{
@@ -166,7 +167,7 @@ func TestWorkflowStatus_WhenCheckRunIsMissingInNonEmptyCheckRuns(t *testing.T) {
 		eventPayload,
 	)
 
-	args := []aladino.Value{aladino.BuildStringValue(checkName)}
+	args := []lang.Value{lang.BuildStringValue(checkName)}
 	gotValue, err := workflowStatus(mockedEnv, args)
 
 	assert.Nil(t, err)
@@ -179,7 +180,7 @@ func TestWorkflowStatus_WhenEventIsCompleted(t *testing.T) {
 	checkConclusion := "success"
 	headSHA := "1234abc"
 
-	wantValue := aladino.BuildStringValue(checkConclusion)
+	wantValue := lang.BuildStringValue(checkConclusion)
 
 	eventPayload := &github.WorkflowRunEvent{
 		WorkflowRun: &github.WorkflowRun{
@@ -214,7 +215,7 @@ func TestWorkflowStatus_WhenEventIsCompleted(t *testing.T) {
 		eventPayload,
 	)
 
-	args := []aladino.Value{aladino.BuildStringValue(checkName)}
+	args := []lang.Value{lang.BuildStringValue(checkName)}
 	gotValue, err := workflowStatus(mockedEnv, args)
 
 	assert.Nil(t, err)
@@ -226,7 +227,7 @@ func TestWorkflowStatus_WhenEventIsNotCompleted(t *testing.T) {
 	checkStatus := "in_progress"
 	headSHA := "1234abc"
 
-	wantValue := aladino.BuildStringValue(checkStatus)
+	wantValue := lang.BuildStringValue(checkStatus)
 
 	eventPayload := &github.WorkflowRunEvent{
 		WorkflowRun: &github.WorkflowRun{
@@ -260,7 +261,7 @@ func TestWorkflowStatus_WhenEventIsNotCompleted(t *testing.T) {
 		eventPayload,
 	)
 
-	args := []aladino.Value{aladino.BuildStringValue(checkName)}
+	args := []lang.Value{lang.BuildStringValue(checkName)}
 	gotValue, err := workflowStatus(mockedEnv, args)
 
 	assert.Nil(t, err)
