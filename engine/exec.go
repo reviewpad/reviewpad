@@ -12,6 +12,7 @@ import (
 	"github.com/mattn/go-shellwords"
 	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/engine/commands"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/sirupsen/logrus"
 )
 
@@ -416,12 +417,19 @@ func execStatement(interpreter Interpreter, run PadWorkflowRunBlock, rules map[s
 
 	// if the run block has a for-each clause
 	if run.ForEach != nil {
-		err := interpreter.ProcessList(run.ForEach.Value, run.ForEach.In)
+		value, err := interpreter.ProcessList(run.ForEach.In)
 		if err != nil {
 			return ExitStatusFailure, nil, err
 		}
 
-		return execStatementBlock(interpreter, run.ForEach.Do, rules)
+		for _, val := range value.(*lang.ArrayValue).Vals {
+			interpreter.StoreTemporaryVariable(run.ForEach.Value, val)
+
+			_, _, err := execStatementBlock(interpreter, run.ForEach.Do, rules)
+			if err != nil {
+				return ExitStatusFailure, nil, err
+			}
+		}
 	}
 
 	for _, rule := range run.If {
