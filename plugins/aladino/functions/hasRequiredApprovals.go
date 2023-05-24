@@ -16,12 +16,12 @@ import (
 
 func HasRequiredApprovals() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type: aladino.BuildFunctionType(
-			[]aladino.Type{
-				aladino.BuildIntType(),
-				aladino.BuildArrayOfType(aladino.BuildStringType()),
+		Type: lang.BuildFunctionType(
+			[]lang.Type{
+				lang.BuildIntType(),
+				lang.BuildArrayOfType(lang.BuildStringType()),
 			},
-			aladino.BuildBoolType(),
+			lang.BuildBoolType(),
 		),
 		Code:           hasRequiredApprovalsCode,
 		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},

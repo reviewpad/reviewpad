@@ -54,7 +54,7 @@ func TestBuildGroupAST_WhenGroupTypeFilterIsSet(t *testing.T) {
 				[]Expr{},
 			),
 			BuildLambda(
-				[]Expr{BuildTypedExpr(BuildVariable("dev"), BuildStringType())},
+				[]Expr{BuildTypedExpr(BuildVariable("dev"), lang.BuildStringType())},
 				BuildFunctionCall(
 					BuildVariable("hasFileExtensions"),
 					[]Expr{
@@ -117,7 +117,7 @@ func TestEvalGroup(t *testing.T) {
 	builtIns := &BuiltIns{
 		Functions: map[string]*BuiltInFunction{
 			"group": {
-				Type: BuildFunctionType([]Type{BuildStringType()}, BuildArrayOfType(BuildStringType())),
+				Type: lang.BuildFunctionType([]lang.Type{lang.BuildStringType()}, lang.BuildArrayOfType(lang.BuildStringType())),
 				Code: func(e Env, args []lang.Value) (lang.Value, error) {
 					return lang.BuildArrayValue([]lang.Value{lang.BuildStringValue(devName)}), nil
 				},
@@ -344,7 +344,7 @@ func TestExecProgram(t *testing.T) {
 	builtIns := &BuiltIns{
 		Actions: map[string]*BuiltInAction{
 			"addLabel": {
-				Type: BuildFunctionType([]Type{BuildStringType()}, nil),
+				Type: lang.BuildFunctionType([]lang.Type{lang.BuildStringType()}, nil),
 				Code: func(e Env, args []lang.Value) error {
 					return nil
 				},
@@ -404,7 +404,7 @@ func TestExecAsyncProgram(t *testing.T) {
 	builtIns := &BuiltIns{
 		Actions: map[string]*BuiltInAction{
 			"robin": {
-				Type: BuildFunctionType([]Type{BuildStringType()}, nil),
+				Type: lang.BuildFunctionType([]lang.Type{lang.BuildStringType()}, nil),
 				Code: func(e Env, args []lang.Value) error {
 					return fmt.Errorf("robin error")
 				},
@@ -479,7 +479,7 @@ func TestExecStatement_WhenTypeCheckExecFails(t *testing.T) {
 	builtIns := &BuiltIns{
 		Actions: map[string]*BuiltInAction{
 			"addLabel": {
-				Type: BuildFunctionType([]Type{BuildStringType()}, nil),
+				Type: lang.BuildFunctionType([]lang.Type{lang.BuildStringType()}, nil),
 				Code: func(e Env, args []lang.Value) error {
 					return nil
 				},
@@ -506,7 +506,7 @@ func TestExecStatement_WhenActionExecFails(t *testing.T) {
 	builtIns := &BuiltIns{
 		Functions: map[string]*BuiltInFunction{
 			"author": {
-				Type: BuildFunctionType([]Type{}, BuildArrayOfType(BuildStringType())),
+				Type: lang.BuildFunctionType([]lang.Type{}, lang.BuildArrayOfType(lang.BuildStringType())),
 				Code: func(e Env, args []lang.Value) (lang.Value, error) {
 					return lang.BuildArrayValue([]lang.Value{lang.BuildStringValue(devName)}), nil
 				},
@@ -532,7 +532,7 @@ func TestExecStatement(t *testing.T) {
 	builtIns := &BuiltIns{
 		Actions: map[string]*BuiltInAction{
 			"addLabel": {
-				Type: BuildFunctionType([]Type{BuildStringType()}, nil),
+				Type: lang.BuildFunctionType([]lang.Type{lang.BuildStringType()}, nil),
 				Code: func(e Env, args []lang.Value) error {
 					return nil
 				},

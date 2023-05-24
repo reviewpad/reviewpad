@@ -15,7 +15,7 @@ import (
 
 func DeleteHeadBranch() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{}, nil),
+		Type:           lang.BuildFunctionType([]lang.Type{}, nil),
 		Code:           deleteHeadBranch,
 		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 	}

@@ -13,7 +13,7 @@ import (
 
 func IsDraft() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildBoolType()),
+		Type:           lang.BuildFunctionType([]lang.Type{}, lang.BuildBoolType()),
 		Code:           isDraftCode,
 		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 	}

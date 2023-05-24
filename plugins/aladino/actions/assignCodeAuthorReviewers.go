@@ -22,10 +22,10 @@ import (
 
 func AssignCodeAuthorReviewers() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
-		Type: aladino.BuildFunctionType([]aladino.Type{
-			aladino.BuildIntType(),
-			aladino.BuildArrayOfType(aladino.BuildStringType()),
-			aladino.BuildIntType(),
+		Type: lang.BuildFunctionType([]lang.Type{
+			lang.BuildIntType(),
+			lang.BuildArrayOfType(lang.BuildStringType()),
+			lang.BuildIntType(),
 		}, nil),
 		Code:           assignCodeAuthorReviewersCode,
 		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},

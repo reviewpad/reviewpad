@@ -13,7 +13,7 @@ import (
 
 func FileCount() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildIntType()),
+		Type:           lang.BuildFunctionType([]lang.Type{}, lang.BuildIntType()),
 		Code:           fileCountCode,
 		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 	}

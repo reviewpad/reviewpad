@@ -2,7 +2,7 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-package aladino
+package lang
 
 import (
 	"testing"
@@ -98,159 +98,159 @@ func TestEquals_WhenArraysOfDiffSizes(t *testing.T) {
 	leftTys := []Type{BuildBoolType(), BuildIntType()}
 	rightTys := []Type{BuildBoolType()}
 
-	assert.False(t, equals(leftTys, rightTys))
+	assert.False(t, Equals(leftTys, rightTys))
 }
 
 func TestEquals_WhenArraysContainDiffValues(t *testing.T) {
 	leftTys := []Type{BuildIntType()}
 	rightTys := []Type{BuildBoolType()}
 
-	assert.False(t, equals(leftTys, rightTys))
+	assert.False(t, Equals(leftTys, rightTys))
 }
 
 func TestEquals_WhenEqualTypes(t *testing.T) {
 	leftTys := []Type{BuildBoolType()}
 	rightTys := []Type{BuildBoolType()}
 
-	assert.True(t, equals(leftTys, rightTys))
+	assert.True(t, Equals(leftTys, rightTys))
 }
 
 func TestEquals_WhenBoolTypeComparedToStringType(t *testing.T) {
 	boolType := BuildBoolType()
 	otherType := BuildStringType()
 
-	assert.False(t, boolType.equals(otherType))
+	assert.False(t, boolType.Equals(otherType))
 }
 
 func TestEquals_WhenBoolTypeComparedToSameType(t *testing.T) {
 	boolType := BuildBoolType()
 	otherType := BuildBoolType()
 
-	assert.True(t, boolType.equals(otherType))
+	assert.True(t, boolType.Equals(otherType))
 }
 
 func TestEquals_WhenStringTypeComparedToBoolType(t *testing.T) {
 	stringType := BuildStringType()
 	otherType := BuildBoolType()
 
-	assert.False(t, stringType.equals(otherType))
+	assert.False(t, stringType.Equals(otherType))
 }
 
 func TestEquals_WhenStringTypeComparedToSameType(t *testing.T) {
 	stringType := BuildStringType()
 	otherType := BuildStringType()
 
-	assert.True(t, stringType.equals(otherType))
+	assert.True(t, stringType.Equals(otherType))
 }
 
 func TestEquals_WhenIntTypeComparedToStringType(t *testing.T) {
 	intType := BuildIntType()
 	otherType := BuildStringType()
 
-	assert.False(t, intType.equals(otherType))
+	assert.False(t, intType.Equals(otherType))
 }
 
 func TestEquals_WhenIntTypeComparedToSameType(t *testing.T) {
 	intType := BuildIntType()
 	otherType := BuildIntType()
 
-	assert.True(t, intType.equals(otherType))
+	assert.True(t, intType.Equals(otherType))
 }
 
 func TestEquals_WhenFunctionTypeComparedToIntType(t *testing.T) {
 	functionType := BuildFunctionType([]Type{BuildStringType()}, BuildIntType())
 	otherType := BuildIntType()
 
-	assert.False(t, functionType.equals(otherType))
+	assert.False(t, functionType.Equals(otherType))
 }
 
 func TestEquals_WhenFunctionTypeComparedToSameType(t *testing.T) {
 	functionType := BuildFunctionType([]Type{BuildStringType()}, BuildIntType())
 	otherType := BuildFunctionType([]Type{BuildStringType()}, BuildIntType())
 
-	assert.True(t, functionType.equals(otherType))
+	assert.True(t, functionType.Equals(otherType))
 }
 
 func TestEquals_WhenArraysTypesHaveDiffSizes(t *testing.T) {
 	arrayType := BuildArrayType([]Type{BuildStringType()})
 	otherArrayType := BuildArrayType([]Type{BuildStringType(), BuildIntType()})
 
-	assert.False(t, arrayType.equals(otherArrayType))
+	assert.False(t, arrayType.Equals(otherArrayType))
 }
 
 func TestEquals_WhenArraysTypesAreEqual(t *testing.T) {
 	arrayType := BuildArrayType([]Type{BuildStringType()})
 	otherArrayType := BuildArrayType([]Type{BuildStringType()})
 
-	assert.True(t, arrayType.equals(otherArrayType))
+	assert.True(t, arrayType.Equals(otherArrayType))
 }
 
 func TestEquals_WhenArrayTypeAndArrayOfTypeHaveDiffKind(t *testing.T) {
 	arrayType := BuildArrayType([]Type{BuildStringType()})
 	arrayOfType := BuildArrayOfType(BuildIntType())
 
-	assert.False(t, arrayType.equals(arrayOfType))
+	assert.False(t, arrayType.Equals(arrayOfType))
 }
 
 func TestEquals_WhenArrayTypeAndArrayOfTypeHaveSameKind(t *testing.T) {
 	arrayType := BuildArrayType([]Type{BuildStringType()})
 	arrayOfType := BuildArrayOfType(BuildStringType())
 
-	assert.True(t, arrayType.equals(arrayOfType))
+	assert.True(t, arrayType.Equals(arrayOfType))
 }
 
 func TestEquals_WhenArrayTypeComparedToStringType(t *testing.T) {
 	arrayType := BuildArrayType([]Type{BuildStringType()})
 	otherType := BuildStringType()
 
-	assert.False(t, arrayType.equals(otherType))
+	assert.False(t, arrayType.Equals(otherType))
 }
 
 func TestEquals_WhenArrayOfTypeAndArrayTypeHaveDiffKinds(t *testing.T) {
 	arrayOfType := BuildArrayOfType(BuildIntType())
 	arrayType := BuildArrayType([]Type{BuildStringType()})
 
-	assert.False(t, arrayOfType.equals(arrayType))
+	assert.False(t, arrayOfType.Equals(arrayType))
 }
 
 func TestEquals_WhenArrayOfTypeAndArrayTypeHaveSameKind(t *testing.T) {
 	arrayOfType := BuildArrayOfType(BuildIntType())
 	arrayType := BuildArrayType([]Type{BuildIntType()})
 
-	assert.True(t, arrayOfType.equals(arrayType))
+	assert.True(t, arrayOfType.Equals(arrayType))
 }
 
 func TestEquals_WhenArraysOfTypesHaveDiffKind(t *testing.T) {
 	arrayOfType := BuildArrayOfType(BuildIntType())
 	otherArrayOfType := BuildArrayOfType(BuildStringType())
 
-	assert.False(t, arrayOfType.equals(otherArrayOfType))
+	assert.False(t, arrayOfType.Equals(otherArrayOfType))
 }
 
 func TestEquals_WhenArraysOfTypesAreEqual(t *testing.T) {
 	arrayOfType := BuildArrayOfType(BuildIntType())
 	otherArrayOfType := BuildArrayOfType(BuildIntType())
 
-	assert.True(t, arrayOfType.equals(otherArrayOfType))
+	assert.True(t, arrayOfType.Equals(otherArrayOfType))
 }
 
 func TestEquals_WhenArrayOfTypeComparedToStringType(t *testing.T) {
 	arrayOfType := BuildArrayOfType(BuildIntType())
 	otherType := BuildStringType()
 
-	assert.False(t, arrayOfType.equals(otherType))
+	assert.False(t, arrayOfType.Equals(otherType))
 }
 
 func TestEquals_WhenArrayTypeComparedToDynamicArrayType(t *testing.T) {
 	arrayType := BuildArrayType([]Type{BuildStringType(), BuildIntType()})
 	dynamicArrayType := BuildDynamicArrayType()
 
-	assert.True(t, arrayType.equals(dynamicArrayType))
+	assert.True(t, arrayType.Equals(dynamicArrayType))
 }
 
 func TestEquals_WhenArrayOfTypeComparedToDynamicArrayType(t *testing.T) {
 	arrayOfType := BuildArrayOfType(BuildStringType())
 	dynamicArrayType := BuildDynamicArrayType()
 
-	assert.True(t, arrayOfType.equals(dynamicArrayType))
+	assert.True(t, arrayOfType.Equals(dynamicArrayType))
 }

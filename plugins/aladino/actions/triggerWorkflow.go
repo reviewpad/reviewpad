@@ -13,7 +13,7 @@ import (
 
 func TriggerWorkflow() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, nil),
+		Type:           lang.BuildFunctionType([]lang.Type{lang.BuildStringType()}, nil),
 		Code:           triggerWorkflowCode,
 		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 	}

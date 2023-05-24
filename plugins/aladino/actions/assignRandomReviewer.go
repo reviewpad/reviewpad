@@ -14,7 +14,7 @@ import (
 
 func AssignRandomReviewer() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{}, nil),
+		Type:           lang.BuildFunctionType([]lang.Type{}, nil),
 		Code:           assignRandomReviewerCode,
 		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 	}

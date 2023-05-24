@@ -14,7 +14,7 @@ import (
 
 func Size() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildArrayOfType(aladino.BuildStringType())}, aladino.BuildIntType()),
+		Type:           lang.BuildFunctionType([]lang.Type{lang.BuildArrayOfType(lang.BuildStringType())}, lang.BuildIntType()),
 		Code:           sizeCode,
 		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 	}

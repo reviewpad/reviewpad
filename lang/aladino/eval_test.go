@@ -302,7 +302,7 @@ func TestEval_OnLambda(t *testing.T) {
 	if err != nil {
 		assert.FailNow(t, "parse failed", err)
 	}
-	lambdaParam := aladino.BuildTypedExpr(variable, aladino.BuildStringType())
+	lambdaParam := aladino.BuildTypedExpr(variable, lang.BuildStringType())
 	lambdaBody, err := aladino.Parse("1 == 1")
 	if err != nil {
 		assert.FailNow(t, "parse failed", err)
@@ -327,7 +327,7 @@ func TestEval_OnTypedExpr(t *testing.T) {
 		assert.FailNow(t, "parse failed", err)
 	}
 
-	typedExpr := aladino.BuildTypedExpr(expr, aladino.BuildBoolType())
+	typedExpr := aladino.BuildTypedExpr(expr, lang.BuildBoolType())
 
 	gotVal, err := typedExpr.Eval(mockedEnv)
 

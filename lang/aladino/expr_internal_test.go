@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -628,47 +629,47 @@ func TestArrayEquals_WhenEqual(t *testing.T) {
 }
 
 func TestBuildTypedExpr(t *testing.T) {
-	wantVal := &TypedExpr{&IntConst{1}, &IntType{}}
-	gotVal := BuildTypedExpr(BuildIntConst(1), BuildIntType())
+	wantVal := &TypedExpr{&IntConst{1}, &lang.IntType{}}
+	gotVal := BuildTypedExpr(BuildIntConst(1), lang.BuildIntType())
 
 	assert.Equal(t, wantVal, gotVal)
 }
 
 func TestTypedExprKind(t *testing.T) {
 	wantVal := TYPED_EXPR
-	gotVal := BuildTypedExpr(BuildIntConst(1), BuildIntType()).Kind()
+	gotVal := BuildTypedExpr(BuildIntConst(1), lang.BuildIntType()).Kind()
 
 	assert.Equal(t, wantVal, gotVal)
 }
 
 func TestTypedExprEquals_WhenDiffKinds(t *testing.T) {
-	typedExpr := BuildTypedExpr(BuildIntConst(1), BuildIntType())
+	typedExpr := BuildTypedExpr(BuildIntConst(1), lang.BuildIntType())
 	otherVal := BuildIntConst(0)
 
 	assert.False(t, typedExpr.equals(otherVal))
 }
 
 func TestTypedExprEquals_WhenDiffValues(t *testing.T) {
-	typedExpr := BuildTypedExpr(BuildIntConst(1), BuildIntType())
-	otherVal := BuildTypedExpr(BuildIntConst(1), BuildStringType())
+	typedExpr := BuildTypedExpr(BuildIntConst(1), lang.BuildIntType())
+	otherVal := BuildTypedExpr(BuildIntConst(1), lang.BuildStringType())
 
 	assert.False(t, typedExpr.equals(otherVal))
 }
 
 func TestTypedExprEquals_WhenEqual(t *testing.T) {
-	typedExpr := BuildTypedExpr(BuildIntConst(1), BuildIntType())
-	otherVal := BuildTypedExpr(BuildIntConst(1), BuildIntType())
+	typedExpr := BuildTypedExpr(BuildIntConst(1), lang.BuildIntType())
+	otherVal := BuildTypedExpr(BuildIntConst(1), lang.BuildIntType())
 
 	assert.True(t, typedExpr.equals(otherVal))
 }
 
 func TestBuildLambda(t *testing.T) {
 	wantVal := &Lambda{
-		[]Expr{&TypedExpr{&Variable{"foo"}, &StringType{}}},
+		[]Expr{&TypedExpr{&Variable{"foo"}, &lang.StringType{}}},
 		&BinaryOp{&IntConst{1}, &EqOp{}, &IntConst{1}},
 	}
 	gotVal := BuildLambda(
-		[]Expr{BuildTypedExpr(BuildVariable("foo"), BuildStringType())},
+		[]Expr{BuildTypedExpr(BuildVariable("foo"), lang.BuildStringType())},
 		BuildBinaryOp(BuildIntConst(1), eqOperator(), BuildIntConst(1)),
 	)
 
@@ -678,7 +679,7 @@ func TestBuildLambda(t *testing.T) {
 func TestLambdaKind(t *testing.T) {
 	wantVal := LAMBDA_CONST
 	gotVal := BuildLambda(
-		[]Expr{BuildTypedExpr(BuildVariable("foo"), BuildStringType())},
+		[]Expr{BuildTypedExpr(BuildVariable("foo"), lang.BuildStringType())},
 		BuildBinaryOp(BuildIntConst(1), eqOperator(), BuildIntConst(1)),
 	).Kind()
 
@@ -687,7 +688,7 @@ func TestLambdaKind(t *testing.T) {
 
 func TestLambdaEquals_WhenDiffKinds(t *testing.T) {
 	lambda := BuildLambda(
-		[]Expr{BuildTypedExpr(BuildVariable("foo"), BuildStringType())},
+		[]Expr{BuildTypedExpr(BuildVariable("foo"), lang.BuildStringType())},
 		BuildBinaryOp(BuildIntConst(1), eqOperator(), BuildIntConst(1)),
 	)
 	otherVal := BuildIntConst(0)
@@ -696,11 +697,11 @@ func TestLambdaEquals_WhenDiffKinds(t *testing.T) {
 
 func TestLambdaEquals_WhenDiffValues(t *testing.T) {
 	lambda := BuildLambda(
-		[]Expr{BuildTypedExpr(BuildVariable("foo"), BuildStringType())},
+		[]Expr{BuildTypedExpr(BuildVariable("foo"), lang.BuildStringType())},
 		BuildBinaryOp(BuildIntConst(1), eqOperator(), BuildIntConst(1)),
 	)
 	otherVal := BuildLambda(
-		[]Expr{BuildTypedExpr(BuildVariable("bar"), BuildStringType())},
+		[]Expr{BuildTypedExpr(BuildVariable("bar"), lang.BuildStringType())},
 		BuildBinaryOp(BuildVariable("var#1"), eqOperator(), BuildVariable("var#2")),
 	)
 
@@ -709,11 +710,11 @@ func TestLambdaEquals_WhenDiffValues(t *testing.T) {
 
 func TestLambdaEquals_WhenEqual(t *testing.T) {
 	lambda := BuildLambda(
-		[]Expr{BuildTypedExpr(BuildVariable("foo"), BuildStringType())},
+		[]Expr{BuildTypedExpr(BuildVariable("foo"), lang.BuildStringType())},
 		BuildBinaryOp(BuildIntConst(1), eqOperator(), BuildIntConst(1)),
 	)
 	otherVal := BuildLambda(
-		[]Expr{BuildTypedExpr(BuildVariable("foo"), BuildStringType())},
+		[]Expr{BuildTypedExpr(BuildVariable("foo"), lang.BuildStringType())},
 		BuildBinaryOp(BuildIntConst(1), eqOperator(), BuildIntConst(1)),
 	)
 

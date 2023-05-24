@@ -87,21 +87,21 @@ func MockBuiltIns() *BuiltIns {
 	return &BuiltIns{
 		Functions: map[string]*BuiltInFunction{
 			"emptyFunction": {
-				Type: BuildFunctionType([]Type{}, nil),
+				Type: lang.BuildFunctionType([]lang.Type{}, nil),
 				Code: func(e Env, args []lang.Value) (lang.Value, error) {
 					return nil, nil
 				},
 				SupportedKinds: []entities.TargetEntityKind{entities.PullRequest, entities.Issue},
 			},
 			"zeroConst": {
-				Type: BuildFunctionType([]Type{}, BuildIntType()),
+				Type: lang.BuildFunctionType([]lang.Type{}, lang.BuildIntType()),
 				Code: func(e Env, args []lang.Value) (lang.Value, error) {
 					return lang.BuildIntValue(0), nil
 				},
 				SupportedKinds: []entities.TargetEntityKind{entities.PullRequest, entities.Issue},
 			},
 			"returnStr": {
-				Type: BuildFunctionType([]Type{BuildStringType()}, BuildStringType()),
+				Type: lang.BuildFunctionType([]lang.Type{lang.BuildStringType()}, lang.BuildStringType()),
 				Code: func(e Env, args []lang.Value) (lang.Value, error) {
 					return args[0].(*lang.StringValue), nil
 				},
@@ -110,7 +110,7 @@ func MockBuiltIns() *BuiltIns {
 		},
 		Actions: map[string]*BuiltInAction{
 			"emptyAction": {
-				Type: BuildFunctionType([]Type{}, nil),
+				Type: lang.BuildFunctionType([]lang.Type{}, nil),
 				Code: func(e Env, args []lang.Value) error {
 					return nil
 				},
@@ -120,9 +120,9 @@ func MockBuiltIns() *BuiltIns {
 	}
 }
 
-func mockTypes() map[string]Type {
+func mockTypes() map[string]lang.Type {
 	mockedBuiltIns := MockBuiltIns()
-	builtInsType := make(map[string]Type)
+	builtInsType := make(map[string]lang.Type)
 
 	for builtInName, builtInFunction := range mockedBuiltIns.Functions {
 		builtInsType[builtInName] = builtInFunction.Type

@@ -12,7 +12,7 @@ import (
 
 func CommentCount() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildIntType()),
+		Type:           lang.BuildFunctionType([]lang.Type{}, lang.BuildIntType()),
 		Code:           commentCountCode,
 		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest, entities.Issue},
 	}

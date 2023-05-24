@@ -14,7 +14,7 @@ import (
 
 func IsWaitingForReview() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildBoolType()),
+		Type:           lang.BuildFunctionType([]lang.Type{}, lang.BuildBoolType()),
 		Code:           isWaitingForReviewCode,
 		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 	}

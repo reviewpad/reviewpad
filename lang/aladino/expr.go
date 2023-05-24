@@ -18,7 +18,7 @@ import (
 
 type Expr interface {
 	Kind() string
-	typeinfer(env TypeEnv) (Type, error)
+	typeinfer(env TypeEnv) (lang.Type, error)
 	Eval(Env) (lang.Value, error)
 	equals(Expr) bool
 }
@@ -415,10 +415,10 @@ func EqualList(left []Expr, right []Expr) bool {
 
 type TypedExpr struct {
 	expr   Expr
-	typeOf Type
+	typeOf lang.Type
 }
 
-func BuildTypedExpr(expr Expr, typeOf Type) *TypedExpr {
+func BuildTypedExpr(expr Expr, typeOf lang.Type) *TypedExpr {
 	return &TypedExpr{expr, typeOf}
 }
 
@@ -434,7 +434,7 @@ func (te *TypedExpr) equals(other Expr) bool {
 	otherTypedExpr := other.(*TypedExpr)
 
 	return te.expr.equals(otherTypedExpr.expr) &&
-		te.typeOf.equals(otherTypedExpr.typeOf)
+		te.typeOf.Equals(otherTypedExpr.typeOf)
 }
 
 type Lambda struct {

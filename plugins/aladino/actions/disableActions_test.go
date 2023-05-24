@@ -21,7 +21,7 @@ func TestDisableActions(t *testing.T) {
 	builtIns := &aladino.BuiltIns{
 		Actions: map[string]*aladino.BuiltInAction{
 			builtInName: {
-				Type: aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, aladino.BuildArrayOfType(aladino.BuildStringType())),
+				Type: lang.BuildFunctionType([]lang.Type{lang.BuildStringType()}, lang.BuildArrayOfType(lang.BuildStringType())),
 				Code: func(e aladino.Env, args []lang.Value) error {
 					return nil
 				},

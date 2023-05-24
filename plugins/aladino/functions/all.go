@@ -12,15 +12,15 @@ import (
 
 func All() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type: aladino.BuildFunctionType(
-			[]aladino.Type{
-				aladino.BuildArrayOfType(aladino.BuildStringType()),
-				aladino.BuildFunctionType(
-					[]aladino.Type{aladino.BuildStringType()},
-					aladino.BuildBoolType(),
+		Type: lang.BuildFunctionType(
+			[]lang.Type{
+				lang.BuildArrayOfType(lang.BuildStringType()),
+				lang.BuildFunctionType(
+					[]lang.Type{lang.BuildStringType()},
+					lang.BuildBoolType(),
 				),
 			},
-			aladino.BuildBoolType(),
+			lang.BuildBoolType(),
 		),
 		Code:           allCode,
 		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest, entities.Issue},

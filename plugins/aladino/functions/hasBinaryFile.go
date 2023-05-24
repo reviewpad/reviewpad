@@ -13,7 +13,7 @@ import (
 
 func HasBinaryFile() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildBoolType()),
+		Type:           lang.BuildFunctionType([]lang.Type{}, lang.BuildBoolType()),
 		Code:           hasBinaryFile,
 		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 	}

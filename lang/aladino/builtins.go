@@ -16,13 +16,13 @@ type BuiltIns struct {
 }
 
 type BuiltInFunction struct {
-	Type           Type
+	Type           lang.Type
 	Code           func(e Env, args []lang.Value) (lang.Value, error)
 	SupportedKinds []entities.TargetEntityKind
 }
 
 type BuiltInAction struct {
-	Type              Type
+	Type              lang.Type
 	Code              func(e Env, args []lang.Value) error
 	Disabled          bool
 	SupportedKinds    []entities.TargetEntityKind

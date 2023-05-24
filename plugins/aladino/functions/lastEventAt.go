@@ -14,7 +14,7 @@ import (
 
 func LastEventAt() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildIntType()),
+		Type:           lang.BuildFunctionType([]lang.Type{}, lang.BuildIntType()),
 		Code:           lastEventAtCode,
 		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest, entities.Issue},
 	}

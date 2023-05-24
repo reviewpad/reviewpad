@@ -16,7 +16,7 @@ import (
 
 func Review() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType(), aladino.BuildStringType()}, nil),
+		Type:           lang.BuildFunctionType([]lang.Type{lang.BuildStringType(), lang.BuildStringType()}, nil),
 		Code:           reviewCode,
 		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 	}

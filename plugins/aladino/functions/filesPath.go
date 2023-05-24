@@ -13,7 +13,7 @@ import (
 
 func FilesPath() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildArrayOfType(aladino.BuildStringType())),
+		Type:           lang.BuildFunctionType([]lang.Type{}, lang.BuildArrayOfType(lang.BuildStringType())),
 		Code:           filesPathCode,
 		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 	}

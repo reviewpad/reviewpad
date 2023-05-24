@@ -14,7 +14,7 @@ import (
 
 func CheckRunConclusion() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, aladino.BuildStringType()),
+		Type:           lang.BuildFunctionType([]lang.Type{lang.BuildStringType()}, lang.BuildStringType()),
 		Code:           checkRunConclusionCode,
 		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 	}

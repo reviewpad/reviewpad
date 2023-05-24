@@ -5,6 +5,8 @@
 
 package aladino
 
+import "github.com/reviewpad/reviewpad/v4/lang"
+
 var base int
 
 func setAST(l AladinoLexer, root Expr) {
@@ -20,8 +22,8 @@ func setAST(l AladinoLexer, root Expr) {
     ast Expr
     astList []Expr
     bool bool
-    varType Type
-    varTypeList []Type
+    varType lang.Type
+    varTypeList []lang.Type
 }
 
 // any non-terminal which returns a value needs a type, which is
@@ -70,16 +72,16 @@ expr :
 ;
 
 type :
-      TK_STRING_TYPE                          { $$ = BuildStringType() }
-    | TK_INT_TYPE                             { $$ = BuildIntType() }
-    | TK_BOOL_TYPE                            { $$ = BuildBoolType() }
-    | '[' ']' type                            { $$ = BuildArrayOfType($3) }
-    | TK_FUNCTION_TYPE '(' type_list ')' type { $$ = BuildFunctionType($3, $5) }
+      TK_STRING_TYPE                          { $$ = lang.BuildStringType() }
+    | TK_INT_TYPE                             { $$ = lang.BuildIntType() }
+    | TK_BOOL_TYPE                            { $$ = lang.BuildBoolType() }
+    | '[' ']' type                            { $$ = lang.BuildArrayOfType($3) }
+    | TK_FUNCTION_TYPE '(' type_list ')' type { $$ = lang.BuildFunctionType($3, $5) }
 ;
 
 type_list :
-      type ',' type_list { $$ = append([]Type{$1}, $3...) }
-    | type               { $$ = []Type{$1} }
+      type ',' type_list { $$ = append([]lang.Type{$1}, $3...) }
+    | type               { $$ = []lang.Type{$1} }
 ;
 
 typed_expr_list :

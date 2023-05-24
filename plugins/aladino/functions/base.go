@@ -13,7 +13,7 @@ import (
 
 func Base() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildStringType()),
+		Type:           lang.BuildFunctionType([]lang.Type{}, lang.BuildStringType()),
 		Code:           baseCode,
 		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 	}

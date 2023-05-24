@@ -50,7 +50,7 @@ func TestTypeInference_WhenGivenBoolConst(t *testing.T) {
 
 	expr := BuildBoolConst(true)
 
-	wantType := BuildBoolType()
+	wantType := lang.BuildBoolType()
 
 	gotType, err := TypeInference(mockedEnv, expr)
 
@@ -77,7 +77,7 @@ func TestTypesInfer_WhenGivenArrayOfExprThatContainsExistingBuiltInWithArgs(t *t
 
 	gotType, err := typesinfer(mockedTypeEnv, exprs)
 
-	wantType := []Type{BuildStringType()}
+	wantType := []lang.Type{lang.BuildStringType()}
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantType, gotType)
@@ -109,7 +109,7 @@ func TestTypeInfer_WhenUnaryOpOperatorIsANotOp(t *testing.T) {
 	unaryOp := BuildUnaryOp(notOperator(), BuildBoolConst(true))
 	gotType, err := unaryOp.typeinfer(mockedTypeEnv)
 
-	wantType := BuildBoolType()
+	wantType := lang.BuildBoolType()
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantType, gotType)
@@ -141,7 +141,7 @@ func TestTypeInfer_WhenBinaryOpHasEqOperator(t *testing.T) {
 	binaryOp := BuildBinaryOp(BuildBoolConst(true), eqOperator(), BuildBoolConst(true))
 	gotType, err := binaryOp.typeinfer(mockedTypeEnv)
 
-	wantType := BuildBoolType()
+	wantType := lang.BuildBoolType()
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantType, gotType)
@@ -153,7 +153,7 @@ func TestTypeInfer_WhenBinaryOpHasNeqOperator(t *testing.T) {
 	binaryOp := BuildBinaryOp(BuildBoolConst(true), neqOperator(), BuildBoolConst(true))
 	gotType, err := binaryOp.typeinfer(mockedTypeEnv)
 
-	wantType := BuildBoolType()
+	wantType := lang.BuildBoolType()
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantType, gotType)
@@ -165,7 +165,7 @@ func TestTypeInfer_WhenBinaryOpHasGreaterEqThanOperator(t *testing.T) {
 	binaryOp := BuildBinaryOp(BuildIntConst(1), greaterEqThanOperator(), BuildIntConst(1))
 	gotType, err := binaryOp.typeinfer(mockedTypeEnv)
 
-	wantType := BuildBoolType()
+	wantType := lang.BuildBoolType()
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantType, gotType)
@@ -177,7 +177,7 @@ func TestTypeInfer_WhenBinaryOpHasGreaterThanOperator(t *testing.T) {
 	binaryOp := BuildBinaryOp(BuildIntConst(1), greaterThanOperator(), BuildIntConst(1))
 	gotType, err := binaryOp.typeinfer(mockedTypeEnv)
 
-	wantType := BuildBoolType()
+	wantType := lang.BuildBoolType()
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantType, gotType)
@@ -189,7 +189,7 @@ func TestTypeInfer_WhenBinaryOpHasLessEqThanOperator(t *testing.T) {
 	binaryOp := BuildBinaryOp(BuildIntConst(1), lessEqThanOperator(), BuildIntConst(1))
 	gotType, err := binaryOp.typeinfer(mockedTypeEnv)
 
-	wantType := BuildBoolType()
+	wantType := lang.BuildBoolType()
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantType, gotType)
@@ -201,7 +201,7 @@ func TestTypeInfer_WhenBinaryOpHasLessThanOperator(t *testing.T) {
 	binaryOp := BuildBinaryOp(BuildIntConst(1), lessThanOperator(), BuildIntConst(1))
 	gotType, err := binaryOp.typeinfer(mockedTypeEnv)
 
-	wantType := BuildBoolType()
+	wantType := lang.BuildBoolType()
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantType, gotType)
@@ -213,7 +213,7 @@ func TestTypeInfer_WhenBinaryOpHasAndOperator(t *testing.T) {
 	binaryOp := BuildBinaryOp(BuildBoolConst(true), andOperator(), BuildBoolConst(true))
 	gotType, err := binaryOp.typeinfer(mockedTypeEnv)
 
-	wantType := BuildBoolType()
+	wantType := lang.BuildBoolType()
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantType, gotType)
@@ -225,7 +225,7 @@ func TestTypeInfer_WhenBinaryOpHasOrOperator(t *testing.T) {
 	binaryOp := BuildBinaryOp(BuildBoolConst(true), orOperator(), BuildBoolConst(true))
 	gotType, err := binaryOp.typeinfer(mockedTypeEnv)
 
-	wantType := BuildBoolType()
+	wantType := lang.BuildBoolType()
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantType, gotType)
@@ -269,7 +269,7 @@ func TestTypeInfer_WhenFunctionCallHasCorrectTypes(t *testing.T) {
 	fc := BuildFunctionCall(BuildVariable("returnStr"), []Expr{BuildStringConst("hello")})
 	gotType, err := fc.typeinfer(mockedTypeEnv)
 
-	wantType := BuildStringType()
+	wantType := lang.BuildStringType()
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantType, gotType)
@@ -321,7 +321,7 @@ func TestTypeInfer_WhenLambdaHasCorrectTypes(t *testing.T) {
 	)
 	gotType, err := lambda.typeinfer(mockedTypeEnv)
 
-	wantType := BuildFunctionType([]Type{}, BuildStringType())
+	wantType := lang.BuildFunctionType([]lang.Type{}, lang.BuildStringType())
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantType, gotType)
@@ -331,12 +331,12 @@ func TestTypeInfer_WhenLambdaHasCorrectArgumentTypes(t *testing.T) {
 	mockedTypeEnv := MockTypeEnv()
 
 	lambda := BuildLambda(
-		[]Expr{BuildTypedExpr(BuildVariable("x"), BuildStringType())},
+		[]Expr{BuildTypedExpr(BuildVariable("x"), lang.BuildStringType())},
 		BuildVariable("x"),
 	)
 	gotType, err := lambda.typeinfer(mockedTypeEnv)
 
-	wantType := BuildFunctionType([]Type{BuildStringType()}, BuildStringType())
+	wantType := lang.BuildFunctionType([]lang.Type{lang.BuildStringType()}, lang.BuildStringType())
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantType, gotType)
@@ -345,7 +345,7 @@ func TestTypeInfer_WhenLambdaHasCorrectArgumentTypes(t *testing.T) {
 func TestTypeInfer_WhenTypedExprExprIsNotVariable(t *testing.T) {
 	mockedTypeEnv := MockTypeEnv()
 
-	typedExpr := BuildTypedExpr(BuildIntConst(1), BuildIntType())
+	typedExpr := BuildTypedExpr(BuildIntConst(1), lang.BuildIntType())
 	gotType, err := typedExpr.typeinfer(mockedTypeEnv)
 
 	assert.Nil(t, gotType)
@@ -357,12 +357,12 @@ func TestTypeInfer_WhenTypedExprHasCorrectTypes(t *testing.T) {
 
 	variableName := "dummyVariable"
 
-	typedExpr := BuildTypedExpr(BuildVariable(variableName), BuildIntType())
+	typedExpr := BuildTypedExpr(BuildVariable(variableName), lang.BuildIntType())
 	gotType, err := typedExpr.typeinfer(mockedTypeEnv)
 
 	gotStoredType, ok := mockedTypeEnv[variableName]
 
-	wantType := BuildIntType()
+	wantType := lang.BuildIntType()
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantType, gotType)
@@ -387,7 +387,7 @@ func TestTypeInfer_WhenVariableIsABuiltIn(t *testing.T) {
 	variable := BuildVariable("zeroConst")
 	gotType, err := variable.typeinfer(mockedTypeEnv)
 
-	wantType := BuildFunctionType([]Type{}, BuildIntType())
+	wantType := lang.BuildFunctionType([]lang.Type{}, lang.BuildIntType())
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantType, gotType)
@@ -399,7 +399,7 @@ func TestTypeInfer_WhenStringConst(t *testing.T) {
 	stringConst := BuildStringConst("hello")
 	gotType, err := stringConst.typeinfer(mockedTypeEnv)
 
-	wantType := BuildStringType()
+	wantType := lang.BuildStringType()
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantType, gotType)
@@ -411,7 +411,7 @@ func TestTypeInfer_WhenIntConst(t *testing.T) {
 	intConst := BuildIntConst(1)
 	gotType, err := intConst.typeinfer(mockedTypeEnv)
 
-	wantType := BuildIntType()
+	wantType := lang.BuildIntType()
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantType, gotType)
@@ -423,7 +423,7 @@ func TestTypeInfer_WhenBoolConst(t *testing.T) {
 	boolConst := BuildBoolConst(true)
 	gotType, err := boolConst.typeinfer(mockedTypeEnv)
 
-	wantType := BuildBoolType()
+	wantType := lang.BuildBoolType()
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantType, gotType)
@@ -445,7 +445,7 @@ func TestTypeInfer_WhenArrayElemsTypeHasCorrectTypes(t *testing.T) {
 	array := BuildArray([]Expr{BuildIntConst(1)})
 	gotType, err := array.typeinfer(mockedTypeEnv)
 
-	wantType := BuildArrayType([]Type{BuildIntType()})
+	wantType := lang.BuildArrayType([]lang.Type{lang.BuildIntType()})
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantType, gotType)

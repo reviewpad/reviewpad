@@ -18,11 +18,11 @@ import (
 
 func AssignReviewer() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
-		Type: aladino.BuildFunctionType(
-			[]aladino.Type{
-				aladino.BuildArrayOfType(aladino.BuildStringType()),
-				aladino.BuildIntType(),
-				aladino.BuildStringType(),
+		Type: lang.BuildFunctionType(
+			[]lang.Type{
+				lang.BuildArrayOfType(lang.BuildStringType()),
+				lang.BuildIntType(),
+				lang.BuildStringType(),
 			},
 			nil,
 		),

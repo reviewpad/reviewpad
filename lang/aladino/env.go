@@ -28,7 +28,7 @@ const (
 	SEVERITY_INFO    Severity = 4
 )
 
-type TypeEnv map[string]Type
+type TypeEnv map[string]lang.Type
 
 type RegisterMap map[string]lang.Value
 
@@ -150,7 +150,7 @@ func (e *BaseEnv) GetCheckRunID() *int64 {
 }
 
 func NewTypeEnv(e Env) TypeEnv {
-	builtInsType := make(map[string]Type)
+	builtInsType := make(map[string]lang.Type)
 	for builtInName, builtInFunction := range e.GetBuiltIns().Functions {
 		builtInsType[builtInName] = builtInFunction.Type
 	}

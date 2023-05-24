@@ -13,9 +13,9 @@ import (
 
 func ApprovalsCount() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type: aladino.BuildFunctionType(
-			[]aladino.Type{},
-			aladino.BuildIntType(),
+		Type: lang.BuildFunctionType(
+			[]lang.Type{},
+			lang.BuildIntType(),
 		),
 		Code:           approvalsCountCode,
 		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},

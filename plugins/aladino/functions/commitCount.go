@@ -13,7 +13,7 @@ import (
 
 func CommitCount() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildIntType()),
+		Type:           lang.BuildFunctionType([]lang.Type{}, lang.BuildIntType()),
 		Code:           commitCountCode,
 		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 	}

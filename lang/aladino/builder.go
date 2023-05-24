@@ -4,6 +4,8 @@
 
 package aladino
 
+import "github.com/reviewpad/reviewpad/v4/lang"
+
 func BuildFilter(param string, condition Expr) (Expr, error) {
 	organizationAST := BuildFunctionCall(
 		BuildVariable("organization"),
@@ -15,7 +17,7 @@ func BuildFilter(param string, condition Expr) (Expr, error) {
 		[]Expr{
 			organizationAST,
 			BuildLambda(
-				[]Expr{BuildTypedExpr(BuildVariable(param), BuildStringType())},
+				[]Expr{BuildTypedExpr(BuildVariable(param), lang.BuildStringType())},
 				condition,
 			),
 		},

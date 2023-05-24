@@ -14,7 +14,7 @@ import (
 
 func HasFilePattern() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, aladino.BuildBoolType()),
+		Type:           lang.BuildFunctionType([]lang.Type{lang.BuildStringType()}, lang.BuildBoolType()),
 		Code:           hasFilePatternCode,
 		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 	}

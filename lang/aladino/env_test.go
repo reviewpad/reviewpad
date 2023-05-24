@@ -21,11 +21,11 @@ import (
 func TestNewTypeEnv_WithDefaultEnv(t *testing.T) {
 	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
 
-	wantTypeEnv := aladino.TypeEnv(map[string]aladino.Type{
-		"emptyFunction": aladino.BuildFunctionType([]aladino.Type{}, nil),
-		"emptyAction":   aladino.BuildFunctionType([]aladino.Type{}, nil),
-		"zeroConst":     aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildIntType()),
-		"returnStr":     aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, aladino.BuildStringType()),
+	wantTypeEnv := aladino.TypeEnv(map[string]lang.Type{
+		"emptyFunction": lang.BuildFunctionType([]lang.Type{}, nil),
+		"emptyAction":   lang.BuildFunctionType([]lang.Type{}, nil),
+		"zeroConst":     lang.BuildFunctionType([]lang.Type{}, lang.BuildIntType()),
+		"returnStr":     lang.BuildFunctionType([]lang.Type{lang.BuildStringType()}, lang.BuildStringType()),
 	})
 
 	gotTypeEnv := aladino.NewTypeEnv(mockedEnv)

@@ -15,7 +15,7 @@ import (
 
 func AssignTeamReviewer() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildArrayOfType(aladino.BuildStringType())}, nil),
+		Type:           lang.BuildFunctionType([]lang.Type{lang.BuildArrayOfType(lang.BuildStringType())}, nil),
 		Code:           assignTeamReviewerCode,
 		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 	}

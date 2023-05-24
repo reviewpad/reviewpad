@@ -13,7 +13,7 @@ import (
 
 func IsBinary() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, aladino.BuildBoolType()),
+		Type:           lang.BuildFunctionType([]lang.Type{lang.BuildStringType()}, lang.BuildBoolType()),
 		Code:           isBinaryCode,
 		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 	}

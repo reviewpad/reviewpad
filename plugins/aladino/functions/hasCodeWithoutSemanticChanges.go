@@ -19,7 +19,7 @@ const RequestIDKey = "request-id"
 
 func HasCodeWithoutSemanticChanges() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildArrayOfType(aladino.BuildStringType())}, aladino.BuildBoolType()),
+		Type:           lang.BuildFunctionType([]lang.Type{lang.BuildArrayOfType(lang.BuildStringType())}, lang.BuildBoolType()),
 		Code:           hasCodeWithoutSemanticChanges,
 		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 	}

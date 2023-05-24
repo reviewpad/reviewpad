@@ -7,6 +7,7 @@ package aladino_test
 import (
 	"testing"
 
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	"github.com/stretchr/testify/assert"
 )
@@ -26,7 +27,7 @@ func TestBuildFilter(t *testing.T) {
 				[]aladino.Expr{
 					aladino.BuildTypedExpr(
 						aladino.BuildVariable(param),
-						aladino.BuildStringType()),
+						lang.BuildStringType()),
 				},
 				condition,
 			),

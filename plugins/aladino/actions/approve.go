@@ -12,7 +12,7 @@ import (
 
 func Approve() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, nil),
+		Type:           lang.BuildFunctionType([]lang.Type{lang.BuildStringType()}, nil),
 		Code:           approveCode,
 		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 	}

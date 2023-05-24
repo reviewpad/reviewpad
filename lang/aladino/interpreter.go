@@ -43,7 +43,7 @@ func evalGroup(env Env, expr Expr) (lang.Value, error) {
 		return nil, err
 	}
 
-	if exprType.Kind() != ARRAY_TYPE && exprType.Kind() != ARRAY_OF_TYPE {
+	if exprType.Kind() != lang.ARRAY_TYPE && exprType.Kind() != lang.ARRAY_OF_TYPE {
 		return nil, fmt.Errorf("expression is not a valid group")
 	}
 
@@ -98,7 +98,7 @@ func EvalExpr(env Env, kind, expr string) (bool, error) {
 		return false, err
 	}
 
-	if exprType.Kind() != BOOL_TYPE {
+	if exprType.Kind() != lang.BOOL_TYPE {
 		return false, fmt.Errorf("expression %v is not a condition", expr)
 	}
 

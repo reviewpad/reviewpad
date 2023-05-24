@@ -4,7 +4,9 @@
 
 package lang
 
-import "reflect"
+import (
+	"reflect"
+)
 
 type Value interface {
 	HasKindOf(string) bool

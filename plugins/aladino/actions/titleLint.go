@@ -16,7 +16,7 @@ import (
 
 func TitleLint() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{}, nil),
+		Type:           lang.BuildFunctionType([]lang.Type{}, nil),
 		Code:           titleLintCode,
 		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 	}

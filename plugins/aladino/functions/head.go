@@ -13,7 +13,7 @@ import (
 
 func Head() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildStringType()),
+		Type:           lang.BuildFunctionType([]lang.Type{}, lang.BuildStringType()),
 		Code:           headCode,
 		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 	}

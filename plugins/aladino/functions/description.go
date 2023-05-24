@@ -12,7 +12,7 @@ import (
 
 func Description() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildStringType()),
+		Type:           lang.BuildFunctionType([]lang.Type{}, lang.BuildStringType()),
 		Code:           descriptionCode,
 		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest, entities.Issue},
 	}

@@ -15,7 +15,7 @@ import (
 
 func HasGitConflicts() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildBoolType()),
+		Type:           lang.BuildFunctionType([]lang.Type{}, lang.BuildBoolType()),
 		Code:           hasGitConflictsCode,
 		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 	}
