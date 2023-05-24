@@ -10,6 +10,7 @@ import (
 	"github.com/reviewpad/go-lib/entities"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/reviewpad/reviewpad/v4/collector"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/sirupsen/logrus"
 )
 
@@ -43,7 +44,8 @@ type Interpreter interface {
 	Report(mode string, safeMode bool) error
 	ReportMetrics() error
 	GetCheckRunConclusion() string
-	ProcessList(name, expr string) error
+	ProcessList(expr string) (lang.Value, error)
+	StoreTemporaryVariable(name string, value lang.Value)
 }
 
 type Env struct {

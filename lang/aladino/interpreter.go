@@ -81,6 +81,14 @@ func (i *Interpreter) ProcessList(listName, expr string) error {
 	return nil
 }
 
+func (i *Interpreter) StoreTemporaryVariable(name string, value lang.Value) {
+	i.Env.GetRegisterMap()[BuildInternalTemporaryVariableName(name)] = value
+}
+
+func BuildInternalTemporaryVariableName(name string) string {
+	return fmt.Sprintf("@variable:%s", name)
+}
+
 func BuildInternalLabelID(id string) string {
 	return fmt.Sprintf("@label:%v", id)
 }
