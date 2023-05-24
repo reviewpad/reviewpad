@@ -108,7 +108,7 @@ func TestEvalGroup_WhenExpressionIsNotValidGroup(t *testing.T) {
 
 	_, err = evalList(mockedEnv, expr)
 
-	assert.EqualError(t, err, "expression is not a valid group")
+	assert.EqualError(t, err, "expression is not a valid list")
 }
 
 func TestEvalGroup(t *testing.T) {
@@ -182,7 +182,7 @@ func TestProcessGroup_WhenEvalGroupFails(t *testing.T) {
 		"",
 	)
 
-	assert.EqualError(t, err, "ProcessGroup:evalGroup expression is not a valid group")
+	assert.EqualError(t, err, "ProcessGroup:evalList expression is not a valid list")
 }
 
 func TestProcessGroup_WhenGroupTypeFilterIsNotSet(t *testing.T) {

@@ -457,7 +457,7 @@ func TestEvalConfigurationFile(t *testing.T) {
 		},
 		"when group is invalid": {
 			inputReviewpadFilePath: "testdata/exec/reviewpad_with_invalid_group.yml",
-			wantErr:                "ProcessGroup:evalGroup expression is not a valid group",
+			wantErr:                "ProcessGroup:evalList expression is not a valid list",
 			targetEntity:           engine.DefaultMockTargetEntity,
 		},
 		"when workflow is invalid": {

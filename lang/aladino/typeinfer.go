@@ -123,7 +123,7 @@ func (v *Variable) typeinfer(env TypeEnv) (lang.Type, error) {
 	if !ok {
 		// if the built-in is not found in the environment
 		// we check if it's a variable
-		varType, ok := env[fmt.Sprintf("@variable:$%s", varName)]
+		varType, ok = env[fmt.Sprintf("@variable:$%s", varName)]
 		if ok {
 			return varType, nil
 		}

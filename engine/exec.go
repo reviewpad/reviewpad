@@ -425,9 +425,9 @@ func execStatement(interpreter Interpreter, run PadWorkflowRunBlock, rules map[s
 		for _, val := range value.(*lang.ArrayValue).Vals {
 			interpreter.StoreTemporaryVariable(run.ForEach.Value, val)
 
-			_, _, err := execStatementBlock(interpreter, run.ForEach.Do, rules)
+			exitStatus, forEachActions, err := execStatementBlock(interpreter, run.ForEach.Do, rules)
 			if err != nil {
-				return ExitStatusFailure, nil, err
+				return exitStatus, forEachActions, err
 			}
 		}
 	}
