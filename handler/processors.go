@@ -506,10 +506,14 @@ func processCheckSuiteEvent(log *logrus.Entry, token string, event *github.Check
 
 		headSha := event.CheckSuite.GetHeadSHA()
 
+		// If we receive an event from the GitHub Merge Queue and that event action is 'requested', we need to find the pull request associated with it.
+		// The GitHub Merge Queue creates a temporary branch where the head SHA of the check suite is from the temporary branch.
+		// In order to find the pull request associated with the event, we can use the temporary branch name created by the merge queue.
+		// The format of a GitHub Merge Queue temporary branch is: gh-readonly-queue/{target_branch}/pr-{pr_number}-{head_SHA_source_branch}
+		// We can extract the pr number from the temporary branch name and find the pull request associated with it and get its head SHA.
 		if event.Sender.GetLogin() == "github-merge-queue[bot]" && event.GetAction() == "requested" {
-			// The format of a GitHub Merge Queue temporary branch is: gh-readonly-queue/{target_branch}/pr-{pr_number}-{head_sha_temporary_branch}
-			prInfo := strings.Split(event.GetCheckSuite().GetHeadBranch(), "/")[2]
-			prNumber, err := strconv.Atoi(strings.Split(prInfo, "-")[1])
+			prIdentifier := strings.Split(event.GetCheckSuite().GetHeadBranch(), "/")[2]
+			prNumber, err := strconv.Atoi(strings.Split(prIdentifier, "-")[1])
 			if err != nil {
 				return nil, nil, fmt.Errorf("error converting pr number to int: %w", err)
 			}
