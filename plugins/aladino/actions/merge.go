@@ -76,6 +76,7 @@ func mergeCode(e aladino.Env, args []lang.Value) error {
 	}
 
 	if isGitHubMergeQueueEnabled {
+		e.GetLogger().Infof("ID: %v", t.PullRequest.GetId())
 		if err := e.GetGithubClient().AddPullRequestToGithubMergeQueue(e.GetCtx(), t.PullRequest.GetId()); err != nil {
 			if e.GetCheckRunID() != nil {
 				if err := updateCheckRunWithSummary(e, "The merge cannot be completed due to non-compliance with certain GitHub branch protection rules"); err != nil {

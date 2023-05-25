@@ -200,7 +200,7 @@ type MergeQueueQuery struct {
 
 type AddPullRequestToMergeQueueMutation struct {
 	EnqueuePullRequest struct {
-		PullRequestID string
+		ClientMutationID string
 	} `graphql:"enqueuePullRequest(input: $input)"`
 }
 
