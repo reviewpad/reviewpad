@@ -183,19 +183,19 @@ type MergeQueueQuery struct {
 	Repository struct {
 		MergeQueue struct {
 			Url     string
-			Entries MergeQueueEntryConnection
+			Entries struct {
+				Nodes []struct {
+					PullRequest struct {
+						Number int
+					}
+				}
+				PageInfo struct {
+					EndCursor   githubv4.String
+					HasNextPage bool
+				}
+			} `graphql:"entries(first: 100, after: $cursor)"`
 		} `graphql:"mergeQueue(branch: $branchName)"`
 	} `graphql:"repository(owner: $repositoryOwner, name: $repositoryName)"`
-}
-
-type MergeQueueEntryConnection struct {
-	Nodes []MergeQueueEntry
-}
-
-type MergeQueueEntry struct {
-	PullRequest struct {
-		Number int
-	}
 }
 
 type AddPullRequestToMergeQueueMutation struct {
@@ -792,33 +792,50 @@ func isPullRequestReviewer(pullRequest PullRequestsQuery, username string) bool 
 	return false
 }
 
-func (c *GithubClient) GetGitHubMergeQueueEntries(ctx context.Context, repoOwner, repoName, branch string) ([]int, error) {
+func (c *GithubClient) GetGitHubMergeQueueEntries(ctx context.Context, repoOwner, repoName, branch string, retryCount int) ([]int, error) {
 	var mergeQueueQuery MergeQueueQuery
+	pullRequests := make([]int, 0)
+	hasNextPage := true
 
 	varGQLMergeQueueQuery := map[string]interface{}{
 		"repositoryOwner": githubv4.String(repoOwner),
 		"repositoryName":  githubv4.String(repoName),
 		"branchName":      githubv4.String(branch),
+		"cursor":          (*githubv4.String)(nil),
 	}
 
-	err := c.GetClientGraphQL().Query(ctx, &mergeQueueQuery, varGQLMergeQueueQuery)
-	if err != nil {
-		return nil, err
-	}
+	currentRequestRetry := 1
 
-	if mergeQueueQuery.Repository.MergeQueue.Url == "" {
-		return nil, nil
-	}
+	for hasNextPage {
+		err := c.GetClientGraphQL().Query(ctx, &mergeQueueQuery, varGQLMergeQueueQuery)
 
-	pullRequests := make([]int, 0)
-	for _, entry := range mergeQueueQuery.Repository.MergeQueue.Entries.Nodes {
-		pullRequests = append(pullRequests, entry.PullRequest.Number)
+		if err != nil {
+			currentRequestRetry++
+			if currentRequestRetry <= retryCount {
+				continue
+			} else {
+				return nil, err
+			}
+		} else {
+			currentRequestRetry = 0
+		}
+
+		if mergeQueueQuery.Repository.MergeQueue.Url == "" {
+			return nil, nil
+		}
+
+		for _, entry := range mergeQueueQuery.Repository.MergeQueue.Entries.Nodes {
+			pullRequests = append(pullRequests, entry.PullRequest.Number)
+		}
+
+		hasNextPage = mergeQueueQuery.Repository.MergeQueue.Entries.PageInfo.HasNextPage
+		varGQLMergeQueueQuery["cursor"] = githubv4.NewString(mergeQueueQuery.Repository.MergeQueue.Entries.PageInfo.EndCursor)
 	}
 
 	return pullRequests, nil
 }
 
-func (c *GithubClient) addPullRequestToGithubMergeQueue(ctx context.Context, pullRequestID int) error {
+func (c *GithubClient) AddPullRequestToGithubMergeQueue(ctx context.Context, pullRequestID string) error {
 	var addPullRequestToMergeQueue AddPullRequestToMergeQueueMutation
 	addPullRequestToMergeQueueInput := githubv4.EnqueuePullRequestInput{
 		PullRequestID: githubv4.ID(pullRequestID),

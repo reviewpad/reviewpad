@@ -26,6 +26,7 @@ func Merge() *aladino.BuiltInAction {
 func mergeCode(e aladino.Env, args []lang.Value) error {
 	t := e.GetTarget().(*target.PullRequestTarget)
 	log := e.GetLogger().WithField("builtin", "merge")
+	totalRetryCount := 2
 
 	if t.PullRequest.Status != pbc.PullRequestStatus_OPEN || t.PullRequest.IsDraft {
 		log.Infof("skipping action because pull request is not open or is a draft")
@@ -43,7 +44,7 @@ func mergeCode(e aladino.Env, args []lang.Value) error {
 
 	// We need to check if the base branch of the pull request has GitHub Merge Queue enabled.
 	// The queue is not enabled if we have nil entries.
-	gitHubMergeQueueEntries, err := e.GetGithubClient().GetGitHubMergeQueueEntries(e.GetCtx(), t.PullRequest.GetBase().Repo.Owner, t.PullRequest.GetBase().Repo.Name, t.PullRequest.GetBase().Name)
+	gitHubMergeQueueEntries, err := e.GetGithubClient().GetGitHubMergeQueueEntries(e.GetCtx(), t.PullRequest.GetBase().Repo.Owner, t.PullRequest.GetBase().Repo.Name, t.PullRequest.GetBase().Name, totalRetryCount)
 	if err != nil {
 		return err
 	}
@@ -72,6 +73,20 @@ func mergeCode(e aladino.Env, args []lang.Value) error {
 		if err := updateCheckRunWithSummary(e, summary); err != nil {
 			return err
 		}
+	}
+
+	if isGitHubMergeQueueEnabled {
+		if err := e.GetGithubClient().AddPullRequestToGithubMergeQueue(e.GetCtx(), t.PullRequest.GetId()); err != nil {
+			if e.GetCheckRunID() != nil {
+				if err := updateCheckRunWithSummary(e, "The merge cannot be completed due to non-compliance with certain GitHub branch protection rules"); err != nil {
+					return err
+				}
+			}
+
+			e.GetLogger().WithError(err).Warnln("failed to add this pull request to the GitHub Merge Queue")
+		}
+
+		return nil
 	}
 
 	mergeErr := t.Merge(mergeMethod)
