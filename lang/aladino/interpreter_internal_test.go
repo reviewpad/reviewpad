@@ -93,7 +93,7 @@ func TestEvalGroup_WhenTypeInferenceFails(t *testing.T) {
 		assert.FailNow(t, fmt.Sprintf("parse failed %v", err))
 	}
 
-	_, err = evalList(mockedEnv, expr)
+	_, err = evalGroup(mockedEnv, expr)
 
 	assert.EqualError(t, err, "type inference failed")
 }
@@ -106,9 +106,9 @@ func TestEvalGroup_WhenExpressionIsNotValidGroup(t *testing.T) {
 		assert.FailNow(t, fmt.Sprintf("parse failed %v", err))
 	}
 
-	_, err = evalList(mockedEnv, expr)
+	_, err = evalGroup(mockedEnv, expr)
 
-	assert.EqualError(t, err, "expression is not a valid list")
+	assert.EqualError(t, err, "expression is not a valid group")
 }
 
 func TestEvalGroup(t *testing.T) {
@@ -133,7 +133,7 @@ func TestEvalGroup(t *testing.T) {
 		assert.FailNow(t, fmt.Sprintf("parse failed %v", err))
 	}
 
-	gotVal, err := evalList(mockedEnv, expr)
+	gotVal, err := evalGroup(mockedEnv, expr)
 
 	wantVal := lang.BuildArrayValue([]lang.Value{lang.BuildStringValue(devName)})
 
@@ -182,7 +182,7 @@ func TestProcessGroup_WhenEvalGroupFails(t *testing.T) {
 		"",
 	)
 
-	assert.EqualError(t, err, "ProcessGroup:evalList expression is not a valid list")
+	assert.EqualError(t, err, "ProcessGroup:evalGroup expression is not a valid group")
 }
 
 func TestProcessGroup_WhenGroupTypeFilterIsNotSet(t *testing.T) {

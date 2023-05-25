@@ -37,14 +37,14 @@ func buildGroupAST(typeOf engine.GroupType, expr, paramExpr, whereExpr string) (
 	}
 }
 
-func evalList(env Env, expr Expr) (lang.Value, error) {
+func evalGroup(env Env, expr Expr) (lang.Value, error) {
 	exprType, err := TypeInference(env, expr)
 	if err != nil {
 		return nil, err
 	}
 
 	if exprType.Kind() != lang.ARRAY_TYPE && exprType.Kind() != lang.ARRAY_OF_TYPE {
-		return nil, fmt.Errorf("expression is not a valid list")
+		return nil, fmt.Errorf("expression is not a valid group")
 	}
 
 	return Eval(env, expr)
@@ -56,9 +56,9 @@ func (i *Interpreter) ProcessGroup(groupName string, kind engine.GroupKind, type
 		return fmt.Errorf("ProcessGroup:buildGroupAST: %v", err)
 	}
 
-	value, err := evalList(i.Env, exprAST)
+	value, err := evalGroup(i.Env, exprAST)
 	if err != nil {
-		return fmt.Errorf("ProcessGroup:evalList %v", err)
+		return fmt.Errorf("ProcessGroup:evalGroup %v", err)
 	}
 
 	i.Env.GetRegisterMap()[groupName] = value
@@ -71,9 +71,9 @@ func (i *Interpreter) ProcessList(expr string) (lang.Value, error) {
 		return nil, fmt.Errorf("ProcessList:Parse: %v", err)
 	}
 
-	value, err := evalList(i.Env, exprAST)
+	value, err := evalGroup(i.Env, exprAST)
 	if err != nil {
-		return nil, fmt.Errorf("ProcessList:evalList %v", err)
+		return nil, fmt.Errorf("ProcessList:evalGroup %v", err)
 	}
 
 	return value, nil
