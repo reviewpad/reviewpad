@@ -5,12 +5,14 @@
 package plugins_aladino_actions_test
 
 import (
+	"fmt"
 	"io"
 	"net/http"
 	"testing"
 
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	pbc "github.com/reviewpad/api/go/codehost"
+	host "github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
@@ -43,6 +45,47 @@ func TestMerge_WhenNoMergeMethodIsProvided(t *testing.T) {
 	wantMergeMethod := "merge"
 	var gotMergeMethod string
 
+	mockedCodeReview := aladino.GetDefaultPullRequestDetails()
+
+	mockOwner := host.GetPullRequestBaseOwnerName(mockedCodeReview)
+	mockRepo := host.GetPullRequestBaseRepoName(mockedCodeReview)
+	mockBranch := mockedCodeReview.GetBase().GetName()
+
+	mockedGitHubMergeQueueEntriesGQLQuery := fmt.Sprintf(`{
+		"query":"query($branchName:String! $cursor:String $repositoryName:String! $repositoryOwner:String!) {
+			repository(owner: $repositoryOwner, name: $repositoryName) {
+				mergeQueue(branch: $branchName) {
+					url,
+					entries(first:100,after:$cursor) {
+						nodes {
+							pullRequest {
+								number
+							}
+						},
+						pageInfo{
+							endCursor,
+							hasNextPage
+						}
+					}
+				}
+			}
+		}",
+		"variables":{
+			"branchName":"%s",
+			"cursor":null,
+			"repositoryName":"%s",
+			"repositoryOwner":"%s"
+		}
+	}`, mockBranch, mockRepo, mockOwner)
+
+	mockerGitHubMergeQueueEntriesGQLQueryBody := `{
+		"data": {
+			"repository": {
+				"mergeQueue": null
+			}
+		}
+	}`
+
 	mockedEnv := aladino.MockDefaultEnv(
 		t,
 		[]mock.MockBackendOption{
@@ -58,7 +101,13 @@ func TestMerge_WhenNoMergeMethodIsProvided(t *testing.T) {
 				}),
 			),
 		},
-		nil,
+		func(w http.ResponseWriter, req *http.Request) {
+			query := utils.MinifyQuery(utils.MustRead(req.Body))
+			switch query {
+			case utils.MinifyQuery(mockedGitHubMergeQueueEntriesGQLQuery):
+				utils.MustWrite(w, mockerGitHubMergeQueueEntriesGQLQueryBody)
+			}
+		},
 		aladino.MockBuiltIns(),
 		nil,
 	)
@@ -74,6 +123,22 @@ func TestMerge_WhenMergeMethodIsProvided(t *testing.T) {
 	wantMergeMethod := "rebase"
 	var gotMergeMethod string
 
+	mockedCodeReview := aladino.GetDefaultPullRequestDetails()
+
+	mockOwner := host.GetPullRequestBaseOwnerName(mockedCodeReview)
+	mockRepo := host.GetPullRequestBaseRepoName(mockedCodeReview)
+	mockBranch := mockedCodeReview.GetBase().GetName()
+
+	mockedGitHubMergeQueueEntriesGQLQuery := getMockedGitHubMergeQueueEntriesGQLQuery(mockBranch, mockRepo, mockOwner)
+
+	mockedGitHubMergeQueueEntriesGQLQueryBody := `{
+		"data": {
+			"repository": {
+				"mergeQueue": null
+			}
+		}
+	}`
+
 	mockedEnv := aladino.MockDefaultEnv(
 		t,
 		[]mock.MockBackendOption{
@@ -89,7 +154,13 @@ func TestMerge_WhenMergeMethodIsProvided(t *testing.T) {
 				}),
 			),
 		},
-		nil,
+		func(w http.ResponseWriter, req *http.Request) {
+			query := utils.MinifyQuery(utils.MustRead(req.Body))
+			switch query {
+			case utils.MinifyQuery(mockedGitHubMergeQueueEntriesGQLQuery):
+				utils.MustWrite(w, mockedGitHubMergeQueueEntriesGQLQueryBody)
+			}
+		},
 		aladino.MockBuiltIns(),
 		nil,
 	)
@@ -144,4 +215,247 @@ func TestMerge_WhenMergeIsClosedPullRequest(t *testing.T) {
 	err := merge(mockedEnv, args)
 
 	assert.Nil(t, err)
+}
+
+func TestMerge_WhenGitHubMergeQueueEntriesRequestFails(t *testing.T) {
+	wantMergeMethod := "merge"
+
+	mockedCodeReview := aladino.GetDefaultPullRequestDetails()
+
+	mockOwner := host.GetPullRequestBaseOwnerName(mockedCodeReview)
+	mockRepo := host.GetPullRequestBaseRepoName(mockedCodeReview)
+	mockBranch := mockedCodeReview.GetBase().GetName()
+
+	mockedGitHubMergeQueueEntriesGQLQuery := getMockedGitHubMergeQueueEntriesGQLQuery(mockBranch, mockRepo, mockOwner)
+
+	mockedEnv := aladino.MockDefaultEnvWithPullRequestAndFiles(
+		t,
+		nil,
+		func(w http.ResponseWriter, req *http.Request) {
+			query := utils.MinifyQuery(utils.MustRead(req.Body))
+			switch query {
+			case utils.MinifyQuery(mockedGitHubMergeQueueEntriesGQLQuery):
+				http.Error(w, "GetGitHubMergeQueueEntriesRequestFail", http.StatusNotFound)
+			}
+		},
+		mockedCodeReview,
+		aladino.GetDefaultPullRequestFileList(),
+		aladino.MockBuiltIns(),
+		nil,
+	)
+
+	args := []aladino.Value{aladino.BuildStringValue(wantMergeMethod)}
+	err := merge(mockedEnv, args)
+
+	assert.EqualError(t, err, "non-200 OK status code: 404 Not Found body: \"GetGitHubMergeQueueEntriesRequestFail\\n\"")
+}
+
+func TestMerge_WhenGitHubMergeQueueIsONAndPullRequestIsNotOnTheQueue(t *testing.T) {
+	wantMergeMethod := "merge"
+
+	mockedCodeReview := aladino.GetDefaultPullRequestDetails()
+
+	mockOwner := host.GetPullRequestBaseOwnerName(mockedCodeReview)
+	mockRepo := host.GetPullRequestBaseRepoName(mockedCodeReview)
+	mockBranch := mockedCodeReview.GetBase().GetName()
+
+	entityNodeID := aladino.DefaultMockEntityNodeID
+
+	mockedGitHubMergeQueueEntriesGQLQuery := getMockedGitHubMergeQueueEntriesGQLQuery(mockBranch, mockRepo, mockOwner)
+
+	mockedGitHubMergeQueueEntriesGQLQueryBody := `{
+		"data": {
+			"repository": {
+				"mergeQueue": {
+					"url": "foo.bar",
+					"entries": {
+						"nodes": []
+					}
+				}
+			}
+		}
+	}`
+
+	mockedAddPullRequestToGitHubMergeQueueMutation := fmt.Sprintf(`{
+        "query": "mutation($input:EnqueuePullRequestInput!) {
+            enqueuePullRequest(input: $input) {
+                clientMutationId
+	        }
+	    }",
+	    "variables":{
+	        "input":{
+	            "pullRequestId": "%v"
+	        }
+	    }
+    }`, entityNodeID)
+
+	mockedAddPullRequestToGitHubMergeQueueBody := `{"data": {"enqueuePullRequest": {"clientMutationId": "client_mutation_id"}}}}`
+
+	mockedEnv := aladino.MockDefaultEnvWithPullRequestAndFiles(
+		t,
+		nil,
+		func(w http.ResponseWriter, req *http.Request) {
+			query := utils.MinifyQuery(utils.MustRead(req.Body))
+			switch query {
+			case utils.MinifyQuery(mockedGitHubMergeQueueEntriesGQLQuery):
+				utils.MustWrite(w, mockedGitHubMergeQueueEntriesGQLQueryBody)
+			case utils.MinifyQuery(mockedAddPullRequestToGitHubMergeQueueMutation):
+				utils.MustWrite(w, mockedAddPullRequestToGitHubMergeQueueBody)
+			}
+		},
+		mockedCodeReview,
+		aladino.GetDefaultPullRequestFileList(),
+		aladino.MockBuiltIns(),
+		nil,
+	)
+
+	args := []aladino.Value{aladino.BuildStringValue(wantMergeMethod)}
+	err := merge(mockedEnv, args)
+
+	assert.Nil(t, err)
+}
+
+func TestMerge_WhenGitHubMergeQueueIsONAndPullRequestIsNotOnTheQueueAndEnqueueFails(t *testing.T) {
+	wantMergeMethod := "merge"
+
+	mockedCodeReview := aladino.GetDefaultPullRequestDetails()
+
+	mockOwner := host.GetPullRequestBaseOwnerName(mockedCodeReview)
+	mockRepo := host.GetPullRequestBaseRepoName(mockedCodeReview)
+	mockBranch := mockedCodeReview.GetBase().GetName()
+
+	entityNodeID := aladino.DefaultMockEntityNodeID
+
+	mockedGitHubMergeQueueEntriesGQLQuery := getMockedGitHubMergeQueueEntriesGQLQuery(mockBranch, mockRepo, mockOwner)
+
+	mockedGitHubMergeQueueEntriesGQLQueryBody := `{
+		"data": {
+			"repository": {
+				"mergeQueue": {
+					"url": "foo.bar",
+					"entries": {
+						"nodes": []
+					}
+				}
+			}
+		}
+	}`
+
+	mockedAddPullRequestToGitHubMergeQueueMutation := fmt.Sprintf(`{
+        "query": "mutation($input:EnqueuePullRequestInput!) {
+            enqueuePullRequest(input: $input) {
+                clientMutationId
+	        }
+	    }",
+	    "variables":{
+	        "input":{
+	            "pullRequestId": "%v"
+	        }
+	    }
+    }`, entityNodeID)
+
+	mockedEnv := aladino.MockDefaultEnvWithPullRequestAndFiles(
+		t,
+		nil,
+		func(w http.ResponseWriter, req *http.Request) {
+			query := utils.MinifyQuery(utils.MustRead(req.Body))
+			switch query {
+			case utils.MinifyQuery(mockedGitHubMergeQueueEntriesGQLQuery):
+				utils.MustWrite(w, mockedGitHubMergeQueueEntriesGQLQueryBody)
+			case utils.MinifyQuery(mockedAddPullRequestToGitHubMergeQueueMutation):
+				http.Error(w, "EnqueuePullRequestFail", http.StatusNotFound)
+			}
+		},
+		mockedCodeReview,
+		aladino.GetDefaultPullRequestFileList(),
+		aladino.MockBuiltIns(),
+		nil,
+	)
+
+	args := []aladino.Value{aladino.BuildStringValue(wantMergeMethod)}
+	err := merge(mockedEnv, args)
+
+	assert.Nil(t, err)
+}
+
+func TestMerge_WhenPullRequestIsOnGitHubMergeQueue(t *testing.T) {
+	wantMergeMethod := "merge"
+
+	mockedCodeReview := aladino.GetDefaultPullRequestDetails()
+
+	mockOwner := host.GetPullRequestBaseOwnerName(mockedCodeReview)
+	mockRepo := host.GetPullRequestBaseRepoName(mockedCodeReview)
+	mockBranch := mockedCodeReview.GetBase().GetName()
+	mockPrNum := mockedCodeReview.GetNumber()
+
+	mockedGitHubMergeQueueEntriesGQLQuery := getMockedGitHubMergeQueueEntriesGQLQuery(mockBranch, mockRepo, mockOwner)
+
+	mockedGitHubMergeQueueEntriesGQLQueryBody := fmt.Sprintf(`{
+		"data": {
+			"repository": {
+				"mergeQueue": {
+					"url": "foo.bar",
+					"entries": {
+						"nodes": [
+							{
+								"pullRequest": {
+									"number": %d
+								}
+							}
+						]
+					}
+				}
+			}
+		}
+	}`, mockPrNum)
+
+	mockedEnv := aladino.MockDefaultEnvWithPullRequestAndFiles(
+		t,
+		nil,
+		func(w http.ResponseWriter, req *http.Request) {
+			query := utils.MinifyQuery(utils.MustRead(req.Body))
+			switch query {
+			case utils.MinifyQuery(mockedGitHubMergeQueueEntriesGQLQuery):
+				utils.MustWrite(w, mockedGitHubMergeQueueEntriesGQLQueryBody)
+			}
+		},
+		mockedCodeReview,
+		aladino.GetDefaultPullRequestFileList(),
+		aladino.MockBuiltIns(),
+		nil,
+	)
+
+	args := []aladino.Value{aladino.BuildStringValue(wantMergeMethod)}
+	err := merge(mockedEnv, args)
+
+	assert.Nil(t, err)
+}
+
+func getMockedGitHubMergeQueueEntriesGQLQuery(mockBranch, mockRepo, mockOwner string) string {
+	return fmt.Sprintf(`{
+		"query":"query($branchName:String! $cursor:String $repositoryName:String! $repositoryOwner:String!) {
+			repository(owner: $repositoryOwner, name: $repositoryName) {
+				mergeQueue(branch: $branchName) {
+					url,
+					entries(first:100,after:$cursor) {
+						nodes {
+							pullRequest {
+								number
+							}
+						},
+						pageInfo{
+							endCursor,
+							hasNextPage
+						}
+					}
+				}
+			}
+		}",
+		"variables":{
+			"branchName":"%s",
+			"cursor":null,
+			"repositoryName":"%s",
+			"repositoryOwner":"%s"
+		}
+	}`, mockBranch, mockRepo, mockOwner)
 }
