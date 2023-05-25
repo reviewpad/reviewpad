@@ -179,6 +179,31 @@ type CompareBaseAndHeadQuery struct {
 	} `graphql:"repository(owner: $owner, name: $name)"`
 }
 
+type MergeQueueQuery struct {
+	Repository struct {
+		MergeQueue struct {
+			Url     string
+			Entries MergeQueueEntryConnection
+		} `graphql:"mergeQueue(branch: $branchName)"`
+	} `graphql:"repository(owner: $repositoryOwner, name: $repositoryName)"`
+}
+
+type MergeQueueEntryConnection struct {
+	Nodes []MergeQueueEntry
+}
+
+type MergeQueueEntry struct {
+	PullRequest struct {
+		Number int
+	}
+}
+
+type AddPullRequestToMergeQueueMutation struct {
+	EnqueuePullRequest struct {
+		PullRequestID string
+	} `graphql:"enqueuePullRequest(input: $input)"`
+}
+
 func GetPullRequestHeadOwnerName(pullRequest *pbc.PullRequest) string {
 	return pullRequest.Head.Repo.Owner
 }
@@ -765,4 +790,39 @@ func isPullRequestReviewer(pullRequest PullRequestsQuery, username string) bool 
 	}
 
 	return false
+}
+
+func (c *GithubClient) GetGitHubMergeQueueEntries(ctx context.Context, repoOwner, repoName, branch string) ([]int, error) {
+	var mergeQueueQuery MergeQueueQuery
+
+	varGQLMergeQueueQuery := map[string]interface{}{
+		"repositoryOwner": githubv4.String(repoOwner),
+		"repositoryName":  githubv4.String(repoName),
+		"branchName":      githubv4.String(branch),
+	}
+
+	err := c.GetClientGraphQL().Query(ctx, &mergeQueueQuery, varGQLMergeQueueQuery)
+	if err != nil {
+		return nil, err
+	}
+
+	if mergeQueueQuery.Repository.MergeQueue.Url == "" {
+		return nil, nil
+	}
+
+	pullRequests := make([]int, 0)
+	for _, entry := range mergeQueueQuery.Repository.MergeQueue.Entries.Nodes {
+		pullRequests = append(pullRequests, entry.PullRequest.Number)
+	}
+
+	return pullRequests, nil
+}
+
+func (c *GithubClient) addPullRequestToGithubMergeQueue(ctx context.Context, pullRequestID int) error {
+	var addPullRequestToMergeQueue AddPullRequestToMergeQueueMutation
+	addPullRequestToMergeQueueInput := githubv4.EnqueuePullRequestInput{
+		PullRequestID: githubv4.ID(pullRequestID),
+	}
+
+	return c.clientGQL.Mutate(ctx, &addPullRequestToMergeQueue, addPullRequestToMergeQueueInput, nil)
 }

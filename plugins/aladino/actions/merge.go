@@ -41,10 +41,35 @@ func mergeCode(e aladino.Env, args []lang.Value) error {
 		return nil
 	}
 
+	// We need to check if the base branch of the pull request has GitHub Merge Queue enabled.
+	// The queue is not enabled if we have nil entries.
+	gitHubMergeQueueEntries, err := e.GetGithubClient().GetGitHubMergeQueueEntries(e.GetCtx(), t.PullRequest.GetBase().Repo.Owner, t.PullRequest.GetBase().Repo.Name, t.PullRequest.GetBase().Name)
+	if err != nil {
+		return err
+	}
+
+	isGitHubMergeQueueEnabled := gitHubMergeQueueEntries != nil
+
+	if isGitHubMergeQueueEnabled {
+		// We need to check if the pull request is already in the GitHub Merge Queue.
+		// If it is, we don't need to do anything.
+		for _, pullRequestNumber := range gitHubMergeQueueEntries {
+			if int64(pullRequestNumber) == t.PullRequest.GetNumber() {
+				log.Infof("skipping action because pull request is already in the GitHub Merge Queue")
+				return nil
+			}
+		}
+	}
+
 	if e.GetCheckRunID() != nil {
 		e.SetCheckRunConclusion("success")
-		err := updateCheckRunWithSummary(e, "Reviewpad is about to merge this pull request")
-		if err != nil {
+
+		summary := "Reviewpad is about to merge this pull request"
+		if isGitHubMergeQueueEnabled {
+			summary = "Reviewpad is about to add this pull request to the GitHub Merge Queue"
+		}
+
+		if err := updateCheckRunWithSummary(e, summary); err != nil {
 			return err
 		}
 	}
