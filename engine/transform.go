@@ -11,7 +11,7 @@ import (
 
 func addDefaultsToRequestedReviewers(str string) string {
 	trimmedStr := strings.ReplaceAll(str, " ", "")
-	m := regexp.MustCompile(`\$assignReviewer\(((\[.*\])|(\$(team|group)\("[^"]*"\)))(,(\d+))?(,"([^"]*)")?\)`)
+	m := regexp.MustCompile(`\$assignReviewer\(((\[.*\])|(\$(team|group)\("[^"]*"\))|(\$[a-z-A-Z0-9]+))(,(\d+))?(,"([^"]*)")?\)`)
 	match := m.FindStringSubmatch(trimmedStr)
 
 	if len(match) == 0 {
