@@ -182,7 +182,15 @@ type CompareBaseAndHeadQuery struct {
 type MergeQueueQuery struct {
 	Repository struct {
 		MergeQueue struct {
-			Url     string
+			ID string
+		} `graphql:"mergeQueue(branch: $branchName)"`
+	} `graphql:"repository(owner: $repositoryOwner, name: $repositoryName)"`
+}
+
+type MergeQueueEntriesQuery struct {
+	Repository struct {
+		MergeQueue struct {
+			ID      string
 			Entries struct {
 				Nodes []struct {
 					PullRequest struct {
@@ -792,12 +800,29 @@ func isPullRequestReviewer(pullRequest PullRequestsQuery, username string) bool 
 	return false
 }
 
-func (c *GithubClient) GetGitHubMergeQueueEntries(ctx context.Context, repoOwner, repoName, branch string, retryCount int) ([]int, error) {
+func (c *GithubClient) IsGithubMergeQueueEnabled(ctx context.Context, repoOwner, repoName, branch string) (bool, error) {
 	var mergeQueueQuery MergeQueueQuery
+
+	varGQLMergeQueueQuery := map[string]interface{}{
+		"repositoryOwner": githubv4.String(repoOwner),
+		"repositoryName":  githubv4.String(repoName),
+		"branchName":      githubv4.String(branch),
+	}
+
+	err := c.GetClientGraphQL().Query(ctx, &mergeQueueQuery, varGQLMergeQueueQuery)
+	if err != nil {
+		return false, err
+	}
+
+	return mergeQueueQuery.Repository.MergeQueue.ID != "", nil
+}
+
+func (c *GithubClient) GetGitHubMergeQueueEntries(ctx context.Context, repoOwner, repoName, branch string, retryCount int) ([]int, error) {
+	var mergeQueueEntriesQuery MergeQueueEntriesQuery
 	pullRequests := make([]int, 0)
 	hasNextPage := true
 
-	varGQLMergeQueueQuery := map[string]interface{}{
+	varGQLMergeQueueEntriesQuery := map[string]interface{}{
 		"repositoryOwner": githubv4.String(repoOwner),
 		"repositoryName":  githubv4.String(repoName),
 		"branchName":      githubv4.String(branch),
@@ -807,7 +832,7 @@ func (c *GithubClient) GetGitHubMergeQueueEntries(ctx context.Context, repoOwner
 	currentRequestRetry := 1
 
 	for hasNextPage {
-		err := c.GetClientGraphQL().Query(ctx, &mergeQueueQuery, varGQLMergeQueueQuery)
+		err := c.GetClientGraphQL().Query(ctx, &mergeQueueEntriesQuery, varGQLMergeQueueEntriesQuery)
 
 		if err != nil {
 			currentRequestRetry++
@@ -820,16 +845,16 @@ func (c *GithubClient) GetGitHubMergeQueueEntries(ctx context.Context, repoOwner
 			currentRequestRetry = 0
 		}
 
-		if mergeQueueQuery.Repository.MergeQueue.Url == "" {
-			return nil, nil
+		if mergeQueueEntriesQuery.Repository.MergeQueue.ID == "" {
+			return nil, fmt.Errorf("merge queue not found for branch %s", branch)
 		}
 
-		for _, entry := range mergeQueueQuery.Repository.MergeQueue.Entries.Nodes {
+		for _, entry := range mergeQueueEntriesQuery.Repository.MergeQueue.Entries.Nodes {
 			pullRequests = append(pullRequests, entry.PullRequest.Number)
 		}
 
-		hasNextPage = mergeQueueQuery.Repository.MergeQueue.Entries.PageInfo.HasNextPage
-		varGQLMergeQueueQuery["cursor"] = githubv4.NewString(mergeQueueQuery.Repository.MergeQueue.Entries.PageInfo.EndCursor)
+		hasNextPage = mergeQueueEntriesQuery.Repository.MergeQueue.Entries.PageInfo.HasNextPage
+		varGQLMergeQueueEntriesQuery["cursor"] = githubv4.NewString(mergeQueueEntriesQuery.Repository.MergeQueue.Entries.PageInfo.EndCursor)
 	}
 
 	return pullRequests, nil

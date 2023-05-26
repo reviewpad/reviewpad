@@ -7,6 +7,7 @@ package plugins_aladino_actions_test
 import (
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"testing"
 
@@ -51,34 +52,9 @@ func TestMerge_WhenNoMergeMethodIsProvided(t *testing.T) {
 	mockRepo := host.GetPullRequestBaseRepoName(mockedCodeReview)
 	mockBranch := mockedCodeReview.GetBase().GetName()
 
-	mockedGitHubMergeQueueEntriesGQLQuery := fmt.Sprintf(`{
-		"query":"query($branchName:String! $cursor:String $repositoryName:String! $repositoryOwner:String!) {
-			repository(owner: $repositoryOwner, name: $repositoryName) {
-				mergeQueue(branch: $branchName) {
-					url,
-					entries(first:100,after:$cursor) {
-						nodes {
-							pullRequest {
-								number
-							}
-						},
-						pageInfo{
-							endCursor,
-							hasNextPage
-						}
-					}
-				}
-			}
-		}",
-		"variables":{
-			"branchName":"%s",
-			"cursor":null,
-			"repositoryName":"%s",
-			"repositoryOwner":"%s"
-		}
-	}`, mockBranch, mockRepo, mockOwner)
+	mockedIsGitHubMergeQueueEnabledGQLQuery := getMockedIsGitHubMergeQueueGQLQuery(mockBranch, mockRepo, mockOwner)
 
-	mockerGitHubMergeQueueEntriesGQLQueryBody := `{
+	mockedIsGitHubMergeQueueEnabledGQLQueryBody := `{
 		"data": {
 			"repository": {
 				"mergeQueue": null
@@ -104,8 +80,8 @@ func TestMerge_WhenNoMergeMethodIsProvided(t *testing.T) {
 		func(w http.ResponseWriter, req *http.Request) {
 			query := utils.MinifyQuery(utils.MustRead(req.Body))
 			switch query {
-			case utils.MinifyQuery(mockedGitHubMergeQueueEntriesGQLQuery):
-				utils.MustWrite(w, mockerGitHubMergeQueueEntriesGQLQueryBody)
+			case utils.MinifyQuery(mockedIsGitHubMergeQueueEnabledGQLQuery):
+				utils.MustWrite(w, mockedIsGitHubMergeQueueEnabledGQLQueryBody)
 			}
 		},
 		aladino.MockBuiltIns(),
@@ -129,9 +105,9 @@ func TestMerge_WhenMergeMethodIsProvided(t *testing.T) {
 	mockRepo := host.GetPullRequestBaseRepoName(mockedCodeReview)
 	mockBranch := mockedCodeReview.GetBase().GetName()
 
-	mockedGitHubMergeQueueEntriesGQLQuery := getMockedGitHubMergeQueueEntriesGQLQuery(mockBranch, mockRepo, mockOwner)
+	mockedIsGitHubMergeQueueEnabledGQLQuery := getMockedIsGitHubMergeQueueGQLQuery(mockBranch, mockRepo, mockOwner)
 
-	mockedGitHubMergeQueueEntriesGQLQueryBody := `{
+	mockedIsGitHubMergeQueueEnabledGQLQueryBody := `{
 		"data": {
 			"repository": {
 				"mergeQueue": null
@@ -157,8 +133,8 @@ func TestMerge_WhenMergeMethodIsProvided(t *testing.T) {
 		func(w http.ResponseWriter, req *http.Request) {
 			query := utils.MinifyQuery(utils.MustRead(req.Body))
 			switch query {
-			case utils.MinifyQuery(mockedGitHubMergeQueueEntriesGQLQuery):
-				utils.MustWrite(w, mockedGitHubMergeQueueEntriesGQLQueryBody)
+			case utils.MinifyQuery(mockedIsGitHubMergeQueueEnabledGQLQuery):
+				utils.MustWrite(w, mockedIsGitHubMergeQueueEnabledGQLQueryBody)
 			}
 		},
 		aladino.MockBuiltIns(),
@@ -217,6 +193,39 @@ func TestMerge_WhenMergeIsClosedPullRequest(t *testing.T) {
 	assert.Nil(t, err)
 }
 
+func TestMerge_WhenCheckGitHubMergeQueueIsEnabledRequestFails(t *testing.T) {
+	wantMergeMethod := "merge"
+
+	mockedCodeReview := aladino.GetDefaultPullRequestDetails()
+
+	mockOwner := host.GetPullRequestBaseOwnerName(mockedCodeReview)
+	mockRepo := host.GetPullRequestBaseRepoName(mockedCodeReview)
+	mockBranch := mockedCodeReview.GetBase().GetName()
+
+	mockedIsGitHubMergeQueueEnabledGQLQuery := getMockedIsGitHubMergeQueueGQLQuery(mockBranch, mockRepo, mockOwner)
+
+	mockedEnv := aladino.MockDefaultEnvWithPullRequestAndFiles(
+		t,
+		nil,
+		func(w http.ResponseWriter, req *http.Request) {
+			query := utils.MinifyQuery(utils.MustRead(req.Body))
+			switch query {
+			case utils.MinifyQuery(mockedIsGitHubMergeQueueEnabledGQLQuery):
+				http.Error(w, "IsGitHubMergeQueueEnabledRequestFail", http.StatusNotFound)
+			}
+		},
+		mockedCodeReview,
+		aladino.GetDefaultPullRequestFileList(),
+		aladino.MockBuiltIns(),
+		nil,
+	)
+
+	args := []lang.Value{lang.BuildStringValue(wantMergeMethod)}
+	err := merge(mockedEnv, args)
+
+	assert.EqualError(t, err, "non-200 OK status code: 404 Not Found body: \"IsGitHubMergeQueueEnabledRequestFail\\n\"")
+}
+
 func TestMerge_WhenGitHubMergeQueueEntriesRequestFails(t *testing.T) {
 	wantMergeMethod := "merge"
 
@@ -226,6 +235,18 @@ func TestMerge_WhenGitHubMergeQueueEntriesRequestFails(t *testing.T) {
 	mockRepo := host.GetPullRequestBaseRepoName(mockedCodeReview)
 	mockBranch := mockedCodeReview.GetBase().GetName()
 
+	mockedIsGitHubMergeQueueEnabledGQLQuery := getMockedIsGitHubMergeQueueGQLQuery(mockBranch, mockRepo, mockOwner)
+
+	mockedIsGitHubMergeQueueEnabledGQLQueryBody := `{
+		"data": {
+			"repository": {
+				"mergeQueue": {
+					"id": "test"
+				}
+			}
+		}
+	}`
+
 	mockedGitHubMergeQueueEntriesGQLQuery := getMockedGitHubMergeQueueEntriesGQLQuery(mockBranch, mockRepo, mockOwner)
 
 	mockedEnv := aladino.MockDefaultEnvWithPullRequestAndFiles(
@@ -233,7 +254,11 @@ func TestMerge_WhenGitHubMergeQueueEntriesRequestFails(t *testing.T) {
 		nil,
 		func(w http.ResponseWriter, req *http.Request) {
 			query := utils.MinifyQuery(utils.MustRead(req.Body))
+			log.Printf("query: %v\n", query)
+			log.Printf("mockedIsGitHubMergeQueueEnabledGQLQuery: %v\n", utils.MinifyQuery(mockedGitHubMergeQueueEntriesGQLQuery))
 			switch query {
+			case utils.MinifyQuery(mockedIsGitHubMergeQueueEnabledGQLQuery):
+				utils.MustWrite(w, mockedIsGitHubMergeQueueEnabledGQLQueryBody)
 			case utils.MinifyQuery(mockedGitHubMergeQueueEntriesGQLQuery):
 				http.Error(w, "GetGitHubMergeQueueEntriesRequestFail", http.StatusNotFound)
 			}
@@ -261,13 +286,25 @@ func TestMerge_WhenGitHubMergeQueueIsONAndPullRequestIsNotOnTheQueue(t *testing.
 
 	entityNodeID := aladino.DefaultMockEntityNodeID
 
+	mockedIsGitHubMergeQueueEnabledGQLQuery := getMockedIsGitHubMergeQueueGQLQuery(mockBranch, mockRepo, mockOwner)
+
+	mockedIsGitHubMergeQueueEnabledGQLQueryBody := `{
+		"data": {
+			"repository": {
+				"mergeQueue": {
+					"id": "test"
+				}
+			}
+		}
+	}`
+
 	mockedGitHubMergeQueueEntriesGQLQuery := getMockedGitHubMergeQueueEntriesGQLQuery(mockBranch, mockRepo, mockOwner)
 
 	mockedGitHubMergeQueueEntriesGQLQueryBody := `{
 		"data": {
 			"repository": {
 				"mergeQueue": {
-					"url": "foo.bar",
+					"id": "test",
 					"entries": {
 						"nodes": []
 					}
@@ -297,6 +334,8 @@ func TestMerge_WhenGitHubMergeQueueIsONAndPullRequestIsNotOnTheQueue(t *testing.
 		func(w http.ResponseWriter, req *http.Request) {
 			query := utils.MinifyQuery(utils.MustRead(req.Body))
 			switch query {
+			case utils.MinifyQuery(mockedIsGitHubMergeQueueEnabledGQLQuery):
+				utils.MustWrite(w, mockedIsGitHubMergeQueueEnabledGQLQueryBody)
 			case utils.MinifyQuery(mockedGitHubMergeQueueEntriesGQLQuery):
 				utils.MustWrite(w, mockedGitHubMergeQueueEntriesGQLQueryBody)
 			case utils.MinifyQuery(mockedAddPullRequestToGitHubMergeQueueMutation):
@@ -326,13 +365,25 @@ func TestMerge_WhenGitHubMergeQueueIsONAndPullRequestIsNotOnTheQueueAndEnqueueFa
 
 	entityNodeID := aladino.DefaultMockEntityNodeID
 
+	mockedIsGitHubMergeQueueEnabledGQLQuery := getMockedIsGitHubMergeQueueGQLQuery(mockBranch, mockRepo, mockOwner)
+
+	mockedIsGitHubMergeQueueEnabledGQLQueryBody := `{
+		"data": {
+			"repository": {
+				"mergeQueue": {
+					"id": "test"
+				}
+			}
+		}
+	}`
+
 	mockedGitHubMergeQueueEntriesGQLQuery := getMockedGitHubMergeQueueEntriesGQLQuery(mockBranch, mockRepo, mockOwner)
 
 	mockedGitHubMergeQueueEntriesGQLQueryBody := `{
 		"data": {
 			"repository": {
 				"mergeQueue": {
-					"url": "foo.bar",
+					"id": "test",
 					"entries": {
 						"nodes": []
 					}
@@ -360,6 +411,8 @@ func TestMerge_WhenGitHubMergeQueueIsONAndPullRequestIsNotOnTheQueueAndEnqueueFa
 		func(w http.ResponseWriter, req *http.Request) {
 			query := utils.MinifyQuery(utils.MustRead(req.Body))
 			switch query {
+			case utils.MinifyQuery(mockedIsGitHubMergeQueueEnabledGQLQuery):
+				utils.MustWrite(w, mockedIsGitHubMergeQueueEnabledGQLQueryBody)
 			case utils.MinifyQuery(mockedGitHubMergeQueueEntriesGQLQuery):
 				utils.MustWrite(w, mockedGitHubMergeQueueEntriesGQLQueryBody)
 			case utils.MinifyQuery(mockedAddPullRequestToGitHubMergeQueueMutation):
@@ -388,13 +441,25 @@ func TestMerge_WhenPullRequestIsOnGitHubMergeQueue(t *testing.T) {
 	mockBranch := mockedCodeReview.GetBase().GetName()
 	mockPrNum := mockedCodeReview.GetNumber()
 
+	mockedIsGitHubMergeQueueEnabledGQLQuery := getMockedIsGitHubMergeQueueGQLQuery(mockBranch, mockRepo, mockOwner)
+
+	mockedIsGitHubMergeQueueEnabledGQLQueryBody := `{
+		"data": {
+			"repository": {
+				"mergeQueue": {
+					"id": "test"
+				}
+			}
+		}
+	}`
+
 	mockedGitHubMergeQueueEntriesGQLQuery := getMockedGitHubMergeQueueEntriesGQLQuery(mockBranch, mockRepo, mockOwner)
 
 	mockedGitHubMergeQueueEntriesGQLQueryBody := fmt.Sprintf(`{
 		"data": {
 			"repository": {
 				"mergeQueue": {
-					"url": "foo.bar",
+					"id": "test",
 					"entries": {
 						"nodes": [
 							{
@@ -415,6 +480,8 @@ func TestMerge_WhenPullRequestIsOnGitHubMergeQueue(t *testing.T) {
 		func(w http.ResponseWriter, req *http.Request) {
 			query := utils.MinifyQuery(utils.MustRead(req.Body))
 			switch query {
+			case utils.MinifyQuery(mockedIsGitHubMergeQueueEnabledGQLQuery):
+				utils.MustWrite(w, mockedIsGitHubMergeQueueEnabledGQLQueryBody)
 			case utils.MinifyQuery(mockedGitHubMergeQueueEntriesGQLQuery):
 				utils.MustWrite(w, mockedGitHubMergeQueueEntriesGQLQueryBody)
 			}
@@ -431,12 +498,29 @@ func TestMerge_WhenPullRequestIsOnGitHubMergeQueue(t *testing.T) {
 	assert.Nil(t, err)
 }
 
+func getMockedIsGitHubMergeQueueGQLQuery(mockBranch, mockRepo, mockOwner string) string {
+	return fmt.Sprintf(`{
+		"query":"query($branchName:String!$repositoryName:String!$repositoryOwner:String!) {
+			repository(owner: $repositoryOwner,name: $repositoryName) {
+				mergeQueue(branch:$branchName) {
+					id
+				}
+			}
+		}",
+		"variables":{
+			"branchName":"%s",
+			"repositoryName":"%s",
+			"repositoryOwner":"%s"
+		}
+	}`, mockBranch, mockRepo, mockOwner)
+}
+
 func getMockedGitHubMergeQueueEntriesGQLQuery(mockBranch, mockRepo, mockOwner string) string {
 	return fmt.Sprintf(`{
-		"query":"query($branchName:String! $cursor:String $repositoryName:String! $repositoryOwner:String!) {
-			repository(owner: $repositoryOwner, name: $repositoryName) {
-				mergeQueue(branch: $branchName) {
-					url,
+		"query":"query($branchName:String!$cursor:String$repositoryName:String!$repositoryOwner:String!) {
+			repository(owner:$repositoryOwner,name:$repositoryName) {
+				mergeQueue(branch:$branchName) {
+					id,
 					entries(first:100,after:$cursor) {
 						nodes {
 							pullRequest {
