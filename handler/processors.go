@@ -8,6 +8,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -491,8 +492,12 @@ func processCheckSuiteEvent(log *logrus.Entry, token string, event *github.Check
 		Payload:     event,
 	}
 
-	// When the check suite is from a head of a forked repository the pull_requests array will be empty
-	// We need to fetch all the pull requests for the repository and find the one that matches the head sha
+	if event.Sender.GetLogin() == "github-merge-queue[bot]" && event.GetAction() == "requested" {
+		return processCheckSuiteEventForMergeQueue(log, token, event, eventDetails)
+	}
+
+	// When the check suite is from a head of a forked repository the pull_requests array will be empty.
+	// We need to fetch all the pull requests for the repository and find the one that matches the head sha.
 	if len(event.CheckSuite.PullRequests) == 0 {
 		log.Infof("no pull requests found in check suite event. fetching all pull requests for repository %v", event.GetRepo().GetFullName())
 
@@ -536,6 +541,53 @@ func processCheckSuiteEvent(log *logrus.Entry, token string, event *github.Check
 	}
 
 	return targetEntities, eventDetails, nil
+}
+
+func processCheckSuiteEventForMergeQueue(log *logrus.Entry, token string, event *github.CheckSuiteEvent, eventDetails *entities.EventDetails) ([]*entities.TargetEntity, *entities.EventDetails, error) {
+	// The GitHub Merge Queue creates a temporary branch where the head SHA of the check suite is from the temporary branch.
+	// In order to find the pull request associated with the event, we can use the temporary branch name created by the merge queue.
+	// The format of a GitHub Merge Queue temporary branch is: gh-readonly-queue/{target_branch}/pr-{pr_number}-{head_SHA_source_branch}
+	// We can extract the pr number from the temporary branch name and find the pull request associated with it.
+	prIdentifier := strings.Split(event.GetCheckSuite().GetHeadBranch(), "/")[2]
+	prNumber, err := strconv.Atoi(strings.Split(prIdentifier, "-")[1])
+	if err != nil {
+		return nil, nil, fmt.Errorf("error converting pr number to int: %w", err)
+	}
+
+	pr, err := getPullRequest(token, event.GetRepo().GetFullName(), prNumber)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return []*entities.TargetEntity{
+		{
+			Kind:        entities.PullRequest,
+			Number:      pr.GetNumber(),
+			Owner:       event.GetRepo().GetOwner().GetLogin(),
+			Repo:        event.GetRepo().GetName(),
+			AccountType: pr.GetBase().GetRepo().GetOwner().GetType(),
+			Visibility:  pr.GetBase().GetRepo().GetVisibility(),
+		},
+	}, eventDetails, nil
+}
+
+func getPullRequest(token, fullName string, prNumber int) (*github.PullRequest, error) {
+	ctx, canc := context.WithTimeout(context.Background(), time.Minute*10)
+	defer canc()
+
+	ghClient := reviewpad_gh.NewGithubClientFromToken(ctx, token)
+
+	repoParts := strings.SplitN(fullName, "/", 2)
+
+	owner := repoParts[0]
+	repo := repoParts[1]
+
+	pr, _, err := ghClient.GetPullRequest(ctx, owner, repo, prNumber)
+	if err != nil {
+		return nil, fmt.Errorf("get pull request: %w", err)
+	}
+
+	return pr, nil
 }
 
 func getPullRequests(token, fullName string) ([]*github.PullRequest, error) {

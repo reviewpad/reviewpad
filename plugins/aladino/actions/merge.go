@@ -26,6 +26,7 @@ func Merge() *aladino.BuiltInAction {
 func mergeCode(e aladino.Env, args []lang.Value) error {
 	t := e.GetTarget().(*target.PullRequestTarget)
 	log := e.GetLogger().WithField("builtin", "merge")
+	totalRetryCount := 2
 
 	if t.PullRequest.Status != pbc.PullRequestStatus_OPEN || t.PullRequest.IsDraft {
 		log.Infof("skipping action because pull request is not open or is a draft")
@@ -41,10 +42,21 @@ func mergeCode(e aladino.Env, args []lang.Value) error {
 		return nil
 	}
 
+	// We need to check if the base branch of the pull request has GitHub Merge Queue enabled.
+	// The queue is not enabled if we have nil entries.
+	gitHubMergeQueueEntries, err := e.GetGithubClient().GetGitHubMergeQueueEntries(e.GetCtx(), t.PullRequest.GetBase().Repo.Owner, t.PullRequest.GetBase().Repo.Name, t.PullRequest.GetBase().Name, totalRetryCount)
+	if err != nil {
+		return err
+	}
+
+	if gitHubMergeQueueEntries != nil {
+		return processMergeForGitHubMergeQueue(e, gitHubMergeQueueEntries)
+	}
+
 	if e.GetCheckRunID() != nil {
 		e.SetCheckRunConclusion("success")
-		err := updateCheckRunWithSummary(e, "Reviewpad is about to merge this pull request")
-		if err != nil {
+
+		if err := updateCheckRunWithSummary(e, "Reviewpad is about to merge this pull request"); err != nil {
 			return err
 		}
 	}
@@ -52,7 +64,7 @@ func mergeCode(e aladino.Env, args []lang.Value) error {
 	mergeErr := t.Merge(mergeMethod)
 	if mergeErr != nil {
 		if e.GetCheckRunID() != nil {
-			err := updateCheckRunWithSummary(e, "The merge cannot be completed due to non-compliance with certain GitHub branch protection rules")
+			err := updateCheckRunWithSummary(e, fmt.Sprintf("The merge cannot be completed due to non-compliance with certain GitHub branch protection rules: %v", mergeErr))
 			if err != nil {
 				return err
 			}
@@ -90,4 +102,38 @@ func parseMergeMethod(args []lang.Value) (string, error) {
 	default:
 		return "", fmt.Errorf("merge: unsupported merge method %v", mergeMethod)
 	}
+}
+
+func processMergeForGitHubMergeQueue(e aladino.Env, gitHubMergeQueueEntries []int) error {
+	t := e.GetTarget().(*target.PullRequestTarget)
+	log := e.GetLogger().WithField("builtin", "merge")
+
+	// We need to check if the pull request is already in the GitHub Merge Queue.
+	// If it is, we don't need to do anything.
+	for _, pullRequestNumber := range gitHubMergeQueueEntries {
+		if int64(pullRequestNumber) == t.PullRequest.GetNumber() {
+			log.Infof("skipping action because pull request is already in the GitHub Merge Queue")
+			return nil
+		}
+	}
+
+	if e.GetCheckRunID() != nil {
+		e.SetCheckRunConclusion("success")
+
+		if err := updateCheckRunWithSummary(e, "Reviewpad is about to add this pull request to the GitHub Merge Queue"); err != nil {
+			return err
+		}
+	}
+
+	if err := e.GetGithubClient().AddPullRequestToGithubMergeQueue(e.GetCtx(), t.PullRequest.GetId()); err != nil {
+		if e.GetCheckRunID() != nil {
+			if checkRunUpdateErr := updateCheckRunWithSummary(e, fmt.Sprintf("The pull request cannot be added to the merge queue: %v", err)); checkRunUpdateErr != nil {
+				return checkRunUpdateErr
+			}
+		}
+
+		e.GetLogger().WithError(err).Warnln("failed to add this pull request to the GitHub Merge Queue")
+	}
+
+	return nil
 }
