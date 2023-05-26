@@ -49,44 +49,16 @@ func mergeCode(e aladino.Env, args []lang.Value) error {
 		return err
 	}
 
-	isGitHubMergeQueueEnabled := gitHubMergeQueueEntries != nil
-
-	if isGitHubMergeQueueEnabled {
-		// We need to check if the pull request is already in the GitHub Merge Queue.
-		// If it is, we don't need to do anything.
-		for _, pullRequestNumber := range gitHubMergeQueueEntries {
-			if int64(pullRequestNumber) == t.PullRequest.GetNumber() {
-				log.Infof("skipping action because pull request is already in the GitHub Merge Queue")
-				return nil
-			}
-		}
+	if gitHubMergeQueueEntries != nil {
+		return processMergeForGitHubMergeQueue(e, gitHubMergeQueueEntries)
 	}
 
 	if e.GetCheckRunID() != nil {
 		e.SetCheckRunConclusion("success")
 
-		summary := "Reviewpad is about to merge this pull request"
-		if isGitHubMergeQueueEnabled {
-			summary = "Reviewpad is about to add this pull request to the GitHub Merge Queue"
-		}
-
-		if err := updateCheckRunWithSummary(e, summary); err != nil {
+		if err := updateCheckRunWithSummary(e, "Reviewpad is about to merge this pull request"); err != nil {
 			return err
 		}
-	}
-
-	if isGitHubMergeQueueEnabled {
-		if err := e.GetGithubClient().AddPullRequestToGithubMergeQueue(e.GetCtx(), t.PullRequest.GetId()); err != nil {
-			if e.GetCheckRunID() != nil {
-				if checkRunUpdateErr := updateCheckRunWithSummary(e, "The pull request cannot be added to the merge queue"); checkRunUpdateErr != nil {
-					return checkRunUpdateErr
-				}
-			}
-
-			e.GetLogger().WithError(err).Warnln("failed to add this pull request to the GitHub Merge Queue")
-		}
-
-		return nil
 	}
 
 	mergeErr := t.Merge(mergeMethod)
@@ -130,4 +102,38 @@ func parseMergeMethod(args []lang.Value) (string, error) {
 	default:
 		return "", fmt.Errorf("merge: unsupported merge method %v", mergeMethod)
 	}
+}
+
+func processMergeForGitHubMergeQueue(e aladino.Env, gitHubMergeQueueEntries []int) error {
+	t := e.GetTarget().(*target.PullRequestTarget)
+	log := e.GetLogger().WithField("builtin", "merge")
+
+	// We need to check if the pull request is already in the GitHub Merge Queue.
+	// If it is, we don't need to do anything.
+	for _, pullRequestNumber := range gitHubMergeQueueEntries {
+		if int64(pullRequestNumber) == t.PullRequest.GetNumber() {
+			log.Infof("skipping action because pull request is already in the GitHub Merge Queue")
+			return nil
+		}
+	}
+
+	if e.GetCheckRunID() != nil {
+		e.SetCheckRunConclusion("success")
+
+		if err := updateCheckRunWithSummary(e, "Reviewpad is about to add this pull request to the GitHub Merge Queue"); err != nil {
+			return err
+		}
+	}
+
+	if err := e.GetGithubClient().AddPullRequestToGithubMergeQueue(e.GetCtx(), t.PullRequest.GetId()); err != nil {
+		if e.GetCheckRunID() != nil {
+			if checkRunUpdateErr := updateCheckRunWithSummary(e, "The pull request cannot be added to the merge queue"); checkRunUpdateErr != nil {
+				return checkRunUpdateErr
+			}
+		}
+
+		e.GetLogger().WithError(err).Warnln("failed to add this pull request to the GitHub Merge Queue")
+	}
+
+	return nil
 }

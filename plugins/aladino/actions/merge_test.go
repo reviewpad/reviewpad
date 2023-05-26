@@ -244,7 +244,7 @@ func TestMerge_WhenGitHubMergeQueueEntriesRequestFails(t *testing.T) {
 		nil,
 	)
 
-	args := []aladino.Value{aladino.BuildStringValue(wantMergeMethod)}
+	args := []lang.Value{lang.BuildStringValue(wantMergeMethod)}
 	err := merge(mockedEnv, args)
 
 	assert.EqualError(t, err, "non-200 OK status code: 404 Not Found body: \"GetGitHubMergeQueueEntriesRequestFail\\n\"")
@@ -309,7 +309,7 @@ func TestMerge_WhenGitHubMergeQueueIsONAndPullRequestIsNotOnTheQueue(t *testing.
 		nil,
 	)
 
-	args := []aladino.Value{aladino.BuildStringValue(wantMergeMethod)}
+	args := []lang.Value{lang.BuildStringValue(wantMergeMethod)}
 	err := merge(mockedEnv, args)
 
 	assert.Nil(t, err)
@@ -372,7 +372,7 @@ func TestMerge_WhenGitHubMergeQueueIsONAndPullRequestIsNotOnTheQueueAndEnqueueFa
 		nil,
 	)
 
-	args := []aladino.Value{aladino.BuildStringValue(wantMergeMethod)}
+	args := []lang.Value{lang.BuildStringValue(wantMergeMethod)}
 	err := merge(mockedEnv, args)
 
 	assert.Nil(t, err)
@@ -425,7 +425,7 @@ func TestMerge_WhenPullRequestIsOnGitHubMergeQueue(t *testing.T) {
 		nil,
 	)
 
-	args := []aladino.Value{aladino.BuildStringValue(wantMergeMethod)}
+	args := []lang.Value{lang.BuildStringValue(wantMergeMethod)}
 	err := merge(mockedEnv, args)
 
 	assert.Nil(t, err)
