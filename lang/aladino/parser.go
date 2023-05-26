@@ -92,7 +92,7 @@ const AladinoInitialStackSize = 16
 
 /*  start  of  programs  */
 
-var AladinoExca = [...]int8{
+var AladinoExca = [...]int{
 	-1, 1,
 	1, -1,
 	-2, 0,
@@ -102,7 +102,7 @@ const AladinoPrivate = 57344
 
 const AladinoLast = 106
 
-var AladinoAct = [...]int8{
+var AladinoAct = [...]int{
 	53, 52, 22, 2, 20, 21, 18, 19, 55, 44,
 	45, 5, 6, 32, 8, 54, 24, 25, 26, 27,
 	28, 48, 46, 34, 31, 7, 11, 12, 23, 17,
@@ -116,7 +116,7 @@ var AladinoAct = [...]int8{
 	0, 0, 0, 13, 15, 16,
 }
 
-var AladinoPact = [...]int16{
+var AladinoPact = [...]int{
 	7, -1000, 75, 7, 7, -1000, -1000, -1000, -1000, 7,
 	22, -1000, -1000, 7, 7, 7, 7, 7, -1000, 21,
 	15, -16, 46, -3, 28, 81, -1000, -1000, -1000, -1000,
@@ -125,25 +125,25 @@ var AladinoPact = [...]int16{
 	42, -1000, -12, -23, 67, 67, -1000, -1000,
 }
 
-var AladinoPgo = [...]int8{
+var AladinoPgo = [...]int{
 	0, 2, 5, 4, 0, 1, 30,
 }
 
-var AladinoR1 = [...]int8{
+var AladinoR1 = [...]int{
 	0, 6, 1, 1, 1, 1, 1, 1, 1, 1,
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 4,
 	4, 4, 4, 4, 5, 5, 3, 3, 3, 2,
 	2, 2,
 }
 
-var AladinoR2 = [...]int8{
+var AladinoR2 = [...]int{
 	0, 1, 2, 3, 3, 3, 3, 3, 3, 1,
 	1, 1, 1, 3, 2, 1, 1, 5, 5, 1,
 	1, 1, 3, 5, 3, 1, 5, 3, 0, 3,
 	1, 0,
 }
 
-var AladinoChk = [...]int16{
+var AladinoChk = [...]int{
 	-1000, -6, -1, 25, 26, 4, 5, 18, 7, 28,
 	30, 19, 20, 22, 21, 23, 24, 8, -1, -1,
 	-3, -2, -1, 6, -1, -1, -1, -1, -1, 27,
@@ -152,7 +152,7 @@ var AladinoChk = [...]int16{
 	-1, -4, -5, -4, 27, 31, -4, -5,
 }
 
-var AladinoDef = [...]int8{
+var AladinoDef = [...]int{
 	0, -2, 1, 0, 28, 9, 10, 11, 12, 31,
 	0, 15, 16, 0, 0, 0, 0, 0, 2, 0,
 	0, 0, 30, 14, 3, 4, 5, 6, 7, 8,
@@ -161,7 +161,7 @@ var AladinoDef = [...]int8{
 	0, 22, 0, 25, 0, 0, 23, 24,
 }
 
-var AladinoTok1 = [...]int8{
+var AladinoTok1 = [...]int{
 	1, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
@@ -174,13 +174,13 @@ var AladinoTok1 = [...]int8{
 	3, 28, 3, 29,
 }
 
-var AladinoTok2 = [...]int8{
+var AladinoTok2 = [...]int{
 	2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
 	12, 13, 14, 15, 16, 17, 18, 19, 20, 21,
 	22, 23, 24, 25,
 }
 
-var AladinoTok3 = [...]int8{
+var AladinoTok3 = [...]int{
 	0,
 }
 
@@ -260,9 +260,9 @@ func AladinoErrorMessage(state, lookAhead int) string {
 	expected := make([]int, 0, 4)
 
 	// Look for shiftable tokens.
-	base := int(AladinoPact[state])
+	base := AladinoPact[state]
 	for tok := TOKSTART; tok-1 < len(AladinoToknames); tok++ {
-		if n := base + tok; n >= 0 && n < AladinoLast && int(AladinoChk[int(AladinoAct[n])]) == tok {
+		if n := base + tok; n >= 0 && n < AladinoLast && AladinoChk[AladinoAct[n]] == tok {
 			if len(expected) == cap(expected) {
 				return res
 			}
@@ -272,13 +272,13 @@ func AladinoErrorMessage(state, lookAhead int) string {
 
 	if AladinoDef[state] == -2 {
 		i := 0
-		for AladinoExca[i] != -1 || int(AladinoExca[i+1]) != state {
+		for AladinoExca[i] != -1 || AladinoExca[i+1] != state {
 			i += 2
 		}
 
 		// Look for tokens that we accept or reduce.
 		for i += 2; AladinoExca[i] >= 0; i += 2 {
-			tok := int(AladinoExca[i])
+			tok := AladinoExca[i]
 			if tok < TOKSTART || AladinoExca[i+1] == 0 {
 				continue
 			}
@@ -309,30 +309,30 @@ func Aladinolex1(lex AladinoLexer, lval *AladinoSymType) (char, token int) {
 	token = 0
 	char = lex.Lex(lval)
 	if char <= 0 {
-		token = int(AladinoTok1[0])
+		token = AladinoTok1[0]
 		goto out
 	}
 	if char < len(AladinoTok1) {
-		token = int(AladinoTok1[char])
+		token = AladinoTok1[char]
 		goto out
 	}
 	if char >= AladinoPrivate {
 		if char < AladinoPrivate+len(AladinoTok2) {
-			token = int(AladinoTok2[char-AladinoPrivate])
+			token = AladinoTok2[char-AladinoPrivate]
 			goto out
 		}
 	}
 	for i := 0; i < len(AladinoTok3); i += 2 {
-		token = int(AladinoTok3[i+0])
+		token = AladinoTok3[i+0]
 		if token == char {
-			token = int(AladinoTok3[i+1])
+			token = AladinoTok3[i+1]
 			goto out
 		}
 	}
 
 out:
 	if token == 0 {
-		token = int(AladinoTok2[1]) /* unknown char */
+		token = AladinoTok2[1] /* unknown char */
 	}
 	if AladinoDebug >= 3 {
 		__yyfmt__.Printf("lex %s(%d)\n", AladinoTokname(token), uint(char))
@@ -387,7 +387,7 @@ Aladinostack:
 	AladinoS[Aladinop].yys = Aladinostate
 
 Aladinonewstate:
-	Aladinon = int(AladinoPact[Aladinostate])
+	Aladinon = AladinoPact[Aladinostate]
 	if Aladinon <= AladinoFlag {
 		goto Aladinodefault /* simple state */
 	}
@@ -398,8 +398,8 @@ Aladinonewstate:
 	if Aladinon < 0 || Aladinon >= AladinoLast {
 		goto Aladinodefault
 	}
-	Aladinon = int(AladinoAct[Aladinon])
-	if int(AladinoChk[Aladinon]) == Aladinotoken { /* valid shift */
+	Aladinon = AladinoAct[Aladinon]
+	if AladinoChk[Aladinon] == Aladinotoken { /* valid shift */
 		Aladinorcvr.char = -1
 		Aladinotoken = -1
 		AladinoVAL = Aladinorcvr.lval
@@ -412,7 +412,7 @@ Aladinonewstate:
 
 Aladinodefault:
 	/* default state action */
-	Aladinon = int(AladinoDef[Aladinostate])
+	Aladinon = AladinoDef[Aladinostate]
 	if Aladinon == -2 {
 		if Aladinorcvr.char < 0 {
 			Aladinorcvr.char, Aladinotoken = Aladinolex1(Aladinolex, &Aladinorcvr.lval)
@@ -421,18 +421,18 @@ Aladinodefault:
 		/* look through exception table */
 		xi := 0
 		for {
-			if AladinoExca[xi+0] == -1 && int(AladinoExca[xi+1]) == Aladinostate {
+			if AladinoExca[xi+0] == -1 && AladinoExca[xi+1] == Aladinostate {
 				break
 			}
 			xi += 2
 		}
 		for xi += 2; ; xi += 2 {
-			Aladinon = int(AladinoExca[xi+0])
+			Aladinon = AladinoExca[xi+0]
 			if Aladinon < 0 || Aladinon == Aladinotoken {
 				break
 			}
 		}
-		Aladinon = int(AladinoExca[xi+1])
+		Aladinon = AladinoExca[xi+1]
 		if Aladinon < 0 {
 			goto ret0
 		}
@@ -454,10 +454,10 @@ Aladinodefault:
 
 			/* find a state where "error" is a legal shift action */
 			for Aladinop >= 0 {
-				Aladinon = int(AladinoPact[AladinoS[Aladinop].yys]) + AladinoErrCode
+				Aladinon = AladinoPact[AladinoS[Aladinop].yys] + AladinoErrCode
 				if Aladinon >= 0 && Aladinon < AladinoLast {
-					Aladinostate = int(AladinoAct[Aladinon]) /* simulate a shift of "error" */
-					if int(AladinoChk[Aladinostate]) == AladinoErrCode {
+					Aladinostate = AladinoAct[Aladinon] /* simulate a shift of "error" */
+					if AladinoChk[Aladinostate] == AladinoErrCode {
 						goto Aladinostack
 					}
 				}
@@ -493,7 +493,7 @@ Aladinodefault:
 	Aladinopt := Aladinop
 	_ = Aladinopt // guard against "declared and not used"
 
-	Aladinop -= int(AladinoR2[Aladinon])
+	Aladinop -= AladinoR2[Aladinon]
 	// Aladinop is now the index of $0. Perform the default action. Iff the
 	// reduced production is ε, $1 is possibly out of range.
 	if Aladinop+1 >= len(AladinoS) {
@@ -504,16 +504,16 @@ Aladinodefault:
 	AladinoVAL = AladinoS[Aladinop+1]
 
 	/* consult goto table to find next state */
-	Aladinon = int(AladinoR1[Aladinon])
-	Aladinog := int(AladinoPgo[Aladinon])
+	Aladinon = AladinoR1[Aladinon]
+	Aladinog := AladinoPgo[Aladinon]
 	Aladinoj := Aladinog + AladinoS[Aladinop].yys + 1
 
 	if Aladinoj >= AladinoLast {
-		Aladinostate = int(AladinoAct[Aladinog])
+		Aladinostate = AladinoAct[Aladinog]
 	} else {
-		Aladinostate = int(AladinoAct[Aladinoj])
-		if int(AladinoChk[Aladinostate]) != -Aladinon {
-			Aladinostate = int(AladinoAct[Aladinog])
+		Aladinostate = AladinoAct[Aladinoj]
+		if AladinoChk[Aladinostate] != -Aladinon {
+			Aladinostate = AladinoAct[Aladinog]
 		}
 	}
 	// dummy call; replaced with literal code
