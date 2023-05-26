@@ -64,7 +64,7 @@ func mergeCode(e aladino.Env, args []lang.Value) error {
 	mergeErr := t.Merge(mergeMethod)
 	if mergeErr != nil {
 		if e.GetCheckRunID() != nil {
-			err := updateCheckRunWithSummary(e, "The merge cannot be completed due to non-compliance with certain GitHub branch protection rules")
+			err := updateCheckRunWithSummary(e, fmt.Sprintf("The merge cannot be completed due to non-compliance with certain GitHub branch protection rules: %v", mergeErr))
 			if err != nil {
 				return err
 			}
@@ -127,7 +127,7 @@ func processMergeForGitHubMergeQueue(e aladino.Env, gitHubMergeQueueEntries []in
 
 	if err := e.GetGithubClient().AddPullRequestToGithubMergeQueue(e.GetCtx(), t.PullRequest.GetId()); err != nil {
 		if e.GetCheckRunID() != nil {
-			if checkRunUpdateErr := updateCheckRunWithSummary(e, "The pull request cannot be added to the merge queue"); checkRunUpdateErr != nil {
+			if checkRunUpdateErr := updateCheckRunWithSummary(e, fmt.Sprintf("The pull request cannot be added to the merge queue: %v", err)); checkRunUpdateErr != nil {
 				return checkRunUpdateErr
 			}
 		}
