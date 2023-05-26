@@ -417,6 +417,8 @@ func execStatement(interpreter Interpreter, run PadWorkflowRunBlock, rules map[s
 
 	// if the run block has a for-each clause
 	if run.ForEach != nil {
+		var executedActions []string
+
 		value, err := interpreter.ProcessList(run.ForEach.In)
 		if err != nil {
 			return ExitStatusFailure, nil, err
@@ -426,10 +428,13 @@ func execStatement(interpreter Interpreter, run PadWorkflowRunBlock, rules map[s
 			interpreter.StoreTemporaryVariable(run.ForEach.Value, val)
 
 			exitStatus, forEachActions, err := execStatementBlock(interpreter, run.ForEach.Do, rules)
+			executedActions = append(executedActions, forEachActions...)
 			if err != nil {
-				return exitStatus, forEachActions, err
+				return exitStatus, executedActions, err
 			}
 		}
+
+		return ExitStatusSuccess, executedActions, nil
 	}
 
 	for _, rule := range run.If {
@@ -472,11 +477,10 @@ func execStatementBlock(interpreter Interpreter, runs []PadWorkflowRunBlock, rul
 	actions := []string{}
 	for _, run := range runs {
 		retStatus, runActions, err := execStatement(interpreter, run, rules)
+		actions = append(actions, runActions...)
 		if err != nil || retStatus == ExitStatusFailure {
-			return retStatus, nil, err
+			return retStatus, actions, err
 		}
-
-		actions = runActions
 	}
 
 	return ExitStatusSuccess, actions, nil
