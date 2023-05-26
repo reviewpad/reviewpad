@@ -10,18 +10,19 @@ import (
 	"github.com/reviewpad/go-conventionalcommits"
 	"github.com/reviewpad/go-conventionalcommits/parser"
 	"github.com/reviewpad/go-lib/entities"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
 func TitleLint() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{}, nil),
+		Type:           lang.BuildFunctionType([]lang.Type{}, nil),
 		Code:           titleLintCode,
 		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 	}
 }
 
-func titleLintCode(e aladino.Env, _ []aladino.Value) error {
+func titleLintCode(e aladino.Env, _ []lang.Value) error {
 	title := e.GetTarget().GetTitle()
 
 	res, err := parser.NewMachine(conventionalcommits.WithTypes(conventionalcommits.TypesConventional)).Parse([]byte(title))

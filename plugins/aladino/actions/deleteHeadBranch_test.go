@@ -12,6 +12,7 @@ import (
 	"github.com/google/go-github/v52/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	pbc "github.com/reviewpad/api/go/codehost"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/reviewpad/reviewpad/v4/utils"
@@ -173,7 +174,7 @@ func TestDeleteHeadBranch(t *testing.T) {
 				nil,
 			)
 
-			err := deleteHeadBranch(mockedEnv, []aladino.Value{})
+			err := deleteHeadBranch(mockedEnv, []lang.Value{})
 
 			// this allows simplified checking of github error response equality
 			if e, ok := err.(*github.ErrorResponse); ok {

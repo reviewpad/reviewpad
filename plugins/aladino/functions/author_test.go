@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	pbc "github.com/reviewpad/api/go/codehost"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -30,9 +31,9 @@ func TestAuthor(t *testing.T) {
 		nil,
 	)
 
-	wantAuthor := aladino.BuildStringValue(authorLogin)
+	wantAuthor := lang.BuildStringValue(authorLogin)
 
-	gotAuthor, err := author(mockedEnv, []aladino.Value{})
+	gotAuthor, err := author(mockedEnv, []lang.Value{})
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantAuthor, gotAuthor, "it should get the pull request author")

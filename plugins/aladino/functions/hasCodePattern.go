@@ -7,19 +7,20 @@ package plugins_aladino_functions
 import (
 	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
 func HasCodePattern() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, aladino.BuildBoolType()),
+		Type:           lang.BuildFunctionType([]lang.Type{lang.BuildStringType()}, lang.BuildBoolType()),
 		Code:           hasCodePatternCode,
 		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 	}
 }
 
-func hasCodePatternCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
-	arg := args[0].(*aladino.StringValue)
+func hasCodePatternCode(e aladino.Env, args []lang.Value) (lang.Value, error) {
+	arg := args[0].(*lang.StringValue)
 	patch := e.GetTarget().(*target.PullRequestTarget).Patch
 
 	for _, file := range patch {
@@ -33,9 +34,9 @@ func hasCodePatternCode(e aladino.Env, args []aladino.Value) (aladino.Value, err
 		}
 
 		if isMatch {
-			return aladino.BuildTrueValue(), nil
+			return lang.BuildTrueValue(), nil
 		}
 	}
 
-	return aladino.BuildFalseValue(), nil
+	return lang.BuildFalseValue(), nil
 }

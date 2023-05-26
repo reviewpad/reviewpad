@@ -8,25 +8,26 @@ import (
 	"github.com/google/go-github/v52/github"
 	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
 func IsWaitingForReview() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildBoolType()),
+		Type:           lang.BuildFunctionType([]lang.Type{}, lang.BuildBoolType()),
 		Code:           isWaitingForReviewCode,
 		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 	}
 }
 
-func isWaitingForReviewCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
+func isWaitingForReviewCode(e aladino.Env, _ []lang.Value) (lang.Value, error) {
 	pullRequest := e.GetTarget().(*target.PullRequestTarget).PullRequest
 	requestedUsers := pullRequest.RequestedReviewers.Users
 	requestedTeams := pullRequest.RequestedReviewers.Teams
 	log := e.GetLogger().WithField("builtin", "isWaitingForReview")
 
 	if len(requestedUsers) > 0 || len(requestedTeams) > 0 {
-		return aladino.BuildBoolValue(true), nil
+		return lang.BuildBoolValue(true), nil
 	}
 
 	prNum := pullRequest.GetNumber()
@@ -41,7 +42,7 @@ func isWaitingForReviewCode(e aladino.Env, _ []aladino.Value) (aladino.Value, er
 
 	if len(commits) == 0 {
 		log.Warnf("no commits found for pull request %s/%s#%d", owner, repo, prNum)
-		return aladino.BuildBoolValue(false), nil
+		return lang.BuildBoolValue(false), nil
 	}
 
 	lastPushedDate, err := e.GetGithubClient().GetPullRequestLastPushDate(e.GetCtx(), owner, repo, int(prNum))
@@ -75,10 +76,10 @@ func isWaitingForReviewCode(e aladino.Env, _ []aladino.Value) (aladino.Value, er
 	for _, lastUserReview := range lastReviewByUser {
 		if *lastUserReview.State != "APPROVED" {
 			if lastUserReview.GetSubmittedAt().Before(lastPushedDate) {
-				return aladino.BuildBoolValue(true), nil
+				return lang.BuildBoolValue(true), nil
 			}
 		}
 	}
 
-	return aladino.BuildBoolValue(false), nil
+	return lang.BuildBoolValue(false), nil
 }

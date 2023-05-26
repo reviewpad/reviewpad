@@ -11,18 +11,19 @@ import (
 	pbc "github.com/reviewpad/api/go/codehost"
 	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
 func Merge() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, nil),
+		Type:           lang.BuildFunctionType([]lang.Type{lang.BuildStringType()}, nil),
 		Code:           mergeCode,
 		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 	}
 }
 
-func mergeCode(e aladino.Env, args []aladino.Value) error {
+func mergeCode(e aladino.Env, args []lang.Value) error {
 	t := e.GetTarget().(*target.PullRequestTarget)
 	log := e.GetLogger().WithField("builtin", "merge")
 
@@ -77,12 +78,12 @@ func updateCheckRunWithSummary(e aladino.Env, summary string) error {
 	return err
 }
 
-func parseMergeMethod(args []aladino.Value) (string, error) {
+func parseMergeMethod(args []lang.Value) (string, error) {
 	if len(args) == 0 {
 		return "merge", nil
 	}
 
-	mergeMethod := args[0].(*aladino.StringValue).Val
+	mergeMethod := args[0].(*lang.StringValue).Val
 	switch mergeMethod {
 	case "merge", "rebase", "squash":
 		return mergeMethod, nil

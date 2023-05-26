@@ -7,6 +7,7 @@ package plugins_aladino_functions_test
 import (
 	"testing"
 
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -17,24 +18,24 @@ var appendString = plugins_aladino.PluginBuiltIns().Functions["append"].Code
 func TestAppendString(t *testing.T) {
 	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
 
-	slice := aladino.BuildArrayValue(
-		[]aladino.Value{
-			aladino.BuildStringValue("a"),
-			aladino.BuildStringValue("b"),
+	slice := lang.BuildArrayValue(
+		[]lang.Value{
+			lang.BuildStringValue("a"),
+			lang.BuildStringValue("b"),
 		},
 	)
-	elems := aladino.BuildArrayValue(
-		[]aladino.Value{
-			aladino.BuildStringValue("c"),
+	elems := lang.BuildArrayValue(
+		[]lang.Value{
+			lang.BuildStringValue("c"),
 		},
 	)
-	args := []aladino.Value{slice, elems}
+	args := []lang.Value{slice, elems}
 
-	wantSlice := aladino.BuildArrayValue(
-		[]aladino.Value{
-			aladino.BuildStringValue("a"),
-			aladino.BuildStringValue("b"),
-			aladino.BuildStringValue("c"),
+	wantSlice := lang.BuildArrayValue(
+		[]lang.Value{
+			lang.BuildStringValue("a"),
+			lang.BuildStringValue("b"),
+			lang.BuildStringValue("c"),
 		},
 	)
 

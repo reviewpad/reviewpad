@@ -7,6 +7,7 @@ import (
 
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	host "github.com/reviewpad/reviewpad/v4/codehost/github"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/reviewpad/reviewpad/v4/utils"
@@ -44,13 +45,13 @@ func TestHasRequiredApprovals_WhenErrorOccurs(t *testing.T) {
 
 	tests := map[string]struct {
 		ghGraphQLHandler          func(http.ResponseWriter, *http.Request)
-		inputTotalRequiredReviews aladino.Value
-		inputRequiredReviewsFrom  aladino.Value
+		inputTotalRequiredReviews lang.Value
+		inputRequiredReviewsFrom  lang.Value
 		wantErr                   error
 	}{
 		"when given total required approvals exceeds the size of the given list of required approvals": {
-			inputTotalRequiredReviews: aladino.BuildIntValue(2),
-			inputRequiredReviewsFrom:  aladino.BuildArrayValue([]aladino.Value{aladino.BuildStringValue("john")}),
+			inputTotalRequiredReviews: lang.BuildIntValue(2),
+			inputRequiredReviewsFrom:  lang.BuildArrayValue([]lang.Value{lang.BuildStringValue("john")}),
 			wantErr:                   fmt.Errorf("hasRequiredApprovals: the number of required approvals exceeds the number of members from the given list of required approvals"),
 		},
 		"when get approved reviewers request fails": {
@@ -60,8 +61,8 @@ func TestHasRequiredApprovals_WhenErrorOccurs(t *testing.T) {
 					http.Error(w, "GetLatestReviewsRequestFail", http.StatusNotFound)
 				}
 			},
-			inputTotalRequiredReviews: aladino.BuildIntValue(1),
-			inputRequiredReviewsFrom:  aladino.BuildArrayValue([]aladino.Value{aladino.BuildStringValue("john"), aladino.BuildStringValue("test")}),
+			inputTotalRequiredReviews: lang.BuildIntValue(1),
+			inputRequiredReviewsFrom:  lang.BuildArrayValue([]lang.Value{lang.BuildStringValue("john"), lang.BuildStringValue("test")}),
 			wantErr:                   fmt.Errorf("non-200 OK status code: 404 Not Found body: \"GetLatestReviewsRequestFail\\n\""),
 		},
 	}
@@ -69,7 +70,7 @@ func TestHasRequiredApprovals_WhenErrorOccurs(t *testing.T) {
 	for _, test := range tests {
 		mockedEnv := aladino.MockDefaultEnv(t, nil, test.ghGraphQLHandler, aladino.MockBuiltIns(), nil)
 
-		args := []aladino.Value{test.inputTotalRequiredReviews, test.inputRequiredReviewsFrom}
+		args := []lang.Value{test.inputTotalRequiredReviews, test.inputRequiredReviewsFrom}
 		gotHasRequiredApprovals, gotErr := hasRequiredApprovals(mockedEnv, args)
 
 		assert.Nil(t, gotHasRequiredApprovals)
@@ -107,9 +108,9 @@ func TestHasRequiredApprovals(t *testing.T) {
 	tests := map[string]struct {
 		clientOptions             []mock.MockBackendOption
 		ghGraphQLHandler          func(http.ResponseWriter, *http.Request)
-		inputTotalRequiredReviews aladino.Value
-		inputRequiredReviewsFrom  aladino.Value
-		wantHasRequiredApprovals  aladino.Value
+		inputTotalRequiredReviews lang.Value
+		inputRequiredReviewsFrom  lang.Value
+		wantHasRequiredApprovals  lang.Value
 		wantErr                   string
 	}{
 		"when there is not enough required approvals": {
@@ -136,9 +137,9 @@ func TestHasRequiredApprovals(t *testing.T) {
 					}`)
 				}
 			},
-			inputTotalRequiredReviews: aladino.BuildIntValue(1),
-			inputRequiredReviewsFrom:  aladino.BuildArrayValue([]aladino.Value{aladino.BuildStringValue("test")}),
-			wantHasRequiredApprovals:  aladino.BuildBoolValue(false),
+			inputTotalRequiredReviews: lang.BuildIntValue(1),
+			inputRequiredReviewsFrom:  lang.BuildArrayValue([]lang.Value{lang.BuildStringValue("test")}),
+			wantHasRequiredApprovals:  lang.BuildBoolValue(false),
 			wantErr:                   "",
 		},
 		"when there is enough required approvals": {
@@ -165,9 +166,9 @@ func TestHasRequiredApprovals(t *testing.T) {
 					}`)
 				}
 			},
-			inputTotalRequiredReviews: aladino.BuildIntValue(1),
-			inputRequiredReviewsFrom:  aladino.BuildArrayValue([]aladino.Value{aladino.BuildStringValue("test")}),
-			wantHasRequiredApprovals:  aladino.BuildBoolValue(true),
+			inputTotalRequiredReviews: lang.BuildIntValue(1),
+			inputRequiredReviewsFrom:  lang.BuildArrayValue([]lang.Value{lang.BuildStringValue("test")}),
+			wantHasRequiredApprovals:  lang.BuildBoolValue(true),
 			wantErr:                   "",
 		},
 	}
@@ -181,7 +182,7 @@ func TestHasRequiredApprovals(t *testing.T) {
 			nil,
 		)
 
-		args := []aladino.Value{test.inputTotalRequiredReviews, test.inputRequiredReviewsFrom}
+		args := []lang.Value{test.inputTotalRequiredReviews, test.inputRequiredReviewsFrom}
 		gotHasRequiredApprovals, gotErr := hasRequiredApprovals(mockedEnv, args)
 
 		assert.Nil(t, gotErr)

@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	pbc "github.com/reviewpad/api/go/codehost"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -32,10 +33,10 @@ func TestHasFileName_WhenTrue(t *testing.T) {
 		nil,
 	)
 
-	args := []aladino.Value{aladino.BuildStringValue(defaultMockPrFileName)}
+	args := []lang.Value{lang.BuildStringValue(defaultMockPrFileName)}
 	gotVal, err := hasFileName(mockedEnv, args)
 
-	wantVal := aladino.BuildBoolValue(true)
+	wantVal := lang.BuildBoolValue(true)
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantVal, gotVal)
@@ -58,10 +59,10 @@ func TestHasFileName_WhenFalse(t *testing.T) {
 		nil,
 	)
 
-	args := []aladino.Value{aladino.BuildStringValue(defaultMockPrFileName)}
+	args := []lang.Value{lang.BuildStringValue(defaultMockPrFileName)}
 	gotVal, err := hasFileName(mockedEnv, args)
 
-	wantVal := aladino.BuildBoolValue(false)
+	wantVal := lang.BuildBoolValue(false)
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantVal, gotVal)

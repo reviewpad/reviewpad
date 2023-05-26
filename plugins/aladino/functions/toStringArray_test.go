@@ -8,6 +8,7 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -18,7 +19,7 @@ var toStringArray = plugins_aladino.PluginBuiltIns().Functions["toStringArray"].
 func TestToStringArray(t *testing.T) {
 	tests := map[string]struct {
 		str     string
-		wantRes aladino.Value
+		wantRes lang.Value
 		wantErr error
 	}{
 		"when empty": {
@@ -31,11 +32,11 @@ func TestToStringArray(t *testing.T) {
 		},
 		"when array of strings": {
 			str:     `["a", "b", "c"]`,
-			wantRes: aladino.BuildArrayValue([]aladino.Value{aladino.BuildStringValue("a"), aladino.BuildStringValue("b"), aladino.BuildStringValue("c")}),
+			wantRes: lang.BuildArrayValue([]lang.Value{lang.BuildStringValue("a"), lang.BuildStringValue("b"), lang.BuildStringValue("c")}),
 		},
 		"when empty array": {
 			str:     `[]`,
-			wantRes: aladino.BuildArrayValue([]aladino.Value{}),
+			wantRes: lang.BuildArrayValue([]lang.Value{}),
 		},
 		"when nested array": {
 			str:     `[["a", "b", "c"]]`,
@@ -47,7 +48,7 @@ func TestToStringArray(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			env := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
 
-			res, err := toStringArray(env, []aladino.Value{aladino.BuildStringValue(test.str)})
+			res, err := toStringArray(env, []lang.Value{lang.BuildStringValue(test.str)})
 
 			assert.Equal(t, test.wantRes, res)
 			assert.Equal(t, test.wantErr, err)

@@ -6,19 +6,20 @@ package plugins_aladino_actions
 
 import (
 	"github.com/reviewpad/go-lib/entities"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
 func Comment() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, nil),
+		Type:           lang.BuildFunctionType([]lang.Type{lang.BuildStringType()}, nil),
 		Code:           commentCode,
 		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest, entities.Issue},
 	}
 }
 
-func commentCode(e aladino.Env, args []aladino.Value) error {
+func commentCode(e aladino.Env, args []lang.Value) error {
 	t := e.GetTarget()
-	commentBody := args[0].(*aladino.StringValue).Val
+	commentBody := args[0].(*lang.StringValue).Val
 	return t.Comment(commentBody)
 }

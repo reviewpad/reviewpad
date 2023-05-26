@@ -11,6 +11,7 @@ import (
 
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	pbc "github.com/reviewpad/api/go/codehost"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/reviewpad/reviewpad/v4/utils"
@@ -32,7 +33,7 @@ func TestMerge_WhenMergeMethodIsUnsupported(t *testing.T) {
 		nil,
 	)
 
-	args := []aladino.Value{aladino.BuildStringValue("INVALID")}
+	args := []lang.Value{lang.BuildStringValue("INVALID")}
 	err := merge(mockedEnv, args)
 
 	assert.EqualError(t, err, "merge: unsupported merge method INVALID")
@@ -62,7 +63,7 @@ func TestMerge_WhenNoMergeMethodIsProvided(t *testing.T) {
 		nil,
 	)
 
-	args := []aladino.Value{}
+	args := []lang.Value{}
 	err := merge(mockedEnv, args)
 
 	assert.Nil(t, err)
@@ -93,7 +94,7 @@ func TestMerge_WhenMergeMethodIsProvided(t *testing.T) {
 		nil,
 	)
 
-	args := []aladino.Value{aladino.BuildStringValue(wantMergeMethod)}
+	args := []lang.Value{lang.BuildStringValue(wantMergeMethod)}
 	err := merge(mockedEnv, args)
 
 	assert.Nil(t, err)
@@ -117,7 +118,7 @@ func TestMerge_WhenMergeIsOnDraftPullRequest(t *testing.T) {
 		nil,
 	)
 
-	args := []aladino.Value{aladino.BuildStringValue(wantMergeMethod)}
+	args := []lang.Value{lang.BuildStringValue(wantMergeMethod)}
 	err := merge(mockedEnv, args)
 
 	assert.Nil(t, err)
@@ -139,7 +140,7 @@ func TestMerge_WhenMergeIsClosedPullRequest(t *testing.T) {
 		nil,
 	)
 
-	args := []aladino.Value{aladino.BuildStringValue(wantMergeMethod)}
+	args := []lang.Value{lang.BuildStringValue(wantMergeMethod)}
 	err := merge(mockedEnv, args)
 
 	assert.Nil(t, err)

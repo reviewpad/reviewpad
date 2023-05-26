@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/reviewpad/reviewpad/v4/utils"
@@ -307,7 +308,7 @@ func TestRemoveFromProject(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			env := aladino.MockDefaultEnv(t, nil, test.graphQLHandler, nil, nil)
 
-			gotErr := removeFromProjectCode(env, []aladino.Value{aladino.BuildStringValue(test.projectName)})
+			gotErr := removeFromProjectCode(env, []lang.Value{lang.BuildStringValue(test.projectName)})
 
 			assert.Equal(t, test.wantErr, gotErr)
 		})

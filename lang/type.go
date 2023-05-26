@@ -2,11 +2,11 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-package aladino
+package lang
 
 type Type interface {
 	Kind() string
-	equals(other Type) bool
+	Equals(other Type) bool
 }
 
 const (
@@ -97,8 +97,8 @@ func (dATy *DynamicArrayType) Kind() string {
 }
 
 // Equals
-// equals on arrays
-func equals(leftTys []Type, rightTys []Type) bool {
+// Equals on arrays
+func Equals(leftTys []Type, rightTys []Type) bool {
 	if len(leftTys) != len(rightTys) {
 		return false
 	}
@@ -106,7 +106,7 @@ func equals(leftTys []Type, rightTys []Type) bool {
 	for i, leftTy := range leftTys {
 		rightTy := rightTys[i]
 
-		if !leftTy.equals(rightTy) {
+		if !leftTy.Equals(rightTy) {
 			return false
 		}
 	}
@@ -114,65 +114,73 @@ func equals(leftTys []Type, rightTys []Type) bool {
 	return true
 }
 
-func (thisTy *BoolType) equals(thatTy Type) bool {
+func (thisTy *BoolType) Equals(thatTy Type) bool {
 	return thatTy.Kind() == thisTy.Kind()
 }
 
-func (thisTy *StringType) equals(thatTy Type) bool {
+func (thisTy *StringType) Equals(thatTy Type) bool {
 	return thatTy.Kind() == thisTy.Kind()
 }
 
-func (thisTy *IntType) equals(thatTy Type) bool {
+func (thisTy *IntType) Equals(thatTy Type) bool {
 	return thatTy.Kind() == thisTy.Kind()
 }
 
-func (thisTy *FunctionType) equals(thatTy Type) bool {
+func (thisTy *FunctionType) Equals(thatTy Type) bool {
 	if thisTy.Kind() != thatTy.Kind() {
 		return false
 	}
 
 	thatTyFunction := thatTy.(*FunctionType)
-	argsCheck := equals(thisTy.paramTypes, thatTyFunction.paramTypes)
-	retCheck := thisTy.returnType.equals(thatTyFunction.returnType)
+	argsCheck := Equals(thisTy.paramTypes, thatTyFunction.paramTypes)
+	retCheck := thisTy.returnType.Equals(thatTyFunction.returnType)
 
 	return argsCheck && retCheck
 }
 
-func (thisTy *ArrayType) equals(thatTy Type) bool {
+func (thisTy *ArrayType) Equals(thatTy Type) bool {
 	switch thatTy.Kind() {
 	case ARRAY_TYPE:
 		thatTyArray := thatTy.(*ArrayType)
-		return equals(thatTyArray.elemsType, thisTy.elemsType)
+		return Equals(thatTyArray.elemsType, thisTy.elemsType)
 	case ARRAY_OF_TYPE:
 		thatTyArrayOf := thatTy.(*ArrayOfType)
 		elems := make([]Type, len(thisTy.elemsType))
 		for i := range thisTy.elemsType {
 			elems[i] = thatTyArrayOf.elemType
 		}
-		return equals(elems, thisTy.elemsType)
+		return Equals(elems, thisTy.elemsType)
 	case DYNAMIC_ARRAY_TYPE:
 		return true
 	}
 	return false
 }
 
-func (thisTy *ArrayOfType) equals(thatTy Type) bool {
+func (thisTy *ArrayOfType) Equals(thatTy Type) bool {
 	switch thatTy.Kind() {
 	case ARRAY_TYPE:
-		return thatTy.equals(thisTy)
+		return thatTy.Equals(thisTy)
 	case ARRAY_OF_TYPE:
 		thatTyArrayOf := thatTy.(*ArrayOfType)
-		return thisTy.elemType.equals(thatTyArrayOf.elemType)
+		return thisTy.elemType.Equals(thatTyArrayOf.elemType)
 	case DYNAMIC_ARRAY_TYPE:
 		return true
 	}
 	return false
 }
 
-func (thisTy *JSONType) equals(thatTy Type) bool {
+func (thisTy *JSONType) Equals(thatTy Type) bool {
 	return thisTy.Kind() == thatTy.Kind()
 }
 
-func (thisTy *DynamicArrayType) equals(thatTy Type) bool {
+func (thisTy *DynamicArrayType) Equals(thatTy Type) bool {
 	return thisTy.Kind() == thatTy.Kind()
+}
+
+func (fTy *FunctionType) ParamTypes() []Type {
+	return fTy.paramTypes
+}
+
+func (fTy *FunctionType) ReturnType() Type {
+	return fTy.returnType
 }

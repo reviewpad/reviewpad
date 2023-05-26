@@ -9,6 +9,7 @@ import (
 	"fmt"
 
 	"github.com/reviewpad/go-lib/entities"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
@@ -16,16 +17,16 @@ const ReviewpadCommentAnnotation = "<!--@annotation-reviewpad-single-comment-->"
 
 func CommentOnce() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, nil),
+		Type:           lang.BuildFunctionType([]lang.Type{lang.BuildStringType()}, nil),
 		Code:           commentOnceCode,
 		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest, entities.Issue},
 	}
 }
 
-func commentOnceCode(e aladino.Env, args []aladino.Value) error {
+func commentOnceCode(e aladino.Env, args []lang.Value) error {
 	t := e.GetTarget()
 
-	commentBody := args[0].(*aladino.StringValue).Val
+	commentBody := args[0].(*lang.StringValue).Val
 	commentBodyWithReviewpadAnnotation := fmt.Sprintf("%s\n%s", ReviewpadCommentAnnotation, commentBody)
 	commentBodyWithReviewpadAnnotationHash := sha256.Sum256([]byte(commentBodyWithReviewpadAnnotation))
 

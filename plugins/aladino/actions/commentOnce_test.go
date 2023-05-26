@@ -12,6 +12,7 @@ import (
 
 	"github.com/google/go-github/v52/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/reviewpad/reviewpad/v4/utils"
@@ -44,7 +45,7 @@ func TestCommentOnce_WhenGetCommentsRequestFails(t *testing.T) {
 		nil,
 	)
 
-	args := []aladino.Value{aladino.BuildStringValue(fmt.Sprintf("%s%s", ReviewpadCommentAnnotation, comment))}
+	args := []lang.Value{lang.BuildStringValue(fmt.Sprintf("%s%s", ReviewpadCommentAnnotation, comment))}
 	err := commentOnce(mockedEnv, args)
 
 	assert.Equal(t, err.(*github.ErrorResponse).Message, failMessage)
@@ -78,7 +79,7 @@ func TestCommentOnce_WhenCommentAlreadyExists(t *testing.T) {
 		nil,
 	)
 
-	args := []aladino.Value{aladino.BuildStringValue(existingComment)}
+	args := []lang.Value{lang.BuildStringValue(existingComment)}
 	err := commentOnce(mockedEnv, args)
 
 	assert.Nil(t, err)
@@ -113,7 +114,7 @@ func TestCommentOnce_WhenFirstTime(t *testing.T) {
 		nil,
 	)
 
-	args := []aladino.Value{aladino.BuildStringValue(commentToAdd)}
+	args := []lang.Value{lang.BuildStringValue(commentToAdd)}
 	err := commentOnce(mockedEnv, args)
 
 	assert.Nil(t, err)

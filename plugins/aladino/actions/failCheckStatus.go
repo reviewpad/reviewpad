@@ -10,21 +10,22 @@ import (
 
 	"github.com/google/go-github/v52/github"
 	"github.com/reviewpad/go-lib/entities"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
 // FailCheckStatus is a built-in action that fails the check run with a message without failing reviewpad.
 func FailCheckStatus() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, nil),
+		Type:           lang.BuildFunctionType([]lang.Type{lang.BuildStringType()}, nil),
 		Code:           failCheckStatusCode,
 		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest, entities.Issue},
 	}
 }
 
-func failCheckStatusCode(e aladino.Env, args []aladino.Value) error {
+func failCheckStatusCode(e aladino.Env, args []lang.Value) error {
 	targetEntity := e.GetTarget().GetTargetEntity()
-	failMessage := args[0].(*aladino.StringValue).Val
+	failMessage := args[0].(*lang.StringValue).Val
 
 	e.GetBuiltInsReportedMessages()[aladino.SEVERITY_FAIL] = append(e.GetBuiltInsReportedMessages()[aladino.SEVERITY_FAIL], failMessage)
 

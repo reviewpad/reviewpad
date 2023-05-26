@@ -12,24 +12,25 @@ import (
 	converter "github.com/reviewpad/go-lib/converters"
 	"github.com/reviewpad/go-lib/entities"
 	lib_http "github.com/reviewpad/go-lib/http"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino_services "github.com/reviewpad/reviewpad/v4/plugins/aladino/services"
 )
 
 func RobinSummarize() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
-		Type:              aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType(), aladino.BuildStringType()}, nil),
+		Type:              lang.BuildFunctionType([]lang.Type{lang.BuildStringType(), lang.BuildStringType()}, nil),
 		Code:              robinSummarizeCode,
 		SupportedKinds:    []entities.TargetEntityKind{entities.PullRequest, entities.Issue},
 		RunAsynchronously: true,
 	}
 }
 
-func robinSummarizeCode(e aladino.Env, args []aladino.Value) error {
+func robinSummarizeCode(e aladino.Env, args []lang.Value) error {
 	target := e.GetTarget()
 	targetEntity := target.GetTargetEntity()
-	summaryMode := args[0].(*aladino.StringValue).Val
-	model := args[1].(*aladino.StringValue).Val
+	summaryMode := args[0].(*lang.StringValue).Val
+	model := args[1].(*lang.StringValue).Val
 
 	log := e.GetLogger().WithField("builtin", "summarize")
 

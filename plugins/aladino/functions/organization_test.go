@@ -10,6 +10,7 @@ import (
 
 	"github.com/google/go-github/v52/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -48,7 +49,7 @@ func TestOrganization_WhenListMembersRequestFails(t *testing.T) {
 		nil,
 	)
 
-	args := []aladino.Value{}
+	args := []lang.Value{}
 	gotMembers, err := organization(mockedEnv, args)
 
 	assert.Nil(t, gotMembers)
@@ -73,12 +74,12 @@ func TestOrganization(t *testing.T) {
 		nil,
 	)
 
-	wantMembers := aladino.BuildArrayValue([]aladino.Value{
-		aladino.BuildStringValue("john"),
-		aladino.BuildStringValue("jane"),
+	wantMembers := lang.BuildArrayValue([]lang.Value{
+		lang.BuildStringValue("john"),
+		lang.BuildStringValue("jane"),
 	})
 
-	args := []aladino.Value{}
+	args := []lang.Value{}
 	gotMembers, err := organization(mockedEnv, args)
 
 	assert.Nil(t, err)

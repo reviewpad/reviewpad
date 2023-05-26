@@ -7,24 +7,25 @@ package plugins_aladino_functions
 import (
 	"github.com/ohler55/ojg/oj"
 	"github.com/reviewpad/go-lib/entities"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
 func ToJSON() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, aladino.BuildJSONType()),
+		Type:           lang.BuildFunctionType([]lang.Type{lang.BuildStringType()}, lang.BuildJSONType()),
 		Code:           toJSONCode,
 		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest, entities.Issue},
 	}
 }
 
-func toJSONCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
-	jsonString := args[0].(*aladino.StringValue).Val
+func toJSONCode(e aladino.Env, args []lang.Value) (lang.Value, error) {
+	jsonString := args[0].(*lang.StringValue).Val
 
 	val, err := oj.ParseString(jsonString)
 	if err != nil {
 		return nil, err
 	}
 
-	return aladino.BuildJSONValue(val), nil
+	return lang.BuildJSONValue(val), nil
 }

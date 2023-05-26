@@ -8,19 +8,20 @@ import (
 	"github.com/google/go-github/v52/github"
 	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
 func CheckRunConclusion() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, aladino.BuildStringType()),
+		Type:           lang.BuildFunctionType([]lang.Type{lang.BuildStringType()}, lang.BuildStringType()),
 		Code:           checkRunConclusionCode,
 		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 	}
 }
 
-func checkRunConclusionCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
-	checkRunName := args[0].(*aladino.StringValue).Val
+func checkRunConclusionCode(e aladino.Env, args []lang.Value) (lang.Value, error) {
+	checkRunName := args[0].(*lang.StringValue).Val
 	pullRequest := e.GetTarget().(*target.PullRequestTarget)
 	owner := pullRequest.GetTargetEntity().Owner
 	repo := pullRequest.GetTargetEntity().Repo
@@ -32,7 +33,7 @@ func checkRunConclusionCode(e aladino.Env, args []aladino.Value) (aladino.Value,
 	}
 
 	if len(ghCommits) == 0 {
-		return aladino.BuildStringValue(""), nil
+		return lang.BuildStringValue(""), nil
 	}
 
 	lastCommitSha := ghCommits[len(ghCommits)-1].GetSHA()
@@ -52,7 +53,7 @@ func checkRunConclusionCode(e aladino.Env, args []aladino.Value) (aladino.Value,
 		}
 	}
 
-	return aladino.BuildStringValue(checkRunConclusion), nil
+	return lang.BuildStringValue(checkRunConclusion), nil
 }
 
 func isCheckEligible(checkRun *github.CheckRun, requiredName string, requiredMinCompletedAt *github.Timestamp) bool {

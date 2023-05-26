@@ -7,6 +7,7 @@ package plugins_aladino_functions_test
 import (
 	"testing"
 
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -17,16 +18,16 @@ var isElementOf = plugins_aladino.PluginBuiltIns().Functions["isElementOf"].Code
 func TestIsElementOf_WhenTrue(t *testing.T) {
 	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
 
-	args := []aladino.Value{
-		aladino.BuildStringValue("elemA"),
-		aladino.BuildArrayValue([]aladino.Value{
-			aladino.BuildStringValue("elemA"),
-			aladino.BuildStringValue("elemB"),
+	args := []lang.Value{
+		lang.BuildStringValue("elemA"),
+		lang.BuildArrayValue([]lang.Value{
+			lang.BuildStringValue("elemA"),
+			lang.BuildStringValue("elemB"),
 		}),
 	}
 	gotVal, err := isElementOf(mockedEnv, args)
 
-	wantVal := aladino.BuildBoolValue(true)
+	wantVal := lang.BuildBoolValue(true)
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantVal, gotVal)
@@ -35,16 +36,16 @@ func TestIsElementOf_WhenTrue(t *testing.T) {
 func TestIsElementOf_WhenFalse(t *testing.T) {
 	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
 
-	args := []aladino.Value{
-		aladino.BuildStringValue("elemA"),
-		aladino.BuildArrayValue([]aladino.Value{
-			aladino.BuildStringValue("elemB"),
-			aladino.BuildStringValue("elemC"),
+	args := []lang.Value{
+		lang.BuildStringValue("elemA"),
+		lang.BuildArrayValue([]lang.Value{
+			lang.BuildStringValue("elemB"),
+			lang.BuildStringValue("elemC"),
 		}),
 	}
 	gotVal, err := isElementOf(mockedEnv, args)
 
-	wantVal := aladino.BuildBoolValue(false)
+	wantVal := lang.BuildBoolValue(false)
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantVal, gotVal)

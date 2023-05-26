@@ -6,27 +6,28 @@ package plugins_aladino_actions
 
 import (
 	"github.com/reviewpad/go-lib/entities"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
 func RemoveLabel() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, nil),
+		Type:           lang.BuildFunctionType([]lang.Type{lang.BuildStringType()}, nil),
 		Code:           removeLabelCode,
 		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest, entities.Issue},
 	}
 }
 
-func removeLabelCode(e aladino.Env, args []aladino.Value) error {
+func removeLabelCode(e aladino.Env, args []lang.Value) error {
 	t := e.GetTarget()
-	labelID := args[0].(*aladino.StringValue).Val
+	labelID := args[0].(*lang.StringValue).Val
 	internalLabelID := aladino.BuildInternalLabelID(labelID)
 	log := e.GetLogger().WithField("builtin", "removeLabel")
 
 	var labelName string
 
 	if val, ok := e.GetRegisterMap()[internalLabelID]; ok {
-		labelName = val.(*aladino.StringValue).Val
+		labelName = val.(*lang.StringValue).Val
 	} else {
 		labelName = labelID
 		log.Warnf("the %v label was not found in the environment", labelID)

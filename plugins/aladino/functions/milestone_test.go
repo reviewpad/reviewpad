@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	pbc "github.com/reviewpad/api/go/codehost"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -32,10 +33,10 @@ func TestMilestone(t *testing.T) {
 		nil,
 	)
 
-	args := []aladino.Value{}
+	args := []lang.Value{}
 	gotMilestoneTitle, err := milestone(mockedEnv, args)
 
-	wantMilestoneTitle := aladino.BuildStringValue(milestoneTitle)
+	wantMilestoneTitle := lang.BuildStringValue(milestoneTitle)
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantMilestoneTitle, gotMilestoneTitle)

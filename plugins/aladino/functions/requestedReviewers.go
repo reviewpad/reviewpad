@@ -7,31 +7,32 @@ package plugins_aladino_functions
 import (
 	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
 func RequestedReviewers() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildArrayOfType(aladino.BuildStringType())),
+		Type:           lang.BuildFunctionType([]lang.Type{}, lang.BuildArrayOfType(lang.BuildStringType())),
 		Code:           requestedReviewersCode,
 		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 	}
 }
 
-func requestedReviewersCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
+func requestedReviewersCode(e aladino.Env, _ []lang.Value) (lang.Value, error) {
 	pullRequest := e.GetTarget().(*target.PullRequestTarget).PullRequest
 	usersReviewers := pullRequest.RequestedReviewers.Users
 	teamReviewers := pullRequest.RequestedReviewers.Teams
 	totalReviewers := len(usersReviewers) + len(teamReviewers)
-	reviewersLogin := make([]aladino.Value, totalReviewers)
+	reviewersLogin := make([]lang.Value, totalReviewers)
 
 	for i, userReviewer := range usersReviewers {
-		reviewersLogin[i] = aladino.BuildStringValue(userReviewer.GetLogin())
+		reviewersLogin[i] = lang.BuildStringValue(userReviewer.GetLogin())
 	}
 
 	for i, teamReviewer := range teamReviewers {
-		reviewersLogin[i+len(usersReviewers)] = aladino.BuildStringValue(teamReviewer.Slug)
+		reviewersLogin[i+len(usersReviewers)] = lang.BuildStringValue(teamReviewer.Slug)
 	}
 
-	return aladino.BuildArrayValue(reviewersLogin), nil
+	return lang.BuildArrayValue(reviewersLogin), nil
 }

@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/migueleliasweb/go-github-mock/src/mock"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/reviewpad/reviewpad/v4/utils"
@@ -20,19 +21,19 @@ var hasBinaryFile = plugins_aladino.PluginBuiltIns().Functions["hasBinaryFile"].
 
 func TestHasBinaryFile(t *testing.T) {
 	tests := map[string]struct {
-		wantResult     aladino.Value
+		wantResult     lang.Value
 		wantErr        error
 		graphqlHandler func(http.ResponseWriter, *http.Request)
 	}{
 		"when graphql query errors": {
-			wantResult: (aladino.Value)(nil),
+			wantResult: (lang.Value)(nil),
 			graphqlHandler: func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(http.StatusInternalServerError)
 			},
 			wantErr: errors.New(`non-200 OK status code: 500 Internal Server Error body: ""`),
 		},
 		"when object is not binary file": {
-			wantResult: aladino.BuildBoolValue(false),
+			wantResult: lang.BuildBoolValue(false),
 			graphqlHandler: func(w http.ResponseWriter, r *http.Request) {
 				utils.MustWrite(w, `{
 					"data": {
@@ -46,7 +47,7 @@ func TestHasBinaryFile(t *testing.T) {
 			},
 		},
 		"when object is binary file": {
-			wantResult: aladino.BuildBoolValue(true),
+			wantResult: lang.BuildBoolValue(true),
 			graphqlHandler: func(w http.ResponseWriter, r *http.Request) {
 				utils.MustWrite(w, `{
 					"data": {
@@ -65,7 +66,7 @@ func TestHasBinaryFile(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			env := aladino.MockDefaultEnv(t, []mock.MockBackendOption{}, test.graphqlHandler, aladino.MockBuiltIns(), nil)
 
-			res, err := hasBinaryFile(env, []aladino.Value{})
+			res, err := hasBinaryFile(env, []lang.Value{})
 
 			assert.Equal(t, test.wantResult, res)
 			assert.Equal(t, test.wantErr, err)

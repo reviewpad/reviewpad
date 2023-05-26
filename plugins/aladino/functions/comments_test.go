@@ -10,6 +10,7 @@ import (
 
 	"github.com/google/go-github/v52/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -18,9 +19,9 @@ import (
 var comments = plugins_aladino.PluginBuiltIns().Functions["comments"].Code
 
 func TestComments(t *testing.T) {
-	wantedComments := aladino.BuildArrayValue(
-		[]aladino.Value{
-			aladino.BuildStringValue("hello world"),
+	wantedComments := lang.BuildArrayValue(
+		[]lang.Value{
+			lang.BuildStringValue("hello world"),
 		},
 	)
 
@@ -41,7 +42,7 @@ func TestComments(t *testing.T) {
 		nil,
 	)
 
-	args := []aladino.Value{}
+	args := []lang.Value{}
 	gotComments, err := comments(mockedEnv, args)
 
 	assert.Nil(t, err)
@@ -69,7 +70,7 @@ func TestComments_WhenGetCommentsRequestFailed(t *testing.T) {
 		nil,
 	)
 
-	args := []aladino.Value{}
+	args := []lang.Value{}
 	gotComments, err := comments(mockedEnv, args)
 
 	assert.Nil(t, gotComments)

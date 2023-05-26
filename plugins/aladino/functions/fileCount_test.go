@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	pbc "github.com/reviewpad/api/go/codehost"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -33,9 +34,9 @@ func TestFileCount(t *testing.T) {
 		nil,
 	)
 
-	wantFileCount := aladino.BuildIntValue(len(mockedFiles))
+	wantFileCount := lang.BuildIntValue(len(mockedFiles))
 
-	args := []aladino.Value{}
+	args := []lang.Value{}
 	gotFileCount, err := fileCount(mockedEnv, args)
 
 	assert.Nil(t, err)

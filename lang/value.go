@@ -2,9 +2,11 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-package aladino
+package lang
 
-import "reflect"
+import (
+	"reflect"
+)
 
 type Value interface {
 	HasKindOf(string) bool

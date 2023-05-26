@@ -7,28 +7,29 @@ package plugins_aladino_functions
 import (
 	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
 func Commits() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildArrayOfType(aladino.BuildStringType())),
+		Type:           lang.BuildFunctionType([]lang.Type{}, lang.BuildArrayOfType(lang.BuildStringType())),
 		Code:           commitsCode,
 		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 	}
 }
 
-func commitsCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
+func commitsCode(e aladino.Env, _ []lang.Value) (lang.Value, error) {
 	t := e.GetTarget().(*target.PullRequestTarget)
 	ghCommits, err := t.GetCommits()
 	if err != nil {
 		return nil, err
 	}
 
-	commitMessages := make([]aladino.Value, len(ghCommits))
+	commitMessages := make([]lang.Value, len(ghCommits))
 	for i, ghCommit := range ghCommits {
-		commitMessages[i] = aladino.BuildStringValue(ghCommit.Message)
+		commitMessages[i] = lang.BuildStringValue(ghCommit.Message)
 	}
 
-	return aladino.BuildArrayValue(commitMessages), nil
+	return lang.BuildArrayValue(commitMessages), nil
 }

@@ -6,37 +6,38 @@ package plugins_aladino_functions
 
 import (
 	"github.com/reviewpad/go-lib/entities"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
 func Any() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type: aladino.BuildFunctionType(
-			[]aladino.Type{
-				aladino.BuildArrayOfType(aladino.BuildStringType()),
-				aladino.BuildFunctionType(
-					[]aladino.Type{aladino.BuildStringType()},
-					aladino.BuildBoolType(),
+		Type: lang.BuildFunctionType(
+			[]lang.Type{
+				lang.BuildArrayOfType(lang.BuildStringType()),
+				lang.BuildFunctionType(
+					[]lang.Type{lang.BuildStringType()},
+					lang.BuildBoolType(),
 				),
 			},
-			aladino.BuildBoolType(),
+			lang.BuildBoolType(),
 		),
 		Code:           anyCode,
 		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest, entities.Issue},
 	}
 }
 
-func anyCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
-	elems := args[0].(*aladino.ArrayValue).Vals
-	fn := args[1].(*aladino.FunctionValue).Fn
+func anyCode(e aladino.Env, args []lang.Value) (lang.Value, error) {
+	elems := args[0].(*lang.ArrayValue).Vals
+	fn := args[1].(*lang.FunctionValue).Fn
 	match := false
 
 	for _, elem := range elems {
-		match = fn([]aladino.Value{elem}).(*aladino.BoolValue).Val
+		match = fn([]lang.Value{elem}).(*lang.BoolValue).Val
 		if match {
 			break
 		}
 	}
 
-	return aladino.BuildBoolValue(match), nil
+	return lang.BuildBoolValue(match), nil
 }

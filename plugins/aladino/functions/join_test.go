@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -16,34 +17,34 @@ var join = plugins_aladino.PluginBuiltIns().Functions["join"].Code
 
 func TestJoin(t *testing.T) {
 	tests := map[string]struct {
-		args       []aladino.Value
-		wantString *aladino.StringValue
+		args       []lang.Value
+		wantString *lang.StringValue
 	}{
 		"join empty array": {
-			args: []aladino.Value{
-				aladino.BuildArrayValue([]aladino.Value{}),
-				aladino.BuildStringValue(" "),
+			args: []lang.Value{
+				lang.BuildArrayValue([]lang.Value{}),
+				lang.BuildStringValue(" "),
 			},
-			wantString: aladino.BuildStringValue(""),
+			wantString: lang.BuildStringValue(""),
 		},
 		"join single element array": {
-			args: []aladino.Value{
-				aladino.BuildArrayValue([]aladino.Value{
-					aladino.BuildStringValue("a"),
+			args: []lang.Value{
+				lang.BuildArrayValue([]lang.Value{
+					lang.BuildStringValue("a"),
 				}),
-				aladino.BuildStringValue(" "),
+				lang.BuildStringValue(" "),
 			},
-			wantString: aladino.BuildStringValue("a"),
+			wantString: lang.BuildStringValue("a"),
 		},
 		"join multiple elements array": {
-			args: []aladino.Value{
-				aladino.BuildArrayValue([]aladino.Value{
-					aladino.BuildStringValue("a"),
-					aladino.BuildStringValue("b"),
+			args: []lang.Value{
+				lang.BuildArrayValue([]lang.Value{
+					lang.BuildStringValue("a"),
+					lang.BuildStringValue("b"),
 				}),
-				aladino.BuildStringValue(" "),
+				lang.BuildStringValue(" "),
 			},
-			wantString: aladino.BuildStringValue("a b"),
+			wantString: lang.BuildStringValue("a b"),
 		},
 	}
 
@@ -60,15 +61,15 @@ func TestJoin(t *testing.T) {
 
 func TestJoin_BadType(t *testing.T) {
 	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
-	args := []aladino.Value{
-		aladino.BuildArrayValue([]aladino.Value{
-			aladino.BuildIntValue(4),
-			aladino.BuildIntValue(2),
+	args := []lang.Value{
+		lang.BuildArrayValue([]lang.Value{
+			lang.BuildIntValue(4),
+			lang.BuildIntValue(2),
 		}),
-		aladino.BuildStringValue(" "),
+		lang.BuildStringValue(" "),
 	}
 	got, err := join(mockedEnv, args)
 	assert.Nil(t, got)
 	assert.NotNil(t, err)
-	assert.ErrorContains(t, err, fmt.Sprintf("join: invalid element of kind %v", aladino.INT_VALUE))
+	assert.ErrorContains(t, err, fmt.Sprintf("join: invalid element of kind %v", lang.INT_VALUE))
 }

@@ -10,28 +10,29 @@ import (
 
 	"github.com/google/go-github/v52/github"
 	"github.com/reviewpad/go-lib/entities"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
 func WorkflowStatus() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, aladino.BuildStringType()),
+		Type:           lang.BuildFunctionType([]lang.Type{lang.BuildStringType()}, lang.BuildStringType()),
 		Code:           workflowStatusCode,
 		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest, entities.Issue},
 	}
 }
 
-func workflowStatusCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
-	workflowName := strings.ToLower(args[0].(*aladino.StringValue).Val)
+func workflowStatusCode(e aladino.Env, args []lang.Value) (lang.Value, error) {
+	workflowName := strings.ToLower(args[0].(*lang.StringValue).Val)
 
 	workflowPayload := e.GetEventPayload()
 	if reflect.TypeOf(workflowPayload).String() != "*github.WorkflowRunEvent" {
-		return aladino.BuildStringValue(""), nil
+		return lang.BuildStringValue(""), nil
 	}
 
 	workflowRunPayload := workflowPayload.(*github.WorkflowRunEvent).WorkflowRun
 	if workflowRunPayload == nil {
-		return aladino.BuildStringValue(""), nil
+		return lang.BuildStringValue(""), nil
 	}
 
 	headSHA := workflowRunPayload.GetHeadSHA()
@@ -47,12 +48,12 @@ func workflowStatusCode(e aladino.Env, args []aladino.Value) (aladino.Value, err
 	for _, check := range checkRuns.CheckRuns {
 		if *check.Name == workflowName {
 			if *check.Status == "completed" {
-				return aladino.BuildStringValue(*check.Conclusion), nil
+				return lang.BuildStringValue(*check.Conclusion), nil
 			} else {
-				return aladino.BuildStringValue(*check.Status), nil
+				return lang.BuildStringValue(*check.Status), nil
 			}
 		}
 	}
 
-	return aladino.BuildStringValue(""), nil
+	return lang.BuildStringValue(""), nil
 }

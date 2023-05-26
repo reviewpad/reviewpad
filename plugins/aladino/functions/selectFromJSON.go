@@ -9,20 +9,21 @@ import (
 
 	"github.com/ohler55/ojg/jp"
 	"github.com/reviewpad/go-lib/entities"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
 func SelectFromJSON() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildJSONType(), aladino.BuildStringType()}, aladino.BuildStringType()),
+		Type:           lang.BuildFunctionType([]lang.Type{lang.BuildJSONType(), lang.BuildStringType()}, lang.BuildStringType()),
 		Code:           selectFromJSONCode,
 		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest, entities.Issue},
 	}
 }
 
-func selectFromJSONCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
-	jsonValue := args[0].(*aladino.JSONValue).Val
-	expr := args[1].(*aladino.StringValue).Val
+func selectFromJSONCode(e aladino.Env, args []lang.Value) (lang.Value, error) {
+	jsonValue := args[0].(*lang.JSONValue).Val
+	expr := args[1].(*lang.StringValue).Val
 	log := e.GetLogger().WithField("builtin", "selectFromJSON")
 
 	parsedExpression, err := jp.ParseString(expr)
@@ -34,7 +35,7 @@ func selectFromJSONCode(e aladino.Env, args []aladino.Value) (aladino.Value, err
 
 	if len(results) == 0 {
 		log.Infof(`nothing found at path "%s"\n`, expr)
-		return aladino.BuildStringValue(""), nil
+		return lang.BuildStringValue(""), nil
 	}
 
 	var result interface{} = results
@@ -45,7 +46,7 @@ func selectFromJSONCode(e aladino.Env, args []aladino.Value) (aladino.Value, err
 
 	// marshaling a string into json will cause it to have quotation around it
 	if res, ok := result.(string); ok {
-		return aladino.BuildStringValue(res), nil
+		return lang.BuildStringValue(res), nil
 	}
 
 	res, err := json.Marshal(result)
@@ -53,5 +54,5 @@ func selectFromJSONCode(e aladino.Env, args []aladino.Value) (aladino.Value, err
 		return nil, err
 	}
 
-	return aladino.BuildStringValue(string(res)), nil
+	return lang.BuildStringValue(string(res)), nil
 }

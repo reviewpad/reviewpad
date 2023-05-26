@@ -8,19 +8,20 @@ import (
 	"github.com/reviewpad/go-lib/entities"
 	host "github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	"github.com/shurcooL/githubv4"
 )
 
 func HasGitConflicts() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildBoolType()),
+		Type:           lang.BuildFunctionType([]lang.Type{}, lang.BuildBoolType()),
 		Code:           hasGitConflictsCode,
 		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 	}
 }
 
-func hasGitConflictsCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
+func hasGitConflictsCode(e aladino.Env, _ []lang.Value) (lang.Value, error) {
 	pullRequest := e.GetTarget().(*target.PullRequestTarget).PullRequest
 
 	prNum := host.GetPullRequestNumber(pullRequest)
@@ -46,8 +47,8 @@ func hasGitConflictsCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error
 	}
 
 	if string(pullRequestQuery.Repository.PullRequest.Mergeable) == "CONFLICTING" {
-		return aladino.BuildBoolValue(true), nil
+		return lang.BuildBoolValue(true), nil
 	}
 
-	return aladino.BuildBoolValue(false), nil
+	return lang.BuildBoolValue(false), nil
 }

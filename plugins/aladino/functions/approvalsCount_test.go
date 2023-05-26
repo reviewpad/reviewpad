@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/reviewpad/reviewpad/v4/utils"
@@ -20,7 +21,7 @@ var approvalsCount = plugins_aladino.PluginBuiltIns().Functions["approvalsCount"
 func TestApprovalsCount(t *testing.T) {
 	tests := map[string]struct {
 		graphQLHandler http.HandlerFunc
-		wantRes        aladino.Value
+		wantRes        lang.Value
 		wantErr        error
 	}{
 		"when graphql query errors": {
@@ -46,7 +47,7 @@ func TestApprovalsCount(t *testing.T) {
 				}
 				`)
 			},
-			wantRes: aladino.BuildIntValue(0),
+			wantRes: lang.BuildIntValue(0),
 		},
 		"when successful": {
 			graphQLHandler: func(w http.ResponseWriter, r *http.Request) {
@@ -64,7 +65,7 @@ func TestApprovalsCount(t *testing.T) {
 				}
 				`)
 			},
-			wantRes: aladino.BuildIntValue(3),
+			wantRes: lang.BuildIntValue(3),
 		},
 	}
 
@@ -72,7 +73,7 @@ func TestApprovalsCount(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			env := aladino.MockDefaultEnv(t, nil, test.graphQLHandler, nil, nil)
 
-			res, err := approvalsCount(env, []aladino.Value{})
+			res, err := approvalsCount(env, []lang.Value{})
 
 			assert.Equal(t, test.wantRes, res)
 			assert.Equal(t, test.wantErr, err)

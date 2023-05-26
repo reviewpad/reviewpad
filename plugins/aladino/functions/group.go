@@ -8,19 +8,20 @@ import (
 	"fmt"
 
 	"github.com/reviewpad/go-lib/entities"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
 func Group() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, aladino.BuildArrayOfType(aladino.BuildStringType())),
+		Type:           lang.BuildFunctionType([]lang.Type{lang.BuildStringType()}, lang.BuildArrayOfType(lang.BuildStringType())),
 		Code:           groupCode,
 		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest, entities.Issue},
 	}
 }
 
-func groupCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
-	groupName := args[0].(*aladino.StringValue).Val
+func groupCode(e aladino.Env, args []lang.Value) (lang.Value, error) {
+	groupName := args[0].(*lang.StringValue).Val
 
 	if val, ok := e.GetRegisterMap()[groupName]; ok {
 		return val, nil

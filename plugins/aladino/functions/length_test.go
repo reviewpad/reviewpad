@@ -7,6 +7,7 @@ package plugins_aladino_functions_test
 import (
 	"testing"
 
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -17,15 +18,15 @@ var length = plugins_aladino.PluginBuiltIns().Functions["length"].Code
 func TestLength(t *testing.T) {
 	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
 
-	slice := aladino.BuildArrayValue(
-		[]aladino.Value{
-			aladino.BuildStringValue("a"),
-			aladino.BuildStringValue("b"),
+	slice := lang.BuildArrayValue(
+		[]lang.Value{
+			lang.BuildStringValue("a"),
+			lang.BuildStringValue("b"),
 		},
 	)
-	args := []aladino.Value{slice}
+	args := []lang.Value{slice}
 
-	wantLength := &aladino.IntValue{Val: 2}
+	wantLength := &lang.IntValue{Val: 2}
 
 	gotLength, err := length(mockedEnv, args)
 

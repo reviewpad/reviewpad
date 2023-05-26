@@ -7,26 +7,27 @@ package plugins_aladino_functions
 import (
 	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
 func IsBinary() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, aladino.BuildBoolType()),
+		Type:           lang.BuildFunctionType([]lang.Type{lang.BuildStringType()}, lang.BuildBoolType()),
 		Code:           isBinaryCode,
 		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 	}
 }
 
-func isBinaryCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
+func isBinaryCode(e aladino.Env, args []lang.Value) (lang.Value, error) {
 	target := e.GetTarget().(*target.PullRequestTarget)
 	headBranch := target.PullRequest.Head.Name
-	fileName := args[0].(*aladino.StringValue).Val
+	fileName := args[0].(*lang.StringValue).Val
 
 	isBinary, err := target.IsFileBinary(headBranch, fileName)
 	if err != nil {
 		return nil, err
 	}
 
-	return aladino.BuildBoolValue(isBinary), nil
+	return lang.BuildBoolValue(isBinary), nil
 }

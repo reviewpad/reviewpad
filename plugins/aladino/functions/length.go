@@ -6,19 +6,20 @@ package plugins_aladino_functions
 
 import (
 	"github.com/reviewpad/go-lib/entities"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
 func Length() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildArrayOfType(aladino.BuildStringType())}, aladino.BuildIntType()),
+		Type:           lang.BuildFunctionType([]lang.Type{lang.BuildArrayOfType(lang.BuildStringType())}, lang.BuildIntType()),
 		Code:           lengthCode,
 		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest, entities.Issue},
 	}
 }
 
-func lengthCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
-	slice := args[0].(*aladino.ArrayValue).Vals
+func lengthCode(e aladino.Env, args []lang.Value) (lang.Value, error) {
+	slice := args[0].(*lang.ArrayValue).Vals
 
-	return aladino.BuildIntValue(len(slice)), nil
+	return lang.BuildIntValue(len(slice)), nil
 }

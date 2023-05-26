@@ -10,18 +10,19 @@ import (
 	"github.com/reviewpad/go-conventionalcommits"
 	"github.com/reviewpad/go-conventionalcommits/parser"
 	"github.com/reviewpad/go-lib/entities"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
 func CommitLint() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{}, nil),
+		Type:           lang.BuildFunctionType([]lang.Type{}, nil),
 		Code:           commitLintCode,
 		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 	}
 }
 
-func commitLintCode(e aladino.Env, _ []aladino.Value) error {
+func commitLintCode(e aladino.Env, _ []lang.Value) error {
 	entity := e.GetTarget().GetTargetEntity()
 
 	prNum := entity.Number

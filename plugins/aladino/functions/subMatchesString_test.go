@@ -9,6 +9,7 @@ import (
 	"regexp/syntax"
 	"testing"
 
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -20,7 +21,7 @@ func TestSubMatchesString(t *testing.T) {
 	tests := map[string]struct {
 		pattern    string
 		str        string
-		wantResult aladino.Value
+		wantResult lang.Value
 		wantErr    error
 	}{
 		"when pattern is invalid": {
@@ -34,28 +35,28 @@ func TestSubMatchesString(t *testing.T) {
 		"when pattern is empty and string is empty": {
 			pattern:    "",
 			str:        "",
-			wantResult: aladino.BuildArrayValue([]aladino.Value{}),
+			wantResult: lang.BuildArrayValue([]lang.Value{}),
 		},
 		// empty regular expression matches everything
 		"when pattern is empty but string has value": {
 			pattern:    "",
 			str:        "abc",
-			wantResult: aladino.BuildArrayValue([]aladino.Value{}),
+			wantResult: lang.BuildArrayValue([]lang.Value{}),
 		},
 		"when string is empty": {
 			pattern:    "abc",
 			str:        "",
-			wantResult: aladino.BuildArrayValue([]aladino.Value{}),
+			wantResult: lang.BuildArrayValue([]lang.Value{}),
 		},
 		"when pattern matches": {
 			pattern:    "a(\\w+)bc(\\w+)",
 			str:        "abcbcbc",
-			wantResult: aladino.BuildArrayValue([]aladino.Value{aladino.BuildStringValue("bc"), aladino.BuildStringValue("bc")}),
+			wantResult: lang.BuildArrayValue([]lang.Value{lang.BuildStringValue("bc"), lang.BuildStringValue("bc")}),
 		},
 		"when pattern doesn't match": {
 			pattern:    "test123",
 			str:        "[a-bA-Z]*",
-			wantResult: aladino.BuildArrayValue([]aladino.Value{}),
+			wantResult: lang.BuildArrayValue([]lang.Value{}),
 		},
 	}
 
@@ -63,7 +64,7 @@ func TestSubMatchesString(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			env := aladino.MockDefaultEnv(t, nil, nil, nil, nil)
 
-			res, err := subMatchesString(env, []aladino.Value{aladino.BuildStringValue(test.pattern), aladino.BuildStringValue(test.str)})
+			res, err := subMatchesString(env, []lang.Value{lang.BuildStringValue(test.pattern), lang.BuildStringValue(test.str)})
 
 			assert.Equal(t, test.wantErr, err)
 			assert.Equal(t, test.wantResult, res)

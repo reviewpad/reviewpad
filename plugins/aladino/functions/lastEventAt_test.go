@@ -9,6 +9,7 @@ import (
 	"time"
 
 	pbc "github.com/reviewpad/api/go/codehost"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -32,9 +33,9 @@ func TestLastEventAt(t *testing.T) {
 		nil,
 	)
 
-	wantUpdatedAt := aladino.BuildIntValue(int(date.Unix()))
+	wantUpdatedAt := lang.BuildIntValue(int(date.Unix()))
 
-	args := []aladino.Value{}
+	args := []lang.Value{}
 	gotUpdatedAt, gotErr := lastEventAt(mockedEnv, args)
 
 	assert.Nil(t, gotErr)

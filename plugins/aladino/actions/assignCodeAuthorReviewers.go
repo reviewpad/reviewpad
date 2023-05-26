@@ -15,26 +15,27 @@ import (
 	"github.com/reviewpad/reviewpad/v4/codehost"
 	"github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	"golang.org/x/exp/slices"
 )
 
 func AssignCodeAuthorReviewers() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
-		Type: aladino.BuildFunctionType([]aladino.Type{
-			aladino.BuildIntType(),
-			aladino.BuildArrayOfType(aladino.BuildStringType()),
-			aladino.BuildIntType(),
+		Type: lang.BuildFunctionType([]lang.Type{
+			lang.BuildIntType(),
+			lang.BuildArrayOfType(lang.BuildStringType()),
+			lang.BuildIntType(),
 		}, nil),
 		Code:           assignCodeAuthorReviewersCode,
 		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 	}
 }
 
-func assignCodeAuthorReviewersCode(env aladino.Env, args []aladino.Value) error {
-	totalRequiredReviewers := args[0].(*aladino.IntValue).Val
-	reviewersToExclude := args[1].(*aladino.ArrayValue).Vals
-	maxAllowedAssignedReviews := args[2].(*aladino.IntValue).Val
+func assignCodeAuthorReviewersCode(env aladino.Env, args []lang.Value) error {
+	totalRequiredReviewers := args[0].(*lang.IntValue).Val
+	reviewersToExclude := args[1].(*lang.ArrayValue).Vals
+	maxAllowedAssignedReviews := args[2].(*lang.IntValue).Val
 
 	gitHubClient := env.GetGithubClient()
 	pr := env.GetTarget().(*target.PullRequestTarget)
@@ -156,7 +157,7 @@ func getAuthorsFromGitBlame(ctx context.Context, gitHubClient *github.GithubClie
 func isUserEligibleToReview(
 	username string,
 	codeReview *pbc.PullRequest,
-	reviewersToExclude []aladino.Value,
+	reviewersToExclude []lang.Value,
 	availableAssignees []*codehost.User,
 	totalOpenPRsAsReviewer int,
 	maxAllowedAssignedReviews int,
@@ -184,9 +185,9 @@ func isUserEligibleToReview(
 	return true
 }
 
-func isUserExcluded(users []aladino.Value, username string) bool {
+func isUserExcluded(users []lang.Value, username string) bool {
 	for _, excludedReviewer := range users {
-		if excludedReviewer.(*aladino.StringValue).Val == username {
+		if excludedReviewer.(*lang.StringValue).Val == username {
 			return true
 		}
 	}

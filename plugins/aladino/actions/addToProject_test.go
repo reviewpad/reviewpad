@@ -10,6 +10,7 @@ import (
 
 	pbc "github.com/reviewpad/api/go/codehost"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/reviewpad/reviewpad/v4/utils"
@@ -29,7 +30,7 @@ func TestAddToProject_WhenRequestFails(t *testing.T) {
 		nil,
 	)
 
-	err := addToProject(mockedEnv, []aladino.Value{aladino.BuildStringValue("reviewpad"), aladino.BuildStringValue("to do")})
+	err := addToProject(mockedEnv, []lang.Value{lang.BuildStringValue("reviewpad"), lang.BuildStringValue("to do")})
 
 	assert.NotNil(t, err)
 }
@@ -216,7 +217,7 @@ func TestAddToProject(t *testing.T) {
 				nil,
 			)
 
-			err := addToProject(mockedEnv, []aladino.Value{aladino.BuildStringValue("reviewpad"), aladino.BuildStringValue("to do")})
+			err := addToProject(mockedEnv, []lang.Value{lang.BuildStringValue("reviewpad"), lang.BuildStringValue("to do")})
 
 			assert.Equal(t, testCase.expectedError, err)
 		})

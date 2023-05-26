@@ -9,25 +9,26 @@ import (
 	"regexp"
 
 	"github.com/reviewpad/go-lib/entities"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
 func MatchString() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType(), aladino.BuildStringType()}, aladino.BuildBoolType()),
+		Type:           lang.BuildFunctionType([]lang.Type{lang.BuildStringType(), lang.BuildStringType()}, lang.BuildBoolType()),
 		Code:           matchStringCode,
 		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest, entities.Issue},
 	}
 }
 
-func matchStringCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
-	pattern := args[0].(*aladino.StringValue).Val
-	str := args[1].(*aladino.StringValue).Val
+func matchStringCode(e aladino.Env, args []lang.Value) (lang.Value, error) {
+	pattern := args[0].(*lang.StringValue).Val
+	str := args[1].(*lang.StringValue).Val
 
 	reg, err := regexp.Compile(pattern)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse regex %s %w", pattern, err)
 	}
 
-	return aladino.BuildBoolValue(reg.MatchString(str)), nil
+	return lang.BuildBoolValue(reg.MatchString(str)), nil
 }

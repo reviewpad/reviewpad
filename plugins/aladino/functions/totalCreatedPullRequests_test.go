@@ -10,6 +10,7 @@ import (
 
 	"github.com/google/go-github/v52/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -39,7 +40,7 @@ func TestTotalCreatedPullRequests_WhenListIssuesByRepoRequestFails(t *testing.T)
 		nil,
 	)
 
-	args := []aladino.Value{aladino.BuildStringValue(devName)}
+	args := []lang.Value{lang.BuildStringValue(devName)}
 	gotTotal, err := totalCreatedPullRequests(mockedEnv, args)
 
 	assert.Nil(t, gotTotal)
@@ -73,9 +74,9 @@ func TestTotalCreatedPullRequests_WhenThereIsPullRequestIssues(t *testing.T) {
 		nil,
 	)
 
-	wantTotal := aladino.BuildIntValue(1)
+	wantTotal := lang.BuildIntValue(1)
 
-	args := []aladino.Value{aladino.BuildStringValue(devName)}
+	args := []lang.Value{lang.BuildStringValue(devName)}
 	gotTotal, err := totalCreatedPullRequests(mockedEnv, args)
 
 	assert.Nil(t, err)

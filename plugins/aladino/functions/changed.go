@@ -10,32 +10,33 @@ import (
 
 	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
 func Changed() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType(), aladino.BuildStringType()}, aladino.BuildBoolType()),
+		Type:           lang.BuildFunctionType([]lang.Type{lang.BuildStringType(), lang.BuildStringType()}, lang.BuildBoolType()),
 		Code:           changedCode,
 		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 	}
 }
 
-func changedCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
+func changedCode(e aladino.Env, args []lang.Value) (lang.Value, error) {
 	pullRequest := e.GetTarget().(*target.PullRequestTarget)
 
-	antecedentRegex := args[0].(*aladino.StringValue).Val
-	consequentRegex := args[1].(*aladino.StringValue).Val
+	antecedentRegex := args[0].(*lang.StringValue).Val
+	consequentRegex := args[1].(*lang.StringValue).Val
 
 	antecedentMatches := getMatches(pullRequest, antecedentRegex)
 	consequentMatches := getMatches(pullRequest, consequentRegex)
 
-	retValue := aladino.BuildTrueValue()
+	retValue := lang.BuildTrueValue()
 
 	for varName, antecedentVals := range antecedentMatches {
 		consequentVals, ok := consequentMatches[varName]
 		if !ok {
-			return aladino.BuildFalseValue(), nil
+			return lang.BuildFalseValue(), nil
 		}
 
 		for _, leftVal := range antecedentVals {
@@ -47,7 +48,7 @@ func changedCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
 				}
 			}
 			if !leftValExists {
-				return aladino.BuildFalseValue(), nil
+				return lang.BuildFalseValue(), nil
 			}
 		}
 	}

@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	pbc "github.com/reviewpad/api/go/codehost"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -30,9 +31,9 @@ func TestTitle(t *testing.T) {
 		nil,
 	)
 
-	wantTitle := aladino.BuildStringValue(prTitle)
+	wantTitle := lang.BuildStringValue(prTitle)
 
-	args := []aladino.Value{}
+	args := []lang.Value{}
 	gotTitle, err := title(mockedEnv, args)
 
 	assert.Nil(t, err)

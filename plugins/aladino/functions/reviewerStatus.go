@@ -7,19 +7,20 @@ package plugins_aladino_functions
 import (
 	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
 func ReviewerStatus() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, aladino.BuildStringType()),
+		Type:           lang.BuildFunctionType([]lang.Type{lang.BuildStringType()}, lang.BuildStringType()),
 		Code:           reviewerStatusCode,
 		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 	}
 }
 
-func reviewerStatusCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
-	reviewerLogin := args[0].(*aladino.StringValue)
+func reviewerStatusCode(e aladino.Env, args []lang.Value) (lang.Value, error) {
+	reviewerLogin := args[0].(*lang.StringValue)
 
 	pullRequest := e.GetTarget().(*target.PullRequestTarget).PullRequest
 	prNum := pullRequest.Number
@@ -56,5 +57,5 @@ func reviewerStatusCode(e aladino.Env, args []aladino.Value) (aladino.Value, err
 		}
 	}
 
-	return aladino.BuildStringValue(status), nil
+	return lang.BuildStringValue(status), nil
 }

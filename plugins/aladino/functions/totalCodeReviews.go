@@ -6,20 +6,21 @@ package plugins_aladino_functions
 
 import (
 	"github.com/reviewpad/go-lib/entities"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	"github.com/shurcooL/githubv4"
 )
 
 func TotalCodeReviews() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, aladino.BuildIntType()),
+		Type:           lang.BuildFunctionType([]lang.Type{lang.BuildStringType()}, lang.BuildIntType()),
 		Code:           totalCodeReviewsCode,
 		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest, entities.Issue},
 	}
 }
 
-func totalCodeReviewsCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
-	username := args[0].(*aladino.StringValue).Val
+func totalCodeReviewsCode(e aladino.Env, args []lang.Value) (lang.Value, error) {
+	username := args[0].(*lang.StringValue).Val
 
 	var totalPullRequestReviewContributionsQuery struct {
 		User struct {
@@ -38,5 +39,5 @@ func totalCodeReviewsCode(e aladino.Env, args []aladino.Value) (aladino.Value, e
 		return nil, err
 	}
 
-	return aladino.BuildIntValue(int(totalPullRequestReviewContributionsQuery.User.ContributionsCollection.TotalPullRequestReviewContributions)), nil
+	return lang.BuildIntValue(int(totalPullRequestReviewContributionsQuery.User.ContributionsCollection.TotalPullRequestReviewContributions)), nil
 }

@@ -7,23 +7,24 @@ package plugins_aladino_functions
 import (
 	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
 func HasLinkedIssues() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildBoolType()),
+		Type:           lang.BuildFunctionType([]lang.Type{}, lang.BuildBoolType()),
 		Code:           hasLinkedIssuesCode,
 		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 	}
 }
 
-func hasLinkedIssuesCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
+func hasLinkedIssuesCode(e aladino.Env, args []lang.Value) (lang.Value, error) {
 	pullRequest := e.GetTarget().(*target.PullRequestTarget)
 	closingIssuesCount, err := pullRequest.GetLinkedIssuesCount()
 	if err != nil {
 		return nil, err
 	}
 
-	return aladino.BuildBoolValue(closingIssuesCount > 0), nil
+	return lang.BuildBoolValue(closingIssuesCount > 0), nil
 }

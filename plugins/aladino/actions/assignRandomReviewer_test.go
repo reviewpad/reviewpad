@@ -12,6 +12,7 @@ import (
 	"github.com/google/go-github/v52/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	pbc "github.com/reviewpad/api/go/codehost"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/reviewpad/reviewpad/v4/utils"
@@ -45,7 +46,7 @@ func TestAssignRandomReviewer_WhenListReviewersRequestFails(t *testing.T) {
 		nil,
 	)
 
-	args := []aladino.Value{}
+	args := []lang.Value{}
 	err := assignRandomReviewer(mockedEnv, args)
 
 	assert.Equal(t, err.(*github.ErrorResponse).Message, failMessage)
@@ -78,7 +79,7 @@ func TestAssignRandomReviewer_WhenPullRequestAlreadyHasReviewers(t *testing.T) {
 		nil,
 	)
 
-	args := []aladino.Value{}
+	args := []lang.Value{}
 	err := assignRandomReviewer(mockedEnv, args)
 
 	assert.Nil(t, err)
@@ -110,7 +111,7 @@ func TestAssignRandomReviewer_WhenListAssigneesRequestFails(t *testing.T) {
 		nil,
 	)
 
-	args := []aladino.Value{}
+	args := []lang.Value{}
 	err := assignRandomReviewer(mockedEnv, args)
 
 	assert.Equal(t, err.(*github.ErrorResponse).Message, failMessage)
@@ -156,7 +157,7 @@ func TestAssignRandomReviewer_ShouldFilterPullRequestAuthor(t *testing.T) {
 		nil,
 	)
 
-	args := []aladino.Value{}
+	args := []lang.Value{}
 	err := assignRandomReviewer(mockedEnv, args)
 
 	assert.Nil(t, err)
@@ -201,7 +202,7 @@ func TestAssignRandomReviewer_WhenThereIsNoUsers(t *testing.T) {
 		nil,
 	)
 
-	args := []aladino.Value{}
+	args := []lang.Value{}
 	err := assignRandomReviewer(mockedEnv, args)
 
 	assert.Nil(t, err)

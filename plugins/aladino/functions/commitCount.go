@@ -7,19 +7,20 @@ package plugins_aladino_functions
 import (
 	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
 func CommitCount() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildIntType()),
+		Type:           lang.BuildFunctionType([]lang.Type{}, lang.BuildIntType()),
 		Code:           commitCountCode,
 		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 	}
 }
 
-func commitCountCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
+func commitCountCode(e aladino.Env, _ []lang.Value) (lang.Value, error) {
 	t := e.GetTarget().(*target.PullRequestTarget)
 
-	return aladino.BuildIntValue(int(t.GetCommitCount())), nil
+	return lang.BuildIntValue(int(t.GetCommitCount())), nil
 }

@@ -10,6 +10,7 @@ import (
 
 	"github.com/google/go-github/v52/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -38,7 +39,7 @@ func TestCommits_WhenListCommitsRequestFails(t *testing.T) {
 		nil,
 	)
 
-	args := []aladino.Value{}
+	args := []lang.Value{}
 	gotCommits, err := commits(mockedEnv, args)
 
 	assert.Nil(t, gotCommits)
@@ -66,13 +67,13 @@ func TestCommits(t *testing.T) {
 		nil,
 	)
 
-	wantCommitsMessages := make([]aladino.Value, len(repoCommits))
+	wantCommitsMessages := make([]lang.Value, len(repoCommits))
 	for i, repoCommit := range repoCommits {
-		wantCommitsMessages[i] = aladino.BuildStringValue(repoCommit.Commit.GetMessage())
+		wantCommitsMessages[i] = lang.BuildStringValue(repoCommit.Commit.GetMessage())
 	}
-	wantCommits := aladino.BuildArrayValue(wantCommitsMessages)
+	wantCommits := lang.BuildArrayValue(wantCommitsMessages)
 
-	args := []aladino.Value{}
+	args := []lang.Value{}
 	gotCommits, err := commits(mockedEnv, args)
 
 	assert.Nil(t, err)

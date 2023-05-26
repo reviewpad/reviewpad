@@ -9,6 +9,7 @@ import (
 	"time"
 
 	pbc "github.com/reviewpad/api/go/codehost"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -36,9 +37,9 @@ func TestCreatedAt(t *testing.T) {
 	if err != nil {
 		assert.FailNow(t, "time.Parse failed", err)
 	}
-	wantCreatedAt := aladino.BuildIntValue(int(wantCreatedAtTime.Unix()))
+	wantCreatedAt := lang.BuildIntValue(int(wantCreatedAtTime.Unix()))
 
-	args := []aladino.Value{}
+	args := []lang.Value{}
 	gotCreatedAt, err := createdAt(mockedEnv, args)
 
 	assert.Nil(t, err)

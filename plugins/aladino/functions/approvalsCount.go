@@ -7,21 +7,22 @@ package plugins_aladino_functions
 import (
 	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
 func ApprovalsCount() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type: aladino.BuildFunctionType(
-			[]aladino.Type{},
-			aladino.BuildIntType(),
+		Type: lang.BuildFunctionType(
+			[]lang.Type{},
+			lang.BuildIntType(),
 		),
 		Code:           approvalsCountCode,
 		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 	}
 }
 
-func approvalsCountCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
+func approvalsCountCode(e aladino.Env, args []lang.Value) (lang.Value, error) {
 	pullRequest := e.GetTarget().(*target.PullRequestTarget)
 
 	count, err := pullRequest.GetApprovalsCount()
@@ -29,5 +30,5 @@ func approvalsCountCode(e aladino.Env, args []aladino.Value) (aladino.Value, err
 		return nil, err
 	}
 
-	return aladino.BuildIntValue(count), nil
+	return lang.BuildIntValue(count), nil
 }

@@ -12,13 +12,14 @@ import (
 	"strings"
 	"time"
 
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/utils/report"
 )
 
 type Expr interface {
 	Kind() string
-	typeinfer(env TypeEnv) (Type, error)
-	Eval(Env) (Value, error)
+	typeinfer(env TypeEnv) (lang.Type, error)
+	Eval(Env) (lang.Value, error)
 	equals(Expr) bool
 }
 
@@ -47,7 +48,7 @@ const (
 
 type UnaryOperator interface {
 	getOperator() string
-	Eval(exprValue Value) Value
+	Eval(exprValue lang.Value) lang.Value
 }
 
 type NotOp struct{}
@@ -58,7 +59,7 @@ func (op *NotOp) getOperator() string { return NOT_OP }
 
 type BinaryOperator interface {
 	getOperator() string
-	Eval(lhs, rhs Value) Value
+	Eval(lhs, rhs lang.Value) lang.Value
 }
 
 type EqOp struct{}
@@ -414,10 +415,10 @@ func EqualList(left []Expr, right []Expr) bool {
 
 type TypedExpr struct {
 	expr   Expr
-	typeOf Type
+	typeOf lang.Type
 }
 
-func BuildTypedExpr(expr Expr, typeOf Type) *TypedExpr {
+func BuildTypedExpr(expr Expr, typeOf lang.Type) *TypedExpr {
 	return &TypedExpr{expr, typeOf}
 }
 
@@ -433,7 +434,7 @@ func (te *TypedExpr) equals(other Expr) bool {
 	otherTypedExpr := other.(*TypedExpr)
 
 	return te.expr.equals(otherTypedExpr.expr) &&
-		te.typeOf.equals(otherTypedExpr.typeOf)
+		te.typeOf.Equals(otherTypedExpr.typeOf)
 }
 
 type Lambda struct {

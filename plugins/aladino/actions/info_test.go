@@ -7,6 +7,7 @@ package plugins_aladino_actions_test
 import (
 	"testing"
 
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -19,7 +20,7 @@ func TestInfo(t *testing.T) {
 
 	message := "This pull request was considered too large."
 
-	args := []aladino.Value{aladino.BuildStringValue(message)}
+	args := []lang.Value{lang.BuildStringValue(message)}
 	gotError := info(mockedEnv, args)
 
 	wantReportedInfos := []string{message}

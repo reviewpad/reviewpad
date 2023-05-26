@@ -9,18 +9,19 @@ import (
 
 	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
 func DeleteHeadBranch() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{}, nil),
+		Type:           lang.BuildFunctionType([]lang.Type{}, nil),
 		Code:           deleteHeadBranch,
 		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 	}
 }
 
-func deleteHeadBranch(e aladino.Env, args []aladino.Value) error {
+func deleteHeadBranch(e aladino.Env, args []lang.Value) error {
 	target := e.GetTarget().(*target.PullRequestTarget)
 	targetEntity := target.GetTargetEntity()
 	ctx := e.GetCtx()

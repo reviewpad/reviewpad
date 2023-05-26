@@ -7,18 +7,19 @@ package plugins_aladino_functions
 import (
 	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
 func HasLinearHistory() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildBoolType()),
+		Type:           lang.BuildFunctionType([]lang.Type{}, lang.BuildBoolType()),
 		Code:           hasLinearHistoryCode,
 		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 	}
 }
 
-func hasLinearHistoryCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
+func hasLinearHistoryCode(e aladino.Env, _ []lang.Value) (lang.Value, error) {
 	pullRequest := e.GetTarget().(*target.PullRequestTarget)
 
 	ghCommits, err := pullRequest.GetCommits()
@@ -28,9 +29,9 @@ func hasLinearHistoryCode(e aladino.Env, _ []aladino.Value) (aladino.Value, erro
 
 	for _, ghCommit := range ghCommits {
 		if ghCommit.ParentsCount > 1 {
-			return aladino.BuildBoolValue(false), nil
+			return lang.BuildBoolValue(false), nil
 		}
 	}
 
-	return aladino.BuildBoolValue(true), nil
+	return lang.BuildBoolValue(true), nil
 }

@@ -8,30 +8,31 @@ import (
 	doublestar "github.com/bmatcuk/doublestar/v4"
 	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
 func HasFilePattern() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, aladino.BuildBoolType()),
+		Type:           lang.BuildFunctionType([]lang.Type{lang.BuildStringType()}, lang.BuildBoolType()),
 		Code:           hasFilePatternCode,
 		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 	}
 }
 
-func hasFilePatternCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
-	filePatternRegex := args[0].(*aladino.StringValue)
+func hasFilePatternCode(e aladino.Env, args []lang.Value) (lang.Value, error) {
+	filePatternRegex := args[0].(*lang.StringValue)
 
 	patch := e.GetTarget().(*target.PullRequestTarget).Patch
 	for fp := range patch {
 		re, err := doublestar.Match(filePatternRegex.Val, fp)
 		if err != nil {
-			return aladino.BuildFalseValue(), err
+			return lang.BuildFalseValue(), err
 		}
 		if re {
-			return aladino.BuildTrueValue(), nil
+			return lang.BuildTrueValue(), nil
 		}
 	}
 
-	return aladino.BuildFalseValue(), nil
+	return lang.BuildFalseValue(), nil
 }

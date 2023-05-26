@@ -7,6 +7,7 @@ package aladino
 import (
 	"testing"
 
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -57,7 +58,7 @@ func TestParse(t *testing.T) {
 					[]Expr{
 						BuildTypedExpr(
 							BuildVariable("developer"),
-							BuildStringType(),
+							lang.BuildStringType(),
 						),
 					},
 					BuildVariable("developer"),
@@ -67,7 +68,7 @@ func TestParse(t *testing.T) {
 					[]Expr{
 						BuildTypedExpr(
 							BuildVariable("dev"),
-							BuildStringType(),
+							lang.BuildStringType(),
 						),
 					},
 					BuildBinaryOp(BuildVariable("dev"), eqOperator(), BuildStringConst("hello")),
@@ -84,14 +85,14 @@ func TestParse(t *testing.T) {
 		"lambda single argument": {
 			input: `($dev: String => $totalCreatedPullRequests($dev) == 10)`,
 			wantExpr: BuildLambda(
-				[]Expr{BuildTypedExpr(BuildVariable("dev"), BuildStringType())},
+				[]Expr{BuildTypedExpr(BuildVariable("dev"), lang.BuildStringType())},
 				BuildBinaryOp(BuildFunctionCall(BuildVariable("totalCreatedPullRequests"), []Expr{BuildVariable("dev")}), eqOperator(), BuildIntConst(10)),
 			),
 		},
 		"lambda single argument and operation": {
 			input: `($dev: String => $dev == "hello")`,
 			wantExpr: BuildLambda(
-				[]Expr{BuildTypedExpr(BuildVariable("dev"), BuildStringType())},
+				[]Expr{BuildTypedExpr(BuildVariable("dev"), lang.BuildStringType())},
 				BuildBinaryOp(BuildVariable("dev"), eqOperator(), BuildStringConst("hello")),
 			),
 		},
@@ -99,8 +100,8 @@ func TestParse(t *testing.T) {
 			input: `($a: Int, $b: Int => $a > $b)`,
 			wantExpr: BuildLambda(
 				[]Expr{
-					BuildTypedExpr(BuildVariable("a"), BuildIntType()),
-					BuildTypedExpr(BuildVariable("b"), BuildIntType()),
+					BuildTypedExpr(BuildVariable("a"), lang.BuildIntType()),
+					BuildTypedExpr(BuildVariable("b"), lang.BuildIntType()),
 				},
 				BuildBinaryOp(BuildVariable("a"), greaterThanOperator(), BuildVariable("b")),
 			),
@@ -115,7 +116,7 @@ func TestParse(t *testing.T) {
 						[]Expr{},
 					),
 					BuildLambda(
-						[]Expr{BuildTypedExpr(BuildVariable("dev"), BuildStringType())},
+						[]Expr{BuildTypedExpr(BuildVariable("dev"), lang.BuildStringType())},
 						BuildFunctionCall(
 							BuildVariable("isElementOf"),
 							[]Expr{
@@ -133,9 +134,9 @@ func TestParse(t *testing.T) {
 		"nested lambda": {
 			input: `($a: Int => ($b: Int => $a > $b))`,
 			wantExpr: BuildLambda(
-				[]Expr{BuildTypedExpr(BuildVariable("a"), BuildIntType())},
+				[]Expr{BuildTypedExpr(BuildVariable("a"), lang.BuildIntType())},
 				BuildLambda(
-					[]Expr{BuildTypedExpr(BuildVariable("b"), BuildIntType())},
+					[]Expr{BuildTypedExpr(BuildVariable("b"), lang.BuildIntType())},
 					BuildBinaryOp(BuildVariable("a"), greaterThanOperator(), BuildVariable("b")),
 				),
 			),
@@ -143,8 +144,8 @@ func TestParse(t *testing.T) {
 		"typed expression lambda": {
 			input: `($a: Int, $b: Int => $a > $b)`,
 			wantExpr: BuildLambda(
-				[]Expr{BuildTypedExpr(BuildVariable("a"), BuildIntType()),
-					BuildTypedExpr(BuildVariable("b"), BuildIntType())},
+				[]Expr{BuildTypedExpr(BuildVariable("a"), lang.BuildIntType()),
+					BuildTypedExpr(BuildVariable("b"), lang.BuildIntType())},
 				BuildBinaryOp(BuildVariable("a"), greaterThanOperator(), BuildVariable("b")),
 			),
 		},
@@ -152,11 +153,11 @@ func TestParse(t *testing.T) {
 			input: `($a: []Int, $b: []Bool, $c: []String, $d: Func(String) String, $e: Func(Int) String  => $concat($a, $b, $c))`,
 			wantExpr: BuildLambda(
 				[]Expr{
-					BuildTypedExpr(BuildVariable("a"), BuildArrayOfType(BuildIntType())),
-					BuildTypedExpr(BuildVariable("b"), BuildArrayOfType(BuildBoolType())),
-					BuildTypedExpr(BuildVariable("c"), BuildArrayOfType(BuildStringType())),
-					BuildTypedExpr(BuildVariable("d"), BuildFunctionType([]Type{BuildStringType()}, BuildStringType())),
-					BuildTypedExpr(BuildVariable("e"), BuildFunctionType([]Type{BuildIntType()}, BuildStringType())),
+					BuildTypedExpr(BuildVariable("a"), lang.BuildArrayOfType(lang.BuildIntType())),
+					BuildTypedExpr(BuildVariable("b"), lang.BuildArrayOfType(lang.BuildBoolType())),
+					BuildTypedExpr(BuildVariable("c"), lang.BuildArrayOfType(lang.BuildStringType())),
+					BuildTypedExpr(BuildVariable("d"), lang.BuildFunctionType([]lang.Type{lang.BuildStringType()}, lang.BuildStringType())),
+					BuildTypedExpr(BuildVariable("e"), lang.BuildFunctionType([]lang.Type{lang.BuildIntType()}, lang.BuildStringType())),
 				},
 				BuildFunctionCall(
 					BuildVariable("concat"),
@@ -172,7 +173,7 @@ func TestParse(t *testing.T) {
 			input: `($orgs: []String => $isElementOf("reviewpad", $orgs))`,
 			wantExpr: BuildLambda(
 				[]Expr{
-					BuildTypedExpr(BuildVariable("orgs"), BuildArrayOfType(BuildStringType())),
+					BuildTypedExpr(BuildVariable("orgs"), lang.BuildArrayOfType(lang.BuildStringType())),
 				},
 				BuildFunctionCall(
 					BuildVariable("isElementOf"),
@@ -187,7 +188,7 @@ func TestParse(t *testing.T) {
 			input: `($nums: []Int => $isElementOf(5, $nums))`,
 			wantExpr: BuildLambda(
 				[]Expr{
-					BuildTypedExpr(BuildVariable("nums"), BuildArrayOfType(BuildIntType())),
+					BuildTypedExpr(BuildVariable("nums"), lang.BuildArrayOfType(lang.BuildIntType())),
 				},
 				BuildFunctionCall(
 					BuildVariable("isElementOf"),
@@ -202,7 +203,7 @@ func TestParse(t *testing.T) {
 			input: `($flags: []Bool => $isElementOf(true, $flags))`,
 			wantExpr: BuildLambda(
 				[]Expr{
-					BuildTypedExpr(BuildVariable("flags"), BuildArrayOfType(BuildBoolType())),
+					BuildTypedExpr(BuildVariable("flags"), lang.BuildArrayOfType(lang.BuildBoolType())),
 				},
 				BuildFunctionCall(
 					BuildVariable("isElementOf"),
@@ -219,7 +220,7 @@ func TestParse(t *testing.T) {
 				[]Expr{
 					BuildLambda(
 						[]Expr{
-							BuildTypedExpr(BuildVariable("orgs"), BuildArrayOfType(BuildStringType())),
+							BuildTypedExpr(BuildVariable("orgs"), lang.BuildArrayOfType(lang.BuildStringType())),
 						},
 						BuildFunctionCall(
 							BuildVariable("isElementOf"),
@@ -232,7 +233,7 @@ func TestParse(t *testing.T) {
 					BuildStringConst("hello"),
 					BuildLambda(
 						[]Expr{
-							BuildTypedExpr(BuildVariable("users"), BuildArrayOfType(BuildStringType())),
+							BuildTypedExpr(BuildVariable("users"), lang.BuildArrayOfType(lang.BuildStringType())),
 						},
 						BuildFunctionCall(
 							BuildVariable("isElementOf"),
@@ -251,7 +252,7 @@ func TestParse(t *testing.T) {
 				[]Expr{
 					BuildLambda(
 						[]Expr{
-							BuildTypedExpr(BuildVariable("nums"), BuildArrayOfType(BuildIntType())),
+							BuildTypedExpr(BuildVariable("nums"), lang.BuildArrayOfType(lang.BuildIntType())),
 						},
 						BuildFunctionCall(
 							BuildVariable("isElementOf"),
@@ -265,7 +266,7 @@ func TestParse(t *testing.T) {
 					BuildIntConst(1),
 					BuildLambda(
 						[]Expr{
-							BuildTypedExpr(BuildVariable("ids"), BuildArrayOfType(BuildIntType())),
+							BuildTypedExpr(BuildVariable("ids"), lang.BuildArrayOfType(lang.BuildIntType())),
 						},
 						BuildFunctionCall(
 							BuildVariable("isElementOf"),
@@ -284,7 +285,7 @@ func TestParse(t *testing.T) {
 				[]Expr{
 					BuildLambda(
 						[]Expr{
-							BuildTypedExpr(BuildVariable("flags"), BuildArrayOfType(BuildBoolType())),
+							BuildTypedExpr(BuildVariable("flags"), lang.BuildArrayOfType(lang.BuildBoolType())),
 						},
 						BuildFunctionCall(
 							BuildVariable("isElementOf"),
@@ -298,7 +299,7 @@ func TestParse(t *testing.T) {
 					BuildIntConst(1),
 					BuildLambda(
 						[]Expr{
-							BuildTypedExpr(BuildVariable("enabled"), BuildArrayOfType(BuildBoolType())),
+							BuildTypedExpr(BuildVariable("enabled"), lang.BuildArrayOfType(lang.BuildBoolType())),
 						},
 						BuildFunctionCall(
 							BuildVariable("isElementOf"),
@@ -315,7 +316,7 @@ func TestParse(t *testing.T) {
 			input: `($a: []String => $length($a))`,
 			wantExpr: BuildLambda(
 				[]Expr{
-					BuildTypedExpr(BuildVariable("a"), BuildArrayOfType(BuildStringType())),
+					BuildTypedExpr(BuildVariable("a"), lang.BuildArrayOfType(lang.BuildStringType())),
 				},
 				BuildFunctionCall(
 					BuildVariable("length"),
@@ -329,7 +330,7 @@ func TestParse(t *testing.T) {
 			input: `($a: []Int => $length($a))`,
 			wantExpr: BuildLambda(
 				[]Expr{
-					BuildTypedExpr(BuildVariable("a"), BuildArrayOfType(BuildIntType())),
+					BuildTypedExpr(BuildVariable("a"), lang.BuildArrayOfType(lang.BuildIntType())),
 				},
 				BuildFunctionCall(
 					BuildVariable("length"),
@@ -343,7 +344,7 @@ func TestParse(t *testing.T) {
 			input: `($a: []Bool => $length($a))`,
 			wantExpr: BuildLambda(
 				[]Expr{
-					BuildTypedExpr(BuildVariable("a"), BuildArrayOfType(BuildBoolType())),
+					BuildTypedExpr(BuildVariable("a"), lang.BuildArrayOfType(lang.BuildBoolType())),
 				},
 				BuildFunctionCall(
 					BuildVariable("length"),
@@ -357,7 +358,7 @@ func TestParse(t *testing.T) {
 			input: `($a: [][]String => $length($a))`,
 			wantExpr: BuildLambda(
 				[]Expr{
-					BuildTypedExpr(BuildVariable("a"), BuildArrayOfType(BuildArrayOfType(BuildStringType()))),
+					BuildTypedExpr(BuildVariable("a"), lang.BuildArrayOfType(lang.BuildArrayOfType(lang.BuildStringType()))),
 				},
 				BuildFunctionCall(
 					BuildVariable("length"),
@@ -371,7 +372,7 @@ func TestParse(t *testing.T) {
 			input: `($a: [][][]String => $length($a))`,
 			wantExpr: BuildLambda(
 				[]Expr{
-					BuildTypedExpr(BuildVariable("a"), BuildArrayOfType(BuildArrayOfType(BuildArrayOfType(BuildStringType())))),
+					BuildTypedExpr(BuildVariable("a"), lang.BuildArrayOfType(lang.BuildArrayOfType(lang.BuildArrayOfType(lang.BuildStringType())))),
 				},
 				BuildFunctionCall(
 					BuildVariable("length"),
@@ -385,7 +386,7 @@ func TestParse(t *testing.T) {
 			input: `($a: [][]Int => $length($a))`,
 			wantExpr: BuildLambda(
 				[]Expr{
-					BuildTypedExpr(BuildVariable("a"), BuildArrayOfType(BuildArrayOfType(BuildIntType()))),
+					BuildTypedExpr(BuildVariable("a"), lang.BuildArrayOfType(lang.BuildArrayOfType(lang.BuildIntType()))),
 				},
 				BuildFunctionCall(
 					BuildVariable("length"),
@@ -399,7 +400,7 @@ func TestParse(t *testing.T) {
 			input: `($a: [][][]Int => $length($a))`,
 			wantExpr: BuildLambda(
 				[]Expr{
-					BuildTypedExpr(BuildVariable("a"), BuildArrayOfType(BuildArrayOfType(BuildArrayOfType(BuildIntType())))),
+					BuildTypedExpr(BuildVariable("a"), lang.BuildArrayOfType(lang.BuildArrayOfType(lang.BuildArrayOfType(lang.BuildIntType())))),
 				},
 				BuildFunctionCall(
 					BuildVariable("length"),
@@ -413,7 +414,7 @@ func TestParse(t *testing.T) {
 			input: `($a: [][]Bool => $length($a))`,
 			wantExpr: BuildLambda(
 				[]Expr{
-					BuildTypedExpr(BuildVariable("a"), BuildArrayOfType(BuildArrayOfType(BuildBoolType()))),
+					BuildTypedExpr(BuildVariable("a"), lang.BuildArrayOfType(lang.BuildArrayOfType(lang.BuildBoolType()))),
 				},
 				BuildFunctionCall(
 					BuildVariable("length"),
@@ -427,7 +428,7 @@ func TestParse(t *testing.T) {
 			input: `($a: [][][]Bool => $length($a))`,
 			wantExpr: BuildLambda(
 				[]Expr{
-					BuildTypedExpr(BuildVariable("a"), BuildArrayOfType(BuildArrayOfType(BuildArrayOfType(BuildBoolType())))),
+					BuildTypedExpr(BuildVariable("a"), lang.BuildArrayOfType(lang.BuildArrayOfType(lang.BuildArrayOfType(lang.BuildBoolType())))),
 				},
 				BuildFunctionCall(
 					BuildVariable("length"),
@@ -441,8 +442,8 @@ func TestParse(t *testing.T) {
 			input: `($a: Func(Int, String) String, $b: Func(Int) Int => $a(1, "a") > $b(2))`,
 			wantExpr: BuildLambda(
 				[]Expr{
-					BuildTypedExpr(BuildVariable("a"), BuildFunctionType([]Type{BuildIntType(), BuildStringType()}, BuildStringType())),
-					BuildTypedExpr(BuildVariable("b"), BuildFunctionType([]Type{BuildIntType()}, BuildIntType())),
+					BuildTypedExpr(BuildVariable("a"), lang.BuildFunctionType([]lang.Type{lang.BuildIntType(), lang.BuildStringType()}, lang.BuildStringType())),
+					BuildTypedExpr(BuildVariable("b"), lang.BuildFunctionType([]lang.Type{lang.BuildIntType()}, lang.BuildIntType())),
 				},
 				BuildBinaryOp(
 					BuildFunctionCall(BuildVariable("a"), []Expr{BuildIntConst(1), BuildStringConst("a")}),
@@ -455,7 +456,7 @@ func TestParse(t *testing.T) {
 			input: `($a: []Func(String) String => $length($a))`,
 			wantExpr: BuildLambda(
 				[]Expr{
-					BuildTypedExpr(BuildVariable("a"), BuildArrayOfType(BuildFunctionType([]Type{BuildStringType()}, BuildStringType()))),
+					BuildTypedExpr(BuildVariable("a"), lang.BuildArrayOfType(lang.BuildFunctionType([]lang.Type{lang.BuildStringType()}, lang.BuildStringType()))),
 				},
 				BuildFunctionCall(
 					BuildVariable("length"),
@@ -469,7 +470,7 @@ func TestParse(t *testing.T) {
 			input: `($a: []Func(String) Int => $length($a))`,
 			wantExpr: BuildLambda(
 				[]Expr{
-					BuildTypedExpr(BuildVariable("a"), BuildArrayOfType(BuildFunctionType([]Type{BuildStringType()}, BuildIntType()))),
+					BuildTypedExpr(BuildVariable("a"), lang.BuildArrayOfType(lang.BuildFunctionType([]lang.Type{lang.BuildStringType()}, lang.BuildIntType()))),
 				},
 				BuildFunctionCall(
 					BuildVariable("length"),
@@ -483,7 +484,7 @@ func TestParse(t *testing.T) {
 			input: `($a: []Func(String) Bool => $length($a))`,
 			wantExpr: BuildLambda(
 				[]Expr{
-					BuildTypedExpr(BuildVariable("a"), BuildArrayOfType(BuildFunctionType([]Type{BuildStringType()}, BuildBoolType()))),
+					BuildTypedExpr(BuildVariable("a"), lang.BuildArrayOfType(lang.BuildFunctionType([]lang.Type{lang.BuildStringType()}, lang.BuildBoolType()))),
 				},
 				BuildFunctionCall(
 					BuildVariable("length"),
@@ -499,12 +500,12 @@ func TestParse(t *testing.T) {
 				[]Expr{
 					BuildTypedExpr(
 						BuildVariable("a"),
-						BuildArrayOfType(
-							BuildFunctionType(
-								[]Type{BuildStringType()},
-								BuildFunctionType(
-									[]Type{BuildStringType()},
-									BuildStringType(),
+						lang.BuildArrayOfType(
+							lang.BuildFunctionType(
+								[]lang.Type{lang.BuildStringType()},
+								lang.BuildFunctionType(
+									[]lang.Type{lang.BuildStringType()},
+									lang.BuildStringType(),
 								),
 							),
 						),
@@ -524,12 +525,12 @@ func TestParse(t *testing.T) {
 				[]Expr{
 					BuildTypedExpr(
 						BuildVariable("a"),
-						BuildArrayOfType(
-							BuildFunctionType(
-								[]Type{BuildStringType()},
-								BuildFunctionType(
-									[]Type{BuildStringType()},
-									BuildIntType(),
+						lang.BuildArrayOfType(
+							lang.BuildFunctionType(
+								[]lang.Type{lang.BuildStringType()},
+								lang.BuildFunctionType(
+									[]lang.Type{lang.BuildStringType()},
+									lang.BuildIntType(),
 								),
 							),
 						),
@@ -549,12 +550,12 @@ func TestParse(t *testing.T) {
 				[]Expr{
 					BuildTypedExpr(
 						BuildVariable("a"),
-						BuildArrayOfType(
-							BuildFunctionType(
-								[]Type{BuildStringType()},
-								BuildFunctionType(
-									[]Type{BuildStringType()},
-									BuildBoolType(),
+						lang.BuildArrayOfType(
+							lang.BuildFunctionType(
+								[]lang.Type{lang.BuildStringType()},
+								lang.BuildFunctionType(
+									[]lang.Type{lang.BuildStringType()},
+									lang.BuildBoolType(),
 								),
 							),
 						),
@@ -572,7 +573,7 @@ func TestParse(t *testing.T) {
 			input: `($a: []Func(Int) String => $length($a))`,
 			wantExpr: BuildLambda(
 				[]Expr{
-					BuildTypedExpr(BuildVariable("a"), BuildArrayOfType(BuildFunctionType([]Type{BuildIntType()}, BuildStringType()))),
+					BuildTypedExpr(BuildVariable("a"), lang.BuildArrayOfType(lang.BuildFunctionType([]lang.Type{lang.BuildIntType()}, lang.BuildStringType()))),
 				},
 				BuildFunctionCall(
 					BuildVariable("length"),
@@ -586,7 +587,7 @@ func TestParse(t *testing.T) {
 			input: `($a: []Func(Int) Int => $length($a))`,
 			wantExpr: BuildLambda(
 				[]Expr{
-					BuildTypedExpr(BuildVariable("a"), BuildArrayOfType(BuildFunctionType([]Type{BuildIntType()}, BuildIntType()))),
+					BuildTypedExpr(BuildVariable("a"), lang.BuildArrayOfType(lang.BuildFunctionType([]lang.Type{lang.BuildIntType()}, lang.BuildIntType()))),
 				},
 				BuildFunctionCall(
 					BuildVariable("length"),
@@ -600,7 +601,7 @@ func TestParse(t *testing.T) {
 			input: `($a: []Func(Int) Bool => $length($a))`,
 			wantExpr: BuildLambda(
 				[]Expr{
-					BuildTypedExpr(BuildVariable("a"), BuildArrayOfType(BuildFunctionType([]Type{BuildIntType()}, BuildBoolType()))),
+					BuildTypedExpr(BuildVariable("a"), lang.BuildArrayOfType(lang.BuildFunctionType([]lang.Type{lang.BuildIntType()}, lang.BuildBoolType()))),
 				},
 				BuildFunctionCall(
 					BuildVariable("length"),
@@ -614,7 +615,7 @@ func TestParse(t *testing.T) {
 			input: `($a: []Func(Bool) String => $length($a))`,
 			wantExpr: BuildLambda(
 				[]Expr{
-					BuildTypedExpr(BuildVariable("a"), BuildArrayOfType(BuildFunctionType([]Type{BuildBoolType()}, BuildStringType()))),
+					BuildTypedExpr(BuildVariable("a"), lang.BuildArrayOfType(lang.BuildFunctionType([]lang.Type{lang.BuildBoolType()}, lang.BuildStringType()))),
 				},
 				BuildFunctionCall(
 					BuildVariable("length"),
@@ -628,7 +629,7 @@ func TestParse(t *testing.T) {
 			input: `($a: []Func(Bool) Int => $length($a))`,
 			wantExpr: BuildLambda(
 				[]Expr{
-					BuildTypedExpr(BuildVariable("a"), BuildArrayOfType(BuildFunctionType([]Type{BuildBoolType()}, BuildIntType()))),
+					BuildTypedExpr(BuildVariable("a"), lang.BuildArrayOfType(lang.BuildFunctionType([]lang.Type{lang.BuildBoolType()}, lang.BuildIntType()))),
 				},
 				BuildFunctionCall(
 					BuildVariable("length"),
@@ -642,7 +643,7 @@ func TestParse(t *testing.T) {
 			input: `($a: []Func(Bool) Bool => $length($a))`,
 			wantExpr: BuildLambda(
 				[]Expr{
-					BuildTypedExpr(BuildVariable("a"), BuildArrayOfType(BuildFunctionType([]Type{BuildBoolType()}, BuildBoolType()))),
+					BuildTypedExpr(BuildVariable("a"), lang.BuildArrayOfType(lang.BuildFunctionType([]lang.Type{lang.BuildBoolType()}, lang.BuildBoolType()))),
 				},
 				BuildFunctionCall(
 					BuildVariable("length"),
@@ -656,7 +657,7 @@ func TestParse(t *testing.T) {
 			input: `($a: [][]Func(String) String => $length($a))`,
 			wantExpr: BuildLambda(
 				[]Expr{
-					BuildTypedExpr(BuildVariable("a"), BuildArrayOfType(BuildArrayOfType(BuildFunctionType([]Type{BuildStringType()}, BuildStringType())))),
+					BuildTypedExpr(BuildVariable("a"), lang.BuildArrayOfType(lang.BuildArrayOfType(lang.BuildFunctionType([]lang.Type{lang.BuildStringType()}, lang.BuildStringType())))),
 				},
 				BuildFunctionCall(
 					BuildVariable("length"),
@@ -670,9 +671,9 @@ func TestParse(t *testing.T) {
 			input: `($a: Func(Func(String) String) Func(String) Int => $length($a))`,
 			wantExpr: BuildLambda(
 				[]Expr{
-					BuildTypedExpr(BuildVariable("a"), BuildFunctionType(
-						[]Type{BuildFunctionType([]Type{BuildStringType()}, BuildStringType())},
-						BuildFunctionType([]Type{BuildStringType()}, BuildIntType()),
+					BuildTypedExpr(BuildVariable("a"), lang.BuildFunctionType(
+						[]lang.Type{lang.BuildFunctionType([]lang.Type{lang.BuildStringType()}, lang.BuildStringType())},
+						lang.BuildFunctionType([]lang.Type{lang.BuildStringType()}, lang.BuildIntType()),
 					)),
 				},
 				BuildFunctionCall(

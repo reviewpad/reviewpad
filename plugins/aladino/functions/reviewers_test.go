@@ -11,6 +11,7 @@ import (
 
 	"github.com/google/go-github/v52/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -36,7 +37,7 @@ func TestReviewers_WhenListReviewsRequestFails(t *testing.T) {
 		nil,
 	)
 
-	gotReviewers, gotErr := reviewers(mockedEnv, []aladino.Value{})
+	gotReviewers, gotErr := reviewers(mockedEnv, []lang.Value{})
 
 	assert.Equal(t, "ListReviewsRequestFail", gotErr.(*github.ErrorResponse).Message)
 	assert.Nil(t, gotReviewers)
@@ -45,7 +46,7 @@ func TestReviewers_WhenListReviewsRequestFails(t *testing.T) {
 func TestReviewers(t *testing.T) {
 	tests := map[string]struct {
 		clientOptions []mock.MockBackendOption
-		wantReviewers aladino.Value
+		wantReviewers lang.Value
 		wantErr       string
 	}{
 		"when pull request has no reviews": {
@@ -55,7 +56,7 @@ func TestReviewers(t *testing.T) {
 					[]*github.PullRequestReview{},
 				),
 			},
-			wantReviewers: aladino.BuildArrayValue([]aladino.Value{}),
+			wantReviewers: lang.BuildArrayValue([]lang.Value{}),
 			wantErr:       "",
 		},
 		"when pull request has reviews": {
@@ -74,7 +75,7 @@ func TestReviewers(t *testing.T) {
 					},
 				),
 			},
-			wantReviewers: aladino.BuildArrayValue([]aladino.Value{aladino.BuildStringValue("mary")}),
+			wantReviewers: lang.BuildArrayValue([]lang.Value{lang.BuildStringValue("mary")}),
 			wantErr:       "",
 		},
 		"when pull request has more than one review of the same user": {
@@ -101,7 +102,7 @@ func TestReviewers(t *testing.T) {
 					},
 				),
 			},
-			wantReviewers: aladino.BuildArrayValue([]aladino.Value{aladino.BuildStringValue("mary")}),
+			wantReviewers: lang.BuildArrayValue([]lang.Value{lang.BuildStringValue("mary")}),
 			wantErr:       "",
 		},
 		"when pull request has more than one review of different users": {
@@ -128,10 +129,10 @@ func TestReviewers(t *testing.T) {
 					},
 				),
 			},
-			wantReviewers: aladino.BuildArrayValue(
-				[]aladino.Value{
-					aladino.BuildStringValue("mary"),
-					aladino.BuildStringValue("john"),
+			wantReviewers: lang.BuildArrayValue(
+				[]lang.Value{
+					lang.BuildStringValue("mary"),
+					lang.BuildStringValue("john"),
 				},
 			),
 			wantErr: "",
@@ -142,7 +143,7 @@ func TestReviewers(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			mockedEnv := aladino.MockDefaultEnv(t, test.clientOptions, nil, aladino.MockBuiltIns(), nil)
 
-			gotReviewers, gotErr := reviewers(mockedEnv, []aladino.Value{})
+			gotReviewers, gotErr := reviewers(mockedEnv, []lang.Value{})
 
 			if gotErr != nil && gotErr.Error() != test.wantErr {
 				assert.FailNow(t, fmt.Sprintf("reviewers() error = %v, wantErr %v", gotErr, test.wantErr))

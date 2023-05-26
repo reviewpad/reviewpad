@@ -10,6 +10,7 @@ import (
 
 	"github.com/google/go-github/v52/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/reviewpad/reviewpad/v4/utils"
@@ -41,10 +42,10 @@ func TestHasFileExtensions_WhenFalse(t *testing.T) {
 		nil,
 	)
 
-	args := []aladino.Value{aladino.BuildArrayValue([]aladino.Value{aladino.BuildStringValue(".md")})}
+	args := []lang.Value{lang.BuildArrayValue([]lang.Value{lang.BuildStringValue(".md")})}
 	gotVal, err := hasFileExtensions(mockedEnv, args)
 
-	wantVal := aladino.BuildBoolValue(false)
+	wantVal := lang.BuildBoolValue(false)
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantVal, gotVal)
@@ -73,10 +74,10 @@ func TestHasFileExtensions_WhenTrue(t *testing.T) {
 		nil,
 	)
 
-	args := []aladino.Value{aladino.BuildArrayValue([]aladino.Value{aladino.BuildStringValue(".ts")})}
+	args := []lang.Value{lang.BuildArrayValue([]lang.Value{lang.BuildStringValue(".ts")})}
 	gotVal, err := hasFileExtensions(mockedEnv, args)
 
-	wantVal := aladino.BuildBoolValue(true)
+	wantVal := lang.BuildBoolValue(true)
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantVal, gotVal)

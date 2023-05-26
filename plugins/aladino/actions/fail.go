@@ -10,20 +10,21 @@ import (
 
 	"github.com/google/go-github/v52/github"
 	"github.com/reviewpad/go-lib/entities"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
 func Fail() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, nil),
+		Type:           lang.BuildFunctionType([]lang.Type{lang.BuildStringType()}, nil),
 		Code:           failCode,
 		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest, entities.Issue},
 	}
 }
 
-func failCode(e aladino.Env, args []aladino.Value) error {
+func failCode(e aladino.Env, args []lang.Value) error {
 	targetEntity := e.GetTarget().GetTargetEntity()
-	failMessage := args[0].(*aladino.StringValue).Val
+	failMessage := args[0].(*lang.StringValue).Val
 
 	e.GetBuiltInsReportedMessages()[aladino.SEVERITY_FATAL] = append(e.GetBuiltInsReportedMessages()[aladino.SEVERITY_FATAL], failMessage)
 	// Because we want to stack the messages from $failCheckStatus and $fail as well, we are going to add the message to the fail list as well.

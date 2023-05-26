@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -20,96 +21,96 @@ func TestAny(t *testing.T) {
 
 	testCases := []struct {
 		name    string
-		args    []aladino.Value
-		res     aladino.Value
+		args    []lang.Value
+		res     lang.Value
 		wantErr error
 	}{
 		{
 			name: "matches one",
-			args: []aladino.Value{
-				aladino.BuildArrayValue(
-					[]aladino.Value{
-						aladino.BuildStringValue("a"),
-						aladino.BuildStringValue("e"),
-						aladino.BuildStringValue("f"),
+			args: []lang.Value{
+				lang.BuildArrayValue(
+					[]lang.Value{
+						lang.BuildStringValue("a"),
+						lang.BuildStringValue("e"),
+						lang.BuildStringValue("f"),
 					},
 				),
-				aladino.BuildFunctionValue(func(args []aladino.Value) aladino.Value {
-					val := args[0].(*aladino.StringValue).Val
-					return aladino.BuildBoolValue(strings.Contains("abcd", val))
+				lang.BuildFunctionValue(func(args []lang.Value) lang.Value {
+					val := args[0].(*lang.StringValue).Val
+					return lang.BuildBoolValue(strings.Contains("abcd", val))
 				}),
 			},
-			res:     aladino.BuildBoolValue(true),
+			res:     lang.BuildBoolValue(true),
 			wantErr: nil,
 		},
 		{
 			name: "matches two",
-			args: []aladino.Value{
-				aladino.BuildArrayValue(
-					[]aladino.Value{
-						aladino.BuildStringValue("a"),
-						aladino.BuildStringValue("b"),
-						aladino.BuildStringValue("f"),
+			args: []lang.Value{
+				lang.BuildArrayValue(
+					[]lang.Value{
+						lang.BuildStringValue("a"),
+						lang.BuildStringValue("b"),
+						lang.BuildStringValue("f"),
 					},
 				),
-				aladino.BuildFunctionValue(func(args []aladino.Value) aladino.Value {
-					val := args[0].(*aladino.StringValue).Val
-					return aladino.BuildBoolValue(strings.Contains("abcd", val))
+				lang.BuildFunctionValue(func(args []lang.Value) lang.Value {
+					val := args[0].(*lang.StringValue).Val
+					return lang.BuildBoolValue(strings.Contains("abcd", val))
 				}),
 			},
-			res:     aladino.BuildBoolValue(true),
+			res:     lang.BuildBoolValue(true),
 			wantErr: nil,
 		},
 		{
 			name: "matches all",
-			args: []aladino.Value{
-				aladino.BuildArrayValue(
-					[]aladino.Value{
-						aladino.BuildStringValue("a"),
-						aladino.BuildStringValue("b"),
-						aladino.BuildStringValue("c"),
+			args: []lang.Value{
+				lang.BuildArrayValue(
+					[]lang.Value{
+						lang.BuildStringValue("a"),
+						lang.BuildStringValue("b"),
+						lang.BuildStringValue("c"),
 					},
 				),
-				aladino.BuildFunctionValue(func(args []aladino.Value) aladino.Value {
-					val := args[0].(*aladino.StringValue).Val
-					return aladino.BuildBoolValue(strings.Contains("abcd", val))
+				lang.BuildFunctionValue(func(args []lang.Value) lang.Value {
+					val := args[0].(*lang.StringValue).Val
+					return lang.BuildBoolValue(strings.Contains("abcd", val))
 				}),
 			},
-			res:     aladino.BuildBoolValue(true),
+			res:     lang.BuildBoolValue(true),
 			wantErr: nil,
 		},
 		{
 			name: "matches none",
-			args: []aladino.Value{
-				aladino.BuildArrayValue(
-					[]aladino.Value{
-						aladino.BuildStringValue("e"),
-						aladino.BuildStringValue("f"),
-						aladino.BuildStringValue("g"),
-						aladino.BuildStringValue("h"),
-						aladino.BuildStringValue("i"),
+			args: []lang.Value{
+				lang.BuildArrayValue(
+					[]lang.Value{
+						lang.BuildStringValue("e"),
+						lang.BuildStringValue("f"),
+						lang.BuildStringValue("g"),
+						lang.BuildStringValue("h"),
+						lang.BuildStringValue("i"),
 					},
 				),
-				aladino.BuildFunctionValue(func(args []aladino.Value) aladino.Value {
-					val := args[0].(*aladino.StringValue).Val
-					return aladino.BuildBoolValue(strings.Contains("abcd", val))
+				lang.BuildFunctionValue(func(args []lang.Value) lang.Value {
+					val := args[0].(*lang.StringValue).Val
+					return lang.BuildBoolValue(strings.Contains("abcd", val))
 				}),
 			},
-			res:     aladino.BuildBoolValue(false),
+			res:     lang.BuildBoolValue(false),
 			wantErr: nil,
 		},
 		{
 			name: "empty list",
-			args: []aladino.Value{
-				aladino.BuildArrayValue(
-					[]aladino.Value{},
+			args: []lang.Value{
+				lang.BuildArrayValue(
+					[]lang.Value{},
 				),
-				aladino.BuildFunctionValue(func(args []aladino.Value) aladino.Value {
-					val := args[0].(*aladino.StringValue).Val
-					return aladino.BuildBoolValue(strings.Contains("abcd", val))
+				lang.BuildFunctionValue(func(args []lang.Value) lang.Value {
+					val := args[0].(*lang.StringValue).Val
+					return lang.BuildBoolValue(strings.Contains("abcd", val))
 				}),
 			},
-			res:     aladino.BuildBoolValue(false),
+			res:     lang.BuildBoolValue(false),
 			wantErr: nil,
 		},
 	}

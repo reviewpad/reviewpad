@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/migueleliasweb/go-github-mock/src/mock"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/reviewpad/reviewpad/v4/utils"
@@ -25,7 +26,7 @@ type TeamReviewersRequestPostBody struct {
 func TestAssignTeamReviewer_WhenNoTeamSlugsAreProvided(t *testing.T) {
 	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
 
-	args := []aladino.Value{aladino.BuildArrayValue([]aladino.Value{})}
+	args := []lang.Value{lang.BuildArrayValue([]lang.Value{})}
 	err := assignTeamReviewer(mockedEnv, args)
 
 	assert.EqualError(t, err, "assignTeamReviewer: requires at least 1 team to request for review")
@@ -56,7 +57,7 @@ func TestAssignTeamReviewer(t *testing.T) {
 		nil,
 	)
 
-	args := []aladino.Value{aladino.BuildArrayValue([]aladino.Value{aladino.BuildStringValue(teamA), aladino.BuildStringValue(teamB)})}
+	args := []lang.Value{lang.BuildArrayValue([]lang.Value{lang.BuildStringValue(teamA), lang.BuildStringValue(teamB)})}
 	err := assignTeamReviewer(mockedEnv, args)
 
 	assert.Nil(t, err)

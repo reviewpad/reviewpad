@@ -9,21 +9,22 @@ import (
 
 	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
 func AssignTeamReviewer() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildArrayOfType(aladino.BuildStringType())}, nil),
+		Type:           lang.BuildFunctionType([]lang.Type{lang.BuildArrayOfType(lang.BuildStringType())}, nil),
 		Code:           assignTeamReviewerCode,
 		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 	}
 }
 
-func assignTeamReviewerCode(e aladino.Env, args []aladino.Value) error {
+func assignTeamReviewerCode(e aladino.Env, args []lang.Value) error {
 	t := e.GetTarget().(*target.PullRequestTarget)
 
-	teamReviewers := args[0].(*aladino.ArrayValue).Vals
+	teamReviewers := args[0].(*lang.ArrayValue).Vals
 
 	if len(teamReviewers) < 1 {
 		return fmt.Errorf("assignTeamReviewer: requires at least 1 team to request for review")
@@ -32,7 +33,7 @@ func assignTeamReviewerCode(e aladino.Env, args []aladino.Value) error {
 	teamReviewersSlugs := make([]string, len(teamReviewers))
 
 	for i, team := range teamReviewers {
-		teamReviewersSlugs[i] = team.(*aladino.StringValue).Val
+		teamReviewersSlugs[i] = team.(*lang.StringValue).Val
 	}
 
 	return t.RequestTeamReviewers(teamReviewersSlugs)

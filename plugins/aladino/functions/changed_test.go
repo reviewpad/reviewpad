@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	pbc "github.com/reviewpad/api/go/codehost"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -17,28 +18,28 @@ var changed = plugins_aladino.PluginBuiltIns().Functions["changed"].Code
 
 func TestChanged(t *testing.T) {
 	tests := map[string]struct {
-		args    []aladino.Value
-		wantVal aladino.Value
+		args    []lang.Value
+		wantVal lang.Value
 	}{
 		"bad spec": {
-			args:    []aladino.Value{aladino.BuildStringValue("src/@1.go"), aladino.BuildStringValue("docs/file.md")},
-			wantVal: aladino.BuildFalseValue(),
+			args:    []lang.Value{lang.BuildStringValue("src/@1.go"), lang.BuildStringValue("docs/file.md")},
+			wantVal: lang.BuildFalseValue(),
 		},
 		"missing in docs": {
-			args:    []aladino.Value{aladino.BuildStringValue("src/@1.go"), aladino.BuildStringValue("docs/@1.md")},
-			wantVal: aladino.BuildFalseValue(),
+			args:    []lang.Value{lang.BuildStringValue("src/@1.go"), lang.BuildStringValue("docs/@1.md")},
+			wantVal: lang.BuildFalseValue(),
 		},
 		"changes in tests and docs": {
-			args:    []aladino.Value{aladino.BuildStringValue("test/@1.go"), aladino.BuildStringValue("docs/@1.md")},
-			wantVal: aladino.BuildTrueValue(),
+			args:    []lang.Value{lang.BuildStringValue("test/@1.go"), lang.BuildStringValue("docs/@1.md")},
+			wantVal: lang.BuildTrueValue(),
 		},
 		"go tests": {
-			args:    []aladino.Value{aladino.BuildStringValue("src/@1/@2.go"), aladino.BuildStringValue("src/@1/@2_test.go")},
-			wantVal: aladino.BuildTrueValue(),
+			args:    []lang.Value{lang.BuildStringValue("src/@1/@2.go"), lang.BuildStringValue("src/@1/@2_test.go")},
+			wantVal: lang.BuildTrueValue(),
 		},
 		"nested patterns": {
-			args:    []aladino.Value{aladino.BuildStringValue("src/pkg/@1.go"), aladino.BuildStringValue("src/pkg/dir/@2.go")},
-			wantVal: aladino.BuildFalseValue(),
+			args:    []lang.Value{lang.BuildStringValue("src/pkg/@1.go"), lang.BuildStringValue("src/pkg/dir/@2.go")},
+			wantVal: lang.BuildFalseValue(),
 		},
 	}
 

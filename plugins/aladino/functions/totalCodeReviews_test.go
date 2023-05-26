@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/reviewpad/reviewpad/v4/utils"
@@ -31,7 +32,7 @@ func TestTotalCodeReviews_WhenRequestFails(t *testing.T) {
 		nil,
 	)
 
-	args := []aladino.Value{aladino.BuildStringValue(author)}
+	args := []lang.Value{lang.BuildStringValue(author)}
 	gotVal, gotErr := totalCodeReviews(mockedEnv, args)
 
 	assert.Nil(t, gotVal)
@@ -81,9 +82,9 @@ func TestTotalCodeReviews(t *testing.T) {
 	)
 
 	wantErr := ""
-	wantVal := aladino.BuildIntValue(codeReviewsNum)
+	wantVal := lang.BuildIntValue(codeReviewsNum)
 
-	args := []aladino.Value{aladino.BuildStringValue(author)}
+	args := []lang.Value{lang.BuildStringValue(author)}
 	gotVal, gotErr := totalCodeReviews(mockedEnv, args)
 
 	if gotErr != nil && gotErr.Error() != wantErr {

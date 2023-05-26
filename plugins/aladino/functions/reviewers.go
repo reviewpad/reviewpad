@@ -7,20 +7,21 @@ package plugins_aladino_functions
 import (
 	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
 func Reviewers() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildArrayOfType(aladino.BuildStringType())),
+		Type:           lang.BuildFunctionType([]lang.Type{}, lang.BuildArrayOfType(lang.BuildStringType())),
 		Code:           reviewersCode,
 		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 	}
 }
 
-func reviewersCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
+func reviewersCode(e aladino.Env, _ []lang.Value) (lang.Value, error) {
 	t := e.GetTarget().(*target.PullRequestTarget)
-	reviewers := make([]aladino.Value, 0)
+	reviewers := make([]lang.Value, 0)
 	existsInReviewersList := make(map[string]bool)
 
 	reviews, err := t.GetReviews()
@@ -31,10 +32,10 @@ func reviewersCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
 	for _, review := range reviews {
 		reviewer := review.User.Login
 		if _, ok := existsInReviewersList[reviewer]; !ok {
-			reviewers = append(reviewers, aladino.BuildStringValue(reviewer))
+			reviewers = append(reviewers, lang.BuildStringValue(reviewer))
 			existsInReviewersList[reviewer] = true
 		}
 	}
 
-	return aladino.BuildArrayValue(reviewers), nil
+	return lang.BuildArrayValue(reviewers), nil
 }

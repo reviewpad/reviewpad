@@ -8,21 +8,22 @@ import (
 	"time"
 
 	"github.com/reviewpad/go-lib/entities"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
 func CreatedAt() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildIntType()),
+		Type:           lang.BuildFunctionType([]lang.Type{}, lang.BuildIntType()),
 		Code:           createdAtCode,
 		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest, entities.Issue},
 	}
 }
 
-func createdAtCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
+func createdAtCode(e aladino.Env, args []lang.Value) (lang.Value, error) {
 	createdAtTime, err := time.Parse("2006-01-02 15:04:05.999999999 -0700 MST", e.GetTarget().GetCreatedAt())
 	if err != nil {
 		return nil, err
 	}
-	return aladino.BuildIntValue(int(createdAtTime.Unix())), nil
+	return lang.BuildIntValue(int(createdAtTime.Unix())), nil
 }

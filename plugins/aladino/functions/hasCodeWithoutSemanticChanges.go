@@ -9,6 +9,7 @@ import (
 	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/codehost"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	semantic "github.com/reviewpad/reviewpad/v4/plugins/aladino/semantic"
 )
@@ -18,13 +19,13 @@ const RequestIDKey = "request-id"
 
 func HasCodeWithoutSemanticChanges() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildArrayOfType(aladino.BuildStringType())}, aladino.BuildBoolType()),
+		Type:           lang.BuildFunctionType([]lang.Type{lang.BuildArrayOfType(lang.BuildStringType())}, lang.BuildBoolType()),
 		Code:           hasCodeWithoutSemanticChanges,
 		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 	}
 }
 
-func hasCodeWithoutSemanticChanges(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
+func hasCodeWithoutSemanticChanges(e aladino.Env, args []lang.Value) (lang.Value, error) {
 	pullRequest := e.GetTarget().(*target.PullRequestTarget)
 	log := e.GetLogger()
 
@@ -32,11 +33,11 @@ func hasCodeWithoutSemanticChanges(e aladino.Env, args []aladino.Value) (aladino
 	patch := pullRequest.Patch
 	newPatch := make(map[string]*codehost.File)
 
-	filePatterns := args[0].(*aladino.ArrayValue)
+	filePatterns := args[0].(*lang.ArrayValue)
 	for fp, file := range patch {
 		ignore := false
 		for _, v := range filePatterns.Vals {
-			filePatternRegex := v.(*aladino.StringValue)
+			filePatternRegex := v.(*lang.StringValue)
 
 			re, err := doublestar.Match(filePatternRegex.Val, fp)
 			if err == nil && re {
@@ -80,9 +81,9 @@ func hasCodeWithoutSemanticChanges(e aladino.Env, args []aladino.Value) (aladino
 
 	if res {
 		log.Infof("no semantic changes detected")
-		return aladino.BuildTrueValue(), nil
+		return lang.BuildTrueValue(), nil
 	} else {
 		log.Infof("semantic changes detected")
-		return aladino.BuildFalseValue(), nil
+		return lang.BuildFalseValue(), nil
 	}
 }

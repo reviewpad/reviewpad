@@ -13,6 +13,7 @@ import (
 	"github.com/reviewpad/go-lib/entities"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	"github.com/stretchr/testify/assert"
 )
@@ -20,11 +21,11 @@ import (
 func TestNewTypeEnv_WithDefaultEnv(t *testing.T) {
 	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
 
-	wantTypeEnv := aladino.TypeEnv(map[string]aladino.Type{
-		"emptyFunction": aladino.BuildFunctionType([]aladino.Type{}, nil),
-		"emptyAction":   aladino.BuildFunctionType([]aladino.Type{}, nil),
-		"zeroConst":     aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildIntType()),
-		"returnStr":     aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, aladino.BuildStringType()),
+	wantTypeEnv := aladino.TypeEnv(map[string]lang.Type{
+		"emptyFunction": lang.BuildFunctionType([]lang.Type{}, nil),
+		"emptyAction":   lang.BuildFunctionType([]lang.Type{}, nil),
+		"zeroConst":     lang.BuildFunctionType([]lang.Type{}, lang.BuildIntType()),
+		"returnStr":     lang.BuildFunctionType([]lang.Type{lang.BuildStringType()}, lang.BuildStringType()),
 	})
 
 	gotTypeEnv := aladino.NewTypeEnv(mockedEnv)
@@ -129,7 +130,7 @@ func TestNewEvalEnv(t *testing.T) {
 		Ctx:          ctx,
 		GithubClient: mockedGithubClient,
 		Collector:    aladino.DefaultMockCollector,
-		RegisterMap:  aladino.RegisterMap(make(map[string]aladino.Value)),
+		RegisterMap:  aladino.RegisterMap(make(map[string]lang.Value)),
 		BuiltIns:     aladino.MockBuiltIns(),
 		Report:       &aladino.Report{Actions: make([]string, 0)},
 		// TODO: Mock an event

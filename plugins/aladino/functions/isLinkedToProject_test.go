@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/migueleliasweb/go-github-mock/src/mock"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/reviewpad/reviewpad/v4/utils"
@@ -20,22 +21,22 @@ var isLinkedToProject = plugins_aladino.PluginBuiltIns().Functions["isLinkedToPr
 
 func TestIsLinkedToProject(t *testing.T) {
 	tests := map[string]struct {
-		args           []aladino.Value
-		wantResult     aladino.Value
+		args           []lang.Value
+		wantResult     lang.Value
 		wantErr        error
 		graphqlHandler func(http.ResponseWriter, *http.Request)
 	}{
 		"when graphql query errors": {
-			args:       []aladino.Value{aladino.BuildStringValue("project title")},
-			wantResult: (aladino.Value)(nil),
+			args:       []lang.Value{lang.BuildStringValue("project title")},
+			wantResult: (lang.Value)(nil),
 			graphqlHandler: func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(http.StatusInternalServerError)
 			},
 			wantErr: errors.New(`non-200 OK status code: 500 Internal Server Error body: ""`),
 		},
 		"when graphql query errors with project items not found": {
-			args:       []aladino.Value{aladino.BuildStringValue("project title")},
-			wantResult: (aladino.Value)(nil),
+			args:       []lang.Value{lang.BuildStringValue("project title")},
+			wantResult: (lang.Value)(nil),
 			graphqlHandler: func(w http.ResponseWriter, r *http.Request) {
 				utils.MustWrite(w, `{
 					"data": {
@@ -49,8 +50,8 @@ func TestIsLinkedToProject(t *testing.T) {
 			wantErr: errors.New(`project items not found`),
 		},
 		"when linked project is false": {
-			args:       []aladino.Value{aladino.BuildStringValue("project title")},
-			wantResult: aladino.BuildBoolValue(false),
+			args:       []lang.Value{lang.BuildStringValue("project title")},
+			wantResult: lang.BuildBoolValue(false),
 			graphqlHandler: func(w http.ResponseWriter, r *http.Request) {
 				utils.MustWrite(w, `{
 					"data": {
@@ -74,8 +75,8 @@ func TestIsLinkedToProject(t *testing.T) {
 			},
 		},
 		"when linked project is true": {
-			args:       []aladino.Value{aladino.BuildStringValue("project title")},
-			wantResult: aladino.BuildBoolValue(true),
+			args:       []lang.Value{lang.BuildStringValue("project title")},
+			wantResult: lang.BuildBoolValue(true),
 			graphqlHandler: func(w http.ResponseWriter, r *http.Request) {
 				utils.MustWrite(w, `{
 					"data": {

@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	pbc "github.com/reviewpad/api/go/codehost"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -39,12 +40,12 @@ func TestLabels(t *testing.T) {
 		nil,
 	)
 
-	wantLabels := aladino.BuildArrayValue([]aladino.Value{
-		aladino.BuildStringValue("bug"),
-		aladino.BuildStringValue("enhancement"),
+	wantLabels := lang.BuildArrayValue([]lang.Value{
+		lang.BuildStringValue("bug"),
+		lang.BuildStringValue("enhancement"),
 	})
 
-	args := []aladino.Value{}
+	args := []lang.Value{}
 	gotLabels, err := labels(mockedEnv, args)
 
 	assert.Nil(t, err)

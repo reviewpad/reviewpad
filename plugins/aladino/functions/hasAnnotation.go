@@ -8,20 +8,21 @@ import (
 	"strings"
 
 	"github.com/reviewpad/go-lib/entities"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	semantic "github.com/reviewpad/reviewpad/v4/plugins/aladino/semantic"
 )
 
 func HasAnnotation() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, aladino.BuildBoolType()),
+		Type:           lang.BuildFunctionType([]lang.Type{lang.BuildStringType()}, lang.BuildBoolType()),
 		Code:           hasAnnotationCode,
 		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 	}
 }
 
-func hasAnnotationCode(e aladino.Env, args []aladino.Value) (aladino.Value, error) {
-	annotation := args[0].(*aladino.StringValue).Val
+func hasAnnotationCode(e aladino.Env, args []lang.Value) (lang.Value, error) {
+	annotation := args[0].(*lang.StringValue).Val
 
 	symbolsByFileName, err := semantic.GetSymbolsFromPatch(e)
 	if err != nil {
@@ -33,13 +34,13 @@ func hasAnnotationCode(e aladino.Env, args []aladino.Value) (aladino.Value, erro
 			for _, symbolComment := range symbol.CodeComments {
 				comment := symbolComment.Code
 				if commentHasAnnotation(comment, annotation) {
-					return aladino.BuildTrueValue(), nil
+					return lang.BuildTrueValue(), nil
 				}
 			}
 		}
 	}
 
-	return aladino.BuildFalseValue(), nil
+	return lang.BuildFalseValue(), nil
 }
 
 func commentHasAnnotation(comment, annotation string) bool {

@@ -24,6 +24,7 @@ import (
 	"github.com/reviewpad/reviewpad/v4/codehost"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/reviewpad/reviewpad/v4/collector"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/utils"
 	"github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
@@ -86,31 +87,31 @@ func MockBuiltIns() *BuiltIns {
 	return &BuiltIns{
 		Functions: map[string]*BuiltInFunction{
 			"emptyFunction": {
-				Type: BuildFunctionType([]Type{}, nil),
-				Code: func(e Env, args []Value) (Value, error) {
+				Type: lang.BuildFunctionType([]lang.Type{}, nil),
+				Code: func(e Env, args []lang.Value) (lang.Value, error) {
 					return nil, nil
 				},
 				SupportedKinds: []entities.TargetEntityKind{entities.PullRequest, entities.Issue},
 			},
 			"zeroConst": {
-				Type: BuildFunctionType([]Type{}, BuildIntType()),
-				Code: func(e Env, args []Value) (Value, error) {
-					return BuildIntValue(0), nil
+				Type: lang.BuildFunctionType([]lang.Type{}, lang.BuildIntType()),
+				Code: func(e Env, args []lang.Value) (lang.Value, error) {
+					return lang.BuildIntValue(0), nil
 				},
 				SupportedKinds: []entities.TargetEntityKind{entities.PullRequest, entities.Issue},
 			},
 			"returnStr": {
-				Type: BuildFunctionType([]Type{BuildStringType()}, BuildStringType()),
-				Code: func(e Env, args []Value) (Value, error) {
-					return args[0].(*StringValue), nil
+				Type: lang.BuildFunctionType([]lang.Type{lang.BuildStringType()}, lang.BuildStringType()),
+				Code: func(e Env, args []lang.Value) (lang.Value, error) {
+					return args[0].(*lang.StringValue), nil
 				},
 				SupportedKinds: []entities.TargetEntityKind{entities.PullRequest, entities.Issue},
 			},
 		},
 		Actions: map[string]*BuiltInAction{
 			"emptyAction": {
-				Type: BuildFunctionType([]Type{}, nil),
-				Code: func(e Env, args []Value) error {
+				Type: lang.BuildFunctionType([]lang.Type{}, nil),
+				Code: func(e Env, args []lang.Value) error {
 					return nil
 				},
 				SupportedKinds: []entities.TargetEntityKind{entities.PullRequest, entities.Issue},
@@ -119,9 +120,9 @@ func MockBuiltIns() *BuiltIns {
 	}
 }
 
-func mockTypes() map[string]Type {
+func mockTypes() map[string]lang.Type {
 	mockedBuiltIns := MockBuiltIns()
-	builtInsType := make(map[string]Type)
+	builtInsType := make(map[string]lang.Type)
 
 	for builtInName, builtInFunction := range mockedBuiltIns.Functions {
 		builtInsType[builtInName] = builtInFunction.Type

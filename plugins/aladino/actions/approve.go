@@ -6,20 +6,21 @@ package plugins_aladino_actions
 
 import (
 	"github.com/reviewpad/go-lib/entities"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
 func Approve() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType()}, nil),
+		Type:           lang.BuildFunctionType([]lang.Type{lang.BuildStringType()}, nil),
 		Code:           approveCode,
 		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 	}
 }
 
-func approveCode(e aladino.Env, args []aladino.Value) error {
-	return reviewCode(e, []aladino.Value{
-		&aladino.StringValue{Val: "APPROVE"},
+func approveCode(e aladino.Env, args []lang.Value) error {
+	return reviewCode(e, []lang.Value{
+		&lang.StringValue{Val: "APPROVE"},
 		args[0],
 	})
 }

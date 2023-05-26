@@ -11,23 +11,24 @@ import (
 	api "github.com/reviewpad/api/go/services"
 	converter "github.com/reviewpad/go-lib/converters"
 	"github.com/reviewpad/go-lib/entities"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino_services "github.com/reviewpad/reviewpad/v4/plugins/aladino/services"
 )
 
 func RobinPrompt() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{aladino.BuildStringType(), aladino.BuildStringType()}, nil),
+		Type:           lang.BuildFunctionType([]lang.Type{lang.BuildStringType(), lang.BuildStringType()}, nil),
 		Code:           robinPromptCode,
 		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest, entities.Issue},
 	}
 }
 
-func robinPromptCode(e aladino.Env, args []aladino.Value) error {
+func robinPromptCode(e aladino.Env, args []lang.Value) error {
 	target := e.GetTarget()
 	targetEntity := target.GetTargetEntity()
-	prompt := args[0].(*aladino.StringValue).Val
-	model := args[1].(*aladino.StringValue).Val
+	prompt := args[0].(*lang.StringValue).Val
+	model := args[1].(*lang.StringValue).Val
 
 	service, ok := e.GetBuiltIns().Services[plugins_aladino_services.ROBIN_SERVICE_KEY]
 	if !ok {

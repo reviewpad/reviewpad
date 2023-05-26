@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -19,7 +20,7 @@ func TestRule_WhenRuleIsAbsent(t *testing.T) {
 	ruleName := "is-absent"
 	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
 
-	args := []aladino.Value{aladino.BuildStringValue(ruleName)}
+	args := []lang.Value{lang.BuildStringValue(ruleName)}
 	gotVal, err := rule(mockedEnv, args)
 
 	assert.Nil(t, gotVal)
@@ -31,9 +32,9 @@ func TestRule_WhenRuleIsInvalid(t *testing.T) {
 	internalRuleName := fmt.Sprintf("@rule:%v", ruleName)
 	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
 
-	mockedEnv.GetRegisterMap()[internalRuleName] = aladino.BuildStringValue("1 == \"a\"")
+	mockedEnv.GetRegisterMap()[internalRuleName] = lang.BuildStringValue("1 == \"a\"")
 
-	args := []aladino.Value{aladino.BuildStringValue(ruleName)}
+	args := []lang.Value{lang.BuildStringValue(ruleName)}
 	gotVal, err := rule(mockedEnv, args)
 
 	assert.Nil(t, gotVal)
@@ -45,12 +46,12 @@ func TestRule_WhenRuleIsTrue(t *testing.T) {
 	internalRuleName := fmt.Sprintf("@rule:%v", ruleName)
 	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
 
-	mockedEnv.GetRegisterMap()[internalRuleName] = aladino.BuildStringValue("1 == 1")
+	mockedEnv.GetRegisterMap()[internalRuleName] = lang.BuildStringValue("1 == 1")
 
-	args := []aladino.Value{aladino.BuildStringValue(ruleName)}
+	args := []lang.Value{lang.BuildStringValue(ruleName)}
 	gotVal, err := rule(mockedEnv, args)
 
-	wantVal := aladino.BuildBoolValue(true)
+	wantVal := lang.BuildBoolValue(true)
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantVal, gotVal)
@@ -61,12 +62,12 @@ func TestRule_WhenRuleIsFalse(t *testing.T) {
 	internalRuleName := fmt.Sprintf("@rule:%v", ruleName)
 	mockedEnv := aladino.MockDefaultEnv(t, nil, nil, aladino.MockBuiltIns(), nil)
 
-	mockedEnv.GetRegisterMap()[internalRuleName] = aladino.BuildStringValue("1 == 2")
+	mockedEnv.GetRegisterMap()[internalRuleName] = lang.BuildStringValue("1 == 2")
 
-	args := []aladino.Value{aladino.BuildStringValue(ruleName)}
+	args := []lang.Value{lang.BuildStringValue(ruleName)}
 	gotVal, err := rule(mockedEnv, args)
 
-	wantVal := aladino.BuildBoolValue(false)
+	wantVal := lang.BuildBoolValue(false)
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantVal, gotVal)

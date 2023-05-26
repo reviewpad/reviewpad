@@ -4,14 +4,18 @@
 
 package aladino
 
-import "fmt"
+import (
+	"fmt"
 
-func TypeInference(e Env, expr Expr) (Type, error) {
+	"github.com/reviewpad/reviewpad/v4/lang"
+)
+
+func TypeInference(e Env, expr Expr) (lang.Type, error) {
 	return expr.typeinfer(NewTypeEnv(e))
 }
 
-func typesinfer(env TypeEnv, exprs []Expr) ([]Type, error) {
-	exprsTy := make([]Type, len(exprs))
+func typesinfer(env TypeEnv, exprs []Expr) ([]lang.Type, error) {
+	exprsTy := make([]lang.Type, len(exprs))
 	for i, expr := range exprs {
 		exprTy, err := expr.typeinfer(env)
 		if err != nil {
@@ -24,7 +28,7 @@ func typesinfer(env TypeEnv, exprs []Expr) ([]Type, error) {
 	return exprsTy, nil
 }
 
-func (u *UnaryOp) typeinfer(env TypeEnv) (Type, error) {
+func (u *UnaryOp) typeinfer(env TypeEnv) (lang.Type, error) {
 	exprType, exprErr := u.expr.typeinfer(env)
 	if exprErr != nil {
 		return nil, exprErr
@@ -32,14 +36,14 @@ func (u *UnaryOp) typeinfer(env TypeEnv) (Type, error) {
 
 	switch u.op.getOperator() {
 	case NOT_OP:
-		if exprType.Kind() == BOOL_TYPE {
-			return BuildBoolType(), nil
+		if exprType.Kind() == lang.BOOL_TYPE {
+			return lang.BuildBoolType(), nil
 		}
 	}
 	return nil, fmt.Errorf("type inference failed")
 }
 
-func (b *BinaryOp) typeinfer(env TypeEnv) (Type, error) {
+func (b *BinaryOp) typeinfer(env TypeEnv) (lang.Type, error) {
 	lhsType, errLeft := b.lhs.typeinfer(env)
 	if errLeft != nil {
 		return nil, errLeft
@@ -52,23 +56,23 @@ func (b *BinaryOp) typeinfer(env TypeEnv) (Type, error) {
 
 	switch b.op.getOperator() {
 	case EQ_OP, NEQ_OP:
-		if lhsType.equals(rhsType) {
-			return BuildBoolType(), nil
+		if lhsType.Equals(rhsType) {
+			return lang.BuildBoolType(), nil
 		}
 	case GREATER_EQ_THAN_OP, GREATER_THAN_OP, LESS_EQ_THAN_OP, LESS_THAN_OP:
-		if lhsType.equals(BuildIntType()) && rhsType.equals(BuildIntType()) {
-			return BuildBoolType(), nil
+		if lhsType.Equals(lang.BuildIntType()) && rhsType.Equals(lang.BuildIntType()) {
+			return lang.BuildBoolType(), nil
 		}
 	case AND_OP, OR_OP:
-		if lhsType.equals(BuildBoolType()) && rhsType.equals(BuildBoolType()) {
-			return BuildBoolType(), nil
+		if lhsType.Equals(lang.BuildBoolType()) && rhsType.Equals(lang.BuildBoolType()) {
+			return lang.BuildBoolType(), nil
 		}
 	}
 
 	return nil, fmt.Errorf("type inference failed")
 }
 
-func (fc *FunctionCall) typeinfer(env TypeEnv) (Type, error) {
+func (fc *FunctionCall) typeinfer(env TypeEnv) (lang.Type, error) {
 	argsTy, err := typesinfer(env, fc.arguments)
 	if err != nil {
 		return nil, err
@@ -79,15 +83,15 @@ func (fc *FunctionCall) typeinfer(env TypeEnv) (Type, error) {
 		return nil, err
 	}
 
-	ty := fcType.(*FunctionType)
-	if equals(argsTy, ty.paramTypes) {
-		return ty.returnType, nil
+	ty := fcType.(*lang.FunctionType)
+	if lang.Equals(argsTy, ty.ParamTypes()) {
+		return ty.ReturnType(), nil
 	}
 
 	return nil, fmt.Errorf("type inference failed: mismatch in arg types on %v", fc.name.ident)
 }
 
-func (l *Lambda) typeinfer(env TypeEnv) (Type, error) {
+func (l *Lambda) typeinfer(env TypeEnv) (lang.Type, error) {
 	paramsTy, err := typesinfer(env, l.parameters)
 	if err != nil {
 		return nil, err
@@ -98,10 +102,10 @@ func (l *Lambda) typeinfer(env TypeEnv) (Type, error) {
 		return nil, err
 	}
 
-	return BuildFunctionType(paramsTy, bodyType), nil
+	return lang.BuildFunctionType(paramsTy, bodyType), nil
 }
 
-func (te *TypedExpr) typeinfer(env TypeEnv) (Type, error) {
+func (te *TypedExpr) typeinfer(env TypeEnv) (lang.Type, error) {
 	if te.expr.Kind() != VARIABLE_CONST {
 		return nil, fmt.Errorf("typed expression %v is not a variable", te.expr)
 	}
@@ -113,7 +117,7 @@ func (te *TypedExpr) typeinfer(env TypeEnv) (Type, error) {
 }
 
 // TODO: Fix variable shadowing
-func (v *Variable) typeinfer(env TypeEnv) (Type, error) {
+func (v *Variable) typeinfer(env TypeEnv) (lang.Type, error) {
 	varName := v.ident
 	varType, ok := env[varName]
 	if !ok {
@@ -123,23 +127,23 @@ func (v *Variable) typeinfer(env TypeEnv) (Type, error) {
 	return varType, nil
 }
 
-func (c *StringConst) typeinfer(env TypeEnv) (Type, error) {
-	return BuildStringType(), nil
+func (c *StringConst) typeinfer(env TypeEnv) (lang.Type, error) {
+	return lang.BuildStringType(), nil
 }
 
-func (i *IntConst) typeinfer(env TypeEnv) (Type, error) {
-	return BuildIntType(), nil
+func (i *IntConst) typeinfer(env TypeEnv) (lang.Type, error) {
+	return lang.BuildIntType(), nil
 }
 
-func (b *BoolConst) typeinfer(env TypeEnv) (Type, error) {
-	return BuildBoolType(), nil
+func (b *BoolConst) typeinfer(env TypeEnv) (lang.Type, error) {
+	return lang.BuildBoolType(), nil
 }
 
-func (a *Array) typeinfer(env TypeEnv) (Type, error) {
+func (a *Array) typeinfer(env TypeEnv) (lang.Type, error) {
 	elemsTy, err := typesinfer(env, a.elems)
 	if err != nil {
 		return nil, err
 	}
 
-	return BuildArrayType(elemsTy), nil
+	return lang.BuildArrayType(elemsTy), nil
 }

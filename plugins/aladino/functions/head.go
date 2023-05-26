@@ -7,19 +7,20 @@ package plugins_aladino_functions
 import (
 	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
 
 func Head() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type:           aladino.BuildFunctionType([]aladino.Type{}, aladino.BuildStringType()),
+		Type:           lang.BuildFunctionType([]lang.Type{}, lang.BuildStringType()),
 		Code:           headCode,
 		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 	}
 }
 
-func headCode(e aladino.Env, _ []aladino.Value) (aladino.Value, error) {
+func headCode(e aladino.Env, _ []lang.Value) (lang.Value, error) {
 	pullRequest := e.GetTarget().(*target.PullRequestTarget)
 
-	return aladino.BuildStringValue(pullRequest.GetHead()), nil
+	return lang.BuildStringValue(pullRequest.GetHead()), nil
 }

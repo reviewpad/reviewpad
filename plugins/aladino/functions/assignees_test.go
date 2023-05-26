@@ -9,6 +9,7 @@ import (
 
 	pbc "github.com/reviewpad/api/go/codehost"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/stretchr/testify/assert"
@@ -34,14 +35,14 @@ func TestAssignees(t *testing.T) {
 	)
 
 	mockedAssignees := mockedEnv.GetTarget().(*target.PullRequestTarget).PullRequest.Assignees
-	wantAssigneesLogins := make([]aladino.Value, len(mockedAssignees))
+	wantAssigneesLogins := make([]lang.Value, len(mockedAssignees))
 	for i, assignee := range mockedAssignees {
-		wantAssigneesLogins[i] = aladino.BuildStringValue(assignee.GetLogin())
+		wantAssigneesLogins[i] = lang.BuildStringValue(assignee.GetLogin())
 	}
 
-	wantAssignees := aladino.BuildArrayValue(wantAssigneesLogins)
+	wantAssignees := lang.BuildArrayValue(wantAssigneesLogins)
 
-	gotAssignees, err := assignees(mockedEnv, []aladino.Value{})
+	gotAssignees, err := assignees(mockedEnv, []lang.Value{})
 
 	assert.Nil(t, err)
 	assert.Equal(t, wantAssignees, gotAssignees)

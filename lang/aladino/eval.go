@@ -6,9 +6,11 @@ package aladino
 
 import (
 	"fmt"
+
+	"github.com/reviewpad/reviewpad/v4/lang"
 )
 
-func (u *UnaryOp) Eval(e Env) (Value, error) {
+func (u *UnaryOp) Eval(e Env) (lang.Value, error) {
 	exprValue, exprErr := u.expr.Eval(e)
 	if exprErr != nil {
 		return nil, exprErr
@@ -19,7 +21,7 @@ func (u *UnaryOp) Eval(e Env) (Value, error) {
 	return operator.Eval(exprValue), nil
 }
 
-func (b *BinaryOp) Eval(e Env) (Value, error) {
+func (b *BinaryOp) Eval(e Env) (lang.Value, error) {
 	leftValue, leftErr := b.lhs.Eval(e)
 	if leftErr != nil {
 		return nil, leftErr
@@ -39,7 +41,7 @@ func (b *BinaryOp) Eval(e Env) (Value, error) {
 	return operator.Eval(leftValue, rightValue), nil
 }
 
-func (v *Variable) Eval(e Env) (Value, error) {
+func (v *Variable) Eval(e Env) (lang.Value, error) {
 	variableName := v.ident
 
 	if val, ok := e.GetRegisterMap()[variableName]; ok {
@@ -55,27 +57,27 @@ func (v *Variable) Eval(e Env) (Value, error) {
 
 	for _, supportedKind := range fn.SupportedKinds {
 		if entityKind == supportedKind {
-			return fn.Code(e, []Value{})
+			return fn.Code(e, []lang.Value{})
 		}
 	}
 
 	return nil, fmt.Errorf("eval: unsupported kind %v", entityKind)
 }
 
-func (b *BoolConst) Eval(e Env) (Value, error) {
-	return BuildBoolValue(b.value), nil
+func (b *BoolConst) Eval(e Env) (lang.Value, error) {
+	return lang.BuildBoolValue(b.value), nil
 }
 
-func (c *StringConst) Eval(e Env) (Value, error) {
-	return BuildStringValue(c.value), nil
+func (c *StringConst) Eval(e Env) (lang.Value, error) {
+	return lang.BuildStringValue(c.value), nil
 }
 
-func (i *IntConst) Eval(e Env) (Value, error) {
-	return BuildIntValue(i.value), nil
+func (i *IntConst) Eval(e Env) (lang.Value, error) {
+	return lang.BuildIntValue(i.value), nil
 }
 
-func (fc *FunctionCall) Eval(e Env) (Value, error) {
-	args := make([]Value, len(fc.arguments))
+func (fc *FunctionCall) Eval(e Env) (lang.Value, error) {
+	args := make([]lang.Value, len(fc.arguments))
 	for i, elem := range fc.arguments {
 		value, err := elem.Eval(e)
 
@@ -110,8 +112,8 @@ func (fc *FunctionCall) Eval(e Env) (Value, error) {
 	return nil, fmt.Errorf("eval: unsupported kind %v", entityKind)
 }
 
-func (lambda *Lambda) Eval(e Env) (Value, error) {
-	fn := func(args []Value) Value {
+func (lambda *Lambda) Eval(e Env) (lang.Value, error) {
+	fn := func(args []lang.Value) lang.Value {
 		// TODO: We need to deep copy the register map and use in the eval at L79
 		for i, elem := range lambda.parameters {
 			paramIdent := elem.(*TypedExpr).expr.(*Variable).ident
@@ -127,15 +129,15 @@ func (lambda *Lambda) Eval(e Env) (Value, error) {
 		return fnVal
 	}
 
-	return BuildFunctionValue(fn), nil
+	return lang.BuildFunctionValue(fn), nil
 }
 
-func (te *TypedExpr) Eval(e Env) (Value, error) {
+func (te *TypedExpr) Eval(e Env) (lang.Value, error) {
 	return te.expr.Eval(e)
 }
 
-func (a *Array) Eval(e Env) (Value, error) {
-	values := make([]Value, len(a.elems))
+func (a *Array) Eval(e Env) (lang.Value, error) {
+	values := make([]lang.Value, len(a.elems))
 	for i, elem := range a.elems {
 		value, err := elem.Eval(e)
 
@@ -146,10 +148,10 @@ func (a *Array) Eval(e Env) (Value, error) {
 		values[i] = value
 	}
 
-	return BuildArrayValue(values), nil
+	return lang.BuildArrayValue(values), nil
 }
 
-func Eval(env Env, expr Expr) (Value, error) {
+func Eval(env Env, expr Expr) (lang.Value, error) {
 	val, err := expr.Eval(env)
 
 	if err != nil {
@@ -168,59 +170,59 @@ func EvalCondition(env Env, expr Expr) (bool, error) {
 		return false, err
 	}
 
-	return boolVal.(*BoolValue).Val, nil
+	return boolVal.(*lang.BoolValue).Val, nil
 }
 
-func (op *NotOp) Eval(exprVal Value) Value {
-	return BuildBoolValue(!exprVal.(*BoolValue).Val)
+func (op *NotOp) Eval(exprVal lang.Value) lang.Value {
+	return lang.BuildBoolValue(!exprVal.(*lang.BoolValue).Val)
 }
 
-func (op *EqOp) Eval(lhs, rhs Value) Value {
-	return BuildBoolValue(lhs.Equals(rhs))
+func (op *EqOp) Eval(lhs, rhs lang.Value) lang.Value {
+	return lang.BuildBoolValue(lhs.Equals(rhs))
 }
 
-func (op *NeqOp) Eval(lhs, rhs Value) Value {
-	return BuildBoolValue(!lhs.Equals(rhs))
+func (op *NeqOp) Eval(lhs, rhs lang.Value) lang.Value {
+	return lang.BuildBoolValue(!lhs.Equals(rhs))
 }
 
-func (op *AndOp) Eval(lhs, rhs Value) Value {
-	leftValue := lhs.(*BoolValue).Val
-	rightValue := rhs.(*BoolValue).Val
+func (op *AndOp) Eval(lhs, rhs lang.Value) lang.Value {
+	leftValue := lhs.(*lang.BoolValue).Val
+	rightValue := rhs.(*lang.BoolValue).Val
 
-	return BuildBoolValue(leftValue && rightValue)
+	return lang.BuildBoolValue(leftValue && rightValue)
 }
 
-func (op *OrOp) Eval(lhs, rhs Value) Value {
-	leftValue := lhs.(*BoolValue).Val
-	rightValue := rhs.(*BoolValue).Val
+func (op *OrOp) Eval(lhs, rhs lang.Value) lang.Value {
+	leftValue := lhs.(*lang.BoolValue).Val
+	rightValue := rhs.(*lang.BoolValue).Val
 
-	return BuildBoolValue(leftValue || rightValue)
+	return lang.BuildBoolValue(leftValue || rightValue)
 }
 
-func (op *LessThanOp) Eval(lhs, rhs Value) Value {
-	leftValue := lhs.(*IntValue).Val
-	rightValue := rhs.(*IntValue).Val
+func (op *LessThanOp) Eval(lhs, rhs lang.Value) lang.Value {
+	leftValue := lhs.(*lang.IntValue).Val
+	rightValue := rhs.(*lang.IntValue).Val
 
-	return BuildBoolValue(leftValue < rightValue)
+	return lang.BuildBoolValue(leftValue < rightValue)
 }
 
-func (op *LessEqThanOp) Eval(lhs, rhs Value) Value {
-	leftValue := lhs.(*IntValue).Val
-	rightValue := rhs.(*IntValue).Val
+func (op *LessEqThanOp) Eval(lhs, rhs lang.Value) lang.Value {
+	leftValue := lhs.(*lang.IntValue).Val
+	rightValue := rhs.(*lang.IntValue).Val
 
-	return BuildBoolValue(leftValue <= rightValue)
+	return lang.BuildBoolValue(leftValue <= rightValue)
 }
 
-func (op *GreaterThanOp) Eval(lhs, rhs Value) Value {
-	leftValue := lhs.(*IntValue).Val
-	rightValue := rhs.(*IntValue).Val
+func (op *GreaterThanOp) Eval(lhs, rhs lang.Value) lang.Value {
+	leftValue := lhs.(*lang.IntValue).Val
+	rightValue := rhs.(*lang.IntValue).Val
 
-	return BuildBoolValue(leftValue > rightValue)
+	return lang.BuildBoolValue(leftValue > rightValue)
 }
 
-func (op *GreaterEqThanOp) Eval(lhs, rhs Value) Value {
-	leftValue := lhs.(*IntValue).Val
-	rightValue := rhs.(*IntValue).Val
+func (op *GreaterEqThanOp) Eval(lhs, rhs lang.Value) lang.Value {
+	leftValue := lhs.(*lang.IntValue).Val
+	rightValue := rhs.(*lang.IntValue).Val
 
-	return BuildBoolValue(leftValue >= rightValue)
+	return lang.BuildBoolValue(leftValue >= rightValue)
 }
