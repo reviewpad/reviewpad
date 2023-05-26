@@ -1,0 +1,20 @@
+# Copyright (C) 2023 Explore.dev, Unipessoal Lda - All Rights Reserved
+# Use of this source code is governed by a license that can be
+# found in the LICENSE file.
+
+groups:
+  - name: test
+    spec: '["team1", "team2"]'
+
+workflows:
+  - name: test
+    run:
+      - forEach:
+          value: $teamName
+          in: $group("test")
+          do:
+            - $addLabel($teamName)
+            - forEach:
+                value: $teamName2
+                in: $group("test")
+                do: $assignReviewer($team($teamName2), 1, "random")
