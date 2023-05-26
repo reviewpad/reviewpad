@@ -26,7 +26,6 @@ func Merge() *aladino.BuiltInAction {
 func mergeCode(e aladino.Env, args []lang.Value) error {
 	t := e.GetTarget().(*target.PullRequestTarget)
 	log := e.GetLogger().WithField("builtin", "merge")
-	totalRetryCount := 2
 
 	if t.PullRequest.Status != pbc.PullRequestStatus_OPEN || t.PullRequest.IsDraft {
 		log.Infof("skipping action because pull request is not open or is a draft")
@@ -42,15 +41,19 @@ func mergeCode(e aladino.Env, args []lang.Value) error {
 		return nil
 	}
 
-	// We need to check if the base branch of the pull request has GitHub Merge Queue enabled.
-	// The queue is not enabled if we have nil entries.
-	gitHubMergeQueueEntries, err := e.GetGithubClient().GetGitHubMergeQueueEntries(e.GetCtx(), t.PullRequest.GetBase().Repo.Owner, t.PullRequest.GetBase().Repo.Name, t.PullRequest.GetBase().Name, totalRetryCount)
+	isGithubMergeQueueEnabled, err := e.GetGithubClient().IsGithubMergeQueueEnabled(
+		e.GetCtx(),
+		t.PullRequest.GetBase().GetRepo().GetOwner(),
+		t.PullRequest.GetBase().GetRepo().GetName(),
+		t.PullRequest.GetBase().GetName(),
+	)
+
 	if err != nil {
 		return err
 	}
 
-	if gitHubMergeQueueEntries != nil {
-		return processMergeForGitHubMergeQueue(e, gitHubMergeQueueEntries)
+	if isGithubMergeQueueEnabled {
+		return processMergeForGitHubMergeQueue(e)
 	}
 
 	if e.GetCheckRunID() != nil {
@@ -104,12 +107,23 @@ func parseMergeMethod(args []lang.Value) (string, error) {
 	}
 }
 
-func processMergeForGitHubMergeQueue(e aladino.Env, gitHubMergeQueueEntries []int) error {
+func processMergeForGitHubMergeQueue(e aladino.Env) error {
 	t := e.GetTarget().(*target.PullRequestTarget)
 	log := e.GetLogger().WithField("builtin", "merge")
 
-	// We need to check if the pull request is already in the GitHub Merge Queue.
-	// If it is, we don't need to do anything.
+	totalRetryCount := 2
+	gitHubMergeQueueEntries, err := e.GetGithubClient().GetGitHubMergeQueueEntries(
+		e.GetCtx(),
+		t.PullRequest.GetBase().GetRepo().GetOwner(),
+		t.PullRequest.GetBase().GetRepo().GetName(),
+		t.PullRequest.GetBase().GetName(),
+		totalRetryCount,
+	)
+
+	if err != nil {
+		return err
+	}
+
 	for _, pullRequestNumber := range gitHubMergeQueueEntries {
 		if int64(pullRequestNumber) == t.PullRequest.GetNumber() {
 			log.Infof("skipping action because pull request is already in the GitHub Merge Queue")
