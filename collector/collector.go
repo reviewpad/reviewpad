@@ -5,6 +5,8 @@
 package collector
 
 import (
+	"strings"
+
 	"github.com/dukex/mixpanel"
 	"github.com/google/uuid"
 )
@@ -96,6 +98,12 @@ func (c *collector) Collect(eventName string, properties map[string]interface{})
 
 // CollectError sends an error event to mixpanel.
 func (c *collector) CollectError(err error) error {
+	for _, errorToIgnore := range errorsToIgnore {
+		if strings.Contains(err.Error(), errorToIgnore) {
+			return nil
+		}
+	}
+
 	return c.Collect("Error", map[string]interface{}{
 		"details": err.Error(),
 	})
