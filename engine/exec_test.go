@@ -299,17 +299,17 @@ func TestExecConfigurationFile(t *testing.T) {
 			targetEntity:   engine.DefaultMockTargetEntity,
 			wantExitStatus: engine.ExitStatusSuccess,
 		},
-		// "reviewpad with workflow else": {
-		// 	inputReviewpadFilePath: "testdata/exec/reviewpad_with_workflow_else.yml",
-		// 	wantProgram: engine.BuildProgram(
-		// 		[]*engine.Statement{
-		// 			engine.BuildStatement(`$addLabel("else-clause")`),
-		// 			engine.BuildStatement(`$addLabel("after-if")`),
-		// 		},
-		// 	),
-		// 	targetEntity:   engine.DefaultMockTargetEntity,
-		// 	wantExitStatus: engine.ExitStatusSuccess,
-		// },
+		"reviewpad with workflow else": {
+			inputReviewpadFilePath: "testdata/exec/reviewpad_with_workflow_else.yml",
+			wantProgram: engine.BuildProgram(
+				[]*engine.Statement{
+					engine.BuildStatement(`$addLabel("else-clause")`),
+					engine.BuildStatement(`$addLabel("after-if")`),
+				},
+			),
+			targetEntity:   engine.DefaultMockTargetEntity,
+			wantExitStatus: engine.ExitStatusSuccess,
+		},
 	}
 
 	codehostClient := aladino.GetDefaultCodeHostClient(t, aladino.GetDefaultPullRequestDetails(), aladino.GetDefaultPullRequestFileList(), nil, nil)
