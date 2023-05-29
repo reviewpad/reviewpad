@@ -22,18 +22,23 @@ func Reviewers() *aladino.BuiltInFunction {
 func reviewersCode(e aladino.Env, _ []lang.Value) (lang.Value, error) {
 	t := e.GetTarget().(*target.PullRequestTarget)
 	reviewers := make([]lang.Value, 0)
-	existsInReviewersList := make(map[string]bool)
 
 	reviews, err := t.GetReviews()
 	if err != nil {
 		return nil, err
 	}
 
+	visited := make(map[string]bool)
 	for _, review := range reviews {
 		reviewer := review.User.Login
-		if _, ok := existsInReviewersList[reviewer]; !ok {
+
+		if reviewer == t.PullRequest.Author.Login {
+			continue
+		}
+
+		if _, ok := visited[reviewer]; !ok {
 			reviewers = append(reviewers, lang.BuildStringValue(reviewer))
-			existsInReviewersList[reviewer] = true
+			visited[reviewer] = true
 		}
 	}
 
