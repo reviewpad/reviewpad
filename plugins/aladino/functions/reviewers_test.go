@@ -11,6 +11,7 @@ import (
 
 	"github.com/google/go-github/v52/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
+	"github.com/reviewpad/api/go/codehost"
 	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
@@ -44,6 +45,13 @@ func TestReviewers_WhenListReviewsRequestFails(t *testing.T) {
 }
 
 func TestReviewers(t *testing.T) {
+	pullRequestAuthor := "peter"
+	mockedCodeReview := aladino.GetDefaultMockPullRequestDetailsWith(&codehost.PullRequest{
+		Author: &codehost.User{
+			Login: pullRequestAuthor,
+		},
+	})
+
 	tests := map[string]struct {
 		clientOptions []mock.MockBackendOption
 		wantReviewers lang.Value
@@ -137,11 +145,50 @@ func TestReviewers(t *testing.T) {
 			),
 			wantErr: "",
 		},
+		"when pull request has a comment from its author": {
+			clientOptions: []mock.MockBackendOption{
+				mock.WithRequestMatch(
+					mock.GetReposPullsReviewsByOwnerByRepoByPullNumber,
+					[]*github.PullRequestReview{
+						{
+							ID:    github.Int64(1),
+							Body:  github.String("Here is the body for the review."),
+							State: github.String("COMMENTED"),
+							User: &github.User{
+								Login: github.String(pullRequestAuthor),
+							},
+						},
+						{
+							ID:    github.Int64(2),
+							Body:  github.String("Here is the body for the review."),
+							State: github.String("APPROVED"),
+							User: &github.User{
+								Login: github.String("john"),
+							},
+						},
+					},
+				),
+			},
+			wantReviewers: lang.BuildArrayValue(
+				[]lang.Value{
+					lang.BuildStringValue("john"),
+				},
+			),
+			wantErr: "",
+		},
 	}
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			mockedEnv := aladino.MockDefaultEnv(t, test.clientOptions, nil, aladino.MockBuiltIns(), nil)
+			mockedEnv := aladino.MockDefaultEnvWithPullRequestAndFiles(
+				t,
+				test.clientOptions,
+				nil,
+				mockedCodeReview,
+				aladino.GetDefaultPullRequestFileList(),
+				aladino.MockBuiltIns(),
+				nil,
+			)
 
 			gotReviewers, gotErr := reviewers(mockedEnv, []lang.Value{})
 
