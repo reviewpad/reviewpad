@@ -415,7 +415,6 @@ func execStatement(interpreter Interpreter, run PadWorkflowRunBlock, rules map[s
 		return retStatus, run.Actions, err
 	}
 
-	// if the run block has a for-each clause
 	if run.ForEach != nil {
 		var executedActions []string
 
