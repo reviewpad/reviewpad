@@ -87,12 +87,6 @@ func BuildInternalTemporaryVariableName(name string) string {
 	return fmt.Sprintf("@variable:%s", name)
 }
 
-func (i *Interpreter) NewExecutionScope() engine.Interpreter {
-	return &Interpreter{
-		Env: i.Env.NewExecutionScope(),
-	}
-}
-
 func BuildInternalLabelID(id string) string {
 	return fmt.Sprintf("@label:%v", id)
 }

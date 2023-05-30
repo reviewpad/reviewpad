@@ -276,6 +276,38 @@ func lintGroupsMentions(groups []PadGroup, rules []PadRule, workflows []PadWorkf
 	return nil
 }
 
+func lintShadowedVariablesInRuns(runs []PadWorkflowRunBlock, definedVariables map[string]bool) error {
+	for _, run := range runs {
+		if run.ForEach != nil {
+			if _, ok := definedVariables[run.ForEach.Value]; ok {
+				return fmt.Errorf("variable shadowing is not allowed: the variable %s is already defined", run.ForEach.Value)
+			}
+
+			definedVariables[run.ForEach.Value] = true
+
+			err := lintShadowedVariablesInRuns(run.ForEach.Do, definedVariables)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func lintShadowedVariables(workflows []PadWorkflow) error {
+	definedVariables := map[string]bool{}
+
+	for _, workflow := range workflows {
+		err := lintShadowedVariablesInRuns(workflow.Runs, definedVariables)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func Lint(file *ReviewpadFile, logger *logrus.Entry) error {
 	err := lintGroups(logger, file.Groups)
 	if err != nil {
@@ -293,6 +325,11 @@ func Lint(file *ReviewpadFile, logger *logrus.Entry) error {
 	}
 
 	err = lintRulesMentions(logger, file.Rules, file.Groups, file.Workflows)
+	if err != nil {
+		return err
+	}
+
+	err = lintShadowedVariables(file.Workflows)
 	if err != nil {
 		return err
 	}
