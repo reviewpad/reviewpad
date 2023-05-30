@@ -419,14 +419,12 @@ func execStatement(interpreter Interpreter, run PadWorkflowRunBlock, rules map[s
 	if run.ForEach != nil {
 		var executedActions []string
 
-		// First process the list expression to be iterated
 		value, err := interpreter.ProcessList(run.ForEach.In)
 		if err != nil {
 			return ExitStatusFailure, nil, err
 		}
 
 		for _, val := range value.(*lang.ArrayValue).Vals {
-			// store the value in the temporary variable
 			interpreter.StoreTemporaryVariable(run.ForEach.Value, val)
 
 			exitStatus, forEachActions, err := execStatementBlock(interpreter, run.ForEach.Do, rules)
