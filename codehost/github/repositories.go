@@ -40,3 +40,19 @@ func (c *GithubClient) DownloadContents(ctx context.Context, filePath string, br
 
 	return io.ReadAll(ioReader)
 }
+
+func (c *GithubClient) DownloadContentsFromCommitSHA(ctx context.Context, filePath string, branch *pbc.Branch) ([]byte, error) {
+	branchRepoOwner := branch.Repo.Owner
+	branchRepoName := branch.Repo.Name
+	branchRef := branch.Sha
+
+	ioReader, _, err := c.clientREST.Repositories.DownloadContents(ctx, branchRepoOwner, branchRepoName, filePath, &github.RepositoryContentGetOptions{
+		Ref: branchRef,
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return io.ReadAll(ioReader)
+}
