@@ -423,10 +423,14 @@ func execStatement(interpreter Interpreter, run PadWorkflowRunBlock, rules map[s
 			return ExitStatusFailure, nil, err
 		}
 
-		for _, val := range value.(*lang.ArrayValue).Vals {
-			interpreter.StoreTemporaryVariable(run.ForEach.Value, val)
+		// create a new execution scope for the for-each block
+		// so that the temporary variables are not shadowed
+		scopedInterpreter := interpreter.NewExecutionScope()
 
-			exitStatus, forEachActions, err := execStatementBlock(interpreter, run.ForEach.Do, rules)
+		for _, val := range value.(*lang.ArrayValue).Vals {
+			scopedInterpreter.StoreTemporaryVariable(run.ForEach.Value, val)
+
+			exitStatus, forEachActions, err := execStatementBlock(scopedInterpreter, run.ForEach.Do, rules)
 			executedActions = append(executedActions, forEachActions...)
 			if err != nil {
 				return exitStatus, executedActions, err

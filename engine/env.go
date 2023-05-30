@@ -46,6 +46,7 @@ type Interpreter interface {
 	GetCheckRunConclusion() string
 	ProcessList(expr string) (lang.Value, error)
 	StoreTemporaryVariable(name string, value lang.Value)
+	NewExecutionScope() Interpreter
 }
 
 type Env struct {

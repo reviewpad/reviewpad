@@ -51,6 +51,7 @@ type Env interface {
 	GetCheckRunID() *int64
 	SetCheckRunConclusion(string)
 	GetCheckRunConclusion() string
+	NewExecutionScope() Env
 }
 
 type BaseEnv struct {
@@ -164,6 +165,32 @@ func NewTypeEnv(e Env) TypeEnv {
 	}
 
 	return TypeEnv(builtInsType)
+}
+
+func (e *BaseEnv) NewExecutionScope() Env {
+	newRegisterMap := RegisterMap(make(map[string]lang.Value))
+	for key, value := range e.RegisterMap {
+		newRegisterMap[key] = value
+	}
+
+	return &BaseEnv{
+		BuiltIns:                 e.BuiltIns,
+		BuiltInsReportedMessages: e.BuiltInsReportedMessages,
+		GithubClient:             e.GithubClient,
+		CodeHostClient:           e.CodeHostClient,
+		Collector:                e.Collector,
+		Ctx:                      e.Ctx,
+		DryRun:                   e.DryRun,
+		EventPayload:             e.EventPayload,
+		RegisterMap:              newRegisterMap,
+		Report:                   e.Report,
+		Target:                   e.Target,
+		Logger:                   e.Logger,
+		ExecWaitGroup:            e.ExecWaitGroup,
+		ExecMutex:                e.ExecMutex,
+		CheckRunID:               e.CheckRunID,
+		CheckRunConclusion:       e.CheckRunConclusion,
+	}
 }
 
 func NewEvalEnv(
