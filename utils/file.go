@@ -81,3 +81,12 @@ func DownloadReviewpadFileFromGitHub(ctx context.Context, logger *logrus.Entry, 
 
 	return bytes.NewBuffer(reviewpadFileContent), nil
 }
+
+func DownloadReviewpadFileFromGitHubThroughCommitSHA(ctx context.Context, logger *logrus.Entry, githubClient *gh.GithubClient, filePath string, branch *pbc.Branch) (*bytes.Buffer, error) {
+	reviewpadFileContent, err := githubClient.DownloadContentsFromCommitSHA(ctx, filePath, branch)
+	if err != nil {
+		return nil, err
+	}
+
+	return bytes.NewBuffer(reviewpadFileContent), nil
+}
