@@ -122,6 +122,7 @@ type PadWorkflowRunBlock struct {
 }
 
 type PadWorkflowRunForEachBlock struct {
+	Key   string
 	Value string
 	In    string
 	Do    []PadWorkflowRunBlock
@@ -226,6 +227,30 @@ type ReviewpadFile struct {
 	Workflows      []PadWorkflow       `yaml:"workflows"`
 	Pipelines      []PadPipeline       `yaml:"pipelines"`
 	Recipes        map[string]*bool    `yaml:"recipes"`
+	Dictionaries   []PadDictionary     `yaml:"dictionaries"`
+}
+
+type PadDictionary struct {
+	Name string            `yaml:"name"`
+	Spec map[string]string `yaml:"spec"`
+}
+
+func (p PadDictionary) equals(o PadDictionary) bool {
+	if p.Name != o.Name {
+		return false
+	}
+
+	if len(p.Spec) != len(o.Spec) {
+		return false
+	}
+
+	for key, value := range p.Spec {
+		if o.Spec[key] != value {
+			return false
+		}
+	}
+
+	return true
 }
 
 type PadPipeline struct {
@@ -424,6 +449,10 @@ func (r *ReviewpadFile) appendRecipes(o *ReviewpadFile) {
 	}
 }
 
+func (r *ReviewpadFile) appendDictionaries(o *ReviewpadFile) {
+	r.Dictionaries = append(r.Dictionaries, o.Dictionaries...)
+}
+
 func (r *ReviewpadFile) extend(o *ReviewpadFile) {
 	if o.Mode != "" {
 		r.Mode = o.Mode
@@ -443,6 +472,7 @@ func (r *ReviewpadFile) extend(o *ReviewpadFile) {
 	r.appendWorkflows(o)
 	r.appendPipelines(o)
 	r.appendRecipes(o)
+	r.appendDictionaries(o)
 }
 
 func findGroup(groups []PadGroup, name string) (*PadGroup, bool) {

@@ -29,6 +29,7 @@ func inlineModificator(file *ReviewpadFile) (*ReviewpadFile, error) {
 		Workflows:      file.Workflows,
 		Pipelines:      file.Pipelines,
 		Recipes:        file.Recipes,
+		Dictionaries:   file.Dictionaries,
 	}
 
 	for i, workflow := range reviewpadFile.Workflows {
@@ -250,11 +251,17 @@ func normalizeRun(run any, currentRules []PadRule) ([]PadWorkflowRunBlock, []Pad
 				return nil, nil, err
 			}
 
-			mapBlock.ForEach = &PadWorkflowRunForEachBlock{
+			padWorkflowRunForEachBlock := &PadWorkflowRunForEachBlock{
 				Value: value.(string),
 				In:    in.(string),
 				Do:    processedDo,
 			}
+
+			if key, ok := forEachBlock.(map[string]interface{})["key"].(string); ok {
+				padWorkflowRunForEachBlock.Key = key
+			}
+
+			mapBlock.ForEach = padWorkflowRunForEachBlock
 
 			rules = append(rules, processedDoRules...)
 

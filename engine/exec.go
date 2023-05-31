@@ -302,6 +302,19 @@ func ExecConfigurationFile(env *Env, file *ReviewpadFile) (ExitStatus, *Program,
 		}
 	}
 
+	// process dictionaries
+	for _, dictionary := range file.Dictionaries {
+		transformedSpec := make(map[string]string)
+		for key, value := range dictionary.Spec {
+			transformedSpec[key] = transformAladinoExpression(value)
+		}
+
+		err := interpreter.ProcessDictionary(dictionary.Name, transformedSpec)
+		if err != nil {
+			return ExitStatusFailure, nil, err
+		}
+	}
+
 	// a program is a list of statements to be executed based on the command, workflow rules and actions.
 	program := BuildProgram(make([]*Statement, 0))
 
