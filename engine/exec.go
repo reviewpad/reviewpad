@@ -359,10 +359,10 @@ func ExecConfigurationFile(env *Env, file *ReviewpadFile) (ExitStatus, *Program,
 
 	// pipelines should only run on pull requests
 	if env.TargetEntity.Kind == entities.PullRequest {
-		// process pipelines
 		for _, pipeline := range file.Pipelines {
-			log.Infof("evaluating pipeline '%v':", pipeline.Name)
 			pipelineLog := log.WithField("pipeline", pipeline.Name)
+
+			pipelineLog.Infof("processing pipeline '%v':", pipeline.Name)
 
 			var err error
 			activated := pipeline.Trigger == ""
@@ -373,24 +373,40 @@ func ExecConfigurationFile(env *Env, file *ReviewpadFile) (ExitStatus, *Program,
 				}
 			}
 
-			if activated {
-				for num, stage := range pipeline.Stages {
-					pipelineLog.Infof("evaluating pipeline stage '%v'", num)
-					if stage.Until == "" {
-						program.append(stage.Actions)
-						retStatus, err := execActions(interpreter, stage.Actions)
-						return retStatus, program, err
+			if !activated {
+				pipelineLog.Info("skipping pipeline because the trigger condition was not met")
+				continue
+			}
+
+			for num, stage := range pipeline.Stages {
+				pipelineLog.Infof("processing pipeline stage %v", num)
+
+				if stage.Until == "" {
+					pipelineLog.Info("pipeline stage 'until' condition not specified, executing actions")
+
+					program.append(stage.Actions)
+					retStatus, err := execActions(interpreter, stage.Actions)
+					if err != nil || retStatus == ExitStatusFailure {
+						return retStatus, nil, err
 					}
 
-					isDone, err := interpreter.EvalExpr("patch", stage.Until)
-					if err != nil {
-						return ExitStatusFailure, nil, err
-					}
+					break
+				}
 
-					if !isDone {
-						program.append(stage.Actions)
-						retStatus, err := execActions(interpreter, stage.Actions)
-						return retStatus, program, err
+				isStageCompleted, err := interpreter.EvalExpr("patch", stage.Until)
+				if err != nil {
+					return ExitStatusFailure, nil, err
+				}
+
+				if isStageCompleted {
+					pipelineLog.Info("pipeline stage 'until' condition was met, skipping stage")
+				} else {
+					pipelineLog.Info("pipeline stage 'until' condition was not met, executing actions")
+
+					program.append(stage.Actions)
+					retStatus, err := execActions(interpreter, stage.Actions)
+					if err != nil || retStatus == ExitStatusFailure {
+						return retStatus, nil, err
 					}
 				}
 			}
