@@ -37,7 +37,7 @@ func FileExt(fp string) string {
 // Otherwise, we download the pull request files and check the filePath exists in them.
 func ReviewpadFileChanged(ctx context.Context, githubClient *gh.GithubClient, filePath string, pullRequest *pbc.PullRequest) (bool, error) {
 	if pullRequest.ChangedFilesCount > pullRequestFileLimit {
-		rawHeadFile, err := githubClient.DownloadContents(ctx, filePath, pullRequest.Head, github.DownloadContentsOptions{
+		rawHeadFile, err := githubClient.DownloadContents(ctx, filePath, pullRequest.Head, &github.DownloadContentsOptions{
 			Method: github.DownloadMethodSHA,
 		})
 		if err != nil {
@@ -47,7 +47,7 @@ func ReviewpadFileChanged(ctx context.Context, githubClient *gh.GithubClient, fi
 			return false, err
 		}
 
-		rawBaseFile, err := githubClient.DownloadContents(ctx, filePath, pullRequest.Base, github.DownloadContentsOptions{
+		rawBaseFile, err := githubClient.DownloadContents(ctx, filePath, pullRequest.Base, &github.DownloadContentsOptions{
 			Method: github.DownloadMethodSHA,
 		})
 		if err != nil {
@@ -84,7 +84,7 @@ func DownloadReviewpadFileFromGitHub(
 	githubClient *gh.GithubClient,
 	filePath string,
 	branch *pbc.Branch,
-	options github.DownloadContentsOptions,
+	options *github.DownloadContentsOptions,
 ) (*bytes.Buffer, error) {
 	reviewpadFileContent, err := githubClient.DownloadContents(ctx, filePath, branch, options)
 	if err != nil {

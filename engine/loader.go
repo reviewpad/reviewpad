@@ -335,7 +335,7 @@ func loadExtension(ctx context.Context, githubClient *gh.GithubClient, extension
 		return nil, "", err
 	}
 
-	content, err := githubClient.DownloadContents(ctx, filePath, branch, gh.DownloadContentsOptions{
+	content, err := githubClient.DownloadContents(ctx, filePath, branch, &gh.DownloadContentsOptions{
 		Method: gh.DownloadMethodBranchName,
 	})
 	if err != nil {
