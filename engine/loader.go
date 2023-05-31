@@ -335,7 +335,7 @@ func loadExtension(ctx context.Context, githubClient *gh.GithubClient, extension
 		return nil, "", err
 	}
 
-	content, err := githubClient.DownloadContents(ctx, filePath, branch)
+	content, err := githubClient.DownloadContentsFromBranchName(ctx, filePath, branch)
 	if err != nil {
 		if responseErr, ok := err.(*github.ErrorResponse); ok && responseErr.Response.StatusCode == 404 {
 			return nil, "", errors.New("we encountered an error while processing the 'extends' property in your Reviewpad configuration. This problem may be due to an incorrect URL or unauthenticated access. Please ensure that you have Reviewpad GitHub App installed in all repositories you are trying to extend from and that the file URL is correct. If you still encounter this error, please reach out to us at #help on https://reviewpad.com/discord for additional support.")
