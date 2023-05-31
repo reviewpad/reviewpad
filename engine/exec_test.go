@@ -349,6 +349,25 @@ func TestExecConfigurationFile(t *testing.T) {
 			targetEntity:   engine.DefaultMockTargetEntity,
 			wantExitStatus: engine.ExitStatusSuccess,
 		},
+		"reviewpad with pipelines": {
+			inputReviewpadFilePath: "testdata/exec/reviewpad_with_pipelines.yml",
+			wantProgram: engine.BuildProgram(
+				[]*engine.Statement{
+					engine.BuildStatement(`$addLabel("pipeline with no trigger")`),
+					engine.BuildStatement(`$addLabel("pipeline with trigger")`),
+					engine.BuildStatement(`$addLabel("pipeline with single stage and single action")`),
+					engine.BuildStatement(`$addLabel("pipeline with single stage and multiple actions - 1/2")`),
+					engine.BuildStatement(`$addLabel("pipeline with single stage and multiple actions - 2/2")`),
+					engine.BuildStatement(`$addLabel("pipeline with multiple stages - stage 2")`),
+					engine.BuildStatement(`$addLabel("pipeline with multiple stages and multiple actions - stage 2 - 1/2")`),
+					engine.BuildStatement(`$addLabel("pipeline with multiple stages and multiple actions - stage 2 - 2/2")`),
+					engine.BuildStatement(`$addLabel("pipeline with single stage and concise actions")`),
+					engine.BuildStatement(`$addLabel("pipeline with multiple stages and concise actions - stage 2")`),
+				},
+			),
+			targetEntity:   engine.DefaultMockTargetEntity,
+			wantExitStatus: engine.ExitStatusSuccess,
+		},
 	}
 
 	codehostClient := aladino.GetDefaultCodeHostClient(t, aladino.GetDefaultPullRequestDetails(), aladino.GetDefaultPullRequestFileList(), nil, nil)

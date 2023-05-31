@@ -1,0 +1,65 @@
+# Copyright 2022 Explore.dev Unipessoal Lda. All Rights Reserved.
+# Use of this source code is governed by a license that can be
+# found in the LICENSE file.
+
+pipelines:
+  - name: pipeline with no trigger
+    stages:
+      - actions:
+          - $addLabel("pipeline with no trigger")
+
+  - name: pipeline with trigger
+    trigger: 1 == 1
+    stages:
+      - actions:
+          - $addLabel("pipeline with trigger")
+
+  - name: pipeline with failing trigger
+    trigger: 1 == 2
+    stages:
+      - actions:
+          - $addLabel("pipeline with failing trigger")
+
+  - name: pipeline with single stage and single action
+    trigger: 1 == 1
+    stages:
+      - actions:
+          - $addLabel("pipeline with single stage and single action")
+
+  - name: pipeline with single stage and multiple actions
+    trigger: 1 == 1
+    stages:
+      - actions:
+          - $addLabel("pipeline with single stage and multiple actions - 1/2")
+          - $addLabel("pipeline with single stage and multiple actions - 2/2")
+
+  - name: pipeline with multiple stages
+    trigger: 1 == 1
+    stages:
+      - actions:
+          - $addLabel("pipeline with multiple stages - stage 1")
+        until: 1 == 1
+      - actions:
+          - $addLabel("pipeline with multiple stages - stage 2")
+
+  - name: pipeline with multiple stages and multiple actions
+    trigger: 1 == 1
+    stages:
+      - actions:
+          - $addLabel("pipeline with multiple stages and multiple actions - stage 1")
+        until: 1 == 1
+      - actions:
+          - $addLabel("pipeline with multiple stages and multiple actions - stage 2 - 1/2")
+          - $addLabel("pipeline with multiple stages and multiple actions - stage 2 - 2/2")
+
+  - name: pipeline with single stage and concise actions
+    trigger: 1 == 1
+    stages:
+      - actions: $addLabel("pipeline with single stage and concise actions")
+
+  - name: pipeline with multiple stages and concise actions
+    trigger: 1 == 1
+    stages:
+      - actions: $addLabel("pipeline with multiple stages and concise actions - stage 1")
+        until: 1 == 1
+      - actions: $addLabel("pipeline with multiple stages and concise actions - stage 2")
