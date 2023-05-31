@@ -65,6 +65,24 @@ func (i *Interpreter) ProcessGroup(groupName string, kind engine.GroupKind, type
 	return nil
 }
 
+func (i *Interpreter) ProcessIterable(expr string) (lang.Value, error) {
+	exprAST, err := Parse(expr)
+	if err != nil {
+		return nil, fmt.Errorf("ProcessIterable:Parse: %v", err)
+	}
+
+	exprType, err := TypeInference(i.Env, exprAST)
+	if err != nil {
+		return nil, err
+	}
+
+	if exprType.Kind() != lang.ARRAY_TYPE && exprType.Kind() != lang.ARRAY_OF_TYPE && exprType.Kind() != lang.DICTIONARY_TYPE {
+		return nil, fmt.Errorf("expression is not a valid iterable")
+	}
+
+	return Eval(i.Env, exprAST)
+}
+
 func (i *Interpreter) ProcessDictionary(name string, dictionary map[string]string) error {
 	processedDictionary := make(map[string]lang.Value)
 

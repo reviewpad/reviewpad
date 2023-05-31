@@ -450,18 +450,32 @@ func execStatement(interpreter Interpreter, run PadWorkflowRunBlock, rules map[s
 	if run.ForEach != nil {
 		var executedActions []string
 
-		value, err := interpreter.ProcessList(run.ForEach.In)
+		value, err := interpreter.ProcessIterable(run.ForEach.In)
 		if err != nil {
 			return ExitStatusFailure, nil, err
 		}
 
-		for _, val := range value.(*lang.ArrayValue).Vals {
-			interpreter.StoreTemporaryVariable(run.ForEach.Value, val)
+		switch val := value.(type) {
+		case *lang.ArrayValue:
+			for _, val := range val.Vals {
+				interpreter.StoreTemporaryVariable(run.ForEach.Value, val)
 
-			exitStatus, forEachActions, err := execStatementBlock(interpreter, run.ForEach.Do, rules)
-			executedActions = append(executedActions, forEachActions...)
-			if err != nil {
-				return exitStatus, executedActions, err
+				exitStatus, forEachActions, err := execStatementBlock(interpreter, run.ForEach.Do, rules)
+				executedActions = append(executedActions, forEachActions...)
+				if err != nil {
+					return exitStatus, executedActions, err
+				}
+			}
+		case *lang.DictionaryValue:
+			for key, val := range val.Vals {
+				interpreter.StoreTemporaryVariable(run.ForEach.Key, lang.BuildStringValue(key))
+				interpreter.StoreTemporaryVariable(run.ForEach.Value, val)
+
+				exitStatus, forEachActions, err := execStatementBlock(interpreter, run.ForEach.Do, rules)
+				executedActions = append(executedActions, forEachActions...)
+				if err != nil {
+					return exitStatus, executedActions, err
+				}
 			}
 		}
 
