@@ -32,13 +32,13 @@ func GetSymbolsFromPatch(e aladino.Env) (map[string]*entities.Symbols, error) {
 	lastCommit := head.Sha
 
 	for fp, commitFile := range patch {
-		blob, err := e.GetGithubClient().DownloadContents(e.GetCtx(), fp, head, github.DownloadContentsOptions{
+		blob, err := e.GetGithubClient().DownloadContents(e.GetCtx(), fp, head, &github.DownloadContentsOptions{
 			Method: github.DownloadMethodSHA,
 		})
 		if err != nil {
 			// If fails to download the file from head, then tries to download it from base.
 			// This happens when a file has been removed.
-			blob, err = e.GetGithubClient().DownloadContents(e.GetCtx(), fp, base, github.DownloadContentsOptions{
+			blob, err = e.GetGithubClient().DownloadContents(e.GetCtx(), fp, base, &github.DownloadContentsOptions{
 				Method: github.DownloadMethodSHA,
 			})
 
@@ -149,7 +149,7 @@ func joinSymbols(current *entities.Symbols, new *entities.Symbols) {
 func GetSymbolsFromFileInBranch(e aladino.Env, commitFile *codehost.File, branch *pbc.Branch) (*entities.Symbols, string, error) {
 	fp := commitFile.Repr.GetFilename()
 
-	blob, err := e.GetGithubClient().DownloadContents(e.GetCtx(), fp, branch, github.DownloadContentsOptions{
+	blob, err := e.GetGithubClient().DownloadContents(e.GetCtx(), fp, branch, &github.DownloadContentsOptions{
 		Method: github.DownloadMethodSHA,
 	})
 	if err != nil {
