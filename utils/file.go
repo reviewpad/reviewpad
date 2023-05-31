@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	pbc "github.com/reviewpad/api/go/codehost"
+	"github.com/reviewpad/reviewpad/v4/codehost/github"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/sirupsen/logrus"
 )
@@ -36,7 +37,9 @@ func FileExt(fp string) string {
 // Otherwise, we download the pull request files and check the filePath exists in them.
 func ReviewpadFileChanged(ctx context.Context, githubClient *gh.GithubClient, filePath string, pullRequest *pbc.PullRequest) (bool, error) {
 	if pullRequest.ChangedFilesCount > pullRequestFileLimit {
-		rawHeadFile, err := githubClient.DownloadContents(ctx, filePath, pullRequest.Head)
+		rawHeadFile, err := githubClient.DownloadContents(ctx, filePath, pullRequest.Head, &github.DownloadContentsOptions{
+			Method: github.DownloadMethodSHA,
+		})
 		if err != nil {
 			if strings.HasPrefix(err.Error(), "no file named") {
 				return true, nil
@@ -44,7 +47,9 @@ func ReviewpadFileChanged(ctx context.Context, githubClient *gh.GithubClient, fi
 			return false, err
 		}
 
-		rawBaseFile, err := githubClient.DownloadContents(ctx, filePath, pullRequest.Base)
+		rawBaseFile, err := githubClient.DownloadContents(ctx, filePath, pullRequest.Base, &github.DownloadContentsOptions{
+			Method: github.DownloadMethodSHA,
+		})
 		if err != nil {
 			if strings.HasPrefix(err.Error(), "no file named") {
 				return true, nil
@@ -73,8 +78,15 @@ func ReviewpadFileChanged(ctx context.Context, githubClient *gh.GithubClient, fi
 	return false, nil
 }
 
-func DownloadReviewpadFileFromGitHub(ctx context.Context, logger *logrus.Entry, githubClient *gh.GithubClient, filePath string, branch *pbc.Branch) (*bytes.Buffer, error) {
-	reviewpadFileContent, err := githubClient.DownloadContents(ctx, filePath, branch)
+func DownloadReviewpadFileFromGitHub(
+	ctx context.Context,
+	logger *logrus.Entry,
+	githubClient *gh.GithubClient,
+	filePath string,
+	branch *pbc.Branch,
+	options *github.DownloadContentsOptions,
+) (*bytes.Buffer, error) {
+	reviewpadFileContent, err := githubClient.DownloadContents(ctx, filePath, branch, options)
 	if err != nil {
 		return nil, err
 	}
