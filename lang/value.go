@@ -12,6 +12,7 @@ type Value interface {
 	HasKindOf(string) bool
 	Kind() string
 	Equals(Value) bool
+	Type() Type
 }
 
 const (
@@ -49,6 +50,10 @@ func (thisVal *IntValue) Equals(other Value) bool {
 	return thisVal.Val == other.(*IntValue).Val
 }
 
+func (iVal *IntValue) Type() Type {
+	return BuildIntType()
+}
+
 // BoolValue represents a bool value
 type BoolValue struct {
 	// defaultValue
@@ -78,6 +83,10 @@ func (bVal *BoolValue) HasKindOf(ty string) bool {
 	return bVal.Kind() == ty
 }
 
+func (bVal *BoolValue) Type() Type {
+	return BuildBoolType()
+}
+
 // StringValue represents a string value
 type StringValue struct {
 	// defaultValue
@@ -104,6 +113,10 @@ func (sVal *StringValue) HasKindOf(ty string) bool {
 	return sVal.Kind() == ty
 }
 
+func (sVal *StringValue) Type() Type {
+	return BuildStringType()
+}
+
 type TimeValue struct {
 	Val int
 }
@@ -128,6 +141,10 @@ func (thisVal *TimeValue) Equals(other Value) bool {
 	}
 
 	return thisVal.Val == other.(*TimeValue).Val
+}
+
+func (tVal *TimeValue) Type() Type {
+	return BuildIntType()
 }
 
 // ArrayValue represents an array value
@@ -169,6 +186,15 @@ func (aVal *ArrayValue) HasKindOf(ty string) bool {
 	return aVal.Kind() == ty
 }
 
+func (aVal *ArrayValue) Type() Type {
+	types := make([]Type, len(aVal.Vals))
+	for _, val := range aVal.Vals {
+		types = append(types, val.Type())
+	}
+
+	return BuildArrayType(types)
+}
+
 // FunctionValue represents a function value
 type FunctionValue struct {
 	// defaultValue
@@ -190,6 +216,12 @@ func (thisVal *FunctionValue) Equals(other Value) bool {
 
 func (fVal *FunctionValue) HasKindOf(ty string) bool {
 	return fVal.Kind() == ty
+}
+
+// TODO: Implement a more reliable function type
+// that returns the actual parameters and return type
+func (fVal *FunctionValue) Type() Type {
+	return BuildFunctionType([]Type{}, BuildBoolType())
 }
 
 // JSONValue represents a json value
@@ -215,4 +247,8 @@ func (jVal *JSONValue) Equals(other Value) bool {
 	}
 
 	return reflect.DeepEqual(jVal.Val, other.(*JSONValue).Val)
+}
+
+func (jVal *JSONValue) Type() Type {
+	return BuildJSONType()
 }

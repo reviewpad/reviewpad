@@ -121,6 +121,13 @@ func (v *Variable) typeinfer(env TypeEnv) (lang.Type, error) {
 	varName := v.ident
 	varType, ok := env[varName]
 	if !ok {
+		// if the built-in is not found in the environment
+		// we check if it's a variable
+		varType, ok = env[fmt.Sprintf("@variable:$%s", varName)]
+		if ok {
+			return varType, nil
+		}
+
 		return nil, fmt.Errorf("no type for built-in %v", varName)
 	}
 

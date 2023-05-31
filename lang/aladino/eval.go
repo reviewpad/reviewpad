@@ -48,6 +48,12 @@ func (v *Variable) Eval(e Env) (lang.Value, error) {
 		return val, nil
 	}
 
+	// TODO: we need to have a lint step to check if a variable name is a built-in function name
+	variable, ok := e.GetRegisterMap()[fmt.Sprintf("@variable:$%s", variableName)]
+	if ok {
+		return variable, nil
+	}
+
 	fn, ok := e.GetBuiltIns().Functions[variableName]
 	if !ok {
 		return nil, fmt.Errorf("eval: failure on %v", variableName)

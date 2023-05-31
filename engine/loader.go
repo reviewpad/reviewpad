@@ -414,4 +414,10 @@ func transformRunBlock(block PadWorkflowRunBlock, actionFunc func(action string)
 	for _, elseBlock := range block.Else {
 		transformRunBlock(elseBlock, actionFunc)
 	}
+
+	if block.ForEach != nil {
+		for _, run := range block.ForEach.Do {
+			transformRunBlock(run, actionFunc)
+		}
+	}
 }

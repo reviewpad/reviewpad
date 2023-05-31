@@ -18,6 +18,8 @@ import (
 	"github.com/reviewpad/reviewpad/v4/engine"
 	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
+	plugins_aladino_actions "github.com/reviewpad/reviewpad/v4/plugins/aladino/actions"
+	plugins_aladino_functions "github.com/reviewpad/reviewpad/v4/plugins/aladino/functions"
 	"github.com/reviewpad/reviewpad/v4/utils"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
@@ -310,6 +312,43 @@ func TestExecConfigurationFile(t *testing.T) {
 			targetEntity:   engine.DefaultMockTargetEntity,
 			wantExitStatus: engine.ExitStatusSuccess,
 		},
+		"reviewpad with for each workflow": {
+			inputReviewpadFilePath: "testdata/exec/reviewpad_with_foreach_workflow.yml",
+			wantProgram: engine.BuildProgram(
+				[]*engine.Statement{
+					engine.BuildStatement(`$addLabel($teamName)`),
+					engine.BuildStatement(`$addLabel($teamName)`),
+				},
+			),
+			targetEntity:   engine.DefaultMockTargetEntity,
+			wantExitStatus: engine.ExitStatusSuccess,
+		},
+		"reviewpad with nested for each workflow": {
+			inputReviewpadFilePath: "testdata/exec/reviewpad_with_nested_foreach_workflow.yml",
+			wantProgram: engine.BuildProgram(
+				[]*engine.Statement{
+					engine.BuildStatement(`$addLabel($teamName)`),
+					engine.BuildStatement(`$assignReviewer($team($teamName2), 1, "random")`),
+					engine.BuildStatement(`$assignReviewer($team($teamName2), 1, "random")`),
+					engine.BuildStatement(`$addLabel($teamName)`),
+					engine.BuildStatement(`$assignReviewer($team($teamName2), 1, "random")`),
+					engine.BuildStatement(`$assignReviewer($team($teamName2), 1, "random")`),
+				},
+			),
+			targetEntity:   engine.DefaultMockTargetEntity,
+			wantExitStatus: engine.ExitStatusSuccess,
+		},
+		"reviewpad with conditional for each workflow": {
+			inputReviewpadFilePath: "testdata/exec/reviewpad_with_conditional_foreach_workflow.yml",
+			wantProgram: engine.BuildProgram(
+				[]*engine.Statement{
+					engine.BuildStatement(`$addLabel($teamName)`),
+					engine.BuildStatement(`$addLabel($teamName)`),
+				},
+			),
+			targetEntity:   engine.DefaultMockTargetEntity,
+			wantExitStatus: engine.ExitStatusSuccess,
+		},
 	}
 
 	codehostClient := aladino.GetDefaultCodeHostClient(t, aladino.GetDefaultPullRequestDetails(), aladino.GetDefaultPullRequestFileList(), nil, nil)
@@ -328,6 +367,11 @@ func TestExecConfigurationFile(t *testing.T) {
 						},
 						SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 					},
+					"assignReviewer": plugins_aladino_actions.AssignReviewer(),
+				},
+				Functions: map[string]*aladino.BuiltInFunction{
+					"group": plugins_aladino_functions.Group(),
+					"team":  plugins_aladino_functions.Team(),
 				},
 			}
 

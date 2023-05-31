@@ -12,6 +12,7 @@ import (
 	"github.com/mattn/go-shellwords"
 	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/engine/commands"
+	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/sirupsen/logrus"
 )
 
@@ -408,10 +409,31 @@ func execActions(interpreter Interpreter, actions []string) (ExitStatus, error) 
 func execStatement(interpreter Interpreter, run PadWorkflowRunBlock, rules map[string]PadRule) (ExitStatus, []string, error) {
 	// if the run block was just a simple string
 	// there is no rule to evaluate, so just return the actions
-	if run.If == nil {
+	if run.ForEach == nil && run.If == nil {
 		// execute the actions
 		retStatus, err := execActions(interpreter, run.Actions)
 		return retStatus, run.Actions, err
+	}
+
+	if run.ForEach != nil {
+		var executedActions []string
+
+		value, err := interpreter.ProcessList(run.ForEach.In)
+		if err != nil {
+			return ExitStatusFailure, nil, err
+		}
+
+		for _, val := range value.(*lang.ArrayValue).Vals {
+			interpreter.StoreTemporaryVariable(run.ForEach.Value, val)
+
+			exitStatus, forEachActions, err := execStatementBlock(interpreter, run.ForEach.Do, rules)
+			executedActions = append(executedActions, forEachActions...)
+			if err != nil {
+				return exitStatus, executedActions, err
+			}
+		}
+
+		return ExitStatusSuccess, executedActions, nil
 	}
 
 	for _, rule := range run.If {
@@ -454,11 +476,10 @@ func execStatementBlock(interpreter Interpreter, runs []PadWorkflowRunBlock, rul
 	actions := []string{}
 	for _, run := range runs {
 		retStatus, runActions, err := execStatement(interpreter, run, rules)
+		actions = append(actions, runActions...)
 		if err != nil || retStatus == ExitStatusFailure {
 			return retStatus, nil, err
 		}
-
-		actions = runActions
 	}
 
 	return ExitStatusSuccess, actions, nil

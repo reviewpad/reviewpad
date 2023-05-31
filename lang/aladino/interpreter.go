@@ -65,6 +65,28 @@ func (i *Interpreter) ProcessGroup(groupName string, kind engine.GroupKind, type
 	return nil
 }
 
+func (i *Interpreter) ProcessList(expr string) (lang.Value, error) {
+	exprAST, err := Parse(expr)
+	if err != nil {
+		return nil, fmt.Errorf("ProcessList:Parse: %v", err)
+	}
+
+	value, err := evalGroup(i.Env, exprAST)
+	if err != nil {
+		return nil, fmt.Errorf("ProcessList:evalGroup %v", err)
+	}
+
+	return value, nil
+}
+
+func (i *Interpreter) StoreTemporaryVariable(name string, value lang.Value) {
+	i.Env.GetRegisterMap()[BuildInternalTemporaryVariableName(name)] = value
+}
+
+func BuildInternalTemporaryVariableName(name string) string {
+	return fmt.Sprintf("@variable:%s", name)
+}
+
 func BuildInternalLabelID(id string) string {
 	return fmt.Sprintf("@label:%v", id)
 }
