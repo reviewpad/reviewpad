@@ -25,7 +25,7 @@ func (c *GithubClient) GetDefaultRepositoryBranch(ctx context.Context, owner str
 	return repository.GetDefaultBranch(), nil
 }
 
-func (c *GithubClient) DownloadContents(ctx context.Context, filePath string, branch *pbc.Branch) ([]byte, error) {
+func (c *GithubClient) DownloadContentsFromBranchName(ctx context.Context, filePath string, branch *pbc.Branch) ([]byte, error) {
 	branchRepoOwner := branch.Repo.Owner
 	branchRepoName := branch.Repo.Name
 	branchRef := branch.Name
