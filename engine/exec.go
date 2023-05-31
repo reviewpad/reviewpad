@@ -478,7 +478,7 @@ func execStatementBlock(interpreter Interpreter, runs []PadWorkflowRunBlock, rul
 		retStatus, runActions, err := execStatement(interpreter, run, rules)
 		actions = append(actions, runActions...)
 		if err != nil || retStatus == ExitStatusFailure {
-			return retStatus, actions, err
+			return retStatus, nil, err
 		}
 	}
 
