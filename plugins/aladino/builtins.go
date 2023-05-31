@@ -134,8 +134,9 @@ func PluginBuiltInsWithConfig(config *PluginConfig) *aladino.BuiltIns {
 			"toNumber":                      functions.ToNumber(),
 			"toStringArray":                 functions.ToStringArray(),
 			// Engine
-			"group": functions.Group(),
-			"rule":  functions.Rule(),
+			"dictionary": functions.Dictionary(),
+			"group":      functions.Group(),
+			"rule":       functions.Rule(),
 			// Internal
 			"filter": functions.Filter(),
 		},
