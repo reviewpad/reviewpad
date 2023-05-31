@@ -36,7 +36,7 @@ func FileExt(fp string) string {
 // Otherwise, we download the pull request files and check the filePath exists in them.
 func ReviewpadFileChanged(ctx context.Context, githubClient *gh.GithubClient, filePath string, pullRequest *pbc.PullRequest) (bool, error) {
 	if pullRequest.ChangedFilesCount > pullRequestFileLimit {
-		rawHeadFile, err := githubClient.DownloadContentsFromBranchName(ctx, filePath, pullRequest.Head)
+		rawHeadFile, err := githubClient.DownloadContentsFromCommitSHA(ctx, filePath, pullRequest.Head)
 		if err != nil {
 			if strings.HasPrefix(err.Error(), "no file named") {
 				return true, nil
