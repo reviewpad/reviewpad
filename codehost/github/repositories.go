@@ -25,26 +25,16 @@ func (c *GithubClient) GetDefaultRepositoryBranch(ctx context.Context, owner str
 	return repository.GetDefaultBranch(), nil
 }
 
-func (c *GithubClient) DownloadContentsFromBranchName(ctx context.Context, filePath string, branch *pbc.Branch) ([]byte, error) {
+func (c *GithubClient) DownloadContents(ctx context.Context, filePath string, branch *pbc.Branch, useSHA bool) ([]byte, error) {
 	branchRepoOwner := branch.Repo.Owner
 	branchRepoName := branch.Repo.Name
-	branchRef := branch.Name
 
-	ioReader, _, err := c.clientREST.Repositories.DownloadContents(ctx, branchRepoOwner, branchRepoName, filePath, &github.RepositoryContentGetOptions{
-		Ref: branchRef,
-	})
-
-	if err != nil {
-		return nil, err
+	var branchRef string
+	if useSHA {
+		branchRef = branch.Sha
+	} else {
+		branchRef = branch.Name
 	}
-
-	return io.ReadAll(ioReader)
-}
-
-func (c *GithubClient) DownloadContentsFromCommitSHA(ctx context.Context, filePath string, branch *pbc.Branch) ([]byte, error) {
-	branchRepoOwner := branch.Repo.Owner
-	branchRepoName := branch.Repo.Name
-	branchRef := branch.Sha
 
 	ioReader, _, err := c.clientREST.Repositories.DownloadContents(ctx, branchRepoOwner, branchRepoName, filePath, &github.RepositoryContentGetOptions{
 		Ref: branchRef,

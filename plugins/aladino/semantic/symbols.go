@@ -31,11 +31,11 @@ func GetSymbolsFromPatch(e aladino.Env) (map[string]*entities.Symbols, error) {
 	lastCommit := head.Sha
 
 	for fp, commitFile := range patch {
-		blob, err := e.GetGithubClient().DownloadContentsFromBranchName(e.GetCtx(), fp, head)
+		blob, err := e.GetGithubClient().DownloadContents(e.GetCtx(), fp, head, true)
 		if err != nil {
 			// If fails to download the file from head, then tries to download it from base.
 			// This happens when a file has been removed.
-			blob, err = e.GetGithubClient().DownloadContentsFromBranchName(e.GetCtx(), fp, base)
+			blob, err = e.GetGithubClient().DownloadContents(e.GetCtx(), fp, base, true)
 
 			if err != nil {
 				return nil, err
@@ -144,7 +144,7 @@ func joinSymbols(current *entities.Symbols, new *entities.Symbols) {
 func GetSymbolsFromFileInBranch(e aladino.Env, commitFile *codehost.File, branch *pbc.Branch) (*entities.Symbols, string, error) {
 	fp := commitFile.Repr.GetFilename()
 
-	blob, err := e.GetGithubClient().DownloadContentsFromBranchName(e.GetCtx(), fp, branch)
+	blob, err := e.GetGithubClient().DownloadContents(e.GetCtx(), fp, branch, true)
 	if err != nil {
 		return nil, "", err
 	}
