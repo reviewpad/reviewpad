@@ -188,8 +188,8 @@ func (aVal *ArrayValue) HasKindOf(ty string) bool {
 
 func (aVal *ArrayValue) Type() Type {
 	types := make([]Type, len(aVal.Vals))
-	for _, val := range aVal.Vals {
-		types = append(types, val.Type())
+	for i, val := range aVal.Vals {
+		types[i] = val.Type()
 	}
 
 	return BuildArrayType(types)
