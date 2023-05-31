@@ -53,13 +53,22 @@ func assignCodeAuthorReviewersCode(env aladino.Env, args []lang.Value) error {
 
 	// since github removes users from the requested reviewers list
 	// after they've submitted a review, we need to check here that
-	// there are no there are no reviews submitted as well
+	// there are no reviews submitted as well
 	reviews, err := pr.GetReviews()
 	if err != nil {
 		return fmt.Errorf("error getting reviews: %s", err)
 	}
 
-	if len(reviews) > 0 {
+	filteredReviews := make([]*codehost.Review, 0)
+	for _, review := range reviews {
+		if strings.HasPrefix(review.User.Login, "reviewpad") {
+			continue
+		}
+
+		filteredReviews = append(filteredReviews, review)
+	}
+
+	if len(filteredReviews) > 0 {
 		return nil
 	}
 
