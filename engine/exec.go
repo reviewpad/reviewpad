@@ -378,7 +378,7 @@ func ExecConfigurationFile(env *Env, file *ReviewpadFile) (ExitStatus, *Program,
 			}
 
 			for num, stage := range pipeline.Stages {
-				pipelineLog.Infof("processing pipeline stage %v", num)
+				pipelineLog.Infof("processing pipeline stage `%v`", num)
 
 				if stage.Until == "" {
 					pipelineLog.Info("pipeline stage 'until' condition not specified, executing actions")
@@ -398,11 +398,11 @@ func ExecConfigurationFile(env *Env, file *ReviewpadFile) (ExitStatus, *Program,
 				}
 
 				if isStageCompleted {
-					pipelineLog.Info("pipeline stage 'until' condition was met, skipping stage")
+					pipelineLog.Info("pipeline stage `until` condition was met, skipping stage")
 					continue
 				}
 
-				pipelineLog.Info("pipeline stage 'until' condition was not met, executing actions")
+				pipelineLog.Info("pipeline stage `until` condition was not met, executing actions")
 
 				program.append(stage.Actions)
 				retStatus, err := execActions(interpreter, stage.Actions)

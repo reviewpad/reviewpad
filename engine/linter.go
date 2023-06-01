@@ -224,14 +224,14 @@ func lintRulesMentions(log *logrus.Entry, rules []PadRule, groups []PadGroup, wo
 	for _, ruleName := range getCallsToRuleBuiltIn(groups, rules, workflows) {
 		_, ok := findRule(rules, ruleName)
 		if !ok {
-			return fmt.Errorf("the rule %v isn't defined", ruleName)
+			return fmt.Errorf("the rule `%v` isn't defined", ruleName)
 		}
 		totalUsesByRule[ruleName]++
 	}
 
 	for ruleName, totalUses := range totalUsesByRule {
 		if totalUses == 0 {
-			log.Warnf("unused rule %v", ruleName)
+			log.Warnf("unused rule `%v`", ruleName)
 		}
 	}
 
@@ -269,7 +269,7 @@ func lintGroupsMentions(groups []PadGroup, rules []PadRule, workflows []PadWorkf
 
 		_, ok := findGroup(groups, groupMention)
 		if !ok {
-			return fmt.Errorf("the group %v isn't defined", groupMention)
+			return fmt.Errorf("the group `%v` isn't defined", groupMention)
 		}
 	}
 
@@ -280,7 +280,7 @@ func lintShadowedVariablesInRuns(runs []PadWorkflowRunBlock, definedVariables ma
 	for _, run := range runs {
 		if run.ForEach != nil {
 			if _, ok := definedVariables[run.ForEach.Value]; ok {
-				return fmt.Errorf("variable shadowing is not allowed: the variable %s is already defined", run.ForEach.Value)
+				return fmt.Errorf("variable shadowing is not allowed: the variable `%s` is already defined", run.ForEach.Value)
 			}
 
 			definedVariables[run.ForEach.Value] = true

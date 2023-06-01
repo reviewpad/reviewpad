@@ -78,7 +78,7 @@ func TestShadowedVariable(t *testing.T) {
 		},
 	}
 
-	wantErr := errors.New("variable shadowing is not allowed: the variable var1 is already defined")
+	wantErr := errors.New("variable shadowing is not allowed: the variable `var1` is already defined")
 
 	gotErr := lintShadowedVariables([]PadWorkflow{workflow})
 

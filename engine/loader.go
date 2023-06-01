@@ -31,7 +31,7 @@ func logExtendedProperties(logger *logrus.Entry, fileA *ReviewpadFile, fileAUri 
 		if _, ok := fileA.Labels[labelName]; ok {
 			if _, ok := fileB.Labels[labelName]; ok {
 				if fileA.Labels[labelName].equals(label) {
-					logger.Warnf("label '%s' has been overridden by %s", labelName, fileAUri)
+					logger.Warnf("label `%s` has been overridden by %s", labelName, fileAUri)
 				}
 			}
 		}
@@ -56,7 +56,7 @@ func logExtendedProperties(logger *logrus.Entry, fileA *ReviewpadFile, fileAUri 
 
 		if groupA != nil && groupB != nil {
 			if groupA.equals(group) {
-				logger.Warnf("group '%s' has been overridden by %s", group.Name, fileAUri)
+				logger.Warnf("group `%s` has been overridden by %s", group.Name, fileAUri)
 			}
 		}
 	}
@@ -80,7 +80,7 @@ func logExtendedProperties(logger *logrus.Entry, fileA *ReviewpadFile, fileAUri 
 
 		if ruleA != nil && ruleB != nil {
 			if ruleA.equals(rule) {
-				logger.Warnf("rule '%s' has been overridden by %s", rule.Name, fileAUri)
+				logger.Warnf("rule `%s` has been overridden by %s", rule.Name, fileAUri)
 			}
 		}
 	}
@@ -104,7 +104,7 @@ func logExtendedProperties(logger *logrus.Entry, fileA *ReviewpadFile, fileAUri 
 
 		if workflowA != nil && workflowB != nil {
 			if workflowA.equals(workflow) {
-				logger.Warnf("workflow '%s' has been overridden by %s", workflow.Name, fileAUri)
+				logger.Warnf("workflow `%s` has been overridden by %s", workflow.Name, fileAUri)
 			}
 		}
 	}
@@ -128,7 +128,7 @@ func logExtendedProperties(logger *logrus.Entry, fileA *ReviewpadFile, fileAUri 
 
 		if pipelineA != nil && pipelineB != nil {
 			if pipelineA.equals(pipeline) {
-				logger.Warnf("pipeline '%s' has been overridden by %s", pipeline.Name, fileAUri)
+				logger.Warnf("pipeline `%s` has been overridden by %s", pipeline.Name, fileAUri)
 			}
 		}
 	}
