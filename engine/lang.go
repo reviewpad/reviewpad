@@ -378,6 +378,16 @@ func (r *ReviewpadFile) equals(o *ReviewpadFile) bool {
 		}
 	}
 
+	if len(r.Dictionaries) != len(o.Dictionaries) {
+		return false
+	}
+	for i, rD := range r.Dictionaries {
+		oD := o.Dictionaries[i]
+		if !rD.equals(oD) {
+			return false
+		}
+	}
+
 	return reflect.DeepEqual(r.Recipes, o.Recipes)
 }
 
