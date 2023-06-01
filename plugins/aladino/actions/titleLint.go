@@ -27,9 +27,9 @@ func titleLintCode(e aladino.Env, _ []lang.Value) error {
 
 	res, err := parser.NewMachine(conventionalcommits.WithTypes(conventionalcommits.TypesConventional)).Parse([]byte(title))
 	if err != nil || !res.Ok() {
-		body := fmt.Sprintf("**Unconventional title detected**: `%v`", title)
+		body := fmt.Sprintf("**Unconventional title detected**: '%v'", title)
 		if err != nil {
-			body = fmt.Sprintf("**Unconventional title detected**: `%v` %v", title, err)
+			body = fmt.Sprintf("**Unconventional title detected**: '%v' %v", title, err)
 		}
 
 		reportedMessages := e.GetBuiltInsReportedMessages()
