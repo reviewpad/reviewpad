@@ -296,9 +296,8 @@ func lintShadowedVariablesInRuns(runs []PadWorkflowRunBlock, definedVariables ma
 }
 
 func lintShadowedVariables(workflows []PadWorkflow) error {
-	definedVariables := map[string]bool{}
-
 	for _, workflow := range workflows {
+		definedVariables := map[string]bool{}
 		err := lintShadowedVariablesInRuns(workflow.Runs, definedVariables)
 		if err != nil {
 			return err
