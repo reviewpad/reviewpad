@@ -363,6 +363,7 @@ func TestExecConfigurationFile(t *testing.T) {
 					engine.BuildStatement(`$addLabel("pipeline with multiple stages and multiple actions - stage 2 - 2/2")`),
 					engine.BuildStatement(`$addLabel("pipeline with single stage and concise actions")`),
 					engine.BuildStatement(`$addLabel("pipeline with multiple stages and concise actions - stage 2")`),
+					engine.BuildStatement(`$addLabel("pipeline with more than 2 stages - stage 2")`),
 				},
 			),
 			targetEntity:   engine.DefaultMockTargetEntity,

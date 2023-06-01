@@ -63,3 +63,14 @@ pipelines:
       - actions: $addLabel("pipeline with multiple stages and concise actions - stage 1")
         until: 1 == 1
       - actions: $addLabel("pipeline with multiple stages and concise actions - stage 2")
+
+  - name: pipeline with more than 2 stages
+    trigger: 1 == 1
+    stages:
+      - actions: $addLabel("pipeline with more than 2 stages - stage 1")
+        until: 1 == 1
+      - actions: $addLabel("pipeline with more than 2 stages - stage 2")
+        until: 1 == 2
+      - actions: $addLabel("pipeline with more than 2 stages - stage 3")
+        until: 1 == 3
+      - action: $addLabel("pipeline with more than 2 stages - stage 4")
