@@ -121,13 +121,13 @@ func lintWorkflows(log *logrus.Entry, rules []PadRule, padWorkflows []PadWorkflo
 	workflowHasExtraActions := false
 
 	for _, workflow := range padWorkflows {
-		log.Infof("analyzing workflow '%v'", workflow.Name)
+		log.Infof("linting workflow `%v`", workflow.Name)
 
 		workflowHasActions := len(workflow.Actions) > 0
 
 		for _, workflowName := range workflowsName {
 			if workflowName == workflow.Name {
-				return fmt.Errorf("workflow with the name '%v' already exists", workflow.Name)
+				return fmt.Errorf("workflow with the name `%v` already exists", workflow.Name)
 			}
 		}
 
@@ -139,17 +139,17 @@ func lintWorkflows(log *logrus.Entry, rules []PadRule, padWorkflows []PadWorkflo
 
 			_, exists := findRule(rules, ruleName)
 			if !exists {
-				return fmt.Errorf("rule '%v' is unknown", ruleName)
+				return fmt.Errorf("rule `%v` is unknown", ruleName)
 			}
 
 			workflowHasExtraActions = len(rule.ExtraActions) > 0
 			if !workflowHasExtraActions && !workflowHasActions {
-				log.Warnf("rule '%v' will be ignored since it has no actions", ruleName)
+				log.Warnf("rule `%v` will be ignored since it has no actions", ruleName)
 			}
 		}
 
 		if !workflowHasActions && !workflowHasExtraActions {
-			log.Warn("workflow has no actions")
+			log.Debug("workflow has no actions")
 		}
 
 		workflowsName = append(workflowsName, workflow.Name)
@@ -180,7 +180,7 @@ func validateWorkflowRun(run *PadWorkflowRunBlock, workflow *PadWorkflow) error 
 	// The old style workflow allows if blocks to have extra actions.
 	// Because of this, a run block can have extra actions.
 	if !hasThenActions && !hasActions && !hasExtraActions && !hasForEachBlock {
-		return fmt.Errorf("workflow '%v' has a run block without a 'then' block, no actions, no extra actions or a for each block", workflow.Name)
+		return fmt.Errorf("workflow `%v` has a run block without a 'then' block, no actions, no extra actions or a for each block", workflow.Name)
 	}
 
 	for _, thenRun := range run.Then {

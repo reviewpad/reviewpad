@@ -132,8 +132,6 @@ func (i *Interpreter) EvalExpr(kind, expr string) (bool, error) {
 }
 
 func (i *Interpreter) ExecProgram(program *engine.Program) (engine.ExitStatus, error) {
-	i.Env.GetLogger().Info("executing program")
-
 	retStatus := engine.ExitStatusSuccess
 	var retErr error
 
@@ -163,8 +161,6 @@ func (i *Interpreter) ExecProgram(program *engine.Program) (engine.ExitStatus, e
 	if i.Env.GetExecFatalErrorOccurred() != nil {
 		return engine.ExitStatusFailure, i.Env.GetExecFatalErrorOccurred()
 	}
-
-	i.Env.GetLogger().Info("execution done")
 
 	return retStatus, retErr
 }
@@ -216,7 +212,7 @@ func (i *Interpreter) ExecStatement(statement *engine.Statement) error {
 
 	i.Env.GetReport().addToReport(statement)
 
-	i.Env.GetLogger().Infof("action %v executed", statRaw)
+	i.Env.GetLogger().Infof("action `%v` executed", statRaw)
 	return nil
 }
 

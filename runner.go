@@ -25,7 +25,7 @@ import (
 )
 
 func logErrorAndCollect(logger *logrus.Entry, collector collector.Collector, message string, err error) {
-	logger.WithError(err).Errorln(message)
+	logger.WithError(err).Errorln(fmt.Sprintf("%s `%s`", message, err.Error()))
 
 	if ghError, isGitHubError := err.(*github.ErrorResponse); isGitHubError {
 		err = collector.CollectError(fmt.Errorf("%s: %s", message, ghError.Message))
@@ -33,7 +33,7 @@ func logErrorAndCollect(logger *logrus.Entry, collector collector.Collector, mes
 		err = collector.CollectError(fmt.Errorf("%s: %s", message, err.Error()))
 	}
 	if err != nil {
-		logger.WithError(err).Errorln("failed to collect error")
+		logger.WithError(err).Errorf("failed to collect error `%s`", err.Error())
 	}
 }
 
