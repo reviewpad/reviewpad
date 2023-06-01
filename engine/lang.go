@@ -450,7 +450,15 @@ func (r *ReviewpadFile) appendRecipes(o *ReviewpadFile) {
 }
 
 func (r *ReviewpadFile) appendDictionaries(o *ReviewpadFile) {
-	r.Dictionaries = append(r.Dictionaries, o.Dictionaries...)
+	updatedDictionaries := make([]PadDictionary, 0)
+
+	for _, dictionary := range r.Dictionaries {
+		if _, ok := findDictionary(o.Dictionaries, dictionary.Name); !ok {
+			updatedDictionaries = append(updatedDictionaries, dictionary)
+		}
+	}
+
+	r.Dictionaries = append(updatedDictionaries, o.Dictionaries...)
 }
 
 func (r *ReviewpadFile) extend(o *ReviewpadFile) {
@@ -509,6 +517,16 @@ func findPipeline(pipelines []PadPipeline, name string) (*PadPipeline, bool) {
 	for _, pipeline := range pipelines {
 		if pipeline.Name == name {
 			return &pipeline, true
+		}
+	}
+
+	return nil, false
+}
+
+func findDictionary(dictionaries []PadDictionary, name string) (*PadDictionary, bool) {
+	for _, dictionary := range dictionaries {
+		if dictionary.Name == name {
+			return &dictionary, true
 		}
 	}
 
