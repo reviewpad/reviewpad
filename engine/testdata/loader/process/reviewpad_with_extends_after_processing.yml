@@ -8,6 +8,22 @@ edition: enterprise
 ignore-errors: true
 metrics-on-merge: true
 
+dictionaries:
+  - name: teams
+    spec:
+      team1: '["john", "jane"]'
+      team2: '["jill", "james"]'
+
+  - name: groups
+    spec:
+      group1: '"group1"'
+      group2: '"group2"'
+      
+  - name: owners
+    spec:
+      dir1: '["jane", "john"]'
+      dir2: '["jill", "james"]'
+
 labels:
   small:
     color: '#aa12ab'
