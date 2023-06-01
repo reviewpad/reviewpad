@@ -399,15 +399,19 @@ func ExecConfigurationFile(env *Env, file *ReviewpadFile) (ExitStatus, *Program,
 
 				if isStageCompleted {
 					pipelineLog.Info("pipeline stage 'until' condition was met, skipping stage")
-				} else {
-					pipelineLog.Info("pipeline stage 'until' condition was not met, executing actions")
-
-					program.append(stage.Actions)
-					retStatus, err := execActions(interpreter, stage.Actions)
-					if err != nil || retStatus == ExitStatusFailure {
-						return retStatus, nil, err
-					}
+					continue
 				}
+
+				pipelineLog.Info("pipeline stage 'until' condition was not met, executing actions")
+
+				program.append(stage.Actions)
+				retStatus, err := execActions(interpreter, stage.Actions)
+				if err != nil || retStatus == ExitStatusFailure {
+					return retStatus, nil, err
+				}
+
+				// If the stage was been executed, the pipeline should stop
+				break
 			}
 		}
 	}
