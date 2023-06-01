@@ -46,7 +46,7 @@ func (fc *FunctionCall) exec(env Env) error {
 	}
 
 	if action.Disabled {
-		env.GetLogger().Infof("action %v is disabled - skipping", fc.name.ident)
+		env.GetLogger().Infof("action `%v` is disabled - skipping", fc.name.ident)
 		return nil
 	}
 

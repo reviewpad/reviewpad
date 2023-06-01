@@ -140,7 +140,7 @@ func EvalConfigurationFile(file *ReviewpadFile, env *Env) (*Program, error) {
 
 	// process workflows
 	for _, workflow := range file.Workflows {
-		log.Infof("evaluating workflow '%v'", workflow.Name)
+		log.Infof("executing workflow `%v`", workflow.Name)
 		workflowLog := log.WithField("workflow", workflow.Name)
 
 		if !workflow.AlwaysRun && triggeredExclusiveWorkflow {
@@ -157,7 +157,7 @@ func EvalConfigurationFile(file *ReviewpadFile, env *Env) (*Program, error) {
 		}
 
 		if !shouldRun {
-			workflowLog.Infof("skipping workflow because event kind is '%v' and workflow is on '%v'", env.TargetEntity.Kind, workflow.On)
+			workflowLog.Infof("skipping workflow because event kind is `%v` and workflow is on `%v`", env.TargetEntity.Kind, workflow.On)
 			continue
 		}
 
@@ -181,7 +181,7 @@ func EvalConfigurationFile(file *ReviewpadFile, env *Env) (*Program, error) {
 	if env.TargetEntity.Kind == entities.PullRequest {
 		// process pipelines
 		for _, pipeline := range file.Pipelines {
-			log.Infof("evaluating pipeline '%v':", pipeline.Name)
+			log.Infof("executing pipeline `%v`:", pipeline.Name)
 			pipelineLog := log.WithField("pipeline", pipeline.Name)
 
 			var err error
@@ -195,7 +195,7 @@ func EvalConfigurationFile(file *ReviewpadFile, env *Env) (*Program, error) {
 
 			if activated {
 				for num, stage := range pipeline.Stages {
-					pipelineLog.Infof("evaluating pipeline stage '%v'", num)
+					pipelineLog.Infof("executing pipeline stage `%v`", num)
 					if stage.Until == "" {
 						program.append(stage.Actions)
 						break
@@ -222,7 +222,6 @@ func EvalConfigurationFile(file *ReviewpadFile, env *Env) (*Program, error) {
 // Pre-condition Lint(file) == nil
 func ExecConfigurationFile(env *Env, file *ReviewpadFile) (ExitStatus, *Program, error) {
 	log := env.Logger
-	log.Infoln("exec configuration file")
 
 	interpreter := env.Interpreter
 
@@ -320,7 +319,7 @@ func ExecConfigurationFile(env *Env, file *ReviewpadFile) (ExitStatus, *Program,
 
 	// process workflows
 	for _, workflow := range file.Workflows {
-		log.Infof("evaluating workflow '%v'", workflow.Name)
+		log.Infof("executing workflow `%v`", workflow.Name)
 		workflowLog := log.WithField("workflow", workflow.Name)
 
 		if !workflow.AlwaysRun && triggeredExclusiveWorkflow {
@@ -337,7 +336,7 @@ func ExecConfigurationFile(env *Env, file *ReviewpadFile) (ExitStatus, *Program,
 		}
 
 		if !shouldRun {
-			workflowLog.Infof("skipping workflow because event kind is '%v' and workflow is on '%v'", env.TargetEntity.Kind, workflow.On)
+			workflowLog.Infof("skipping workflow because event kind is `%v` and workflow is on `%v`", env.TargetEntity.Kind, workflow.On)
 			continue
 		}
 
@@ -362,7 +361,7 @@ func ExecConfigurationFile(env *Env, file *ReviewpadFile) (ExitStatus, *Program,
 		for _, pipeline := range file.Pipelines {
 			pipelineLog := log.WithField("pipeline", pipeline.Name)
 
-			pipelineLog.Infof("processing pipeline '%v':", pipeline.Name)
+			pipelineLog.Infof("executing pipeline `%v`:", pipeline.Name)
 
 			var err error
 			activated := pipeline.Trigger == ""
