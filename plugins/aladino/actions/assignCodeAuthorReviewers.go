@@ -51,23 +51,21 @@ func assignCodeAuthorReviewersCode(env aladino.Env, args []lang.Value) error {
 		return nil
 	}
 
-	// since github removes users from the requested reviewers list
-	// after they've submitted a review, we need to check here that
-	// there are no reviews submitted as well
+	// Fetch all users that have authored the changed files in the pull request.
+	authors, err := getAuthorsFromGitBlame(env.GetCtx(), gitHubClient, pr)
+	if err != nil {
+		return fmt.Errorf("error getting authors from git blame: %s", err)
+	}
+
+	// Fetch all reviews in order to check if there are any reviews submitted by the authors.
 	reviews, err := pr.GetReviews()
 	if err != nil {
 		return fmt.Errorf("error getting reviews: %s", err)
 	}
 
-	filteredReviews := make([]*codehost.Review, 0)
-	for _, review := range reviews {
-		if strings.HasPrefix(review.User.Login, "reviewpad") {
-			continue
-		}
-
-		filteredReviews = append(filteredReviews, review)
-	}
-
+	// Get the reviews that were submitted by the code authors that are valid to be assigned as a reviewer.
+	// A code author is valid to be assigned as a reviewer if they are not included in the list of users to exclude from review requests.
+	filteredReviews := filterReviewsByNonExcludedCodeAuthors(reviews, authors, reviewersToExclude)
 	if len(filteredReviews) > 0 {
 		return nil
 	}
@@ -77,12 +75,6 @@ func assignCodeAuthorReviewersCode(env aladino.Env, args []lang.Value) error {
 	availableAssignees, err := pr.GetAvailableAssignees()
 	if err != nil {
 		return fmt.Errorf("error getting available assignees: %s", err)
-	}
-
-	// Fetch all users that have authored the changed files in the pull request.
-	authors, err := getAuthorsFromGitBlame(env.GetCtx(), gitHubClient, pr)
-	if err != nil {
-		return fmt.Errorf("error getting authors from git blame: %s", err)
 	}
 
 	// Get all available assignees that are not authors.
@@ -227,4 +219,15 @@ func getRandomUsers(users []string, total int) []string {
 	}
 
 	return selectedUsers
+}
+
+func filterReviewsByNonExcludedCodeAuthors(reviews []*codehost.Review, authors []string, excludedAuthors []lang.Value) []*codehost.Review {
+	filteredReviews := make([]*codehost.Review, 0)
+	for _, review := range reviews {
+		if slices.Contains(authors, review.User.Login) && !isUserExcluded(excludedAuthors, review.User.Login) {
+			filteredReviews = append(filteredReviews, review)
+		}
+	}
+
+	return filteredReviews
 }
