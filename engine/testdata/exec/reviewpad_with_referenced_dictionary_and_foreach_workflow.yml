@@ -1,0 +1,37 @@
+# Copyright (C) 2023 Explore.dev, Unipessoal Lda - All Rights Reserved
+# Use of this source code is governed by a license that can be
+# found in the LICENSE file.
+
+dictionaries:
+  - name: security teams
+    spec:
+      secteam1: '["john", "jane"]'
+      secteam2: '["jill", "james"]'
+
+  - name: devops teams
+    spec:
+      devopsteam1: '["john", "jane"]'
+      devopsteam2: '["jill", "james"]'
+
+  - name: groups
+    spec:
+      security: $dictionary("security teams")
+      devops: $dictionary("devops teams")
+
+workflows:
+  - name: test
+    run:
+      - forEach:
+          key: $groupName
+          value: $groupMembers
+          in: $dictionary("groups")
+          do:
+            - forEach:
+                value: $groupMemberTeams
+                in: $groupMembers
+                do:
+                  - forEach:
+                      value: $groupMember
+                      in: $groupMemberTeams
+                      do: $addLabel($groupMember)
+                      
