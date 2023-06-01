@@ -34,4 +34,3 @@ workflows:
                       value: $groupMember
                       in: $groupMemberTeams
                       do: $addLabel($groupMember)
-                      
