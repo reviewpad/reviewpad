@@ -100,11 +100,80 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 							Body:  github.String("body"),
 							State: github.String("APPROVED"),
 							User: &github.User{
-								Login: github.String("test"),
+								Login: github.String("reviewpad[bot]"),
 							},
 						},
 					},
 				),
+			},
+			graphQLHandler: func(w http.ResponseWriter, r *http.Request) {
+				graphQLQuery := utils.MustRead(r.Body)
+				if utils.MinifyQuery(getOpenPullRequestsAsReviewerQuery) == utils.MinifyQuery(graphQLQuery) {
+					utils.MustWrite(w, `{
+						"data": {
+							"repository": {
+								"pullRequests": {
+									"nodes": []
+								}
+							}
+						}
+					}`)
+					return
+				}
+
+				utils.MustWrite(w, `{
+					"data": {
+						"repository": {
+							"object": {
+								"blame0": {
+									"ranges": [
+										{
+											"startingLine": 1,
+											"endingLine": 10,
+											"commit": {
+												"author": {
+													"user": {
+														"login": "reviewpad[bot]"
+													}
+												}
+											}
+										}
+									]
+								},
+								"blame1": {
+									"ranges": [
+										{
+											"startingLine": 1,
+											"endingLine": 5,
+											"commit": {
+												"author": {
+													"user": {
+														"login": "reviewpad[bot]"
+													}
+												}
+											}
+										}
+									]
+								},
+								"blame3": {
+									"ranges": [
+										{
+											"startingLine": 1,
+											"endingLine": 10,
+											"commit": {
+												"author": {
+													"user": {
+														"login": "reviewpad[bot]"
+													}
+												}
+											}
+										}
+									]
+								}
+							}
+						}
+					}
+				}`)
 			},
 			mockedFileList: aladino.GetDefaultPullRequestFileList(),
 		},
