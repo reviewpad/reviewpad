@@ -235,12 +235,12 @@ func normalizeRun(run any, currentRules []PadRule) ([]PadWorkflowRunBlock, []Pad
 
 			value, ok := forEach["value"].(string)
 			if !ok {
-				return nil, nil, fmt.Errorf("forEach block must contain a value")
+				return nil, nil, fmt.Errorf("forEach block must contain a string value")
 			}
 
 			in, ok := forEach["in"].(string)
 			if !ok {
-				return nil, nil, fmt.Errorf("forEach block must contain an in")
+				return nil, nil, fmt.Errorf("forEach block must contain a string in")
 			}
 
 			do, ok := forEach["do"]
