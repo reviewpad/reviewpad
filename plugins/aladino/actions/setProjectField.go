@@ -24,9 +24,32 @@ func setProjectField(e aladino.Env, args []lang.Value) error {
 	fieldValue := args[2].(*lang.StringValue).Val
 	target := e.GetTarget()
 
+	var foundProject bool
+	var projectNumber uint64
+
 	projectItems, err := target.GetLinkedProjects()
 	if err != nil {
 		return err
+	}
+
+	for _, projectItem := range projectItems {
+		if projectItem.Project.Title == projectTitle {
+			projectNumber = projectItem.Project.Number
+			foundProject = true
+			break
+		}
+	}
+
+	if !foundProject {
+		projectColumns, err := e.GetGithubClient().GetProjectColumns(e.GetCtx(), target.GetTargetEntity().Owner, target.GetTargetEntity().Repo, projectNumber)
+		if err != nil {
+			return err
+		}
+
+		err = addToProjectCode(e, []lang.Value{args[0], &lang.StringValue{Val: projectColumns[0].Name}})
+		if err != nil {
+			return err
+		}
 	}
 
 	return target.SetProjectField(projectItems, projectTitle, fieldName, fieldValue)
