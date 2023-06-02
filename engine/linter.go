@@ -279,8 +279,12 @@ func lintGroupsMentions(groups []PadGroup, rules []PadRule, workflows []PadWorkf
 func lintShadowedVariablesInRuns(runs []PadWorkflowRunBlock, definedVariables map[string]bool) error {
 	for _, run := range runs {
 		if run.ForEach != nil {
-			if _, ok := definedVariables[run.ForEach.Key]; ok {
-				return fmt.Errorf("variable shadowing is not allowed: the variable %s is already defined", run.ForEach.Key)
+			// since the key may not be present in some for each blocks
+			// we wanna disregard empty keys so that we don't get a lint error
+			if run.ForEach.Key != "" {
+				if _, ok := definedVariables[run.ForEach.Key]; ok {
+					return fmt.Errorf("variable shadowing is not allowed: the variable %s is already defined", run.ForEach.Key)
+				}
 			}
 
 			if _, ok := definedVariables[run.ForEach.Value]; ok {
@@ -288,6 +292,7 @@ func lintShadowedVariablesInRuns(runs []PadWorkflowRunBlock, definedVariables ma
 			}
 
 			definedVariables[run.ForEach.Value] = true
+			definedVariables[run.ForEach.Key] = true
 
 			err := lintShadowedVariablesInRuns(run.ForEach.Do, definedVariables)
 			if err != nil {
