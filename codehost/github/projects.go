@@ -125,20 +125,6 @@ type GetIssueProjectItemsQuery struct {
 	} `graphql:"repository(owner: $owner, name: $name)"`
 }
 
-type GetProjectColumnsQuery struct {
-	Repository struct {
-		Project struct {
-			Columns struct {
-				PageInfo PageInfo
-				Nodes    []struct {
-					ID   string
-					Name string
-				}
-			} `graphql:"columns(first: 100, after: $afterCursor)"`
-		} `graphql:"project(number: $number)"`
-	} `graphql:"repository(owner: $owner, name: $name)"`
-}
-
 type GQLProjectColumn struct {
 	ID   string
 	Name string
@@ -301,35 +287,4 @@ func (c *GithubClient) DeleteProjectV2Item(ctx context.Context, projectID, itemI
 	}
 
 	return c.clientGQL.Mutate(ctx, &deleteProjectV2ItemMutation, deleteProjectV2ItemMutationInput, nil)
-}
-
-func (c *GithubClient) GetProjectColumns(ctx context.Context, owner, repo string, projectNumber uint64) ([]GQLProjectColumn, error) {
-	var getProjectColumnsQuery GetProjectColumnsQuery
-	varGQLGetProjectColumnsQuery := map[string]interface{}{
-		"owner":       githubv4.String(owner),
-		"name":        githubv4.String(repo),
-		"number":      githubv4.Int(projectNumber),
-		"afterCursor": githubv4.String(""),
-	}
-
-	var columns []GQLProjectColumn
-	for {
-		if err := c.clientGQL.Query(ctx, &getProjectColumnsQuery, varGQLGetProjectColumnsQuery); err != nil {
-			return nil, err
-		}
-
-		// Since a single issue can be associated with multiple projects, we need to find the project item ID
-		// that matches the project ID we're looking for.
-		for _, node := range getProjectColumnsQuery.Repository.Project.Columns.Nodes {
-			columns = append(columns, GQLProjectColumn{ID: node.ID, Name: node.Name})
-		}
-
-		if !getProjectColumnsQuery.Repository.Project.Columns.PageInfo.HasNextPage {
-			break
-		}
-
-		varGQLGetProjectColumnsQuery["afterCursor"] = githubv4.String(getProjectColumnsQuery.Repository.Project.Columns.PageInfo.EndCursor)
-	}
-
-	return columns, nil
 }
