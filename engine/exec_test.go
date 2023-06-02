@@ -369,6 +369,38 @@ func TestExecConfigurationFile(t *testing.T) {
 			targetEntity:   engine.DefaultMockTargetEntity,
 			wantExitStatus: engine.ExitStatusSuccess,
 		},
+		"reviewpad with dictionaries and for each": {
+			inputReviewpadFilePath: "testdata/exec/reviewpad_with_dictionary_and_foreach_workflow.yml",
+			wantProgram: engine.BuildProgram(
+				[]*engine.Statement{
+					engine.BuildStatement(`$addLabel($teamName)`),
+					engine.BuildStatement(`$addLabel($teamMember)`),
+					engine.BuildStatement(`$addLabel($teamMember)`),
+					engine.BuildStatement(`$addLabel($teamName)`),
+					engine.BuildStatement(`$addLabel($teamMember)`),
+					engine.BuildStatement(`$addLabel($teamMember)`),
+				},
+			),
+			targetEntity:   engine.DefaultMockTargetEntity,
+			wantExitStatus: engine.ExitStatusSuccess,
+		},
+		"reviewpad with referenced dictionaries and for each": {
+			inputReviewpadFilePath: "testdata/exec/reviewpad_with_referenced_dictionary_and_foreach_workflow.yml",
+			wantProgram: engine.BuildProgram(
+				[]*engine.Statement{
+					engine.BuildStatement(`$addLabel($groupMember)`),
+					engine.BuildStatement(`$addLabel($groupMember)`),
+					engine.BuildStatement(`$addLabel($groupMember)`),
+					engine.BuildStatement(`$addLabel($groupMember)`),
+					engine.BuildStatement(`$addLabel($groupMember)`),
+					engine.BuildStatement(`$addLabel($groupMember)`),
+					engine.BuildStatement(`$addLabel($groupMember)`),
+					engine.BuildStatement(`$addLabel($groupMember)`),
+				},
+			),
+			targetEntity:   engine.DefaultMockTargetEntity,
+			wantExitStatus: engine.ExitStatusSuccess,
+		},
 	}
 
 	codehostClient := aladino.GetDefaultCodeHostClient(t, aladino.GetDefaultPullRequestDetails(), aladino.GetDefaultPullRequestFileList(), nil, nil)
@@ -390,8 +422,9 @@ func TestExecConfigurationFile(t *testing.T) {
 					"assignReviewer": plugins_aladino_actions.AssignReviewer(),
 				},
 				Functions: map[string]*aladino.BuiltInFunction{
-					"group": plugins_aladino_functions.Group(),
-					"team":  plugins_aladino_functions.Team(),
+					"group":      plugins_aladino_functions.Group(),
+					"team":       plugins_aladino_functions.Team(),
+					"dictionary": plugins_aladino_functions.Dictionary(),
 				},
 			}
 

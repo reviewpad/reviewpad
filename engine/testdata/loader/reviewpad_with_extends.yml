@@ -12,6 +12,12 @@ labels:
   small:
     color: '#aa12ab'
 
+dictionaries:
+  - name: owners
+    spec:
+      dir1: '["jane", "john"]'
+      dir2: '["jill", "james"]'
+
 groups:
   - name: owners
     kind: developers

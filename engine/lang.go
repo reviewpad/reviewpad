@@ -122,6 +122,7 @@ type PadWorkflowRunBlock struct {
 }
 
 type PadWorkflowRunForEachBlock struct {
+	Key   string
 	Value string
 	In    string
 	Do    []PadWorkflowRunBlock
@@ -226,6 +227,30 @@ type ReviewpadFile struct {
 	Workflows      []PadWorkflow       `yaml:"workflows"`
 	Pipelines      []PadPipeline       `yaml:"pipelines"`
 	Recipes        map[string]*bool    `yaml:"recipes"`
+	Dictionaries   []PadDictionary     `yaml:"dictionaries"`
+}
+
+type PadDictionary struct {
+	Name string            `yaml:"name"`
+	Spec map[string]string `yaml:"spec"`
+}
+
+func (p PadDictionary) equals(o PadDictionary) bool {
+	if p.Name != o.Name {
+		return false
+	}
+
+	if len(p.Spec) != len(o.Spec) {
+		return false
+	}
+
+	for key, value := range p.Spec {
+		if o.Spec[key] != value {
+			return false
+		}
+	}
+
+	return true
 }
 
 type PadPipeline struct {
@@ -353,6 +378,16 @@ func (r *ReviewpadFile) equals(o *ReviewpadFile) bool {
 		}
 	}
 
+	if len(r.Dictionaries) != len(o.Dictionaries) {
+		return false
+	}
+	for i, rD := range r.Dictionaries {
+		oD := o.Dictionaries[i]
+		if !rD.equals(oD) {
+			return false
+		}
+	}
+
 	return reflect.DeepEqual(r.Recipes, o.Recipes)
 }
 
@@ -424,6 +459,18 @@ func (r *ReviewpadFile) appendRecipes(o *ReviewpadFile) {
 	}
 }
 
+func (r *ReviewpadFile) appendDictionaries(o *ReviewpadFile) {
+	updatedDictionaries := make([]PadDictionary, 0)
+
+	for _, dictionary := range r.Dictionaries {
+		if _, ok := findDictionary(o.Dictionaries, dictionary.Name); !ok {
+			updatedDictionaries = append(updatedDictionaries, dictionary)
+		}
+	}
+
+	r.Dictionaries = append(updatedDictionaries, o.Dictionaries...)
+}
+
 func (r *ReviewpadFile) extend(o *ReviewpadFile) {
 	if o.Mode != "" {
 		r.Mode = o.Mode
@@ -443,6 +490,7 @@ func (r *ReviewpadFile) extend(o *ReviewpadFile) {
 	r.appendWorkflows(o)
 	r.appendPipelines(o)
 	r.appendRecipes(o)
+	r.appendDictionaries(o)
 }
 
 func findGroup(groups []PadGroup, name string) (*PadGroup, bool) {
@@ -479,6 +527,16 @@ func findPipeline(pipelines []PadPipeline, name string) (*PadPipeline, bool) {
 	for _, pipeline := range pipelines {
 		if pipeline.Name == name {
 			return &pipeline, true
+		}
+	}
+
+	return nil, false
+}
+
+func findDictionary(dictionaries []PadDictionary, name string) (*PadDictionary, bool) {
+	for _, dictionary := range dictionaries {
+		if dictionary.Name == name {
+			return &dictionary, true
 		}
 	}
 

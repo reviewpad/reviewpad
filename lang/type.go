@@ -18,6 +18,7 @@ const (
 	ARRAY_OF_TYPE      string = "ArrayOfType"
 	JSON_TYPE          string = "JSONType"
 	DYNAMIC_ARRAY_TYPE string = "DynamicArrayType"
+	DICTIONARY_TYPE    string = "DictionaryType"
 )
 
 type StringType struct{}
@@ -44,6 +45,8 @@ type DynamicArrayType struct{}
 
 type JSONType struct{}
 
+type DictionaryType struct{}
+
 func BuildStringType() *StringType { return &StringType{} }
 func BuildIntType() *IntType       { return &IntType{} }
 func BuildBoolType() *BoolType     { return &BoolType{} }
@@ -63,6 +66,10 @@ func BuildArrayType(elemsTypes []Type) *ArrayType {
 func BuildJSONType() *JSONType { return &JSONType{} }
 
 func BuildDynamicArrayType() *DynamicArrayType { return &DynamicArrayType{} }
+
+func BuildDictionaryType() *DictionaryType {
+	return &DictionaryType{}
+}
 
 func (bTy *BoolType) Kind() string {
 	return BOOL_TYPE
@@ -94,6 +101,10 @@ func (jTy *JSONType) Kind() string {
 
 func (dATy *DynamicArrayType) Kind() string {
 	return DYNAMIC_ARRAY_TYPE
+}
+
+func (dTy *DictionaryType) Kind() string {
+	return DICTIONARY_TYPE
 }
 
 // Equals
@@ -174,6 +185,10 @@ func (thisTy *JSONType) Equals(thatTy Type) bool {
 }
 
 func (thisTy *DynamicArrayType) Equals(thatTy Type) bool {
+	return thisTy.Kind() == thatTy.Kind()
+}
+
+func (thisTy *DictionaryType) Equals(thatTy Type) bool {
 	return thisTy.Kind() == thatTy.Kind()
 }
 

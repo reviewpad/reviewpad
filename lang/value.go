@@ -16,13 +16,14 @@ type Value interface {
 }
 
 const (
-	INT_VALUE      string = "IntValue"
-	BOOL_VALUE     string = "BoolValue"
-	STRING_VALUE   string = "StringValue"
-	TIME_VALUE     string = "TimeValue"
-	ARRAY_VALUE    string = "ArrayValue"
-	FUNCTION_VALUE string = "FunctionValue"
-	JSON_VALUE     string = "JSONValue"
+	INT_VALUE        string = "IntValue"
+	BOOL_VALUE       string = "BoolValue"
+	STRING_VALUE     string = "StringValue"
+	TIME_VALUE       string = "TimeValue"
+	ARRAY_VALUE      string = "ArrayValue"
+	FUNCTION_VALUE   string = "FunctionValue"
+	JSON_VALUE       string = "JSONValue"
+	DICTIONARY_VALUE string = "DictionaryValue"
 )
 
 // IntValue represents an integer value
@@ -251,4 +252,45 @@ func (jVal *JSONValue) Equals(other Value) bool {
 
 func (jVal *JSONValue) Type() Type {
 	return BuildJSONType()
+}
+
+type DictionaryValue struct {
+	Vals map[string]Value
+}
+
+func BuildDictionaryValue(vals map[string]Value) *DictionaryValue {
+	return &DictionaryValue{Vals: vals}
+}
+
+func (dVal *DictionaryValue) Kind() string {
+	return DICTIONARY_VALUE
+}
+
+func (dVal *DictionaryValue) HasKindOf(ty string) bool {
+	return dVal.Kind() == ty
+}
+
+func (dVal *DictionaryValue) Equals(other Value) bool {
+	if dVal.Kind() != other.Kind() {
+		return false
+	}
+
+	otherDict := other.(*DictionaryValue)
+
+	if len(dVal.Vals) != len(otherDict.Vals) {
+		return false
+	}
+
+	for key, val := range dVal.Vals {
+		otherVal := otherDict.Vals[key]
+		if !val.Equals(otherVal) {
+			return false
+		}
+	}
+
+	return true
+}
+
+func (dVal *DictionaryValue) Type() Type {
+	return BuildDictionaryType()
 }

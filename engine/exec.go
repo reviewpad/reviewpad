@@ -302,6 +302,19 @@ func ExecConfigurationFile(env *Env, file *ReviewpadFile) (ExitStatus, *Program,
 		}
 	}
 
+	// process dictionaries
+	for _, dictionary := range file.Dictionaries {
+		transformedSpec := make(map[string]string)
+		for key, value := range dictionary.Spec {
+			transformedSpec[key] = transformAladinoExpression(value)
+		}
+
+		err := interpreter.ProcessDictionary(dictionary.Name, transformedSpec)
+		if err != nil {
+			return ExitStatusFailure, nil, err
+		}
+	}
+
 	// a program is a list of statements to be executed based on the command, workflow rules and actions.
 	program := BuildProgram(make([]*Statement, 0))
 
@@ -437,18 +450,32 @@ func execStatement(interpreter Interpreter, run PadWorkflowRunBlock, rules map[s
 	if run.ForEach != nil {
 		var executedActions []string
 
-		value, err := interpreter.ProcessList(run.ForEach.In)
+		value, err := interpreter.ProcessIterable(run.ForEach.In)
 		if err != nil {
 			return ExitStatusFailure, nil, err
 		}
 
-		for _, val := range value.(*lang.ArrayValue).Vals {
-			interpreter.StoreTemporaryVariable(run.ForEach.Value, val)
+		switch val := value.(type) {
+		case *lang.ArrayValue:
+			for _, val := range val.Vals {
+				interpreter.StoreTemporaryVariable(run.ForEach.Value, val)
 
-			exitStatus, forEachActions, err := execStatementBlock(interpreter, run.ForEach.Do, rules)
-			executedActions = append(executedActions, forEachActions...)
-			if err != nil {
-				return exitStatus, executedActions, err
+				exitStatus, forEachActions, err := execStatementBlock(interpreter, run.ForEach.Do, rules)
+				executedActions = append(executedActions, forEachActions...)
+				if err != nil {
+					return exitStatus, executedActions, err
+				}
+			}
+		case *lang.DictionaryValue:
+			for key, val := range val.Vals {
+				interpreter.StoreTemporaryVariable(run.ForEach.Key, lang.BuildStringValue(key))
+				interpreter.StoreTemporaryVariable(run.ForEach.Value, val)
+
+				exitStatus, forEachActions, err := execStatementBlock(interpreter, run.ForEach.Do, rules)
+				executedActions = append(executedActions, forEachActions...)
+				if err != nil {
+					return exitStatus, executedActions, err
+				}
 			}
 		}
 

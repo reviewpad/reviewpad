@@ -1,0 +1,23 @@
+# Copyright (C) 2023 Explore.dev, Unipessoal Lda - All Rights Reserved
+# Use of this source code is governed by a license that can be
+# found in the LICENSE file.
+
+dictionaries:
+  - name: teams
+    spec:
+      team1: '["john", "jane"]'
+      team2: '["jill", "james"]'
+
+workflows:
+  - name: test
+    run:
+      - forEach:
+          key: $teamName
+          value: $teamMembers
+          in: $dictionary("teams")
+          do:
+            - $addLabel($teamName)
+            - forEach:
+                value: $teamMember
+                in: $teamMembers
+                do: $addLabel($teamMember)

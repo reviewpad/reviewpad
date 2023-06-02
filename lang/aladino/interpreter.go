@@ -65,18 +65,44 @@ func (i *Interpreter) ProcessGroup(groupName string, kind engine.GroupKind, type
 	return nil
 }
 
-func (i *Interpreter) ProcessList(expr string) (lang.Value, error) {
+func (i *Interpreter) ProcessIterable(expr string) (lang.Value, error) {
 	exprAST, err := Parse(expr)
 	if err != nil {
-		return nil, fmt.Errorf("ProcessList:Parse: %v", err)
+		return nil, fmt.Errorf("ProcessIterable:Parse: %v", err)
 	}
 
-	value, err := evalGroup(i.Env, exprAST)
+	exprType, err := TypeInference(i.Env, exprAST)
 	if err != nil {
-		return nil, fmt.Errorf("ProcessList:evalGroup %v", err)
+		return nil, err
 	}
 
-	return value, nil
+	if exprType.Kind() != lang.ARRAY_TYPE && exprType.Kind() != lang.ARRAY_OF_TYPE && exprType.Kind() != lang.DICTIONARY_TYPE {
+		return nil, fmt.Errorf("expression is not a valid iterable")
+	}
+
+	return Eval(i.Env, exprAST)
+}
+
+func (i *Interpreter) ProcessDictionary(name string, dictionary map[string]string) error {
+	processedDictionary := make(map[string]lang.Value)
+
+	for key, expr := range dictionary {
+		exprAST, err := Parse(expr)
+		if err != nil {
+			return fmt.Errorf("ProcessDictionary:Parse: %v", err)
+		}
+
+		value, err := Eval(i.Env, exprAST)
+		if err != nil {
+			return fmt.Errorf("ProcessDictionary:Eval: %v", err)
+		}
+
+		processedDictionary[key] = value
+	}
+
+	i.Env.GetRegisterMap()[fmt.Sprintf("@dictionary:%s", name)] = lang.BuildDictionaryValue(processedDictionary)
+
+	return nil
 }
 
 func (i *Interpreter) StoreTemporaryVariable(name string, value lang.Value) {

@@ -44,8 +44,9 @@ type Interpreter interface {
 	Report(mode string, safeMode bool) error
 	ReportMetrics() error
 	GetCheckRunConclusion() string
-	ProcessList(expr string) (lang.Value, error)
+	ProcessIterable(expr string) (lang.Value, error)
 	StoreTemporaryVariable(name string, value lang.Value)
+	ProcessDictionary(name string, dictionary map[string]string) error
 }
 
 type Env struct {

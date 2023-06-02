@@ -87,6 +87,29 @@ func TestLoadWithAST(t *testing.T) {
 		IgnoreErrors:   &noIgnoreErrors,
 		MetricsOnMerge: &noMetricsOnMerge,
 		Extends:        []string{},
+		Dictionaries: []engine.PadDictionary{
+			{
+				Name: "teams",
+				Spec: map[string]string{
+					"team1": `["john", "jane"]`,
+					"team2": `["jill", "james"]`,
+				},
+			},
+			{
+				Name: "groups",
+				Spec: map[string]string{
+					"group1": `"group1"`,
+					"group2": `"group2"`,
+				},
+			},
+			{
+				Name: "owners",
+				Spec: map[string]string{
+					"dir1": `["jane", "john"]`,
+					"dir2": `["jill", "james"]`,
+				},
+			},
+		},
 		Labels: map[string]engine.PadLabel{
 			"small": {
 				Color: "#aa12ab",

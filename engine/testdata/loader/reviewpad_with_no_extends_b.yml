@@ -8,6 +8,12 @@ ignore-errors: true
 
 edition: enterprise
 
+dictionaries:
+  - name: groups
+    spec:
+      group1: '"group1"'
+      group2: '"group2"'
+
 groups:
   - name: owners
     kind: developers

@@ -8,6 +8,12 @@ mode: verbose
 
 metrics-on-merge: true
 
+dictionaries:
+  - name: teams
+    spec:
+      team1: '["john", "jane"]'
+      team2: '["jill", "james"]'
+
 labels:
   small:
     color: '#aaf1aa'

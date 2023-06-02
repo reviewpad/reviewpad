@@ -258,6 +258,7 @@ func transform(file *ReviewpadFile) *ReviewpadFile {
 		Workflows:      transformedWorkflows,
 		Pipelines:      transformedPipelines,
 		Recipes:        file.Recipes,
+		Dictionaries:   file.Dictionaries,
 	}
 }
 

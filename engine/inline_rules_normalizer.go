@@ -29,6 +29,7 @@ func inlineModificator(file *ReviewpadFile) (*ReviewpadFile, error) {
 		Workflows:      file.Workflows,
 		Pipelines:      file.Pipelines,
 		Recipes:        file.Recipes,
+		Dictionaries:   file.Dictionaries,
 	}
 
 	for i, workflow := range reviewpadFile.Workflows {
@@ -230,17 +231,19 @@ func normalizeRun(run any, currentRules []PadRule) ([]PadWorkflowRunBlock, []Pad
 				return nil, nil, fmt.Errorf("forEach block must be a map")
 			}
 
-			value, ok := forEachBlock.(map[string]interface{})["value"]
+			forEach := forEachBlock.(map[string]interface{})
+
+			value, ok := forEach["value"].(string)
 			if !ok {
-				return nil, nil, fmt.Errorf("forEach block must contain a value")
+				return nil, nil, fmt.Errorf("forEach block must contain a string value")
 			}
 
-			in, ok := forEachBlock.(map[string]interface{})["in"]
+			in, ok := forEach["in"].(string)
 			if !ok {
-				return nil, nil, fmt.Errorf("forEach block must contain an in")
+				return nil, nil, fmt.Errorf("forEach block must contain a string in")
 			}
 
-			do, ok := forEachBlock.(map[string]interface{})["do"]
+			do, ok := forEach["do"]
 			if !ok {
 				return nil, nil, fmt.Errorf("forEach block must contain a do")
 			}
@@ -250,11 +253,17 @@ func normalizeRun(run any, currentRules []PadRule) ([]PadWorkflowRunBlock, []Pad
 				return nil, nil, err
 			}
 
-			mapBlock.ForEach = &PadWorkflowRunForEachBlock{
-				Value: value.(string),
-				In:    in.(string),
+			padWorkflowRunForEachBlock := &PadWorkflowRunForEachBlock{
+				Value: value,
+				In:    in,
 				Do:    processedDo,
 			}
+
+			if key, ok := forEach["key"].(string); ok {
+				padWorkflowRunForEachBlock.Key = key
+			}
+
+			mapBlock.ForEach = padWorkflowRunForEachBlock
 
 			rules = append(rules, processedDoRules...)
 
