@@ -231,17 +231,19 @@ func normalizeRun(run any, currentRules []PadRule) ([]PadWorkflowRunBlock, []Pad
 				return nil, nil, fmt.Errorf("forEach block must be a map")
 			}
 
-			value, ok := forEachBlock.(map[string]interface{})["value"]
+			forEach := forEachBlock.(map[string]interface{})
+
+			value, ok := forEach["value"].(string)
 			if !ok {
 				return nil, nil, fmt.Errorf("forEach block must contain a value")
 			}
 
-			in, ok := forEachBlock.(map[string]interface{})["in"]
+			in, ok := forEach["in"].(string)
 			if !ok {
 				return nil, nil, fmt.Errorf("forEach block must contain an in")
 			}
 
-			do, ok := forEachBlock.(map[string]interface{})["do"]
+			do, ok := forEach["do"]
 			if !ok {
 				return nil, nil, fmt.Errorf("forEach block must contain a do")
 			}
@@ -252,12 +254,12 @@ func normalizeRun(run any, currentRules []PadRule) ([]PadWorkflowRunBlock, []Pad
 			}
 
 			padWorkflowRunForEachBlock := &PadWorkflowRunForEachBlock{
-				Value: value.(string),
-				In:    in.(string),
+				Value: value,
+				In:    in,
 				Do:    processedDo,
 			}
 
-			if key, ok := forEachBlock.(map[string]interface{})["key"].(string); ok {
+			if key, ok := forEach["key"].(string); ok {
 				padWorkflowRunForEachBlock.Key = key
 			}
 
