@@ -125,11 +125,6 @@ type GetIssueProjectItemsQuery struct {
 	} `graphql:"repository(owner: $owner, name: $name)"`
 }
 
-type GQLProjectColumn struct {
-	ID   string
-	Name string
-}
-
 func (c *GithubClient) GetProjectV2ByName(ctx context.Context, owner, repo, name string) (*ProjectV2, error) {
 	// Warning: we've faced trouble before with the Github GraphQL API, we'll update this later when we find a better alternative.
 	// We request the first 50 projects since GitHub can return several projects  with a partially matching name.
