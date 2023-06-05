@@ -660,7 +660,7 @@ func getMockedProjectFieldsByProjectNumberGraphQLQuery(mockedPRRepoName, mockedP
 }
 
 func getMockedUpdateProjectV2ItemFieldValueMutation() string {
-	return fmt.Sprintf(`{
+	return `{
 		"query": "mutation($input: UpdateProjectV2ItemFieldValueInput!) {
 			updateProjectV2ItemFieldValue(input: $input) {
 				clientMutationId
@@ -676,5 +676,5 @@ func getMockedUpdateProjectV2ItemFieldValueMutation() string {
 				"fieldId":"test"
 			}
 		}
-	}`)
+	}`
 }
