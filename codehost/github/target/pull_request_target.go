@@ -551,3 +551,18 @@ func (target *PullRequestTarget) GetLatestApprovedReviews() ([]string, error) {
 
 	return approvedBy, nil
 }
+
+func (t *PullRequestTarget) IsInProject(projectTitle string) (bool, error) {
+	projectItems, err := t.GetLinkedProjects()
+	if err != nil {
+		return false, err
+	}
+
+	for _, projectItem := range projectItems {
+		if projectItem.Project.Title == projectTitle {
+			return true, nil
+		}
+	}
+
+	return false, nil
+}

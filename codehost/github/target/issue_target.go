@@ -208,3 +208,18 @@ func (target *IssueTarget) GetProjectV2ItemID(projectID string) (string, error) 
 
 	return target.githubClient.GetIssueProjectV2ItemID(ctx, owner, repo, projectID, targetEntity.Number)
 }
+
+func (t *IssueTarget) IsInProject(projectTitle string) (bool, error) {
+	projectItems, err := t.GetLinkedProjects()
+	if err != nil {
+		return false, err
+	}
+
+	for _, projectItem := range projectItems {
+		if projectItem.Project.Title == projectTitle {
+			return true, nil
+		}
+	}
+
+	return false, nil
+}

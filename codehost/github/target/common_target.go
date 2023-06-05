@@ -229,17 +229,32 @@ func (t *CommonTarget) setProjectV2Field(projectID, projectItemID string, fieldD
 	return t.githubClient.GetClientGraphQL().Mutate(ctx, &updateProjectV2ItemFieldValueMutation, updateInput, nil)
 }
 
-func (t *CommonTarget) SetProjectField(projectItems []gh.GQLProjectV2Item, projectTitle, fieldName, fieldValue string) error {
+func (t *CommonTarget) SetProjectField(projectTitle, fieldName, fieldValue string) error {
 	ctx := t.ctx
 	targetEntity := t.targetEntity
 	owner := targetEntity.Owner
 	repo := targetEntity.Repo
+	number := targetEntity.Number
+
+	var err error
+	var projectItems []gh.GQLProjectV2Item
+
+	totalRequestTries := 2
+
+	if targetEntity.Kind == entities.PullRequest {
+		projectItems, err = t.githubClient.GetLinkedProjectsForPullRequest(ctx, owner, repo, number, totalRequestTries)
+	} else {
+		projectItems, err = t.githubClient.GetLinkedProjectsForIssue(ctx, owner, repo, number, totalRequestTries)
+	}
+
+	if err != nil {
+		return err
+	}
 
 	var projectItemID string
 	var projectID string
 	var projectNumber uint64
 	foundProject := false
-	totalRequestTries := 2
 
 	for _, projectItem := range projectItems {
 		if projectItem.Project.Title == projectTitle {
