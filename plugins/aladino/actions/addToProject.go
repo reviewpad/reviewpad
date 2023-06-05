@@ -36,6 +36,17 @@ func addToProjectCode(e aladino.Env, args []lang.Value) error {
 		return err
 	}
 
+	itemID, err := target.AddToProject(project.ID)
+	if err != nil {
+		return err
+	}
+
+	// If no status is provided, we don't need to update the project item field because it's already set to the default value.
+	// The default value is "No status".
+	if projectStatus == "" {
+		return nil
+	}
+
 	fields, err := e.GetGithubClient().GetProjectFieldsByProjectNumber(e.GetCtx(), owner, repo, project.Number, totalRequestTries)
 	if err != nil {
 		return err
@@ -67,25 +78,6 @@ func addToProjectCode(e aladino.Env, args []lang.Value) error {
 		return gh.ErrProjectStatusNotFound
 	}
 
-	var addProjectV2ItemByIdMutation struct {
-		AddProjectV2ItemById struct {
-			Item struct {
-				Id string
-			}
-		} `graphql:"addProjectV2ItemById(input: $input)"`
-	}
-
-	input := gh.AddProjectV2ItemByIdInput{
-		ProjectID: project.ID,
-		ContentID: target.GetNodeID(),
-	}
-
-	// FIXME: move mutate to a separate function in the codehost.github package
-	err = e.GetGithubClient().GetClientGraphQL().Mutate(e.GetCtx(), &addProjectV2ItemByIdMutation, input, nil)
-	if err != nil {
-		return err
-	}
-
 	var updateProjectV2ItemFieldValueMutation struct {
 		UpdateProjetV2ItemFieldValue struct {
 			ClientMutationID string
@@ -94,7 +86,7 @@ func addToProjectCode(e aladino.Env, args []lang.Value) error {
 
 	updateInput := gh.UpdateProjectV2ItemFieldValueInput{
 		ProjectID: project.ID,
-		ItemID:    addProjectV2ItemByIdMutation.AddProjectV2ItemById.Item.Id,
+		ItemID:    itemID,
 		Value: gh.SingleSelectFieldValue{
 			SingleSelectOptionId: fieldOptionID,
 		},

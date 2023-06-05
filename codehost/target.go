@@ -44,6 +44,7 @@ type Target interface {
 	JSON() (string, error)
 	GetProjectV2ItemID(projectID string) (string, error)
 	IsInProject(projectTitle string) (bool, error)
+	AddToProject(projectID string) (string, error)
 }
 
 type User struct {

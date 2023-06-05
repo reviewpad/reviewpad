@@ -566,3 +566,25 @@ func (t *PullRequestTarget) IsInProject(projectTitle string) (bool, error) {
 
 	return false, nil
 }
+
+func (t *PullRequestTarget) AddToProject(projectID string) (string, error) {
+	var addProjectV2ItemByIdMutation struct {
+		AddProjectV2ItemById struct {
+			Item struct {
+				Id string
+			}
+		} `graphql:"addProjectV2ItemById(input: $input)"`
+	}
+
+	input := gh.AddProjectV2ItemByIdInput{
+		ProjectID: projectID,
+		ContentID: t.PullRequest.GetId(),
+	}
+
+	err := t.githubClient.GetClientGraphQL().Mutate(t.ctx, &addProjectV2ItemByIdMutation, input, nil)
+	if err != nil {
+		return "", err
+	}
+
+	return addProjectV2ItemByIdMutation.AddProjectV2ItemById.Item.Id, nil
+}
