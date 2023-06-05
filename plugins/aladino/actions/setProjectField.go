@@ -6,6 +6,7 @@ package plugins_aladino_actions
 
 import (
 	"github.com/reviewpad/go-lib/entities"
+	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
@@ -24,17 +25,14 @@ func setProjectField(e aladino.Env, args []lang.Value) error {
 	fieldValue := args[2].(*lang.StringValue).Val
 	target := e.GetTarget()
 
-	var foundProject bool
+	foundProject := true
 
-	projectItems, err := target.GetLinkedProjects()
+	_, err := e.GetGithubClient().GetProjectV2ByName(e.GetCtx(), target.GetTargetEntity().Owner, target.GetTargetEntity().Repo, projectTitle)
 	if err != nil {
-		return err
-	}
-
-	for _, projectItem := range projectItems {
-		if projectItem.Project.Title == projectTitle {
-			foundProject = true
-			break
+		if err == gh.ErrProjectNotFound {
+			foundProject = false
+		} else {
+			return err
 		}
 	}
 
@@ -43,6 +41,11 @@ func setProjectField(e aladino.Env, args []lang.Value) error {
 		if err != nil {
 			return err
 		}
+	}
+
+	projectItems, err := target.GetLinkedProjects()
+	if err != nil {
+		return err
 	}
 
 	return target.SetProjectField(projectItems, projectTitle, fieldName, fieldValue)
