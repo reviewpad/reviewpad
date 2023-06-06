@@ -51,6 +51,15 @@ func assignCodeAuthorReviewersCode(env aladino.Env, args []lang.Value) error {
 		return nil
 	}
 
+	// if a pull request has no changes for example when
+	// you edit a file in one commit but revert the changes in another
+	// we can end up in a situation where there are no changes in the pull request
+	// in those cases it's not possible to fetch the authors of the changed files
+	// so we just assign a random reviewer.
+	if len(pr.Patch) == 0 {
+		return assignRandomReviewerCode(env, nil)
+	}
+
 	// Fetch all users that have authored the changed files in the pull request.
 	authors, err := getAuthorsFromGitBlame(env.GetCtx(), gitHubClient, pr)
 	if err != nil {
