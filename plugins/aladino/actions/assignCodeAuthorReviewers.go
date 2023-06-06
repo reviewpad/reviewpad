@@ -147,7 +147,17 @@ func getAuthorsFromGitBlame(ctx context.Context, gitHubClient *github.GithubClie
 
 	changedFilesPath := []string{}
 
+	// we are excluding yarn.lock files
+	// to investigate if they are causing an issue with the git blame.
+	excludedFiles := map[string]bool{
+		"yarn.lock": true,
+	}
+
 	for _, patch := range pullRequest.Patch {
+		if excludedFiles[patch.Repr.GetFilename()] {
+			continue
+		}
+
 		changedFilesPath = append(changedFilesPath, patch.Repr.GetFilename())
 	}
 
