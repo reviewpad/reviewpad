@@ -5,32 +5,32 @@
 package engine
 
 import (
+	"fmt"
 	"regexp"
 	"strings"
 )
 
 func addDefaultsToRequestedReviewers(str string) string {
-	trimmedStr := strings.ReplaceAll(str, " ", "")
-	m := regexp.MustCompile(`\$assignReviewer\(((\[.*\])|(\$(team|group)\("[^"]*"\)))(,(\d+))?(,"([^"]*)")?\)`)
-	match := m.FindStringSubmatch(trimmedStr)
+	m := regexp.MustCompile(`\$assignReviewer\(([^,]*\[[^]]*\]|[^,]+)(?:\s*,\s*([^,]*\[[^]]*\]|[^,]+))?(?:\s*,\s*([^,]*\[[^]]*\]|[^,]+))?\)`)
+	match := m.FindStringSubmatch(str)
 
 	if len(match) == 0 {
 		return str
 	}
 
 	reviewers := match[1]
-	totalRequiredReviewers := match[6]
-	policy := match[8]
+	totalRequiredReviewers := `99`
+	policy := `"reviewpad"`
 
-	if totalRequiredReviewers == "" {
-		totalRequiredReviewers = "99"
+	if match[2] != "" {
+		totalRequiredReviewers = match[2]
 	}
 
-	if policy == "" {
-		policy = "reviewpad"
+	if match[3] != "" {
+		policy = match[3]
 	}
 
-	return strings.Replace(trimmedStr, match[0], "$assignReviewer("+reviewers+", "+totalRequiredReviewers+", \""+policy+"\")", 1)
+	return fmt.Sprintf("$assignReviewer(%s, %s, %s)", reviewers, totalRequiredReviewers, policy)
 }
 
 func addDefaultMergeMethod(str string) string {
@@ -42,14 +42,14 @@ func addDefaultSizeMethod(str string) string {
 }
 
 func addDefaultIssueCountBy(str string) string {
-	r := regexp.MustCompile(`\$issueCountBy\(([^,\s]+)(?:,\s*("[^\(\)]*"))?\)`)
+	r := regexp.MustCompile(`\$issueCountBy\(([^,\s]+)(?:,\s*(("[^\(\)]*")|(\$\w+)))?\)`)
 	str = r.ReplaceAllString(str, `$$issueCountBy($1, $2)`)
 	r = regexp.MustCompile(`\$issueCountBy\(([^,\s]+),\s*("")?\)`)
 	return r.ReplaceAllString(str, `$$issueCountBy($1, "all")`)
 }
 
 func addDefaultPullRequestCountBy(str string) string {
-	r := regexp.MustCompile(`\$pullRequestCountBy\(([^,\s]+)(?:,\s*("[^\(\)]*"))?\)`)
+	r := regexp.MustCompile(`\$pullRequestCountBy\(([^,\s]+)(?:,\s*(("[^\(\)]*")|(\$\w+)))?\)`)
 	str = r.ReplaceAllString(str, `$$pullRequestCountBy($1, $2)`)
 	r = regexp.MustCompile(`\$pullRequestCountBy\(([^,\s]+),\s*("")?\)`)
 	return r.ReplaceAllString(str, `$$pullRequestCountBy($1, "all")`)
@@ -60,27 +60,39 @@ func addEmptyCloseComment(str string) string {
 }
 
 func addDefaultCloseReason(str string) string {
-	r := regexp.MustCompile(`\$close\("([^"]*)"\)`)
-	return r.ReplaceAllString(str, `$$close("$1", "completed")`)
+	r := regexp.MustCompile(`\$close\(((?:"([^"]*)")|(?:\$\w+))\)`)
+	return r.ReplaceAllString(str, `$$close($1, "completed")`)
 }
 
 func addDefaultHaveAllChecksRunCompleted(str string) string {
-	allArgsRegex := regexp.MustCompile(`\$haveAllChecksRunCompleted\(((?:\[[^\(\)]*\])|(?:\$.+\(.*\))),\s*((?:\"[^\"]*\")|(?:\$.+\(.*\))),\s((?:\[[^\(\)]*\])|(?:\$.+\(.*\)))\)`)
-	if allArgsRegex.MatchString(str) {
+	allArgsRegex := regexp.MustCompile(`\$haveAllChecksRunCompleted\(([^,]*\[[^]]*\]|[^,]+)?(?:\s*,\s*([^,]*\[[^]]*\]|[^,]+))?(?:\s*,\s*([^,]*\[[^]]*\]|[^,]+))?\)`)
+	match := allArgsRegex.FindStringSubmatch(str)
+
+	if len(match) == 0 {
 		return str
 	}
 
-	str = strings.ReplaceAll(str, "$haveAllChecksRunCompleted()", "$haveAllChecksRunCompleted([])")
+	checkRunsToIgnore := `[]`
+	conclusion := `""`
+	checkConclusionsToIgnore := `[]`
 
-	r := regexp.MustCompile(`\$haveAllChecksRunCompleted\((\[[^\(\)]+\]|(?:\$.+\(.*\))|(?:[^,\(\)]+))\)`)
-	str = r.ReplaceAllString(str, `$$haveAllChecksRunCompleted($1, "")`)
+	if match[1] != "" {
+		checkRunsToIgnore = match[1]
+	}
 
-	r = regexp.MustCompile(`\$haveAllChecksRunCompleted\((\[[^\(\)]+\]|(?:\$.+\(.*\))|(?:[^,\(\)]+)),\s*(\[[^\(\)]+\]|(?:\$.+\(.*\))|(?:[^,\(\)]+))\)`)
-	return r.ReplaceAllString(str, `$$haveAllChecksRunCompleted($1, $2, [])`)
+	if match[2] != "" {
+		conclusion = match[2]
+	}
+
+	if match[3] != "" {
+		checkConclusionsToIgnore = match[3]
+	}
+
+	return fmt.Sprintf(`$haveAllChecksRunCompleted(%s, %s, %s)`, checkRunsToIgnore, conclusion, checkConclusionsToIgnore)
 }
 
 func addDefaultJoinSeparator(str string) string {
-	r := regexp.MustCompile(`\$join\((\[[^\(\)]+\]|(?:[^,]+))(?:,\s*("([^"]*)"))?\)`)
+	r := regexp.MustCompile(`\$join\((\[[^\(\)]+\]|(?:[^,]+))(?:,\s*((?:"([^"]*)")|(?:\$\w+)))?\)`)
 	str = r.ReplaceAllString(str, `$$join($1, $2)`)
 	r = regexp.MustCompile(`\$join\((\[.*\]|(?:[^,]*)), \)`)
 	return r.ReplaceAllString(str, `$$join($1, " ")`)
@@ -99,7 +111,7 @@ func addDefaultAssignCodeAuthorReviewer(str string) string {
 	str = strings.ReplaceAll(str, "$assignCodeAuthorReviewers()", "$assignCodeAuthorReviewers(1)")
 	r := regexp.MustCompile(`\$assignCodeAuthorReviewers\(([^,]*)\)`)
 	str = r.ReplaceAllString(str, `$$assignCodeAuthorReviewers($1, [])`)
-	r = regexp.MustCompile(`\$assignCodeAuthorReviewers\((\d+),\s*((?:\[.*\])|(?:[^,]+))\)`)
+	r = regexp.MustCompile(`\$assignCodeAuthorReviewers\(((?:\d+)|(?:\$\w+)),\s*((?:\[.*\])|(?:[^,]+))\)`)
 	return r.ReplaceAllString(str, `$$assignCodeAuthorReviewers($1, $2, 0)`)
 }
 
@@ -116,7 +128,7 @@ func addDefaultHasAnyCheckRunCompleted(str string) string {
 }
 
 func addDefaultsToRequestedAssignees(str string) string {
-	m := regexp.MustCompile(`\$assignAssignees\(((\[.*\])|(\$(team|group)\("[^"]*"\)))(,((-)?(\d+)))?\)`)
+	m := regexp.MustCompile(`\$assignAssignees\(((\[.*\])|(\$(team|group)\("[^"]*"\))|(\$\w+))(,(((-)?(\d+))|(\$\w+)))?\)`)
 	match := m.FindStringSubmatch(str)
 
 	if len(match) == 0 {
