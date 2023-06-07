@@ -1388,6 +1388,37 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 			mockedFileList:      aladino.GetDefaultPullRequestFileList(),
 			reviewRequestedFrom: []string{"james"},
 		},
+		"when there are no changes in the pull request": {
+			totalReviewers:    1,
+			maxReviews:        3,
+			excludedReviewers: lang.BuildArrayValue([]lang.Value{}),
+			mockBackendOptions: []mock.MockBackendOption{
+				mock.WithRequestMatch(
+					mock.GetReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
+					&github.Reviewers{},
+					&github.Reviewers{},
+				),
+				mock.WithRequestMatch(
+					mock.GetReposAssigneesByOwnerByRepo,
+					[]*github.User{
+						{
+							Login: github.String("jane"),
+						},
+					},
+				),
+				mock.WithRequestMatchHandler(
+					mock.PostReposPullsRequestedReviewersByOwnerByRepoByPullNumber,
+					http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+						body, _ := io.ReadAll(r.Body)
+						reviewersRequest := &github.ReviewersRequest{}
+						utils.MustUnmarshal(body, reviewersRequest)
+						reviewRequestedFrom = reviewersRequest.Reviewers
+					}),
+				),
+			},
+			mockedFileList:      []*pbc.File{},
+			reviewRequestedFrom: []string{"jane"},
+		},
 	}
 
 	for name, test := range tests {
