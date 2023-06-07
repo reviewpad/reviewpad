@@ -84,3 +84,40 @@ func TestShadowedVariable(t *testing.T) {
 
 	assert.Equal(t, wantErr, gotErr)
 }
+
+func TestShadowedReservedName(t *testing.T) {
+	workflow := PadWorkflow{
+		Runs: []PadWorkflowRunBlock{
+			{
+				ForEach: &PadWorkflowRunForEachBlock{
+					Value: "var1",
+					Do: []PadWorkflowRunBlock{
+						{
+							ForEach: &PadWorkflowRunForEachBlock{
+								Value: "var2",
+							},
+						},
+					},
+				},
+			},
+			{
+				ForEach: &PadWorkflowRunForEachBlock{
+					Value: "var1",
+					Do: []PadWorkflowRunBlock{
+						{
+							ForEach: &PadWorkflowRunForEachBlock{
+								Value: "$comment",
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	wantErr := errors.New("built-in shadowing is not allowed: the variable `$comment` is a reserved name")
+
+	gotErr := lintReservedWords([]PadWorkflow{workflow}, []string{"comment"})
+
+	assert.Equal(t, wantErr, gotErr)
+}
