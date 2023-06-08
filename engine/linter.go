@@ -283,12 +283,12 @@ func lintShadowedVariablesInRuns(runs []PadWorkflowRunBlock, definedVariables ma
 			// we wanna disregard empty keys so that we don't get a lint error
 			if run.ForEach.Key != "" {
 				if _, ok := definedVariables[run.ForEach.Key]; ok {
-					return fmt.Errorf("variable shadowing is not allowed: the variable `%s` is already defined", run.ForEach.Key)
+					return fmt.Errorf("variable shadowing is not allowed: the variable %s is already defined", run.ForEach.Key)
 				}
 			}
 
 			if _, ok := definedVariables[run.ForEach.Value]; ok {
-				return fmt.Errorf("variable shadowing is not allowed: the variable `%s` is already defined", run.ForEach.Value)
+				return fmt.Errorf("variable shadowing is not allowed: the variable %s is already defined", run.ForEach.Value)
 			}
 
 			definedVariables[run.ForEach.Value] = true
@@ -318,11 +318,11 @@ func lintShadowedBuiltInsInRuns(runs []PadWorkflowRunBlock, definedBuiltIns map[
 	for _, run := range runs {
 		if run.ForEach != nil {
 			if _, ok := definedBuiltIns[run.ForEach.Key]; ok {
-				return fmt.Errorf("built-in shadowing is not allowed: the variable `%s` is a reserved name", run.ForEach.Key)
+				return fmt.Errorf("built-in shadowing is not allowed: the variable %s is a reserved name", run.ForEach.Key)
 			}
 
 			if _, ok := definedBuiltIns[run.ForEach.Value]; ok {
-				return fmt.Errorf("built-in shadowing is not allowed: the variable `%s` is a reserved name", run.ForEach.Value)
+				return fmt.Errorf("built-in shadowing is not allowed: the variable %s is a reserved name", run.ForEach.Value)
 			}
 
 			err := lintShadowedBuiltInsInRuns(run.ForEach.Do, definedBuiltIns)
