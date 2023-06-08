@@ -7,7 +7,6 @@ import (
 	"context"
 	"fmt"
 	"strconv"
-	"strings"
 
 	"github.com/google/go-github/v52/github"
 	"github.com/reviewpad/go-lib/entities"
@@ -227,51 +226,4 @@ func (t *CommonTarget) setProjectV2Field(projectID, projectItemID string, fieldD
 	}
 
 	return t.githubClient.GetClientGraphQL().Mutate(ctx, &updateProjectV2ItemFieldValueMutation, updateInput, nil)
-}
-
-func (t *CommonTarget) SetProjectField(projectItems []gh.GQLProjectV2Item, projectTitle, fieldName, fieldValue string) error {
-	ctx := t.ctx
-	targetEntity := t.targetEntity
-	owner := targetEntity.Owner
-	repo := targetEntity.Repo
-
-	var projectItemID string
-	var projectID string
-	var projectNumber uint64
-	foundProject := false
-	totalRequestTries := 2
-
-	for _, projectItem := range projectItems {
-		if projectItem.Project.Title == projectTitle {
-			projectItemID = projectItem.ID
-			projectNumber = projectItem.Project.Number
-			projectID = projectItem.Project.ID
-			foundProject = true
-			break
-		}
-	}
-
-	if !foundProject {
-		return gh.ErrProjectNotFound
-	}
-
-	fields, err := t.githubClient.GetProjectFieldsByProjectNumber(ctx, owner, repo, projectNumber, totalRequestTries)
-	if err != nil {
-		return err
-	}
-
-	for _, field := range fields {
-		switch field.TypeName {
-		case "ProjectV2Field":
-			if strings.EqualFold(field.FieldDetails.Name, fieldName) {
-				return t.setProjectV2Field(projectID, projectItemID, field.FieldDetails, fieldValue)
-			}
-		case "ProjectV2SingleSelectField":
-			if strings.EqualFold(field.SingleSelectFieldDetails.Name, fieldName) {
-				return t.setProjectSingleSelectField(projectID, projectItemID, field.SingleSelectFieldDetails, fieldValue)
-			}
-		}
-	}
-
-	return gh.ErrProjectHasNoSuchField
 }

@@ -208,3 +208,93 @@ func (target *IssueTarget) GetProjectV2ItemID(projectID string) (string, error) 
 
 	return target.githubClient.GetIssueProjectV2ItemID(ctx, owner, repo, projectID, targetEntity.Number)
 }
+
+func (t *IssueTarget) IsInProject(projectTitle string) (bool, error) {
+	projectItems, err := t.GetLinkedProjects()
+	if err != nil {
+		return false, err
+	}
+
+	for _, projectItem := range projectItems {
+		if projectItem.Project.Title == projectTitle {
+			return true, nil
+		}
+	}
+
+	return false, nil
+}
+
+func (t *IssueTarget) AddToProject(projectID string) (string, error) {
+	var addProjectV2ItemByIdMutation struct {
+		AddProjectV2ItemById struct {
+			Item struct {
+				Id string
+			}
+		} `graphql:"addProjectV2ItemById(input: $input)"`
+	}
+
+	input := gh.AddProjectV2ItemByIdInput{
+		ProjectID: projectID,
+		ContentID: t.issue.GetNodeID(),
+	}
+
+	err := t.githubClient.GetClientGraphQL().Mutate(t.ctx, &addProjectV2ItemByIdMutation, input, nil)
+	if err != nil {
+		return "", err
+	}
+
+	return addProjectV2ItemByIdMutation.AddProjectV2ItemById.Item.Id, nil
+}
+
+func (t *IssueTarget) SetProjectField(projectTitle, fieldName, fieldValue string) error {
+	ctx := t.ctx
+	targetEntity := t.targetEntity
+	owner := targetEntity.Owner
+	repo := targetEntity.Repo
+
+	totalRequestTries := 2
+
+	projectItems, err := t.GetLinkedProjects()
+	if err != nil {
+		return err
+	}
+
+	var projectItemID string
+	var projectID string
+	var projectNumber uint64
+	foundProject := false
+
+	for _, projectItem := range projectItems {
+		if projectItem.Project.Title == projectTitle {
+			projectItemID = projectItem.ID
+			projectNumber = projectItem.Project.Number
+			projectID = projectItem.Project.ID
+			foundProject = true
+			break
+		}
+	}
+
+	if !foundProject {
+		return gh.ErrProjectNotFound
+	}
+
+	fields, err := t.githubClient.GetProjectFieldsByProjectNumber(ctx, owner, repo, projectNumber, totalRequestTries)
+	if err != nil {
+		return err
+	}
+
+	for _, field := range fields {
+		switch field.TypeName {
+		case "ProjectV2Field":
+			if strings.EqualFold(field.FieldDetails.Name, fieldName) {
+				return t.setProjectV2Field(projectID, projectItemID, field.FieldDetails, fieldValue)
+			}
+		case "ProjectV2SingleSelectField":
+			if strings.EqualFold(field.SingleSelectFieldDetails.Name, fieldName) {
+				return t.setProjectSingleSelectField(projectID, projectItemID, field.SingleSelectFieldDetails, fieldValue)
+			}
+		}
+	}
+
+	return gh.ErrProjectHasNoSuchField
+}

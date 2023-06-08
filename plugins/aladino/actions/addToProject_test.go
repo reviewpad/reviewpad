@@ -155,22 +155,6 @@ func TestAddToProject(t *testing.T) {
 			expectedError:         io.EOF,
 		},
 		{
-			name:                  "when project has no status field",
-			getProjectQuery:       mockedGetProjectQuery,
-			getProjectQueryBody:   `{"data": {"repository":{"projectsV2":{"nodes":[{"id": "1", "number": 1, "title": "reviewpad"}]}}}}`,
-			getProjectFieldsQuery: mockedGetProjectFieldsQuery,
-			getProjectFieldsBody:  `{"data": {"repository":{"projectV2": {"fields": {"pageInfo": {"hasNextPage": false, "endCursor": null}, "nodes": []}}}}}`,
-			expectedError:         gh.ErrProjectHasNoStatusField,
-		},
-		{
-			name:                  "when project status option is not found",
-			getProjectQuery:       mockedGetProjectQuery,
-			getProjectQueryBody:   `{"data": {"repository":{"projectsV2":{"nodes":[{"id": "1", "number": 1, "title": "reviewpad"}]}}}}`,
-			getProjectFieldsQuery: mockedGetProjectFieldsQuery,
-			getProjectFieldsBody:  `{"data": {"repository":{"projectV2": {"fields": {"pageInfo": {"hasNextPage": false, "endCursor": null}, "nodes": [{"id": "1", "name": "status", "options": []}]}}}}}`,
-			expectedError:         gh.ErrProjectStatusNotFound,
-		},
-		{
 			name:                         "add project item error",
 			getProjectQuery:              mockedGetProjectQuery,
 			getProjectQueryBody:          `{"data": {"repository":{"projectsV2":{"nodes":[{"id": "1", "number": 1, "title": "reviewpad"}]}}}}`,

@@ -40,9 +40,11 @@ type Target interface {
 	GetTitle() string
 	IsLinkedToProject(title string) (bool, error)
 	RemoveLabel(labelName string) error
-	SetProjectField(projectItems []gh.GQLProjectV2Item, projectTitle, fieldName, fieldValue string) error
+	SetProjectField(projectTitle, fieldName, fieldValue string) error
 	JSON() (string, error)
 	GetProjectV2ItemID(projectID string) (string, error)
+	IsInProject(projectTitle string) (bool, error)
+	AddToProject(projectID string) (string, error)
 }
 
 type User struct {

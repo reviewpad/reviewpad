@@ -24,10 +24,17 @@ func setProjectField(e aladino.Env, args []lang.Value) error {
 	fieldValue := args[2].(*lang.StringValue).Val
 	target := e.GetTarget()
 
-	projectItems, err := target.GetLinkedProjects()
+	isInProject, err := target.IsInProject(projectTitle)
 	if err != nil {
 		return err
 	}
 
-	return target.SetProjectField(projectItems, projectTitle, fieldName, fieldValue)
+	if !isInProject {
+		err = addToProjectCode(e, []lang.Value{args[0], &lang.StringValue{Val: ""}})
+		if err != nil {
+			return err
+		}
+	}
+
+	return target.SetProjectField(projectTitle, fieldName, fieldValue)
 }
