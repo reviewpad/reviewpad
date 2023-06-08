@@ -78,9 +78,46 @@ func TestShadowedVariable(t *testing.T) {
 		},
 	}
 
-	wantErr := errors.New("variable shadowing is not allowed: the variable `var1` is already defined")
+	wantErr := errors.New("variable shadowing is not allowed: the variable var1 is already defined")
 
 	gotErr := lintShadowedVariables([]PadWorkflow{workflow})
+
+	assert.Equal(t, wantErr, gotErr)
+}
+
+func TestShadowedReservedName(t *testing.T) {
+	workflow := PadWorkflow{
+		Runs: []PadWorkflowRunBlock{
+			{
+				ForEach: &PadWorkflowRunForEachBlock{
+					Value: "var1",
+					Do: []PadWorkflowRunBlock{
+						{
+							ForEach: &PadWorkflowRunForEachBlock{
+								Value: "var2",
+							},
+						},
+					},
+				},
+			},
+			{
+				ForEach: &PadWorkflowRunForEachBlock{
+					Value: "var1",
+					Do: []PadWorkflowRunBlock{
+						{
+							ForEach: &PadWorkflowRunForEachBlock{
+								Value: "$comment",
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	wantErr := errors.New("built-in shadowing is not allowed: the variable $comment is a reserved name")
+
+	gotErr := lintReservedWords([]PadWorkflow{workflow}, []string{"comment"})
 
 	assert.Equal(t, wantErr, gotErr)
 }

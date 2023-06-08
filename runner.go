@@ -45,7 +45,16 @@ func Load(ctx context.Context, log *logrus.Entry, githubClient *gh.GithubClient,
 
 	log.WithField("reviewpad_file", file).Debug("loaded reviewpad file")
 
-	err = engine.Lint(file, log)
+	builtIns := plugins_aladino.PluginBuiltIns()
+	reserved := []string{}
+	for name := range builtIns.Actions {
+		reserved = append(reserved, name)
+	}
+	for name := range builtIns.Functions {
+		reserved = append(reserved, name)
+	}
+
+	err = engine.Lint(file, reserved, log)
 	if err != nil {
 		return nil, err
 	}

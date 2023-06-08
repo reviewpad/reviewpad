@@ -288,7 +288,7 @@ func lintShadowedVariablesInRuns(runs []PadWorkflowRunBlock, definedVariables ma
 			}
 
 			if _, ok := definedVariables[run.ForEach.Value]; ok {
-				return fmt.Errorf("variable shadowing is not allowed: the variable `%s` is already defined", run.ForEach.Value)
+				return fmt.Errorf("variable shadowing is not allowed: the variable %s is already defined", run.ForEach.Value)
 			}
 
 			definedVariables[run.ForEach.Value] = true
@@ -314,6 +314,37 @@ func lintShadowedVariablesInRuns(runs []PadWorkflowRunBlock, definedVariables ma
 	return nil
 }
 
+func lintShadowedBuiltInsInRuns(runs []PadWorkflowRunBlock, definedBuiltIns map[string]bool) error {
+	for _, run := range runs {
+		if run.ForEach != nil {
+			if _, ok := definedBuiltIns[run.ForEach.Key]; ok {
+				return fmt.Errorf("built-in shadowing is not allowed: the variable %s is a reserved name", run.ForEach.Key)
+			}
+
+			if _, ok := definedBuiltIns[run.ForEach.Value]; ok {
+				return fmt.Errorf("built-in shadowing is not allowed: the variable %s is a reserved name", run.ForEach.Value)
+			}
+
+			err := lintShadowedBuiltInsInRuns(run.ForEach.Do, definedBuiltIns)
+			if err != nil {
+				return err
+			}
+		}
+
+		err := lintShadowedBuiltInsInRuns(run.Then, definedBuiltIns)
+		if err != nil {
+			return err
+		}
+
+		err = lintShadowedBuiltInsInRuns(run.Else, definedBuiltIns)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func lintShadowedVariables(workflows []PadWorkflow) error {
 	for _, workflow := range workflows {
 		definedVariables := map[string]bool{}
@@ -326,7 +357,23 @@ func lintShadowedVariables(workflows []PadWorkflow) error {
 	return nil
 }
 
-func Lint(file *ReviewpadFile, logger *logrus.Entry) error {
+func lintReservedWords(workflows []PadWorkflow, reservedWords []string) error {
+	definedVariables := map[string]bool{}
+	for _, reservedWord := range reservedWords {
+		definedVariables[fmt.Sprintf("$%s", reservedWord)] = true
+	}
+
+	for _, workflow := range workflows {
+		err := lintShadowedBuiltInsInRuns(workflow.Runs, definedVariables)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func Lint(file *ReviewpadFile, reserved []string, logger *logrus.Entry) error {
 	err := lintGroups(logger, file.Groups)
 	if err != nil {
 		return err
@@ -343,6 +390,11 @@ func Lint(file *ReviewpadFile, logger *logrus.Entry) error {
 	}
 
 	err = lintRulesMentions(logger, file.Rules, file.Groups, file.Workflows)
+	if err != nil {
+		return err
+	}
+
+	err = lintReservedWords(file.Workflows, reserved)
 	if err != nil {
 		return err
 	}
