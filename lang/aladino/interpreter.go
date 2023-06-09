@@ -62,6 +62,7 @@ func (i *Interpreter) ProcessGroup(groupName string, kind engine.GroupKind, type
 		var unsupportedKindError *UnsupportedKindError
 		if errors.As(err, &unsupportedKindError) {
 			i.Env.GetLogger().Warningln(fmt.Sprintf("built-in %s is being executed on %s, however it is only supported on %s", unsupportedKindError.BuiltIn, unsupportedKindError.Kind, unsupportedKindError.SupportedOn()))
+			i.Env.GetRegisterMap()[groupName] = lang.BuildArrayValue([]lang.Value{})
 			return nil
 		}
 
