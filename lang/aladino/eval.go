@@ -6,9 +6,30 @@ package aladino
 
 import (
 	"fmt"
+	"strings"
 
+	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/lang"
 )
+
+type UnsupportedKindError struct {
+	Kind           entities.TargetEntityKind
+	SupportedKinds []entities.TargetEntityKind
+	BuiltIn        string
+}
+
+func (e *UnsupportedKindError) Error() string {
+	return fmt.Sprintf("unsupported kind %v for built-in %v", e.Kind, e.BuiltIn)
+}
+
+func (e *UnsupportedKindError) SupportedOn() string {
+	supportedOn := []string{}
+	for _, kind := range e.SupportedKinds {
+		supportedOn = append(supportedOn, kind.String())
+	}
+
+	return strings.Join(supportedOn, ", ")
+}
 
 func (u *UnaryOp) Eval(e Env) (lang.Value, error) {
 	exprValue, exprErr := u.expr.Eval(e)
@@ -115,7 +136,11 @@ func (fc *FunctionCall) Eval(e Env) (lang.Value, error) {
 		}
 	}
 
-	return nil, fmt.Errorf("eval: unsupported kind %v", entityKind)
+	return nil, &UnsupportedKindError{
+		Kind:           entityKind,
+		SupportedKinds: fn.SupportedKinds,
+		BuiltIn:        fc.name.ident,
+	}
 }
 
 func (lambda *Lambda) Eval(e Env) (lang.Value, error) {
