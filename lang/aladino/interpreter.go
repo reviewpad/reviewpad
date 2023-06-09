@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"strings"
 
+	"errors"
 	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/codehost"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
@@ -58,6 +59,12 @@ func (i *Interpreter) ProcessGroup(groupName string, kind engine.GroupKind, type
 
 	value, err := evalGroup(i.Env, exprAST)
 	if err != nil {
+		var unsupportedKindError *UnsupportedKindError
+		if errors.As(err, &unsupportedKindError) {
+			i.Env.GetLogger().Warningln(fmt.Sprintf("built-in %s is being executed on %s, however it is only supported on %s", unsupportedKindError.BuiltIn, unsupportedKindError.Kind, unsupportedKindError.SupportedOn()))
+			return nil
+		}
+
 		return fmt.Errorf("ProcessGroup:evalGroup %v", err)
 	}
 
