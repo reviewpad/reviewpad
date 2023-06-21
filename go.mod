@@ -3,7 +3,7 @@ module github.com/reviewpad/reviewpad/v4
 go 1.20
 
 require (
-	github.com/aws/aws-secretsmanager-caching-go v1.1.0
+	github.com/aws/aws-secretsmanager-caching-go v1.1.1
 	github.com/bmatcuk/doublestar/v4 v4.6.0
 	github.com/bradleyfalzon/ghinstallation/v2 v2.4.0
 	github.com/dukex/mixpanel v1.0.1
