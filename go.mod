@@ -16,7 +16,7 @@ require (
 	github.com/jinzhu/copier v0.3.5
 	github.com/libgit2/git2go/v31 v31.7.9
 	github.com/mattn/go-shellwords v1.0.12
-	github.com/migueleliasweb/go-github-mock v0.0.18
+	github.com/migueleliasweb/go-github-mock v0.0.19
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/ohler55/ojg v1.18.5
 	github.com/reviewpad/api/go v0.0.0-20230519182648-a6db32ab3994
