@@ -772,10 +772,12 @@ func TestNewInterpreter_WhenNewEvalEnvFails(t *testing.T) {
 		nil,
 		codehostClient,
 		nil,
+		nil,
 		DefaultMockTargetEntity,
 		nil,
 		nil,
 		nil,
+		"",
 	)
 
 	assert.Nil(t, gotInterpreter)
@@ -795,11 +797,13 @@ func TestNewInterpreter(t *testing.T) {
 		mockedEnv.GetDryRun(),
 		mockedEnv.GetGithubClient(),
 		mockedEnv.GetCodeHostClient(),
+		mockedEnv.GetNexusClient(),
 		mockedEnv.GetCollector(),
 		DefaultMockTargetEntity,
 		mockedEnv.GetEventPayload(),
 		mockedEnv.GetBuiltIns(),
 		nil,
+		"",
 	)
 
 	assert.Nil(t, err)
@@ -1041,11 +1045,13 @@ func TestReportMetric(t *testing.T) {
 				env.GetDryRun(),
 				env.GetGithubClient(),
 				env.GetCodeHostClient(),
+				env.GetNexusClient(),
 				env.GetCollector(),
 				env.GetTarget().GetTargetEntity(),
 				nil,
 				nil,
 				nil,
+				"",
 			)
 
 			assert.Nil(t, err)

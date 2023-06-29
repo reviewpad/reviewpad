@@ -10,6 +10,8 @@ import (
 	"strings"
 
 	"errors"
+
+	"github.com/hasura/go-graphql-client"
 	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/codehost"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
@@ -352,13 +354,28 @@ func NewInterpreter(
 	dryRun bool,
 	githubClient *gh.GithubClient,
 	codeHostClient *codehost.CodeHostClient,
+	nexusClient *graphql.Client,
 	collector collector.Collector,
 	targetEntity *entities.TargetEntity,
 	eventPayload interface{},
 	builtIns *BuiltIns,
 	checkRunID *int64,
+	executionID string,
 ) (engine.Interpreter, error) {
-	evalEnv, err := NewEvalEnv(ctx, logger, dryRun, githubClient, codeHostClient, collector, targetEntity, eventPayload, builtIns, checkRunID)
+	evalEnv, err := NewEvalEnv(
+		ctx,
+		logger,
+		dryRun,
+		githubClient,
+		codeHostClient,
+		nexusClient,
+		collector,
+		targetEntity,
+		eventPayload,
+		builtIns,
+		checkRunID,
+		executionID,
+	)
 	if err != nil {
 		return nil, err
 	}
