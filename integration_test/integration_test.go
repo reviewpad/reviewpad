@@ -11,10 +11,13 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"testing"
 
 	"github.com/google/uuid"
+	"github.com/hasura/go-graphql-client"
 	pbe "github.com/reviewpad/api/go/entities"
 	"github.com/reviewpad/api/go/services"
 	"github.com/reviewpad/go-lib/entities"
@@ -31,6 +34,16 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
 )
+
+type localRoundTripper struct {
+	handler http.Handler
+}
+
+func (l localRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
+	w := httptest.NewRecorder()
+	l.handler.ServeHTTP(w, req)
+	return w.Result(), nil
+}
 
 const (
 	// opening a pull request from this commit
@@ -327,10 +340,23 @@ func TestIntegration(t *testing.T) {
 				CodehostClient: codehostClient,
 			}
 
+			mux := http.NewServeMux()
+			mux.HandleFunc("/graphql", func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(http.StatusOK)
+				w.Write([]byte(`{
+					"data": {
+						"insert_execution": {
+							"id": "id"
+						}
+					}
+				}`))
+			})
+			nexusClientGQL := graphql.NewClient("https://api.github.com/graphql", &http.Client{Transport: localRoundTripper{handler: mux}})
+
 			// execute the reviewpad files one by one and
 			// ensure there are no errors and exit statuses match
 			for i, file := range test.reviewpadFiles {
-				exitStatus, _, _, err := reviewpad.Run(ctxReq, logger, githubClient, codeHostClient, collector, targetEntity, eventDetails, file, nil, false, false)
+				exitStatus, _, _, err := reviewpad.Run(ctxReq, logger, githubClient, codeHostClient, nexusClientGQL, collector, targetEntity, eventDetails, file, nil, false, false)
 				assert.Equal(test.wantErr, err)
 				assert.Equal(test.exitStatus[i], exitStatus)
 			}

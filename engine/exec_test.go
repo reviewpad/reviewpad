@@ -435,11 +435,13 @@ func TestExecConfigurationFile(t *testing.T) {
 				dryRun,
 				mockedClient,
 				codehostClient,
+				nil,
 				engine.DefaultMockCollector,
 				engine.DefaultMockTargetEntity,
 				engine.DefaultMockEventPayload,
 				builtIns,
 				nil,
+				"",
 			)
 			if err != nil {
 				assert.FailNow(t, fmt.Sprintf("mockAladinoInterpreter: %v", err))
@@ -710,11 +712,13 @@ func mockAladinoInterpreter(githubClient *gh.GithubClient, codehostClient *codeh
 		dryRun,
 		githubClient,
 		codehostClient,
+		nil,
 		engine.DefaultMockCollector,
 		engine.DefaultMockTargetEntity,
 		engine.DefaultMockEventPayload,
 		aladino.MockBuiltIns(),
 		nil,
+		"",
 	)
 	if err != nil {
 		return nil, fmt.Errorf("aladino NewInterpreter returned unexpected error: %v", err)

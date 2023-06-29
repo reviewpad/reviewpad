@@ -21,7 +21,7 @@ require (
 	github.com/ohler55/ojg v1.18.5
 	github.com/reviewpad/api/go v0.0.0-20230519182648-a6db32ab3994
 	github.com/reviewpad/go-conventionalcommits v0.10.0
-	github.com/reviewpad/go-lib v0.0.0-20230523100931-3276b99f2619
+	github.com/reviewpad/go-lib v0.0.0-20230629080833-7f90e3730f59
 	github.com/shurcooL/githubv4 v0.0.0-20230424031643-6cea62ecd5a9
 	github.com/sirupsen/logrus v1.9.2
 	github.com/spf13/cobra v1.7.0
