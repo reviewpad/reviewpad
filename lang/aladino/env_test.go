@@ -52,13 +52,11 @@ func TestNewEvalEnv_WhenGetPullRequestFilesFails(t *testing.T) {
 		false,
 		nil,
 		codehostClient,
-		nil,
 		aladino.DefaultMockCollector,
 		targetEntity,
 		nil,
 		aladino.MockBuiltIns(),
 		nil,
-		"",
 	)
 
 	assert.Nil(t, env)
@@ -86,13 +84,11 @@ func TestNewEvalEnv_WhenNewFileFails(t *testing.T) {
 		false,
 		nil,
 		codehostClient,
-		nil,
 		aladino.DefaultMockCollector,
 		targetEntity,
 		nil,
 		aladino.MockBuiltIns(),
 		nil,
-		"",
 	)
 
 	assert.Nil(t, env)
@@ -121,13 +117,11 @@ func TestNewEvalEnv(t *testing.T) {
 		false,
 		mockedGithubClient,
 		mockedCodehostClient,
-		nil,
 		aladino.DefaultMockCollector,
 		aladino.DefaultMockTargetEntity,
 		nil,
 		aladino.MockBuiltIns(),
 		nil,
-		"",
 	)
 
 	mockedTarget, _ := target.NewPullRequestTarget(ctx, aladino.DefaultMockTargetEntity, mockedGithubClient, mockedCodehostClient, mockedCodeReview)
@@ -187,13 +181,11 @@ func TestNewEvalEnv_WhenGetPullRequestFails(t *testing.T) {
 		false,
 		nil,
 		codehostClient,
-		nil,
 		aladino.DefaultMockCollector,
 		targetEntity,
 		nil,
 		aladino.MockBuiltIns(),
 		nil,
-		"",
 	)
 
 	assert.Nil(t, env)

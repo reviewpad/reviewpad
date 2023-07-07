@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/hasura/go-graphql-client"
 	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/codehost"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
@@ -37,7 +36,6 @@ type Env interface {
 	GetBuiltIns() *BuiltIns
 	GetBuiltInsReportedMessages() map[Severity][]string
 	GetGithubClient() *gh.GithubClient
-	GetNexusClient() *graphql.Client
 	GetCodeHostClient() *codehost.CodeHostClient
 	GetCollector() collector.Collector
 	GetCtx() context.Context
@@ -53,7 +51,6 @@ type Env interface {
 	GetCheckRunID() *int64
 	SetCheckRunConclusion(string)
 	GetCheckRunConclusion() string
-	GetExecutionID() string
 }
 
 type BaseEnv struct {
@@ -61,7 +58,6 @@ type BaseEnv struct {
 	BuiltInsReportedMessages map[Severity][]string
 	GithubClient             *gh.GithubClient
 	CodeHostClient           *codehost.CodeHostClient
-	NexusClient              *graphql.Client
 	Collector                collector.Collector
 	Ctx                      context.Context
 	DryRun                   bool
@@ -75,7 +71,6 @@ type BaseEnv struct {
 	ExecFatalErrorOccurred   error
 	CheckRunID               *int64
 	CheckRunConclusion       string
-	ExecutionID              string
 }
 
 func (e *BaseEnv) GetBuiltIns() *BuiltIns {
@@ -88,10 +83,6 @@ func (e *BaseEnv) GetBuiltInsReportedMessages() map[Severity][]string {
 
 func (e *BaseEnv) GetGithubClient() *gh.GithubClient {
 	return e.GithubClient
-}
-
-func (e *BaseEnv) GetNexusClient() *graphql.Client {
-	return e.NexusClient
 }
 
 func (e *BaseEnv) GetCollector() collector.Collector {
@@ -158,10 +149,6 @@ func (e *BaseEnv) GetCheckRunID() *int64 {
 	return e.CheckRunID
 }
 
-func (e *BaseEnv) GetExecutionID() string {
-	return e.ExecutionID
-}
-
 func NewTypeEnv(e Env) TypeEnv {
 	builtInsType := make(map[string]lang.Type)
 	for builtInName, builtInFunction := range e.GetBuiltIns().Functions {
@@ -185,13 +172,11 @@ func NewEvalEnv(
 	dryRun bool,
 	githubClient *gh.GithubClient,
 	codeHostClient *codehost.CodeHostClient,
-	nexusClient *graphql.Client,
 	collector collector.Collector,
 	targetEntity *entities.TargetEntity,
 	eventPayload interface{},
 	builtIns *BuiltIns,
 	checkRunID *int64,
-	executionID string,
 ) (Env, error) {
 	registerMap := RegisterMap(make(map[string]lang.Value))
 	report := &Report{Actions: make([]string, 0)}
@@ -203,7 +188,6 @@ func NewEvalEnv(
 		BuiltIns:                 builtIns,
 		BuiltInsReportedMessages: make(map[Severity][]string),
 		GithubClient:             githubClient,
-		NexusClient:              nexusClient,
 		Collector:                collector,
 		Ctx:                      ctx,
 		DryRun:                   dryRun,
@@ -215,7 +199,6 @@ func NewEvalEnv(
 		ExecWaitGroup:            &wg,
 		ExecMutex:                &mu,
 		CheckRunID:               checkRunID,
-		ExecutionID:              executionID,
 	}
 
 	switch targetEntity.Kind {

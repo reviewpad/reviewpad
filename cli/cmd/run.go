@@ -9,12 +9,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"net/http"
 	"os"
 	"regexp"
 
 	"github.com/google/uuid"
-	"github.com/hasura/go-graphql-client"
 	"github.com/reviewpad/api/go/clients"
 	"github.com/reviewpad/go-lib/entities"
 	log "github.com/reviewpad/go-lib/logrus"
@@ -73,14 +71,6 @@ func init() {
 	if endpoint := os.Getenv("INPUT_ROBIN_SERVICE"); endpoint == "" {
 		panic("INPUT_ROBIN_SERVICE env var is required")
 	}
-
-	if endpoint := os.Getenv("INPUT_NEXUS_GRAPH_SERVICE"); endpoint == "" {
-		panic("INPUT_NEXUS_GRAPH_SERVICE env var is required")
-	}
-
-	if endpoint := os.Getenv("INPUT_NEXUS_GRAPH_TOKEN"); endpoint == "" {
-		panic("INPUT_NEXUS_GRAPH_TOKEN env var is required")
-	}
 }
 
 func run() error {
@@ -123,11 +113,6 @@ func run() error {
 		log.Errorf("error creating new collector: %v", err)
 	}
 
-	nexusClient := graphql.NewClient(os.Getenv("INPUT_NEXUS_GRAPH_SERVICE"), http.DefaultClient)
-	nexusClient = nexusClient.WithRequestModifier(func(req *http.Request) {
-		req.Header.Set("x-hasura-admin-secret", os.Getenv("INPUT_NEXUS_GRAPH_TOKEN"))
-	})
-
 	rawReviewpadFile, err := os.ReadFile(reviewpadFilePath)
 	if err != nil {
 		return fmt.Errorf("error reading reviewpad file. Details: %v", err.Error())
@@ -167,20 +152,7 @@ func run() error {
 
 	for _, targetEntity := range targetEntities {
 		log.Infof("Processing entity %s/%s#%d", targetEntity.Owner, targetEntity.Repo, targetEntity.Number)
-		_, _, _, err = reviewpad.Run(
-			ctxReq,
-			log,
-			gitHubClient,
-			codeHostClient,
-			nexusClient,
-			collectorClient,
-			targetEntity,
-			eventDetails,
-			reviewpadFile,
-			nil,
-			dryRun,
-			safeModeRun,
-		)
+		_, _, _, err = reviewpad.Run(ctxReq, log, gitHubClient, codeHostClient, collectorClient, targetEntity, eventDetails, reviewpadFile, nil, dryRun, safeModeRun)
 		if err != nil {
 			return fmt.Errorf("error running reviewpad team edition. Details %v", err.Error())
 		}
