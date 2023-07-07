@@ -152,13 +152,11 @@ func mockEnvWith(prOwner string, prRepoName string, prNum int, githubClient *gh.
 		false,
 		githubClient,
 		codehostClient,
-		nil,
 		DefaultMockCollector,
 		targetEntity,
 		eventPayload,
 		builtIns,
 		nil,
-		"",
 	)
 	if err != nil {
 		return nil, err

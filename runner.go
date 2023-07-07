@@ -12,7 +12,6 @@ import (
 	"strings"
 
 	"github.com/google/go-github/v52/github"
-	"github.com/hasura/go-graphql-client"
 	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/codehost"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
@@ -267,18 +266,11 @@ func runReviewpadFile(env *engine.Env, reviewpadFile *engine.ReviewpadFile, safe
 	return exitStatus, program, env.Interpreter.GetCheckRunConclusion(), nil
 }
 
-type AddExecutionMutation struct {
-	Insert_execution struct {
-		Id string
-	} `graphql:"insert_execution(object: {organization_id: $organizationId})"`
-}
-
 func Run(
 	ctx context.Context,
 	log *logrus.Entry,
 	gitHubClient *gh.GithubClient,
 	codeHostClient *codehost.CodeHostClient,
-	nexusClient *graphql.Client,
 	collector collector.Collector,
 	targetEntity *entities.TargetEntity,
 	eventDetails *entities.EventDetails,
@@ -294,17 +286,7 @@ func Run(
 
 	defer config.CleanupPluginConfig()
 
-	execution := &AddExecutionMutation{}
-
-	err = nexusClient.Mutate(ctx, execution, map[string]interface{}{
-		"organizationId": targetEntity.OrganizationId,
-	})
-
-	if err != nil {
-		return engine.ExitStatusFailure, nil, "", err
-	}
-
-	aladinoInterpreter, err := aladino.NewInterpreter(ctx, log, dryRun, gitHubClient, codeHostClient, nexusClient, collector, targetEntity, eventDetails.Payload, plugins_aladino.PluginBuiltInsWithConfig(config), checkRunId, execution.Insert_execution.Id)
+	aladinoInterpreter, err := aladino.NewInterpreter(ctx, log, dryRun, gitHubClient, codeHostClient, collector, targetEntity, eventDetails.Payload, plugins_aladino.PluginBuiltInsWithConfig(config), checkRunId)
 	if err != nil {
 		return engine.ExitStatusFailure, nil, "", err
 	}

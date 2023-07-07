@@ -67,14 +67,12 @@ func processCronEvent(log *logrus.Entry, token string, e *ActionEvent) ([]*entit
 			kind = entities.PullRequest
 		}
 		targets = append(targets, &entities.TargetEntity{
-			Kind:           kind,
-			Number:         *issue.Number,
-			Owner:          owner,
-			Repo:           repo,
-			AccountType:    repository.GetOwner().GetType(),
-			Visibility:     repository.GetVisibility(),
-			OrganizationId: repository.GetOwner().GetNodeID(),
-			NodeId:         issue.GetNodeID(),
+			Kind:        kind,
+			Number:      *issue.Number,
+			Owner:       owner,
+			Repo:        repo,
+			AccountType: repository.GetOwner().GetType(),
+			Visibility:  repository.GetVisibility(),
 		})
 	}
 
@@ -91,14 +89,12 @@ func processIssuesEvent(log *logrus.Entry, e *github.IssuesEvent) ([]*entities.T
 
 	return []*entities.TargetEntity{
 			{
-				Kind:           entities.Issue,
-				Number:         *e.Issue.Number,
-				Owner:          *e.Repo.Owner.Login,
-				Repo:           *e.Repo.Name,
-				AccountType:    e.GetRepo().GetOwner().GetType(),
-				Visibility:     e.GetRepo().GetVisibility(),
-				OrganizationId: e.GetRepo().GetOwner().GetNodeID(),
-				NodeId:         e.GetIssue().GetNodeID(),
+				Kind:        entities.Issue,
+				Number:      *e.Issue.Number,
+				Owner:       *e.Repo.Owner.Login,
+				Repo:        *e.Repo.Name,
+				AccountType: e.GetRepo().GetOwner().GetType(),
+				Visibility:  e.GetRepo().GetVisibility(),
 			},
 		}, &entities.EventDetails{
 			EventName:   "issues",
@@ -118,14 +114,12 @@ func processIssueCommentEvent(log *logrus.Entry, e *github.IssueCommentEvent) ([
 
 	return []*entities.TargetEntity{
 			{
-				Kind:           kind,
-				Number:         *e.Issue.Number,
-				Owner:          *e.Repo.Owner.Login,
-				Repo:           *e.Repo.Name,
-				AccountType:    e.GetRepo().GetOwner().GetType(),
-				Visibility:     e.GetRepo().GetVisibility(),
-				OrganizationId: e.GetRepo().GetOwner().GetNodeID(),
-				NodeId:         e.GetIssue().GetNodeID(),
+				Kind:        kind,
+				Number:      *e.Issue.Number,
+				Owner:       *e.Repo.Owner.Login,
+				Repo:        *e.Repo.Name,
+				AccountType: e.GetRepo().GetOwner().GetType(),
+				Visibility:  e.GetRepo().GetVisibility(),
 			},
 		}, &entities.EventDetails{
 			EventName:   "issue_comment",
@@ -140,14 +134,12 @@ func processDiscussionEvent(log *logrus.Entry, e *github.DiscussionEvent) ([]*en
 
 	return []*entities.TargetEntity{
 			{
-				Kind:           entities.Discussion,
-				Number:         *e.Discussion.Number,
-				Owner:          *e.Repo.Owner.Login,
-				Repo:           *e.Repo.Name,
-				AccountType:    e.GetRepo().GetOwner().GetType(),
-				Visibility:     e.GetRepo().GetVisibility(),
-				OrganizationId: e.GetRepo().GetOwner().GetNodeID(),
-				NodeId:         e.GetDiscussion().GetNodeID(),
+				Kind:        entities.Discussion,
+				Number:      *e.Discussion.Number,
+				Owner:       *e.Repo.Owner.Login,
+				Repo:        *e.Repo.Name,
+				AccountType: e.GetRepo().GetOwner().GetType(),
+				Visibility:  e.GetRepo().GetVisibility(),
 			},
 		}, &entities.EventDetails{
 			EventName:   "discussion",
@@ -162,14 +154,12 @@ func processDiscussionCommentEvent(log *logrus.Entry, e *github.DiscussionCommen
 
 	return []*entities.TargetEntity{
 			{
-				Kind:           entities.Discussion,
-				Number:         *e.Discussion.Number,
-				Owner:          *e.Repo.Owner.Login,
-				Repo:           *e.Repo.Name,
-				AccountType:    e.GetRepo().GetOwner().GetType(),
-				Visibility:     e.GetRepo().GetVisibility(),
-				OrganizationId: e.GetRepo().GetOwner().GetNodeID(),
-				NodeId:         e.GetDiscussion().GetNodeID(),
+				Kind:        entities.Discussion,
+				Number:      *e.Discussion.Number,
+				Owner:       *e.Repo.Owner.Login,
+				Repo:        *e.Repo.Name,
+				AccountType: e.GetRepo().GetOwner().GetType(),
+				Visibility:  e.GetRepo().GetVisibility(),
 			},
 		}, &entities.EventDetails{
 			EventName:   "discussion_comment",
@@ -184,14 +174,12 @@ func processPullRequestEvent(log *logrus.Entry, e *github.PullRequestEvent) ([]*
 
 	return []*entities.TargetEntity{
 			{
-				Kind:           entities.PullRequest,
-				Number:         *e.PullRequest.Number,
-				Owner:          *e.Repo.Owner.Login,
-				Repo:           *e.Repo.Name,
-				AccountType:    e.GetRepo().GetOwner().GetType(),
-				Visibility:     e.GetRepo().GetVisibility(),
-				OrganizationId: e.GetRepo().GetOwner().GetNodeID(),
-				NodeId:         e.GetPullRequest().GetNodeID(),
+				Kind:        entities.PullRequest,
+				Number:      *e.PullRequest.Number,
+				Owner:       *e.Repo.Owner.Login,
+				Repo:        *e.Repo.Name,
+				AccountType: e.GetRepo().GetOwner().GetType(),
+				Visibility:  e.GetRepo().GetVisibility(),
 			},
 		}, &entities.EventDetails{
 			EventName:   "pull_request",
@@ -206,14 +194,12 @@ func processPullRequestReviewEvent(log *logrus.Entry, e *github.PullRequestRevie
 
 	return []*entities.TargetEntity{
 			{
-				Kind:           entities.PullRequest,
-				Number:         *e.PullRequest.Number,
-				Owner:          *e.Repo.Owner.Login,
-				Repo:           *e.Repo.Name,
-				AccountType:    e.GetRepo().GetOwner().GetType(),
-				Visibility:     e.GetRepo().GetVisibility(),
-				OrganizationId: e.GetRepo().GetOwner().GetNodeID(),
-				NodeId:         e.GetPullRequest().GetNodeID(),
+				Kind:        entities.PullRequest,
+				Number:      *e.PullRequest.Number,
+				Owner:       *e.Repo.Owner.Login,
+				Repo:        *e.Repo.Name,
+				AccountType: e.GetRepo().GetOwner().GetType(),
+				Visibility:  e.GetRepo().GetVisibility(),
 			},
 		}, &entities.EventDetails{
 			EventName:   "pull_request_review",
@@ -228,14 +214,12 @@ func processPullRequestReviewCommentEvent(log *logrus.Entry, e *github.PullReque
 
 	return []*entities.TargetEntity{
 			{
-				Kind:           entities.PullRequest,
-				Number:         *e.PullRequest.Number,
-				Owner:          *e.Repo.Owner.Login,
-				Repo:           *e.Repo.Name,
-				AccountType:    e.GetRepo().GetOwner().GetType(),
-				Visibility:     e.GetRepo().GetVisibility(),
-				OrganizationId: e.GetRepo().GetOwner().GetNodeID(),
-				NodeId:         e.GetPullRequest().GetNodeID(),
+				Kind:        entities.PullRequest,
+				Number:      *e.PullRequest.Number,
+				Owner:       *e.Repo.Owner.Login,
+				Repo:        *e.Repo.Name,
+				AccountType: e.GetRepo().GetOwner().GetType(),
+				Visibility:  e.GetRepo().GetVisibility(),
 			},
 		}, &entities.EventDetails{
 			EventName:   "pull_request_review_comment",
@@ -250,14 +234,12 @@ func processPullRequestTargetEvent(log *logrus.Entry, e *github.PullRequestTarge
 
 	return []*entities.TargetEntity{
 			{
-				Kind:           entities.PullRequest,
-				Number:         *e.PullRequest.Number,
-				Owner:          *e.Repo.Owner.Login,
-				Repo:           *e.Repo.Name,
-				AccountType:    e.GetRepo().GetOwner().GetType(),
-				Visibility:     e.GetRepo().GetVisibility(),
-				OrganizationId: e.GetRepo().GetOwner().GetNodeID(),
-				NodeId:         e.GetPullRequest().GetNodeID(),
+				Kind:        entities.PullRequest,
+				Number:      *e.PullRequest.Number,
+				Owner:       *e.Repo.Owner.Login,
+				Repo:        *e.Repo.Name,
+				AccountType: e.GetRepo().GetOwner().GetType(),
+				Visibility:  e.GetRepo().GetVisibility(),
 			},
 		}, &entities.EventDetails{
 			EventName:   "pull_request_target",
@@ -291,14 +273,12 @@ func processStatusEvent(log *logrus.Entry, token string, e *github.StatusEvent) 
 			log.Infof("found pull request %v", *pr.Number)
 			return []*entities.TargetEntity{
 				{
-					Kind:           entities.PullRequest,
-					Number:         *pr.Number,
-					Owner:          *pr.Base.Repo.Owner.Login,
-					Repo:           *pr.Base.Repo.Name,
-					AccountType:    pr.GetBase().GetRepo().GetOwner().GetType(),
-					Visibility:     pr.GetBase().GetRepo().GetVisibility(),
-					OrganizationId: e.GetRepo().GetOwner().GetNodeID(),
-					NodeId:         pr.GetNodeID(),
+					Kind:        entities.PullRequest,
+					Number:      *pr.Number,
+					Owner:       *pr.Base.Repo.Owner.Login,
+					Repo:        *pr.Base.Repo.Name,
+					AccountType: pr.GetBase().GetRepo().GetOwner().GetType(),
+					Visibility:  pr.GetBase().GetRepo().GetVisibility(),
 				},
 			}, eventDetails, nil
 		}
@@ -334,14 +314,12 @@ func processWorkflowRunEvent(log *logrus.Entry, token string, e *github.Workflow
 			log.Infof("found pull request %v", *pr.Number)
 			return []*entities.TargetEntity{
 				{
-					Kind:           entities.PullRequest,
-					Number:         *pr.Number,
-					Owner:          *pr.Base.Repo.Owner.Login,
-					Repo:           *pr.Base.Repo.Name,
-					AccountType:    pr.GetBase().GetRepo().GetOwner().GetType(),
-					Visibility:     pr.GetBase().GetRepo().GetVisibility(),
-					OrganizationId: e.GetRepo().GetOwner().GetNodeID(),
-					NodeId:         pr.GetNodeID(),
+					Kind:        entities.PullRequest,
+					Number:      *pr.Number,
+					Owner:       *pr.Base.Repo.Owner.Login,
+					Repo:        *pr.Base.Repo.Name,
+					AccountType: pr.GetBase().GetRepo().GetOwner().GetType(),
+					Visibility:  pr.GetBase().GetRepo().GetVisibility(),
 				},
 			}, eventDetail, nil
 		}
@@ -376,14 +354,12 @@ func processPushEvent(log *logrus.Entry, token string, e *github.PushEvent) ([]*
 	for _, pr := range prs {
 		if fmt.Sprintf("refs/heads/%s", pr.GetHead().GetRef()) == e.GetRef() {
 			targets = append(targets, &entities.TargetEntity{
-				Kind:           entities.PullRequest,
-				Number:         *pr.Number,
-				Owner:          owner,
-				Repo:           repo,
-				AccountType:    pr.GetBase().GetRepo().GetOwner().GetType(),
-				Visibility:     pr.GetBase().GetRepo().GetVisibility(),
-				OrganizationId: e.GetRepo().GetOwner().GetNodeID(),
-				NodeId:         pr.GetNodeID(),
+				Kind:        entities.PullRequest,
+				Number:      *pr.Number,
+				Owner:       owner,
+				Repo:        repo,
+				AccountType: pr.GetBase().GetRepo().GetOwner().GetType(),
+				Visibility:  pr.GetBase().GetRepo().GetVisibility(),
 			})
 		}
 	}
@@ -475,14 +451,12 @@ func processCheckRunEvent(log *logrus.Entry, token string, event *github.CheckRu
 				log.Infof("found pull request %v", pr.GetNumber())
 				return []*entities.TargetEntity{
 					{
-						Kind:           entities.PullRequest,
-						Number:         pr.GetNumber(),
-						Owner:          event.GetRepo().GetOwner().GetLogin(),
-						Repo:           event.GetRepo().GetName(),
-						AccountType:    pr.GetBase().GetRepo().GetOwner().GetType(),
-						Visibility:     pr.GetBase().GetRepo().GetVisibility(),
-						OrganizationId: event.GetRepo().GetOwner().GetNodeID(),
-						NodeId:         pr.GetNodeID(),
+						Kind:        entities.PullRequest,
+						Number:      pr.GetNumber(),
+						Owner:       event.GetRepo().GetOwner().GetLogin(),
+						Repo:        event.GetRepo().GetName(),
+						AccountType: pr.GetBase().GetRepo().GetOwner().GetType(),
+						Visibility:  pr.GetBase().GetRepo().GetVisibility(),
 					},
 				}, eventDetails, nil
 			}
@@ -495,14 +469,12 @@ func processCheckRunEvent(log *logrus.Entry, token string, event *github.CheckRu
 
 	for _, pr := range event.CheckRun.PullRequests {
 		targetEntities = append(targetEntities, &entities.TargetEntity{
-			Kind:           entities.PullRequest,
-			Owner:          event.GetRepo().GetOwner().GetLogin(),
-			Repo:           event.GetRepo().GetName(),
-			Number:         pr.GetNumber(),
-			AccountType:    event.GetRepo().GetOwner().GetType(),
-			Visibility:     event.GetRepo().GetVisibility(),
-			OrganizationId: event.GetRepo().GetOwner().GetNodeID(),
-			NodeId:         pr.GetNodeID(),
+			Kind:        entities.PullRequest,
+			Owner:       event.GetRepo().GetOwner().GetLogin(),
+			Repo:        event.GetRepo().GetName(),
+			Number:      pr.GetNumber(),
+			AccountType: event.GetRepo().GetOwner().GetType(),
+			Visibility:  event.GetRepo().GetVisibility(),
 		})
 	}
 
@@ -541,14 +513,12 @@ func processCheckSuiteEvent(log *logrus.Entry, token string, event *github.Check
 				log.Infof("found pull request %v", pr.GetNumber())
 				return []*entities.TargetEntity{
 					{
-						Kind:           entities.PullRequest,
-						Number:         pr.GetNumber(),
-						Owner:          event.GetRepo().GetOwner().GetLogin(),
-						Repo:           event.GetRepo().GetName(),
-						AccountType:    pr.GetBase().GetRepo().GetOwner().GetType(),
-						Visibility:     pr.GetBase().GetRepo().GetVisibility(),
-						OrganizationId: event.GetRepo().GetOwner().GetNodeID(),
-						NodeId:         pr.GetNodeID(),
+						Kind:        entities.PullRequest,
+						Number:      pr.GetNumber(),
+						Owner:       event.GetRepo().GetOwner().GetLogin(),
+						Repo:        event.GetRepo().GetName(),
+						AccountType: pr.GetBase().GetRepo().GetOwner().GetType(),
+						Visibility:  pr.GetBase().GetRepo().GetVisibility(),
 					},
 				}, eventDetails, nil
 			}
@@ -560,14 +530,12 @@ func processCheckSuiteEvent(log *logrus.Entry, token string, event *github.Check
 	} else {
 		for _, pr := range event.CheckSuite.PullRequests {
 			targetEntities = append(targetEntities, &entities.TargetEntity{
-				Kind:           entities.PullRequest,
-				Owner:          event.GetRepo().GetOwner().GetLogin(),
-				Repo:           event.GetRepo().GetName(),
-				Number:         pr.GetNumber(),
-				AccountType:    event.GetRepo().GetOwner().GetType(),
-				Visibility:     event.GetRepo().GetVisibility(),
-				OrganizationId: event.GetRepo().GetOwner().GetNodeID(),
-				NodeId:         pr.GetNodeID(),
+				Kind:        entities.PullRequest,
+				Owner:       event.GetRepo().GetOwner().GetLogin(),
+				Repo:        event.GetRepo().GetName(),
+				Number:      pr.GetNumber(),
+				AccountType: event.GetRepo().GetOwner().GetType(),
+				Visibility:  event.GetRepo().GetVisibility(),
 			})
 		}
 	}
@@ -593,14 +561,12 @@ func processCheckSuiteEventForMergeQueue(log *logrus.Entry, token string, event 
 
 	return []*entities.TargetEntity{
 		{
-			Kind:           entities.PullRequest,
-			Number:         pr.GetNumber(),
-			Owner:          event.GetRepo().GetOwner().GetLogin(),
-			Repo:           event.GetRepo().GetName(),
-			AccountType:    pr.GetBase().GetRepo().GetOwner().GetType(),
-			Visibility:     pr.GetBase().GetRepo().GetVisibility(),
-			OrganizationId: event.GetRepo().GetOwner().GetNodeID(),
-			NodeId:         pr.GetNodeID(),
+			Kind:        entities.PullRequest,
+			Number:      pr.GetNumber(),
+			Owner:       event.GetRepo().GetOwner().GetLogin(),
+			Repo:        event.GetRepo().GetName(),
+			AccountType: pr.GetBase().GetRepo().GetOwner().GetType(),
+			Visibility:  pr.GetBase().GetRepo().GetVisibility(),
 		},
 	}, eventDetails, nil
 }
