@@ -68,7 +68,7 @@ Conceptually, the packages are divided into four categories:
 1. Engine: The engine is the package responsible for processing the YML file. This process is divided into two stages:
     - Process the YML file to determine which workflows are enabled. The outcome of this phase is a program with the actions that will be executed over the pull request.
     - Execution of the synthesised program.
-2. [Aladino Language](https://docs.reviewpad.com/guides/aladino/specification): This is the language that is used in the `spec` property of the rules and also the actions of the workflows. The engine of Reviewpad is not specific to Aladino - this means that it is possible to add support for a new language such as `Javascript` or `Golang` in these specifications.
+2. [Aladino Language](https://docs.reviewpad.com/guides/aladino-language): This is the language that is used in the `spec` property of the rules and also the actions of the workflows. The engine of Reviewpad is not specific to Aladino - this means that it is possible to add support for a new language such as `Javascript` or `Golang` in these specifications.
 3. Plugins: The plugin package contains the built-in functions and actions that act as an abstraction to the 3rd party services such as GitHub, Jira, etc. This package is specific to each supported specification language. In the case of `plugins/aladino`, it contains the implementations of the [built-ins](https://docs.reviewpad.com/guides/built-ins).
 4. Utilities: packages, such as the collector, that provide utilities that are used in multiple places.
 
