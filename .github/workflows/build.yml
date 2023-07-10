@@ -13,9 +13,13 @@ env:
   INPUT_CODEHOST_SERVICE: codehost-service:9000
 
 jobs:
-  # more information on how to use aws ecr with github action services https://github.com/aws-actions/amazon-ecr-login#using-an-image-as-a-service
+  # More information on how to use aws ecr with github action services https://github.com/aws-actions/amazon-ecr-login#using-an-image-as-a-service
   login-to-amazon-ecr:
     runs-on: ubuntu-latest
+    # More information about permissions for AWS https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services#adding-permissions-settings
+    permissions:
+      id-token: write # This is required for requesting the JWT
+      contents: read  # This is required for actions/checkout
     steps:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
