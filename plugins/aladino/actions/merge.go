@@ -9,7 +9,7 @@ import (
 
 	"github.com/google/go-github/v52/github"
 	pbc "github.com/reviewpad/api/go/codehost"
-	"github.com/reviewpad/go-lib/entities"
+	"github.com/reviewpad/go-lib/event/event_processor"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
@@ -19,7 +19,7 @@ func Merge() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
 		Type:           lang.BuildFunctionType([]lang.Type{lang.BuildStringType()}, nil),
 		Code:           mergeCode,
-		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
+		SupportedKinds: []event_processor.TargetEntityKind{event_processor.PullRequest},
 	}
 }
 

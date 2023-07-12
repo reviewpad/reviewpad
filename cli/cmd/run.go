@@ -14,13 +14,14 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/reviewpad/api/go/clients"
-	"github.com/reviewpad/go-lib/entities"
+	github_event_processor "github.com/reviewpad/go-lib/entities/event_processor/github"
+	"github.com/reviewpad/go-lib/event/event_processor"
 	log "github.com/reviewpad/go-lib/logrus"
+	"github.com/reviewpad/reviewpad/v3/handler"
 	"github.com/reviewpad/reviewpad/v4"
 	"github.com/reviewpad/reviewpad/v4/codehost"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/reviewpad/reviewpad/v4/collector"
-	"github.com/reviewpad/reviewpad/v4/handler"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc/metadata"
@@ -124,7 +125,7 @@ func run() error {
 		return fmt.Errorf("error running reviewpad team edition. Details %v", err.Error())
 	}
 
-	targetEntities, eventDetails, err := handler.ProcessEvent(log, event)
+	targetEntities, eventDetails, err := github_event_processor.ProcessEvent(log, event, token)
 	if err != nil {
 		return fmt.Errorf("error processing event. Details %v", err.Error())
 	}
@@ -172,12 +173,12 @@ func parseEvent(rawEvent string) (*handler.ActionEvent, error) {
 	return event, nil
 }
 
-func toTargetEntityKind(entityType string) (entities.TargetEntityKind, error) {
+func toTargetEntityKind(entityType string) (event_processor.TargetEntityKind, error) {
 	switch entityType {
 	case "issues":
-		return entities.Issue, nil
+		return event_processor.Issue, nil
 	case "pull":
-		return entities.PullRequest, nil
+		return event_processor.PullRequest, nil
 	default:
 		return "", fmt.Errorf("unknown entity type %s", entityType)
 	}

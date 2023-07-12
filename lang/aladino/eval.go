@@ -8,13 +8,13 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/reviewpad/go-lib/entities"
+	"github.com/reviewpad/go-lib/event/event_processor"
 	"github.com/reviewpad/reviewpad/v4/lang"
 )
 
 type UnsupportedKindError struct {
-	Kind           entities.TargetEntityKind
-	SupportedKinds []entities.TargetEntityKind
+	Kind           event_processor.TargetEntityKind
+	SupportedKinds []event_processor.TargetEntityKind
 	BuiltIn        string
 }
 

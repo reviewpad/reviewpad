@@ -7,7 +7,7 @@ package plugins_aladino_functions
 import (
 	"fmt"
 
-	"github.com/reviewpad/go-lib/entities"
+	"github.com/reviewpad/go-lib/event/event_processor"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
@@ -24,7 +24,7 @@ func HasRequiredApprovals() *aladino.BuiltInFunction {
 			lang.BuildBoolType(),
 		),
 		Code:           hasRequiredApprovalsCode,
-		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
+		SupportedKinds: []event_processor.TargetEntityKind{event_processor.PullRequest},
 	}
 }
 

@@ -7,7 +7,7 @@ package plugins_aladino_functions
 import (
 	"strings"
 
-	"github.com/reviewpad/go-lib/entities"
+	"github.com/reviewpad/go-lib/event/event_processor"
 	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	semantic "github.com/reviewpad/reviewpad/v4/plugins/aladino/semantic"
@@ -17,7 +17,7 @@ func HasAnnotation() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
 		Type:           lang.BuildFunctionType([]lang.Type{lang.BuildStringType()}, lang.BuildBoolType()),
 		Code:           hasAnnotationCode,
-		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
+		SupportedKinds: []event_processor.TargetEntityKind{event_processor.PullRequest},
 	}
 }
 

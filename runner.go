@@ -12,12 +12,12 @@ import (
 	"strings"
 
 	"github.com/google/go-github/v52/github"
-	"github.com/reviewpad/go-lib/entities"
+	"github.com/reviewpad/go-lib/event/event_processor"
+	github_event_processor "github.com/reviewpad/go-lib/event/event_processor/github"
 	"github.com/reviewpad/reviewpad/v4/codehost"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/reviewpad/reviewpad/v4/collector"
 	"github.com/reviewpad/reviewpad/v4/engine"
-	"github.com/reviewpad/reviewpad/v4/handler"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
 	"github.com/reviewpad/reviewpad/v4/utils"
@@ -123,7 +123,7 @@ func runReviewpadCommandDryRun(
 	logger *logrus.Entry,
 	collector collector.Collector,
 	gitHubClient *gh.GithubClient,
-	targetEntity *entities.TargetEntity,
+	targetEntity *event_processor.TargetEntity,
 	reviewpadFile *engine.ReviewpadFile,
 	env *engine.Env,
 ) (engine.ExitStatus, *engine.Program, string, error) {
@@ -168,7 +168,7 @@ func runReviewpadCommand(
 	logger *logrus.Entry,
 	collector collector.Collector,
 	gitHubClient *gh.GithubClient,
-	targetEntity *entities.TargetEntity,
+	targetEntity *event_processor.TargetEntity,
 	env *engine.Env,
 	aladinoInterpreter engine.Interpreter,
 	command string,
@@ -218,7 +218,7 @@ func runReviewpadFile(env *engine.Env, reviewpadFile *engine.ReviewpadFile, safe
 	err := env.Collector.Collect("Trigger Analysis", map[string]interface{}{
 		"project":        fmt.Sprintf("%s/%s", env.TargetEntity.Owner, env.TargetEntity.Repo),
 		"mode":           reviewpadFile.Mode,
-		"author":         handler.GetEventSender(env.EventDetails.Payload),
+		"author":         github_event_processor.GetEventSender(env.EventDetails.Payload),
 		"ignoreErrors":   reviewpadFile.IgnoreErrors,
 		"metricsOnMerge": reviewpadFile.MetricsOnMerge,
 		"totalImports":   len(reviewpadFile.Imports),
@@ -272,8 +272,8 @@ func Run(
 	gitHubClient *gh.GithubClient,
 	codeHostClient *codehost.CodeHostClient,
 	collector collector.Collector,
-	targetEntity *entities.TargetEntity,
-	eventDetails *entities.EventDetails,
+	targetEntity *event_processor.TargetEntity,
+	eventDetails *event_processor.EventDetails,
 	reviewpadFile *engine.ReviewpadFile,
 	checkRunId *int64,
 	dryRun bool,

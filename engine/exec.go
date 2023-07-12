@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/mattn/go-shellwords"
-	"github.com/reviewpad/go-lib/entities"
+	"github.com/reviewpad/go-lib/event/event_processor"
 	"github.com/reviewpad/reviewpad/v4/engine/commands"
 	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/sirupsen/logrus"
@@ -178,7 +178,7 @@ func EvalConfigurationFile(file *ReviewpadFile, env *Env) (*Program, error) {
 	}
 
 	// pipelines should only run on pull requests
-	if env.TargetEntity.Kind == entities.PullRequest {
+	if env.TargetEntity.Kind == event_processor.PullRequest {
 		// process pipelines
 		for _, pipeline := range file.Pipelines {
 			log.Infof("executing pipeline `%v`:", pipeline.Name)
@@ -386,7 +386,7 @@ func ExecConfigurationFile(env *Env, file *ReviewpadFile) (ExitStatus, *Program,
 	}
 
 	// pipelines should only run on pull requests
-	if env.TargetEntity.Kind == entities.PullRequest {
+	if env.TargetEntity.Kind == event_processor.PullRequest {
 		for _, pipeline := range file.Pipelines {
 			pipelineLog := log.WithField("pipeline", pipeline.Name)
 

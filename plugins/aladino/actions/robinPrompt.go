@@ -10,7 +10,7 @@ import (
 	api_entities "github.com/reviewpad/api/go/entities"
 	api "github.com/reviewpad/api/go/services"
 	converter "github.com/reviewpad/go-lib/converters"
-	"github.com/reviewpad/go-lib/entities"
+	"github.com/reviewpad/go-lib/event/event_processor"
 	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino_services "github.com/reviewpad/reviewpad/v4/plugins/aladino/services"
@@ -20,7 +20,7 @@ func RobinPrompt() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
 		Type:           lang.BuildFunctionType([]lang.Type{lang.BuildStringType(), lang.BuildStringType()}, nil),
 		Code:           robinPromptCode,
-		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest, entities.Issue},
+		SupportedKinds: []event_processor.TargetEntityKind{event_processor.PullRequest, event_processor.Issue},
 	}
 }
 

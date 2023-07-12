@@ -6,7 +6,7 @@ package plugins_aladino_functions
 
 import (
 	"github.com/bmatcuk/doublestar/v4"
-	"github.com/reviewpad/go-lib/entities"
+	"github.com/reviewpad/go-lib/event/event_processor"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
@@ -16,7 +16,7 @@ func Size() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
 		Type:           lang.BuildFunctionType([]lang.Type{lang.BuildArrayOfType(lang.BuildStringType())}, lang.BuildIntType()),
 		Code:           sizeCode,
-		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
+		SupportedKinds: []event_processor.TargetEntityKind{event_processor.PullRequest},
 	}
 }
 

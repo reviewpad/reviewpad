@@ -11,7 +11,7 @@ import (
 
 	"errors"
 
-	"github.com/reviewpad/go-lib/entities"
+	"github.com/reviewpad/go-lib/event/event_processor"
 	"github.com/reviewpad/reviewpad/v4/codehost"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
@@ -224,14 +224,14 @@ func (i *Interpreter) ExecStatement(statement *engine.Statement) error {
 		codeHostClient := i.Env.GetCodeHostClient()
 		ctx := i.Env.GetCtx()
 		switch targetEntity.Kind {
-		case entities.Issue:
+		case event_processor.Issue:
 			issue, _, err := githubClient.GetIssue(ctx, targetEntity.Owner, targetEntity.Repo, targetEntity.Number)
 			if err != nil {
 				return err
 			}
 
 			i.Env.(*BaseEnv).Target = target.NewIssueTarget(ctx, targetEntity, githubClient, issue)
-		case entities.PullRequest:
+		case event_processor.PullRequest:
 			pullRequest, err := codeHostClient.GetPullRequest(ctx, fmt.Sprintf("%s/%s", targetEntity.Owner, targetEntity.Repo), int64(targetEntity.Number))
 			if err != nil {
 				return err
@@ -358,7 +358,7 @@ func NewInterpreter(
 	githubClient *gh.GithubClient,
 	codeHostClient *codehost.CodeHostClient,
 	collector collector.Collector,
-	targetEntity *entities.TargetEntity,
+	targetEntity *event_processor.TargetEntity,
 	eventPayload interface{},
 	builtIns *BuiltIns,
 	checkRunID *int64,

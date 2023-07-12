@@ -5,7 +5,7 @@
 package plugins_aladino_functions
 
 import (
-	"github.com/reviewpad/go-lib/entities"
+	"github.com/reviewpad/go-lib/event/event_processor"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
@@ -18,7 +18,7 @@ func ApprovalsCount() *aladino.BuiltInFunction {
 			lang.BuildIntType(),
 		),
 		Code:           approvalsCountCode,
-		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
+		SupportedKinds: []event_processor.TargetEntityKind{event_processor.PullRequest},
 	}
 }
 

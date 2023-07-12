@@ -14,7 +14,7 @@ import (
 	"github.com/google/go-github/v52/github"
 	"github.com/jarcoal/httpmock"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
-	"github.com/reviewpad/go-lib/entities"
+	"github.com/reviewpad/go-lib/event/event_processor"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/reviewpad/reviewpad/v4/engine"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
@@ -152,7 +152,7 @@ func TestLoadWithAST(t *testing.T) {
 			{
 				Name:      "add-label-with-medium-size",
 				AlwaysRun: false,
-				On: []entities.TargetEntityKind{
+				On: []event_processor.TargetEntityKind{
 					"pull_request",
 				},
 				Runs: []engine.PadWorkflowRunBlock{
@@ -175,7 +175,7 @@ func TestLoadWithAST(t *testing.T) {
 			{
 				Name:      "info-owners",
 				AlwaysRun: false,
-				On: []entities.TargetEntityKind{
+				On: []event_processor.TargetEntityKind{
 					"pull_request",
 				},
 				Runs: []engine.PadWorkflowRunBlock{
@@ -198,7 +198,7 @@ func TestLoadWithAST(t *testing.T) {
 			{
 				Name:      "check-title",
 				AlwaysRun: false,
-				On: []entities.TargetEntityKind{
+				On: []event_processor.TargetEntityKind{
 					"pull_request",
 				},
 				Runs: []engine.PadWorkflowRunBlock{
@@ -221,7 +221,7 @@ func TestLoadWithAST(t *testing.T) {
 			{
 				Name:      "add-label-with-small-size",
 				AlwaysRun: false,
-				On: []entities.TargetEntityKind{
+				On: []event_processor.TargetEntityKind{
 					"pull_request",
 				},
 				Runs: []engine.PadWorkflowRunBlock{

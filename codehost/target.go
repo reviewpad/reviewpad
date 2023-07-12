@@ -10,7 +10,7 @@ import (
 	"time"
 
 	pbc "github.com/reviewpad/api/go/codehost"
-	"github.com/reviewpad/go-lib/entities"
+	"github.com/reviewpad/go-lib/event/event_processor"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
 )
 
@@ -37,7 +37,7 @@ type Target interface {
 	GetProjectByName(name string) (*Project, error)
 	GetProjectFieldsByProjectNumber(projectNumber uint64) ([]*ProjectField, error)
 	GetState() pbc.PullRequestStatus
-	GetTargetEntity() *entities.TargetEntity
+	GetTargetEntity() *event_processor.TargetEntity
 	GetTitle() string
 	IsLinkedToProject(title string) (bool, error)
 	RemoveLabel(labelName string) error

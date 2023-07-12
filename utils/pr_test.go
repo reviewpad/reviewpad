@@ -8,34 +8,34 @@ import (
 	"testing"
 
 	"github.com/google/go-github/v52/github"
-	"github.com/reviewpad/go-lib/entities"
+	"github.com/reviewpad/go-lib/event/event_processor"
 	"github.com/reviewpad/reviewpad/v4/utils"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestIsPullRequestReadyForReportMetrics(t *testing.T) {
 	tests := map[string]struct {
-		eventDetails *entities.EventDetails
+		eventDetails *event_processor.EventDetails
 		wantVal      bool
 	}{
 		"when event data is nil": {
 			wantVal: false,
 		},
 		"when event name is not pull request": {
-			eventDetails: &entities.EventDetails{
+			eventDetails: &event_processor.EventDetails{
 				EventName: "pull_request_review",
 			},
 			wantVal: false,
 		},
 		"when event action is not closed": {
-			eventDetails: &entities.EventDetails{
+			eventDetails: &event_processor.EventDetails{
 				EventName:   "pull_request",
 				EventAction: "opened",
 			},
 			wantVal: false,
 		},
 		"when event name is pull request and event action is closed": {
-			eventDetails: &entities.EventDetails{
+			eventDetails: &event_processor.EventDetails{
 				EventName:   "pull_request",
 				EventAction: "closed",
 			},
@@ -53,7 +53,7 @@ func TestIsPullRequestReadyForReportMetrics(t *testing.T) {
 
 func TestIsReviewPadCommand(t *testing.T) {
 	tests := map[string]struct {
-		eventDetails *entities.EventDetails
+		eventDetails *event_processor.EventDetails
 		wantVal      bool
 	}{
 		"when target entity is nil": {
@@ -61,13 +61,13 @@ func TestIsReviewPadCommand(t *testing.T) {
 		},
 		"when event name is pull request review": {
 			wantVal: false,
-			eventDetails: &entities.EventDetails{
+			eventDetails: &event_processor.EventDetails{
 				EventName: "pull_request_review",
 			},
 		},
 		"when comment body is nil": {
 			wantVal: false,
-			eventDetails: &entities.EventDetails{
+			eventDetails: &event_processor.EventDetails{
 				EventName: "issue_comment",
 				Payload: &github.IssueCommentEvent{
 					Comment: &github.IssueComment{
@@ -78,7 +78,7 @@ func TestIsReviewPadCommand(t *testing.T) {
 		},
 		"when comment body doesn't have /reviewpad prefix": {
 			wantVal: false,
-			eventDetails: &entities.EventDetails{
+			eventDetails: &event_processor.EventDetails{
 				EventName: "issue_comment",
 				Payload: &github.IssueCommentEvent{
 					Comment: &github.IssueComment{
@@ -89,7 +89,7 @@ func TestIsReviewPadCommand(t *testing.T) {
 		},
 		"when event action is not created": {
 			wantVal: false,
-			eventDetails: &entities.EventDetails{
+			eventDetails: &event_processor.EventDetails{
 				EventName:   "issue_comment",
 				EventAction: "updated",
 				Payload: &github.IssueCommentEvent{
@@ -101,7 +101,7 @@ func TestIsReviewPadCommand(t *testing.T) {
 		},
 		"when event name is issue comment and body has /reviewpad prefix": {
 			wantVal: true,
-			eventDetails: &entities.EventDetails{
+			eventDetails: &event_processor.EventDetails{
 				EventName:   "issue_comment",
 				EventAction: "created",
 				Payload: &github.IssueCommentEvent{
