@@ -7,7 +7,7 @@ package plugins_aladino_functions_test
 import (
 	"testing"
 
-	"github.com/reviewpad/go-lib/event/event_processor"
+	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
@@ -108,7 +108,7 @@ func TestContext(t *testing.T) {
 	assert.Nil(t, err)
 
 	tests := map[string]struct {
-		targetEntity *event_processor.TargetEntity
+		targetEntity *entities.TargetEntity
 		wantErr      error
 		wantRes      lang.Value
 	}{
@@ -117,8 +117,8 @@ func TestContext(t *testing.T) {
 			wantRes:      lang.BuildStringValue(mockPRJSON),
 		},
 		"when issue": {
-			targetEntity: &event_processor.TargetEntity{
-				Kind:   event_processor.Issue,
+			targetEntity: &entities.TargetEntity{
+				Kind:   entities.Issue,
 				Owner:  "test",
 				Repo:   "test",
 				Number: 1,

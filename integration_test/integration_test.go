@@ -293,14 +293,14 @@ func TestIntegration(t *testing.T) {
 				require.Nil(err)
 			}
 
-			targetEntity := &event_processor.TargetEntity{
-				Kind:   event_processor.PullRequest,
+			targetEntity := &entities.TargetEntity{
+				Kind:   entities.PullRequest,
 				Owner:  repoOwner,
 				Repo:   repoName,
 				Number: integrationTestMutation.CreatePullRequest.PullRequest.Number,
 			}
 
-			eventDetails := &event_processor.EventDetails{
+			eventDetails := &entities.EventDetails{
 				EventName:   "pull_request",
 				EventAction: "opened",
 			}

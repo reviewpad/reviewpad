@@ -8,14 +8,14 @@ import (
 	"strings"
 
 	"github.com/google/go-github/v52/github"
-	"github.com/reviewpad/go-lib/event/event_processor"
+	"github.com/reviewpad/go-lib/entities"
 )
 
-func IsPullRequestReadyForReportMetrics(eventDetails *event_processor.EventDetails) bool {
+func IsPullRequestReadyForReportMetrics(eventDetails *entities.EventDetails) bool {
 	return eventDetails != nil && eventDetails.EventName == "pull_request" && eventDetails.EventAction == "closed"
 }
 
-func IsReviewpadCommand(eventDetails *event_processor.EventDetails) bool {
+func IsReviewpadCommand(eventDetails *entities.EventDetails) bool {
 	return eventDetails != nil &&
 		eventDetails.EventName == "issue_comment" &&
 		eventDetails.EventAction == "created" &&

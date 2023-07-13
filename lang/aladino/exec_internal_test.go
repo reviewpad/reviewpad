@@ -7,7 +7,7 @@ package aladino
 import (
 	"testing"
 
-	"github.com/reviewpad/go-lib/event/event_processor"
+	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/stretchr/testify/assert"
 )
@@ -101,7 +101,7 @@ func TestExec_WhenActionIsEnabled(t *testing.T) {
 					isBuiltInCalled = true
 					return nil
 				},
-				SupportedKinds: []event_processor.TargetEntityKind{event_processor.PullRequest},
+				SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 			},
 		},
 	}
@@ -132,7 +132,7 @@ func TestExec_WhenActionIsDisabled(t *testing.T) {
 					return nil
 				},
 				Disabled:       true,
-				SupportedKinds: []event_processor.TargetEntityKind{event_processor.PullRequest},
+				SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 			},
 		},
 	}

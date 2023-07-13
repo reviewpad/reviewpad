@@ -9,7 +9,7 @@ import (
 	"strconv"
 
 	"github.com/google/go-github/v52/github"
-	"github.com/reviewpad/go-lib/event/event_processor"
+	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/codehost"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/shurcooL/githubv4"
@@ -17,11 +17,11 @@ import (
 
 type CommonTarget struct {
 	ctx          context.Context
-	targetEntity *event_processor.TargetEntity
+	targetEntity *entities.TargetEntity
 	githubClient *gh.GithubClient
 }
 
-func NewCommonTarget(ctx context.Context, targetEntity *event_processor.TargetEntity, githubClient *gh.GithubClient) *CommonTarget {
+func NewCommonTarget(ctx context.Context, targetEntity *entities.TargetEntity, githubClient *gh.GithubClient) *CommonTarget {
 	return &CommonTarget{
 		ctx,
 		targetEntity,
@@ -133,7 +133,7 @@ func (t *CommonTarget) GetProjectFieldsByProjectNumber(projectNumber uint64) ([]
 	return fields, nil
 }
 
-func (t *CommonTarget) GetTargetEntity() *event_processor.TargetEntity {
+func (t *CommonTarget) GetTargetEntity() *entities.TargetEntity {
 	return t.targetEntity
 }
 

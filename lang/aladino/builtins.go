@@ -5,7 +5,7 @@
 package aladino
 
 import (
-	"github.com/reviewpad/go-lib/event/event_processor"
+	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/lang"
 )
 
@@ -18,14 +18,14 @@ type BuiltIns struct {
 type BuiltInFunction struct {
 	Type           lang.Type
 	Code           func(e Env, args []lang.Value) (lang.Value, error)
-	SupportedKinds []event_processor.TargetEntityKind
+	SupportedKinds []entities.TargetEntityKind
 }
 
 type BuiltInAction struct {
 	Type              lang.Type
 	Code              func(e Env, args []lang.Value) error
 	Disabled          bool
-	SupportedKinds    []event_processor.TargetEntityKind
+	SupportedKinds    []entities.TargetEntityKind
 	RunAsynchronously bool
 }
 

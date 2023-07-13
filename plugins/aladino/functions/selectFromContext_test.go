@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/ohler55/ojg"
-	"github.com/reviewpad/go-lib/event/event_processor"
+	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
@@ -19,14 +19,14 @@ import (
 var selectFromContext = plugins_aladino.PluginBuiltIns().Functions["selectFromContext"].Code
 
 func TestSelectFromContext(t *testing.T) {
-	mockIssueTargetEntity := &event_processor.TargetEntity{
-		Kind:   event_processor.Issue,
+	mockIssueTargetEntity := &entities.TargetEntity{
+		Kind:   entities.Issue,
 		Owner:  "test",
 		Repo:   "test",
 		Number: 1,
 	}
 	tests := map[string]struct {
-		targetEntity *event_processor.TargetEntity
+		targetEntity *entities.TargetEntity
 		path         string
 		wantErr      error
 		wantRes      lang.Value

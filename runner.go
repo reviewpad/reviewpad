@@ -12,7 +12,7 @@ import (
 	"strings"
 
 	"github.com/google/go-github/v52/github"
-	"github.com/reviewpad/go-lib/event/event_processor"
+	"github.com/reviewpad/go-lib/entities"
 	github_event_processor "github.com/reviewpad/go-lib/event/event_processor/github"
 	"github.com/reviewpad/reviewpad/v4/codehost"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
@@ -123,7 +123,7 @@ func runReviewpadCommandDryRun(
 	logger *logrus.Entry,
 	collector collector.Collector,
 	gitHubClient *gh.GithubClient,
-	targetEntity *event_processor.TargetEntity,
+	targetEntity *entities.TargetEntity,
 	reviewpadFile *engine.ReviewpadFile,
 	env *engine.Env,
 ) (engine.ExitStatus, *engine.Program, string, error) {
@@ -168,7 +168,7 @@ func runReviewpadCommand(
 	logger *logrus.Entry,
 	collector collector.Collector,
 	gitHubClient *gh.GithubClient,
-	targetEntity *event_processor.TargetEntity,
+	targetEntity *entities.TargetEntity,
 	env *engine.Env,
 	aladinoInterpreter engine.Interpreter,
 	command string,
@@ -272,8 +272,8 @@ func Run(
 	gitHubClient *gh.GithubClient,
 	codeHostClient *codehost.CodeHostClient,
 	collector collector.Collector,
-	targetEntity *event_processor.TargetEntity,
-	eventDetails *event_processor.EventDetails,
+	targetEntity *entities.TargetEntity,
+	eventDetails *entities.EventDetails,
 	reviewpadFile *engine.ReviewpadFile,
 	checkRunId *int64,
 	dryRun bool,

@@ -9,7 +9,7 @@ import (
 
 	"github.com/reviewpad/go-conventionalcommits"
 	"github.com/reviewpad/go-conventionalcommits/parser"
-	"github.com/reviewpad/go-lib/event/event_processor"
+	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 )
@@ -18,7 +18,7 @@ func CommitLint() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
 		Type:           lang.BuildFunctionType([]lang.Type{}, nil),
 		Code:           commitLintCode,
-		SupportedKinds: []event_processor.TargetEntityKind{event_processor.PullRequest},
+		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 	}
 }
 

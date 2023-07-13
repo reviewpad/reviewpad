@@ -12,7 +12,7 @@ import (
 
 	"github.com/google/go-github/v52/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
-	"github.com/reviewpad/go-lib/event/event_processor"
+	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/codehost"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/reviewpad/reviewpad/v4/engine"
@@ -123,19 +123,19 @@ func TestEvalCommand(t *testing.T) {
 		inputContext      context.Context
 		inputGitHubClient *gh.GithubClient
 		clientOptions     []mock.MockBackendOption
-		targetEntity      *event_processor.TargetEntity
-		eventDetails      *event_processor.EventDetails
+		targetEntity      *entities.TargetEntity
+		eventDetails      *entities.EventDetails
 		wantProgram       *engine.Program
 		wantErr           string
 	}{
 		"when invalid assign reviewer command": {
-			targetEntity: &event_processor.TargetEntity{
+			targetEntity: &entities.TargetEntity{
 				Kind:   engine.DefaultMockTargetEntity.Kind,
 				Number: engine.DefaultMockTargetEntity.Number,
 				Owner:  engine.DefaultMockTargetEntity.Owner,
 				Repo:   engine.DefaultMockTargetEntity.Repo,
 			},
-			eventDetails: &event_processor.EventDetails{
+			eventDetails: &entities.EventDetails{
 				EventName:   "issue_comment",
 				EventAction: "created",
 				Payload: &github.IssueCommentEvent{
@@ -154,13 +154,13 @@ func TestEvalCommand(t *testing.T) {
 			wantErr: "accepts 1 arg, received 4",
 		},
 		"when invalid total required reviewers arg": {
-			targetEntity: &event_processor.TargetEntity{
+			targetEntity: &entities.TargetEntity{
 				Kind:   engine.DefaultMockTargetEntity.Kind,
 				Number: engine.DefaultMockTargetEntity.Number,
 				Owner:  engine.DefaultMockTargetEntity.Owner,
 				Repo:   engine.DefaultMockTargetEntity.Repo,
 			},
-			eventDetails: &event_processor.EventDetails{
+			eventDetails: &entities.EventDetails{
 				EventName:   "issue_comment",
 				EventAction: "created",
 				Payload: &github.IssueCommentEvent{
@@ -179,13 +179,13 @@ func TestEvalCommand(t *testing.T) {
 			wantErr: "invalid argument: reviewpad, number of reviewers must be a number",
 		},
 		"when total required reviewers arg is 0": {
-			targetEntity: &event_processor.TargetEntity{
+			targetEntity: &entities.TargetEntity{
 				Kind:   engine.DefaultMockTargetEntity.Kind,
 				Number: engine.DefaultMockTargetEntity.Number,
 				Owner:  engine.DefaultMockTargetEntity.Owner,
 				Repo:   engine.DefaultMockTargetEntity.Repo,
 			},
-			eventDetails: &event_processor.EventDetails{
+			eventDetails: &entities.EventDetails{
 				EventName:   "issue_comment",
 				EventAction: "created",
 				Payload: &github.IssueCommentEvent{
@@ -209,13 +209,13 @@ func TestEvalCommand(t *testing.T) {
 					engine.BuildStatement(`$assignCodeAuthorReviewers(1, [], 0)`),
 				},
 			),
-			targetEntity: &event_processor.TargetEntity{
+			targetEntity: &entities.TargetEntity{
 				Kind:   engine.DefaultMockTargetEntity.Kind,
 				Number: engine.DefaultMockTargetEntity.Number,
 				Owner:  engine.DefaultMockTargetEntity.Owner,
 				Repo:   engine.DefaultMockTargetEntity.Repo,
 			},
-			eventDetails: &event_processor.EventDetails{
+			eventDetails: &entities.EventDetails{
 				EventName:   "issue_comment",
 				EventAction: "created",
 				Payload: &github.IssueCommentEvent{
@@ -232,13 +232,13 @@ func TestEvalCommand(t *testing.T) {
 					engine.BuildStatement(`$assignCodeAuthorReviewers(1, [], 0)`),
 				},
 			),
-			targetEntity: &event_processor.TargetEntity{
+			targetEntity: &entities.TargetEntity{
 				Kind:   engine.DefaultMockTargetEntity.Kind,
 				Number: engine.DefaultMockTargetEntity.Number,
 				Owner:  engine.DefaultMockTargetEntity.Owner,
 				Repo:   engine.DefaultMockTargetEntity.Repo,
 			},
-			eventDetails: &event_processor.EventDetails{
+			eventDetails: &entities.EventDetails{
 				EventName:   "issue_comment",
 				EventAction: "created",
 				Payload: &github.IssueCommentEvent{
@@ -284,8 +284,8 @@ func TestExecConfigurationFile(t *testing.T) {
 		inputContext           context.Context
 		inputGitHubClient      *gh.GithubClient
 		clientOptions          []mock.MockBackendOption
-		targetEntity           *event_processor.TargetEntity
-		eventDetails           *event_processor.EventDetails
+		targetEntity           *entities.TargetEntity
+		eventDetails           *entities.EventDetails
 		wantProgram            *engine.Program
 		wantErr                string
 		wantExitStatus         engine.ExitStatus
@@ -417,7 +417,7 @@ func TestExecConfigurationFile(t *testing.T) {
 						Code: func(e aladino.Env, args []lang.Value) error {
 							return nil
 						},
-						SupportedKinds: []event_processor.TargetEntityKind{event_processor.PullRequest},
+						SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 					},
 					"assignReviewer": plugins_aladino_actions.AssignReviewer(),
 				},
@@ -480,8 +480,8 @@ func TestEvalConfigurationFile(t *testing.T) {
 		inputContext           context.Context
 		inputGitHubClient      *gh.GithubClient
 		clientOptions          []mock.MockBackendOption
-		targetEntity           *event_processor.TargetEntity
-		eventDetails           *event_processor.EventDetails
+		targetEntity           *entities.TargetEntity
+		eventDetails           *entities.EventDetails
 		wantProgram            *engine.Program
 		wantErr                string
 	}{

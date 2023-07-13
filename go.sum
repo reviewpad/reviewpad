@@ -146,6 +146,8 @@ github.com/reviewpad/go-lib v0.0.0-20230713095128-7e56c1a32e50 h1:Ni0KhRbcJqqBAK
 github.com/reviewpad/go-lib v0.0.0-20230713095128-7e56c1a32e50/go.mod h1:OsOBUydEpiUEWj7h9M4XrG5XlJB3IZcN6/dcjR+1LU0=
 github.com/reviewpad/go-lib v0.0.0-20230713120543-e9581034f596 h1:XpCC+vmhOxDR0jVqgK9wbnUiUdsmVM09TGUTKxmRTF8=
 github.com/reviewpad/go-lib v0.0.0-20230713120543-e9581034f596/go.mod h1:OsOBUydEpiUEWj7h9M4XrG5XlJB3IZcN6/dcjR+1LU0=
+github.com/reviewpad/go-lib v0.0.0-20230713130620-0e99056506b8 h1:x23L87mpcVJas3JXmJhkqmcuxwz00FRyg8YrVkkV2k8=
+github.com/reviewpad/go-lib v0.0.0-20230713130620-0e99056506b8/go.mod h1:OsOBUydEpiUEWj7h9M4XrG5XlJB3IZcN6/dcjR+1LU0=
 github.com/rogpeppe/go-internal v1.10.0 h1:TMyTOH3F/DB16zRVcYyreMH6GnZZrwQVAoYjRBZyWFQ=
 github.com/rogpeppe/go-internal v1.10.0/go.mod h1:UQnix2H7Ngw/k4C5ijL5+65zddjncjaFoBhdsK/akog=
 github.com/russross/blackfriday/v2 v2.1.0/go.mod h1:+Rmxgy9KzJVeS9/2gXHxylqXiyQDYRxCVz55jmeOWTM=

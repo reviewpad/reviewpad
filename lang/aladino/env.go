@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/reviewpad/go-lib/event/event_processor"
+	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/codehost"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
@@ -179,7 +179,7 @@ func NewEvalEnv(
 	githubClient *gh.GithubClient,
 	codeHostClient *codehost.CodeHostClient,
 	collector collector.Collector,
-	targetEntity *event_processor.TargetEntity,
+	targetEntity *entities.TargetEntity,
 	eventPayload interface{},
 	builtIns *BuiltIns,
 	checkRunID *int64,
@@ -210,14 +210,14 @@ func NewEvalEnv(
 	}
 
 	switch targetEntity.Kind {
-	case event_processor.Issue:
+	case entities.Issue:
 		issue, _, err := githubClient.GetIssue(ctx, targetEntity.Owner, targetEntity.Repo, targetEntity.Number)
 		if err != nil {
 			return nil, err
 		}
 
 		input.Target = target.NewIssueTarget(ctx, targetEntity, githubClient, issue)
-	case event_processor.PullRequest:
+	case entities.PullRequest:
 		pullRequest, err := codeHostClient.GetPullRequest(ctx, fmt.Sprintf("%s/%s", targetEntity.Owner, targetEntity.Repo), int64(targetEntity.Number))
 		if err != nil {
 			return nil, err

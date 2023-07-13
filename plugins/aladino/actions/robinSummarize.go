@@ -10,7 +10,7 @@ import (
 	api_entities "github.com/reviewpad/api/go/entities"
 	api "github.com/reviewpad/api/go/services"
 	converter "github.com/reviewpad/go-lib/converters"
-	"github.com/reviewpad/go-lib/event/event_processor"
+	"github.com/reviewpad/go-lib/entities"
 	lib_http "github.com/reviewpad/go-lib/http"
 	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
@@ -21,7 +21,7 @@ func RobinSummarize() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
 		Type:              lang.BuildFunctionType([]lang.Type{lang.BuildStringType(), lang.BuildStringType()}, nil),
 		Code:              robinSummarizeCode,
-		SupportedKinds:    []event_processor.TargetEntityKind{event_processor.PullRequest, event_processor.Issue},
+		SupportedKinds:    []entities.TargetEntityKind{entities.PullRequest, entities.Issue},
 		RunAsynchronously: true,
 	}
 }

@@ -15,7 +15,7 @@ import (
 	"github.com/google/go-github/v52/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
 	pbc "github.com/reviewpad/api/go/codehost"
-	"github.com/reviewpad/go-lib/event/event_processor"
+	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/engine"
 	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/utils"
@@ -121,7 +121,7 @@ func TestEvalGroup(t *testing.T) {
 				Code: func(e Env, args []lang.Value) (lang.Value, error) {
 					return lang.BuildArrayValue([]lang.Value{lang.BuildStringValue(devName)}), nil
 				},
-				SupportedKinds: []event_processor.TargetEntityKind{event_processor.PullRequest},
+				SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 			},
 		},
 	}
@@ -348,7 +348,7 @@ func TestExecProgram(t *testing.T) {
 				Code: func(e Env, args []lang.Value) error {
 					return nil
 				},
-				SupportedKinds: []event_processor.TargetEntityKind{event_processor.PullRequest},
+				SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 			},
 		},
 	}
@@ -408,7 +408,7 @@ func TestExecAsyncProgram(t *testing.T) {
 				Code: func(e Env, args []lang.Value) error {
 					return fmt.Errorf("robin error")
 				},
-				SupportedKinds:    []event_processor.TargetEntityKind{event_processor.PullRequest},
+				SupportedKinds:    []entities.TargetEntityKind{entities.PullRequest},
 				RunAsynchronously: true,
 			},
 		},
@@ -483,7 +483,7 @@ func TestExecStatement_WhenTypeCheckExecFails(t *testing.T) {
 				Code: func(e Env, args []lang.Value) error {
 					return nil
 				},
-				SupportedKinds: []event_processor.TargetEntityKind{event_processor.PullRequest},
+				SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 			},
 		},
 	}
@@ -510,7 +510,7 @@ func TestExecStatement_WhenActionExecFails(t *testing.T) {
 				Code: func(e Env, args []lang.Value) (lang.Value, error) {
 					return lang.BuildArrayValue([]lang.Value{lang.BuildStringValue(devName)}), nil
 				},
-				SupportedKinds: []event_processor.TargetEntityKind{event_processor.PullRequest},
+				SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 			},
 		},
 	}
@@ -536,7 +536,7 @@ func TestExecStatement(t *testing.T) {
 				Code: func(e Env, args []lang.Value) error {
 					return nil
 				},
-				SupportedKinds: []event_processor.TargetEntityKind{event_processor.PullRequest},
+				SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 			},
 		},
 	}

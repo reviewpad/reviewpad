@@ -11,7 +11,7 @@ import (
 	"strings"
 
 	pbc "github.com/reviewpad/api/go/codehost"
-	"github.com/reviewpad/go-lib/event/event_processor"
+	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/codehost"
 	"github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
@@ -28,7 +28,7 @@ func AssignCodeAuthorReviewers() *aladino.BuiltInAction {
 			lang.BuildIntType(),
 		}, nil),
 		Code:           assignCodeAuthorReviewersCode,
-		SupportedKinds: []event_processor.TargetEntityKind{event_processor.PullRequest},
+		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 	}
 }
 

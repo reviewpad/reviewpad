@@ -20,7 +20,7 @@ import (
 	pbe "github.com/reviewpad/api/go/entities"
 	pbs "github.com/reviewpad/api/go/services"
 	api_mocks "github.com/reviewpad/api/go/services_mocks"
-	"github.com/reviewpad/go-lib/event/event_processor"
+	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/codehost"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/reviewpad/reviewpad/v4/collector"
@@ -43,13 +43,13 @@ var DefaultMockPrDate = time.Date(2009, 11, 17, 20, 34, 58, 651387237, time.UTC)
 var DefaultMockContext = context.Background()
 var DefaultMockLogger = logrus.NewEntry(logrus.New()).WithField("prefix", "[aladino]")
 var DefaultMockCollector, _ = collector.NewCollector("", "distinctId", "pull_request", "runnerName", nil)
-var DefaultMockTargetEntity = &event_processor.TargetEntity{
+var DefaultMockTargetEntity = &entities.TargetEntity{
 	Owner:  DefaultMockPrOwner,
 	Repo:   DefaultMockPrRepoName,
 	Number: DefaultMockPrNum,
-	Kind:   event_processor.PullRequest,
+	Kind:   entities.PullRequest,
 }
-var DefaultMockEventDetails = &event_processor.EventDetails{
+var DefaultMockEventDetails = &entities.EventDetails{
 	EventName:   DefaultMockEventName,
 	EventAction: DefaultMockEventAction,
 }
@@ -91,21 +91,21 @@ func MockBuiltIns() *BuiltIns {
 				Code: func(e Env, args []lang.Value) (lang.Value, error) {
 					return nil, nil
 				},
-				SupportedKinds: []event_processor.TargetEntityKind{event_processor.PullRequest, event_processor.Issue},
+				SupportedKinds: []entities.TargetEntityKind{entities.PullRequest, entities.Issue},
 			},
 			"zeroConst": {
 				Type: lang.BuildFunctionType([]lang.Type{}, lang.BuildIntType()),
 				Code: func(e Env, args []lang.Value) (lang.Value, error) {
 					return lang.BuildIntValue(0), nil
 				},
-				SupportedKinds: []event_processor.TargetEntityKind{event_processor.PullRequest, event_processor.Issue},
+				SupportedKinds: []entities.TargetEntityKind{entities.PullRequest, entities.Issue},
 			},
 			"returnStr": {
 				Type: lang.BuildFunctionType([]lang.Type{lang.BuildStringType()}, lang.BuildStringType()),
 				Code: func(e Env, args []lang.Value) (lang.Value, error) {
 					return args[0].(*lang.StringValue), nil
 				},
-				SupportedKinds: []event_processor.TargetEntityKind{event_processor.PullRequest, event_processor.Issue},
+				SupportedKinds: []entities.TargetEntityKind{entities.PullRequest, entities.Issue},
 			},
 		},
 		Actions: map[string]*BuiltInAction{
@@ -114,7 +114,7 @@ func MockBuiltIns() *BuiltIns {
 				Code: func(e Env, args []lang.Value) error {
 					return nil
 				},
-				SupportedKinds: []event_processor.TargetEntityKind{event_processor.PullRequest, event_processor.Issue},
+				SupportedKinds: []entities.TargetEntityKind{entities.PullRequest, entities.Issue},
 			},
 		},
 	}
@@ -143,7 +143,7 @@ func mockHttpClientWith(clientOptions ...mock.MockBackendOption) *http.Client {
 	return mock.NewMockedHTTPClient(clientOptions...)
 }
 
-func mockEnvWith(prOwner string, prRepoName string, prNum int, githubClient *gh.GithubClient, codehostClient *codehost.CodeHostClient, eventPayload interface{}, builtIns *BuiltIns, targetEntity *event_processor.TargetEntity) (Env, error) {
+func mockEnvWith(prOwner string, prRepoName string, prNum int, githubClient *gh.GithubClient, codehostClient *codehost.CodeHostClient, eventPayload interface{}, builtIns *BuiltIns, targetEntity *entities.TargetEntity) (Env, error) {
 	ctx := context.Background()
 
 	env, err := NewEvalEnv(
@@ -247,7 +247,7 @@ func MockDefaultEnvWithTargetEntity(
 	ghGraphQLHandler func(http.ResponseWriter, *http.Request),
 	builtIns *BuiltIns,
 	eventPayload interface{},
-	targetEntity *event_processor.TargetEntity,
+	targetEntity *entities.TargetEntity,
 ) Env {
 	prOwner := DefaultMockPrOwner
 	prRepoName := DefaultMockPrRepoName

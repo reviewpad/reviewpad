@@ -5,7 +5,7 @@
 package plugins_aladino_functions
 
 import (
-	"github.com/reviewpad/go-lib/event/event_processor"
+	"github.com/reviewpad/go-lib/entities"
 	host "github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v4/lang"
@@ -17,7 +17,7 @@ func HasGitConflicts() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
 		Type:           lang.BuildFunctionType([]lang.Type{}, lang.BuildBoolType()),
 		Code:           hasGitConflictsCode,
-		SupportedKinds: []event_processor.TargetEntityKind{event_processor.PullRequest},
+		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 	}
 }
 

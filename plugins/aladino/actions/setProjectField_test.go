@@ -10,7 +10,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/reviewpad/go-lib/event/event_processor"
+	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
@@ -49,11 +49,11 @@ func TestSetProjectField_WhenGetLinkedProjectsRequestFails(t *testing.T) {
 				},
 				aladino.MockBuiltIns(),
 				nil,
-				&event_processor.TargetEntity{
+				&entities.TargetEntity{
 					Owner:  aladino.DefaultMockPrOwner,
 					Repo:   aladino.DefaultMockPrRepoName,
 					Number: aladino.DefaultMockPrNum,
-					Kind:   event_processor.PullRequest,
+					Kind:   entities.PullRequest,
 				},
 			),
 			wantErr: fmt.Sprintf("non-200 OK status code: 404 Not Found body: \"%s\\n\"", failMessageForPullRequest),
@@ -71,11 +71,11 @@ func TestSetProjectField_WhenGetLinkedProjectsRequestFails(t *testing.T) {
 				},
 				aladino.MockBuiltIns(),
 				nil,
-				&event_processor.TargetEntity{
+				&entities.TargetEntity{
 					Owner:  aladino.DefaultMockPrOwner,
 					Repo:   aladino.DefaultMockPrRepoName,
 					Number: aladino.DefaultMockPrNum,
-					Kind:   event_processor.Issue,
+					Kind:   entities.Issue,
 				},
 			),
 			wantErr: fmt.Sprintf("non-200 OK status code: 404 Not Found body: \"%s\\n\"", failMessageForIssue),
@@ -202,11 +202,11 @@ func TestSetProjectField_WhenEntityIsInProject(t *testing.T) {
 				},
 				aladino.MockBuiltIns(),
 				nil,
-				&event_processor.TargetEntity{
+				&entities.TargetEntity{
 					Owner:  aladino.DefaultMockPrOwner,
 					Repo:   aladino.DefaultMockPrRepoName,
 					Number: aladino.DefaultMockPrNum,
-					Kind:   event_processor.PullRequest,
+					Kind:   entities.PullRequest,
 				},
 			),
 		},
@@ -227,11 +227,11 @@ func TestSetProjectField_WhenEntityIsInProject(t *testing.T) {
 				},
 				aladino.MockBuiltIns(),
 				nil,
-				&event_processor.TargetEntity{
+				&entities.TargetEntity{
 					Owner:  aladino.DefaultMockPrOwner,
 					Repo:   aladino.DefaultMockPrRepoName,
 					Number: aladino.DefaultMockPrNum,
-					Kind:   event_processor.Issue,
+					Kind:   entities.Issue,
 				},
 			),
 		},
@@ -345,11 +345,11 @@ func TestSetProjectField_WhenSetProjectFieldFails(t *testing.T) {
 				},
 				aladino.MockBuiltIns(),
 				nil,
-				&event_processor.TargetEntity{
+				&entities.TargetEntity{
 					Owner:  aladino.DefaultMockPrOwner,
 					Repo:   aladino.DefaultMockPrRepoName,
 					Number: aladino.DefaultMockPrNum,
-					Kind:   event_processor.PullRequest,
+					Kind:   entities.PullRequest,
 				},
 			),
 			wantErr: "non-200 OK status code: 404 Not Found body: \"GetProjectFieldsByProjectNumberRequestFail\\n\"",
@@ -371,11 +371,11 @@ func TestSetProjectField_WhenSetProjectFieldFails(t *testing.T) {
 				},
 				aladino.MockBuiltIns(),
 				nil,
-				&event_processor.TargetEntity{
+				&entities.TargetEntity{
 					Owner:  aladino.DefaultMockPrOwner,
 					Repo:   aladino.DefaultMockPrRepoName,
 					Number: aladino.DefaultMockPrNum,
-					Kind:   event_processor.PullRequest,
+					Kind:   entities.PullRequest,
 				},
 			),
 			wantErr: "non-200 OK status code: 404 Not Found body: \"SetProjectSingleSelectFieldRequestFail\\n\"",
@@ -395,11 +395,11 @@ func TestSetProjectField_WhenSetProjectFieldFails(t *testing.T) {
 				},
 				aladino.MockBuiltIns(),
 				nil,
-				&event_processor.TargetEntity{
+				&entities.TargetEntity{
 					Owner:  aladino.DefaultMockPrOwner,
 					Repo:   aladino.DefaultMockPrRepoName,
 					Number: aladino.DefaultMockPrNum,
-					Kind:   event_processor.Issue,
+					Kind:   entities.Issue,
 				},
 			),
 			wantErr: "non-200 OK status code: 404 Not Found body: \"GetProjectFieldsByProjectNumberRequestFail\\n\"",
@@ -421,11 +421,11 @@ func TestSetProjectField_WhenSetProjectFieldFails(t *testing.T) {
 				},
 				aladino.MockBuiltIns(),
 				nil,
-				&event_processor.TargetEntity{
+				&entities.TargetEntity{
 					Owner:  aladino.DefaultMockPrOwner,
 					Repo:   aladino.DefaultMockPrRepoName,
 					Number: aladino.DefaultMockPrNum,
-					Kind:   event_processor.Issue,
+					Kind:   entities.Issue,
 				},
 			),
 			wantErr: "non-200 OK status code: 404 Not Found body: \"SetProjectSingleSelectFieldRequestFail\\n\"",
@@ -513,11 +513,11 @@ func TestSetProjectField_WhenEntityIsNotInProjectAndAddToProjectFails(t *testing
 				},
 				aladino.MockBuiltIns(),
 				nil,
-				&event_processor.TargetEntity{
+				&entities.TargetEntity{
 					Owner:  aladino.DefaultMockPrOwner,
 					Repo:   aladino.DefaultMockPrRepoName,
 					Number: aladino.DefaultMockPrNum,
-					Kind:   event_processor.PullRequest,
+					Kind:   entities.PullRequest,
 				},
 			),
 			wantErr: "non-200 OK status code: 404 Not Found body: \"GetProjectV2ByName\\n\"",
@@ -537,11 +537,11 @@ func TestSetProjectField_WhenEntityIsNotInProjectAndAddToProjectFails(t *testing
 				},
 				aladino.MockBuiltIns(),
 				nil,
-				&event_processor.TargetEntity{
+				&entities.TargetEntity{
 					Owner:  aladino.DefaultMockPrOwner,
 					Repo:   aladino.DefaultMockPrRepoName,
 					Number: aladino.DefaultMockPrNum,
-					Kind:   event_processor.Issue,
+					Kind:   entities.Issue,
 				},
 			),
 			wantErr: "non-200 OK status code: 404 Not Found body: \"GetProjectV2ByName\\n\"",

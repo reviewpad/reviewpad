@@ -9,7 +9,7 @@ import (
 	"os"
 
 	git "github.com/libgit2/git2go/v31"
-	"github.com/reviewpad/go-lib/event/event_processor"
+	"github.com/reviewpad/go-lib/entities"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v4/lang"
@@ -20,7 +20,7 @@ func Rebase() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
 		Type:           lang.BuildFunctionType([]lang.Type{}, nil),
 		Code:           rebaseCode,
-		SupportedKinds: []event_processor.TargetEntityKind{event_processor.PullRequest},
+		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 	}
 }
 

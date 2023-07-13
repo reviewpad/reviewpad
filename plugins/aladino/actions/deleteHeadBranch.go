@@ -7,7 +7,7 @@ package plugins_aladino_actions
 import (
 	"fmt"
 
-	"github.com/reviewpad/go-lib/event/event_processor"
+	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
@@ -17,7 +17,7 @@ func DeleteHeadBranch() *aladino.BuiltInAction {
 	return &aladino.BuiltInAction{
 		Type:           lang.BuildFunctionType([]lang.Type{}, nil),
 		Code:           deleteHeadBranch,
-		SupportedKinds: []event_processor.TargetEntityKind{event_processor.PullRequest},
+		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest},
 	}
 }
 
