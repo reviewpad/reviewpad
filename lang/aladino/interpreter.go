@@ -10,7 +10,6 @@ import (
 	"strings"
 
 	"errors"
-
 	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/codehost"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
