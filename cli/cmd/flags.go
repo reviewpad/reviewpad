@@ -13,4 +13,5 @@ var (
 	reviewpadFilePath string
 	safeModeRun       bool
 	logLevel          string
+	eventType         string
 )

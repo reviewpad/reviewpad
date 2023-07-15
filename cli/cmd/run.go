@@ -7,20 +7,20 @@ package cmd
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"os"
 	"regexp"
 
+	"github.com/google/go-github/v52/github"
 	"github.com/google/uuid"
 	"github.com/reviewpad/api/go/clients"
 	"github.com/reviewpad/go-lib/entities"
+	github_event_processor "github.com/reviewpad/go-lib/event/event_processor/github"
 	log "github.com/reviewpad/go-lib/logrus"
 	"github.com/reviewpad/reviewpad/v4"
 	"github.com/reviewpad/reviewpad/v4/codehost"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/reviewpad/reviewpad/v4/collector"
-	"github.com/reviewpad/reviewpad/v4/handler"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc/metadata"
@@ -47,6 +47,7 @@ func init() {
 	runCmd.Flags().StringVarP(&eventFilePath, "event-payload", "e", "", "File path to github event in JSON format")
 	runCmd.Flags().StringVarP(&mixpanelToken, "mixpanel-token", "m", "", "Mixpanel token")
 	runCmd.Flags().StringVarP(&logLevel, "log-level", "l", "debug", "Log level")
+	runCmd.Flags().StringVarP(&eventType, "event-type", "y", "pull_request", "Event type")
 
 	if err := runCmd.MarkFlagRequired("url"); err != nil {
 		panic(err)
@@ -57,6 +58,10 @@ func init() {
 	}
 
 	if err := runCmd.MarkFlagRequired("event-payload"); err != nil {
+		panic(err)
+	}
+
+	if err := runCmd.MarkFlagRequired("event-type"); err != nil {
 		panic(err)
 	}
 
@@ -81,20 +86,20 @@ func run() error {
 
 	log := log.NewLogger(logLevel)
 
-	var event *handler.ActionEvent
-
 	eventFileContent, err := os.ReadFile(eventFilePath)
 	if err != nil {
 		return err
 	}
 
-	event, err = parseEvent(string(eventFileContent))
+	event, err := github.ParseWebHook(eventType, eventFileContent)
 	if err != nil {
 		return err
 	}
 
-	// Use the provided token
-	event.Token = &token
+	targetEntities, eventDetails, err := github_event_processor.ProcessEvent(log, event, token)
+	if err != nil {
+		return err
+	}
 
 	// FIXME: Abstract to be code host agnostic
 	gitHubDetailsRegex := regexp.MustCompile(`github\.com\/(.+)\/(.+)\/(\w+)\/(\d+)`)
@@ -122,11 +127,6 @@ func run() error {
 	reviewpadFile, err := reviewpad.Load(ctx, log, gitHubClient, bufRviewpadFile)
 	if err != nil {
 		return fmt.Errorf("error running reviewpad team edition. Details %v", err.Error())
-	}
-
-	targetEntities, eventDetails, err := github_entities.ProcessEvent(log, event, token)
-	if err != nil {
-		return fmt.Errorf("error processing event. Details %v", err.Error())
 	}
 
 	requestID := uuid.New().String()
@@ -159,17 +159,6 @@ func run() error {
 	}
 
 	return nil
-}
-
-func parseEvent(rawEvent string) (*handler.ActionEvent, error) {
-	event := &handler.ActionEvent{}
-
-	err := json.Unmarshal([]byte(rawEvent), event)
-	if err != nil {
-		return nil, err
-	}
-
-	return event, nil
 }
 
 func toTargetEntityKind(entityType string) (entities.TargetEntityKind, error) {
