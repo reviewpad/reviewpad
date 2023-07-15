@@ -257,6 +257,9 @@ Add the following to your `.vscode/launch.json`.
                 // This URL should be same the URL of the pull request / issues in the GitHub event provided with the -e flag.
                 // For instance, if you are using a GitHub event of a comment on the pull request X, the -u flag should be the URL of the pull request X.
                 "-u=<GITHUB_URL>",
+                // The GitHub event type
+                // Determines how the events JSON file will be processed
+                "-y=<GITHUB_EVENT_TYPE>"
             ],
             "env": {
                 "INPUT_CODEHOST_SERVICE": "<CODEHOST_SERVICE_ENDPOINT>",
@@ -277,13 +280,22 @@ It represents the GitHub event that you wish to run the reviewpad.yml file again
 
 To extract a GitHub event, you can use the following steps:
 
-1. Navigate to the logs of the Reviewpad GitHub App run where you wish to copy the event from. You can use the following query to filter the events payload `{$.level=debug && $.msg="request received" && $.request_received.delivery_id=<DELIVERY_ID> }`.
-2. Copy the content inside the property `body`.
-3. Paste the content inside a file (e.g. `my_event.json`) and save it under `cli > debugdata`.
-4. This content is an escape JSON string. Use the [JSON Parse & Stringify](https://marketplace.visualstudio.com/items?itemName=nextfaze.json-parse-stringify) extension to parse the content by pressing `Ctrl+Shift+P` and searching for `JSON: Parse Stringified JSON`.
-5. Rename the root property `eventType` to `event_name`.
-6. Rename the root property `eventPayload` to `event`.
-7. Update the argument `-e` to point to the full path of the file you just created.
+1. Navigate to the advanced section in the settings for your development github app ([Advanced](https://github.com/organizations/reviewpad/settings/apps/<dev github app name>/advanced))
+2. Pick the delivery you want to use.
+3. Copy the content inside the `payload`.
+4. Paste the content inside a file (e.g. `my_event.json`) and save it under `cli > debugdata`.
+5. Update the argument `-e` to point to the full path of the file you just created.
+
+The `-y` flag is also mandatory to run the debugger.
+
+It represents the type of the GitHub event that you wish ro run the reviewpad.yml file against.
+
+To get the GitHub event type, you can use the following steps:
+
+1. Navigate to the advanced section in the settings for your development github app ([Advanced](https://github.com/organizations/reviewpad/settings/apps/<dev github app name>/advanced))
+2. Pick the delivery you want to use.
+3. Copy the content of the `X-Github-Event` header.
+4. Update the argument `-y` with the content you copied.
 
 You can then run the debugger by pressing F5.
 
