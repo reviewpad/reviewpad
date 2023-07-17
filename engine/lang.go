@@ -11,10 +11,8 @@ import (
 )
 
 const (
-	PROFESSIONAL_EDITION string = "professional"
-	TEAM_EDITION         string = "team"
-	SILENT_MODE          string = "silent"
-	VERBOSE_MODE         string = "verbose"
+	SILENT_MODE  string = "silent"
+	VERBOSE_MODE string = "verbose"
 )
 
 type PadImport struct {
@@ -222,12 +220,36 @@ type ReviewpadFile struct {
 	Imports        []PadImport         `yaml:"imports"`
 	Extends        []string            `yaml:"extends"`
 	Groups         []PadGroup          `yaml:"groups"`
+	Checks         map[string]PadCheck `yaml:"checks"`
 	Rules          []PadRule           `yaml:"rules"`
 	Labels         map[string]PadLabel `yaml:"labels"`
 	Workflows      []PadWorkflow       `yaml:"workflows"`
 	Pipelines      []PadPipeline       `yaml:"pipelines"`
 	Recipes        map[string]*bool    `yaml:"recipes"`
 	Dictionaries   []PadDictionary     `yaml:"dictionaries"`
+}
+
+type PadCheck struct {
+	Severity   string                 `yaml:"severity"`
+	Parameters map[string]interface{} `yaml:"parameters"`
+}
+
+func (p PadCheck) equals(o PadCheck) bool {
+	if p.Severity != o.Severity {
+		return false
+	}
+
+	if len(p.Parameters) != len(o.Parameters) {
+		return false
+	}
+
+	for key, value := range p.Parameters {
+		if o.Parameters[key] != value {
+			return false
+		}
+	}
+
+	return true
 }
 
 type PadDictionary struct {
@@ -388,7 +410,37 @@ func (r *ReviewpadFile) equals(o *ReviewpadFile) bool {
 		}
 	}
 
+	if len(r.Pipelines) != len(o.Pipelines) {
+		return false
+	}
+	for i, rP := range r.Pipelines {
+		oP := o.Pipelines[i]
+		if !rP.equals(oP) {
+			return false
+		}
+	}
+
+	if len(r.Checks) != len(o.Checks) {
+		return false
+	}
+	for i, rC := range r.Checks {
+		oC := o.Checks[i]
+		if !rC.equals(oC) {
+			return false
+		}
+	}
+
 	return reflect.DeepEqual(r.Recipes, o.Recipes)
+}
+
+func (r *ReviewpadFile) appendChecks(o *ReviewpadFile) {
+	if r.Checks == nil {
+		r.Checks = make(map[string]PadCheck)
+	}
+
+	for checkName, check := range o.Checks {
+		r.Checks[checkName] = check
+	}
 }
 
 func (r *ReviewpadFile) appendLabels(o *ReviewpadFile) {
@@ -484,6 +536,7 @@ func (r *ReviewpadFile) extend(o *ReviewpadFile) {
 		r.MetricsOnMerge = o.MetricsOnMerge
 	}
 
+	r.appendChecks(o)
 	r.appendLabels(o)
 	r.appendGroups(o)
 	r.appendRules(o)

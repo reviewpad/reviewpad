@@ -87,6 +87,7 @@ func TestLoadWithAST(t *testing.T) {
 		IgnoreErrors:   &noIgnoreErrors,
 		MetricsOnMerge: &noMetricsOnMerge,
 		Extends:        []string{},
+		Checks:         map[string]engine.PadCheck{},
 		Dictionaries: []engine.PadDictionary{
 			{
 				Name: "teams",

@@ -252,6 +252,7 @@ func transform(file *ReviewpadFile) *ReviewpadFile {
 		MetricsOnMerge: file.MetricsOnMerge,
 		Imports:        file.Imports,
 		Extends:        file.Extends,
+		Checks:         file.Checks,
 		Groups:         file.Groups,
 		Rules:          transformedRules,
 		Labels:         file.Labels,
@@ -315,7 +316,7 @@ func processImports(file *ReviewpadFile, env *LoadEnv) (*ReviewpadFile, error) {
 		// remove from the stack
 		delete(env.Stack, idHash)
 
-		// append labels, rules and workflows
+		file.appendChecks(subTreeFile)
 		file.appendLabels(subTreeFile)
 		file.appendGroups(subTreeFile)
 		file.appendRules(subTreeFile)

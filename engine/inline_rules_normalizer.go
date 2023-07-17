@@ -24,6 +24,7 @@ func inlineModificator(file *ReviewpadFile) (*ReviewpadFile, error) {
 		Extends:        file.Extends,
 		Imports:        file.Imports,
 		Groups:         file.Groups,
+		Checks:         file.Checks,
 		Rules:          file.Rules,
 		Labels:         file.Labels,
 		Workflows:      file.Workflows,
