@@ -120,6 +120,7 @@ func PluginBuiltInsWithConfig(config *PluginConfig) *aladino.BuiltIns {
 			"any":                           functions.Any(),
 			"append":                        functions.AppendString(),
 			"contains":                      functions.Contains(),
+			"dictionaryValueFromKey":        functions.DictionaryValueFromKey(),
 			"extractMarkdownHeadingContent": functions.ExtractMarkdownHeadingContent(),
 			"isElementOf":                   functions.IsElementOf(),
 			"join":                          functions.Join(),
