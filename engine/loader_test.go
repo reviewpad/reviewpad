@@ -370,7 +370,7 @@ func TestLoad(t *testing.T) {
 		"when the file has invalid extends": {
 			inputReviewpadFilePath: "testdata/loader/reviewpad_with_invalid_extends.yml",
 			inputContext:           context.Background(),
-			wantErr:                "fatal: url must be a link to a GitHub blob, e.g. https://github.com/reviewpad/action/blob/main/main.go",
+			wantErr:                "fatal: url must be a link to a GitHub blob, e.g. https://github.com/reviewpad/reviewpad/blob/main/reviewpad.yml",
 		},
 		"when the file has an extends": {
 			inputReviewpadFilePath: "testdata/loader/reviewpad_with_extends.yml",

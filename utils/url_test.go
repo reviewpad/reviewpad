@@ -36,19 +36,19 @@ func TestValidateUrl(t *testing.T) {
 			url:              "https://github.com/reviewpad/.github/blo/main/reviewpad-models/common.yml",
 			expectedBranch:   nil,
 			expectedFilePath: "",
-			expectedErr:      errors.New("fatal: url must be a link to a GitHub blob, e.g. https://github.com/reviewpad/action/blob/main/main.go"),
+			expectedErr:      errors.New("fatal: url must be a link to a GitHub blob, e.g. https://github.com/reviewpad/reviewpad/blob/main/reviewpad.yml"),
 		},
 		"url without https": {
 			url:              "github.com/reviewpad/.github/blob/main/reviewpad-models/common.yml",
 			expectedBranch:   nil,
 			expectedFilePath: "",
-			expectedErr:      errors.New("fatal: url must be a link to a GitHub blob, e.g. https://github.com/reviewpad/action/blob/main/main.go"),
+			expectedErr:      errors.New("fatal: url must be a link to a GitHub blob, e.g. https://github.com/reviewpad/reviewpad/blob/main/reviewpad.yml"),
 		},
 		"invalid github url": {
 			url:              "https://gitlab.com/reviewpad/.github/blo/main/reviewpad-models/common.yml",
 			expectedBranch:   nil,
 			expectedFilePath: "",
-			expectedErr:      errors.New("fatal: url must be a link to a GitHub blob, e.g. https://github.com/reviewpad/action/blob/main/main.go"),
+			expectedErr:      errors.New("fatal: url must be a link to a GitHub blob, e.g. https://github.com/reviewpad/reviewpad/blob/main/reviewpad.yml"),
 		},
 	}
 
