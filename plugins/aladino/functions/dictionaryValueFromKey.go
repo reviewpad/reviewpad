@@ -14,7 +14,7 @@ import (
 
 func DictionaryValueFromKey() *aladino.BuiltInFunction {
 	return &aladino.BuiltInFunction{
-		Type:           lang.BuildFunctionType([]lang.Type{lang.BuildStringType(), lang.BuildStringType()}, lang.BuildStringType()),
+		Type:           lang.BuildFunctionType([]lang.Type{lang.BuildStringType(), lang.BuildStringType()}, lang.BuildArrayOfType(lang.BuildStringType())),
 		Code:           dictionaryValueFromKeyCode,
 		SupportedKinds: []entities.TargetEntityKind{entities.PullRequest, entities.Issue},
 	}
