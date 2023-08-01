@@ -231,6 +231,7 @@ type ReviewpadFile struct {
 
 type PadCheck struct {
 	Severity   string                 `yaml:"severity"`
+	Activation string                 `yaml:"activation"`
 	Parameters map[string]interface{} `yaml:"parameters"`
 }
 
