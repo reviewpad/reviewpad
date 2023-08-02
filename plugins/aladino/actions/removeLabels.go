@@ -39,7 +39,7 @@ func removeLabelsCode(e aladino.Env, args []lang.Value) error {
 			labelName = val.(*lang.StringValue).Val
 		} else {
 			labelName = labelID
-			log.Warnf("the \"%v\" label was not found in the environment", labelID)
+			log.Infof("the '%v' label is not defined in the 'labels:' section", labelID)
 		}
 
 		err := t.RemoveLabel(labelName)
