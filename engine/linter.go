@@ -148,7 +148,7 @@ func lintWorkflows(log *logrus.Entry, rules []PadRule, padWorkflows []PadWorkflo
 			}
 		}
 
-		if !workflowHasActions && !workflowHasExtraActions {
+		if !workflowHasActions && !workflowHasExtraActions && len(workflow.Runs) == 0 {
 			log.Debug("workflow has no actions")
 		}
 
@@ -217,6 +217,13 @@ func lintRulesMentions(log *logrus.Entry, rules []PadRule, groups []PadGroup, wo
 
 			if exists {
 				totalUsesByRule[ruleName]++
+			}
+		}
+
+		for _, run := range workflow.Runs {
+			err := lintRulesMentionsInRun(run, rules, totalUsesByRule)
+			if err != nil {
+				return err
 			}
 		}
 	}
@@ -365,6 +372,33 @@ func lintReservedWords(workflows []PadWorkflow, reservedWords []string) error {
 
 	for _, workflow := range workflows {
 		err := lintShadowedBuiltInsInRuns(workflow.Runs, definedVariables)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func lintRulesMentionsInRun(run PadWorkflowRunBlock, rules []PadRule, totalUsesByRule map[string]int) error {
+	for _, rule := range run.If {
+		ruleName := rule.Rule
+		_, exists := findRule(rules, ruleName)
+
+		if exists {
+			totalUsesByRule[ruleName]++
+		}
+	}
+
+	for _, thenRun := range run.Then {
+		err := lintRulesMentionsInRun(thenRun, rules, totalUsesByRule)
+		if err != nil {
+			return err
+		}
+	}
+
+	for _, elseRun := range run.Else {
+		err := lintRulesMentionsInRun(elseRun, rules, totalUsesByRule)
 		if err != nil {
 			return err
 		}

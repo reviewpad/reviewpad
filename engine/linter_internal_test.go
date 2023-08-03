@@ -8,6 +8,7 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -120,4 +121,78 @@ func TestShadowedReservedName(t *testing.T) {
 	gotErr := lintReservedWords([]PadWorkflow{workflow}, []string{"comment"})
 
 	assert.Equal(t, wantErr, gotErr)
+}
+
+func TestLintRulesMention(t *testing.T) {
+	tests := map[string]struct {
+		rules     []PadRule
+		workflows []PadWorkflow
+		wantErr   error
+	}{
+		"when unused rule": {
+			rules: []PadRule{
+				{
+					Name: "true == true",
+					Spec: "true == true",
+				},
+			},
+			workflows: []PadWorkflow{
+				{
+					Rules: []PadWorkflowRule{
+						{
+							Rule: "true == false",
+						},
+					},
+				},
+			},
+			wantErr: nil,
+		},
+		"when rule used in old workflow": {
+			rules: []PadRule{
+				{
+					Name: "true == true",
+					Spec: "true == true",
+				},
+			},
+			workflows: []PadWorkflow{
+				{
+					Rules: []PadWorkflowRule{
+						{
+							Rule: "true == true",
+						},
+					},
+				},
+			},
+			wantErr: nil,
+		},
+		"when rule used in run": {
+			rules: []PadRule{
+				{
+					Name: "true == true",
+					Spec: "true == true",
+				},
+			},
+			workflows: []PadWorkflow{
+				{
+					Runs: []PadWorkflowRunBlock{
+						{
+							If: []PadWorkflowRule{
+								{
+									Rule: "true == true",
+								},
+							},
+						},
+					},
+				},
+			},
+			wantErr: nil,
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			err := lintRulesMentions(logrus.NewEntry(logrus.New()), test.rules, nil, test.workflows)
+			assert.Equal(t, test.wantErr, err)
+		})
+	}
 }
