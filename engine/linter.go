@@ -121,8 +121,6 @@ func lintWorkflows(log *logrus.Entry, rules []PadRule, padWorkflows []PadWorkflo
 	workflowHasExtraActions := false
 
 	for _, workflow := range padWorkflows {
-		log.Infof("linting workflow `%v`", workflow.Name)
-
 		workflowHasActions := len(workflow.Actions) > 0
 
 		for _, workflowName := range workflowsName {
