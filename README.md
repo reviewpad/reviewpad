@@ -280,9 +280,9 @@ It represents the GitHub event that you wish to run the reviewpad.yml file again
 
 To extract a GitHub event, you can use the following steps:
 
-1. Navigate to the advanced section in the settings for your development github app ([Advanced](https://github.com/organizations/reviewpad/settings/apps/<dev github app name>/advanced))
-2. Pick the delivery you want to use.
-3. Copy the content inside the `payload`.
+1. Navigate to the checks tab of the pull request you want test against, in there you will find a `Delivery ID` field
+2. Go to the raas entry gate log group and filter out the logs by `{$.delivery_id="[Delivery ID]" && $.msg="request received"}`
+3. Copy the content inside the `body` field.
 4. Paste the content inside a file (e.g. `my_event.json`) and save it under `cli > debugdata`.
 5. Update the argument `-e` to point to the full path of the file you just created.
 
@@ -292,10 +292,8 @@ It represents the type of the GitHub event that you wish ro run the reviewpad.ym
 
 To get the GitHub event type, you can use the following steps:
 
-1. Navigate to the advanced section in the settings for your development github app ([Advanced](https://github.com/organizations/reviewpad/settings/apps/<dev github app name>/advanced))
-2. Pick the delivery you want to use.
-3. Copy the content of the `X-Github-Event` header.
-4. Update the argument `-y` with the content you copied.
+1. Navigate to the checks tab of the pull request you want test against, in there you will find a `Event Type` field    
+2. Update the argument `-y` with the content you copied.
 
 You can then run the debugger by pressing F5.
 
