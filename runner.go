@@ -278,6 +278,7 @@ func Run(
 	checkRunId *int64,
 	dryRun bool,
 	safeMode bool,
+	checksWithIssue []string,
 ) (engine.ExitStatus, *engine.Program, string, error) {
 	config, err := plugins_aladino.DefaultPluginConfig()
 	if err != nil {
@@ -286,7 +287,7 @@ func Run(
 
 	defer config.CleanupPluginConfig()
 
-	aladinoInterpreter, err := aladino.NewInterpreter(ctx, log, dryRun, gitHubClient, codeHostClient, collector, targetEntity, eventDetails.Payload, plugins_aladino.PluginBuiltInsWithConfig(config), checkRunId)
+	aladinoInterpreter, err := aladino.NewInterpreter(ctx, log, dryRun, gitHubClient, codeHostClient, collector, targetEntity, eventDetails.Payload, plugins_aladino.PluginBuiltInsWithConfig(config), checkRunId, checksWithIssue)
 	if err != nil {
 		return engine.ExitStatusFailure, nil, "", err
 	}
