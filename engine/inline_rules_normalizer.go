@@ -61,12 +61,13 @@ func inlineModificator(file *ReviewpadFile) (*ReviewpadFile, error) {
 
 func processWorkflow(workflow PadWorkflow, currentRules []PadRule) (*PadWorkflow, []PadRule, error) {
 	wf := &PadWorkflow{
-		Name:        workflow.Name,
-		Description: workflow.Description,
-		AlwaysRun:   workflow.AlwaysRun,
-		Rules:       workflow.Rules,
-		Actions:     workflow.Actions,
-		On:          workflow.On,
+		Name:           workflow.Name,
+		Description:    workflow.Description,
+		AlwaysRun:      workflow.AlwaysRun,
+		Rules:          workflow.Rules,
+		Actions:        workflow.Actions,
+		On:             workflow.On,
+		TriggerOnCheck: workflow.TriggerOnCheck,
 	}
 
 	runs, runRules, err := normalizeRun(workflow.NonNormalizedRun, currentRules)
