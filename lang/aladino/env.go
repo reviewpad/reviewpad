@@ -206,6 +206,7 @@ func NewEvalEnv(
 		ExecWaitGroup:            &wg,
 		ExecMutex:                &mu,
 		CheckRunID:               checkRunID,
+		ChecksWithIssues:         checksWithIssues,
 	}
 
 	switch targetEntity.Kind {
