@@ -1,4 +1,4 @@
-![Reviewpad-Background-Logo-Shorter@1 5x](https://user-images.githubusercontent.com/38539/185980242-be2dfd87-2e0c-4bb1-87ce-462f629cedf6.png)
+![Reviewpad](https://github.com/reviewpad/reviewpad/assets/38539/5220e087-e15f-423f-a509-20a7485ff7f7)
 
 # Reviewpad
 
