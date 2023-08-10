@@ -10,7 +10,7 @@ For **questions**, check out the GitHub [discussions](https://github.com/reviewp
 
 For **documentation**, check out this document and the [official documentation](https://docs.reviewpad.com).
 
-**Join our Community on [Discord](https://reviewpad.com/discord)!**
+**Join our community on [Discord](https://reviewpad.com/discord)!**
 
 To start using Reviewpad, check out our [website](https://reviewpad.com).
 
