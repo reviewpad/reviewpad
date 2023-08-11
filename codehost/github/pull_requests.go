@@ -8,6 +8,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/google/go-github/v52/github"
@@ -224,6 +225,7 @@ type GetAllReviewersQuery struct {
 			} `graphql:"reviewRequests(first: 100)"`
 			Reviews struct {
 				Nodes []struct {
+					State  string `graphql:"state"`
 					Author struct {
 						Login string `graphql:"login"`
 					}
@@ -911,7 +913,7 @@ func (c *GithubClient) AddPullRequestToGithubMergeQueue(ctx context.Context, pul
 	return c.clientGQL.Mutate(ctx, &addPullRequestToMergeQueue, addPullRequestToMergeQueueInput, nil)
 }
 
-func (c *GithubClient) GetAllReviewers(ctx context.Context, owner, repo string, number int) ([]string, error) {
+func (c *GithubClient) GetAllReviewers(ctx context.Context, owner, repo, state string, number int) ([]string, error) {
 	getAllReviewersQuery := &GetAllReviewersQuery{}
 	varGQLGetAllReviewersQuery := map[string]interface{}{
 		"owner":  graphql.String(owner),
@@ -926,6 +928,12 @@ func (c *GithubClient) GetAllReviewers(ctx context.Context, owner, repo string, 
 
 	reviewerLogins := make([]string, 0)
 	for _, reviewer := range getAllReviewersQuery.Repository.PullRequest.ReviewRequests.Nodes {
+		// requested reviewers are assumed to be pending
+		// so we skip them if state is not pending
+		if state != "" && !strings.EqualFold(state, "PENDING") {
+			continue
+		}
+
 		if reviewer.RequestedReviewer.User.Login != "" {
 			reviewerLogins = append(reviewerLogins, reviewer.RequestedReviewer.User.Login)
 		}
@@ -935,6 +943,10 @@ func (c *GithubClient) GetAllReviewers(ctx context.Context, owner, repo string, 
 	}
 
 	for _, review := range getAllReviewersQuery.Repository.PullRequest.Reviews.Nodes {
+		if state != "" && !strings.EqualFold(state, review.State) {
+			continue
+		}
+
 		reviewerLogins = append(reviewerLogins, review.Author.Login)
 	}
 

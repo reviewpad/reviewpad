@@ -153,6 +153,10 @@ func summarizeAlias(str string) string {
 	return strings.ReplaceAll(str, "$summarize()", `$robinSummarize("default", "openai-gpt-4")`)
 }
 
+func addDefaultsGetReviewers(str string) string {
+	return strings.ReplaceAll(str, "$getReviewers()", "$getReviewers(\"\")")
+}
+
 func transformAladinoExpression(str string) string {
 	transformedActionStr := str
 
@@ -172,6 +176,7 @@ func transformAladinoExpression(str string) string {
 		addDefaultsToRequestedAssignees,
 		addEmptyFilterToHasCodeWithoutSemanticChanges,
 		summarizeAlias,
+		addDefaultsGetReviewers,
 	}
 
 	for i := range transformations {

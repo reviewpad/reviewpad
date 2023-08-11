@@ -25,7 +25,7 @@ func hasAnyReviewersCode(e aladino.Env, args []lang.Value) (lang.Value, error) {
 	pr := e.GetTarget().(*target.PullRequestTarget)
 	targetEntity := e.GetTarget().GetTargetEntity()
 
-	reviewers, err := pr.GetAllReviewers(e.GetCtx(), targetEntity.Owner, targetEntity.Repo, targetEntity.Number)
+	reviewers, err := pr.GetAllReviewers(e.GetCtx(), targetEntity.Owner, targetEntity.Repo, "", targetEntity.Number)
 	if err != nil {
 		return nil, fmt.Errorf("error getting reviewers. %v", err.Error())
 	}
