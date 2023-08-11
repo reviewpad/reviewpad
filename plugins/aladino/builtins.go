@@ -101,6 +101,7 @@ func PluginBuiltInsWithConfig(config *PluginConfig) *aladino.BuiltIns {
 			"getLastEventTime":                       functions.LastEventAt(),
 			"getMilestone":                           functions.Milestone(),
 			"getReviewerStatus":                      functions.ReviewerStatus(),
+			"getOrganizationTeams":                   functions.GetOrganizationTeams(),
 			"getSize":                                functions.Size(),
 			"getState":                               functions.State(),
 			"getTitle":                               functions.Title(),
