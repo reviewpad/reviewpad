@@ -231,3 +231,7 @@ func (t *CommonTarget) setProjectV2Field(projectID, projectItemID string, fieldD
 func (t *CommonTarget) GetOrganizationTeams(ctx context.Context, owner string) ([]string, error) {
 	return t.githubClient.GetOrganizationTeams(ctx, owner)
 }
+
+func (t *CommonTarget) GetUserTeams(ctx context.Context, login string) ([]string, error) {
+	return t.githubClient.GetUserTeams(ctx, t.targetEntity.Owner, login)
+}
