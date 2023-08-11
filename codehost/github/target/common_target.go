@@ -227,3 +227,7 @@ func (t *CommonTarget) setProjectV2Field(projectID, projectItemID string, fieldD
 
 	return t.githubClient.GetClientGraphQL().Mutate(ctx, &updateProjectV2ItemFieldValueMutation, updateInput, nil)
 }
+
+func (t *CommonTarget) GetOrganizationTeams(ctx context.Context, owner string) ([]string, error) {
+	return t.githubClient.GetOrganizationTeams(ctx, owner)
+}

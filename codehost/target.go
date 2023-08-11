@@ -5,6 +5,7 @@
 package codehost
 
 import (
+	"context"
 	"errors"
 	"time"
 
@@ -45,6 +46,7 @@ type Target interface {
 	GetProjectV2ItemID(projectID string) (string, error)
 	IsInProject(projectTitle string) (bool, error)
 	AddToProject(projectID string) (string, error)
+	GetOrganizationTeams(context.Context, string) ([]string, error)
 }
 
 type User struct {
