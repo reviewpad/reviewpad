@@ -431,6 +431,14 @@ func TestTransformAladinoExpression(t *testing.T) {
 			arg:     `$assignReviewer(["john", "jane"], $maxReviewers, $strategy)`,
 			wantVal: `$assignReviewer(["john", "jane"], $maxReviewers, $strategy)`,
 		},
+		"getReviewers": {
+			arg:     `$getReviewers()`,
+			wantVal: `$getReviewers("")`,
+		},
+		"getReviewers approved": {
+			arg:     `$getReviewers("APPROVED")`,
+			wantVal: `$getReviewers("APPROVED")`,
+		},
 		// TODO: test addDefaultTotalRequestedReviewers
 	}
 
