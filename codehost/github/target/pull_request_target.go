@@ -642,3 +642,10 @@ func (t *PullRequestTarget) SetProjectField(projectTitle, fieldName, fieldValue 
 
 	return gh.ErrProjectHasNoSuchField
 }
+
+// GetAllReviewers returns the list of all reviewers of the pull request
+// meaning all the reviewers who have replied to the pull request.
+// and reviewers that have been requested to review the pull request but have not responded.
+func (t *PullRequestTarget) GetAllReviewers(ctx context.Context, owner, repo string, number int) ([]string, error) {
+	return t.githubClient.GetAllReviewers(ctx, owner, repo, number)
+}
