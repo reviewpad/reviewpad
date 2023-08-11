@@ -47,6 +47,7 @@ type Target interface {
 	IsInProject(projectTitle string) (bool, error)
 	AddToProject(projectID string) (string, error)
 	GetOrganizationTeams(context.Context, string) ([]string, error)
+	GetUserTeams(context.Context, string) ([]string, error)
 }
 
 type User struct {
