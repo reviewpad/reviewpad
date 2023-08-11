@@ -233,6 +233,21 @@ type GetAllReviewersQuery struct {
 	} `graphql:"repository(owner: $owner, name: $name)"`
 }
 
+type GetAllReviewersApprovedQuery struct {
+	Repository struct {
+		PullRequest struct {
+			ReviewRequests struct {
+				TotalCount int `graphql:"totalCount"`
+			} `graphql:"reviewRequests"`
+			LatestReviews struct {
+				Nodes []struct {
+					State string `graphql:"state"`
+				}
+			} `graphql:"latestReviews(first: 100)"`
+		} `graphql:"pullRequest(number: $number)"`
+	} `graphql:"repository(owner: $owner, name: $name)"`
+}
+
 type AddPullRequestToMergeQueueMutation struct {
 	EnqueuePullRequest struct {
 		ClientMutationID string
@@ -924,4 +939,30 @@ func (c *GithubClient) GetAllReviewers(ctx context.Context, owner, repo string, 
 	}
 
 	return reviewerLogins, nil
+}
+
+func (c *GithubClient) GetAllReviewersApproved(ctx context.Context, owner, repo string, number int) (bool, error) {
+	getAllReviewersApprovedQuery := &GetAllReviewersApprovedQuery{}
+	varGQLGetAllReviewersApprovedQuery := map[string]interface{}{
+		"owner":  graphql.String(owner),
+		"name":   graphql.String(repo),
+		"number": graphql.Int(number),
+	}
+
+	err := c.GetClientGraphQL().Query(ctx, getAllReviewersApprovedQuery, varGQLGetAllReviewersApprovedQuery)
+	if err != nil {
+		return false, err
+	}
+
+	if getAllReviewersApprovedQuery.Repository.PullRequest.ReviewRequests.TotalCount > 0 {
+		return false, nil
+	}
+
+	for _, review := range getAllReviewersApprovedQuery.Repository.PullRequest.LatestReviews.Nodes {
+		if review.State != "APPROVED" {
+			return false, nil
+		}
+	}
+
+	return true, nil
 }
