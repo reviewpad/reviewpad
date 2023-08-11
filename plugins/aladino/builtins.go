@@ -107,6 +107,7 @@ func PluginBuiltInsWithConfig(config *PluginConfig) *aladino.BuiltIns {
 			"hasAnnotation":                          functions.HasAnnotation(),
 			"hasAnyCheckRunCompleted":                functions.HasAnyCheckRunCompleted(),
 			"hasAnyPendingReviews":                   functions.IsWaitingForReview(),
+			"hasAnyReviewers":                        functions.HasAnyReviewers(),
 			"hasAnyUnaddressedThreads":               functions.HasUnaddressedThreads(),
 			"hasBinaryFile":                          functions.HasBinaryFile(),
 			"hasCodePattern":                         functions.HasCodePattern(),

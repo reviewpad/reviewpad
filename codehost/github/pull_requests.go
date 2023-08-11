@@ -13,6 +13,7 @@ import (
 	"github.com/google/go-github/v52/github"
 	pbc "github.com/reviewpad/api/go/codehost"
 	"github.com/shurcooL/githubv4"
+	"github.com/shurcooL/graphql"
 )
 
 const maxPerPage int = 100
@@ -204,6 +205,32 @@ type MergeQueueEntriesQuery struct {
 			} `graphql:"entries(first: 100, after: $cursor)"`
 		} `graphql:"mergeQueue(branch: $branchName)"`
 	} `graphql:"repository(owner: $repositoryOwner, name: $repositoryName)"`
+}
+
+type GetAllReviewersQuery struct {
+	Repository struct {
+		PullRequest struct {
+			ReviewRequests struct {
+				Nodes []struct {
+					RequestedReviewer struct {
+						User struct {
+							Login string `graphql:"login"`
+						} `graphql:"... on User"`
+						Team struct {
+							Slug string `graphql:"slug"`
+						} `graphql:"... on Team"`
+					} `graphql:"requestedReviewer"`
+				}
+			} `graphql:"reviewRequests(first: 100)"`
+			Reviews struct {
+				Nodes []struct {
+					Author struct {
+						Login string `graphql:"login"`
+					}
+				}
+			} `graphql:"latestReviews(first: 100)"`
+		} `graphql:"pullRequest(number: $number)"`
+	} `graphql:"repository(owner: $owner, name: $name)"`
 }
 
 type AddPullRequestToMergeQueueMutation struct {
@@ -867,4 +894,34 @@ func (c *GithubClient) AddPullRequestToGithubMergeQueue(ctx context.Context, pul
 	}
 
 	return c.clientGQL.Mutate(ctx, &addPullRequestToMergeQueue, addPullRequestToMergeQueueInput, nil)
+}
+
+func (c *GithubClient) GetAllReviewers(ctx context.Context, owner, repo string, number int) ([]string, error) {
+	getAllReviewersQuery := &GetAllReviewersQuery{}
+	varGQLGetAllReviewersQuery := map[string]interface{}{
+		"owner":  graphql.String(owner),
+		"name":   graphql.String(repo),
+		"number": graphql.Int(number),
+	}
+
+	err := c.GetClientGraphQL().Query(ctx, getAllReviewersQuery, varGQLGetAllReviewersQuery)
+	if err != nil {
+		return nil, err
+	}
+
+	reviewerLogins := make([]string, 0)
+	for _, reviewer := range getAllReviewersQuery.Repository.PullRequest.ReviewRequests.Nodes {
+		if reviewer.RequestedReviewer.User.Login != "" {
+			reviewerLogins = append(reviewerLogins, reviewer.RequestedReviewer.User.Login)
+		}
+		if reviewer.RequestedReviewer.Team.Slug != "" {
+			reviewerLogins = append(reviewerLogins, reviewer.RequestedReviewer.Team.Slug)
+		}
+	}
+
+	for _, review := range getAllReviewersQuery.Repository.PullRequest.Reviews.Nodes {
+		reviewerLogins = append(reviewerLogins, review.Author.Login)
+	}
+
+	return reviewerLogins, nil
 }
