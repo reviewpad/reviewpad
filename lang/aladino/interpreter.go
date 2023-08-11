@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"errors"
+
 	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/codehost"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
@@ -346,6 +347,10 @@ func (i *Interpreter) GetCheckRunConclusion() string {
 	return i.Env.GetCheckRunConclusion()
 }
 
+func (i *Interpreter) GetChecksWithIssues() []string {
+	return i.Env.GetChecksWithIssues()
+}
+
 func NewInterpreter(
 	ctx context.Context,
 	logger *logrus.Entry,
@@ -357,8 +362,9 @@ func NewInterpreter(
 	eventPayload interface{},
 	builtIns *BuiltIns,
 	checkRunID *int64,
+	checksWithIssues []string,
 ) (engine.Interpreter, error) {
-	evalEnv, err := NewEvalEnv(ctx, logger, dryRun, githubClient, codeHostClient, collector, targetEntity, eventPayload, builtIns, checkRunID)
+	evalEnv, err := NewEvalEnv(ctx, logger, dryRun, githubClient, codeHostClient, collector, targetEntity, eventPayload, builtIns, checkRunID, checksWithIssues)
 	if err != nil {
 		return nil, err
 	}

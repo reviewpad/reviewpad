@@ -330,7 +330,7 @@ func TestIntegration(t *testing.T) {
 			// execute the reviewpad files one by one and
 			// ensure there are no errors and exit statuses match
 			for i, file := range test.reviewpadFiles {
-				exitStatus, _, _, err := reviewpad.Run(ctxReq, logger, githubClient, codeHostClient, collector, targetEntity, eventDetails, file, nil, false, false)
+				exitStatus, _, _, err := reviewpad.Run(ctxReq, logger, githubClient, codeHostClient, collector, targetEntity, eventDetails, file, nil, false, false, nil)
 				assert.Equal(test.wantErr, err)
 				assert.Equal(test.exitStatus[i], exitStatus)
 			}
