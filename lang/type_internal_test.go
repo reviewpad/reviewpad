@@ -254,3 +254,24 @@ func TestEquals_WhenArrayOfTypeComparedToDynamicArrayType(t *testing.T) {
 
 	assert.True(t, arrayOfType.Equals(dynamicArrayType))
 }
+
+func TestEquals_WhenTwoJSONTypes(t *testing.T) {
+	jsonType1 := BuildJSONType()
+	otherType := BuildJSONType()
+
+	assert.True(t, jsonType1.Equals(otherType))
+}
+
+func TestEquals_WhenTwoDictionaryTypes(t *testing.T) {
+	dictionaryType := BuildDictionaryType()
+	otherType := BuildDictionaryType()
+
+	assert.True(t, dictionaryType.Equals(otherType))
+}
+
+func TestEquals_WhenTwoDynamicArrayType(t *testing.T) {
+	dynamicArrayType := BuildDynamicArrayType()
+	otherType := BuildDynamicArrayType()
+
+	assert.True(t, dynamicArrayType.Equals(otherType))
+}
