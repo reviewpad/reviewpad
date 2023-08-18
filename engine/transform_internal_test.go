@@ -35,6 +35,14 @@ func TestTransformAladinoExpression(t *testing.T) {
 			arg:     "$size($files)",
 			wantVal: "$size($files)",
 		},
+		"get size": {
+			arg:     "$getSize()",
+			wantVal: "$getSize([])",
+		},
+		"get size with variable": {
+			arg:     "$getSize($files)",
+			wantVal: "$getSize($files)",
+		},
 		"issueCountBy simple": {
 			arg:     "$issueCountBy(\"john\", \"open\") > 0",
 			wantVal: "$issueCountBy(\"john\", \"open\") > 0",
@@ -54,6 +62,26 @@ func TestTransformAladinoExpression(t *testing.T) {
 		"issueCountBy with last one variable": {
 			arg:     `$issueCountBy($author(), $state)`,
 			wantVal: `$issueCountBy($author(), $state)`,
+		},
+		"countUserIssues simple": {
+			arg:     "$countUserIssues(\"john\", \"open\") > 0",
+			wantVal: "$countUserIssues(\"john\", \"open\") > 0",
+		},
+		"countUserIssues": {
+			arg:     "$countUserIssues(\"john\", \"open\") > 0 && true && $countUserIssues(\"dev\") > 0",
+			wantVal: "$countUserIssues(\"john\", \"open\") > 0 && true && $countUserIssues(\"dev\", \"all\") > 0",
+		},
+		"countUserIssues with one variable": {
+			arg:     `$countUserIssues($teamMember)`,
+			wantVal: `$countUserIssues($teamMember, "all")`,
+		},
+		"countUserIssues with two variables": {
+			arg:     `$countUserIssues($teamMember, $state)`,
+			wantVal: `$countUserIssues($teamMember, $state)`,
+		},
+		"countUserIssues with last one variable": {
+			arg:     `$countUserIssues($author(), $state)`,
+			wantVal: `$countUserIssues($author(), $state)`,
 		},
 		"pullRequestCountBy simple": {
 			arg:     "$pullRequestCountBy(\"john\") > 0",
@@ -102,6 +130,54 @@ func TestTransformAladinoExpression(t *testing.T) {
 		"pullRequestCountBy with last one variable": {
 			arg:     `$pullRequestCountBy($author(), $state)`,
 			wantVal: `$pullRequestCountBy($author(), $state)`,
+		},
+		"countUserPullRequests simple": {
+			arg:     "$pullRequestCountBy(\"john\") > 0",
+			wantVal: "$pullRequestCountBy(\"john\", \"all\") > 0",
+		},
+		"countUserPullRequests nil state": {
+			arg:     "$countUserPullRequests(\"john\", \"\") > 0",
+			wantVal: "$countUserPullRequests(\"john\", \"all\") > 0",
+		},
+		"countUserPullRequests nil dev": {
+			arg:     "$countUserPullRequests(\"\", \"closed\") > 0",
+			wantVal: "$countUserPullRequests(\"\", \"closed\") > 0",
+		},
+		"countUserPullRequests nil dev and state": {
+			arg:     "$countUserPullRequests(\"\") > 0",
+			wantVal: "$countUserPullRequests(\"\", \"all\") > 0",
+		},
+		"countUserPullRequests and issueCountBy": {
+			arg:     "$countUserPullRequests(\"john\") > 0 && true && $issueCountBy(\"dev\") > 0",
+			wantVal: "$countUserPullRequests(\"john\", \"all\") > 0 && true && $issueCountBy(\"dev\", \"all\") > 0",
+		},
+		"countUserPullRequests with dev": {
+			arg:     `$countUserPullRequests("john") > 0 && true && $countUserPullRequests("john", "open") > 1`,
+			wantVal: `$countUserPullRequests("john", "all") > 0 && true && $countUserPullRequests("john", "open") > 1`,
+		},
+		"countUserPullRequests with function call": {
+			arg:     `$countUserPullRequests($author()) > 1 && $countUserPullRequests($author(), "open") > 2`,
+			wantVal: `$countUserPullRequests($author(), "all") > 1 && $countUserPullRequests($author(), "open") > 2`,
+		},
+		"countUserPullRequests with function call and state": {
+			arg:     `$countUserPullRequests($author(), "open")`,
+			wantVal: `$countUserPullRequests($author(), "open")`,
+		},
+		"countUserPullRequests with function call and empty state": {
+			arg:     `$countUserPullRequests($author(), "")`,
+			wantVal: `$countUserPullRequests($author(), "all")`,
+		},
+		"countUserPullRequests with one variable": {
+			arg:     `$countUserPullRequests($teamMember)`,
+			wantVal: `$countUserPullRequests($teamMember, "all")`,
+		},
+		"countUserPullRequests with two variables": {
+			arg:     `$countUserPullRequests($teamMember, $state)`,
+			wantVal: `$countUserPullRequests($teamMember, $state)`,
+		},
+		"countUserPullRequests with last one variable": {
+			arg:     `$countUserPullRequests($author(), $state)`,
+			wantVal: `$countUserPullRequests($author(), $state)`,
 		},
 		"close": {
 			arg:     "$close()",
@@ -167,17 +243,33 @@ func TestTransformAladinoExpression(t *testing.T) {
 			arg:     `$haveAllChecksRunCompleted($checks, $conclusion, $ignoredConclusions)`,
 			wantVal: `$haveAllChecksRunCompleted($checks, $conclusion, $ignoredConclusions)`,
 		},
-		"$haveAnyChecksRunCompleted with first variable": {
-			arg:     `$haveAnyChecksRunCompleted($checks, "success", ["skipped"])`,
-			wantVal: `$haveAnyChecksRunCompleted($checks, "success", ["skipped"])`,
+		"$hasOnlyCompletedCheckRuns with arg provided": {
+			arg:     `$hasOnlyCompletedCheckRuns(["build", "test"], "", [])`,
+			wantVal: `$hasOnlyCompletedCheckRuns(["build", "test"], "", [])`,
 		},
-		"$haveAnyChecksRunCompleted with second variable": {
-			arg:     `$haveAnyChecksRunCompleted(["build", "test"], $conclusion, ["skipped"])`,
-			wantVal: `$haveAnyChecksRunCompleted(["build", "test"], $conclusion, ["skipped"])`,
+		"$hasOnlyCompletedCheckRuns with no arg provided": {
+			arg:     `$hasOnlyCompletedCheckRuns()`,
+			wantVal: `$hasOnlyCompletedCheckRuns([], "", [])`,
 		},
-		"$haveAnyChecksRunCompleted with third variable": {
-			arg:     `$haveAnyChecksRunCompleted(["build", "test"], "success", $ignoredConclusions)`,
-			wantVal: `$haveAnyChecksRunCompleted(["build", "test"], "success", $ignoredConclusions)`,
+		"$hasOnlyCompletedCheckRuns with no empty arg provided": {
+			arg:     `$hasOnlyCompletedCheckRuns(["build", "test"], "success", ["skipped"])`,
+			wantVal: `$hasOnlyCompletedCheckRuns(["build", "test"], "success", ["skipped"])`,
+		},
+		"$hasOnlyCompletedCheckRuns with two args provided": {
+			arg:     `$hasOnlyCompletedCheckRuns(["build"], "completed")`,
+			wantVal: `$hasOnlyCompletedCheckRuns(["build"], "completed", [])`,
+		},
+		"$hasOnlyCompletedCheckRuns with one variable": {
+			arg:     `$hasOnlyCompletedCheckRuns($checks)`,
+			wantVal: `$hasOnlyCompletedCheckRuns($checks, "", [])`,
+		},
+		"$hasOnlyCompletedCheckRuns with two variables": {
+			arg:     `$hasOnlyCompletedCheckRuns($checks, $conclusion)`,
+			wantVal: `$hasOnlyCompletedCheckRuns($checks, $conclusion, [])`,
+		},
+		"$hasOnlyCompletedCheckRuns with three variables": {
+			arg:     `$hasOnlyCompletedCheckRuns($checks, $conclusion, $ignoredConclusions)`,
+			wantVal: `$hasOnlyCompletedCheckRuns($checks, $conclusion, $ignoredConclusions)`,
 		},
 		"join empty array with empty separator": {
 			arg:     `$join([])`,
@@ -307,6 +399,54 @@ func TestTransformAladinoExpression(t *testing.T) {
 			arg:     `$assignCodeAuthorReviewers(1, ["john", "jane"], $maxReviews)`,
 			wantVal: `$assignCodeAuthorReviewers(1, ["john", "jane"], $maxReviews)`,
 		},
+		"addReviewersBasedOnCodeAuthor empty args": {
+			arg:     `$addReviewersBasedOnCodeAuthor()`,
+			wantVal: `$addReviewersBasedOnCodeAuthor(1, [], 0)`,
+		},
+		"addReviewersBasedOnCodeAuthor total provided": {
+			arg:     `$addReviewersBasedOnCodeAuthor(5)`,
+			wantVal: `$addReviewersBasedOnCodeAuthor(5, [], 0)`,
+		},
+		"addReviewersBasedOnCodeAuthor total and excluded provided": {
+			arg:     `$addReviewersBasedOnCodeAuthor(5, ["john", "jane"])`,
+			wantVal: `$addReviewersBasedOnCodeAuthor(5, ["john", "jane"], 0)`,
+		},
+		"addReviewersBasedOnCodeAuthor total, excluded and max reviews provided": {
+			arg:     `$addReviewersBasedOnCodeAuthor(5, ["john", "jane"], 3)`,
+			wantVal: `$addReviewersBasedOnCodeAuthor(5, ["john", "jane"], 3)`,
+		},
+		"addReviewersBasedOnCodeAuthor total, excluded as group and max reviews provided": {
+			arg:     `$addReviewersBasedOnCodeAuthor(1, $group("excluded_reviewers"), 2)`,
+			wantVal: `$addReviewersBasedOnCodeAuthor(1, $group("excluded_reviewers"), 2)`,
+		},
+		"addReviewersBasedOnCodeAuthor total and excluded provided as team": {
+			arg:     `$addReviewersBasedOnCodeAuthor(1, $team("reviewers"))`,
+			wantVal: `$addReviewersBasedOnCodeAuthor(1, $team("reviewers"), 0)`,
+		},
+		"addReviewersBasedOnCodeAuthor with one variable": {
+			arg:     `$addReviewersBasedOnCodeAuthor($addReviewersBasedOnCodeAuthorTotal)`,
+			wantVal: `$addReviewersBasedOnCodeAuthor($addReviewersBasedOnCodeAuthorTotal, [], 0)`,
+		},
+		"addReviewersBasedOnCodeAuthor with two variables": {
+			arg:     `$addReviewersBasedOnCodeAuthor($addReviewersBasedOnCodeAuthorTotal, $excludedReviewers)`,
+			wantVal: `$addReviewersBasedOnCodeAuthor($addReviewersBasedOnCodeAuthorTotal, $excludedReviewers, 0)`,
+		},
+		"addReviewersBasedOnCodeAuthor with three variables": {
+			arg:     `$addReviewersBasedOnCodeAuthor($addReviewersBasedOnCodeAuthorTotal, $excludedReviewers, $maxReviews)`,
+			wantVal: `$addReviewersBasedOnCodeAuthor($addReviewersBasedOnCodeAuthorTotal, $excludedReviewers, $maxReviews)`,
+		},
+		"addReviewersBasedOnCodeAuthor with first variable": {
+			arg:     `$addReviewersBasedOnCodeAuthor($addReviewersBasedOnCodeAuthorTotal, [], 0)`,
+			wantVal: `$addReviewersBasedOnCodeAuthor($addReviewersBasedOnCodeAuthorTotal, [], 0)`,
+		},
+		"addReviewersBasedOnCodeAuthor with middle variable": {
+			arg:     `$addReviewersBasedOnCodeAuthor(1, $excludedReviewers, 1)`,
+			wantVal: `$addReviewersBasedOnCodeAuthor(1, $excludedReviewers, 1)`,
+		},
+		"addReviewersBasedOnCodeAuthor with last variable": {
+			arg:     `$addReviewersBasedOnCodeAuthor(1, ["john", "jane"], $maxReviews)`,
+			wantVal: `$addReviewersBasedOnCodeAuthor(1, ["john", "jane"], $maxReviews)`,
+		},
 		"has any check run completed with no args": {
 			arg:     `$hasAnyCheckRunCompleted()`,
 			wantVal: `$hasAnyCheckRunCompleted([], [])`,
@@ -379,6 +519,46 @@ func TestTransformAladinoExpression(t *testing.T) {
 			arg:     `$assignAssignees(["john", "jane"], $assignAssigneesTotal)`,
 			wantVal: `$assignAssignees(["john", "jane"], $assignAssigneesTotal)`,
 		},
+		"addAssignees with users list provided": {
+			arg:     `$addAssignees(["john", "mary"])`,
+			wantVal: `$addAssignees(["john", "mary"], 10)`,
+		},
+		"addAssignees with users list and total provided": {
+			arg:     `$addAssignees(["john", "mary"], 1)`,
+			wantVal: `$addAssignees(["john", "mary"], 1)`,
+		},
+		"addAssignees with group": {
+			arg:     `$addAssignees($group("test"))`,
+			wantVal: `$addAssignees($group("test"), 10)`,
+		},
+		"addAssignees with group and total provided": {
+			arg:     `$addAssignees($group("test"), 1)`,
+			wantVal: `$addAssignees($group("test"), 1)`,
+		},
+		"addAssignees with team": {
+			arg:     `$addAssignees($team("test"))`,
+			wantVal: `$addAssignees($team("test"), 10)`,
+		},
+		"addAssignees with team and total provided": {
+			arg:     `$addAssignees($team("test"), 1)`,
+			wantVal: `$addAssignees($team("test"), 1)`,
+		},
+		"addAssignees with one variable": {
+			arg:     `$addAssignees($addAssigneesUsers, 5)`,
+			wantVal: `$addAssignees($addAssigneesUsers, 5)`,
+		},
+		"addAssignees with two variables": {
+			arg:     `$addAssignees($addAssigneesUsers, $addAssigneesTotal)`,
+			wantVal: `$addAssignees($addAssigneesUsers, $addAssigneesTotal)`,
+		},
+		"addAssignees with last variable": {
+			arg:     `$addAssignees($team("test"), $addAssigneesTotal)`,
+			wantVal: `$addAssignees($team("test"), $addAssigneesTotal)`,
+		},
+		"addAssignees with first argument array and second variable": {
+			arg:     `$addAssignees(["john", "jane"], $addAssigneesTotal)`,
+			wantVal: `$addAssignees(["john", "jane"], $addAssigneesTotal)`,
+		},
 		"hasCodeWithoutSemanticChanges with no argument": {
 			arg:     `$hasCodeWithoutSemanticChanges()`,
 			wantVal: `$hasCodeWithoutSemanticChanges([])`,
@@ -394,6 +574,22 @@ func TestTransformAladinoExpression(t *testing.T) {
 		"hasCodeWithoutSemanticChanges with variable": {
 			arg:     `$hasCodeWithoutSemanticChanges($hasCodeWithoutSemanticChangesPaths)`,
 			wantVal: `$hasCodeWithoutSemanticChanges($hasCodeWithoutSemanticChangesPaths)`,
+		},
+		"containsOnlyCodeWithoutSemanticChanges with no argument": {
+			arg:     `$containsOnlyCodeWithoutSemanticChanges()`,
+			wantVal: `$containsOnlyCodeWithoutSemanticChanges([])`,
+		},
+		"containsOnlyCodeWithoutSemanticChanges with default argument": {
+			arg:     `$containsOnlyCodeWithoutSemanticChanges([])`,
+			wantVal: `$containsOnlyCodeWithoutSemanticChanges([])`,
+		},
+		"containsOnlyCodeWithoutSemanticChanges with argument": {
+			arg:     `$containsOnlyCodeWithoutSemanticChanges(["*.md", "*.txt"])`,
+			wantVal: `$containsOnlyCodeWithoutSemanticChanges(["*.md", "*.txt"])`,
+		},
+		"containsOnlyCodeWithoutSemanticChanges with variable": {
+			arg:     `$containsOnlyCodeWithoutSemanticChanges($containsOnlyCodeWithoutSemanticChangesPaths)`,
+			wantVal: `$containsOnlyCodeWithoutSemanticChanges($containsOnlyCodeWithoutSemanticChangesPaths)`,
 		},
 		"summarize alias": {
 			arg:     `$summarize()`,
@@ -430,6 +626,38 @@ func TestTransformAladinoExpression(t *testing.T) {
 		"assignReviewer with one literal and two variables": {
 			arg:     `$assignReviewer(["john", "jane"], $maxReviewers, $strategy)`,
 			wantVal: `$assignReviewer(["john", "jane"], $maxReviewers, $strategy)`,
+		},
+		"addReviewers with one variable": {
+			arg:     `$addReviewers($reviewers)`,
+			wantVal: `$addReviewers($reviewers, 99, "reviewpad")`,
+		},
+		"addReviewers with two variables": {
+			arg:     `$addReviewers($reviewers, $maxReviewers)`,
+			wantVal: `$addReviewers($reviewers, $maxReviewers, "reviewpad")`,
+		},
+		"addReviewers with three variables": {
+			arg:     `$addReviewers($reviewers, $maxReviewers, $strategy)`,
+			wantVal: `$addReviewers($reviewers, $maxReviewers, $strategy)`,
+		},
+		"addReviewers with one literal": {
+			arg:     `$addReviewers(["john"])`,
+			wantVal: `$addReviewers(["john"], 99, "reviewpad")`,
+		},
+		"addReviewers with two literals": {
+			arg:     `$addReviewers(["john"], 1)`,
+			wantVal: `$addReviewers(["john"], 1, "reviewpad")`,
+		},
+		"addReviewers with three literals": {
+			arg:     `$addReviewers(["john"], 1, "reviewpad")`,
+			wantVal: `$addReviewers(["john"], 1, "reviewpad")`,
+		},
+		"addReviewers with one literal and one variable": {
+			arg:     `$addReviewers(["john", "jane"], $maxReviewers)`,
+			wantVal: `$addReviewers(["john", "jane"], $maxReviewers, "reviewpad")`,
+		},
+		"addReviewers with one literal and two variables": {
+			arg:     `$addReviewers(["john", "jane"], $maxReviewers, $strategy)`,
+			wantVal: `$addReviewers(["john", "jane"], $maxReviewers, $strategy)`,
 		},
 		"getReviewers": {
 			arg:     `$getReviewers()`,
