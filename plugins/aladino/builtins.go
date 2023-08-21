@@ -191,7 +191,7 @@ func PluginBuiltInsWithConfig(config *PluginConfig) *aladino.BuiltIns {
 			"addLabel":                      actions.AddLabel(),
 			"addReviewers":                  actions.AssignReviewer(),
 			"addReviewersBasedOnCodeAuthor": actions.AssignCodeAuthorReviewers(),
-			"addReviewersRandomly":          actions.AssignRandomReviewer(),
+			"addReviewerRandomly":           actions.AssignRandomReviewer(),
 			"addTeamsForReview":             actions.AssignTeamReviewer(),
 			"addToProject":                  actions.AddToProject(),
 			"approve":                       actions.Approve(),
