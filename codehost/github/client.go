@@ -143,6 +143,16 @@ func (c *GithubClient) GetTotalRequests() uint64 {
 	return c.totalRequests
 }
 
+func (c *GithubClient) WithLogger(logger *logrus.Entry) *GithubClient {
+	return &GithubClient{
+		clientREST:   c.clientREST,
+		clientGQL:    c.clientGQL,
+		rawClientGQL: c.rawClientGQL,
+		token:        c.token,
+		logger:       logger,
+	}
+}
+
 func NewGithubAppClient(gitHubAppID int64, gitHubAppPrivateKey []byte) (*GithubAppClient, error) {
 	transport, err := ghinstallation.NewAppsTransport(http.DefaultTransport, gitHubAppID, gitHubAppPrivateKey)
 	if err != nil {
