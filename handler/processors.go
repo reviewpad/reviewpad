@@ -31,7 +31,7 @@ func ParseEvent(log *logrus.Entry, rawEvent string) (*ActionEvent, error) {
 	return event, nil
 }
 
-func processUnsupportedEvent(eventPayload interface{}) ([]*entities.TargetEntity, *entities.EventDetails, error) {
+func processUnsupportedEvent(log *logrus.Entry, eventPayload interface{}) ([]*entities.TargetEntity, *entities.EventDetails, error) {
 	return nil, nil, fmt.Errorf("unsupported event payload type: %T", eventPayload)
 }
 
@@ -41,7 +41,7 @@ func processCronEvent(log *logrus.Entry, token string, e *ActionEvent) ([]*entit
 	ctx, canc := context.WithTimeout(context.Background(), time.Minute*10)
 	defer canc()
 
-	ghClient := reviewpad_gh.NewGithubClientFromToken(ctx, token)
+	ghClient := reviewpad_gh.NewGithubClientFromToken(ctx, token, log)
 
 	repoParts := strings.SplitN(*e.Repository, "/", 2)
 
@@ -254,7 +254,7 @@ func processStatusEvent(log *logrus.Entry, token string, e *github.StatusEvent) 
 	ctx, canc := context.WithTimeout(context.Background(), time.Minute*10)
 	defer canc()
 
-	ghClient := reviewpad_gh.NewGithubClientFromToken(ctx, token)
+	ghClient := reviewpad_gh.NewGithubClientFromToken(ctx, token, log)
 
 	prs, err := ghClient.GetPullRequests(ctx, *e.Repo.Owner.Login, *e.Repo.Name)
 	if err != nil {
@@ -294,7 +294,7 @@ func processWorkflowRunEvent(log *logrus.Entry, token string, e *github.Workflow
 
 	ctx, canc := context.WithTimeout(context.Background(), time.Minute*10)
 	defer canc()
-	ghClient := reviewpad_gh.NewGithubClientFromToken(ctx, token)
+	ghClient := reviewpad_gh.NewGithubClientFromToken(ctx, token, log)
 
 	prs, err := ghClient.GetPullRequests(ctx, *e.Repo.Owner.Login, *e.Repo.Name)
 	if err != nil {
@@ -336,7 +336,7 @@ func processPushEvent(log *logrus.Entry, token string, e *github.PushEvent) ([]*
 	ctx, canc := context.WithTimeout(context.Background(), time.Minute*10)
 	defer canc()
 
-	ghClient := reviewpad_gh.NewGithubClientFromToken(ctx, token)
+	ghClient := reviewpad_gh.NewGithubClientFromToken(ctx, token, log)
 
 	repoParts := strings.SplitN(*e.GetRepo().FullName, "/", 2)
 
@@ -439,7 +439,7 @@ func processCheckRunEvent(log *logrus.Entry, token string, event *github.CheckRu
 
 	//  if the head is from a forked repository the pull_requests array will be empty on check run events
 	if len(event.CheckRun.PullRequests) == 0 {
-		prs, err := getPullRequests(token, event.GetRepo().GetFullName())
+		prs, err := getPullRequests(token, event.GetRepo().GetFullName(), log)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -501,7 +501,7 @@ func processCheckSuiteEvent(log *logrus.Entry, token string, event *github.Check
 	if len(event.CheckSuite.PullRequests) == 0 {
 		log.Infof("no pull requests found in check suite event. fetching all pull requests for repository %v", event.GetRepo().GetFullName())
 
-		prs, err := getPullRequests(token, event.GetRepo().GetFullName())
+		prs, err := getPullRequests(token, event.GetRepo().GetFullName(), log)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -554,7 +554,7 @@ func processCheckSuiteEventForMergeQueue(log *logrus.Entry, token string, event 
 		return nil, nil, fmt.Errorf("error converting pr number to int: %w", err)
 	}
 
-	pr, err := getPullRequest(token, event.GetRepo().GetFullName(), prNumber)
+	pr, err := getPullRequest(token, event.GetRepo().GetFullName(), prNumber, log)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -571,11 +571,11 @@ func processCheckSuiteEventForMergeQueue(log *logrus.Entry, token string, event 
 	}, eventDetails, nil
 }
 
-func getPullRequest(token, fullName string, prNumber int) (*github.PullRequest, error) {
+func getPullRequest(token, fullName string, prNumber int, log *logrus.Entry) (*github.PullRequest, error) {
 	ctx, canc := context.WithTimeout(context.Background(), time.Minute*10)
 	defer canc()
 
-	ghClient := reviewpad_gh.NewGithubClientFromToken(ctx, token)
+	ghClient := reviewpad_gh.NewGithubClientFromToken(ctx, token, log)
 
 	repoParts := strings.SplitN(fullName, "/", 2)
 
@@ -590,11 +590,11 @@ func getPullRequest(token, fullName string, prNumber int) (*github.PullRequest, 
 	return pr, nil
 }
 
-func getPullRequests(token, fullName string) ([]*github.PullRequest, error) {
+func getPullRequests(token, fullName string, log *logrus.Entry) ([]*github.PullRequest, error) {
 	ctx, canc := context.WithTimeout(context.Background(), time.Minute*10)
 	defer canc()
 
-	ghClient := reviewpad_gh.NewGithubClientFromToken(ctx, token)
+	ghClient := reviewpad_gh.NewGithubClientFromToken(ctx, token, log)
 
 	repoParts := strings.SplitN(fullName, "/", 2)
 
@@ -656,35 +656,35 @@ func ProcessEvent(log *logrus.Entry, event *ActionEvent) ([]*entities.TargetEnti
 	// Handle github events triggered by actions
 	// For more information, visit: https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows
 	case *github.BranchProtectionRuleEvent:
-		return processUnsupportedEvent(payload)
+		return processUnsupportedEvent(log, payload)
 	case *github.CheckRunEvent:
 		return processCheckRunEvent(log, *event.Token, payload)
 	case *github.CheckSuiteEvent:
 		return processCheckSuiteEvent(log, *event.Token, payload)
 	case *github.CommitCommentEvent:
-		return processUnsupportedEvent(payload)
+		return processUnsupportedEvent(log, payload)
 	case *github.ContentReferenceEvent:
-		return processUnsupportedEvent(payload)
+		return processUnsupportedEvent(log, payload)
 	case *github.CreateEvent:
-		return processUnsupportedEvent(payload)
+		return processUnsupportedEvent(log, payload)
 	case *github.DeleteEvent:
-		return processUnsupportedEvent(payload)
+		return processUnsupportedEvent(log, payload)
 	case *github.DeployKeyEvent:
-		return processUnsupportedEvent(payload)
+		return processUnsupportedEvent(log, payload)
 	case *github.DeploymentEvent:
-		return processUnsupportedEvent(payload)
+		return processUnsupportedEvent(log, payload)
 	case *github.DeploymentStatusEvent:
-		return processUnsupportedEvent(payload)
+		return processUnsupportedEvent(log, payload)
 	case *github.DiscussionEvent:
 		return processDiscussionEvent(log, payload)
 	case *github.DiscussionCommentEvent:
 		return processDiscussionCommentEvent(log, payload)
 	case *github.ForkEvent:
-		return processUnsupportedEvent(payload)
+		return processUnsupportedEvent(log, payload)
 	case *github.GitHubAppAuthorizationEvent:
-		return processUnsupportedEvent(payload)
+		return processUnsupportedEvent(log, payload)
 	case *github.GollumEvent:
-		return processUnsupportedEvent(payload)
+		return processUnsupportedEvent(log, payload)
 	case *github.InstallationEvent:
 		return processInstallationEvent(log, payload)
 	case *github.InstallationRepositoriesEvent:
@@ -694,35 +694,35 @@ func ProcessEvent(log *logrus.Entry, event *ActionEvent) ([]*entities.TargetEnti
 	case *github.IssuesEvent:
 		return processIssuesEvent(log, payload)
 	case *github.LabelEvent:
-		return processUnsupportedEvent(payload)
+		return processUnsupportedEvent(log, payload)
 	case *github.MarketplacePurchaseEvent:
-		return processUnsupportedEvent(payload)
+		return processUnsupportedEvent(log, payload)
 	case *github.MemberEvent:
-		return processUnsupportedEvent(payload)
+		return processUnsupportedEvent(log, payload)
 	case *github.MembershipEvent:
-		return processUnsupportedEvent(payload)
+		return processUnsupportedEvent(log, payload)
 	case *github.MetaEvent:
-		return processUnsupportedEvent(payload)
+		return processUnsupportedEvent(log, payload)
 	case *github.MilestoneEvent:
-		return processUnsupportedEvent(payload)
+		return processUnsupportedEvent(log, payload)
 	case *github.OrganizationEvent:
-		return processUnsupportedEvent(payload)
+		return processUnsupportedEvent(log, payload)
 	case *github.OrgBlockEvent:
-		return processUnsupportedEvent(payload)
+		return processUnsupportedEvent(log, payload)
 	case *github.PackageEvent:
-		return processUnsupportedEvent(payload)
+		return processUnsupportedEvent(log, payload)
 	case *github.PageBuildEvent:
-		return processUnsupportedEvent(payload)
+		return processUnsupportedEvent(log, payload)
 	case *github.PingEvent:
-		return processUnsupportedEvent(payload)
+		return processUnsupportedEvent(log, payload)
 	case *github.ProjectEvent:
-		return processUnsupportedEvent(payload)
+		return processUnsupportedEvent(log, payload)
 	case *github.ProjectCardEvent:
-		return processUnsupportedEvent(payload)
+		return processUnsupportedEvent(log, payload)
 	case *github.ProjectColumnEvent:
-		return processUnsupportedEvent(payload)
+		return processUnsupportedEvent(log, payload)
 	case *github.PublicEvent:
-		return processUnsupportedEvent(payload)
+		return processUnsupportedEvent(log, payload)
 	case *github.PullRequestEvent:
 		return processPullRequestEvent(log, payload)
 	case *github.PullRequestReviewEvent:
@@ -730,44 +730,44 @@ func ProcessEvent(log *logrus.Entry, event *ActionEvent) ([]*entities.TargetEnti
 	case *github.PullRequestReviewCommentEvent:
 		return processPullRequestReviewCommentEvent(log, payload)
 	case *github.PullRequestReviewThreadEvent:
-		return processUnsupportedEvent(payload)
+		return processUnsupportedEvent(log, payload)
 	case *github.PullRequestTargetEvent:
 		return processPullRequestTargetEvent(log, payload)
 	case *github.PushEvent:
 		return processPushEvent(log, *event.Token, payload)
 	case *github.ReleaseEvent:
-		return processUnsupportedEvent(payload)
+		return processUnsupportedEvent(log, payload)
 	case *github.RepositoryEvent:
-		return processUnsupportedEvent(payload)
+		return processUnsupportedEvent(log, payload)
 	case *github.RepositoryDispatchEvent:
-		return processUnsupportedEvent(payload)
+		return processUnsupportedEvent(log, payload)
 	case *github.RepositoryImportEvent:
-		return processUnsupportedEvent(payload)
+		return processUnsupportedEvent(log, payload)
 	case *github.RepositoryVulnerabilityAlertEvent:
-		return processUnsupportedEvent(payload)
+		return processUnsupportedEvent(log, payload)
 	case *github.SecretScanningAlertEvent:
-		return processUnsupportedEvent(payload)
+		return processUnsupportedEvent(log, payload)
 	case *github.StarEvent:
-		return processUnsupportedEvent(payload)
+		return processUnsupportedEvent(log, payload)
 	case *github.StatusEvent:
 		return processStatusEvent(log, *event.Token, payload)
 	case *github.TeamEvent:
-		return processUnsupportedEvent(payload)
+		return processUnsupportedEvent(log, payload)
 	case *github.TeamAddEvent:
-		return processUnsupportedEvent(payload)
+		return processUnsupportedEvent(log, payload)
 	case *github.UserEvent:
-		return processUnsupportedEvent(payload)
+		return processUnsupportedEvent(log, payload)
 	case *github.WatchEvent:
-		return processUnsupportedEvent(payload)
+		return processUnsupportedEvent(log, payload)
 	case *github.WorkflowDispatchEvent:
-		return processUnsupportedEvent(payload)
+		return processUnsupportedEvent(log, payload)
 	case *github.WorkflowJobEvent:
-		return processUnsupportedEvent(payload)
+		return processUnsupportedEvent(log, payload)
 	case *github.WorkflowRunEvent:
 		return processWorkflowRunEvent(log, *event.Token, payload)
 	}
 
-	return processUnsupportedEvent(eventPayload)
+	return processUnsupportedEvent(log, eventPayload)
 }
 
 func GetEventSender(eventPayload interface{}) string {

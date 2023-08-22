@@ -111,7 +111,7 @@ func TestNewEvalEnv(t *testing.T) {
 	}, nil)
 
 	ctx := context.Background()
-	mockedGithubClient := gh.NewGithubClient(nil, nil, nil)
+	mockedGithubClient := gh.NewGithubClient(nil, nil, nil, nil)
 
 	gotEnv, err := aladino.NewEvalEnv(
 		ctx,
