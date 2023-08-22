@@ -54,10 +54,10 @@ func (t *RequestCountTransport) RoundTrip(req *http.Request) (*http.Response, er
 
 	if t.client.logger != nil {
 		t.client.logger.WithFields(logrus.Fields{
-			"method":        req.Method,
-			"url":           req.URL.String(),
-			"body":          string(body),
-			"current_count": t.client.totalRequests,
+			"method":                req.Method,
+			"url":                   req.URL.String(),
+			"body":                  string(body),
+			"current_request_count": t.client.totalRequests,
 		}).Debug("github client request")
 	}
 
