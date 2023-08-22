@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 
 	"github.com/bradleyfalzon/ghinstallation/v2"
 	"github.com/google/go-github/v52/github"
@@ -40,6 +41,11 @@ type RequestCountTransport struct {
 func (t *RequestCountTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	var body []byte
 	var err error
+	requestType := "rest"
+
+	if strings.Contains(req.URL.Path, "graphql") {
+		requestType = "graphql"
+	}
 
 	t.client.totalRequests++
 
@@ -58,6 +64,7 @@ func (t *RequestCountTransport) RoundTrip(req *http.Request) (*http.Response, er
 			"url":                   req.URL.String(),
 			"body":                  string(body),
 			"current_request_count": t.client.totalRequests,
+			"request_type":          requestType,
 		}).Debug("github client request")
 	}
 
