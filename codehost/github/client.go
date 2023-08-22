@@ -143,11 +143,15 @@ func (c *GithubClient) GetTotalRequests() uint64 {
 	return c.totalRequests
 }
 
-func (c *GithubClient) WithLoggerComponent(component string) {
-	c.logger = c.logger.WithFields(logrus.Fields{
-		"component":     component,
-		"new_component": component,
-	})
+func (c *GithubClient) WithLogger(logger *logrus.Entry) *GithubClient {
+	return &GithubClient{
+		clientREST:    c.clientREST,
+		clientGQL:     c.clientGQL,
+		rawClientGQL:  c.rawClientGQL,
+		token:         c.token,
+		totalRequests: c.totalRequests,
+		logger:        logger,
+	}
 }
 
 func NewGithubAppClient(gitHubAppID int64, gitHubAppPrivateKey []byte) (*GithubAppClient, error) {
