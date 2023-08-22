@@ -280,6 +280,8 @@ func Run(
 	safeMode bool,
 	checksWithIssue []string,
 ) (engine.ExitStatus, *engine.Program, string, error) {
+	log = log.WithField("component", "reviewpad")
+
 	config, err := plugins_aladino.DefaultPluginConfig()
 	if err != nil {
 		return engine.ExitStatusFailure, nil, "", err
