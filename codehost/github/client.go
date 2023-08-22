@@ -145,11 +145,12 @@ func (c *GithubClient) GetTotalRequests() uint64 {
 
 func (c *GithubClient) WithLogger(logger *logrus.Entry) *GithubClient {
 	return &GithubClient{
-		clientREST:   c.clientREST,
-		clientGQL:    c.clientGQL,
-		rawClientGQL: c.rawClientGQL,
-		token:        c.token,
-		logger:       logger,
+		clientREST:    c.clientREST,
+		clientGQL:     c.clientGQL,
+		rawClientGQL:  c.rawClientGQL,
+		token:         c.token,
+		totalRequests: c.totalRequests,
+		logger:        logger,
 	}
 }
 
