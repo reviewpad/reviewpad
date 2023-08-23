@@ -41,7 +41,7 @@ func processCronEvent(log *logrus.Entry, token string, e *ActionEvent) ([]*entit
 	ctx, canc := context.WithTimeout(context.Background(), time.Minute*10)
 	defer canc()
 
-	ghClient := reviewpad_gh.NewGithubClientFromToken(ctx, token)
+	ghClient := reviewpad_gh.NewGithubClientFromToken(ctx, token, log)
 
 	repoParts := strings.SplitN(*e.Repository, "/", 2)
 
@@ -254,7 +254,7 @@ func processStatusEvent(log *logrus.Entry, token string, e *github.StatusEvent) 
 	ctx, canc := context.WithTimeout(context.Background(), time.Minute*10)
 	defer canc()
 
-	ghClient := reviewpad_gh.NewGithubClientFromToken(ctx, token)
+	ghClient := reviewpad_gh.NewGithubClientFromToken(ctx, token, log)
 
 	prs, err := ghClient.GetPullRequests(ctx, *e.Repo.Owner.Login, *e.Repo.Name)
 	if err != nil {
@@ -294,7 +294,7 @@ func processWorkflowRunEvent(log *logrus.Entry, token string, e *github.Workflow
 
 	ctx, canc := context.WithTimeout(context.Background(), time.Minute*10)
 	defer canc()
-	ghClient := reviewpad_gh.NewGithubClientFromToken(ctx, token)
+	ghClient := reviewpad_gh.NewGithubClientFromToken(ctx, token, log)
 
 	prs, err := ghClient.GetPullRequests(ctx, *e.Repo.Owner.Login, *e.Repo.Name)
 	if err != nil {
@@ -336,7 +336,7 @@ func processPushEvent(log *logrus.Entry, token string, e *github.PushEvent) ([]*
 	ctx, canc := context.WithTimeout(context.Background(), time.Minute*10)
 	defer canc()
 
-	ghClient := reviewpad_gh.NewGithubClientFromToken(ctx, token)
+	ghClient := reviewpad_gh.NewGithubClientFromToken(ctx, token, log)
 
 	repoParts := strings.SplitN(*e.GetRepo().FullName, "/", 2)
 
@@ -439,7 +439,7 @@ func processCheckRunEvent(log *logrus.Entry, token string, event *github.CheckRu
 
 	//  if the head is from a forked repository the pull_requests array will be empty on check run events
 	if len(event.CheckRun.PullRequests) == 0 {
-		prs, err := getPullRequests(token, event.GetRepo().GetFullName())
+		prs, err := getPullRequests(token, event.GetRepo().GetFullName(), log)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -501,7 +501,7 @@ func processCheckSuiteEvent(log *logrus.Entry, token string, event *github.Check
 	if len(event.CheckSuite.PullRequests) == 0 {
 		log.Infof("no pull requests found in check suite event. fetching all pull requests for repository %v", event.GetRepo().GetFullName())
 
-		prs, err := getPullRequests(token, event.GetRepo().GetFullName())
+		prs, err := getPullRequests(token, event.GetRepo().GetFullName(), log)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -554,7 +554,7 @@ func processCheckSuiteEventForMergeQueue(log *logrus.Entry, token string, event 
 		return nil, nil, fmt.Errorf("error converting pr number to int: %w", err)
 	}
 
-	pr, err := getPullRequest(token, event.GetRepo().GetFullName(), prNumber)
+	pr, err := getPullRequest(token, event.GetRepo().GetFullName(), prNumber, log)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -571,11 +571,11 @@ func processCheckSuiteEventForMergeQueue(log *logrus.Entry, token string, event 
 	}, eventDetails, nil
 }
 
-func getPullRequest(token, fullName string, prNumber int) (*github.PullRequest, error) {
+func getPullRequest(token, fullName string, prNumber int, log *logrus.Entry) (*github.PullRequest, error) {
 	ctx, canc := context.WithTimeout(context.Background(), time.Minute*10)
 	defer canc()
 
-	ghClient := reviewpad_gh.NewGithubClientFromToken(ctx, token)
+	ghClient := reviewpad_gh.NewGithubClientFromToken(ctx, token, log)
 
 	repoParts := strings.SplitN(fullName, "/", 2)
 
@@ -590,11 +590,11 @@ func getPullRequest(token, fullName string, prNumber int) (*github.PullRequest, 
 	return pr, nil
 }
 
-func getPullRequests(token, fullName string) ([]*github.PullRequest, error) {
+func getPullRequests(token, fullName string, log *logrus.Entry) ([]*github.PullRequest, error) {
 	ctx, canc := context.WithTimeout(context.Background(), time.Minute*10)
 	defer canc()
 
-	ghClient := reviewpad_gh.NewGithubClientFromToken(ctx, token)
+	ghClient := reviewpad_gh.NewGithubClientFromToken(ctx, token, log)
 
 	repoParts := strings.SplitN(fullName, "/", 2)
 

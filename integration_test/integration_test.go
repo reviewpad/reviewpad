@@ -93,7 +93,7 @@ func TestIntegration(t *testing.T) {
 	require.NotEqual(repoOwner, "")
 	require.NotEqual(repoName, "")
 
-	githubClient := github.NewGithubClientFromToken(ctx, githubToken)
+	githubClient := github.NewGithubClientFromToken(ctx, githubToken, logger)
 
 	testID := uuid.NewString()
 	repoFullName := fmt.Sprintf("%s/%s", repoOwner, repoName)
