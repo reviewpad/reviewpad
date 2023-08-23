@@ -21,6 +21,7 @@ import (
 )
 
 type GithubClient struct {
+	base          http.RoundTripper
 	clientREST    *github.Client
 	clientGQL     *githubv4.Client
 	rawClientGQL  *graphql.Client
@@ -33,12 +34,7 @@ type GithubAppClient struct {
 	*github.Client
 }
 
-type RequestCountTransport struct {
-	base   http.RoundTripper
-	client *GithubClient
-}
-
-func (t *RequestCountTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+func (t *GithubClient) RoundTrip(req *http.Request) (*http.Response, error) {
 	var body []byte
 	var err error
 	requestType := "rest"
@@ -47,7 +43,7 @@ func (t *RequestCountTransport) RoundTrip(req *http.Request) (*http.Response, er
 		requestType = "graphql"
 	}
 
-	t.client.totalRequests++
+	t.totalRequests++
 
 	if req.Body != nil {
 		body, err = io.ReadAll(req.Body)
@@ -58,12 +54,12 @@ func (t *RequestCountTransport) RoundTrip(req *http.Request) (*http.Response, er
 		req.Body = io.NopCloser(bytes.NewReader(body))
 	}
 
-	if t.client.logger != nil {
-		t.client.logger.WithFields(logrus.Fields{
+	if t.logger != nil {
+		t.logger.WithFields(logrus.Fields{
 			"method":                req.Method,
 			"url":                   req.URL.String(),
 			"body":                  string(body),
-			"current_request_count": t.client.totalRequests,
+			"current_request_count": t.totalRequests,
 			"request_type":          requestType,
 		}).Debug("github client request")
 	}
@@ -96,11 +92,11 @@ func NewGithubClientFromToken(ctx context.Context, token string, logger *logrus.
 		rawClientGQL: rawClientGQL,
 		token:        token,
 		logger:       logger,
+		base:         tc.Transport,
 	}
 
 	// override the transport to count requests
-	oauth2Transport := tc.Transport
-	tc.Transport = &RequestCountTransport{base: oauth2Transport, client: client}
+	tc.Transport = client
 
 	return client
 }
@@ -143,15 +139,8 @@ func (c *GithubClient) GetTotalRequests() uint64 {
 	return c.totalRequests
 }
 
-func (c *GithubClient) WithLogger(logger *logrus.Entry) *GithubClient {
-	return &GithubClient{
-		clientREST:    c.clientREST,
-		clientGQL:     c.clientGQL,
-		rawClientGQL:  c.rawClientGQL,
-		token:         c.token,
-		totalRequests: c.totalRequests,
-		logger:        logger,
-	}
+func (c *GithubClient) WithLogger(ctx context.Context, logger *logrus.Entry) *GithubClient {
+	return NewGithubClientFromToken(ctx, c.GetToken(), logger)
 }
 
 func NewGithubAppClient(gitHubAppID int64, gitHubAppPrivateKey []byte) (*GithubAppClient, error) {
