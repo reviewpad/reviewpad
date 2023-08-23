@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/bradleyfalzon/ghinstallation/v2"
@@ -215,8 +216,18 @@ func (t *GithubClient) RoundTrip(req *http.Request) (*http.Response, error) {
 
 func setRateLimitFields(fields logrus.Fields, requestType string, headers http.Header, body []byte) (logrus.Fields, error) {
 	if requestType == "rest" {
-		fields["rate_limit_per_hour"] = headers.Get("x-rate-limit")
-		fields["rate_limit_remaining"] = headers.Get("x-ratelimit-remaining")
+		limit, err := strconv.Atoi(headers.Get("x-ratelimit-limit"))
+		if err != nil {
+			return nil, err
+		}
+
+		remaining, err := strconv.Atoi(headers.Get("x-ratelimit-remaining"))
+		if err != nil {
+			return nil, err
+		}
+
+		fields["rate_limit_per_hour"] = limit
+		fields["rate_limit_remaining"] = remaining
 		fields["rate_limit_reset"] = headers.Get("x-ratelimit-reset")
 		fields["rate_limit_cost"] = 1
 
