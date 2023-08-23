@@ -280,10 +280,6 @@ func Run(
 	safeMode bool,
 	checksWithIssue []string,
 ) (engine.ExitStatus, *engine.Program, string, error) {
-	gitHubClient = gitHubClient.WithLogger(log.WithFields(logrus.Fields{
-		"component": "reviewpad",
-	}))
-
 	config, err := plugins_aladino.DefaultPluginConfig()
 	if err != nil {
 		return engine.ExitStatusFailure, nil, "", err
