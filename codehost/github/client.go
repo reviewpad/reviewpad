@@ -7,6 +7,7 @@ package github
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -14,6 +15,9 @@ import (
 
 	"github.com/bradleyfalzon/ghinstallation/v2"
 	"github.com/google/go-github/v52/github"
+	"github.com/graphql-go/graphql/language/ast"
+	"github.com/graphql-go/graphql/language/parser"
+	"github.com/graphql-go/graphql/language/printer"
 	"github.com/hasura/go-graphql-client"
 	"github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
@@ -32,39 +36,6 @@ type GithubClient struct {
 
 type GithubAppClient struct {
 	*github.Client
-}
-
-func (t *GithubClient) RoundTrip(req *http.Request) (*http.Response, error) {
-	var body []byte
-	var err error
-	requestType := "rest"
-
-	if strings.Contains(req.URL.Path, "graphql") {
-		requestType = "graphql"
-	}
-
-	t.totalRequests++
-
-	if req.Body != nil {
-		body, err = io.ReadAll(req.Body)
-		if err != nil {
-			return nil, err
-		}
-
-		req.Body = io.NopCloser(bytes.NewReader(body))
-	}
-
-	if t.logger != nil {
-		t.logger.WithFields(logrus.Fields{
-			"method":                req.Method,
-			"url":                   req.URL.String(),
-			"body":                  string(body),
-			"current_request_count": t.totalRequests,
-			"request_type":          requestType,
-		}).Debug("github client request")
-	}
-
-	return t.base.RoundTrip(req)
 }
 
 func NewGithubClient(clientREST *github.Client, clientGQL *githubv4.Client, rawClientGQL *graphql.Client, logger *logrus.Entry) *GithubClient {
@@ -150,4 +121,205 @@ func NewGithubAppClient(gitHubAppID int64, gitHubAppPrivateKey []byte) (*GithubA
 	}
 
 	return &GithubAppClient{github.NewClient(&http.Client{Transport: transport})}, nil
+}
+
+type GraphQLRequest struct {
+	Query         string                 `json:"query"`
+	Variables     map[string]interface{} `json:"variables,omitempty"`
+	OperationName *string                `json:"operationName,omitempty"`
+}
+
+type GraphQLRateLimitResponse struct {
+	Data struct {
+		RateLimit struct {
+			Limit     int64  `json:"limit"`
+			Cost      int64  `json:"cost"`
+			Remaining int64  `json:"remaining"`
+			ResetAt   string `json:"resetAt"`
+		} `json:"rateLimit"`
+	} `json:"data"`
+}
+
+func (t *GithubClient) RoundTrip(req *http.Request) (*http.Response, error) {
+	var body []byte
+	var err error
+	requestType := "rest"
+
+	if strings.Contains(req.URL.Path, "graphql") {
+		requestType = "graphql"
+	}
+
+	t.totalRequests++
+
+	if req.Body != nil {
+		body, err = io.ReadAll(req.Body)
+		if err != nil {
+			return nil, err
+		}
+
+		if requestType == "graphql" {
+			body, err = addRateLimitQuery(body)
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		req.ContentLength = int64(len(body))
+		req.Body = io.NopCloser(bytes.NewReader(body))
+	}
+
+	fields := logrus.Fields{
+		"method":                req.Method,
+		"url":                   req.URL.String(),
+		"body":                  string(body),
+		"current_request_count": t.totalRequests,
+		"request_type":          requestType,
+	}
+
+	if t.logger != nil {
+		t.logger.WithFields(fields).Debug("github client request")
+	}
+
+	res, err := t.base.RoundTrip(req)
+	if err != nil {
+		return nil, err
+	}
+
+	resBody, err := io.ReadAll(res.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	fields, err = setRateLimitFields(fields, requestType, res.Header, resBody)
+	if err != nil {
+		return nil, err
+	}
+
+	if requestType == "graphql" {
+		// now we have to remove the rateLimit query from the response
+		// so that the client can unmarshal the response into the expected struct
+		resBody, err = removeRateLimitFromBody(resBody)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	res.Body = io.NopCloser(bytes.NewReader(resBody))
+
+	if t.logger != nil {
+		t.logger.WithFields(fields).Debug("github client response")
+	}
+
+	return res, err
+}
+
+func setRateLimitFields(fields logrus.Fields, requestType string, headers http.Header, body []byte) (logrus.Fields, error) {
+	if requestType == "rest" {
+		fields["rate_limit_per_hour"] = headers.Get("x-rate-limit")
+		fields["rate_limit_remaining"] = headers.Get("x-ratelimit-remaining")
+		fields["rate_limit_reset"] = headers.Get("x-ratelimit-reset")
+		fields["rate_limit_cost"] = 1
+
+		return fields, nil
+	}
+
+	rateLimitResponse := &GraphQLRateLimitResponse{}
+
+	if err := json.Unmarshal(body, rateLimitResponse); err != nil {
+		return nil, err
+	}
+
+	fields["rate_limit_per_hour"] = rateLimitResponse.Data.RateLimit.Limit
+	fields["rate_limit_remaining"] = rateLimitResponse.Data.RateLimit.Remaining
+	fields["rate_limit_reset"] = rateLimitResponse.Data.RateLimit.ResetAt
+	fields["rate_limit_cost"] = rateLimitResponse.Data.RateLimit.Cost
+
+	return fields, nil
+}
+
+func removeRateLimitFromBody(body []byte) ([]byte, error) {
+	r := map[string]interface{}{}
+
+	if err := json.Unmarshal(body, &r); err != nil {
+		return nil, err
+	}
+
+	if _, ok := r["data"].(map[string]interface{}); ok {
+		delete(r["data"].(map[string]interface{}), "rateLimit")
+	}
+
+	return json.Marshal(r)
+}
+
+// addRateLimitQuery adds a rate limit query to the GraphQL request
+func addRateLimitQuery(body []byte) ([]byte, error) {
+	graphQLRequest := &GraphQLRequest{}
+
+	err := json.Unmarshal(body, graphQLRequest)
+	if err != nil {
+		return nil, err
+	}
+
+	doc, err := parser.Parse(parser.ParseParams{
+		Source: string(graphQLRequest.Query),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	// if for some reason the query is empty, just return the body
+	if len(doc.Definitions) == 0 {
+		return body, nil
+	}
+
+	def := doc.Definitions[0].(*ast.OperationDefinition)
+
+	if def.GetKind() != "OperationDefinition" || def.Operation != "query" {
+		return body, nil
+	}
+
+	def.SelectionSet.Selections = append(def.SelectionSet.Selections, &ast.Field{
+		Kind: "Field",
+		Name: &ast.Name{
+			Kind:  "Name",
+			Value: "rateLimit",
+		},
+		SelectionSet: &ast.SelectionSet{
+			Kind: "SelectionSet",
+			Selections: []ast.Selection{
+				&ast.Field{
+					Kind: "Field",
+					Name: &ast.Name{
+						Kind:  "Name",
+						Value: "limit",
+					},
+				},
+				&ast.Field{
+					Kind: "Field",
+					Name: &ast.Name{
+						Kind:  "Name",
+						Value: "cost",
+					},
+				},
+				&ast.Field{
+					Kind: "Field",
+					Name: &ast.Name{
+						Kind:  "Name",
+						Value: "remaining",
+					},
+				},
+				&ast.Field{
+					Kind: "Field",
+					Name: &ast.Name{
+						Kind:  "Name",
+						Value: "resetAt",
+					},
+				},
+			},
+		},
+	})
+
+	graphQLRequest.Query = printer.Print(doc).(string)
+
+	return json.Marshal(graphQLRequest)
 }
