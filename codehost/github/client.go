@@ -143,7 +143,7 @@ type GraphQLRateLimitResponse struct {
 
 func (t *GithubClient) RoundTrip(req *http.Request) (*http.Response, error) {
 	var body []byte
-	var err error
+	var resErr error
 	requestType := "rest"
 
 	if strings.Contains(req.URL.Path, "graphql") {
@@ -153,15 +153,15 @@ func (t *GithubClient) RoundTrip(req *http.Request) (*http.Response, error) {
 	t.totalRequests++
 
 	if req.Body != nil {
-		body, err = io.ReadAll(req.Body)
-		if err != nil {
-			return nil, err
+		body, resErr = io.ReadAll(req.Body)
+		if resErr != nil {
+			return nil, resErr
 		}
 
 		if requestType == "graphql" {
-			body, err = addRateLimitQuery(body)
-			if err != nil {
-				return nil, err
+			body, resErr = addRateLimitQuery(body)
+			if resErr != nil {
+				return nil, resErr
 			}
 		}
 
@@ -177,20 +177,20 @@ func (t *GithubClient) RoundTrip(req *http.Request) (*http.Response, error) {
 		"request_type":          requestType,
 	}
 
-	res, err := t.base.RoundTrip(req)
-	if err != nil {
-		return nil, err
+	res, resErr := t.base.RoundTrip(req)
+	if resErr != nil {
+		return nil, resErr
 	}
 
-	resBody, err := io.ReadAll(res.Body)
-	if err != nil {
-		return nil, err
+	resBody, resErr := io.ReadAll(res.Body)
+	if resErr != nil {
+		return nil, resErr
 	}
 
-	fields, err = setRateLimitFields(fields, requestType, res.Header, resBody)
+	fields, err := setRateLimitFields(fields, requestType, res.Header, resBody)
 	if err != nil {
 		if t.logger != nil {
-			t.logger.WithFields(fields).Error("failed to set rate limit fields")
+			t.logger.WithError(err).Error("failed to set rate limit fields")
 		}
 	}
 
@@ -209,7 +209,7 @@ func (t *GithubClient) RoundTrip(req *http.Request) (*http.Response, error) {
 		t.logger.WithFields(fields).Debug("github client request")
 	}
 
-	return res, err
+	return res, resErr
 }
 
 func setRateLimitFields(fields logrus.Fields, requestType string, headers http.Header, body []byte) (logrus.Fields, error) {
