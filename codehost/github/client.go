@@ -10,6 +10,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"math"
 	"net/http"
 	"strconv"
 	"strings"
@@ -226,11 +227,11 @@ func setRateLimitFields(fields logrus.Fields, requestType string, headers http.H
 
 		fields["rate_limit_per_hour"] = limit
 		fields["rate_limit_remaining"] = remaining
-		fields["rate_limit_remaining_percentage"] = (float64(remaining) / float64(limit)) * 100
+		fields["rate_limit_remaining_percentage"] = roundFloat((float64(remaining)/float64(limit))*100, 2)
 		fields["rate_limit_reset"] = headers.Get("x-ratelimit-reset")
 		// we are setting the cost to 1 because for rest requests, the cost is always 1
 		fields["rate_limit_cost"] = 1
-		fields["rate_limit_cost_percentage"] = (1.0 / float64(remaining)) * 100
+		fields["rate_limit_cost_percentage"] = roundFloat((1.0/float64(remaining))*100, 2)
 
 		return fields, nil
 	}
@@ -243,10 +244,10 @@ func setRateLimitFields(fields logrus.Fields, requestType string, headers http.H
 
 	fields["rate_limit_per_hour"] = rateLimitResponse.Data.RateLimit.Limit
 	fields["rate_limit_remaining"] = rateLimitResponse.Data.RateLimit.Remaining
-	fields["rate_limit_remaining_percentage"] = (float64(rateLimitResponse.Data.RateLimit.Remaining) / float64(rateLimitResponse.Data.RateLimit.Limit)) * 100
+	fields["rate_limit_remaining_percentage"] = roundFloat((float64(rateLimitResponse.Data.RateLimit.Remaining)/float64(rateLimitResponse.Data.RateLimit.Limit))*100, 2)
 	fields["rate_limit_reset"] = rateLimitResponse.Data.RateLimit.ResetAt
 	fields["rate_limit_cost"] = rateLimitResponse.Data.RateLimit.Cost
-	fields["rate_limit_cost_percentage"] = (float64(rateLimitResponse.Data.RateLimit.Cost) / float64(rateLimitResponse.Data.RateLimit.Remaining)) * 100
+	fields["rate_limit_cost_percentage"] = roundFloat((float64(rateLimitResponse.Data.RateLimit.Cost)/float64(rateLimitResponse.Data.RateLimit.Remaining))*100, 2)
 
 	return fields, nil
 }
@@ -338,4 +339,9 @@ func addRateLimitQuery(body []byte) ([]byte, error) {
 	graphQLRequest.Query = printer.Print(doc).(string)
 
 	return json.Marshal(graphQLRequest)
+}
+
+func roundFloat(val float64, precision uint) float64 {
+	ratio := math.Pow(10, float64(precision))
+	return math.Round(val*ratio) / ratio
 }
