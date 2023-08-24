@@ -230,7 +230,7 @@ func setRateLimitFields(fields logrus.Fields, requestType string, headers http.H
 		fields["rate_limit_reset"] = headers.Get("x-ratelimit-reset")
 		// we are setting the cost to 1 because for rest requests, the cost is always 1
 		fields["rate_limit_cost"] = 1
-		fields["rate_limit_cost_percentage"] = (1.0 / float64(limit)) * 100
+		fields["rate_limit_cost_percentage"] = (1.0 / float64(remaining)) * 100
 
 		return fields, nil
 	}
@@ -246,7 +246,7 @@ func setRateLimitFields(fields logrus.Fields, requestType string, headers http.H
 	fields["rate_limit_remaining_percentage"] = (float64(rateLimitResponse.Data.RateLimit.Remaining) / float64(rateLimitResponse.Data.RateLimit.Limit)) * 100
 	fields["rate_limit_reset"] = rateLimitResponse.Data.RateLimit.ResetAt
 	fields["rate_limit_cost"] = rateLimitResponse.Data.RateLimit.Cost
-	fields["rate_limit_cost_percentage"] = (float64(rateLimitResponse.Data.RateLimit.Cost) / float64(rateLimitResponse.Data.RateLimit.Limit)) * 100
+	fields["rate_limit_cost_percentage"] = (float64(rateLimitResponse.Data.RateLimit.Cost) / float64(rateLimitResponse.Data.RateLimit.Remaining)) * 100
 
 	return fields, nil
 }
