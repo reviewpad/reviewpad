@@ -268,14 +268,14 @@ func addRateLimitQuery(body []byte) ([]byte, error) {
 
 	err := json.Unmarshal(body, graphQLRequest)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to unmarshal GraphQL request: %s", err.Error())
 	}
 
 	doc, err := parser.Parse(parser.ParseParams{
 		Source: string(graphQLRequest.Query),
 	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to parse GraphQL request: %s", err.Error())
 	}
 
 	// if for some reason the query is empty, just return the body
