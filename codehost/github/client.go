@@ -177,10 +177,6 @@ func (t *GithubClient) RoundTrip(req *http.Request) (*http.Response, error) {
 		"request_type":          requestType,
 	}
 
-	if t.logger != nil {
-		t.logger.WithFields(fields).Debug("github client request")
-	}
-
 	res, err := t.base.RoundTrip(req)
 	if err != nil {
 		return nil, err
@@ -193,7 +189,9 @@ func (t *GithubClient) RoundTrip(req *http.Request) (*http.Response, error) {
 
 	fields, err = setRateLimitFields(fields, requestType, res.Header, resBody)
 	if err != nil {
-		return nil, err
+		if t.logger != nil {
+			t.logger.WithFields(fields).Error("failed to set rate limit fields")
+		}
 	}
 
 	if requestType == "graphql" {
@@ -208,7 +206,7 @@ func (t *GithubClient) RoundTrip(req *http.Request) (*http.Response, error) {
 	res.Body = io.NopCloser(bytes.NewReader(resBody))
 
 	if t.logger != nil {
-		t.logger.WithFields(fields).Debug("github client response")
+		t.logger.WithFields(fields).Debug("github client request")
 	}
 
 	return res, err
@@ -248,6 +246,8 @@ func setRateLimitFields(fields logrus.Fields, requestType string, headers http.H
 	return fields, nil
 }
 
+// removeRateLimitFromBody removes the rate limit field from the GraphQL response
+// so that the client can unmarshal the response into the expected struct
 func removeRateLimitFromBody(body []byte) ([]byte, error) {
 	r := map[string]interface{}{}
 
