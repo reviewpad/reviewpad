@@ -107,11 +107,13 @@ func TestSetRateLimitFields(t *testing.T) {
 			},
 			body: nil,
 			wantFields: logrus.Fields{
-				"test":                 "test",
-				"rate_limit_per_hour":  5000,
-				"rate_limit_remaining": 4999,
-				"rate_limit_reset":     "1628601600",
-				"rate_limit_cost":      1,
+				"test":                            "test",
+				"rate_limit_per_hour":             5000,
+				"rate_limit_remaining":            4999,
+				"rate_limit_reset":                "1628601600",
+				"rate_limit_cost":                 1,
+				"rate_limit_remaining_percentage": 99.98,
+				"rate_limit_cost_percentage":      0.02,
 			},
 		},
 		"when request type is graphql with response error": {
@@ -143,11 +145,13 @@ func TestSetRateLimitFields(t *testing.T) {
 				}
 			}`),
 			wantFields: logrus.Fields{
-				"test":                 "test",
-				"rate_limit_per_hour":  5000,
-				"rate_limit_remaining": 4995,
-				"rate_limit_reset":     "2021-08-10T00:00:00Z",
-				"rate_limit_cost":      5,
+				"test":                            "test",
+				"rate_limit_per_hour":             5000,
+				"rate_limit_remaining":            4995,
+				"rate_limit_reset":                "2021-08-10T00:00:00Z",
+				"rate_limit_cost":                 5,
+				"rate_limit_remaining_percentage": 99.9,
+				"rate_limit_cost_percentage":      0.1,
 			},
 		},
 	}
