@@ -133,9 +133,9 @@ type GraphQLRequest struct {
 type GraphQLRateLimitResponse struct {
 	Data struct {
 		RateLimit struct {
-			Limit     int64  `json:"limit"`
-			Cost      int64  `json:"cost"`
-			Remaining int64  `json:"remaining"`
+			Limit     int    `json:"limit"`
+			Cost      int    `json:"cost"`
+			Remaining int    `json:"remaining"`
 			ResetAt   string `json:"resetAt"`
 		} `json:"rateLimit"`
 	} `json:"data"`
@@ -216,12 +216,12 @@ func setRateLimitFields(fields logrus.Fields, requestType string, headers http.H
 	if requestType == "rest" {
 		limit, err := strconv.Atoi(headers.Get("x-ratelimit-limit"))
 		if err != nil {
-			return fields, err
+			return fields, fmt.Errorf("failed to convert x-ratelimit-limit header to int: %s", err.Error())
 		}
 
 		remaining, err := strconv.Atoi(headers.Get("x-ratelimit-remaining"))
 		if err != nil {
-			return fields, err
+			return fields, fmt.Errorf("failed to convert x-ratelimit-remaining header to int: %s", err.Error())
 		}
 
 		fields["rate_limit_per_hour"] = limit
@@ -235,7 +235,7 @@ func setRateLimitFields(fields logrus.Fields, requestType string, headers http.H
 	rateLimitResponse := &GraphQLRateLimitResponse{}
 
 	if err := json.Unmarshal(body, rateLimitResponse); err != nil {
-		return fields, err
+		return fields, fmt.Errorf("failed to unmarshal GraphQL response: %s", err.Error())
 	}
 
 	fields["rate_limit_per_hour"] = rateLimitResponse.Data.RateLimit.Limit
