@@ -216,12 +216,12 @@ func setRateLimitFields(fields logrus.Fields, requestType string, headers http.H
 	if requestType == "rest" {
 		limit, err := strconv.Atoi(headers.Get("x-ratelimit-limit"))
 		if err != nil {
-			return nil, err
+			return fields, err
 		}
 
 		remaining, err := strconv.Atoi(headers.Get("x-ratelimit-remaining"))
 		if err != nil {
-			return nil, err
+			return fields, err
 		}
 
 		fields["rate_limit_per_hour"] = limit
@@ -235,7 +235,7 @@ func setRateLimitFields(fields logrus.Fields, requestType string, headers http.H
 	rateLimitResponse := &GraphQLRateLimitResponse{}
 
 	if err := json.Unmarshal(body, rateLimitResponse); err != nil {
-		return nil, err
+		return fields, err
 	}
 
 	fields["rate_limit_per_hour"] = rateLimitResponse.Data.RateLimit.Limit
