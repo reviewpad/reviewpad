@@ -191,7 +191,7 @@ func (t *GithubClient) RoundTrip(req *http.Request) (*http.Response, error) {
 	fields, err := setRateLimitFields(fields, requestType, res.Header, resBody)
 	if err != nil {
 		if t.logger != nil {
-			t.logger.WithError(err).Error("failed to set rate limit fields")
+			t.logger.WithError(err).Warn("failed to set rate limit fields")
 		}
 	}
 
