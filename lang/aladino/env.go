@@ -52,6 +52,7 @@ type Env interface {
 	SetCheckRunConclusion(string)
 	GetCheckRunConclusion() string
 	GetChecksWithIssues() []string
+	GetChecksWorkflowsOnly() bool
 }
 
 type BaseEnv struct {
@@ -73,6 +74,7 @@ type BaseEnv struct {
 	CheckRunID               *int64
 	CheckRunConclusion       string
 	ChecksWithIssues         []string
+	CheckWorkflowsOnly       bool
 }
 
 func (e *BaseEnv) GetBuiltIns() *BuiltIns {
@@ -155,6 +157,10 @@ func (e *BaseEnv) GetChecksWithIssues() []string {
 	return e.ChecksWithIssues
 }
 
+func (e *BaseEnv) GetChecksWorkflowsOnly() bool {
+	return e.CheckWorkflowsOnly
+}
+
 func NewTypeEnv(e Env) TypeEnv {
 	builtInsType := make(map[string]lang.Type)
 	for builtInName, builtInFunction := range e.GetBuiltIns().Functions {
@@ -183,6 +189,7 @@ func NewEvalEnv(
 	eventPayload interface{},
 	builtIns *BuiltIns,
 	checkRunID *int64,
+	checkWorkflowsOnly bool,
 	checksWithIssues []string,
 ) (Env, error) {
 	registerMap := RegisterMap(make(map[string]lang.Value))
@@ -207,6 +214,7 @@ func NewEvalEnv(
 		ExecMutex:                &mu,
 		CheckRunID:               checkRunID,
 		ChecksWithIssues:         checksWithIssues,
+		CheckWorkflowsOnly:       checkWorkflowsOnly,
 	}
 
 	switch targetEntity.Kind {

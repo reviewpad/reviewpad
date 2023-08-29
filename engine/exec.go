@@ -332,10 +332,17 @@ func ExecConfigurationFile(env *Env, file *ReviewpadFile) (ExitStatus, *Program,
 
 	// process workflows
 	for _, workflow := range file.Workflows {
-		if workflow.TriggerOnCheck != "" {
+		// if reviewpad should only run workflows that have trigger on check
+		// or the current workflow does not have a trigger on check
+		// or the current workflow has a trigger on check but the check is not in the list of checks with issues
+		// then skip the workflow
+		if env.Interpreter.GetChecksWorkflowsOnly() {
+			if workflow.TriggerOnCheck == "" {
+				continue
+			}
+
 			shouldRun := false
 			checksWithIssues := env.Interpreter.GetChecksWithIssues()
-
 			for _, check := range checksWithIssues {
 				if check == workflow.TriggerOnCheck {
 					shouldRun = true
@@ -344,6 +351,13 @@ func ExecConfigurationFile(env *Env, file *ReviewpadFile) (ExitStatus, *Program,
 			}
 
 			if !shouldRun {
+				continue
+			}
+		} else {
+			// if reviewpad should only run workflows that do not have trigger on check
+			// and the current workflow has a trigger on check
+			// then skip the workflow
+			if workflow.TriggerOnCheck != "" {
 				continue
 			}
 		}

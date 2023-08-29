@@ -157,6 +157,7 @@ func mockEnvWith(prOwner string, prRepoName string, prNum int, githubClient *gh.
 		eventPayload,
 		builtIns,
 		nil,
+		false,
 		nil,
 	)
 	if err != nil {

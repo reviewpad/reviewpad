@@ -440,6 +440,7 @@ func TestExecConfigurationFile(t *testing.T) {
 				engine.DefaultMockEventPayload,
 				builtIns,
 				nil,
+				false,
 				nil,
 			)
 			if err != nil {
@@ -716,6 +717,7 @@ func mockAladinoInterpreter(githubClient *gh.GithubClient, codehostClient *codeh
 		engine.DefaultMockEventPayload,
 		aladino.MockBuiltIns(),
 		nil,
+		false,
 		nil,
 	)
 	if err != nil {

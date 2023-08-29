@@ -48,6 +48,7 @@ type Interpreter interface {
 	StoreTemporaryVariable(name string, value lang.Value)
 	ProcessDictionary(name string, dictionary map[string]string) error
 	GetChecksWithIssues() []string
+	GetChecksWorkflowsOnly() bool
 }
 
 type Env struct {

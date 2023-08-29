@@ -351,6 +351,10 @@ func (i *Interpreter) GetChecksWithIssues() []string {
 	return i.Env.GetChecksWithIssues()
 }
 
+func (i *Interpreter) GetChecksWorkflowsOnly() bool {
+	return i.Env.GetChecksWorkflowsOnly()
+}
+
 func NewInterpreter(
 	ctx context.Context,
 	logger *logrus.Entry,
@@ -362,9 +366,10 @@ func NewInterpreter(
 	eventPayload interface{},
 	builtIns *BuiltIns,
 	checkRunID *int64,
+	checkWorkflowsOnly bool,
 	checksWithIssues []string,
 ) (engine.Interpreter, error) {
-	evalEnv, err := NewEvalEnv(ctx, logger, dryRun, githubClient, codeHostClient, collector, targetEntity, eventPayload, builtIns, checkRunID, checksWithIssues)
+	evalEnv, err := NewEvalEnv(ctx, logger, dryRun, githubClient, codeHostClient, collector, targetEntity, eventPayload, builtIns, checkRunID, checkWorkflowsOnly, checksWithIssues)
 	if err != nil {
 		return nil, err
 	}

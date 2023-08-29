@@ -776,6 +776,7 @@ func TestNewInterpreter_WhenNewEvalEnvFails(t *testing.T) {
 		nil,
 		nil,
 		nil,
+		false,
 		nil,
 	)
 
@@ -801,6 +802,7 @@ func TestNewInterpreter(t *testing.T) {
 		mockedEnv.GetEventPayload(),
 		mockedEnv.GetBuiltIns(),
 		nil,
+		false,
 		nil,
 	)
 
@@ -1048,6 +1050,7 @@ func TestReportMetric(t *testing.T) {
 				nil,
 				nil,
 				nil,
+				false,
 				nil,
 			)
 
