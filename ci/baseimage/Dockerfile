@@ -16,6 +16,13 @@ WORKDIR /app
 # Install necessary packages
 RUN apt-get update && apt-get -y install unzip cmake libssl-dev ca-certificates curl gnupg lsb-release && apt-get clean
 
+# Install dependencies for running image on github actions
+RUN go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+RUN go install gotest.tools/gotestsum@latest
+RUN go install github.com/jandelgado/gcov2lcov@latest
+RUN go install github.com/go-task/task/v3/cmd/task@latest
+RUN go install golang.org/x/tools/go/analysis/passes/shadow/cmd/shadow@latest
+
 # Install docker
 RUN mkdir -m 0755 -p /etc/apt/keyrings
 
