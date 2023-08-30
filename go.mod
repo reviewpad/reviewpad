@@ -22,10 +22,10 @@ require (
 	github.com/ohler55/ojg v1.18.5
 	github.com/reviewpad/api/go v0.0.0-20230621093220-febd5695b708
 	github.com/reviewpad/go-conventionalcommits v0.10.0
-	github.com/reviewpad/go-lib v0.0.0-20230523100931-3276b99f2619
+	github.com/reviewpad/go-lib v0.0.0-20230829232208-9b233af0e39d
 	github.com/shurcooL/githubv4 v0.0.0-20230424031643-6cea62ecd5a9
 	github.com/shurcooL/graphql v0.0.0-20220606043923-3cf50f8a0a29
-	github.com/sirupsen/logrus v1.9.2
+	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.7.0
 	github.com/stretchr/testify v1.8.3
 	github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80
@@ -52,6 +52,7 @@ require (
 	github.com/klauspost/compress v1.16.5 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/reviewpad/checker v0.0.0-20230808154253-4cd92f47e55b // indirect
 	github.com/rogpeppe/go-internal v1.10.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/xanzy/go-gitlab v0.83.0 // indirect
