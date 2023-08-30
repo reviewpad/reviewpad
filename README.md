@@ -249,16 +249,18 @@ Add the following to your `.vscode/launch.json`.
                 "-t=<GIT_HUB_TOKEN>",
                 // Absolute path to reviewpad.yml file to run.
                 "-f=<PATH_TO_REVIEWPAD_FILE>",
-                // Absolute path to JSON file with GitHub event.
-                // This GitHub event defines the action that will run on the pull request / issue.
-                "-e=<PATH_TO_EVENT_JSON>"
                 // GitHub URL of the pull request / issue.
                 // The reviewpad.yml file provided with the -f flag will run against this pull request / issue.
                 // This URL should be same the URL of the pull request / issues in the GitHub event provided with the -e flag.
                 // For instance, if you are using a GitHub event of a comment on the pull request X, the -u flag should be the URL of the pull request X.
                 "-u=<GITHUB_URL>",
+                // Absolute path to JSON file with GitHub event.
+                // This GitHub event body defines the action that will run on the pull request / issue.
+                // To get the GitHub event body, follow the instructions on https://github.com/reviewpad/reviewpad#how-to-get-the-github-event-body
+                "-e=<PATH_TO_GITHUB_EVENT_BODY>"
                 // The GitHub event type
                 // Determines how the events JSON file will be processed
+                // To get the GitHub event body, follow the instructions on https://github.com/reviewpad/reviewpad#how-to-get-the-github-event-type
                 "-y=<GITHUB_EVENT_TYPE>"
             ],
             "env": {
@@ -272,30 +274,41 @@ Add the following to your `.vscode/launch.json`.
 }
 ```
 
-#### How to get the GitHub event (internal use only)
+#### How to get the GitHub event body (internal use only) {#how-to-get-the-github-event-body}
 
 The `-e` flag is mandatory to run the debugger.
 
 It represents the GitHub event that you wish to run the reviewpad.yml file against.
 
-To extract a GitHub event, you can use the following steps:
+To extract a GitHub event, please follow the steps below:
 
-1. Navigate to the checks tab of the pull request you want test against, in there you will find a `Delivery ID` field
-2. Go to the raas entry gate log group and filter out the logs by `{$.delivery_id="[Delivery ID]" && $.msg="request received"}`
-3. Copy the content inside the `body` field.
-4. Paste the content inside a file (e.g. `my_event.json`) and save it under `cli > debugdata`.
-5. Update the argument `-e` to point to the full path of the file you just created.
+1. Navigate to the GitHub URL of the pull request you want to test against.
+2. Click on the `reviewpad` check under the `Checks` tab.
+3. From the `DETAILS` section of the check copy the `Delivery ID`.
+4. Go to the logs of the Entry Gate and filter out the logs using the query `{$.delivery_id="[Delivery ID]" && $.msg="request received"}`
+5. Copy the content inside the `body` field.
+6. Create a file under `cli > debugdata` with a name that ends with `.json` (e.g. `my_event.json`) and paste the content inside the file.
+7. This content is an escape JSON string. Use the [JSON Parse & Stringify](https://marketplace.visualstudio.com/items?itemName=nextfaze.json-parse-stringify) extension to parse the content by pressing `Ctrl+Shift+P` and searching for `JSON: Parse Stringified JSON`.
+8. Update the argument `-e` to point to the full path of the file you just created.
 
-The `-y` flag is also mandatory to run the debugger.
+#### How to get the GitHub event type (internal use only) {#how-to-get-the-github-event-type}
 
-It represents the type of the GitHub event that you wish ro run the reviewpad.yml file against.
+The `-y` flag is mandatory to run the debugger.
 
-To get the GitHub event type, you can use the following steps:
+It represents the type of GitHub event that you wish to run the reviewpad.yml file against.
 
-1. Navigate to the checks tab of the pull request you want test against, in there you will find a `Event Type` field    
-2. Update the argument `-y` with the content you copied.
+To get the GitHub event type, please follow the steps below:
 
-You can then run the debugger by pressing F5.
+1. Navigate to the GitHub URL of the pull request you want to test against.
+2. Click on the `reviewpad` check under the `Checks` tab.
+3. From the `DETAILS` section of the check copy the `Event Type`.
+4. Paste the content inside the `-y` flag.
+
+If you wish to use the logs of the Entry Gate to the event type, please follow the steps below:
+
+1. Filter out the logs using the query `{$.delivery_id="[Delivery ID]" && $.msg="request received"}`
+2. Copy the content inside the `headers.X-GitHub-Event` field.
+3. Paste the content inside the `-y` flag.
 
 ### Contributing
 

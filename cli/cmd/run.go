@@ -13,7 +13,7 @@ import (
 
 	"github.com/google/go-github/v52/github"
 	"github.com/google/uuid"
-	"github.com/reviewpad/api/go/clients"
+	"github.com/reviewpad/go-lib/clients"
 	"github.com/reviewpad/go-lib/entities"
 	github_event_processor "github.com/reviewpad/go-lib/event/event_processor/github"
 	log "github.com/reviewpad/go-lib/logrus"
