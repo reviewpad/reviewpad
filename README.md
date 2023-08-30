@@ -256,11 +256,11 @@ Add the following to your `.vscode/launch.json`.
                 "-u=<GITHUB_URL>",
                 // Absolute path to JSON file with GitHub event.
                 // This GitHub event body defines the action that will run on the pull request / issue.
-                // To get the GitHub event body, follow the instructions on https://github.com/reviewpad/reviewpad#how-to-get-the-github-event-body
+                // To get the GitHub event body, follow the instructions on https://github.com/reviewpad/reviewpad#how-to-get-the-github-event-body-internal-use-only
                 "-e=<PATH_TO_GITHUB_EVENT_BODY>"
                 // The GitHub event type
                 // Determines how the events JSON file will be processed
-                // To get the GitHub event body, follow the instructions on https://github.com/reviewpad/reviewpad#how-to-get-the-github-event-type
+                // To get the GitHub event body, follow the instructions on https://github.com/reviewpad/reviewpad#how-to-get-the-github-event-type-internal-use-only
                 "-y=<GITHUB_EVENT_TYPE>"
             ],
             "env": {
@@ -274,7 +274,7 @@ Add the following to your `.vscode/launch.json`.
 }
 ```
 
-#### How to get the GitHub event body (internal use only) {#how-to-get-the-github-event-body}
+#### How to get the GitHub event body (internal use only)
 
 The `-e` flag is mandatory to run the debugger.
 
@@ -291,7 +291,7 @@ To extract a GitHub event, please follow the steps below:
 7. This content is an escape JSON string. Use the [JSON Parse & Stringify](https://marketplace.visualstudio.com/items?itemName=nextfaze.json-parse-stringify) extension to parse the content by pressing `Ctrl+Shift+P` and searching for `JSON: Parse Stringified JSON`.
 8. Update the argument `-e` to point to the full path of the file you just created.
 
-#### How to get the GitHub event type (internal use only) {#how-to-get-the-github-event-type}
+#### How to get the GitHub event type (internal use only)
 
 The `-y` flag is mandatory to run the debugger.
 
