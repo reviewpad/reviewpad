@@ -119,7 +119,7 @@ func MockGithubClient(clientOptions []mock.MockBackendOption) *gh.GithubClient {
 	githubClientREST := github.NewClient(mock.NewMockedHTTPClient(mocks...))
 
 	// TODO: mock the graphQL client
-	return gh.NewGithubClient(githubClientREST, nil, nil)
+	return gh.NewGithubClient(githubClientREST, nil, nil, nil)
 }
 
 func MockEnvWith(githubClient *gh.GithubClient, interpreter Interpreter, targetEntity *entities.TargetEntity, eventDetails *entities.EventDetails) (*Env, error) {

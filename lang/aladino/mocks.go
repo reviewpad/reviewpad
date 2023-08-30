@@ -211,7 +211,7 @@ func MockDefaultGithubClient(ghApiClientOptions []mock.MockBackendOption, ghGrap
 		rawClientGQL = graphql.NewClient("https://api.github.com/graphql", &http.Client{Transport: localRoundTripper{handler: mux}})
 	}
 
-	return gh.NewGithubClient(client, clientGQL, rawClientGQL)
+	return gh.NewGithubClient(client, clientGQL, rawClientGQL, nil)
 }
 
 func MockDefaultGithubAppClient(ghApiClientOptions []mock.MockBackendOption) *gh.GithubAppClient {

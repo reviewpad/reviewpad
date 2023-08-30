@@ -11,6 +11,7 @@ require (
 	github.com/google/go-github/v52 v52.0.0
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/mux v1.8.0
+	github.com/graphql-go/graphql v0.8.1
 	github.com/hasura/go-graphql-client v0.9.3
 	github.com/jarcoal/httpmock v1.3.0
 	github.com/jinzhu/copier v0.3.5
@@ -21,7 +22,7 @@ require (
 	github.com/ohler55/ojg v1.18.5
 	github.com/reviewpad/api/go v0.0.0-20230621093220-febd5695b708
 	github.com/reviewpad/go-conventionalcommits v0.10.0
-	github.com/reviewpad/go-lib v0.0.0-20230808214501-c209935b916f
+	github.com/reviewpad/go-lib v0.0.0-20230829232208-9b233af0e39d
 	github.com/shurcooL/githubv4 v0.0.0-20230424031643-6cea62ecd5a9
 	github.com/shurcooL/graphql v0.0.0-20220606043923-3cf50f8a0a29
 	github.com/sirupsen/logrus v1.9.3
