@@ -55,7 +55,7 @@ jobs:
       - name: Set up git config
         run: git config --global url."https://${{ secrets.REVIEWPAD_TOKEN }}:@github.com/".insteadOf "https://github.com/"
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Download dependencies
         run: |
