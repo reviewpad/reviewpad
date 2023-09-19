@@ -239,10 +239,12 @@ func (i *Interpreter) ExecStatement(statement *engine.Statement) error {
 
 			patch := i.Env.GetTarget().(*target.PullRequestTarget).Patch
 
-			pullRequestTarget, err := target.NewPullRequestTargetWithPatch(ctx, targetEntity, githubClient, codeHostClient, pullRequest, patch)
+			pullRequestTarget, err := target.NewPullRequestTargetWithoutPatch(ctx, targetEntity, githubClient, codeHostClient, pullRequest)
 			if err != nil {
 				return err
 			}
+			pullRequestTarget.Patch = patch
+
 			i.Env.(*BaseEnv).Target = pullRequestTarget
 		}
 	}
