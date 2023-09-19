@@ -117,11 +117,11 @@ func TestHasAnnotationCode_WhenGetSymbolsFromPatchFails(t *testing.T) {
 		},
 	})
 
-	mockedFiles := []*pbc.File{
+	mockedFiles := []*github.CommitFile{
 		{
-			Sha:      mockedBlobId,
-			Filename: mockedPatchFileRelativeName,
-			Patch:    mockedPatch,
+			SHA:      github.String(mockedBlobId),
+			Filename: github.String(mockedPatchFileRelativeName),
+			Patch:    github.String(mockedPatch),
 		},
 	}
 
@@ -212,11 +212,11 @@ func TestHasAnnotationCode(t *testing.T) {
 				},
 			})
 
-			mockedFiles := []*pbc.File{
+			mockedFiles := []*github.CommitFile{
 				{
-					Sha:      mockedBlobId,
-					Filename: mockedPatchFileRelativeName,
-					Patch:    mockedPatch,
+					SHA:      github.String(mockedBlobId),
+					Filename: github.String(mockedPatchFileRelativeName),
+					Patch:    github.String(mockedPatch),
 				},
 			}
 

@@ -6,7 +6,6 @@ package target
 
 import (
 	"context"
-	"fmt"
 	"strings"
 	"time"
 
@@ -32,14 +31,14 @@ type PullRequestTarget struct {
 // ensure PullRequestTarget conforms to Target interface
 var _ codehost.Target = (*PullRequestTarget)(nil)
 
-func getPullRequestPatch(ctx context.Context, pullRequest *pbc.PullRequest, codehostClient *codehost.CodeHostClient) (Patch, error) {
+func getPullRequestPatch(ctx context.Context, pullRequest *pbc.PullRequest, githubClient *gh.GithubClient) (Patch, error) {
 	patchMap := make(map[string]*codehost.File)
 
 	owner := gh.GetPullRequestBaseOwnerName(pullRequest)
 	repo := gh.GetPullRequestBaseRepoName(pullRequest)
 	number := gh.GetPullRequestNumber(pullRequest)
 
-	files, err := codehostClient.GetPullRequestFiles(ctx, fmt.Sprintf("%s/%s", owner, repo), number)
+	files, err := githubClient.GetPullRequestFiles(ctx, owner, repo, int(number))
 	if err != nil {
 		return nil, err
 	}
@@ -57,7 +56,7 @@ func getPullRequestPatch(ctx context.Context, pullRequest *pbc.PullRequest, code
 }
 
 func NewPullRequestTarget(ctx context.Context, targetEntity *entities.TargetEntity, githubClient *gh.GithubClient, codehostClient *codehost.CodeHostClient, pr *pbc.PullRequest) (*PullRequestTarget, error) {
-	patch, err := getPullRequestPatch(ctx, pr, codehostClient)
+	patch, err := getPullRequestPatch(ctx, pr, githubClient)
 	if err != nil {
 		return nil, err
 	}

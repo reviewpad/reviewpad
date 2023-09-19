@@ -64,7 +64,7 @@ func GetSymbolsFromPatch(e aladino.Env) (map[string]*entities.Symbols, error) {
 			CommitId: lastCommit,
 			Filepath: fp,
 			Blob:     blob,
-			BlobId:   commitFile.Repr.Sha,
+			BlobId:   commitFile.Repr.GetSHA(),
 			Diff:     &entities.ResolveFileDiff{Blocks: blocks},
 		}
 		reply, err := semanticClient.GetSymbols(e.GetCtx(), req)
@@ -90,7 +90,7 @@ func GetSymbolsFromHeadByPatch(e aladino.Env, patch target.Patch) (*entities.Sym
 	files := make(map[string]string)
 
 	for fp, commitFile := range patch {
-		if commitFile.Repr.Status == pbc.File_REMOVED {
+		if commitFile.Repr.GetStatus() == "removed" {
 			// in this case, the file is not in the head branch
 			continue
 		}
@@ -119,7 +119,7 @@ func GetSymbolsFromBaseByPatch(e aladino.Env, patch target.Patch) (*entities.Sym
 	files := make(map[string]string)
 
 	for fp, commitFile := range patch {
-		if commitFile.Repr.GetStatus() == pbc.File_ADDED {
+		if commitFile.Repr.GetStatus() == "added" {
 			// in this case, the file is not in the base branch
 			continue
 		}
@@ -173,7 +173,7 @@ func GetSymbolsFromFileInBranch(e aladino.Env, commitFile *codehost.File, branch
 		CommitId: branch.Sha,
 		Filepath: fp,
 		Blob:     blob,
-		BlobId:   commitFile.Repr.Sha,
+		BlobId:   commitFile.Repr.GetSHA(),
 		Diff:     &entities.ResolveFileDiff{Blocks: blocks},
 	}
 	reply, err := semanticClient.GetSymbols(e.GetCtx(), req)

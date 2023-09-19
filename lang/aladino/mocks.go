@@ -170,8 +170,15 @@ func mockEnvWith(prOwner string, prRepoName string, prNum int, githubClient *gh.
 // Being ready for Aladino means that at least the request to build Aladino Env need to be mocked.
 // As for now, at least one github request need to be mocked in order to build Aladino Env, mainly:
 // - Get issue details (i.e. /repos/{owner}/{repo}/issues/{issue_number})
-func mockDefaultHttpClient(clientOptions []mock.MockBackendOption) *http.Client {
+func mockDefaultHttpClient(clientOptions []mock.MockBackendOption, files []*github.CommitFile) *http.Client {
 	defaultMocks := []mock.MockBackendOption{
+		mock.WithRequestMatchHandler(
+			// Mock request to get pull request changed files
+			mock.GetReposPullsFilesByOwnerByRepoByPullNumber,
+			http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+				utils.MustWriteBytes(w, mock.MustMarshal(files))
+			}),
+		),
 		mock.WithRequestMatchHandler(
 			// Mock request to get issue details
 			mock.GetReposIssuesByOwnerByRepoByIssueNumber,
@@ -199,7 +206,23 @@ func (l localRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) 
 }
 
 func MockDefaultGithubClient(ghApiClientOptions []mock.MockBackendOption, ghGraphQLHandler func(http.ResponseWriter, *http.Request)) *gh.GithubClient {
-	client := github.NewClient(mockDefaultHttpClient(ghApiClientOptions))
+	client := github.NewClient(mockDefaultHttpClient(ghApiClientOptions, GetDefaultPullRequestFileList()))
+
+	// Handle GraphQL
+	var clientGQL *githubv4.Client
+	var rawClientGQL *graphql.Client
+	if ghGraphQLHandler != nil {
+		mux := http.NewServeMux()
+		mux.HandleFunc("/graphql", ghGraphQLHandler)
+		clientGQL = githubv4.NewClient(&http.Client{Transport: localRoundTripper{handler: mux}})
+		rawClientGQL = graphql.NewClient("https://api.github.com/graphql", &http.Client{Transport: localRoundTripper{handler: mux}})
+	}
+
+	return gh.NewGithubClient(client, clientGQL, rawClientGQL, nil)
+}
+
+func MockDefaultGithubClientWithFiles(ghApiClientOptions []mock.MockBackendOption, ghGraphQLHandler func(http.ResponseWriter, *http.Request), files []*github.CommitFile) *gh.GithubClient {
+	client := github.NewClient(mockDefaultHttpClient(ghApiClientOptions, files))
 
 	// Handle GraphQL
 	var clientGQL *githubv4.Client
@@ -230,7 +253,7 @@ func MockDefaultEnv(
 	prRepoName := DefaultMockPrRepoName
 	prNum := DefaultMockPrNum
 	githubClient := MockDefaultGithubClient(ghApiClientOptions, ghGraphQLHandler)
-	codehostClient := GetDefaultCodeHostClient(t, GetDefaultPullRequestDetails(), GetDefaultPullRequestFileList(), nil, nil)
+	codehostClient := GetDefaultCodeHostClient(t, GetDefaultPullRequestDetails(), nil)
 
 	mockedEnv, err := mockEnvWith(prOwner, prRepoName, prNum, githubClient, codehostClient, eventPayload, builtIns, DefaultMockTargetEntity)
 	if err != nil {
@@ -253,7 +276,7 @@ func MockDefaultEnvWithTargetEntity(
 	prRepoName := DefaultMockPrRepoName
 	prNum := DefaultMockPrNum
 	githubClient := MockDefaultGithubClient(ghApiClientOptions, ghGraphQLHandler)
-	codehostClient := GetDefaultCodeHostClient(t, GetDefaultPullRequestDetails(), GetDefaultPullRequestFileList(), nil, nil)
+	codehostClient := GetDefaultCodeHostClient(t, GetDefaultPullRequestDetails(), nil)
 
 	mockedEnv, err := mockEnvWith(prOwner, prRepoName, prNum, githubClient, codehostClient, eventPayload, builtIns, targetEntity)
 	if err != nil {
@@ -268,15 +291,15 @@ func MockDefaultEnvWithPullRequestAndFiles(
 	ghApiClientOptions []mock.MockBackendOption,
 	ghGraphQLHandler func(http.ResponseWriter, *http.Request),
 	pullRequest *pbc.PullRequest,
-	files []*pbc.File,
+	files []*github.CommitFile,
 	builtIns *BuiltIns,
 	eventPayload interface{},
 ) Env {
 	prOwner := DefaultMockPrOwner
 	prRepoName := DefaultMockPrRepoName
 	prNum := DefaultMockPrNum
-	githubClient := MockDefaultGithubClient(ghApiClientOptions, ghGraphQLHandler)
-	codehostClient := GetDefaultCodeHostClient(t, pullRequest, files, nil, nil)
+	githubClient := MockDefaultGithubClientWithFiles(ghApiClientOptions, ghGraphQLHandler, files)
+	codehostClient := GetDefaultCodeHostClient(t, pullRequest, nil)
 
 	mockedEnv, err := mockEnvWith(prOwner, prRepoName, prNum, githubClient, codehostClient, eventPayload, builtIns, DefaultMockTargetEntity)
 	if err != nil {
@@ -442,25 +465,25 @@ func GetDefaultMockPullRequestDetailsWith(pullRequest *pbc.PullRequest) *pbc.Pul
 	return defaultCodeReview
 }
 
-func GetDefaultPullRequestFileList() []*pbc.File {
+func GetDefaultPullRequestFileList() []*github.CommitFile {
 	prRepoName := DefaultMockPrRepoName
-	return []*pbc.File{
+	return []*github.CommitFile{
 		{
-			Filename: fmt.Sprintf("%v/file1.ts", prRepoName),
-			Patch:    "@@ -2,9 +2,11 @@ package main\n- func previous1() {\n+ func new1() {\n+\nreturn",
+			Filename: github.String(fmt.Sprintf("%v/file1.ts", prRepoName)),
+			Patch:    github.String("@@ -2,9 +2,11 @@ package main\n- func previous1() {\n+ func new1() {\n+\nreturn"),
 		},
 		{
-			Filename: fmt.Sprintf("%v/file2.ts", prRepoName),
-			Patch:    "@@ -2,9 +2,11 @@ package main\n- func previous2() {\n+ func new2() {\n+\nreturn",
+			Filename: github.String(fmt.Sprintf("%v/file2.ts", prRepoName)),
+			Patch:    github.String("@@ -2,9 +2,11 @@ package main\n- func previous2() {\n+ func new2() {\n+\nreturn"),
 		},
 		{
-			Filename: fmt.Sprintf("%v/file3.ts", prRepoName),
-			Patch:    "@@ -2,9 +2,11 @@ package main\n- func previous3() {\n+ func new3() {\n+\nreturn",
+			Filename: github.String(fmt.Sprintf("%v/file3.ts", prRepoName)),
+			Patch:    github.String("@@ -2,9 +2,11 @@ package main\n- func previous3() {\n+ func new3() {\n+\nreturn"),
 		},
 	}
 }
 
-func GetDefaultCodeHostClient(t *testing.T, pullRequest *pbc.PullRequest, files []*pbc.File, pullRequestErr error, fileErr error) *codehost.CodeHostClient {
+func GetDefaultCodeHostClient(t *testing.T, pullRequest *pbc.PullRequest, pullRequestErr error) *codehost.CodeHostClient {
 	hostsClient := api_mocks.NewMockHostClient(gomock.NewController(t))
 
 	hostsClient.EXPECT().
@@ -469,39 +492,6 @@ func GetDefaultCodeHostClient(t *testing.T, pullRequest *pbc.PullRequest, files 
 		Return(&pbs.GetPullRequestReply{
 			PullRequest: pullRequest,
 		}, pullRequestErr)
-
-	hostsClient.EXPECT().
-		GetPullRequestFiles(gomock.Any(), gomock.Any(), gomock.Any()).
-		AnyTimes().
-		Return(&pbs.GetPullRequestFilesReply{
-			Files: files,
-		}, nil)
-
-	return &codehost.CodeHostClient{
-		HostInfo: &codehost.HostInfo{
-			Host:    pbe.Host_GITHUB,
-			HostUri: "https://github.com",
-		},
-		CodehostClient: hostsClient,
-	}
-}
-
-func GetDefaultCodeHostClientWithFiles(t *testing.T, files []*pbc.File, err error) *codehost.CodeHostClient {
-	hostsClient := api_mocks.NewMockHostClient(gomock.NewController(t))
-
-	hostsClient.EXPECT().
-		GetPullRequest(gomock.Any(), gomock.Any(), gomock.Any()).
-		AnyTimes().
-		Return(&pbs.GetPullRequestReply{
-			PullRequest: GetDefaultPullRequestDetails(),
-		}, nil)
-
-	hostsClient.EXPECT().
-		GetPullRequestFiles(gomock.Any(), gomock.Any(), gomock.Any()).
-		AnyTimes().
-		Return(&pbs.GetPullRequestFilesReply{
-			Files: files,
-		}, err)
 
 	return &codehost.CodeHostClient{
 		HostInfo: &codehost.HostInfo{

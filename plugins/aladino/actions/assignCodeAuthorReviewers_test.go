@@ -12,7 +12,6 @@ import (
 
 	"github.com/google/go-github/v52/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
-	pbc "github.com/reviewpad/api/go/codehost"
 	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
@@ -63,7 +62,7 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 		mockBackendOptions  []mock.MockBackendOption
 		graphQLHandler      http.HandlerFunc
 		reviewRequestedFrom []string
-		mockedFileList      []*pbc.File
+		mockedFileList      []*github.CommitFile
 	}{
 		"when the pull request is already assigned reviewers": {
 			totalReviewers:    1,
@@ -199,9 +198,9 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 					[]*github.PullRequestReview{},
 				),
 			},
-			mockedFileList: []*pbc.File{{
-				Patch:    "@@ -2,9 +2,11 @@ package main\n- func previous() {\n+ func new() {\n+\nreturn",
-				Filename: "default-mock-repo/file1.ts",
+			mockedFileList: []*github.CommitFile{{
+				Patch:    github.String("@@ -2,9 +2,11 @@ package main\n- func previous() {\n+ func new() {\n+\nreturn"),
+				Filename: github.String("default-mock-repo/file1.ts"),
 			}},
 			graphQLHandler: func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(http.StatusForbidden)
@@ -1416,7 +1415,7 @@ func TestAssignCodeAuthorReviewerCode(t *testing.T) {
 					}),
 				),
 			},
-			mockedFileList:      []*pbc.File{},
+			mockedFileList:      []*github.CommitFile{},
 			reviewRequestedFrom: []string{"jane"},
 		},
 	}

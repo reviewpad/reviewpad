@@ -30,11 +30,11 @@ func filesPathCode(e aladino.Env, _ []lang.Value) (lang.Value, error) {
 
 		// TODO: investigate if this ever happens
 		// and if we should be using previous file name in this case
-		if patchFile.Repr.Filename == "" {
+		if patchFile.Repr.Filename == nil || *patchFile.Repr.Filename == "" {
 			continue
 		}
 
-		filesPath = append(filesPath, lang.BuildStringValue(patchFile.Repr.Filename))
+		filesPath = append(filesPath, lang.BuildStringValue(*patchFile.Repr.Filename))
 	}
 
 	return lang.BuildArrayValue(filesPath), nil
