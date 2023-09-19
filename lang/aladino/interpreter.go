@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"errors"
+
 	"github.com/reviewpad/go-lib/entities"
 	"github.com/reviewpad/reviewpad/v4/codehost"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
@@ -236,7 +237,9 @@ func (i *Interpreter) ExecStatement(statement *engine.Statement) error {
 				return err
 			}
 
-			pullRequestTarget, err := target.NewPullRequestTarget(ctx, targetEntity, githubClient, codeHostClient, pullRequest)
+			patch := i.Env.GetTarget().(*target.PullRequestTarget).Patch
+
+			pullRequestTarget, err := target.NewPullRequestTargetWithPatch(ctx, targetEntity, githubClient, codeHostClient, pullRequest, patch)
 			if err != nil {
 				return err
 			}
