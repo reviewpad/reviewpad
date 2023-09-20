@@ -49,7 +49,7 @@ func sizeCode(e aladino.Env, args []lang.Value) (lang.Value, error) {
 
 	size := 0
 	for _, file := range clearedPatch {
-		size += int(file.Repr.ChangesCount)
+		size += file.Repr.GetChanges()
 	}
 
 	return lang.BuildIntValue(size), nil

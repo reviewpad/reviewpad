@@ -762,7 +762,7 @@ func TestNewInterpreter_WhenNewEvalEnvFails(t *testing.T) {
 	ctx := context.Background()
 	mockErr := errors.New("mock error")
 
-	codehostClient := GetDefaultCodeHostClient(t, nil, nil, mockErr, nil)
+	codehostClient := GetDefaultCodeHostClient(t, nil, mockErr)
 
 	// TODO: Ideally, we should not have nil arguments in the call to NewInterpreter
 	gotInterpreter, err := NewInterpreter(

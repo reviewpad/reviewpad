@@ -7,7 +7,7 @@ package plugins_aladino_functions_test
 import (
 	"testing"
 
-	pbc "github.com/reviewpad/api/go/codehost"
+	"github.com/google/go-github/v52/github"
 	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
@@ -18,14 +18,14 @@ var filesPath = plugins_aladino.PluginBuiltIns().Functions["filesPath"].Code
 
 func TestFilesPath(t *testing.T) {
 	tests := map[string]struct {
-		files      []*pbc.File
+		files      []*github.CommitFile
 		wantResult lang.Value
 		wantErr    error
 	}{
 		"when successful": {
-			files: []*pbc.File{
+			files: []*github.CommitFile{
 				{
-					Filename: "go.mod",
+					Filename: github.String("go.mod"),
 				},
 			},
 			wantResult: lang.BuildArrayValue([]lang.Value{
@@ -33,9 +33,9 @@ func TestFilesPath(t *testing.T) {
 			}),
 		},
 		"when successful with nil file": {
-			files: []*pbc.File{
+			files: []*github.CommitFile{
 				{
-					Filename: "go.mod",
+					Filename: github.String("go.mod"),
 				},
 				nil,
 			},
@@ -44,12 +44,12 @@ func TestFilesPath(t *testing.T) {
 			}),
 		},
 		"when successful with empty file name": {
-			files: []*pbc.File{
+			files: []*github.CommitFile{
 				{
-					Filename: "go.sum",
+					Filename: github.String("go.sum"),
 				},
 				{
-					Filename: "",
+					Filename: github.String(""),
 				},
 			},
 			wantResult: lang.BuildArrayValue([]lang.Value{

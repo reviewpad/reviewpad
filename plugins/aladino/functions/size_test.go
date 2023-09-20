@@ -7,6 +7,7 @@ package plugins_aladino_functions_test
 import (
 	"testing"
 
+	"github.com/google/go-github/v52/github"
 	pbc "github.com/reviewpad/api/go/codehost"
 	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
@@ -37,15 +38,15 @@ func TestSize_WhenRegexMatchFails(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			changes := int64(3)
-			mockedCodeReviewFileList := []*pbc.File{
+			changes := 3
+			mockedCodeReviewFileList := []*github.CommitFile{
 				{
-					Filename:     "reviewpad.yml",
-					ChangesCount: changes,
+					Filename: github.String("reviewpad.yml"),
+					Changes:  github.Int(changes),
 				},
 				{
-					Filename:     "main.go",
-					ChangesCount: changes,
+					Filename: github.String("main.go"),
+					Changes:  github.Int(changes),
 				},
 			}
 			additions := 6

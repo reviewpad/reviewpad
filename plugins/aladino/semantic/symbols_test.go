@@ -48,9 +48,9 @@ func TestGetBlocks(t *testing.T) {
  	}
  	return
 `
-	ghFile := &pbc.File{
-		Patch:    patchData,
-		Filename: fileName,
+	ghFile := &github.CommitFile{
+		Patch:    github.String(patchData),
+		Filename: github.String(fileName),
 	}
 
 	patchFile, err := codehost.NewFile(ghFile)
@@ -119,11 +119,11 @@ func TestGetSymbolsFromPatch_WhenDownloadContentsFails(t *testing.T) {
 		},
 	}
 
-	mockedFiles := []*pbc.File{
+	mockedFiles := []*github.CommitFile{
 		{
-			Sha:      mockedBlobId,
-			Filename: mockedPatchFileRelativeName,
-			Patch:    mockedPatch,
+			SHA:      github.String(mockedBlobId),
+			Filename: github.String(mockedPatchFileRelativeName),
+			Patch:    github.String(mockedPatch),
 		},
 	}
 
@@ -192,11 +192,11 @@ func TestGetSymbolsFromPatch_WhenSemanticServiceNotFound(t *testing.T) {
 		},
 	})
 
-	mockedFiles := []*pbc.File{
+	mockedFiles := []*github.CommitFile{
 		{
-			Sha:      mockedBlobId,
-			Filename: mockedPatchFileRelativeName,
-			Patch:    mockedPatch,
+			SHA:      github.String(mockedBlobId),
+			Filename: github.String(mockedPatchFileRelativeName),
+			Patch:    github.String(mockedPatch),
 		},
 	}
 
@@ -279,11 +279,11 @@ func TestGetSymbolsFromPatch_WhenGetSymbolsRequestFails(t *testing.T) {
 		},
 	})
 
-	mockedFiles := []*pbc.File{
+	mockedFiles := []*github.CommitFile{
 		{
-			Sha:      mockedBlobId,
-			Filename: mockedPatchFileRelativeName,
-			Patch:    mockedPatch,
+			SHA:      github.String(mockedBlobId),
+			Filename: github.String(mockedPatchFileRelativeName),
+			Patch:    github.String(mockedPatch),
 		},
 	}
 
@@ -383,11 +383,11 @@ func TestGetSymbolsFromPatch(t *testing.T) {
 		},
 	})
 
-	mockedFiles := []*pbc.File{
+	mockedFiles := []*github.CommitFile{
 		{
-			Sha:      mockedBlobId,
-			Filename: mockedPatchFileRelativeName,
-			Patch:    mockedPatch,
+			SHA:      github.String(mockedBlobId),
+			Filename: github.String(mockedPatchFileRelativeName),
+			Patch:    github.String(mockedPatch),
 		},
 	}
 
@@ -579,10 +579,10 @@ func TestGetSymbolsFromFileInBranch_WhenGetSymbolsRequestFails(t *testing.T) {
 		nil,
 	)
 
-	githubMockedCommitFile := &pbc.File{
-		Sha:      mockedBlobId,
-		Filename: mockedPatchFileRelativeName,
-		Patch:    mockedPatch,
+	githubMockedCommitFile := &github.CommitFile{
+		SHA:      github.String(mockedBlobId),
+		Filename: github.String(mockedPatchFileRelativeName),
+		Patch:    github.String(mockedPatch),
 	}
 
 	mockedCommitFile := &codehost.File{
@@ -733,10 +733,10 @@ func TestGetSymbolsFromFileInBranch(t *testing.T) {
 		mockBuiltIns,
 		nil,
 	)
-	githubMockedCommitFile := &pbc.File{
-		Sha:      mockedBlobId,
-		Filename: mockedPatchFileRelativeName,
-		Patch:    mockedPatch,
+	githubMockedCommitFile := &github.CommitFile{
+		SHA:      github.String(mockedBlobId),
+		Filename: github.String(mockedPatchFileRelativeName),
+		Patch:    github.String(mockedPatch),
 	}
 
 	mockedCommitFile := &codehost.File{
@@ -802,11 +802,11 @@ func TestGetSymbolsFromHeadByPatch(t *testing.T) {
 		},
 	})
 
-	mockedFiles := []*pbc.File{
+	mockedFiles := []*github.CommitFile{
 		{
-			Sha:      mockedBlobId,
-			Filename: mockedPatchFileRelativeName,
-			Patch:    mockedPatch,
+			SHA:      github.String(mockedBlobId),
+			Filename: github.String(mockedPatchFileRelativeName),
+			Patch:    github.String(mockedPatch),
 		},
 	}
 

@@ -7,7 +7,7 @@ package plugins_aladino_functions_test
 import (
 	"testing"
 
-	pbc "github.com/reviewpad/api/go/codehost"
+	"github.com/google/go-github/v52/github"
 	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
@@ -18,9 +18,9 @@ var hasFileName = plugins_aladino.PluginBuiltIns().Functions["hasFileName"].Code
 
 func TestHasFileName_WhenTrue(t *testing.T) {
 	defaultMockPrFileName := "default-mock-repo/file1.ts"
-	mockedPullRequestFileList := []*pbc.File{
+	mockedPullRequestFileList := []*github.CommitFile{
 		{
-			Filename: defaultMockPrFileName,
+			Filename: github.String(defaultMockPrFileName),
 		},
 	}
 	mockedEnv := aladino.MockDefaultEnvWithPullRequestAndFiles(
@@ -44,9 +44,9 @@ func TestHasFileName_WhenTrue(t *testing.T) {
 
 func TestHasFileName_WhenFalse(t *testing.T) {
 	defaultMockPrFileName := "default-mock-repo/file1.ts"
-	mockedPullRequestFileList := []*pbc.File{
+	mockedPullRequestFileList := []*github.CommitFile{
 		{
-			Filename: "default-mock-repo/file2.ts",
+			Filename: github.String("default-mock-repo/file2.ts"),
 		},
 	}
 	mockedEnv := aladino.MockDefaultEnvWithPullRequestAndFiles(

@@ -124,8 +124,8 @@ func TestDownloadContents_WhenDownloadContentsRequestFails(t *testing.T) {
 
 	mockedPatchFilePath := "test/crawler.go"
 
-	mockedFiles := []*pbc.File{
-		{Filename: mockedPatchFilePath},
+	mockedFiles := []*github.CommitFile{
+		{Filename: github.String(mockedPatchFilePath)},
 	}
 
 	mockedEnv := aladino.MockDefaultEnvWithPullRequestAndFiles(
@@ -187,8 +187,8 @@ func TestDownloadContents(t *testing.T) {
 	mockedPatchFileRelativeName := fmt.Sprintf("%s/crawler.go", mockedPatchFilePath)
 	mockedPatchLocation := fmt.Sprintf("/%s/%s/%s", mockedPRRepoOwner, mockedPRRepoName, mockedPatchFileName)
 
-	mockedFiles := []*pbc.File{
-		{Filename: mockedPatchFileRelativeName},
+	mockedFiles := []*github.CommitFile{
+		{Filename: github.String(mockedPatchFileRelativeName)},
 	}
 
 	mockedBlob := "test-blob"

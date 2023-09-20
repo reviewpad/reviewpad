@@ -7,7 +7,7 @@ package plugins_aladino_functions_test
 import (
 	"testing"
 
-	pbc "github.com/reviewpad/api/go/codehost"
+	"github.com/google/go-github/v52/github"
 	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
 	plugins_aladino "github.com/reviewpad/reviewpad/v4/plugins/aladino"
@@ -17,10 +17,10 @@ import (
 var fileCount = plugins_aladino.PluginBuiltIns().Functions["fileCount"].Code
 
 func TestFileCount(t *testing.T) {
-	mockedFiles := []*pbc.File{
+	mockedFiles := []*github.CommitFile{
 		{
-			Filename: "default-mock-repo/file1.ts",
-			Patch:    "",
+			Filename: github.String("default-mock-repo/file1.ts"),
+			Patch:    github.String(""),
 		},
 	}
 

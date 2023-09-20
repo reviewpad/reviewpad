@@ -10,7 +10,6 @@ import (
 
 	"github.com/google/go-github/v52/github"
 	"github.com/migueleliasweb/go-github-mock/src/mock"
-	pbc "github.com/reviewpad/api/go/codehost"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
 	"github.com/reviewpad/reviewpad/v4/lang"
 	"github.com/reviewpad/reviewpad/v4/lang/aladino"
@@ -64,9 +63,9 @@ func TestHasCodePattern_WhenPatternIsInvalid(t *testing.T) {
 }
 
 func TestHasCodePattern(t *testing.T) {
-	mockedCodeReviewFileList := []*pbc.File{{
-		Patch:    "@@ -2,9 +2,11 @@ package main\n- func previous() {\n+ func new() {\n+\nreturn",
-		Filename: "default-mock-repo/file1.ts",
+	mockedCodeReviewFileList := []*github.CommitFile{{
+		Patch:    github.String("@@ -2,9 +2,11 @@ package main\n- func previous() {\n+ func new() {\n+\nreturn"),
+		Filename: github.String("default-mock-repo/file1.ts"),
 	}}
 	mockedEnv := aladino.MockDefaultEnvWithPullRequestAndFiles(
 		t,
