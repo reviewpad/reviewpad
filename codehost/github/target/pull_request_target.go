@@ -70,6 +70,16 @@ func NewPullRequestTarget(ctx context.Context, targetEntity *entities.TargetEnti
 	}, nil
 }
 
+func NewPullRequestTargetWithoutPatch(ctx context.Context, targetEntity *entities.TargetEntity, githubClient *gh.GithubClient, codehostClient *codehost.CodeHostClient, pr *pbc.PullRequest) (*PullRequestTarget, error) {
+	return &PullRequestTarget{
+		NewCommonTarget(ctx, targetEntity, githubClient),
+		ctx,
+		pr,
+		githubClient,
+		nil,
+	}, nil
+}
+
 func (t *PullRequestTarget) GetNodeID() string {
 	return t.PullRequest.GetId()
 }
