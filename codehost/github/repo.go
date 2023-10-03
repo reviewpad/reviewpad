@@ -10,7 +10,7 @@ import (
 	"os"
 	"strings"
 
-	git "github.com/libgit2/git2go/v31"
+	git "github.com/libgit2/git2go/v34"
 	"github.com/sirupsen/logrus"
 )
 
@@ -38,7 +38,7 @@ func CloneRepository(log *logrus.Entry, url string, token string, path string, o
 		options = &git.CloneOptions{}
 	}
 
-	options.FetchOptions = &git.FetchOptions{
+	options.FetchOptions = git.FetchOptions{
 		RemoteCallbacks: git.RemoteCallbacks{
 			CredentialsCallback: func(url, usernameFromURL string, allowedTypes git.CredentialType) (*git.Credential, error) {
 				log.WithFields(logrus.Fields{

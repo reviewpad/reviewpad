@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	git "github.com/libgit2/git2go/v31"
+	git "github.com/libgit2/git2go/v34"
 	log "github.com/reviewpad/go-lib/logrus"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/sirupsen/logrus"

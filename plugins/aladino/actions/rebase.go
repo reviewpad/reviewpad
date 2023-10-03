@@ -8,7 +8,7 @@ import (
 	"errors"
 	"os"
 
-	git "github.com/libgit2/git2go/v31"
+	git "github.com/libgit2/git2go/v34"
 	"github.com/reviewpad/go-lib/entities"
 	gh "github.com/reviewpad/reviewpad/v4/codehost/github"
 	"github.com/reviewpad/reviewpad/v4/codehost/github/target"
