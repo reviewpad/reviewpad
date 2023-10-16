@@ -47,7 +47,6 @@ type Interpreter interface {
 	ProcessIterable(expr string) (lang.Value, error)
 	StoreTemporaryVariable(name string, value lang.Value)
 	ProcessDictionary(name string, dictionary map[string]string) error
-	GetChecksWithIssues() []string
 }
 
 type Env struct {

@@ -51,7 +51,6 @@ type Env interface {
 	GetCheckRunID() *int64
 	SetCheckRunConclusion(string)
 	GetCheckRunConclusion() string
-	GetChecksWithIssues() []string
 }
 
 type BaseEnv struct {
@@ -72,7 +71,6 @@ type BaseEnv struct {
 	ExecFatalErrorOccurred   error
 	CheckRunID               *int64
 	CheckRunConclusion       string
-	ChecksWithIssues         []string
 }
 
 func (e *BaseEnv) GetBuiltIns() *BuiltIns {
@@ -151,10 +149,6 @@ func (e *BaseEnv) GetCheckRunID() *int64 {
 	return e.CheckRunID
 }
 
-func (e *BaseEnv) GetChecksWithIssues() []string {
-	return e.ChecksWithIssues
-}
-
 func NewTypeEnv(e Env) TypeEnv {
 	builtInsType := make(map[string]lang.Type)
 	for builtInName, builtInFunction := range e.GetBuiltIns().Functions {
@@ -183,7 +177,6 @@ func NewEvalEnv(
 	eventPayload interface{},
 	builtIns *BuiltIns,
 	checkRunID *int64,
-	checksWithIssues []string,
 ) (Env, error) {
 	registerMap := RegisterMap(make(map[string]lang.Value))
 	report := &Report{Actions: make([]string, 0)}
@@ -206,7 +199,6 @@ func NewEvalEnv(
 		ExecWaitGroup:            &wg,
 		ExecMutex:                &mu,
 		CheckRunID:               checkRunID,
-		ChecksWithIssues:         checksWithIssues,
 	}
 
 	switch targetEntity.Kind {

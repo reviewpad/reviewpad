@@ -76,7 +76,6 @@ func TestNewEvalEnv_WhenGetPullRequestFilesFails(t *testing.T) {
 		nil,
 		aladino.MockBuiltIns(),
 		nil,
-		nil,
 	)
 
 	assert.Nil(t, env)
@@ -111,7 +110,6 @@ func TestNewEvalEnv_WhenNewFileFails(t *testing.T) {
 		nil,
 		aladino.MockBuiltIns(),
 		nil,
-		nil,
 	)
 
 	assert.Nil(t, env)
@@ -144,7 +142,6 @@ func TestNewEvalEnv(t *testing.T) {
 		aladino.DefaultMockTargetEntity,
 		nil,
 		aladino.MockBuiltIns(),
-		nil,
 		nil,
 	)
 
@@ -209,7 +206,6 @@ func TestNewEvalEnv_WhenGetPullRequestFails(t *testing.T) {
 		targetEntity,
 		nil,
 		aladino.MockBuiltIns(),
-		nil,
 		nil,
 	)
 
