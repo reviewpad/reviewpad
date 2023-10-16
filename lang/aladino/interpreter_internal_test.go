@@ -776,7 +776,6 @@ func TestNewInterpreter_WhenNewEvalEnvFails(t *testing.T) {
 		nil,
 		nil,
 		nil,
-		nil,
 	)
 
 	assert.Nil(t, gotInterpreter)
@@ -800,7 +799,6 @@ func TestNewInterpreter(t *testing.T) {
 		DefaultMockTargetEntity,
 		mockedEnv.GetEventPayload(),
 		mockedEnv.GetBuiltIns(),
-		nil,
 		nil,
 	)
 
@@ -1045,7 +1043,6 @@ func TestReportMetric(t *testing.T) {
 				env.GetCodeHostClient(),
 				env.GetCollector(),
 				env.GetTarget().GetTargetEntity(),
-				nil,
 				nil,
 				nil,
 				nil,

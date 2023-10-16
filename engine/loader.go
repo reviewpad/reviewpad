@@ -213,12 +213,11 @@ func transform(file *ReviewpadFile) *ReviewpadFile {
 		}
 
 		transformedWorkflows = append(transformedWorkflows, PadWorkflow{
-			Name:           workflow.Name,
-			On:             transformedOn,
-			Description:    workflow.Description,
-			AlwaysRun:      workflow.AlwaysRun,
-			Runs:           workflow.Runs,
-			TriggerOnCheck: workflow.TriggerOnCheck,
+			Name:        workflow.Name,
+			On:          transformedOn,
+			Description: workflow.Description,
+			AlwaysRun:   workflow.AlwaysRun,
+			Runs:        workflow.Runs,
 		})
 	}
 

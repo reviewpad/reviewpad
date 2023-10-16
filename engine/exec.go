@@ -332,22 +332,6 @@ func ExecConfigurationFile(env *Env, file *ReviewpadFile) (ExitStatus, *Program,
 
 	// process workflows
 	for _, workflow := range file.Workflows {
-		if workflow.TriggerOnCheck != "" {
-			shouldRun := false
-			checksWithIssues := env.Interpreter.GetChecksWithIssues()
-
-			for _, check := range checksWithIssues {
-				if check == workflow.TriggerOnCheck {
-					shouldRun = true
-					break
-				}
-			}
-
-			if !shouldRun {
-				continue
-			}
-		}
-
 		log.Infof("executing workflow `%v`", workflow.Name)
 		workflowLog := log.WithField("workflow", workflow.Name)
 

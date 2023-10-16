@@ -109,7 +109,6 @@ type PadWorkflow struct {
 	NonNormalizedActions any                         `yaml:"then"`
 	NonNormalizedElse    any                         `yaml:"else"`
 	NonNormalizedRun     any                         `yaml:"run"`
-	TriggerOnCheck       string                      `yaml:"trigger-on-check"`
 }
 
 type PadWorkflowRunBlock struct {

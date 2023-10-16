@@ -351,10 +351,6 @@ func (i *Interpreter) GetCheckRunConclusion() string {
 	return i.Env.GetCheckRunConclusion()
 }
 
-func (i *Interpreter) GetChecksWithIssues() []string {
-	return i.Env.GetChecksWithIssues()
-}
-
 func NewInterpreter(
 	ctx context.Context,
 	logger *logrus.Entry,
@@ -366,9 +362,8 @@ func NewInterpreter(
 	eventPayload interface{},
 	builtIns *BuiltIns,
 	checkRunID *int64,
-	checksWithIssues []string,
 ) (engine.Interpreter, error) {
-	evalEnv, err := NewEvalEnv(ctx, logger, dryRun, githubClient, codeHostClient, collector, targetEntity, eventPayload, builtIns, checkRunID, checksWithIssues)
+	evalEnv, err := NewEvalEnv(ctx, logger, dryRun, githubClient, codeHostClient, collector, targetEntity, eventPayload, builtIns, checkRunID)
 	if err != nil {
 		return nil, err
 	}
