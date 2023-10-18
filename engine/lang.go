@@ -232,16 +232,11 @@ type ReviewpadFile struct {
 type PadCheck struct {
 	Severity   string                 `yaml:"severity"`
 	Activation string                 `yaml:"activation"`
-	Label      string                 `yaml:"label"`
 	Parameters map[string]interface{} `yaml:"parameters"`
 }
 
 func (p PadCheck) equals(o PadCheck) bool {
 	if p.Severity != o.Severity {
-		return false
-	}
-
-	if p.Label != o.Label {
 		return false
 	}
 
