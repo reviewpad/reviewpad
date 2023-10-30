@@ -1,3 +1,5 @@
+## This project is now in maintenance mode. Please feel free to fork the project to apply any changes you might want to make.
+
 ![Reviewpad](https://github.com/reviewpad/reviewpad/assets/38539/5220e087-e15f-423f-a509-20a7485ff7f7)
 
 # Reviewpad
