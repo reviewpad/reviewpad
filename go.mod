@@ -10,7 +10,7 @@ require (
 	github.com/golang/mock v1.6.0
 	github.com/google/go-github/v52 v52.0.0
 	github.com/google/uuid v1.3.1
-	github.com/gorilla/mux v1.8.0
+	github.com/gorilla/mux v1.8.1
 	github.com/graphql-go/graphql v0.8.1
 	github.com/hasura/go-graphql-client v0.10.0
 	github.com/jarcoal/httpmock v1.3.1
