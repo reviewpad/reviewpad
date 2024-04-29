@@ -23,7 +23,7 @@ require (
 	github.com/reviewpad/api/go v0.0.0-20231016095446-177fe259ce20
 	github.com/reviewpad/go-conventionalcommits v0.10.0
 	github.com/reviewpad/go-lib v0.0.0-20231016101521-daf31e8bf28f
-	github.com/shurcooL/githubv4 v0.0.0-20230704064427-599ae7bbf278
+	github.com/shurcooL/githubv4 be2daab69064
 	github.com/shurcooL/graphql v0.0.0-20230722043721-ed46e5a46466
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.7.0
