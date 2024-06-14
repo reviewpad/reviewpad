@@ -26,7 +26,7 @@ require (
 	github.com/shurcooL/githubv4 v0.0.0-20230704064427-599ae7bbf278
 	github.com/shurcooL/graphql v0.0.0-20230722043721-ed46e5a46466
 	github.com/sirupsen/logrus v1.9.3
-	github.com/spf13/cobra v1.7.0
+	github.com/spf13/cobra v1.8.1
 	github.com/stretchr/testify v1.8.4
 	github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80
 	golang.org/x/exp v0.0.0-20231006140011-7918f672742d
