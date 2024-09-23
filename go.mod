@@ -12,7 +12,7 @@ require (
 	github.com/google/uuid v1.3.1
 	github.com/gorilla/mux v1.8.0
 	github.com/graphql-go/graphql v0.8.1
-	github.com/hasura/go-graphql-client v0.10.0
+	github.com/hasura/go-graphql-client v0.13.1
 	github.com/jarcoal/httpmock v1.3.1
 	github.com/jinzhu/copier v0.4.0
 	github.com/libgit2/git2go/v31 v31.7.9
